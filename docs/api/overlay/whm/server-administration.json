@@ -7,22 +7,2394 @@
     "whm1:getdiskusage": {
       "name": "getDiskUsage",
       "response": {
-        "partition[].inodes_available": {"nullable": true, "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-13", "note": "getdiskusage returned explicit null for the four inode fields; docs/api/source-audit.md#runtime-observations-2026-10-13"}]},
-        "partition[].inodes_ipercentage": {"nullable": true, "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-13", "note": "getdiskusage returned explicit null for the four inode fields; docs/api/source-audit.md#runtime-observations-2026-10-13"}]},
-        "partition[].inodes_total": {"nullable": true, "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-13", "note": "getdiskusage returned explicit null for the four inode fields; docs/api/source-audit.md#runtime-observations-2026-10-13"}]},
-        "partition[].inodes_used": {"nullable": true, "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-13", "note": "getdiskusage returned explicit null for the four inode fields; docs/api/source-audit.md#runtime-observations-2026-10-13"}]}
+        "partition[].inodes_available": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.15",
+              "date": "2026-10-13",
+              "note": "getdiskusage returned explicit null for the four inode fields; docs/api/source-audit.md#runtime-observations-2026-10-13"
+            }
+          ]
+        },
+        "partition[].inodes_ipercentage": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.15",
+              "date": "2026-10-13",
+              "note": "getdiskusage returned explicit null for the four inode fields; docs/api/source-audit.md#runtime-observations-2026-10-13"
+            }
+          ]
+        },
+        "partition[].inodes_total": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.15",
+              "date": "2026-10-13",
+              "note": "getdiskusage returned explicit null for the four inode fields; docs/api/source-audit.md#runtime-observations-2026-10-13"
+            }
+          ]
+        },
+        "partition[].inodes_used": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.15",
+              "date": "2026-10-13",
+              "note": "getdiskusage returned explicit null for the four inode fields; docs/api/source-audit.md#runtime-observations-2026-10-13"
+            }
+          ]
+        }
       }
     },
-    "whm1:gethostname": {"name": "getHostname", "unwrap": "hostname"},
+    "whm1:gethostname": {
+      "name": "getHostname",
+      "unwrap": "hostname"
+    },
     "whm1:systemloadavg": {
       "name": "getLoadAverage",
-      "probe": {"phase": "read-only", "arguments": {}, "routes": ["whm"], "expected": "success"},
+      "probe": {
+        "phase": "read-only",
+        "arguments": {},
+        "routes": [
+          "whm"
+        ],
+        "expected": "success"
+      },
       "response": {
-        "fifteen": {"accept": ["numeric-string"], "preserve": true, "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-13", "note": "systemloadavg returned load averages as decimal strings (for example \"0.50\"); docs/api/source-audit.md#runtime-observations-2026-10-13"}]},
-        "five": {"accept": ["numeric-string"], "preserve": true, "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-13", "note": "systemloadavg returned load averages as decimal strings (for example \"0.50\"); docs/api/source-audit.md#runtime-observations-2026-10-13"}]},
-        "one": {"accept": ["numeric-string"], "preserve": true, "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-13", "note": "systemloadavg returned load averages as decimal strings (for example \"0.50\"); docs/api/source-audit.md#runtime-observations-2026-10-13"}]}
+        "fifteen": {
+          "accept": [
+            "numeric-string"
+          ],
+          "preserve": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.15",
+              "date": "2026-10-13",
+              "note": "systemloadavg returned load averages as decimal strings (for example \"0.50\"); docs/api/source-audit.md#runtime-observations-2026-10-13"
+            }
+          ]
+        },
+        "five": {
+          "accept": [
+            "numeric-string"
+          ],
+          "preserve": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.15",
+              "date": "2026-10-13",
+              "note": "systemloadavg returned load averages as decimal strings (for example \"0.50\"); docs/api/source-audit.md#runtime-observations-2026-10-13"
+            }
+          ]
+        },
+        "one": {
+          "accept": [
+            "numeric-string"
+          ],
+          "preserve": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.15",
+              "date": "2026-10-13",
+              "note": "systemloadavg returned load averages as decimal strings (for example \"0.50\"); docs/api/source-audit.md#runtime-observations-2026-10-13"
+            }
+          ]
+        }
       }
     },
-    "whm1:version": {"name": "version", "unwrap": "version", "probe": {"phase": "read-only", "arguments": {}, "routes": ["whm"], "expected": "success"}}
+    "whm1:version": {
+      "name": "version",
+      "unwrap": "version",
+      "probe": {
+        "phase": "read-only",
+        "arguments": {},
+        "routes": [
+          "whm"
+        ],
+        "expected": "success"
+      }
+    },
+    "whm1:EcosystemFeatures/is_ready": {
+      "name": "isEcosystemFeatureReady",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 11.132 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "The source omits x-readonly; conservatively uses form POST. ready is an integer 0|1 readiness flag, separate from metadata.result. Omitting namespace retains Whostmgr; Cpanel is also documented."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /EcosystemFeatures/is_ready parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:EcosystemFeatures/local_disable": {
+      "name": "disableEcosystemFeatureLocally",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 11.118 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Requires root-level privileges. Only cpanel-monitoring-plugin and cpanel-nova-plugin are documented. Omitting namespace retains Whostmgr; despite broader prose, the pinned schema permits only Whostmgr. Changes local plugin availability."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /EcosystemFeatures/local_disable parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:EcosystemFeatures/local_enable": {
+      "name": "enableEcosystemFeatureLocally",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 11.118 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Requires root-level privileges. Only cpanel-monitoring-plugin and cpanel-nova-plugin are documented. Omitting namespace retains Whostmgr; despite broader prose, the pinned schema permits only Whostmgr. Changes local plugin availability."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /EcosystemFeatures/local_enable parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:accept_eula": {
+      "name": "acceptEula",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 76 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Records acceptance of cPanel and WHM legal agreements, including an audit record of accepting user, time, remote IP, agreement version and URLs. This is a legal acceptance action; API success reports that action, not a review of the agreements."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /accept_eula parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:add_configclusterserver": {
+      "name": "addConfigClusterServer",
+      "method": "POST",
+      "params": {
+        "key": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 11.44 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Run as a root-level account on the intended parent server. Cluster membership can be viewed and modified only from that parent. Sends the remote access key as a sensitive form field over the configured HTTPS transport; creates a remote cluster relationship. Result information is in responseMeta()->whm rather than a data payload."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /add_configclusterserver parameters, x-readonly classification and 200 response schema. Sensitive credential or freeform value inputs use form POST and explicit SensitiveParameter decisions. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:configurebackgroundprocesskiller": {
+      "name": "configureBackgroundProcessKiller",
+      "method": "POST",
+      "params": {
+        "processes_to_kill": {
+          "php": "processesToKill",
+          "encoding": "repeat",
+          "sensitive": true
+        },
+        "trusted_users": {
+          "php": "trustedUsers",
+          "encoding": "repeat"
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 11 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Configures server process termination. processesToKill accepts one process name or a nonempty sequential string list, sent as repeated processes_to_kill keys. trustedUsers uses repeated trusted_users keys. The source permits duplicates or incremented names. Omitting trustedUsers affects all users; process arguments are sensitive command text."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /configurebackgroundprocesskiller parameters, x-readonly classification and 200 response schema. Sensitive credential or freeform value inputs use form POST and explicit SensitiveParameter decisions. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:configureservice": {
+      "name": "configureService",
+      "method": "POST",
+      "params": {
+        "exim-altportnum": {
+          "php": "eximAltportnum"
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 11.38 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "With only the clustering ACL, only named may be configured. Never disable cpsrvd. Omitting enabled or monitored leaves that status unchanged; explicit false sends 0. eximAltportnum is comma-separated port text used only for exim-altport. Changes service availability or monitoring immediately."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /configureservice parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:delete_configclusterserver": {
+      "name": "deleteConfigClusterServer",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 11.44 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Removes configuration-cluster membership. Only the parent server exposes and permits modifying cluster configuration; logging into a child does not indicate membership. Result information is in metadata, without a data payload."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /delete_configclusterserver parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:enable_monitor_all_enabled_services": {
+      "name": "enableMonitorAllEnabledServices",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 11.52.0.8 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Enables monitoring for every enabled service. Per-service monitored values are integer 0|1 flags, separate from metadata.result."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /enable_monitor_all_enabled_services parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:fetch_connected_application": {
+      "name": "fetchConnectedApplication",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 98 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "The response can contain sensitive JWT or connection data. private_key and public_key are stored key identifiers, not key material; token_name is a token name. Known optional fields retain their pinned types while additional data fields and JWT contents remain opaque. Never log this payload."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /fetch_connected_application parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "response": {
+        "data": {
+          "replace": {
+            "type": "object",
+            "fields": {
+              "jwt": {
+                "type": "map",
+                "values": {
+                  "type": "mixed"
+                }
+              },
+              "private_key": {
+                "type": "string"
+              },
+              "privileges_granted": {
+                "type": "list",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "public_key": {
+                "type": "string"
+              },
+              "token_name": {
+                "type": "string"
+              }
+            },
+            "values": {
+              "type": "mixed"
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned data.data declares jwt as an arbitrary object; private_key/public_key/token_name strings and privileges_granted string list; additionalProperties:{} explicitly permits arbitrary further fields. Existing object.values preserves unknown fields while retaining all known field validation. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        }
+      }
+    },
+    "whm1:fetch_security_advice": {
+      "name": "fetchSecurityAdvice",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 80 and later. Uses GET without automatically following returned links."
+        },
+        {
+          "kind": "documented",
+          "text": "Security Advisor HTML, instructions and suggested links are payload data; this method does not execute remediation or fetch returned links. advice applies to mod_advice; message applies to mod_load/mod_run. suggestion may explicitly be null."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /fetch_security_advice parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:force_dedistribution_from_node": {
+      "name": "forceDedistributionFromNode",
+      "method": "POST",
+      "params": {
+        "node_alias": {
+          "php": "nodeAlias"
+        },
+        "user": {
+          "php": "users",
+          "encoding": "repeat"
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 94 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Emergency last-resort action: converts selected distributed accounts to local operation without copying any child-node data, causing data loss for converted users. users is one username or a nonempty sequential list sent as repeated user fields, as shown in the pinned CLI/URL examples. Log levels and per-user information are separate from API outcome; no retry or rollback is provided."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /force_dedistribution_from_node parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:get_all_contact_importances": {
+      "name": "getAllContactImportances",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 58 and later. Uses GET without automatically following returned links."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns per-application/event notification priorities; importance is an integer and name is display text, separate from API outcome. No notification is sent."
+        },
+        {
+          "kind": "observed",
+          "text": "The initial WHM GET capture on cPanel 11.138.0.19 records numeric strings for importances[].importance. Only these observed integer leaves admit the existing canonical, in-range integer-string normalization. The structural artifact does not prove every accepted text format; optional fields, numeric-looking string siblings, integer flags and other operations retain their contracts."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /get_all_contact_importances parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Initial WHM GET capture at revision 4eecbe249c754341f454db573a1a475731dc8b9c on cPanel 11.138.0.19 records numeric-string structural types at $.importances[].importance, conflicting with the pinned integer schema. Immutable artifact docs/api/evidence/2026-10-31-whm-server-administration.json, SHA-256 69d1296be7b3170ce6c6e8468aee28b03a3c6633b4b9c0b374f3ffbd5844e296. Structural evidence does not establish the exact text or every numeric-string format. Apply only the existing canonical in-range integer-string conversion policy: lossless normalization to int; reject noncanonical, fractional, exponent, overflowing, boolean and null alternatives. No sibling or unknown-field compatibility is inferred.",
+          "fingerprint": "docs/api/evidence/2026-10-31-whm-server-administration.json"
+        }
+      ],
+      "response": {
+        "importances[].importance": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "whm1:get_all_contact_importances WHM GET at revision 4eecbe249c754341f454db573a1a475731dc8b9c reports numeric-string at payload path $.importances[].importance; the pinned type is integer. Apply the existing canonical lossless in-range integer-string policy only at this field, without assuming that all numeric-string formats were observed. Artifact docs/api/evidence/2026-10-31-whm-server-administration.json, SHA-256 69d1296be7b3170ce6c6e8468aee28b03a3c6633b4b9c0b374f3ffbd5844e296.",
+              "fingerprint": "docs/api/evidence/2026-10-31-whm-server-administration.json"
+            }
+          ]
+        }
+      }
+    },
+    "whm1:get_application_contact_event_importance": {
+      "name": "getApplicationContactEventImportance",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 58 and later. Uses GET without automatically following returned links."
+        },
+        {
+          "kind": "documented",
+          "text": "importance is an integer priority (0 Disabled, 1 High, 2 Medium, 3 Low); inspect it separately from metadata.result. No notification is sent."
+        },
+        {
+          "kind": "observed",
+          "text": "The independent review on cPanel 11.138.0.19 observed importance as a digit string for ChkServd. This field uses the existing canonical, in-range integer-string normalization; fractional, exponent, noncanonical and overflowing strings are rejected. The accepted boundary formats are offline-tested policy, not additional live observations."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /get_application_contact_event_importance parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Independent WHM GET review of revision e6181e408921547c804736481e26d2da1ca5b88c on cPanel 11.138.0.19: get_application_contact_event_importance for ChkServd returned a digit string at importance and failed the pinned integer spec. Apply the existing canonical, bounded integer-string normalization only at importance. The review does not establish every accepted spelling or integer boundary; name and other fields retain their pinned contracts. Review: https://github.com/hostingpal/whm-api-client/pull/51#pullrequestreview-5720579254."
+        }
+      ],
+      "response": {
+        "importance": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Independent WHM GET review of revision e6181e408921547c804736481e26d2da1ca5b88c on cPanel 11.138.0.19: get_application_contact_event_importance for ChkServd returned a digit string at importance and failed the pinned integer spec. Apply the existing canonical, bounded integer-string normalization only at importance. The review does not establish every accepted spelling or integer boundary; name and other fields retain their pinned contracts. Review: https://github.com/hostingpal/whm-api-client/pull/51#pullrequestreview-5720579254."
+            }
+          ]
+        }
+      }
+    },
+    "whm1:get_application_contact_importance": {
+      "name": "getApplicationContactImportance",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 58 and later. Uses GET without automatically following returned links."
+        },
+        {
+          "kind": "documented",
+          "text": "importance is an integer priority (0 Disabled, 1 High, 2 Medium, 3 Low); inspect it separately from metadata.result. No notification is sent."
+        },
+        {
+          "kind": "observed",
+          "text": "The independent review on cPanel 11.138.0.19 observed importance as a digit string for ChkServd. This field uses the existing canonical, in-range integer-string normalization; fractional, exponent, noncanonical and overflowing strings are rejected. The accepted boundary formats are offline-tested policy, not additional live observations."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /get_application_contact_importance parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Independent WHM GET review of revision e6181e408921547c804736481e26d2da1ca5b88c on cPanel 11.138.0.19: get_application_contact_importance for ChkServd returned a digit string at importance and failed the pinned integer spec. Apply the existing canonical, bounded integer-string normalization only at importance. The review does not establish every accepted spelling or integer boundary; name and other fields retain their pinned contracts. Review: https://github.com/hostingpal/whm-api-client/pull/51#pullrequestreview-5720579254."
+        }
+      ],
+      "response": {
+        "importance": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Independent WHM GET review of revision e6181e408921547c804736481e26d2da1ca5b88c on cPanel 11.138.0.19: get_application_contact_importance for ChkServd returned a digit string at importance and failed the pinned integer spec. Apply the existing canonical, bounded integer-string normalization only at importance. The review does not establish every accepted spelling or integer boundary; name and other fields retain their pinned contracts. Review: https://github.com/hostingpal/whm-api-client/pull/51#pullrequestreview-5720579254."
+            }
+          ]
+        }
+      }
+    },
+    "whm1:get_available_profiles": {
+      "name": "getAvailableProfiles",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 76 and later. Uses GET without automatically following returned links."
+        },
+        {
+          "kind": "documented",
+          "text": "Describes enabled, disabled and optional role lists and an integer experimental flag. Inventory does not activate a profile or establish that activation will succeed."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /get_available_profiles parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:get_available_tiers": {
+      "name": "getAvailableTiers",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 11.38 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "The source declares x-readonly=false, so this retrieval uses form POST. Dynamic release/branch names remain returned keys with string values; known tier fields have the same string contract."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /get_available_tiers parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "response": {
+        "": {
+          "replace": {
+            "type": "object",
+            "fields": {
+              "current": {
+                "type": "string"
+              },
+              "edge": {
+                "type": "string"
+              },
+              "lts": {
+                "type": "string"
+              },
+              "release": {
+                "type": "string"
+              },
+              "stable": {
+                "type": "string"
+              }
+            },
+            "values": {
+              "type": "string"
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned data declares current, edge, lts, release and stable as optional named string fields alongside additionalProperties:{type:string}; the example includes dynamic version keys. Preserve all five fields explicitly in the object contract and PHPDoc while retaining string-valued dynamic branches. This source-backed shape correction does not establish live execution of this POST operation. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        }
+      }
+    },
+    "whm1:get_current_lts_expiration_status": {
+      "name": "getCurrentLtsExpirationStatus",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 62 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "The source declares x-readonly=false, so this retrieval uses form POST. expiration is an integer Unix timestamp; expires_in_next_three_months is an integer flag."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /get_current_lts_expiration_status parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:get_current_profile": {
+      "name": "getCurrentProfile",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 76 and later. Uses GET without automatically following returned links."
+        },
+        {
+          "kind": "documented",
+          "text": "Describes current enabled, disabled and optional roles without activating a profile. experimental remains an integer flag."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /get_current_profile parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:get_linked_server_node": {
+      "name": "getLinkedServerNode",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 86 and later. Uses GET without automatically following returned links."
+        },
+        {
+          "kind": "documented",
+          "text": "Linked-node service lists, role-keyed worker capabilities and role-keyed settings retain their original keys. Child objects without a pinned field schema remain opaque; last_check is an integer timestamp and tls_verified is an integer flag. Returned settings can contain sensitive data."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /get_linked_server_node parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:get_lts_wexpire": {
+      "name": "getLtsWexpire",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 62 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "The source declares x-readonly=false, so this retrieval uses form POST. Branch, flag and tier names remain dynamic keys; nested build lists and integer flags retain their pinned types. Expiration strings are not parsed or normalized."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /get_lts_wexpire parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:get_server_node_status": {
+      "name": "getServerNodeStatus",
+      "method": "POST",
+      "params": {
+        "api_token": {
+          "php": "apiToken",
+          "sensitive": true
+        },
+        "skip_tls_verification": {
+          "php": "skipTlsVerification"
+        },
+        "username": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 86 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST because apiToken is a root-level credential, despite x-readonly=true. Contacts the remote node using version and get_current_profile; username must also have root-level access. An IP address requires skipTlsVerification=true. Omission retains the documented false default; disabling TLS verification weakens remote-node identity checks. Returned status does not create linkage."
+        },
+        {
+          "kind": "documented",
+          "text": "remote_node_linkages normally contains a list of opaque child-node objects. The pinned description also permits an empty object when the parent queries its child. That empty-object alternative declares no fields; populated linked-node behavior remains unobserved in this review."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /get_server_node_status parameters, x-readonly classification and 200 response schema. Sensitive credential or freeform value inputs use form POST and explicit SensitiveParameter decisions. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "response": {
+        "remote_node_linkages": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "list",
+                "items": {
+                  "type": "map",
+                  "values": {
+                    "type": "mixed"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "fields": {}
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned remote_node_linkages is an array of objects whose item schema has no declared fields; its description additionally promises an empty object when called on a parent for its child node. Preserve list rows as opaque maps and admit an object with no declared fields for that documented branch. This is a source-backed offline correction: review https://github.com/hostingpal/whm-api-client/pull/51#pullrequestreview-5720579254 reports no linked nodes and no POST executions. The existing object grammar does not enforce an object-key count, and this override does not infer populated object fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        }
+      }
+    },
+    "whm1:get_service_config": {
+      "name": "getServiceConfig",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 58 and later. Uses GET without automatically following returned links."
+        },
+        {
+          "kind": "documented",
+          "text": "Only dovecot is documented; undocumented services are outside the reviewed contract. A fresh installation may return only protocols until mailserver configuration is saved. Dynamic configuration values are strings, integers or opaque objects. The pinned example includes hulk_auth_passwd: returned configuration and raw payloads attached to exceptions can contain credential material and must be treated as sensitive."
+        },
+        {
+          "kind": "observed",
+          "text": "The independent review on cPanel 11.138.0.19 saw the hulk_auth_passwd key name in the unfiltered dovecot configuration, without inspecting its value. An undocumented exim request returned null data and failed payload validation; this does not widen the documented service or payload contract."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /get_service_config parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Independent WHM GET review of revision e6181e408921547c804736481e26d2da1ca5b88c on cPanel 11.138.0.19: The unfiltered dovecot configuration contained 53 string-valued keys and five object-valued keys. The reviewer saw the hulk_auth_passwd key name only, not its value. An exim request returned null data and failed payload validation; exim is outside the pinned dovecot contract. No credential value or raw configuration payload is included in this evidence. Review: https://github.com/hostingpal/whm-api-client/pull/51#pullrequestreview-5720579254."
+        }
+      ]
+    },
+    "whm1:get_service_config_key": {
+      "name": "getServiceConfigKey",
+      "method": "GET",
+      "params": {
+        "key": {
+          "sensitive": false
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 58 and later. Uses GET without automatically following returned links."
+        },
+        {
+          "kind": "documented",
+          "text": "The field name is the requested key, not the literal source placeholder key name. Dynamic values retain the full configuration string, integer or opaque-object contract. Preserve the explicitly unspecified mail_process_size field as mixed. The pinned service example is dovecot, the only service documented by the full configuration function; undocumented services are outside this reviewed contract. Returned configuration and raw payloads attached to exceptions can contain credential material."
+        },
+        {
+          "kind": "observed",
+          "text": "The independent review on cPanel 11.138.0.19 observed object-valued quota and namespace_private results for dovecot. Their contents remain opaque; this observation does not establish other services or identify every dynamic key."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /get_service_config_key parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Independent WHM GET review of revision e6181e408921547c804736481e26d2da1ca5b88c on cPanel 11.138.0.19: get_service_config_key for dovecot keys quota and namespace_private returned object-valued entries and failed the previous dynamic string-only spec. These object values match the pinned full configuration string|integer|object family; do not infer a closed list of configuration keys or a schema for opaque object contents. Review: https://github.com/hostingpal/whm-api-client/pull/51#pullrequestreview-5720579254."
+        }
+      ],
+      "response": {
+        "": {
+          "replace": {
+            "type": "object",
+            "fields": {
+              "mail_process_size": {
+                "type": "mixed"
+              }
+            },
+            "values": {
+              "type": "union",
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "int"
+                },
+                {
+                  "type": "map",
+                  "values": {
+                    "type": "mixed"
+                  }
+                }
+              ]
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /get_service_config_key data declares key name as the supplied key parameter, not a literal fixed field, and separately declares optional mail_process_size:{} without a type. Preserve that known mixed field. Pinned /get_service_config additionalProperties documents configuration values as string, integer or object; use the same value union for dynamic single-key results, retaining opaque object contents. The single-key source labels its placeholder string; the separately recorded live object results establish that correction. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Independent WHM GET review of revision e6181e408921547c804736481e26d2da1ca5b88c on cPanel 11.138.0.19: get_service_config_key for dovecot keys quota and namespace_private returned object-valued entries and failed the previous dynamic string-only spec. These object values match the pinned full configuration string|integer|object family; do not infer a closed list of configuration keys or a schema for opaque object contents. Review: https://github.com/hostingpal/whm-api-client/pull/51#pullrequestreview-5720579254."
+            }
+          ]
+        }
+      }
+    },
+    "whm1:get_service_proxy_backends": {
+      "name": "getServiceProxyBackends",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 94 and later. Uses GET without automatically following returned links."
+        },
+        {
+          "kind": "documented",
+          "text": "Reports an account service-proxy configuration without contacting returned backends. service_group may be null; omission remains distinct."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /get_service_proxy_backends parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:get_tcp4_sockets": {
+      "name": "getTcp4Sockets",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 80 and later. Uses GET without automatically following returned links."
+        },
+        {
+          "kind": "documented",
+          "text": "Socket addresses and counters remain payload data; queues are integer byte counts and ports, inode, UID and state remain integers. No process or connection is modified."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /get_tcp4_sockets parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:get_tcp6_sockets": {
+      "name": "getTcp6Sockets",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 80 and later. Uses GET without automatically following returned links."
+        },
+        {
+          "kind": "documented",
+          "text": "Socket addresses and counters remain payload data; queues are integer byte counts and ports, inode, UID and state remain integers. No process or connection is modified."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /get_tcp6_sockets parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:get_udp4_sockets": {
+      "name": "getUdp4Sockets",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 80 and later. Uses GET without automatically following returned links."
+        },
+        {
+          "kind": "documented",
+          "text": "Socket addresses and counters remain payload data; queues are integer byte counts and ports, inode, UID and state remain integers. No process or connection is modified."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /get_udp4_sockets parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:get_udp6_sockets": {
+      "name": "getUdp6Sockets",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 80 and later. Uses GET without automatically following returned links."
+        },
+        {
+          "kind": "documented",
+          "text": "Socket inventory may be slow on CentOS 6 systems with many UDP sockets. Queues are integer byte counts; no process or connection is modified."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /get_udp6_sockets parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:get_tweaksetting": {
+      "name": "getTweakSetting",
+      "method": "GET",
+      "params": {
+        "key": {
+          "sensitive": false
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 11 and later. Uses GET without automatically following returned links."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitting module retains Main. Returned key/value text is preserved, including empty strings and numeric-looking strings. Arbitrary configuration values can contain secrets; do not log the payload."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /get_tweaksetting parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:get_update_availability": {
+      "name": "getUpdateAvailability",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 56 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "The source declares x-readonly=false, so this retrieval uses form POST. update_available is an integer flag; discovery does not start an update."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /get_update_availability parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:getminimumpasswordstrengths": {
+      "name": "getMinimumPasswordStrengths",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 82 and later. Uses GET without automatically following returned links."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitting name retrieves all minimum strengths; name selects one service. Returned strength values are integers, including zero. No password or setting changes."
+        },
+        {
+          "kind": "observed",
+          "text": "The initial WHM GET capture on cPanel 11.138.0.19 records numeric strings for all nine documented strength fields. Only these observed integer leaves admit the existing canonical, in-range integer-string normalization. The structural artifact does not prove every accepted text format; optional fields, numeric-looking string siblings, integer flags and other operations retain their contracts."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /getminimumpasswordstrengths parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Initial WHM GET capture at revision 4eecbe249c754341f454db573a1a475731dc8b9c on cPanel 11.138.0.19 records numeric-string structural types at $.createacct, $.default, $.ftp, $.list, $.mysql, $.passwd, $.postgres, $.sshkey, $.virtual, conflicting with the pinned integer schema. Immutable artifact docs/api/evidence/2026-10-31-whm-server-administration.json, SHA-256 69d1296be7b3170ce6c6e8468aee28b03a3c6633b4b9c0b374f3ffbd5844e296. Structural evidence does not establish the exact text or every numeric-string format. Apply only the existing canonical in-range integer-string conversion policy: lossless normalization to int; reject noncanonical, fractional, exponent, overflowing, boolean and null alternatives. No sibling or unknown-field compatibility is inferred.",
+          "fingerprint": "docs/api/evidence/2026-10-31-whm-server-administration.json"
+        }
+      ],
+      "response": {
+        "createacct": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "whm1:getminimumpasswordstrengths WHM GET at revision 4eecbe249c754341f454db573a1a475731dc8b9c reports numeric-string at payload path $.createacct; the pinned type is integer. Apply the existing canonical lossless in-range integer-string policy only at this field, without assuming that all numeric-string formats were observed. Artifact docs/api/evidence/2026-10-31-whm-server-administration.json, SHA-256 69d1296be7b3170ce6c6e8468aee28b03a3c6633b4b9c0b374f3ffbd5844e296.",
+              "fingerprint": "docs/api/evidence/2026-10-31-whm-server-administration.json"
+            }
+          ]
+        },
+        "default": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "whm1:getminimumpasswordstrengths WHM GET at revision 4eecbe249c754341f454db573a1a475731dc8b9c reports numeric-string at payload path $.default; the pinned type is integer. Apply the existing canonical lossless in-range integer-string policy only at this field, without assuming that all numeric-string formats were observed. Artifact docs/api/evidence/2026-10-31-whm-server-administration.json, SHA-256 69d1296be7b3170ce6c6e8468aee28b03a3c6633b4b9c0b374f3ffbd5844e296.",
+              "fingerprint": "docs/api/evidence/2026-10-31-whm-server-administration.json"
+            }
+          ]
+        },
+        "ftp": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "whm1:getminimumpasswordstrengths WHM GET at revision 4eecbe249c754341f454db573a1a475731dc8b9c reports numeric-string at payload path $.ftp; the pinned type is integer. Apply the existing canonical lossless in-range integer-string policy only at this field, without assuming that all numeric-string formats were observed. Artifact docs/api/evidence/2026-10-31-whm-server-administration.json, SHA-256 69d1296be7b3170ce6c6e8468aee28b03a3c6633b4b9c0b374f3ffbd5844e296.",
+              "fingerprint": "docs/api/evidence/2026-10-31-whm-server-administration.json"
+            }
+          ]
+        },
+        "list": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "whm1:getminimumpasswordstrengths WHM GET at revision 4eecbe249c754341f454db573a1a475731dc8b9c reports numeric-string at payload path $.list; the pinned type is integer. Apply the existing canonical lossless in-range integer-string policy only at this field, without assuming that all numeric-string formats were observed. Artifact docs/api/evidence/2026-10-31-whm-server-administration.json, SHA-256 69d1296be7b3170ce6c6e8468aee28b03a3c6633b4b9c0b374f3ffbd5844e296.",
+              "fingerprint": "docs/api/evidence/2026-10-31-whm-server-administration.json"
+            }
+          ]
+        },
+        "mysql": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "whm1:getminimumpasswordstrengths WHM GET at revision 4eecbe249c754341f454db573a1a475731dc8b9c reports numeric-string at payload path $.mysql; the pinned type is integer. Apply the existing canonical lossless in-range integer-string policy only at this field, without assuming that all numeric-string formats were observed. Artifact docs/api/evidence/2026-10-31-whm-server-administration.json, SHA-256 69d1296be7b3170ce6c6e8468aee28b03a3c6633b4b9c0b374f3ffbd5844e296.",
+              "fingerprint": "docs/api/evidence/2026-10-31-whm-server-administration.json"
+            }
+          ]
+        },
+        "passwd": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "whm1:getminimumpasswordstrengths WHM GET at revision 4eecbe249c754341f454db573a1a475731dc8b9c reports numeric-string at payload path $.passwd; the pinned type is integer. Apply the existing canonical lossless in-range integer-string policy only at this field, without assuming that all numeric-string formats were observed. Artifact docs/api/evidence/2026-10-31-whm-server-administration.json, SHA-256 69d1296be7b3170ce6c6e8468aee28b03a3c6633b4b9c0b374f3ffbd5844e296.",
+              "fingerprint": "docs/api/evidence/2026-10-31-whm-server-administration.json"
+            }
+          ]
+        },
+        "postgres": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "whm1:getminimumpasswordstrengths WHM GET at revision 4eecbe249c754341f454db573a1a475731dc8b9c reports numeric-string at payload path $.postgres; the pinned type is integer. Apply the existing canonical lossless in-range integer-string policy only at this field, without assuming that all numeric-string formats were observed. Artifact docs/api/evidence/2026-10-31-whm-server-administration.json, SHA-256 69d1296be7b3170ce6c6e8468aee28b03a3c6633b4b9c0b374f3ffbd5844e296.",
+              "fingerprint": "docs/api/evidence/2026-10-31-whm-server-administration.json"
+            }
+          ]
+        },
+        "sshkey": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "whm1:getminimumpasswordstrengths WHM GET at revision 4eecbe249c754341f454db573a1a475731dc8b9c reports numeric-string at payload path $.sshkey; the pinned type is integer. Apply the existing canonical lossless in-range integer-string policy only at this field, without assuming that all numeric-string formats were observed. Artifact docs/api/evidence/2026-10-31-whm-server-administration.json, SHA-256 69d1296be7b3170ce6c6e8468aee28b03a3c6633b4b9c0b374f3ffbd5844e296.",
+              "fingerprint": "docs/api/evidence/2026-10-31-whm-server-administration.json"
+            }
+          ]
+        },
+        "virtual": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "whm1:getminimumpasswordstrengths WHM GET at revision 4eecbe249c754341f454db573a1a475731dc8b9c reports numeric-string at payload path $.virtual; the pinned type is integer. Apply the existing canonical lossless in-range integer-string policy only at this field, without assuming that all numeric-string formats were observed. Artifact docs/api/evidence/2026-10-31-whm-server-administration.json, SHA-256 69d1296be7b3170ce6c6e8468aee28b03a3c6633b4b9c0b374f3ffbd5844e296.",
+              "fingerprint": "docs/api/evidence/2026-10-31-whm-server-administration.json"
+            }
+          ]
+        }
+      }
+    },
+    "whm1:installed_versions": {
+      "name": "installedVersions",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 64 and later. Uses GET without automatically following returned links."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitting packages retains false; explicit false sends 0 and true requests package lists. Version fields preserve the documented string or integer alternatives; numeric values are not converted to version strings. Omitted fields and empty package lists remain distinct."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /installed_versions parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:is_role_enabled": {
+      "name": "isRoleEnabled",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 76 and later. Uses GET without automatically following returned links."
+        },
+        {
+          "kind": "documented",
+          "text": "Role names are case-sensitive. MySQLClient and PostgresClient reflect client configuration rather than independently toggled roles; DNS does not convert a server to DNSOnly. The enabled integer flag is separate from API outcome."
+        },
+        {
+          "kind": "observed",
+          "text": "The independent review on cPanel 11.138.0.19 observed enabled as a digit string for FTP. This flag additionally accepts the exact strings 0 and 1, normalized to integer flags; other scalar types and flag values remain invalid."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /is_role_enabled parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Independent WHM GET review of revision e6181e408921547c804736481e26d2da1ca5b88c on cPanel 11.138.0.19: is_role_enabled(role: FTP) returned a digit string at enabled and failed the strict flag spec. Accept only the existing string-flag forms 0 and 1 alongside native integer flags; the review does not establish other scalar conversions. Review: https://github.com/hostingpal/whm-api-client/pull/51#pullrequestreview-5720579254."
+        }
+      ],
+      "response": {
+        "enabled": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Independent WHM GET review of revision e6181e408921547c804736481e26d2da1ca5b88c on cPanel 11.138.0.19: is_role_enabled(role: FTP) returned a digit string at enabled and failed the strict flag spec. Accept only the existing string-flag forms 0 and 1 alongside native integer flags; the review does not establish other scalar conversions. Review: https://github.com/hostingpal/whm-api-client/pull/51#pullrequestreview-5720579254."
+            }
+          ]
+        }
+      }
+    },
+    "whm1:link_server_node_with_api_token": {
+      "name": "linkServerNodeWithApiToken",
+      "method": "POST",
+      "params": {
+        "api_token": {
+          "php": "apiToken",
+          "sensitive": true
+        },
+        "skip_tls_verification": {
+          "php": "skipTlsVerification"
+        },
+        "username": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 86 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Only runs on a Standard profile server. The remote node must run a version at least as new as this server. Token and username require root-level access. hostname does not accept an IP address. alias permits only alphanumerics, dash and underscore, with at most 50 characters. Creates a remote network relationship; disabling TLS verification weakens remote-node identity checks."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /link_server_node_with_api_token parameters, x-readonly classification and 200 response schema. Sensitive credential or freeform value inputs use form POST and explicit SensitiveParameter decisions. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:list_configclusterservers": {
+      "name": "listConfigClusterServers",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 11.44 and later. Uses GET without automatically following returned links."
+        },
+        {
+          "kind": "documented",
+          "text": "Dynamic server names remain returned keys with optional signature and user strings. Cluster signatures are payload data; this call does not connect to returned servers."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /list_configclusterservers parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:list_connected_applications": {
+      "name": "listConnectedApplications",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 98 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "The source declares x-readonly=false, so this inventory uses form POST. Known optional connection fields retain their pinned types; additional application properties and JWT contents remain opaque. Stored key identifiers are distinct from key material; returned connection data can contain secrets and must not be logged."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /list_connected_applications parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "response": {
+        "list[]": {
+          "replace": {
+            "type": "object",
+            "fields": {
+              "jwt": {
+                "type": "map",
+                "values": {
+                  "type": "mixed"
+                }
+              },
+              "name": {
+                "type": "string"
+              },
+              "private_key": {
+                "type": "string"
+              },
+              "public_key": {
+                "type": "string"
+              },
+              "token_name": {
+                "type": "string"
+              }
+            },
+            "values": {
+              "type": "mixed"
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned data.list[] declares jwt as an arbitrary object and name/private_key/public_key/token_name strings, with additionalProperties:{} for arbitrary additional fields. Preserve known field contracts and opaque extra values through existing object.values. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        }
+      }
+    },
+    "whm1:list_linked_server_nodes": {
+      "name": "listLinkedServerNodes",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 86 and later. Uses GET without automatically following returned links."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns linked-node inventory without querying update or event URLs. worker_capabilities is keyed by role with opaque object values; timestamps and integer TLS flags remain strict."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /list_linked_server_nodes parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:list_user_child_nodes": {
+      "name": "listUserChildNodes",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 88 and later. Uses GET without automatically following returned links."
+        },
+        {
+          "kind": "documented",
+          "text": "Lists account-to-child-node assignments; each row remains distinct from API outcome and no child-node data is transferred."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /list_user_child_nodes parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:manage_features": {
+      "name": "manageFeatures",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 11.32 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "action can inspect, list, enable or disable features; uses POST for all actions. The pinned features parameter is a feature ID required for enable or disable; no comma-separated or batch encoding is established. Enabling or disabling changes server feature state; inspect per-feature status independently of metadata.result. Returned links are not fetched."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /manage_features parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:participate_in_analytics": {
+      "name": "participateInAnalytics",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 78 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes participation in analytics. enabled is a boolean input sent as 0 or 1; explicit false disables participation."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /participate_in_analytics parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:purchase_a_license": {
+      "name": "purchaseALicense",
+      "method": "POST",
+      "params": {
+        "login_token": {
+          "php": "loginToken",
+          "sensitive": true
+        },
+        "url_after_checkout": {
+          "php": "urlAfterCheckout",
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 62 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns checkout URL strings for a cPanel Store or Market provider. Uses the sensitive store login token and sensitive return URL; callers control any subsequent checkout, navigation or financial purchase. This method does not fetch the returned checkout URLs or establish a completed purchase. Omitting upgrade retains false."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /purchase_a_license parameters, x-readonly classification and 200 response schema. Sensitive credential or freeform value inputs use form POST and explicit SensitiveParameter decisions. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:reboot": {
+      "name": "reboot",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 11 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Reboots the server and can interrupt all services. Omitting force retains false; true requests a forceful reboot that can lose data while processes are active. API success does not prove the server has rebooted or recovered; no polling, retry or rollback is provided."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /reboot parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:remove_connected_application": {
+      "name": "removeConnectedApplication",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 98 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Removes stored connected-application data. Do not infer revocation of separately managed tokens or deletion of key material from this response."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /remove_connected_application parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:restartservice": {
+      "name": "restartService",
+      "method": "POST",
+      "params": {
+        "queue_task": {
+          "php": "queueTask"
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 11.38 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "With only the clustering ACL, only named may be restarted. Omitting queueTask retains false; true queues work and changes output text. API status and output do not prove queued task completion or restored service availability; no polling or retry is provided."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /restartservice parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:restore_config_from_file": {
+      "name": "restoreConfigFromFile",
+      "method": "POST",
+      "params": {
+        "path": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 74 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Restores server configuration from an absolute server-local path using a case-sensitive module name. The source also refers to newline-separated JSON or key/value contents in path; the client forwards supplied text unchanged and does not read local files. No write occurs upstream when the backup has no changes. Configuration text/path input is sensitive; no rollback is provided."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /restore_config_from_file parameters, x-readonly classification and 200 response schema. Sensitive credential or freeform value inputs use form POST and explicit SensitiveParameter decisions. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:run_cpkeyclt": {
+      "name": "runCpkeyclt",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 62 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Runs the license-update utility, which may contact the licensing service and change the server license state. API success does not establish a purchase or future license validity."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /run_cpkeyclt parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:send_test_posturl": {
+      "name": "sendTestPostUrl",
+      "method": "POST",
+      "params": {
+        "url": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 11.52 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Sends a test notification from the server to the supplied notification URL. URLs can contain authentication secrets and are sensitive. The pinned examples supply percent-encoded URL text; pass the documented representation and the client form-encodes it once without decoding or fetching it locally. Returned message ID does not prove recipient processing."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /send_test_posturl parameters, x-readonly classification and 200 response schema. Sensitive credential or freeform value inputs use form POST and explicit SensitiveParameter decisions. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:send_test_pushbullet_note": {
+      "name": "sendTestPushbulletNote",
+      "method": "POST",
+      "params": {
+        "access_token": {
+          "php": "accessToken",
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 11.52 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Sends a test Pushbullet notification using the sensitive access token. Returned provider payload is an opaque object and may contain personal data; API success or message ID does not establish final delivery."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /send_test_pushbullet_note parameters, x-readonly classification and 200 response schema. Sensitive credential or freeform value inputs use form POST and explicit SensitiveParameter decisions. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:servicestatus": {
+      "name": "serviceStatus",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 11.38 and later. Uses GET without automatically following returned links."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitting service retrieves all services. enabled, installed, monitored and running are independent integer flags per service, separate from API outcome. This inventory does not restart services."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /servicestatus parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:set_application_contact_event_importance": {
+      "name": "setApplicationContactEventImportance",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 58 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes notification priority for the selected application/event; does not send a test notification. Priority labels remain case-sensitive input text."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /set_application_contact_event_importance parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:set_application_contact_importance": {
+      "name": "setApplicationContactImportance",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 58 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes application notification priority; does not send a test notification. Priority labels remain case-sensitive input text."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /set_application_contact_importance parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:set_cpanel_updates": {
+      "name": "setCpanelUpdates",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 11.38 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes automatic update policy to daily, manual or never; API success does not prove an update has run."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /set_cpanel_updates parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:set_primary_servername": {
+      "name": "setPrimaryServername",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 11 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes the primary server name; omitting type retains std while ssl selects the secure server name. No hostname resolution or certificate provisioning is performed by the client."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /set_primary_servername parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:set_service_config_key": {
+      "name": "setServiceConfigKey",
+      "method": "POST",
+      "params": {
+        "value": {
+          "sensitive": true
+        },
+        "key": {
+          "sensitive": false
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 58 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Writes a global property from /var/cpanel/conf/{service}/main; subkeys are unsupported. Sensitive value accepts the pinned string or integer alternatives and is sent once as a form field; the key identifier is not key material."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /set_service_config_key parameters, x-readonly classification and 200 response schema. Sensitive credential or freeform value inputs use form POST and explicit SensitiveParameter decisions. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:set_service_proxy_backends": {
+      "name": "setServiceProxyBackends",
+      "method": "POST",
+      "params": {
+        "service_group": {
+          "php": "serviceGroup",
+          "encoding": "numbered"
+        },
+        "service_group_backend": {
+          "php": "serviceGroupBackend",
+          "encoding": "numbered"
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 90 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitted inputs retain existing settings. serviceGroup and serviceGroupBackend must be supplied together; each accepts scalar text or a nonempty list encoded as name, name-1, and so on. The pinned source documents numbered families and single unsuffixed fields; positional pairing remains the caller responsibility."
+        },
+        {
+          "kind": "documented",
+          "text": "On a distributed account parent, settings propagate to the child node. With the Web Server role enabled, this rebuilds virtual hosts and restarts the web server. The API can succeed while vhost rebuilding fails; inspect metadata warnings. Backend reachability, private-network routing and server-side IP security restrictions follow upstream; the client performs no backend probe or retry."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /set_service_proxy_backends parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:set_tier": {
+      "name": "setTier",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 11.38 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes the release tier used for future cPanel updates. A successful policy write does not prove software has been updated."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /set_tier parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:set_tweaksetting": {
+      "name": "setTweakSetting",
+      "method": "POST",
+      "params": {
+        "value": {
+          "sensitive": true
+        },
+        "key": {
+          "sensitive": false
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 11 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes an arbitrary cpanel.config setting. Omitted module retains Main. Omitted value differs from an explicit empty string, which sends value= and assigns an empty value. Freeform values can contain secrets and are sensitive."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /set_tweaksetting parameters, x-readonly classification and 200 response schema. Sensitive credential or freeform value inputs use form POST and explicit SensitiveParameter decisions. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:sethostname": {
+      "name": "setHostname",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 11 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes the hostname and related service configuration. Requires an FQDN with two periods; do not use account domains, service subdomains, leading www/numbers or a trailing dash. Calendars and Contacts access is blocked while the update runs and restored when it finishes. API success does not prove DNS propagation or service recovery."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /sethostname parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:setminimumpasswordstrengths": {
+      "name": "setMinimumPasswordStrengths",
+      "method": "POST",
+      "params": {
+        "passwd": {
+          "sensitive": false
+        },
+        "sshkey": {
+          "sensitive": false
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 11 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes only supplied service password-strength settings; omitted settings are not sent. The pinned input range is 1 through 100, distinct from read values that may be zero. Strength integers are policy settings, not passwords."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /setminimumpasswordstrengths parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:start_cpanel_update": {
+      "name": "startCpanelUpdate",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 94 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Starts server software changes. Omitted or null mode uses the documented default; force reinstalls even when current and sync repairs the currently installed version. Returned is_new, PID and log path report job start/reuse, not completion. The client does not open logs, poll, retry or roll back."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /start_cpanel_update parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:start_profile_activation": {
+      "name": "startProfileActivation",
+      "method": "POST",
+      "params": {
+        "optional": {
+          "encoding": "scalar",
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 76 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Activates a server profile, enabling service monitoring for services it enables. Returned log_id identifies activation logs and does not prove completion; the client does not poll or fetch logs."
+        },
+        {
+          "kind": "documented",
+          "text": "optional must be caller-supplied JSON text mapping role names to integer 0/1 values. Existing scalar encoding exposes a string|int native boundary; integer acceptance does not establish valid JSON-object semantics. The client does not serialize PHP objects or validate JSON text, and form-encodes supplied text exactly once. Omission disables the profile optional roles, if any; profiles without optional roles ignore it. Freeform text is sensitive."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /start_profile_activation parameters, x-readonly classification and 200 response schema. Sensitive credential or freeform value inputs use form POST and explicit SensitiveParameter decisions. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:unlink_server_node": {
+      "name": "unlinkServerNode",
+      "method": "POST",
+      "params": {
+        "handle_api_token": {
+          "php": "handleApiToken"
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 86 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Cannot unlink mail nodes still used by accounts; those accounts must first be deleted upstream. Omitting handleApiToken retains leave; expire_24h schedules expiration of the remote stored token after 24 hours and can be undone upstream. Unlinking changes a remote relationship and does not copy account data."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /unlink_server_node parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:unset_all_service_proxy_backends": {
+      "name": "unsetAllServiceProxyBackends",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 90 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Removes all account service proxying, including the child-node configuration for distributed accounts. With the Web Server role active, this rebuilds vhosts and restarts the web server. API success can include a failed-vhost warning; inspect responseMeta()->whm. No retry or rollback is provided."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /unset_all_service_proxy_backends parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:update_configclusterserver": {
+      "name": "updateConfigClusterServer",
+      "method": "POST",
+      "params": {
+        "key": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 11.44 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Updates only supplied remote key/user values, from the cluster parent server. Omitting either retains its current value. Remote access keys are sensitive form fields and cluster configuration is not visible from a child."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /update_configclusterserver parameters, x-readonly classification and 200 response schema. Sensitive credential or freeform value inputs use form POST and explicit SensitiveParameter decisions. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:update_contact_email": {
+      "name": "updateContactEmail",
+      "method": "POST",
+      "params": {
+        "contact_email": {
+          "php": "contactEmail",
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 76 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes the CONTACTEMAIL setting in server wwwacct.conf; this call does not send a test message. The contact address is sensitive input."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /update_contact_email parameters, x-readonly classification and 200 response schema. Sensitive credential or freeform value inputs use form POST and explicit SensitiveParameter decisions. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:update_linked_server_node": {
+      "name": "updateLinkedServerNode",
+      "method": "POST",
+      "params": {
+        "api_token": {
+          "php": "apiToken",
+          "sensitive": true
+        },
+        "skip_tls_verification": {
+          "php": "skipTlsVerification"
+        },
+        "username": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 86 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes a linked remote node using a root-level token and username; omitted token, hostname and username retain their stored values. hostname does not accept an IP address. Omitted skipTlsVerification retains the documented true default, unlike the false defaults for linking/status; explicit false sends 0. A TLS-verified remote server cannot skip verification."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /update_linked_server_node parameters, x-readonly classification and 200 response schema. Sensitive credential or freeform value inputs use form POST and explicit SensitiveParameter decisions. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:update_updateconf": {
+      "name": "updateUpdateconf",
+      "method": "POST",
+      "params": {
+        "CPANEL": {
+          "php": "cpanel",
+          "sensitive": true
+        },
+        "RPMUP": {
+          "php": "rpmup",
+          "sensitive": true
+        },
+        "SARULESUP": {
+          "php": "sarulesup",
+          "sensitive": true
+        },
+        "SECURITY_UPDATES": {
+          "php": "securityUpdates",
+          "sensitive": true
+        },
+        "STAGING_DIR": {
+          "php": "stagingDir",
+          "sensitive": true
+        },
+        "UPDATES": {
+          "php": "updates",
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 11.38 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Requires the root-level ACL and changes /etc/cpupdate.conf. All omitted fields retain existing settings. SECURITY_UPDATES is independent of UPDATES and can apply current-major security updates hourly even when UPDATES is manual or never. When RPMUP or SARULESUP is never, the administrator must run /usr/local/cpanel/scripts/update-packages when updating system packages or SpamAssassin rules, respectively; the client does not run that script. Freeform configuration values are sensitive."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /update_updateconf parameters, x-readonly classification and 200 response schema. Sensitive credential or freeform value inputs use form POST and explicit SensitiveParameter decisions. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:verify_posturl_access": {
+      "name": "verifyPostUrlAccess",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 11.52 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Calls send_test_posturl for configured notification URLs; it sends notifications and makes server-side network requests. Each result and provider HTTP status is distinct from API outcome. Returned URLs, headers, content and message IDs can contain secrets; the client does not follow them."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /verify_posturl_access parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:verify_pushbullet_access": {
+      "name": "verifyPushbulletAccess",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 11.52 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Calls send_test_pushbullet_note for configured accounts and sends real test notifications. Returned access_token values and provider payloads are sensitive; inspect individual results separately from API outcome. No delivery guarantee or retry is inferred."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /verify_pushbullet_access parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:verify_slack_access": {
+      "name": "verifySlackAccess",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 90 and later. Uses form POST with one request and no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Verifies configured Slack webhooks through server-side requests, which can send test notifications. Returned webhook URLs and provider contents are sensitive payload data. The pinned leaf fields are unspecified and remain mixed; no boolean/status coercion or closed provider schema is inferred."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /verify_slack_access parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:wp_dashboard_get_hostname": {
+      "name": "wpDashboardGetHostname",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 11 and later. Uses GET without automatically following returned links."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns the server hostname for WebPros Dashboard endpoint discovery. The hostname remains inside its documented optional-field object; this method does not fetch or verify the discovered endpoint."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /wp_dashboard_get_hostname parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:save_connected_application": {
+      "exclude": {
+        "reason": "Requires an application/json request body containing name and arbitrary connected-application data; current typed scalar/form transport does not implement JSON request bodies. Tracked under whm-api-client-8x0.1.18.",
+        "evidence": [
+          {
+            "kind": "doc",
+            "version": "pinned 2026-10-13",
+            "date": "2026-10-31",
+            "note": "Pinned /save_connected_application source contract: Requires an application/json request body containing name and arbitrary connected-application data; current typed scalar/form transport does not implement JSON request bodies. Tracked under whm-api-client-8x0.1.18. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+          }
+        ]
+      }
+    },
+    "whm1:restore_config_from_upload": {
+      "exclude": {
+        "reason": "Requires multipart/form-data file with type:string format:binary plus module. Reviewed multipart string-field support does not implement arbitrary binary file upload. Tracked under whm-api-client-8x0.1.19.",
+        "evidence": [
+          {
+            "kind": "doc",
+            "version": "pinned 2026-10-13",
+            "date": "2026-10-31",
+            "note": "Pinned /restore_config_from_upload source contract: Requires multipart/form-data file with type:string format:binary plus module. Reviewed multipart string-field support does not implement arbitrary binary file upload. Tracked under whm-api-client-8x0.1.19. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+          }
+        ]
+      }
+    },
+    "whm1:system_needs_reboot": {
+      "exclude": {
+        "reason": "Pinned 200 JSON schema places needs_reboot and details beside metadata with no data member. Current typed WHM runner returns only data, so void would silently discard the documented result and a fabricated data wrapper would not match the source. Dedicated envelope/payload follow-up required; no runtime widening in this slice.",
+        "evidence": [
+          {
+            "kind": "doc",
+            "version": "pinned 2026-10-13",
+            "date": "2026-10-31",
+            "note": "Pinned /system_needs_reboot source contract: Pinned 200 JSON schema places needs_reboot and details beside metadata with no data member. Current typed WHM runner returns only data, so void would silently discard the documented result and a fabricated data wrapper would not match the source. Dedicated envelope/payload follow-up required; no runtime widening in this slice. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+          }
+        ]
+      }
+    }
   }
 }

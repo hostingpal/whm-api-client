@@ -19,6 +19,8 @@ trait WhmGroups
 
     private ?ApiTools $apiToolsGroup = null;
 
+    private ?Authentication $authenticationGroup = null;
+
     private ?Backups $backupsGroup = null;
 
     private ?CpHulk $cpHulkGroup = null;
@@ -29,11 +31,17 @@ trait WhmGroups
 
     private ?HostingPlans $hostingPlansGroup = null;
 
+    private ?IpAddresses $ipAddressesGroup = null;
+
     private ?Mail $mailGroup = null;
 
     private ?ModSecurity $modSecurityGroup = null;
 
+    private ?Resellers $resellersGroup = null;
+
     private ?Server $serverGroup = null;
+
+    private ?Ssl $sslGroup = null;
 
     private ?WebServer $webServerGroup = null;
 
@@ -66,6 +74,17 @@ trait WhmGroups
     public function apiTools(): ApiTools
     {
         return $this->apiToolsGroup ??= new ApiTools($this->run(...));
+    }
+
+    /**
+     * Select the Authentication operations without making a request.
+     *
+     * WHM authentication providers, root SSH keys and two-factor policy. Returned credentials, private keys, 2FA
+     * secrets, account links and URLs are private payload data; never log them or fetch URLs automatically.
+     */
+    public function authentication(): Authentication
+    {
+        return $this->authenticationGroup ??= new Authentication($this->run(...));
     }
 
     /**
@@ -122,6 +141,16 @@ trait WhmGroups
     }
 
     /**
+     * Select the IP Address Management operations without making a request.
+     *
+     * WHM API 1 functions in the documented IP Address Management group.
+     */
+    public function ipAddresses(): IpAddresses
+    {
+        return $this->ipAddressesGroup ??= new IpAddresses($this->run(...));
+    }
+
+    /**
      * Select the Mail operations without making a request.
      *
      * Server-wide mail operations, including Greylisting policy, trusted hosts, common providers and deferred triplets.
@@ -150,6 +179,19 @@ trait WhmGroups
     }
 
     /**
+     * Select the Resellers operations without making a request.
+     *
+     * Reseller account inventory, privileges, ownership and limits. Both ACL write methods replace the whole privilege
+     * set; read current privileges before constructing the desired replacement. The cPanel 11.138.0.19 review exercised
+     * GET reads only. All fourteen write contracts remain supported by pinned documentation, reviewed upstream source
+     * and offline tests, without live mutation coverage.
+     */
+    public function resellers(): Resellers
+    {
+        return $this->resellersGroup ??= new Resellers($this->run(...));
+    }
+
+    /**
      * Select the Server Administration operations without making a request.
      *
      * WHM API 1 functions in the documented Server Administration group.
@@ -157,6 +199,16 @@ trait WhmGroups
     public function server(): Server
     {
         return $this->serverGroup ??= new Server($this->run(...));
+    }
+
+    /**
+     * Select the SSL Certificates operations without making a request.
+     *
+     * WHM API 1 functions in the documented SSL Certificates group.
+     */
+    public function ssl(): Ssl
+    {
+        return $this->sslGroup ??= new Ssl($this->run(...));
     }
 
     /**

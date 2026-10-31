@@ -387,9 +387,20 @@ func (b *builder) params(op model.Operation, v model.Variant, ov overlay.Operati
 			param.Encoding != "scalar" || (spec.Type != "string" && spec.Type != "int" && spec.Type != "number")) {
 			b.problem(op.ID + ": parameter " + p.Name + ": wire correction requires simple names and a scalar string, integer or number source")
 		}
-		// Reviewed scalar corrections add string compatibility without removing
-		// the source's numeric types or replacing boolean/multiple-value encodings.
-		if o.Type != "" {
+		// Presence-only inputs use a native true guard and the existing 1/0
+		// encoder, so no false or numeric value can reach the wire. This is an
+		// explicit reviewed correction, never inferred from other singleton enums.
+		if o.Type == "true" {
+			if decl["required"] == true || param.Required || spec.Type != "int" || spec.Nullable ||
+				!b.schemas.presenceOnlyInteger(p.Locator.SourceID, decl["schema"]) || o.Wire != "" ||
+				(o.Encoding != "" && o.Encoding != "bool") {
+				b.problem(op.ID + ": parameter " + p.Name + ": true type correction requires an optional scalar integer source with exact enum [1], optional final requiredness, no wire correction and absent or bool encoding")
+			} else {
+				param.PHPType, param.DocType, param.Encoding = "true", "true", "bool"
+			}
+		} else if o.Type != "" {
+			// Numeric corrections retain the source's numeric types and cannot
+			// replace boolean or multiple-value encodings.
 			stringInteger := o.Type == "string|int" && (spec.Type == "string" || spec.Type == "int") && param.PHPType == spec.Type
 			stringNumber := o.Type == "string|int|float" && spec.Type == "number" && param.PHPType == "int|float"
 			if param.Encoding != "scalar" || (!stringInteger && !stringNumber) {

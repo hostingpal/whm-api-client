@@ -23,11 +23,27 @@
         },
         {
           "kind": "documented",
-          "text": "The returned token is a secret shown only once: store it securely and never log the result."
+          "text": "The returned token is a secret shown only once."
+        },
+        {
+          "kind": "policy",
+          "text": "Store the returned credential securely and never log the result."
         },
         {
           "kind": "documented",
-          "text": "Typed acl and whitelistIp accept one scalar. Source documents acl-0/acl-1 and whitelist_ip-0/whitelist_ip-1; repeated families await 8x0.1.21. The example also spells later whitelist-ip keys differently; no inferred encoding is generated."
+          "text": "ACL prose and examples use acl-0/acl-1. Whitelist prose uses whitelist_ip-0/whitelist_ip-1, while later example keys switch to whitelist-ip; these source limitations remain unresolved."
+        },
+        {
+          "kind": "policy",
+          "text": "Typed acl and whitelistIp accept one scalar and cannot create or preserve multiple ACL or IP values. Multi-value support is deferred under 8x0.1.21; the existing unsuffixed-first numbered encoding does not represent these indexed families and is not used here."
+        },
+        {
+          "kind": "policy",
+          "text": "An accepted creation outcome can still raise PayloadMismatchException after the credential was created. Its sensitive unvalidated $payload may contain the only returned secret, but a malformed payload need not contain it. Recover it securely if present and revoke the created named credential through an authorized caller action. Never automatically retry, log the payload or automatically revoke a credential."
+        },
+        {
+          "kind": "policy",
+          "text": "Uses form POST under the client mutation transport policy to keep operation parameters out of access-log URLs."
         }
       ],
       "params": {
@@ -60,11 +76,19 @@
         },
         {
           "kind": "documented",
-          "text": "The token input is the raw secret, not its name. It is sensitive and sent in a form POST as a conservative access-log protection; pinned GET-to-POST compatibility remains live-unverified."
+          "text": "The token input is the raw secret, not its name."
         },
         {
           "kind": "documented",
-          "text": "Recognized tokens return TokenDetails; unrecognized tokens omit data and return null. Optional nullable fields remain distinct from omission. Treat returned token settings as private payload data."
+          "text": "Recognized tokens return TokenDetails; the unrecognized alternative omits data. TokenDetails has no required fields. Optional nullable fields remain distinct from omission."
+        },
+        {
+          "kind": "policy",
+          "text": "The raw token input is sensitive and sent in a form POST to keep it out of access-log URLs; pinned GET-to-POST compatibility remains live-unverified. Treat returned token settings as private payload data."
+        },
+        {
+          "kind": "policy",
+          "text": "Absent or explicit null data returns null. A present empty object remains an empty result; it is unobserved and does not prove recognition or establish an invalid-token signal."
         }
       ],
       "optional_payload": true,
@@ -110,7 +134,15 @@
         },
         {
           "kind": "documented",
-          "text": "Typed tokenName accepts one scalar. Source documents token_name-1, token_name-2 and token_name-3 for multiple revocations; that family awaits 8x0.1.21."
+          "text": "The source documents token_name-1, token_name-2 and token_name-3 for multiple revocations."
+        },
+        {
+          "kind": "policy",
+          "text": "Typed tokenName accepts one scalar; multiple revocation support remains deferred under 8x0.1.21."
+        },
+        {
+          "kind": "policy",
+          "text": "Uses form POST under the client mutation transport policy to keep operation parameters out of access-log URLs."
         }
       ],
       "params": {
@@ -137,29 +169,51 @@
         },
         {
           "kind": "documented",
-          "text": "ACL and whitelist inputs replace all current settings; omitted acl assigns all caller privileges and omitted whitelist permits any IP. Only caller-held privileges may be assigned. whitelistIp=any explicitly clears IP restrictions."
+          "text": "ACL and whitelist inputs replace all current settings. Pinned omission assigns all caller privileges, permits any IP and removes expiration; zero also means no expiration. Only caller-held privileges may be assigned. whitelistIp=any explicitly clears IP restrictions. Expired tokens require manual revocation."
+        },
+        {
+          "kind": "policy",
+          "text": "The typed method requires explicit acl, whitelistIp and expiresAt to express the complete replacement settings, including when renaming. Empty strings are not a documented way to preserve current settings."
         },
         {
           "kind": "documented",
-          "text": "Omitted expiresAt or zero means no expiration; expired tokens require manual revocation. Omitted newName preserves the name; replacements must be unique and at most 50 alphanumeric/dash/underscore characters. Root cannot rename to WebPros_Dashboard, WP-Dashboard or Platform360."
+          "text": "Omitted newName preserves the name; replacements must be unique and at most 50 alphanumeric/dash/underscore characters. Root cannot rename to WebPros_Dashboard, WP-Dashboard or Platform360."
         },
         {
           "kind": "documented",
-          "text": "Typed acl and whitelistIp accept one scalar. ACL prose uses acl-1/acl-2 but its example uses acl-0/acl-1; whitelist prose uses whitelist_ip-0 while later example keys use whitelist-ip. Repeated families await 8x0.1.21 without guessing an encoding. Treat returned settings as private payload data."
+          "text": "ACL prose uses acl-1/acl-2 but its example uses acl-0/acl-1; whitelist prose uses whitelist_ip-0 while later example keys use whitelist-ip. These source limitations remain unresolved."
+        },
+        {
+          "kind": "policy",
+          "text": "Typed acl and whitelistIp accept one scalar and cannot preserve or create multiple ACL or IP values. Do not use updateToken to rename a token restricted by multiple ACL or IP values. Multi-value support is deferred under 8x0.1.21; the existing unsuffixed-first numbered encoding is not used for these families. Treat returned settings as private payload data."
+        },
+        {
+          "kind": "policy",
+          "text": "Uses form POST under the client mutation transport policy to keep operation parameters out of access-log URLs."
         }
       ],
       "params": {
         "token_name": {
-          "php": "tokenName"
+          "php": "tokenName",
+          "description": "The existing API token name. This replaces complete settings, including for a rename: pinned omission assigns all caller privileges, permits any IP and removes expiration. The client requires acl, whitelistIp and expiresAt explicitly; empty strings are not documented preservation values."
         },
-        "expires_at": {
-          "php": "expiresAt"
-        },
-        "new_name": {
-          "php": "newName"
+        "acl": {
+          "required": true,
+          "description": "The complete replacement privilege, limited to caller-held privileges. This replaces complete settings, including for a rename: pinned omission assigns all caller privileges, permits any IP and removes expiration. The client requires acl, whitelistIp and expiresAt explicitly; empty strings are not documented preservation values."
         },
         "whitelist_ip": {
-          "php": "whitelistIp"
+          "php": "whitelistIp",
+          "required": true,
+          "description": "The complete replacement remote IP or CIDR range; any explicitly clears IP restrictions. This replaces complete settings, including for a rename: pinned omission assigns all caller privileges, permits any IP and removes expiration. The client requires acl, whitelistIp and expiresAt explicitly; empty strings are not documented preservation values."
+        },
+        "expires_at": {
+          "php": "expiresAt",
+          "required": true,
+          "description": "The replacement Unix expiration time; zero explicitly means no expiration. Expired tokens require manual revocation. This replaces complete settings, including for a rename: pinned omission assigns all caller privileges, permits any IP and removes expiration. The client requires acl, whitelistIp and expiresAt explicitly; empty strings are not documented preservation values."
+        },
+        "new_name": {
+          "php": "newName",
+          "description": "The optional new unique name, at most 50 alphanumeric/dash/underscore characters; omission preserves the name. Root cannot use WebPros_Dashboard, WP-Dashboard or Platform360. This replaces complete settings, including for a rename: pinned omission assigns all caller privileges, permits any IP and removes expiration. The client requires acl, whitelistIp and expiresAt explicitly; empty strings are not documented preservation values."
         }
       },
       "method": "POST",
@@ -169,7 +223,20 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned operation is x-readonly=false and creates, changes or revokes authentication state; use form POST per the reviewed mutation transport convention."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The api_token_update parameter descriptions explicitly replace all ACL and whitelist settings; omission grants all caller privileges, permits any IP and removes expiration. Require the three settings as non-null inputs by client safety policy, ordered token_name, acl, whitelist_ip, expires_at, new_name. Scalar indexed-family support remains deferred; no undocumented empty-string preservation contract is introduced. Review: https://github.com/hostingpal/whm-api-client/pull/57#pullrequestreview-5720856204."
         }
+      ],
+      "order": [
+        "token_name",
+        "acl",
+        "whitelist_ip",
+        "expires_at",
+        "new_name"
       ]
     },
     "whm1:wp_dashboard_create_api_token": {
@@ -189,7 +256,27 @@
         },
         {
           "kind": "documented",
-          "text": "The token is returned only once and is secret; store it securely and never log the result. Typed acl and whitelistIp accept one scalar; documented acl-0/acl-1 and whitelist_ip-0/whitelist_ip-1 families await 8x0.1.21."
+          "text": "The returned token is a secret shown only once."
+        },
+        {
+          "kind": "policy",
+          "text": "Store the returned credential securely and never log the result."
+        },
+        {
+          "kind": "documented",
+          "text": "The examples use acl-0/acl-1 and whitelist_ip-0/whitelist_ip-1 for multiple values."
+        },
+        {
+          "kind": "policy",
+          "text": "Typed acl and whitelistIp accept one scalar and cannot create or preserve multiple ACL or IP values. Multi-value support is deferred under 8x0.1.21; the existing unsuffixed-first numbered encoding does not represent these indexed families and is not used here."
+        },
+        {
+          "kind": "policy",
+          "text": "An accepted creation outcome can still raise PayloadMismatchException after the credential was created. Its sensitive unvalidated $payload may contain the only returned secret, but a malformed payload need not contain it. Recover it securely if present and revoke the created named credential through an authorized caller action. Never automatically retry, log the payload or automatically revoke a credential."
+        },
+        {
+          "kind": "policy",
+          "text": "Uses form POST under the client mutation transport policy to keep operation parameters out of access-log URLs."
         }
       ],
       "params": {
@@ -211,6 +298,12 @@
           "date": "2026-10-31",
           "note": "Pinned operation is x-readonly=false and creates, changes or revokes authentication state; use form POST per the reviewed mutation transport convention."
         }
+      ],
+      "order": [
+        "token_name",
+        "acl",
+        "expires_at",
+        "whitelist_ip"
       ]
     },
     "whm1:create_user_session": {
@@ -230,7 +323,15 @@
         },
         {
           "kind": "documented",
-          "text": "cpSecurityToken is a session secret. promptToken contains base64 website-generation goals with maximum decoded length 5000; both inputs are sensitive. Session identifiers, security tokens and URLs are private opaque payload strings; never log them or retrieve the returned URL."
+          "text": "cpSecurityToken is a session secret. promptToken contains base64 website-generation goals with maximum decoded length 5000."
+        },
+        {
+          "kind": "policy",
+          "text": "Session identifiers, security tokens and URLs are private opaque payload strings; never log them or retrieve the returned URL. cpSecurityToken and promptToken inputs are sensitive when accepted by the operation."
+        },
+        {
+          "kind": "policy",
+          "text": "Uses form POST under the client mutation transport policy to keep operation parameters out of access-log URLs."
         }
       ],
       "params": {
@@ -267,8 +368,12 @@
           "text": "Creates a single-use WHM session for re-entry from WebPros Dashboard. Optional service permits cpaneld, whostmgrd or webmaild; optional user is an account username or valid email address."
         },
         {
-          "kind": "documented",
+          "kind": "policy",
           "text": "Session identifiers, security tokens and URLs are private opaque payload strings; never log them or retrieve the returned URL."
+        },
+        {
+          "kind": "policy",
+          "text": "Uses form POST under the client mutation transport policy to keep operation parameters out of access-log URLs."
         }
       ],
       "method": "POST",
@@ -318,13 +423,70 @@
         },
         {
           "kind": "documented",
-          "text": "Reports only deprecated cPanel API 1 daily interface usage. Omitted type defaults to the documented cpapi1 enum. The pinned response is one object with count, entry and timestamp; no list alternative is inferred."
+          "text": "Reports only deprecated cPanel API 1 daily interface usage. Omitted type defaults to the documented cpapi1 enum. The pinned response declares optional flat count, entry and timestamp fields."
         },
         {
           "kind": "documented",
           "text": "Only the date of timestamp is meaningful; its time portion is arbitrary. File paths are payload data."
+        },
+        {
+          "kind": "observed",
+          "text": "Independent review on cPanel 11.138.0.19 identified the result wrapper as an empty list and inspected Whostmgr/API/1/Sys.pm loading page usage in the same form as get_api_calls."
+        },
+        {
+          "kind": "policy",
+          "text": "Preserve optional result rows alongside the pinned flat fields without unwrapping. The row contract uses the pinned get_api_calls optional integer count/timestamp and string entry fields; populated page rows were not observed. This new named inspection does not identify a key or field count in historical wildcard evidence or waive its discrepancy."
         }
-      ]
+      ],
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Independent review of eda85ee40f8313a26e402dd012544d695ec79f08 identified get_api_pages data.result as an empty list and inspected Whostmgr/API/1/Sys.pm: get_api_calls returns result and get_api_pages loads the same data in the same way. No source hash was supplied. This establishes the named wrapper separately from immutable historical wildcard observations; no historical key identity, field count or waiver is inferred. Populated page rows were not observed. Review: https://github.com/hostingpal/whm-api-client/pull/57#pullrequestreview-5720856204."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned get_api_calls documents result list rows with optional integer count, string entry and integer timestamp. Reuse that reviewed usage row contract for the source-inspected get_api_pages wrapper while preserving all optional flat get_api_pages fields and avoiding unwrap. This does not claim live populated rows. Review: https://github.com/hostingpal/whm-api-client/pull/57#pullrequestreview-5720856204."
+        }
+      ],
+      "response": {
+        "result": {
+          "add": {
+            "type": "list",
+            "items": {
+              "type": "object",
+              "fields": {
+                "count": {
+                  "type": "int"
+                },
+                "entry": {
+                  "type": "string"
+                },
+                "timestamp": {
+                  "type": "int"
+                }
+              }
+            }
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Independent review of eda85ee40f8313a26e402dd012544d695ec79f08 identified get_api_pages data.result as an empty list and inspected Whostmgr/API/1/Sys.pm: get_api_calls returns result and get_api_pages loads the same data in the same way. No source hash was supplied. This establishes the named wrapper separately from immutable historical wildcard observations; no historical key identity, field count or waiver is inferred. Populated page rows were not observed. Review: https://github.com/hostingpal/whm-api-client/pull/57#pullrequestreview-5720856204."
+            },
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned get_api_calls documents result list rows with optional integer count, string entry and integer timestamp. Reuse that reviewed usage row contract for the source-inspected get_api_pages wrapper while preserving all optional flat get_api_pages fields and avoiding unwrap. This does not claim live populated rows. Review: https://github.com/hostingpal/whm-api-client/pull/57#pullrequestreview-5720856204."
+            }
+          ]
+        }
+      }
     },
     "whm1:get_appconfig_application_list": {
       "name": "getAppconfigApplicationList",
@@ -339,9 +501,55 @@
         },
         {
           "kind": "documented",
-          "text": "Application paths and URLs are opaque payload strings and are never retrieved. upgradecall receives prior and current cPanel versions when invoked by the system; this read does not execute it."
+          "text": "upgradecall receives prior and current cPanel versions when invoked by the system; this read does not execute it."
+        },
+        {
+          "kind": "policy",
+          "text": "Application paths and URLs are opaque payload data and are never retrieved."
+        },
+        {
+          "kind": "observed",
+          "text": "Independent review on cPanel 11.138.0.19 observed an array container at whostmgr[].url. Populated array elements were not observed."
+        },
+        {
+          "kind": "policy",
+          "text": "Only whostmgr[].url additionally accepts list<string>, inferring the element family from the pinned scalar URL string. cpanel and webmail URL fields remain scalar strings. The separately reported cpanel demo field remains untyped pending source and type evidence."
         }
-      ]
+      ],
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Independent review of eda85ee40f8313a26e402dd012544d695ec79f08 observed an array container at whostmgr[].url, without populated element evidence. The pinned AppConfig url schema is a string URL path; list<string> infers its element family from that scalar contract and is validation policy, not observed populated rows. Scope the union to whostmgr only; preserve sibling fields and cpanel/webmail URL contracts. The separate cpanel demo field has no reviewed type. This named inspection is separate from historical masked evidence. Review: https://github.com/hostingpal/whm-api-client/pull/57#pullrequestreview-5720856204."
+        }
+      ],
+      "response": {
+        "whostmgr[].url": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "list",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Independent review of eda85ee40f8313a26e402dd012544d695ec79f08 observed an array container at whostmgr[].url, without populated element evidence. The pinned AppConfig url schema is a string URL path; list<string> infers its element family from that scalar contract and is validation policy, not observed populated rows. Scope the union to whostmgr only; preserve sibling fields and cpanel/webmail URL contracts. The separate cpanel demo field has no reviewed type. This named inspection is separate from historical masked evidence. Review: https://github.com/hostingpal/whm-api-client/pull/57#pullrequestreview-5720856204."
+            }
+          ]
+        }
+      }
     }
   }
 }

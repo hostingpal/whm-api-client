@@ -38,8 +38,8 @@ final class ApiToolsSpec
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [
-            'acl' => ['name' => 'acl', 'encoding' => 'scalar'],
             'tokenName' => ['name' => 'token_name', 'encoding' => 'scalar'],
+            'acl' => ['name' => 'acl', 'encoding' => 'scalar'],
             'expiresAt' => ['name' => 'expires_at', 'encoding' => 'scalar'],
             'whitelistIp' => ['name' => 'whitelist_ip', 'encoding' => 'scalar'],
         ],
@@ -142,6 +142,17 @@ final class ApiToolsSpec
             'fields' => [
                 'count' => ['type' => 'int'],
                 'entry' => ['type' => 'string'],
+                'result' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'count' => ['type' => 'int'],
+                            'entry' => ['type' => 'string'],
+                            'timestamp' => ['type' => 'int'],
+                        ],
+                    ],
+                ],
                 'timestamp' => ['type' => 'int'],
             ],
         ],
@@ -213,7 +224,13 @@ final class ApiToolsSpec
                             'phpConfig' => ['type' => 'string'],
                             'target' => ['type' => 'string'],
                             'upgradecall' => ['type' => 'string'],
-                            'url' => ['type' => 'string'],
+                            'url' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'string'],
+                                    ['type' => 'list', 'items' => ['type' => 'string']],
+                                ],
+                            ],
                             'user' => ['type' => 'string'],
                         ],
                     ],
@@ -299,9 +316,9 @@ final class ApiToolsSpec
         'params' => [
             'tokenName' => ['name' => 'token_name', 'encoding' => 'scalar'],
             'acl' => ['name' => 'acl', 'encoding' => 'scalar'],
+            'whitelistIp' => ['name' => 'whitelist_ip', 'encoding' => 'scalar'],
             'expiresAt' => ['name' => 'expires_at', 'encoding' => 'scalar'],
             'newName' => ['name' => 'new_name', 'encoding' => 'scalar'],
-            'whitelistIp' => ['name' => 'whitelist_ip', 'encoding' => 'scalar'],
         ],
         'returns' => [
             'type' => 'object',

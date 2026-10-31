@@ -19,7 +19,7 @@ use ReflectionParameter;
 use SensitiveParameter;
 use TypeError;
 
-/** Literal pinned-source fixtures, independent of generated specs and overlays. */
+/** Literal pinned and reviewed-source fixtures, independent of generated specs and overlays. */
 final class WhmApiToolsTest extends TestCase
 {
     protected function setUp(): void
@@ -87,11 +87,15 @@ final class WhmApiToolsTest extends TestCase
                 'expiresAt' => 0,
                 'newName' => 'new-token',
                 'whitelistIp' => 'any'],
-            'POST', 'token_name=old-token&acl=list-accts&expires_at=0&new_name=new-token&whitelist_ip=any',
+            'POST', 'token_name=old-token&acl=list-accts&whitelist_ip=any&expires_at=0&new_name=new-token',
+            self::details()];
+        yield 'update positional full intent' => ['api_token_update', 'updateToken',
+            ['old-token', 'list-accts', '192.0.2.1', 123, 'new-token'],
+            'POST', 'token_name=old-token&acl=list-accts&whitelist_ip=192.0.2.1&expires_at=123&new_name=new-token',
             self::details()];
         yield 'dashboard token all inputs' => ['wp_dashboard_create_api_token', 'createDashboardToken',
             ['acl' => 'all', 'tokenName' => 'dashboard', 'expiresAt' => 0, 'whitelistIp' => '192.0.2.0/24'],
-            'POST', 'acl=all&token_name=dashboard&expires_at=0&whitelist_ip=192.0.2.0%2F24',
+            'POST', 'token_name=dashboard&acl=all&expires_at=0&whitelist_ip=192.0.2.0%2F24',
             self::created()];
         yield 'session all inputs' => ['create_user_session', 'createUserSession',
             ['service' => 'cpaneld', 'user' => 'user@example.test', 'app' => 'Email_Accounts',
@@ -112,6 +116,18 @@ final class WhmApiToolsTest extends TestCase
             '{"result":[{"count":2,"entry":"Email::printdomainoptions","timestamp":123}]}', 'result'];
         yield 'usage pages pinned object' => ['get_api_pages', 'getApiPages', ['cpapi1'], 'GET', 'type=cpapi1',
             '{"count":2,"entry":"/plugin/index.html.tt","timestamp":123}'];
+        yield 'usage pages populated reviewed wrapper' => [
+            'get_api_pages', 'getApiPages', [], 'GET', '',
+            '{"result":[{"count":2,"entry":"/plugin/index.html.tt","timestamp":123},{},'
+            . '{"entry":"/other"}]}'];
+        yield 'usage pages simultaneous flat and wrapped fields' => [
+            'get_api_pages', 'getApiPages', [], 'GET', '',
+            '{"count":3,"entry":"/flat","timestamp":456,"result":[{"count":2,"entry":"/wrapped","timestamp":123}]}'];
+        yield 'AppConfig reviewed WHM URL alternatives and mixed rows' => [
+            'get_appconfig_application_list', 'getAppconfigApplicationList', [], 'GET', '',
+            '{"cpanel":[{"url":"/cpanel"}],"webmail":[{"url":"/webmail"}],'
+            . '"whostmgr":[{"name":"scalar","url":"/scalar"},{"name":"list","url":["/one","/two"]},'
+            . '{"url":[]},{}]}'];
         yield 'AppConfig full records' => [
             'get_appconfig_application_list', 'getAppconfigApplicationList', [], 'GET', '',
             '{"cpanel":[' . self::application() . '],"webmail":[],"whostmgr":[' . self::application() . ']}'];
@@ -122,15 +138,17 @@ final class WhmApiToolsTest extends TestCase
     {
         yield 'create defaults' => [
             'api_token_create', 'createToken', ['new-token'], 'POST', 'token_name=new-token', '{}'];
-        yield 'update defaults' => [
-            'api_token_update', 'updateToken', ['old-token'], 'POST', 'token_name=old-token', '{}'];
+        yield 'update explicit settings preserve omitted name' => [
+            'api_token_update', 'updateToken', ['old-token', 'list-accts', '192.0.2.1', 123],
+            'POST', 'token_name=old-token&acl=list-accts&whitelist_ip=192.0.2.1&expires_at=123', '{}'];
         yield 'dashboard required ACL' => [
-            'wp_dashboard_create_api_token', 'createDashboardToken', ['all', 'dashboard'],
-            'POST', 'acl=all&token_name=dashboard', '{}'];
+            'wp_dashboard_create_api_token', 'createDashboardToken', ['dashboard', 'all'],
+            'POST', 'token_name=dashboard&acl=all', '{}'];
         yield 'session defaults' => ['create_user_session', 'createUserSession', ['cpaneld', 'user'],
             'POST', 'service=cpaneld&user=user', '{}'];
         yield 'link defaults' => ['wp_dashboard_create_login_link', 'createDashboardLoginLink', [], 'POST', '', '{}'];
         yield 'calls default' => ['get_api_calls', 'getApiCalls', [], 'GET', '', '{"result":[]}', 'result'];
+        yield 'pages empty reviewed wrapper' => ['get_api_pages', 'getApiPages', [], 'GET', '', '{"result":[]}'];
         yield 'pages default' => ['get_api_pages', 'getApiPages', [], 'GET', '', '{}'];
         yield 'empty token maps' => ['api_token_list', 'listTokens', [], 'GET', '', '{"tokens":{}}', 'tokens'];
         yield 'empty array token maps compatibility' => [
@@ -231,7 +249,11 @@ final class WhmApiToolsTest extends TestCase
             'api_token_update' => 'updateToken',
                 'wp_dashboard_create_api_token' => 'createDashboardToken'] as $function => $method
         ) {
-            $arguments = $method === 'createDashboardToken' ? ['all', 'dashboard'] : ['fixture'];
+            $arguments = match ($method) {
+                'createDashboardToken' => ['dashboard', 'all'],
+                'updateToken' => ['fixture', 'list-accts', '192.0.2.1', 123],
+                default => ['fixture'],
+            };
             foreach (
                 ['acls' => '[1]', 'create_time' => '"123"', 'expires_at' => 'false',
                 'name' => 'null', 'whitelist_ips' => '[1]'] as $field => $bad
@@ -270,8 +292,31 @@ final class WhmApiToolsTest extends TestCase
         foreach (['count' => '"1"', 'entry' => 'null', 'timestamp' => '1.5'] as $field => $bad) {
             yield "calls $field" => [
                 'get_api_calls', 'getApiCalls', [], '{"result":[{"' . $field . '":' . $bad . '}]}'];
+            yield "pages result row $field" => [
+                'get_api_pages', 'getApiPages', [], '{"result":[{"' . $field . '":' . $bad . '}]}'];
             yield "pages $field" => ['get_api_pages', 'getApiPages', [], '{"' . $field . '":' . $bad . '}'];
         }
+        foreach (['{}', 'null', 'false', '1', '"bad"', '[null]', '[false]', '[1]', '["bad"]'] as $i => $bad) {
+            yield "pages invalid wrapped result $i" => ['get_api_pages', 'getApiPages', [], '{"result":' . $bad . '}'];
+        }
+        foreach (
+            ['null', 'false', '{}', '[1]', '[null]', '[false]', '[["/nested"]]', '{"0":"/object"}'] as $i => $bad
+        ) {
+            yield "AppConfig WHM invalid URL $i" => [
+                'get_appconfig_application_list', 'getAppconfigApplicationList', [],
+                '{"whostmgr":[{"url":' . $bad . '}]}'];
+        }
+        foreach (['cpanel', 'webmail'] as $service) {
+            yield "AppConfig $service URL remains scalar" => [
+                'get_appconfig_application_list', 'getAppconfigApplicationList', [],
+                '{"' . $service . '":[{"url":["/list"]}]}'];
+        }
+        yield 'AppConfig WHM URL alternative keeps siblings strict' => [
+            'get_appconfig_application_list', 'getAppconfigApplicationList', [],
+            '{"whostmgr":[{"url":["/list"],"name":false}]}'];
+        yield 'AppConfig mixed URL list rejects later nonstring' => [
+            'get_appconfig_application_list', 'getAppconfigApplicationList', [],
+            '{"whostmgr":[{"url":"/scalar"},{"url":["/valid",1]}]}'];
         yield 'calls object result' => ['get_api_calls', 'getApiCalls', [], '{"result":{}}'];
         yield 'calls missing result' => ['get_api_calls', 'getApiCalls', [], '{}'];
         foreach (
@@ -308,7 +353,9 @@ final class WhmApiToolsTest extends TestCase
             yield "details secret $i" => ['getTokenDetails', ['token' => $bad]];
             yield "revoke token name $i" => ['revokeToken', ['tokenName' => $bad]];
             foreach (['acl', 'expiresAt', 'newName', 'whitelistIp'] as $name) {
-                yield "update $name $i" => ['updateToken', ['tokenName' => 'fixture', $name => $bad]];
+                yield "update $name $i" => ['updateToken',
+                    array_replace(['tokenName' => 'fixture', 'acl' => 'list-accts',
+                        'whitelistIp' => '192.0.2.1', 'expiresAt' => 123], [$name => $bad])];
             }
             yield "dashboard ACL $i" => ['createDashboardToken', ['acl' => $bad, 'tokenName' => 'fixture']];
             foreach (
@@ -323,6 +370,71 @@ final class WhmApiToolsTest extends TestCase
             yield "calls type $i" => ['getApiCalls', ['type' => $bad]];
             yield "pages type $i" => ['getApiPages', ['type' => $bad]];
         }
+    }
+
+    /** @param array<string, mixed> $arguments */
+    #[DataProvider('incompleteUpdateInputs')]
+    public function testUpdateRequiresCompleteIntentBeforeDispatch(string $method, array $arguments): void
+    {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope('applist', '{"app":[]}')));
+        $client->whm()->apiTools()->listApplications();
+        $previousMetadata = $client->whm()->responseMeta();
+        $this->expectException(TypeError::class);
+        try {
+            $client->whm()->apiTools()->{$method}(...$arguments);
+        } finally {
+            self::assertCount(1, $http->getRequests());
+            self::assertSame($previousMetadata, $client->whm()->responseMeta());
+        }
+    }
+
+    /** @return iterable<string, array{string, array<string, mixed>}> */
+    public static function incompleteUpdateInputs(): iterable
+    {
+        yield 'rename only' => ['updateToken', ['tokenName' => 'fixture', 'newName' => 'renamed']];
+        foreach (['acl', 'whitelistIp', 'expiresAt'] as $field) {
+            $arguments = ['tokenName' => 'fixture', 'acl' => 'list-accts',
+                'whitelistIp' => '192.0.2.1', 'expiresAt' => 123];
+            unset($arguments[$field]);
+            yield "missing $field" => ['updateToken', $arguments];
+            $arguments[$field] = null;
+            yield "null $field" => ['updateToken', $arguments];
+        }
+    }
+
+    #[DataProvider('tokenCreationOperations')]
+    public function testCreatedSecretRemainsRecoverableFromMismatchWithoutRetry(string $function, string $method): void
+    {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope(
+            $function,
+            '{"name":"created-fixture","token":"recoverable-secret","expires_at":false,"unknown":"kept"}',
+        )));
+        try {
+            $client->whm()->apiTools()->{$method}(tokenName: 'created-fixture', acl: 'list-accts');
+            self::fail('A created token with invalid settings must retain its unvalidated payload.');
+        } catch (PayloadMismatchException $error) {
+            self::assertTrue($error->outcomeConfirmed);
+            self::assertSame(['name' => 'created-fixture', 'token' => 'recoverable-secret',
+                'expires_at' => false, 'unknown' => 'kept'], $error->payload);
+            self::assertSame($client->whm()->responseMeta(), $error->metadata);
+            self::assertSame(1, $error->metadata?->whmResult());
+            self::assertStringNotContainsString('recoverable-secret', $error->getMessage());
+            self::assertStringNotContainsString('recoverable-secret', print_r($error, true));
+        }
+        self::assertCount(1, $http->getRequests());
+        $request = $http->getLastRequest();
+        self::assertInstanceOf(RequestInterface::class, $request);
+        self::assertSame('POST', $request->getMethod());
+        self::assertSame('token_name=created-fixture&acl=list-accts', (string) $request->getBody());
+    }
+
+    /** @return iterable<string, array{string, string}> */
+    public static function tokenCreationOperations(): iterable
+    {
+        yield 'ordinary token' => ['api_token_create', 'createToken'];
+        yield 'dashboard token' => ['wp_dashboard_create_api_token', 'createDashboardToken'];
     }
 
     public function testSelectorsAndSensitiveParameters(): void
@@ -343,7 +455,7 @@ final class WhmApiToolsTest extends TestCase
         }
         foreach (
             ['createToken' => 1, 'getTokenDetails' => 1, 'listTokens' => 0, 'revokeToken' => 1,
-            'updateToken' => 1, 'createDashboardToken' => 2, 'createUserSession' => 2, 'createDashboardLoginLink' => 0,
+            'updateToken' => 4, 'createDashboardToken' => 2, 'createUserSession' => 2, 'createDashboardLoginLink' => 0,
             'listApplications' => 0, 'getApiCalls' => 0, 'getApiPages' => 0,
             'getAppconfigApplicationList' => 0] as $method => $count
         ) {

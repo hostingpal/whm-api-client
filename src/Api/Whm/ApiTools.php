@@ -57,6 +57,11 @@ use SensitiveParameter;
  * @phpstan-type GetApiPagesResult array{
  *     count?: int,
  *     entry?: string,
+ *     result?: list<array{
+ *         count?: int,
+ *         entry?: string,
+ *         timestamp?: int,
+ *     }>,
  *     timestamp?: int,
  * }
  * @phpstan-type GetAppconfigApplicationListResult array{
@@ -102,7 +107,7 @@ use SensitiveParameter;
  *         phpConfig?: string,
  *         target?: string,
  *         upgradecall?: string,
- *         url?: string,
+ *         url?: string|list<string>,
  *         user?: string,
  *     }>,
  * }
@@ -151,8 +156,11 @@ final readonly class ApiTools
      * Documented: Creates a single-use WHM session for re-entry from WebPros Dashboard. Optional service permits
      * cpaneld, whostmgrd or webmaild; optional user is an account username or valid email address.
      *
-     * Documented: Session identifiers, security tokens and URLs are private opaque payload strings; never log them or
+     * Policy: Session identifiers, security tokens and URLs are private opaque payload strings; never log them or
      * retrieve the returned URL.
+     *
+     * Policy: Uses form POST under the client mutation transport policy to keep operation parameters out of access-log
+     * URLs.
      *
      * API-map identity: whm1:wp_dashboard_create_login_link#GET (wire name wp_dashboard_create_login_link; Session).
      *
@@ -189,15 +197,29 @@ final readonly class ApiTools
      * WP-Dashboard. Omitted expiresAt or zero means no expiration; expired tokens require manual deletion. Omitted
      * whitelist permits any IP.
      *
-     * Documented: The token is returned only once and is secret; store it securely and never log the result. Typed acl
-     * and whitelistIp accept one scalar; documented acl-0/acl-1 and whitelist_ip-0/whitelist_ip-1 families await
-     * 8x0.1.21.
+     * Documented: The returned token is a secret shown only once.
+     *
+     * Policy: Store the returned credential securely and never log the result.
+     *
+     * Documented: The examples use acl-0/acl-1 and whitelist_ip-0/whitelist_ip-1 for multiple values.
+     *
+     * Policy: Typed acl and whitelistIp accept one scalar and cannot create or preserve multiple ACL or IP values.
+     * Multi-value support is deferred under 8x0.1.21; the existing unsuffixed-first numbered encoding does not
+     * represent these indexed families and is not used here.
+     *
+     * Policy: An accepted creation outcome can still raise PayloadMismatchException after the credential was created.
+     * Its sensitive unvalidated $payload may contain the only returned secret, but a malformed payload need not contain
+     * it. Recover it securely if present and revoke the created named credential through an authorized caller action.
+     * Never automatically retry, log the payload or automatically revoke a credential.
+     *
+     * Policy: Uses form POST under the client mutation transport policy to keep operation parameters out of access-log
+     * URLs.
      *
      * API-map identity: whm1:wp_dashboard_create_api_token#GET (wire name wp_dashboard_create_api_token; API Token
      * Management).
      *
-     * @param string $acl The privileges to assign to the token.
      * @param string $tokenName The API token's name.
+     * @param string $acl The privileges to assign to the token.
      * @param int|null $expiresAt The API token's expiration time, in Unix Epoch format. Null omits it.
      * @param string|null $whitelistIp One or more optional remote IP address or CIDR IP address ranges that can use
      *     this token. Null omits it.
@@ -208,15 +230,15 @@ final readonly class ApiTools
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/api-token-management/wpdashboard-wp_dashboard_create_api_token
      */
     public function createDashboardToken(
-        string $acl,
         string $tokenName,
+        string $acl,
         ?int $expiresAt = null,
         ?string $whitelistIp = null,
     ): array {
         /** @var CreateDashboardTokenResult $result Validated against ApiToolsSpec::WP_DASHBOARD_CREATE_API_TOKEN. */
         $result = ($this->run)(ApiToolsSpec::WP_DASHBOARD_CREATE_API_TOKEN, [
-            'acl' => $acl,
             'tokenName' => $tokenName,
+            'acl' => $acl,
             'expiresAt' => $expiresAt,
             'whitelistIp' => $whitelistIp,
         ]);
@@ -240,11 +262,24 @@ final readonly class ApiTools
      * expiration or zero means no expiration; expired tokens require manual revocation. Omitted whitelist permits any
      * IP.
      *
-     * Documented: The returned token is a secret shown only once: store it securely and never log the result.
+     * Documented: The returned token is a secret shown only once.
      *
-     * Documented: Typed acl and whitelistIp accept one scalar. Source documents acl-0/acl-1 and
-     * whitelist_ip-0/whitelist_ip-1; repeated families await 8x0.1.21. The example also spells later whitelist-ip keys
-     * differently; no inferred encoding is generated.
+     * Policy: Store the returned credential securely and never log the result.
+     *
+     * Documented: ACL prose and examples use acl-0/acl-1. Whitelist prose uses whitelist_ip-0/whitelist_ip-1, while
+     * later example keys switch to whitelist-ip; these source limitations remain unresolved.
+     *
+     * Policy: Typed acl and whitelistIp accept one scalar and cannot create or preserve multiple ACL or IP values.
+     * Multi-value support is deferred under 8x0.1.21; the existing unsuffixed-first numbered encoding does not
+     * represent these indexed families and is not used here.
+     *
+     * Policy: An accepted creation outcome can still raise PayloadMismatchException after the credential was created.
+     * Its sensitive unvalidated $payload may contain the only returned secret, but a malformed payload need not contain
+     * it. Recover it securely if present and revoke the created named credential through an authorized caller action.
+     * Never automatically retry, log the payload or automatically revoke a credential.
+     *
+     * Policy: Uses form POST under the client mutation transport policy to keep operation parameters out of access-log
+     * URLs.
      *
      * API-map identity: whm1:api_token_create#GET (wire name api_token_create; API Token Management).
      *
@@ -292,8 +327,13 @@ final readonly class ApiTools
      * preferredDomain defaults to the server hostname.
      *
      * Documented: cpSecurityToken is a session secret. promptToken contains base64 website-generation goals with
-     * maximum decoded length 5000; both inputs are sensitive. Session identifiers, security tokens and URLs are private
-     * opaque payload strings; never log them or retrieve the returned URL.
+     * maximum decoded length 5000.
+     *
+     * Policy: Session identifiers, security tokens and URLs are private opaque payload strings; never log them or
+     * retrieve the returned URL. cpSecurityToken and promptToken inputs are sensitive when accepted by the operation.
+     *
+     * Policy: Uses form POST under the client mutation transport policy to keep operation parameters out of access-log
+     * URLs.
      *
      * API-map identity: whm1:create_user_session#GET (wire name create_user_session; Session).
      *
@@ -375,9 +415,17 @@ final readonly class ApiTools
      * Documented: Available from cPanel 86.
      *
      * Documented: Reports only deprecated cPanel API 1 daily interface usage. Omitted type defaults to the documented
-     * cpapi1 enum. The pinned response is one object with count, entry and timestamp; no list alternative is inferred.
+     * cpapi1 enum. The pinned response declares optional flat count, entry and timestamp fields.
      *
      * Documented: Only the date of timestamp is meaningful; its time portion is arbitrary. File paths are payload data.
+     *
+     * Observed: Independent review on cPanel 11.138.0.19 identified the result wrapper as an empty list and inspected
+     * Whostmgr/API/1/Sys.pm loading page usage in the same form as get_api_calls.
+     *
+     * Policy: Preserve optional result rows alongside the pinned flat fields without unwrapping. The row contract uses
+     * the pinned get_api_calls optional integer count/timestamp and string entry fields; populated page rows were not
+     * observed. This new named inspection does not identify a key or field count in historical wildcard evidence or
+     * waive its discrepancy.
      *
      * API-map identity: whm1:get_api_pages#GET (wire name get_api_pages; API Statistics).
      *
@@ -406,8 +454,17 @@ final readonly class ApiTools
      * Documented: Returns registered cPanel, Webmail and WHM application lists, preserving optional AppConfig fields.
      * displayname, entryurl, icon, origin, target and upgradecall are documented only for AppConfig-registered plugins.
      *
-     * Documented: Application paths and URLs are opaque payload strings and are never retrieved. upgradecall receives
-     * prior and current cPanel versions when invoked by the system; this read does not execute it.
+     * Documented: upgradecall receives prior and current cPanel versions when invoked by the system; this read does not
+     * execute it.
+     *
+     * Policy: Application paths and URLs are opaque payload data and are never retrieved.
+     *
+     * Observed: Independent review on cPanel 11.138.0.19 observed an array container at whostmgr[].url. Populated array
+     * elements were not observed.
+     *
+     * Policy: Only whostmgr[].url additionally accepts list<string>, inferring the element family from the pinned
+     * scalar URL string. cpanel and webmail URL fields remain scalar strings. The separately reported cpanel demo field
+     * remains untyped pending source and type evidence.
      *
      * API-map identity: whm1:get_appconfig_application_list#GET (wire name get_appconfig_application_list;
      * Applications).
@@ -436,11 +493,16 @@ final readonly class ApiTools
      *
      * Documented: Available from cPanel 98.
      *
-     * Documented: The token input is the raw secret, not its name. It is sensitive and sent in a form POST as a
-     * conservative access-log protection; pinned GET-to-POST compatibility remains live-unverified.
+     * Documented: The token input is the raw secret, not its name.
      *
-     * Documented: Recognized tokens return TokenDetails; unrecognized tokens omit data and return null. Optional
-     * nullable fields remain distinct from omission. Treat returned token settings as private payload data.
+     * Documented: Recognized tokens return TokenDetails; the unrecognized alternative omits data. TokenDetails has no
+     * required fields. Optional nullable fields remain distinct from omission.
+     *
+     * Policy: The raw token input is sensitive and sent in a form POST to keep it out of access-log URLs; pinned
+     * GET-to-POST compatibility remains live-unverified. Treat returned token settings as private payload data.
+     *
+     * Policy: Absent or explicit null data returns null. A present empty object remains an empty result; it is
+     * unobserved and does not prove recognition or establish an invalid-token signal.
      *
      * Returns null when the server sends no data.
      *
@@ -525,8 +587,12 @@ final readonly class ApiTools
      *
      * Documented: Revocation invalidates the named token. The source documents no data payload.
      *
-     * Documented: Typed tokenName accepts one scalar. Source documents token_name-1, token_name-2 and token_name-3 for
-     * multiple revocations; that family awaits 8x0.1.21.
+     * Documented: The source documents token_name-1, token_name-2 and token_name-3 for multiple revocations.
+     *
+     * Policy: Typed tokenName accepts one scalar; multiple revocation support remains deferred under 8x0.1.21.
+     *
+     * Policy: Uses form POST under the client mutation transport policy to keep operation parameters out of access-log
+     * URLs.
      *
      * API-map identity: whm1:api_token_revoke#GET (wire name api_token_revoke; API Token Management).
      *
@@ -546,25 +612,49 @@ final readonly class ApiTools
      *
      * Documented: Available from cPanel 68.
      *
-     * Documented: ACL and whitelist inputs replace all current settings; omitted acl assigns all caller privileges and
-     * omitted whitelist permits any IP. Only caller-held privileges may be assigned. whitelistIp=any explicitly clears
-     * IP restrictions.
+     * Documented: ACL and whitelist inputs replace all current settings. Pinned omission assigns all caller privileges,
+     * permits any IP and removes expiration; zero also means no expiration. Only caller-held privileges may be
+     * assigned. whitelistIp=any explicitly clears IP restrictions. Expired tokens require manual revocation.
      *
-     * Documented: Omitted expiresAt or zero means no expiration; expired tokens require manual revocation. Omitted
-     * newName preserves the name; replacements must be unique and at most 50 alphanumeric/dash/underscore characters.
-     * Root cannot rename to WebPros_Dashboard, WP-Dashboard or Platform360.
+     * Policy: The typed method requires explicit acl, whitelistIp and expiresAt to express the complete replacement
+     * settings, including when renaming. Empty strings are not a documented way to preserve current settings.
      *
-     * Documented: Typed acl and whitelistIp accept one scalar. ACL prose uses acl-1/acl-2 but its example uses
-     * acl-0/acl-1; whitelist prose uses whitelist_ip-0 while later example keys use whitelist-ip. Repeated families
-     * await 8x0.1.21 without guessing an encoding. Treat returned settings as private payload data.
+     * Documented: Omitted newName preserves the name; replacements must be unique and at most 50
+     * alphanumeric/dash/underscore characters. Root cannot rename to WebPros_Dashboard, WP-Dashboard or Platform360.
+     *
+     * Documented: ACL prose uses acl-1/acl-2 but its example uses acl-0/acl-1; whitelist prose uses whitelist_ip-0
+     * while later example keys use whitelist-ip. These source limitations remain unresolved.
+     *
+     * Policy: Typed acl and whitelistIp accept one scalar and cannot preserve or create multiple ACL or IP values. Do
+     * not use updateToken to rename a token restricted by multiple ACL or IP values. Multi-value support is deferred
+     * under 8x0.1.21; the existing unsuffixed-first numbered encoding is not used for these families. Treat returned
+     * settings as private payload data.
+     *
+     * Policy: Uses form POST under the client mutation transport policy to keep operation parameters out of access-log
+     * URLs.
      *
      * API-map identity: whm1:api_token_update#GET (wire name api_token_update; API Token Management).
      *
-     * @param string $tokenName The API token's name.
-     * @param string|null $acl The new privileges to assign to the token. Null omits it.
-     * @param int|null $expiresAt The API token's expiration time. Null omits it.
-     * @param string|null $newName The API token's new name. Null omits it.
-     * @param string|null $whitelistIp The new remote IP or CIDR IP ranges to assign to this token. Null omits it.
+     * @param string $tokenName The existing API token name. This replaces complete settings, including for a rename:
+     *     pinned omission assigns all caller privileges, permits any IP and removes expiration. The client requires
+     *     acl, whitelistIp and expiresAt explicitly; empty strings are not documented preservation values.
+     * @param string $acl The complete replacement privilege, limited to caller-held privileges. This replaces complete
+     *     settings, including for a rename: pinned omission assigns all caller privileges, permits any IP and removes
+     *     expiration. The client requires acl, whitelistIp and expiresAt explicitly; empty strings are not documented
+     *     preservation values.
+     * @param string $whitelistIp The complete replacement remote IP or CIDR range; any explicitly clears IP
+     *     restrictions. This replaces complete settings, including for a rename: pinned omission assigns all caller
+     *     privileges, permits any IP and removes expiration. The client requires acl, whitelistIp and expiresAt
+     *     explicitly; empty strings are not documented preservation values.
+     * @param int $expiresAt The replacement Unix expiration time; zero explicitly means no expiration. Expired tokens
+     *     require manual revocation. This replaces complete settings, including for a rename: pinned omission assigns
+     *     all caller privileges, permits any IP and removes expiration. The client requires acl, whitelistIp and
+     *     expiresAt explicitly; empty strings are not documented preservation values.
+     * @param string|null $newName The optional new unique name, at most 50 alphanumeric/dash/underscore characters;
+     *     omission preserves the name. Root cannot use WebPros_Dashboard, WP-Dashboard or Platform360. This replaces
+     *     complete settings, including for a rename: pinned omission assigns all caller privileges, permits any IP and
+     *     removes expiration. The client requires acl, whitelistIp and expiresAt explicitly; empty strings are not
+     *     documented preservation values. Null omits it.
      * @return UpdateTokenResult
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
@@ -573,18 +663,18 @@ final readonly class ApiTools
      */
     public function updateToken(
         string $tokenName,
-        ?string $acl = null,
-        ?int $expiresAt = null,
+        string $acl,
+        string $whitelistIp,
+        int $expiresAt,
         ?string $newName = null,
-        ?string $whitelistIp = null,
     ): array {
         /** @var UpdateTokenResult $result Validated against ApiToolsSpec::API_TOKEN_UPDATE. */
         $result = ($this->run)(ApiToolsSpec::API_TOKEN_UPDATE, [
             'tokenName' => $tokenName,
             'acl' => $acl,
+            'whitelistIp' => $whitelistIp,
             'expiresAt' => $expiresAt,
             'newName' => $newName,
-            'whitelistIp' => $whitelistIp,
         ]);
 
         return $result;
