@@ -17,7 +17,13 @@ trait WhmGroups
 
     private ?Accounts $accountsGroup = null;
 
+    private ?ApiTools $apiToolsGroup = null;
+
+    private ?Authentication $authenticationGroup = null;
+
     private ?Backups $backupsGroup = null;
+
+    private ?Commerce $commerceGroup = null;
 
     private ?CpHulk $cpHulkGroup = null;
 
@@ -27,17 +33,29 @@ trait WhmGroups
 
     private ?HostingPlans $hostingPlansGroup = null;
 
+    private ?Integrations $integrationsGroup = null;
+
     private ?IpAddresses $ipAddressesGroup = null;
 
     private ?Mail $mailGroup = null;
 
+    private ?Market $marketGroup = null;
+
     private ?ModSecurity $modSecurityGroup = null;
+
+    private ?NginxManager $nginxManagerGroup = null;
 
     private ?Resellers $resellersGroup = null;
 
     private ?Server $serverGroup = null;
 
+    private ?Ssl $sslGroup = null;
+
     private ?SupportTickets $supportTicketsGroup = null;
+
+    private ?SystemPackages $systemPackagesGroup = null;
+
+    private ?Transfers $transfersGroup = null;
 
     private ?WebServer $webServerGroup = null;
 
@@ -62,6 +80,28 @@ trait WhmGroups
     }
 
     /**
+     * Select the API Development Tools operations without making a request.
+     *
+     * WHM token and session management, application inventory and legacy API usage reads. Returned credentials,
+     * identifiers and URLs are private payload data.
+     */
+    public function apiTools(): ApiTools
+    {
+        return $this->apiToolsGroup ??= new ApiTools($this->run(...));
+    }
+
+    /**
+     * Select the Authentication operations without making a request.
+     *
+     * WHM authentication providers, root SSH keys and two-factor policy. Returned credentials, private keys, 2FA
+     * secrets, account links and URLs are private payload data; never log them or fetch URLs automatically.
+     */
+    public function authentication(): Authentication
+    {
+        return $this->authenticationGroup ??= new Authentication($this->run(...));
+    }
+
+    /**
      * Select the Backups operations without making a request.
      *
      * WHM API 1 functions in the documented Backups group.
@@ -69,6 +109,16 @@ trait WhmGroups
     public function backups(): Backups
     {
         return $this->backupsGroup ??= new Backups($this->run(...));
+    }
+
+    /**
+     * Select the Commerce Integration operations without making a request.
+     *
+     * Sitejet Commerce configuration and cPanel Store or Market login-token validation.
+     */
+    public function commerce(): Commerce
+    {
+        return $this->commerceGroup ??= new Commerce($this->run(...));
     }
 
     /**
@@ -115,6 +165,18 @@ trait WhmGroups
     }
 
     /**
+     * Select the Integrations operations without making a request.
+     *
+     * Account-scoped cPanel integration links and groups, and server-wide script/Perl hook inventory and management.
+     * Configuration, tokens, URLs and hook command payloads may be private. The client does not activate links, fetch
+     * returned URLs or invoke hooks; changes are single requests without retry or rollback.
+     */
+    public function integrations(): Integrations
+    {
+        return $this->integrationsGroup ??= new Integrations($this->run(...));
+    }
+
+    /**
      * Select the IP Address Management operations without making a request.
      *
      * WHM API 1 functions in the documented IP Address Management group.
@@ -127,15 +189,28 @@ trait WhmGroups
     /**
      * Select the Mail operations without making a request.
      *
-     * Server-wide mail operations, including Greylisting policy, trusted hosts, common providers and deferred triplets.
-     * Trust and configuration changes alter mail deferral policy. Returned triplets contain sender and recipient
-     * addresses; the client does not deliver mail or fetch returned addresses. The cPanel 11.138.0.19 review used GET
-     * reads with Greylisting disabled; all fifteen writes across the reviewed cPHulk and Greylisting slice remain
-     * unobserved.
+     * Server-wide mail authentication and DNS settings, incoming blocks, account outgoing-mail controls, mailbox and
+     * delivery diagnostics, mobile profiles, Exim and spamd configuration, and Greylisting. Mail, private-key,
+     * configuration and profile outputs can contain sensitive data. Mutations use form POST, including private-key
+     * export and raw Exim syntax validation. Per-domain failures remain separate from API status. No automatic
+     * delivery, expunge, retry or rollback is provided. Trust and configuration changes alter mail deferral policy.
+     * Returned triplets contain sender and recipient addresses; the client does not deliver mail or fetch returned
+     * addresses. The cPanel 11.138.0.19 review used GET reads with Greylisting disabled; all fifteen writes across the
+     * reviewed cPHulk and Greylisting slice remain unobserved.
      */
     public function mail(): Mail
     {
         return $this->mailGroup ??= new Mail($this->run(...));
+    }
+
+    /**
+     * Select the cPanel Market operations without making a request.
+     *
+     * cPanel Market provider inventory, product information, attributes and commission configuration.
+     */
+    public function market(): Market
+    {
+        return $this->marketGroup ??= new Market($this->run(...));
     }
 
     /**
@@ -150,6 +225,18 @@ trait WhmGroups
     public function modSecurity(): ModSecurity
     {
         return $this->modSecurityGroup ??= new ModSecurity($this->run(...));
+    }
+
+    /**
+     * Select the NGINX Manager operations without making a request.
+     *
+     * Server-wide NGINX cache configuration reads and explicitly targeted cache writes. Typed writes require users;
+     * deliberate all-user writes use generic POST with user omitted. Configuration maps preserve opaque dynamic values.
+     * Requests execute once without retry, restart or rollback beyond the selected operation.
+     */
+    public function nginxManager(): NginxManager
+    {
+        return $this->nginxManagerGroup ??= new NginxManager($this->run(...));
     }
 
     /**
@@ -176,13 +263,57 @@ trait WhmGroups
     }
 
     /**
+     * Select the SSL Certificates operations without making a request.
+     *
+     * WHM API 1 functions in the documented SSL Certificates group.
+     */
+    public function ssl(): Ssl
+    {
+        return $this->sslGroup ??= new Ssl($this->run(...));
+    }
+
+    /**
      * Select the cPanel Support Tickets operations without making a request.
      *
-     * WHM API 1 functions in the documented cPanel Support Tickets group.
+     * WHM API 1 functions in the documented cPanel Support Tickets group. Observed: The PR65 reviewer called
+     * getSupportAgreement(), getSupportInfo(), whitelistCheck() and list() through WHM GET on 11.138.0.19 with this
+     * client's stateless token authentication. All four raised ApiErrorException: "The system failed to restore the
+     * saved session." These failed reads establish no successful payload compatibility. All ten POST methods remain
+     * unobserved. Documented: The pinned URL examples use /cpsess##########/json-api/, agreement and support-info reads
+     * require a cPanelID token in the current session, and validateOauth2Code() stores the validated token on the
+     * current session. Inference: A WHM session appears to be required, based on the reviewer's reading of the failure
+     * and source text; the session code path was not traced. This is not a universal authentication diagnosis. The
+     * client has no session or cookie handling. It remains uncertain whether validateOauth2Code() could succeed yet
+     * leave no reusable session for later calls. Policy: Keep these typed contracts available with this compatibility
+     * limit; no session management, automatic retry or inferred success is added. Session compatibility and all
+     * unobserved methods remain open under whm-api-client-8x0.2.53.
      */
     public function supportTickets(): SupportTickets
     {
         return $this->supportTicketsGroup ??= new SupportTickets($this->run(...));
+    }
+
+    /**
+     * Select the System Package Management operations without making a request.
+     *
+     * Server RPM metadata, package inventory, plugin processes and queued package actions.
+     */
+    public function systemPackages(): SystemPackages
+    {
+        return $this->systemPackagesGroup ??= new SystemPackages($this->run(...));
+    }
+
+    /**
+     * Select the Transfers operations without making a request.
+     *
+     * Server-scoped transfer modules, remote session creation and credentials, asynchronous session controls and
+     * status, logs and archive deletion. Remote operations can contact hosts and change accounts. Every method performs
+     * one request without retries, polling or rollback. Returned output, analysis, logs and module schemas can contain
+     * sensitive account or configuration data; never execute returned content or fetch embedded URLs.
+     */
+    public function transfers(): Transfers
+    {
+        return $this->transfersGroup ??= new Transfers($this->run(...));
     }
 
     /**

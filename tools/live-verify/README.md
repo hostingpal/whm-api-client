@@ -1330,6 +1330,24 @@ where observed. IPv4/IPv6/range rows are populated; range-user lists are empty.
 No network or address/range change ran. The original failed capture is immutable
 and follow-up `8x0.2.37` retains all remaining live coverage.
 
+## WHM integration groups
+
+Run `WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs php tools/live-verify/whm-integrations.php --output=docs/api/evidence/YYYY-MM-DD-whm-integrations.json`.
+
+Two fixed GETs read version and list_integration_groups with user=npr. Existing
+committed-input, exact request guard, opt-in, verified TLS and new-only structural
+output rules apply. No hook commands, credential links or user configuration are
+read; no hook/link/token mutation or URL fetch runs. `8x0.2.49` retains gaps.
+
+The WHM integrations capture at `7b6f5ce` on `11.138.0.19` passes two GET checks and
+strict assessment with zero discrepancies. Integration groups are empty; no
+populated rows, hooks, credentials, user configurations or mutations are observed
+in that capture. Separate PR62 reviewer lifecycle 5722110065 at `160fc83` on
+`11.138.0.19` observes six POST methods using disposable `wrvint` and fake tokens,
+with account/home cleanup verified and no URL fetch. Removing nonexistent links
+and groups succeeds with null. Hook edit/delete/reorder remain unobserved under
+`8x0.2.49`; `8x0.10.5` retains the depth-limit generator audit.
+
 ## Expanded WHM server inventory
 
 ```sh
@@ -1355,3 +1373,262 @@ still fails for two masked unknown-field observations in installed versions and
 service rows. They remain untyped and unwaived; no key identity/count is inferred.
 No mutation or private configuration read ran. Historical artifacts remain
 immutable and `8x0.2.38` retains remaining live coverage and unknown findings.
+
+## WHM NGINX configuration
+
+Run `WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs php tools/live-verify/whm-nginx.php --output=docs/api/evidence/YYYY-MM-DD-whm-nginx.json`.
+
+Three fixed GETs read version and merged system/npr cache configurations. Existing
+opt-in, committed-input, exact request guard, TLS and immutable structural-output
+rules apply. No all-user inventory, cache clearing/rebuild/reset/toggle, service
+restart or HTTP enforcement test runs. Keep gaps under `8x0.2.51`.
+
+The NGINX capture at 2b36d29 on 11.138.0.19 records three HTTP-200 observations:
+version passes, but both configuration reads fail at the API layer, with payloads
+not checked. Strict status stays failed and no failure cause is inferred. No
+cache or service change ran; all six methods remain offline-tested and live gaps
+stay under 8x0.2.51. Preserve the artifact without retries or schema loosening.
+
+Separate PR63 reviewer diagnostic 5721097412 on WHM `11.138.0.19` identifies
+the missing required EA4 `ea-nginx` package. No successful NGINX payload or POST
+was observed; the historical capture remains failed and unwaived. This correction
+does not install the package or run another capture. The current catalog uses
+`merge: true` and users-first typed arguments, retaining the same three GETs.
+
+## WHM authentication metadata
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/whm-authentication.php \
+  --output=docs/api/evidence/YYYY-MM-DD-whm-authentication.json
+```
+
+Three exact parameterless GETs read version, TFA issuer names and policy status.
+The existing guard, opt-in, committed inputs, TLS verification, structural capture
+and no-retry rules apply. Provider and login URLs, keys, credential configuration,
+TFA secrets and linked-account data are omitted. No remote connection, URL request,
+key operation, provider/link/policy change or notification runs. This establishes
+no successful login, TFA challenge or SSH authorization; `8x0.2.40` retains other
+operations and variants, and strict findings remain failed without waivers.
+
+The WHM authentication capture at `e88583e` on `11.138.0.19` passes all three
+GET observations and strict assessment with zero discrepancies. Only version,
+issuer names and the integer policy flag were read. No secret, private URL, key,
+configuration or link data was requested, and no state changed. It establishes
+no login, TFA challenge, SSH access or mutation compatibility. `8x0.2.40` remains
+open for all unobserved functions and variants.
+
+## WHM SSL inventory
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/whm-ssl.php \
+  --output=docs/api/evidence/YYYY-MM-DD-whm-ssl.json
+```
+
+Nine exact GET requests read version, AutoSSL schedule, log catalog metadata,
+metadata flags, designated account/domain problems and exclusions, the best
+SSL domain for the pinned `whostmgr` example and certificate metadata for `npr`.
+The request guard, opt-in, committed inputs, verified TLS, structural-only capture
+and no-retry behavior are unchanged. Provider payloads, private keys, component
+PEM and log contents are omitted. No certificate generation, installation, reset,
+removal, provider/configuration change, background check or notification occurs.
+No returned URL is fetched. Strict findings remain failures; `8x0.2.39` retains
+unobserved operations and variants.
+
+The corrected WHM SSL capture at `4317e1a` on `11.138.0.19` passes all nine GET
+observations and strict assessment with zero discrepancies. Five evidenced leaves
+preserve best-domain null expiry, nullable certificate owner items and issuer
+organization, and canonical integer-string modulus/expiry values. No sibling or
+UAPI contract changed. Certificate inventory is populated; no mutation or private
+material read ran. The initial artifact is immutable and `8x0.2.39` remains open.
+
+## Expanded WHM account inventory
+
+Run `WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs php tools/live-verify/whm-account-management.php --output=docs/api/evidence/YYYY-MM-DD-whm-account-management.json`.
+
+Nine fixed GETs read version, user counts, disk usage, home roots, enhancement/user
+inventories, privileges and quota availability. Optional selectors are omitted.
+Existing exact request guards, committed inputs, opt-in, verified TLS and structural
+capture apply. No passwords, private links or account/configuration mutations are
+selected. No conversion, purchase or message runs. Strict discrepancies remain
+failures; remaining behavior and variants stay under `8x0.2.41`.
+
+## WHM hosting plans
+
+Run `WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs php tools/live-verify/whm-hosting-plans.php --output=docs/api/evidence/YYYY-MM-DD-whm-hosting-plans.json`.
+
+The original two fixed GETs read version and matchpkgs without selectors. A
+reviewer received an empty match result while listPackages returned a plan on
+11.138.0.19; the cause is unknown. Selector omission does not guarantee complete
+inventory. Preserve the completed artifact; do not rerun it merely for green. Existing
+exact request guards, committed inputs, opt-in, verified TLS and structural-only
+capture apply. No package or feature mutation, arbitrary file read, template
+execution or URL fetch runs. Findings stay unwaived; `8x0.2.43` retains live gaps.
+
+
+### Reviewed hosting-plan contracts
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/whm-hosting-plans-review.php \
+  --output=docs/api/evidence/YYYY-MM-DD-whm-hosting-plans-reviewed.json
+```
+
+The separate `whm-hosting-plans-review-v1` recipe adds the explicitly requested
+`getPackageInfo('default')` and `getAvailableApplications()` reads, alongside WHM
+version. The stock default package is grounded in the reviewer report, not an
+inferred default for the required `name` parameter. Its exact request guards,
+explicit live opt-in, committed-input checks and structural-only publication are
+unchanged. No write, arbitrary file selector, template execution or URL fetch is
+included. It writes a new immutable artifact; the original capture is preserved.
+
+The requested 2026-10-31 run is complete in
+`docs/api/evidence/2026-10-31-whm-hosting-plans-reviewed.json` at `1336c4d`.
+All three HTTP/API/payload/probe outcomes pass; two masked application item and
+subitem unknown-field observations retain a failed, unwaived strict assessment
+under `8x0.2.43`. Do not rerun this completed capture merely to clear findings.
+
+## WHM API tools
+
+Run `WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs php tools/live-verify/whm-api-tools.php --output=docs/api/evidence/YYYY-MM-DD-whm-api-tools.json`.
+
+Five parameterless GETs select version, applist, api_token_list, get_api_calls and
+get_api_pages. Token-list schema contains metadata, not raw credentials. Usage
+entries are function names or file paths. Only masked structural evidence is
+persisted. Existing committed-input, exact request guard, opt-in, verified TLS
+and new-only output requirements apply. No token/session change, secret lookup,
+login-link creation or URL fetch runs. Follow-up `8x0.2.44` retains unobserved behavior.
+
+The completed `465be19` capture has five GET observations covering four typed
+API-tools reads plus version; it does not cover AppConfig. Its masked empty-list
+unknown-field observation remains strict failed and unwaived. The separately
+reviewed `result` wrapper correction does not alter the historical artifact or
+establish its hidden key identity/count. No repeat is required merely for green
+status, and no credential/session action is part of this recipe.
+
+## Expanded WHM web-server inventory
+
+Run `WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs php tools/live-verify/whm-webserver-configuration.php --output=docs/api/evidence/YYYY-MM-DD-whm-webserver-configuration.json`.
+
+Nine fixed parameterless GETs read version and eight EasyApache/PHP inventories.
+Only masked structural evidence is persisted. Existing committed-input, exact
+request guard, opt-in, verified TLS and new-only output requirements apply.
+No INI content, arbitrary file or private configuration selector is supplied;
+no conversion/profile/PHP/FPM mutation or URL fetch runs. `8x0.2.45` retains gaps.
+
+Both committed web-server captures are complete and immutable. Their two
+masked unknown observations remain strict failed and unwaived, explicitly
+nonblocking in review 5720977511. The separate reviewer INI reads and source
+corrections do not expand this fixed catalog. No repeated capture or server
+configuration write is required merely for integration or green status.
+
+## WHM transfer metadata
+
+The original `whm-transfers.php` recipe captured version, available modules and
+`npr` username validation in `2026-10-31-whm-transfers.json` at `a5badae`.
+That three-GET capture strictly passes and is complete; do not replay it just
+for integration. The catalog now also includes the source/observed module name
+`FeatureListRemoteRoot`, with exact local GET arguments and no remote contact.
+
+The separate `whm-transfers-review.php` recipe selects only version and that
+module-schema read for the requested new evidence. Use both the normal live
+opt-in and designated `npr` account/domain guards; it records sanitized structure
+from the same raw responses through committed generated code. Schema text stays
+inert and no embedded URLs are followed. This recipe supplies no remote host,
+credential, session ID, log or archive path. It performs no POST or resource
+change. All eight writes and populated session/log/analysis variants remain
+unobserved under `8x0.2.47`. Preserve every historical artifact and discrepancy.
+
+The requested two-GET recipe is complete: `2026-10-31-whm-transfers-reviewed.json`
+at `d81e43a` on `11.138.0.19` strictly passes with zero discrepancies, observing
+populated schema key records and primary/required string lists. SHA-256
+`ecd22c05ac50d5b2dcfc2ad3c90c0ff6c26b21f059268726b31f163de506bd7e`.
+Do not repeat either transfer capture merely for integration or green status.
+
+## WHM system-package inventory
+
+The expanded `whm-system-packages-v2` catalog has seven fixed GETs: version,
+missing required RPMs with target omitted, installed-package inventory,
+`getPackageInfo(packages: 'ea-apache24')`, RPM `target_settings` and `rpm_groups`,
+and `resolveActions(packages: 'ea-apache24', namespaces: 'ea')`. The typed plural
+argument encodes the singular wire key `package`; namespace uses `ns`.
+The three-GET historical captures used v1 and are complete; do not repeat them
+merely for integration or to clear their findings.
+
+For the separately requested new reads, run only:
+
+```bash
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs php tools/live-verify/whm-system-packages-review.php --output=docs/api/evidence/YYYY-MM-DD-whm-system-packages-reviewed.json
+```
+
+This `whm-system-packages-review-v1` recipe selects version and those four new
+reads. It does not replay `listRpms()` or `listPackages()`. Action resolution is
+a planning read, not action submission. All requests are exact fixed WHM GETs;
+there is no install/remove/upgrade action, cache repair, build-log read, arbitrary
+package selector or URL fetch. Existing committed-input, live opt-in, exact
+request guard, verified TLS and new-only structural output rules apply. Dynamic
+RPM keys and all returned values remain masked in persisted evidence.
+
+The optional-payload fingerprint correction affects newly analyzed responses
+only. Absence remains structurally distinct from null, optional omission is
+accepted, and malformed present payloads still fail. The historical package
+`missing_required` finding is a tooling mismatch and remains strict failed and
+unwaived in its original artifact. It is not a server-failure or zero-dependency
+claim. All seven POST methods and remaining compatibility stay under `8x0.2.46`.
+
+### Reviewed package contracts, 2026-10-31
+
+The separately requested review capture is now complete at `dd72691` on
+`11.138.0.19`: exactly five WHM GETs (version, `ea-apache24` information,
+`target_settings`, `rpm_groups`, and action resolution for that package in
+namespace `ea`). All HTTP/API/payload/probe and strict checks pass, with zero
+discrepancies. It observes mixed string/nested-string-list requirements, string
+conflicts and vendor, a string installed version, nested RPM maps with string
+leaves and with string-list leaves, and populated unaffected/uninstall plan
+lists. The plan was returned only; no package action was submitted. Dynamic
+names and all payload values are absent from the artifact. The nested RPM map
+observations now support the previously inferred section-map compatibility.
+This capture does not establish empty installed-version values, literal vendor
+values, zero dependencies or any POST behavior. The separate reviewer report
+retains the empty-string observation and source placeholder attribution.
+
+The new artifact is `2026-10-31-whm-system-packages-reviewed.json`, SHA-256
+`44b3540940eeda781608957a57d12e5b9b5bdf10343c84f4f5a272e071d156ed`.
+It does not rerun either historical inventory probe or alter their findings.
+No mutation, cache repair, build-log read or URL fetch ran. All seven POSTs and
+remaining compatibility stay under `8x0.2.46`; no repeat is needed for integration.
+
+## Expanded WHM mail inventory
+
+Run `WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs php tools/live-verify/whm-mail-management.php --output=docs/api/evidence/YYYY-MM-DD-whm-mail-management.json`.
+
+Eight fixed GETs read version, default DMARC, SNI support/status, incoming-block
+inventories, owned mailbox names and system forwarding destinations. Account/domain
+selectors are fixed to npr/npr.rs. Existing committed-input, exact request guard,
+opt-in, verified TLS and new-only structural output rules apply. No messages,
+queue contents, keys or mobileconfig are read; no mail is delivered and no state
+changes. Follow-up `8x0.2.48` retains unobserved behavior and variants.
+
+The corrected WHM mail-management capture at 437c951 on 11.138.0.19 passes all
+eight GET observations and strict assessment with zero discrepancies. Only
+get_user_email_forward_destination.forward_to additionally preserves literal empty
+string alongside list<string>, without assigning meaning. PR61 source review
+separately supports arbitrary strings, with null still invalid. Inventories are empty and no mail mutation/delivery/key/queue inspection
+ran. Initial e023749 evidence remains failed and immutable; 8x0.2.48 stays open.
+
+## WHM Market provider inventory
+
+Run `WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs php tools/live-verify/whm-market.php --output=docs/api/evidence/YYYY-MM-DD-whm-market.json`.
+
+Two fixed GETs read version and provider inventory. Existing opt-in, exact request
+guard, committed-input, TLS and immutable structural-output rules apply. No
+commission IDs, private product information, token exchange, provider/commerce
+changes, purchases or URL fetches run. Keep live gaps under `8x0.2.52`.
+
+The Market provider capture at 38edb29 on 11.138.0.19 passes both GET checks and
+strict assessment with zero discrepancies. Provider rows are populated; only this
+inventory plus version is observed. No commerce route, commission ID, product,
+private token, OAuth exchange, mutation or URL fetch ran. The separately reported
+PR64 reviewer Commerce/commission reads do not change this completed capture or
+catalog. All remaining live variants stay under 8x0.2.52.

@@ -1095,9 +1095,9 @@ final readonly class UserManager
      * @param string $oldpass The current password.
      * @param bool|null $enablemysql Whether to update the cPanel account's MySQL password. Null omits it.
      * @return ChangePasswordResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/account-management/usermanager-change_password
      */
     public function changePassword(
@@ -1140,9 +1140,9 @@ final readonly class UserManager
      *
      * @param string $fullUsername The Subaccount's username and domain name.
      * @return CheckAccountConflictsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/subaccount-management/usermanager-check_account_conflicts
      */
     public function checkAccountConflicts(string $fullUsername): array
@@ -1222,9 +1222,9 @@ final readonly class UserManager
      *     omits it.
      * @param 'sub'|null $type The type of account. Null omits it.
      * @return CreateUserResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/subaccount-management/usermanager-create_user
      */
     public function createUser(
@@ -1304,9 +1304,9 @@ final readonly class UserManager
      * @param string $domain The Subaccount's associated domain.
      * @param string $username The Subaccount's username.
      * @return DeleteUserResult|null
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/subaccount-management/usermanager-delete_user
      */
     public function deleteUser(string $domain, string $username): ?array
@@ -1348,9 +1348,9 @@ final readonly class UserManager
      * @param bool|null $servicesWebdiskDismiss Whether to dismiss the merge of the Web Disk service account. Null omits
      *     it.
      * @return mixed
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/subaccount-management/usermanager-dismiss_merge
      */
     public function dismissMerge(
@@ -1431,9 +1431,9 @@ final readonly class UserManager
      *     private. Null omits it.
      * @param 'sub'|null $type The type of account. Null omits it.
      * @return EditUserResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/subaccount-management/usermanager-edit_user
      */
     public function editUser(
@@ -1520,9 +1520,9 @@ final readonly class UserManager
      * @param bool|null $flat Whether to return Subaccounts with the same name under the merge_candidates array. Null
      *     omits it.
      * @return ListUsersResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/subaccount-management/usermanager-list_users
      */
     public function listUsers(?bool $flat = null): array
@@ -1574,9 +1574,9 @@ final readonly class UserManager
      * @param string $fullUsername The full username for the system account.
      * @param 'email'|'ftp'|'webdisk' $type The type of system account.
      * @return LookupServiceAccountResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/subaccount-management/usermanager-lookup_service_account
      */
     public function lookupServiceAccount(string $fullUsername, string $type): array
@@ -1627,9 +1627,9 @@ final readonly class UserManager
      *
      * @param string $guid The Subaccount's unique identifier.
      * @return LookupUserResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/subaccount-management/usermanager-lookup_user
      */
     public function lookupUser(string $guid): array
@@ -1682,9 +1682,9 @@ final readonly class UserManager
      * @param bool|null $servicesFtpMerge Whether to link the FTP account to the subaccount. Null omits it.
      * @param bool|null $servicesWebdiskMerge Whether to link the Web Disk account to the subaccount. Null omits it.
      * @return MergeServiceAccountResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/subaccount-management/usermanager-merge_service_account
      */
     public function mergeServiceAccount(
@@ -1734,9 +1734,9 @@ final readonly class UserManager
      * @param string $username The subaccount's username.
      * @param bool|null $dismiss Whether to dismiss the service account as a merge candidate. Null omits it.
      * @return UnlinkServiceAccountResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/subaccount-management/usermanager-unlink_service_account
      */
     public function unlinkServiceAccount(

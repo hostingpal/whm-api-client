@@ -48,9 +48,9 @@ final readonly class Accounts
      * @param string|null $password The password. Null omits it.
      * @param 'default'|'custom'|null $plan Null omits it.
      * @return CreateAccountResult|null
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-creation/accounts-createacct
      */
     public function createAccount(
@@ -75,7 +75,7 @@ final readonly class Accounts
      * API-map identity: whm1:suspendacct#GET (wire name suspendacct; Account Management).
      *
      * @param string|list<string> $users
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-management/accounts-suspendacct
      */

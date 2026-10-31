@@ -1,0 +1,1206 @@
+{
+  "schema_version": "1.0",
+  "family": "whm1",
+  "group": "SSL Certificates",
+  "accessor": "ssl",
+  "class": "Ssl",
+  "operations": {
+    "whm1:add_autossl_user_excluded_domains": {
+      "name": "addAutoSslUserExcludedDomains",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 66."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST under the documented non-read-only classification. Each call executes immediately; the client provides no retries or rollback."
+        }
+      ],
+      "params": {
+        "domain": {
+          "encoding": "numbered"
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "add_autossl_user_excluded_domains documents multiple domain values as domain, domain-1, domain-2 or incremented parameter names. The existing numbered encoding retains the unsuffixed first value. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:delete_ssl_vhost": {
+      "name": "deleteSslVhost",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 82."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST under the documented non-read-only classification. Each call executes immediately; the client provides no retries or rollback."
+        },
+        {
+          "kind": "observed",
+          "text": "The independent disposable-account review on 11.138.0.19 observed a quoted removed_vhost_data[].is_ssl flag after successful removal. The old payload spec failed after the change had taken effect. The field now accepts exact strings 0 and 1 alongside native flags."
+        },
+        {
+          "kind": "policy",
+          "text": "Client behavior: treat SSL vhost deletion as irreversible; the client provides no rollback or automatic retry. An outcome-confirmed payload error can occur after removal has already taken effect and must not trigger an automatic retry."
+        }
+      ],
+      "response": {
+        "removed_vhost_data[].is_ssl": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Independent review of revision b94526897f82dcd5e7045b02b799498b780bd069 through WHM on cPanel 11.138.0.19: delete_ssl_vhost on the reviewer-created disposable account wrvssl removed the vhost, then returned a digit string at removed_vhost_data[].is_ssl. The old flag spec raised PayloadMismatchException with outcomeConfirmed=true after removal. Accept exact string flags 0 and 1 alongside native flags. The reviewer reported a subsequent retry failing because the vhost was already removed; this agent performs no retry or live action. Evidence is the type-only review report, not a new capture artifact. Review: https://github.com/hostingpal/whm-api-client/pull/53#pullrequestreview-5720639651."
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Independent review of revision b94526897f82dcd5e7045b02b799498b780bd069 through WHM on cPanel 11.138.0.19: delete_ssl_vhost on the reviewer-created disposable account wrvssl removed the vhost, then returned a digit string at removed_vhost_data[].is_ssl. The old flag spec raised PayloadMismatchException with outcomeConfirmed=true after removal. Accept exact string flags 0 and 1 alongside native flags. The reviewer reported a subsequent retry failing because the vhost was already removed; this agent performs no retry or live action. Evidence is the type-only review report, not a new capture artifact. Review: https://github.com/hostingpal/whm-api-client/pull/53#pullrequestreview-5720639651."
+        }
+      ]
+    },
+    "whm1:disable_autossl": {
+      "name": "disableAutoSsl",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 58."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST under the documented non-read-only classification. Each call executes immediately; the client provides no retries or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Disables the AutoSSL feature for the server."
+        }
+      ]
+    },
+    "whm1:enqueue_deferred_ssl_installations": {
+      "name": "enqueueDeferredSslInstallations",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 88."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST under the documented non-read-only classification. Each call executes immediately; the client provides no retries or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Returned certificate, private-key, CSR, CA-bundle or provider material is payload data and may be sensitive. Do not log or persist secret-bearing results."
+        },
+        {
+          "kind": "documented",
+          "text": "Supply the same number of items in cab, crt, key, username and vhostName, with the corresponding account, vhost, certificate, private key and bundle at each position. Empty cab strings request automatic CA-bundle download. Queue acceptance does not prove installation, service readiness or TLS behavior."
+        },
+        {
+          "kind": "policy",
+          "text": "Client behavior: neither the parameter types nor the repeated-field encoder checks equal lengths or positional alignment across these five lists. Callers must align them before sending private keys for installation."
+        },
+        {
+          "kind": "policy",
+          "text": "Client behavior: accept an absent or null data payload for this reviewed unstructured response, while preserving present opaque object values. This source-backed compatibility is offline-tested; payload omission and this operation were not observed live."
+        }
+      ],
+      "params": {
+        "cab": {
+          "sensitive": true,
+          "encoding": "repeat"
+        },
+        "crt": {
+          "sensitive": true,
+          "encoding": "repeat"
+        },
+        "key": {
+          "sensitive": true,
+          "encoding": "repeat"
+        },
+        "username": {
+          "encoding": "repeat"
+        },
+        "vhost_name": {
+          "encoding": "repeat"
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "enqueue_deferred_ssl_installations explicitly permits repeated or incremented values for cab, crt, key, username and vhost_name. Repeated keys preserve positional correspondence without selecting an ambiguous numeric starting index. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /enqueue_deferred_ssl_installations declares a data object with no defined properties. The review approved optional missing or null payload compatibility for this unstructured response while retaining present opaque map values; this is not a void conversion. Missing/null payloads were not observed, and this operation was not run by the reviewer. Queuing can already have occurred before response validation. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/53#pullrequestreview-5720639651."
+        }
+      ],
+      "optional_payload": true
+    },
+    "whm1:fetch_service_ssl_components": {
+      "name": "fetchServiceSslComponents",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 11.40."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST under the documented non-read-only classification. Each call executes immediately; the client provides no retries or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Returned certificate, private-key, CSR, CA-bundle or provider material is payload data and may be sensitive. Do not log or persist secret-bearing results."
+        }
+      ]
+    },
+    "whm1:fetch_ssl_certificates_for_fqdns": {
+      "name": "fetchSslCertificatesForFqdns",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 66."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST under the documented non-read-only classification. Each call executes immediately; the client provides no retries or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Returned certificate, private-key, CSR, CA-bundle or provider material is payload data and may be sensitive. Do not log or persist secret-bearing results."
+        },
+        {
+          "kind": "documented",
+          "text": "domains is caller-supplied comma-separated text, form-encoded once. Literal dotted issuer and subject keys remain literal payload keys. The separately recorded WHM review establishes the narrow certificate-field compatibility corrections."
+        },
+        {
+          "kind": "observed",
+          "text": "The independent review on 11.138.0.19 observed digit strings for created, not_before, not_after and modulus_length, a quoted is_self_signed flag, and null verify_error and literal issuer.organizationName. Only these integer leaves use canonical bounded integer-string normalization; the quoted flag accepts exact 0 or 1. Null remains distinct from omission. Other certificate fields retain their existing contracts."
+        }
+      ],
+      "response": {
+        "payload[].created": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Independent review of revision b94526897f82dcd5e7045b02b799498b780bd069 through WHM on cPanel 11.138.0.19: fetch_ssl_certificates_for_fqdns returned created as digit strings in certificate records. Normalize only canonical, in-range integer strings alongside native integers, preserving the pinned nullability of modulus_length. Other spelling and boundary cases are offline validation policy, not claimed live observations. Evidence is the type-only review report, not a new capture artifact. Review: https://github.com/hostingpal/whm-api-client/pull/53#pullrequestreview-5720639651."
+            }
+          ]
+        },
+        "payload[].not_before": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Independent review of revision b94526897f82dcd5e7045b02b799498b780bd069 through WHM on cPanel 11.138.0.19: fetch_ssl_certificates_for_fqdns returned not_before as digit strings in certificate records. Normalize only canonical, in-range integer strings alongside native integers, preserving the pinned nullability of modulus_length. Other spelling and boundary cases are offline validation policy, not claimed live observations. Evidence is the type-only review report, not a new capture artifact. Review: https://github.com/hostingpal/whm-api-client/pull/53#pullrequestreview-5720639651."
+            }
+          ]
+        },
+        "payload[].not_after": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Independent review of revision b94526897f82dcd5e7045b02b799498b780bd069 through WHM on cPanel 11.138.0.19: fetch_ssl_certificates_for_fqdns returned not_after as digit strings in certificate records. Normalize only canonical, in-range integer strings alongside native integers, preserving the pinned nullability of modulus_length. Other spelling and boundary cases are offline validation policy, not claimed live observations. Evidence is the type-only review report, not a new capture artifact. Review: https://github.com/hostingpal/whm-api-client/pull/53#pullrequestreview-5720639651."
+            }
+          ]
+        },
+        "payload[].modulus_length": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Independent review of revision b94526897f82dcd5e7045b02b799498b780bd069 through WHM on cPanel 11.138.0.19: fetch_ssl_certificates_for_fqdns returned modulus_length as digit strings in certificate records. Normalize only canonical, in-range integer strings alongside native integers, preserving the pinned nullability of modulus_length. Other spelling and boundary cases are offline validation policy, not claimed live observations. Evidence is the type-only review report, not a new capture artifact. Review: https://github.com/hostingpal/whm-api-client/pull/53#pullrequestreview-5720639651."
+            }
+          ]
+        },
+        "payload[].is_self_signed": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Independent review of revision b94526897f82dcd5e7045b02b799498b780bd069 through WHM on cPanel 11.138.0.19: fetch_ssl_certificates_for_fqdns returned is_self_signed as a digit string. Accept only exact string flags 0 and 1 alongside native flags. issuer.organizationName is a literal dotted key, not a nested issuer object; no commonName field is widened. Evidence is the type-only review report, not a new capture artifact. Review: https://github.com/hostingpal/whm-api-client/pull/53#pullrequestreview-5720639651."
+            }
+          ]
+        },
+        "payload[].verify_error": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Independent review of revision b94526897f82dcd5e7045b02b799498b780bd069 through WHM on cPanel 11.138.0.19: fetch_ssl_certificates_for_fqdns returned verify_error as null. Preserve explicit null and absence separately alongside the existing string type. issuer.organizationName is a literal dotted key, not a nested issuer object; no commonName field is widened. Evidence is the type-only review report, not a new capture artifact. Review: https://github.com/hostingpal/whm-api-client/pull/53#pullrequestreview-5720639651."
+            }
+          ]
+        },
+        "payload[].issuer\\.organizationName": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Independent review of revision b94526897f82dcd5e7045b02b799498b780bd069 through WHM on cPanel 11.138.0.19: fetch_ssl_certificates_for_fqdns returned issuer.organizationName as null. Preserve explicit null and absence separately alongside the existing string type. issuer.organizationName is a literal dotted key, not a nested issuer object; no commonName field is widened. Evidence is the type-only review report, not a new capture artifact. Review: https://github.com/hostingpal/whm-api-client/pull/53#pullrequestreview-5720639651."
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Independent review of revision b94526897f82dcd5e7045b02b799498b780bd069 through WHM on cPanel 11.138.0.19: fetch_ssl_certificates_for_fqdns records exposed digit strings for created, not_before, not_after and modulus_length; a quoted is_self_signed flag; and null verify_error and literal issuer.organizationName. These are WHM-specific observations. The reviewer did not run service certificate reset or installation. Evidence is the type-only review report, not a new capture artifact. Review: https://github.com/hostingpal/whm-api-client/pull/53#pullrequestreview-5720639651."
+        }
+      ]
+    },
+    "whm1:fetch_ssl_vhosts": {
+      "name": "fetchSslVhosts",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 11.32."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST under the documented non-read-only classification. Each call executes immediately; the client provides no retries or rollback."
+        },
+        {
+          "kind": "observed",
+          "text": "The independent review on 11.138.0.19 observed an exact empty string for vhosts[].crt.is_self_signed. This unset form is preserved as an empty string alongside native integer flags; no further meaning or conversion is assigned to it."
+        }
+      ],
+      "response": {
+        "vhosts[].crt.is_self_signed": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "flag"
+              },
+              {
+                "type": "string",
+                "literal": ""
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Independent review of revision b94526897f82dcd5e7045b02b799498b780bd069 through WHM on cPanel 11.138.0.19: fetch_ssl_vhosts returned an exact empty string at vhosts[].crt.is_self_signed on a certificate that was not self-signed. Preserve that unset form as an empty string alongside native 0/1 flags, without mapping it to zero, false or null or admitting arbitrary strings. The reported subject.commonName concern was not confirmed and remains unchanged. Evidence is the type-only review report, not a new capture artifact. Review: https://github.com/hostingpal/whm-api-client/pull/53#pullrequestreview-5720639651."
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Independent review of revision b94526897f82dcd5e7045b02b799498b780bd069 through WHM on cPanel 11.138.0.19: fetch_ssl_vhosts returned an exact empty string at vhosts[].crt.is_self_signed on a certificate that was not self-signed. Preserve that unset form as an empty string alongside native 0/1 flags, without mapping it to zero, false or null or admitting arbitrary strings. The reported subject.commonName concern was not confirmed and remains unchanged. Evidence is the type-only review report, not a new capture artifact. Review: https://github.com/hostingpal/whm-api-client/pull/53#pullrequestreview-5720639651."
+        }
+      ]
+    },
+    "whm1:fetch_vhost_ssl_components": {
+      "name": "fetchVhostSslComponents",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 11.32."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST under the documented non-read-only classification. Each call executes immediately; the client provides no retries or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Returned certificate, private-key, CSR, CA-bundle or provider material is payload data and may be sensitive. Do not log or persist secret-bearing results."
+        }
+      ]
+    },
+    "whm1:fetchcrtinfo": {
+      "name": "fetchCertificateInfo",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 11.32."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST under the documented non-read-only classification. Each call executes immediately; the client provides no retries or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Returned certificate, private-key, CSR, CA-bundle or provider material is payload data and may be sensitive. Do not log or persist secret-bearing results."
+        }
+      ]
+    },
+    "whm1:fetchsslinfo": {
+      "name": "fetchSslInfo",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 11.32."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST under the documented non-read-only classification. Each call executes immediately; the client provides no retries or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Returned certificate, private-key, CSR, CA-bundle or provider material is payload data and may be sensitive. Do not log or persist secret-bearing results."
+        },
+        {
+          "kind": "documented",
+          "text": "Both crtdata and domain are optional in the pinned source; omitted selectors remain omitted. The result describes candidate certificates, not currently installed certificates."
+        }
+      ],
+      "params": {
+        "crtdata": {
+          "sensitive": true
+        }
+      }
+    },
+    "whm1:generatessl": {
+      "name": "generateSsl",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 11.32."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST under the documented non-read-only classification. Each call executes immediately; the client provides no retries or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Returned certificate, private-key, CSR, CA-bundle or provider material is payload data and may be sensitive. Do not log or persist secret-bearing results."
+        },
+        {
+          "kind": "documented",
+          "text": "Creates and stores a key and CSR even when skipCertificate is true. Omitting optional subject fields preserves the upstream CSR defaults."
+        }
+      ],
+      "params": {
+        "pass": {
+          "sensitive": true,
+          "php": "passphrase"
+        }
+      }
+    },
+    "whm1:get_autossl_check_schedule": {
+      "name": "getAutoSslCheckSchedule",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 58."
+        }
+      ]
+    },
+    "whm1:get_autossl_log": {
+      "name": "getAutoSslLog",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 58."
+        }
+      ]
+    },
+    "whm1:get_autossl_logs_catalog": {
+      "name": "getAutoSslLogsCatalog",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 58."
+        }
+      ]
+    },
+    "whm1:get_autossl_metadata": {
+      "name": "getAutoSslMetadata",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 60."
+        }
+      ]
+    },
+    "whm1:get_autossl_problems_for_domain": {
+      "name": "getAutoSslProblemsForDomain",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 68."
+        }
+      ]
+    },
+    "whm1:get_autossl_problems_for_user": {
+      "name": "getAutoSslProblemsForUser",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 68."
+        }
+      ]
+    },
+    "whm1:get_autossl_providers": {
+      "name": "getAutoSslProviders",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 58."
+        },
+        {
+          "kind": "documented",
+          "text": "Provider-specific additional fields remain opaque and may contain provider account or credential material. Named fields retain their reviewed contracts. Returned URLs are data and are not fetched."
+        },
+        {
+          "kind": "observed",
+          "text": "The independent review on 11.138.0.19 observed x_terms_of_service_accepted as a string. This corrects a pinned contradiction: its formal schema is an integer flag, while the neighboring terms-of-service prose calls the accepted value a location. It remains string data, without boolean or numeric conversion."
+        }
+      ],
+      "response": {
+        "payload[]": {
+          "replace": {
+            "type": "object",
+            "fields": {
+              "display_name": {
+                "type": "string"
+              },
+              "enabled": {
+                "type": "flag"
+              },
+              "module_name": {
+                "type": "string"
+              },
+              "specs": {
+                "type": "object",
+                "fields": {
+                  "AVERAGE_DELIVERY_TIME": {
+                    "type": "int"
+                  },
+                  "DCV_METHODS": {
+                    "type": "list",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "DELIVERY_METHOD": {
+                    "type": "string"
+                  },
+                  "HTTP_DCV_MAX_REDIRECTS": {
+                    "type": "int"
+                  },
+                  "MAX_DOMAINS_PER_CERTIFICATE": {
+                    "type": "int"
+                  },
+                  "RATE_LIMIT_CERTIFICATES_PER_REGISTERED_DOMAIN_PER_WEEK": {
+                    "type": "int"
+                  },
+                  "SUPPORTS_ANCESTOR_DCV": {
+                    "type": "flag"
+                  },
+                  "SUPPORTS_WILDCARD": {
+                    "type": "flag"
+                  },
+                  "VALIDITY_PERIOD": {
+                    "type": "int"
+                  }
+                }
+              },
+              "x_account_id": {
+                "type": "string"
+              },
+              "x_terms_of_service": {
+                "type": "string"
+              },
+              "x_terms_of_service_accepted": {
+                "type": "string"
+              }
+            },
+            "values": {
+              "type": "mixed"
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "get_autossl_providers payload.items declares named properties alongside additionalProperties with a description only and no type restriction. Preserve every pinned named field and opaque additional values through object.values mixed; the separately evidenced x_terms_of_service_accepted correction resolves its conflicting source definition. The prose says provider-specific names begin with x_; no concrete unknown key or value shape is inferred. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Independent review of revision b94526897f82dcd5e7045b02b799498b780bd069 through WHM on cPanel 11.138.0.19: get_autossl_providers returned x_terms_of_service_accepted as a string in the stock provider list. The formal pinned field is integer enum 0/1 with a copied enabled-style description, but x_terms_of_service prose compares its location with the accepted location. Correct only this field to string, rejecting integer flags and preserving enabled and provider specs unchanged. Evidence is the type-only review report, not a new capture artifact. Review: https://github.com/hostingpal/whm-api-client/pull/53#pullrequestreview-5720639651."
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Independent review of revision b94526897f82dcd5e7045b02b799498b780bd069 through WHM on cPanel 11.138.0.19: get_autossl_providers returned x_terms_of_service_accepted as a string in the stock provider list. The formal pinned field is integer enum 0/1 with a copied enabled-style description, but x_terms_of_service prose compares its location with the accepted location. Correct only this field to string, rejecting integer flags and preserving enabled and provider specs unchanged. Evidence is the type-only review report, not a new capture artifact. Review: https://github.com/hostingpal/whm-api-client/pull/53#pullrequestreview-5720639651."
+        }
+      ]
+    },
+    "whm1:get_autossl_user_excluded_domains": {
+      "name": "getAutoSslUserExcludedDomains",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 66."
+        }
+      ]
+    },
+    "whm1:get_best_ssldomain_for_service": {
+      "name": "getBestSslDomainForService",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 56."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns the suggested service domain and certificate matching/validity metadata; this does not establish a successful TLS connection."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel & WHM 11.138.0.19 through the WHM GET route, cert_valid_not_after was explicitly null. The result preserves integer|null and omitted expiry separately; this observation does not establish a successful TLS connection."
+        },
+        {
+          "kind": "observed",
+          "text": "The independent review on 11.138.0.19 observed a digit-string cert_valid_not_after for cpanel. This expiry additionally accepts canonical, in-range integer strings and normalizes them to integers; the earlier null observation remains valid. Accepted integer boundaries are offline-tested policy, not additional live observations."
+        }
+      ],
+      "response": {
+        "cert_valid_not_after": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "docs/api/evidence/2026-10-31-whm-ssl.json SHA-256 f1bded7e795124bb9d053a568a002b17db6b03766a4ec19cd9a416363142ea29, revision df3a6341a08d85eb9c011e617db7edbcc2c967cc, WHM GET on 11.138.0.19, pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. The original response fingerprint reports $.cert_valid_not_after as null after HTTP/API success. This capture establishes nullability only; omission stays omitted. Numeric-string compatibility is supported separately by the later review, not by this null observation. The initial artifact remains failed and immutable."
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Independent review of revision b94526897f82dcd5e7045b02b799498b780bd069 through WHM on cPanel 11.138.0.19: get_best_ssldomain_for_service for cpanel returned cert_valid_not_after as a digit string for a real certificate. Retain the separately captured null and optional forms. Apply only the existing canonical, bounded integer-string normalization; the observation does not prove every accepted spelling or boundary and does not widen flags or other fields. Evidence is the type-only review report, not a new capture artifact. Review: https://github.com/hostingpal/whm-api-client/pull/53#pullrequestreview-5720639651."
+            }
+          ],
+          "accept": [
+            "numeric-string"
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "docs/api/evidence/2026-10-31-whm-ssl.json SHA-256 f1bded7e795124bb9d053a568a002b17db6b03766a4ec19cd9a416363142ea29, revision df3a6341a08d85eb9c011e617db7edbcc2c967cc, WHM GET on 11.138.0.19, pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. The successful get_best_ssldomain_for_service API response had an explicit null certificate expiry. This operation-specific correction does not infer other nullable fields or numeric conversions."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Independent review of revision b94526897f82dcd5e7045b02b799498b780bd069 through WHM on cPanel 11.138.0.19: get_best_ssldomain_for_service for cpanel returned cert_valid_not_after as a digit string for a real certificate. Retain the separately captured null and optional forms. Apply only the existing canonical, bounded integer-string normalization; the observation does not prove every accepted spelling or boundary and does not widen flags or other fields. Evidence is the type-only review report, not a new capture artifact. Review: https://github.com/hostingpal/whm-api-client/pull/53#pullrequestreview-5720639651."
+        }
+      ]
+    },
+    "whm1:install_service_ssl_certificate": {
+      "name": "installServiceSslCertificate",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 11.40."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST under the documented non-read-only classification. Each call executes immediately; the client provides no retries or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Returned certificate, private-key, CSR, CA-bundle or provider material is payload data and may be sensitive. Do not log or persist secret-bearing results."
+        },
+        {
+          "kind": "documented",
+          "text": "Supply raw PEM strings. The client form-encodes them once; pre-encoded input is encoded again. Installation can immediately change hosted TLS configuration."
+        },
+        {
+          "kind": "documented",
+          "text": "The selected service must be restarted after installation; the client does not restart it."
+        },
+        {
+          "kind": "documented",
+          "text": "The reviewed certificate_info family correction accepts canonical integer strings for not_before, not_after and modulus_length, exact quoted is_self_signed flags, and null for the literal issuer.organizationName key. It follows matching WHM FQDN fields observed on 11.138.0.19. This service write was not run; these variants are source-family compatibility with offline regressions, not live service-write coverage."
+        }
+      ],
+      "params": {
+        "crt": {
+          "sensitive": true
+        },
+        "key": {
+          "sensitive": true
+        },
+        "cabundle": {
+          "sensitive": true
+        }
+      },
+      "response": {
+        "certificate_info.modulus_length": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "install_service_ssl_certificate certificate_info.modulus_length prose explicitly specifies null when the key is not RSA, although its integer schema lacks nullable. This source-prose correction establishes integer|null; later reviewed family evidence separately supports canonical integer-string normalization. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            },
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "install_service_ssl_certificate certificate_info shares the modulus_length definition with fetch_ssl_certificates_for_fqdns certificate records. The review observed the corresponding WHM FQDN wire variant on 11.138.0.19 and approved this narrow source-family compatibility correction for service writes. This service operation was not executed: the correction is source-backed and offline-tested, not live service-write evidence. Retain existing nullability and all other certificate fields; created and verify_error are absent from this service schema and are not added. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/53#pullrequestreview-5720639651."
+            }
+          ],
+          "accept": [
+            "numeric-string"
+          ]
+        },
+        "certificate_info.not_before": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "install_service_ssl_certificate certificate_info shares the not_before definition with fetch_ssl_certificates_for_fqdns certificate records. The review observed the corresponding WHM FQDN wire variant on 11.138.0.19 and approved this narrow source-family compatibility correction for service writes. This service operation was not executed: the correction is source-backed and offline-tested, not live service-write evidence. Retain existing nullability and all other certificate fields; created and verify_error are absent from this service schema and are not added. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/53#pullrequestreview-5720639651."
+            }
+          ]
+        },
+        "certificate_info.not_after": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "install_service_ssl_certificate certificate_info shares the not_after definition with fetch_ssl_certificates_for_fqdns certificate records. The review observed the corresponding WHM FQDN wire variant on 11.138.0.19 and approved this narrow source-family compatibility correction for service writes. This service operation was not executed: the correction is source-backed and offline-tested, not live service-write evidence. Retain existing nullability and all other certificate fields; created and verify_error are absent from this service schema and are not added. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/53#pullrequestreview-5720639651."
+            }
+          ]
+        },
+        "certificate_info.is_self_signed": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "install_service_ssl_certificate certificate_info shares the is_self_signed definition with fetch_ssl_certificates_for_fqdns certificate records. The review observed the corresponding WHM FQDN wire variant on 11.138.0.19 and approved this narrow source-family compatibility correction for service writes. This service operation was not executed: the correction is source-backed and offline-tested, not live service-write evidence. Retain existing nullability and all other certificate fields; created and verify_error are absent from this service schema and are not added. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/53#pullrequestreview-5720639651."
+            }
+          ]
+        },
+        "certificate_info.issuer\\.organizationName": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "install_service_ssl_certificate certificate_info shares the issuer.organizationName definition with fetch_ssl_certificates_for_fqdns certificate records. The review observed the corresponding WHM FQDN wire variant on 11.138.0.19 and approved this narrow source-family compatibility correction for service writes. This service operation was not executed: the correction is source-backed and offline-tested, not live service-write evidence. Retain existing nullability and all other certificate fields; created and verify_error are absent from this service schema and are not added. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/53#pullrequestreview-5720639651."
+            }
+          ]
+        }
+      }
+    },
+    "whm1:installssl": {
+      "name": "installSsl",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 11.32."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST under the documented non-read-only classification. Each call executes immediately; the client provides no retries or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Supply raw PEM strings. The client form-encodes them once; pre-encoded input is encoded again. Installation can immediately change hosted TLS configuration."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned payload has its own status, statusmsg and message. warning_domains lists domains associated with the main domain where the certificate was not installed; working_domains lists installations. Inspect these fields independently of WHM metadata.result."
+        },
+        {
+          "kind": "observed",
+          "text": "The independent disposable-account review on 11.138.0.19 saw installation status and non-empty warning_domains, and confirmed that envelope success can carry payload status:0."
+        },
+        {
+          "kind": "policy",
+          "text": "Client behavior: a valid payload status:0 or non-empty warning_domains does not by itself cause an exception. The operation outcome checks the WHM envelope; callers must assess the returned installation status and per-domain results."
+        }
+      ],
+      "params": {
+        "crt": {
+          "sensitive": true
+        },
+        "key": {
+          "sensitive": true
+        },
+        "cab": {
+          "sensitive": true
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Independent review of revision b94526897f82dcd5e7045b02b799498b780bd069 through WHM on cPanel 11.138.0.19: The disposable-account installssl response included its own status and non-empty warning_domains. The review confirms that a successful WHM envelope can contain payload status:0. These fields describe installation results separately from envelope acceptance; they are retained as payload data, not converted into nested-status exceptions. Evidence is the type-only review report, not a new capture artifact. Review: https://github.com/hostingpal/whm-api-client/pull/53#pullrequestreview-5720639651."
+        }
+      ]
+    },
+    "whm1:listcrts": {
+      "name": "listCertificates",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 11."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel & WHM 11.138.0.19 through the WHM GET route, domain_owners items and literal issuer.organizationName included null, modulus_length included null or numeric strings, and not_after used numeric strings. Only modulus_length and not_after accept lossless canonical in-range integer strings and normalize them to integers. Omission, null and empty lists remain distinct; flags and sibling operations retain their existing contracts."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitting user returns certificates for all accounts on the server, including domains and owners. Supply an explicit user filter when the caller must limit this inventory to one account."
+        }
+      ],
+      "response": {
+        "crt[].domain_owners[]": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "docs/api/evidence/2026-10-31-whm-ssl.json SHA-256 f1bded7e795124bb9d053a568a002b17db6b03766a4ec19cd9a416363142ea29, revision df3a6341a08d85eb9c011e617db7edbcc2c967cc, WHM GET on 11.138.0.19, pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. listcrts fingerprint: $.crt[].domain_owners[] was null|string; accept nullable string items while keeping the domain_owners list itself nonnullable. No sibling field or operation is widened; the initial artifact remains failed and immutable."
+            }
+          ]
+        },
+        "crt[].issuer\\.organizationName": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "docs/api/evidence/2026-10-31-whm-ssl.json SHA-256 f1bded7e795124bb9d053a568a002b17db6b03766a4ec19cd9a416363142ea29, revision df3a6341a08d85eb9c011e617db7edbcc2c967cc, WHM GET on 11.138.0.19, pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. listcrts fingerprint: The literal $.crt[].issuer.organizationName field was null|string; retain the literal dotted key and optional string|null value. No sibling field or operation is widened; the initial artifact remains failed and immutable."
+            }
+          ]
+        },
+        "crt[].modulus_length": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "docs/api/evidence/2026-10-31-whm-ssl.json SHA-256 f1bded7e795124bb9d053a568a002b17db6b03766a4ec19cd9a416363142ea29, revision df3a6341a08d85eb9c011e617db7edbcc2c967cc, WHM GET on 11.138.0.19, pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. listcrts fingerprint reports $.crt[].modulus_length as null|numeric-string; its existing nullability is preserved. Use only the existing lossless canonical in-range decimal integer-string conversion to int. Reject leading zeros, plus signs, negative zero, fractions, exponent forms, whitespace, overflow, booleans and floats. No sibling operation or flag conversion is inferred; the initial artifact remains failed and immutable."
+            }
+          ]
+        },
+        "crt[].not_after": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "docs/api/evidence/2026-10-31-whm-ssl.json SHA-256 f1bded7e795124bb9d053a568a002b17db6b03766a4ec19cd9a416363142ea29, revision df3a6341a08d85eb9c011e617db7edbcc2c967cc, WHM GET on 11.138.0.19, pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. listcrts fingerprint reports $.crt[].not_after as numeric-string; it remains nonnullable. Use only the existing lossless canonical in-range decimal integer-string conversion to int. Reject leading zeros, plus signs, negative zero, fractions, exponent forms, whitespace, overflow, booleans and floats. No sibling operation or flag conversion is inferred; the initial artifact remains failed and immutable."
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "docs/api/evidence/2026-10-31-whm-ssl.json SHA-256 f1bded7e795124bb9d053a568a002b17db6b03766a4ec19cd9a416363142ea29, revision df3a6341a08d85eb9c011e617db7edbcc2c967cc, WHM GET on 11.138.0.19, pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. The original listcrts response fingerprint establishes nullable domain_owners items, nullable literal issuer.organizationName, and numeric-string modulus_length/not_after. Corrections apply only to these four fields on this operation; nullable modulus_length already belongs to the pinned schema."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /listcrts user parameter explicitly says omission returns certificates for all accounts on the server. Preserve this scope caveat in method PHPDoc; the review also checked filtered and unfiltered calls. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/53#pullrequestreview-5720639651."
+        }
+      ]
+    },
+    "whm1:rebuildinstalledssldb": {
+      "name": "rebuildInstalledSslDatabase",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 11.36."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST under the documented non-read-only classification. Each call executes immediately; the client provides no retries or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "This is a documented no-op: it always succeeds without rebuilding or changing installed-certificate state."
+        },
+        {
+          "kind": "policy",
+          "text": "Client behavior: accept an absent or null data payload for this reviewed unstructured response, while preserving present opaque object values. This source-backed compatibility is offline-tested; payload omission and this operation were not observed live."
+        }
+      ],
+      "optional_payload": true,
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /rebuildinstalledssldb declares a data object with no defined properties. The review approved optional missing or null payload compatibility for this unstructured response while retaining present opaque map values; this is not a void conversion. Missing/null payloads were not observed, and this operation was not run by the reviewer. The pinned operation is a no-op that always succeeds without rebuilding state. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/53#pullrequestreview-5720639651."
+        }
+      ]
+    },
+    "whm1:rebuilduserssldb": {
+      "name": "rebuildUserSslDatabase",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 11.38."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST under the documented non-read-only classification. Each call executes immediately; the client provides no retries or rollback."
+        }
+      ]
+    },
+    "whm1:remove_autossl_user_excluded_domains": {
+      "name": "removeAutoSslUserExcludedDomains",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 66."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST under the documented non-read-only classification. Each call executes immediately; the client provides no retries or rollback."
+        }
+      ],
+      "params": {
+        "domain": {
+          "encoding": "numbered"
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "remove_autossl_user_excluded_domains documents multiple domain values as domain, domain-1, domain-2 or incremented parameter names. The existing numbered encoding retains the unsuffixed first value. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:reset_autossl_provider": {
+      "exclude": {
+        "reason": "The documented x_* parameters represent dynamically named provider-specific fields. The typed parameter schema cannot safely represent this parameter map; follow-up whm-api-client-8x0.1.28 retains full provider configuration support.",
+        "evidence": [
+          {
+            "kind": "doc",
+            "version": "pinned 2026-10-13",
+            "date": "2026-10-31",
+            "note": "reset_autossl_provider defines additional query parameters beginning with x_, with x_terms_of_service_accepted as an example. A literal x_* field does not implement that contract. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+          }
+        ]
+      }
+    },
+    "whm1:reset_service_ssl_certificate": {
+      "name": "resetServiceSslCertificate",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 11.40."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST under the documented non-read-only classification. Each call executes immediately; the client provides no retries or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Returned certificate, private-key, CSR, CA-bundle or provider material is payload data and may be sensitive. Do not log or persist secret-bearing results."
+        },
+        {
+          "kind": "documented",
+          "text": "Generates and assigns a new self-signed certificate to the selected service, changing its TLS configuration immediately."
+        },
+        {
+          "kind": "documented",
+          "text": "The reviewed certificate_info family correction accepts canonical integer strings for not_before, not_after and modulus_length, exact quoted is_self_signed flags, and null for the literal issuer.organizationName key. It follows matching WHM FQDN fields observed on 11.138.0.19. This service write was not run; these variants are source-family compatibility with offline regressions, not live service-write coverage."
+        }
+      ],
+      "response": {
+        "certificate_info.not_before": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "reset_service_ssl_certificate certificate_info shares the not_before definition with fetch_ssl_certificates_for_fqdns certificate records. The review observed the corresponding WHM FQDN wire variant on 11.138.0.19 and approved this narrow source-family compatibility correction for service writes. This service operation was not executed: the correction is source-backed and offline-tested, not live service-write evidence. Retain existing nullability and all other certificate fields; created and verify_error are absent from this service schema and are not added. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/53#pullrequestreview-5720639651."
+            }
+          ]
+        },
+        "certificate_info.not_after": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "reset_service_ssl_certificate certificate_info shares the not_after definition with fetch_ssl_certificates_for_fqdns certificate records. The review observed the corresponding WHM FQDN wire variant on 11.138.0.19 and approved this narrow source-family compatibility correction for service writes. This service operation was not executed: the correction is source-backed and offline-tested, not live service-write evidence. Retain existing nullability and all other certificate fields; created and verify_error are absent from this service schema and are not added. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/53#pullrequestreview-5720639651."
+            }
+          ]
+        },
+        "certificate_info.modulus_length": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "reset_service_ssl_certificate certificate_info shares the modulus_length definition with fetch_ssl_certificates_for_fqdns certificate records. The review observed the corresponding WHM FQDN wire variant on 11.138.0.19 and approved this narrow source-family compatibility correction for service writes. This service operation was not executed: the correction is source-backed and offline-tested, not live service-write evidence. Retain existing nullability and all other certificate fields; created and verify_error are absent from this service schema and are not added. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/53#pullrequestreview-5720639651."
+            }
+          ]
+        },
+        "certificate_info.is_self_signed": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "reset_service_ssl_certificate certificate_info shares the is_self_signed definition with fetch_ssl_certificates_for_fqdns certificate records. The review observed the corresponding WHM FQDN wire variant on 11.138.0.19 and approved this narrow source-family compatibility correction for service writes. This service operation was not executed: the correction is source-backed and offline-tested, not live service-write evidence. Retain existing nullability and all other certificate fields; created and verify_error are absent from this service schema and are not added. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/53#pullrequestreview-5720639651."
+            }
+          ]
+        },
+        "certificate_info.issuer\\.organizationName": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "reset_service_ssl_certificate certificate_info shares the issuer.organizationName definition with fetch_ssl_certificates_for_fqdns certificate records. The review observed the corresponding WHM FQDN wire variant on 11.138.0.19 and approved this narrow source-family compatibility correction for service writes. This service operation was not executed: the correction is source-backed and offline-tested, not live service-write evidence. Retain existing nullability and all other certificate fields; created and verify_error are absent from this service schema and are not added. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/53#pullrequestreview-5720639651."
+            }
+          ]
+        }
+      }
+    },
+    "whm1:set_autossl_metadata": {
+      "name": "setAutoSslMetadata",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 60."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST under the documented non-read-only classification. Each call executes immediately; the client provides no retries or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Supply metadataJson as caller-serialized JSON object text. The client sends the text once as a form field and performs no JSON serialization or decoding. The current scalar native boundary also permits integers but establishes no documented integer semantics; native string-only JSON-content inputs remain tracked under whm-api-client-8x0.1.23. Any omitted metadata keys adopt system defaults. Prefer setAutoSslMetadataKey for one key."
+        }
+      ],
+      "params": {
+        "metadata_json": {
+          "sensitive": true,
+          "encoding": "scalar"
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "set_autossl_metadata defines metadata_json in query with application/json parameter content, expressly described as a JSON-encoded object. This is serialized JSON text in a form parameter, not a JSON request body. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:set_autossl_metadata_key": {
+      "name": "setAutoSslMetadataKey",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 70."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST under the documented non-read-only classification. Each call executes immediately; the client provides no retries or rollback."
+        }
+      ],
+      "params": {
+        "key": {
+          "sensitive": false
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "set_autossl_metadata_key key is an AutoSSL configuration selector such as notify_autossl_expiry, not private key material. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:set_autossl_provider": {
+      "exclude": {
+        "reason": "The documented x_* parameters represent dynamically named provider-specific fields. The typed parameter schema cannot safely represent this parameter map; follow-up whm-api-client-8x0.1.28 retains full provider configuration support.",
+        "evidence": [
+          {
+            "kind": "doc",
+            "version": "pinned 2026-10-13",
+            "date": "2026-10-31",
+            "note": "set_autossl_provider defines additional query parameters beginning with x_, with x_terms_of_service_accepted as an example. A literal x_* field does not implement that contract. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+          }
+        ]
+      }
+    },
+    "whm1:set_autossl_user_excluded_domains": {
+      "name": "setAutoSslUserExcludedDomains",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 66."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST under the documented non-read-only classification. Each call executes immediately; the client provides no retries or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Replaces the complete exclusion list. Omitting domain enables AutoSSL for every domain on the account; use addAutoSslUserExcludedDomains for an additive change."
+        }
+      ],
+      "params": {
+        "domain": {
+          "encoding": "numbered"
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "set_autossl_user_excluded_domains documents multiple domain values as domain, domain-1, domain-2 or incremented parameter names. The existing numbered encoding retains the unsuffixed first value. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:start_autossl_check_for_all_users": {
+      "name": "startAutoSslCheckForAllUsers",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 58."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST under the documented non-read-only classification. Each call executes immediately; the client provides no retries or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Starts background AutoSSL work. A returned process ID establishes neither completion nor successful certificate issuance; the client does not poll automatically."
+        }
+      ]
+    },
+    "whm1:start_autossl_check_for_one_user": {
+      "name": "startAutoSslCheckForOneUser",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 58."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST under the documented non-read-only classification. Each call executes immediately; the client provides no retries or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Starts background AutoSSL work. A returned process ID establishes neither completion nor successful certificate issuance; the client does not poll automatically."
+        }
+      ]
+    }
+  }
+}

@@ -68,9 +68,9 @@ final class SupportTicketsSpec
                 'has_compatibility_info' => ['type' => 'flag'],
                 'hostname' => ['type' => 'string'],
                 'ip' => ['type' => 'string'],
-                'logo_url' => ['type' => 'string'],
-                'pub_support_contact' => ['type' => 'string'],
-                'pub_tech_contact' => ['type' => 'string'],
+                'logo_url' => ['type' => 'string', 'nullable' => true],
+                'pub_support_contact' => ['type' => 'string', 'nullable' => true],
+                'pub_tech_contact' => ['type' => 'string', 'nullable' => true],
                 'tech_contact_email' => ['type' => 'string'],
             ],
         ],
@@ -97,9 +97,9 @@ final class SupportTicketsSpec
                 'hulk_wl_status' => ['type' => 'string'],
                 'non_fatals' => ['type' => 'list', 'items' => ['type' => 'string']],
                 'server_name' => ['type' => 'string'],
-                'server_num' => ['type' => 'int'],
+                'server_num' => ['type' => 'int', 'accept' => ['numeric-string']],
                 'ssh_username' => ['type' => 'string'],
-                'ticket_id' => ['type' => 'int'],
+                'ticket_id' => ['type' => 'int', 'accept' => ['numeric-string']],
                 'ticket_status' => ['type' => 'string'],
             ],
         ],
@@ -128,7 +128,7 @@ final class SupportTicketsSpec
                                     'type' => 'object',
                                     'fields' => [
                                         'auth_status' => ['type' => 'string'],
-                                        'auth_time' => ['type' => 'int'],
+                                        'auth_time' => ['type' => 'int', 'nullable' => true],
                                         'server_name' => ['type' => 'string'],
                                         'server_num' => ['type' => 'int'],
                                         'ssh' => ['type' => 'string'],
@@ -184,9 +184,9 @@ final class SupportTicketsSpec
                 'hulk_wl_status' => ['type' => 'string'],
                 'non_fatals' => ['type' => 'list', 'items' => ['type' => 'string']],
                 'revoked_keys' => ['type' => 'int'],
-                'server_num' => ['type' => 'int'],
+                'server_num' => ['type' => 'int', 'accept' => ['numeric-string']],
                 'ssh_username' => ['type' => 'string'],
-                'ticket_id' => ['type' => 'int'],
+                'ticket_id' => ['type' => 'int', 'accept' => ['numeric-string']],
             ],
         ],
     ];
@@ -217,6 +217,7 @@ final class SupportTicketsSpec
             'ticketId' => ['name' => 'ticket_id', 'encoding' => 'scalar'],
         ],
         'returns' => ['type' => 'map', 'values' => ['type' => 'mixed']],
+        'optional' => true,
     ];
 
     public const TICKET_UPDATE_SERVICE_AGREEMENT_APPROVAL = [

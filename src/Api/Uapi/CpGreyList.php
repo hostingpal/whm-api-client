@@ -93,9 +93,9 @@ final readonly class CpGreyList
      * API-map identity: uapi:cPGreyList/disable_all_domains#GET (wire name disable_all_domains).
      *
      * @return DisableAllDomainsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/spam-filtering-(greylisting)/cpgreylist-disable_all_domains
      */
     public function disableAllDomains(): array
@@ -127,9 +127,9 @@ final readonly class CpGreyList
      *
      * @param string|list<string> $domains The domain on which to disable Greylisting.
      * @return DisableDomainsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/spam-filtering-(greylisting)/cpgreylist-disable_domains
      */
@@ -160,9 +160,9 @@ final readonly class CpGreyList
      * API-map identity: uapi:cPGreyList/enable_all_domains#GET (wire name enable_all_domains).
      *
      * @return EnableAllDomainsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/spam-filtering-(greylisting)/cpgreylist-enable_all_domains
      */
     public function enableAllDomains(): array
@@ -194,9 +194,9 @@ final readonly class CpGreyList
      *
      * @param string|list<string> $domains The domain on which to enable Greylisting.
      * @return EnableDomainsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/spam-filtering-(greylisting)/cpgreylist-enable_domains
      */
@@ -220,9 +220,9 @@ final readonly class CpGreyList
      * API-map identity: uapi:cPGreyList/has_greylisting_enabled#GET (wire name has_greylisting_enabled).
      *
      * @return HasGreylistingEnabledResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/spam-filtering-(greylisting)/cpgreylist-has_greylisting_enabled
      */
     public function hasGreylistingEnabled(): array
@@ -249,9 +249,9 @@ final readonly class CpGreyList
      * API-map identity: uapi:cPGreyList/list_domains#GET (wire name list_domains).
      *
      * @return ListDomainsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/spam-filtering-(greylisting)/cpgreylist-list_domains
      */
     public function listDomains(): array

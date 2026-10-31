@@ -56,9 +56,9 @@ final readonly class Park
      * @param bool|null $returnHttpsRedirectStatus Whether to include the `can_https_redirect` and
      *     `is_https_redirecting` fields in each entry. Null omits it.
      * @return ListParkedDomainsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/park/park-listparkeddomains
      */
     public function listParkedDomains(?string $regex = null, ?bool $returnHttpsRedirectStatus = null): array
@@ -113,7 +113,7 @@ final readonly class Park
      * @param bool|null $force Accepted for compatibility, but ignored for account-level callers. Null omits it.
      * @param string|null $topDomain The subdomain label of the account's primary domain to park the `domain` value on.
      *     Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/park/park-park
      */
     public function park(
@@ -155,7 +155,7 @@ final readonly class Park
      * @param string $domain The parked domain to remove.
      * @param string|null $subdomain The subdomain that the domain is parked on, given in the underscore-separated form
      *     that the `AddonDomain::listaddondomains` function returns in its `domainkey` field. Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/park/park-unpark
      */
     public function unpark(string $domain, ?string $subdomain = null): void

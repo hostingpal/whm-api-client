@@ -157,7 +157,7 @@ final readonly class AccountRestoration
      *     it.
      * @param bool|null $mysql Whether to restore the account's MySQL® databases. Null omits it.
      * @param bool|null $subs Whether to restore the account's subdomains. Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/restore-account/backup-restoreaccount
      */
     public function restoreAccount(
@@ -188,9 +188,9 @@ final readonly class AccountRestoration
      * API-map identity: whm1:restore_modules_summary#GET (wire name restore_modules_summary; Restore Queue Reporting).
      *
      * @return RestoreModulesSummaryResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/restore-queue-reporting/transfers-restore_modules_summary
      */
     public function restoreModulesSummary(): array
@@ -213,7 +213,7 @@ final readonly class AccountRestoration
      *
      * API-map identity: whm1:restore_queue_activate#GET (wire name restore_queue_activate; Restore Queue Management).
      *
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/restore-queue-management/backup-restore_queue_activate
      */
     public function restoreQueueActivate(): void
@@ -239,9 +239,9 @@ final readonly class AccountRestoration
      * @param bool|null $mysql Whether to restore the account's MySQL® databases. Null omits it.
      * @param bool|null $subdomains Whether to restore the account's subdomains. Null omits it.
      * @return RestoreQueueAddTaskResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/restore-account/backup-restore_queue_add_task
      */
     public function restoreQueueAddTask(
@@ -277,7 +277,7 @@ final readonly class AccountRestoration
      * API-map identity: whm1:restore_queue_clear_all_completed_tasks#GET (wire name
      * restore_queue_clear_all_completed_tasks; Restore Queue Management).
      *
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/restore-queue-management/backup-restore_queue_clear_all_completed_tasks
      */
     public function restoreQueueClearAllCompletedTasks(): void
@@ -295,7 +295,7 @@ final readonly class AccountRestoration
      * API-map identity: whm1:restore_queue_clear_all_failed_tasks#GET (wire name restore_queue_clear_all_failed_tasks;
      * Restore Queue Management).
      *
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/restore-queue-management/backup-restore_queue_clear_all_failed_tasks
      */
     public function restoreQueueClearAllFailedTasks(): void
@@ -313,7 +313,7 @@ final readonly class AccountRestoration
      * API-map identity: whm1:restore_queue_clear_all_pending_tasks#GET (wire name
      * restore_queue_clear_all_pending_tasks; Restore Queue Management).
      *
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/restore-queue-management/backup-restore_queue_clear_all_pending_tasks
      */
     public function restoreQueueClearAllPendingTasks(): void
@@ -331,7 +331,7 @@ final readonly class AccountRestoration
      * API-map identity: whm1:restore_queue_clear_all_tasks#GET (wire name restore_queue_clear_all_tasks; Restore Queue
      * Management).
      *
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/restore-queue-management/backup-restore_queue_clear_all_tasks
      */
     public function restoreQueueClearAllTasks(): void
@@ -351,7 +351,7 @@ final readonly class AccountRestoration
      *
      * @param int $startTime When the restoration queue started the restoration.
      * @param string $user The cPanel account's username.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/restore-queue-management/backup-restore_queue_clear_completed_task
      */
     public function restoreQueueClearCompletedTask(int $startTime, string $user): void
@@ -373,7 +373,7 @@ final readonly class AccountRestoration
      * Queue Management).
      *
      * @param string $user The cPanel account's username.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/restore-queue-management/backup-restore_queue_clear_pending_task
      */
     public function restoreQueueClearPendingTask(string $user): void
@@ -389,9 +389,9 @@ final readonly class AccountRestoration
      * API-map identity: whm1:restore_queue_is_active#GET (wire name restore_queue_is_active; Restore Queue Reporting).
      *
      * @return RestoreQueueIsActiveResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/restore-queue-reporting/backup-restore_queue_is_active
      */
     public function restoreQueueIsActive(): array
@@ -414,9 +414,9 @@ final readonly class AccountRestoration
      * Reporting).
      *
      * @return RestoreQueueListActiveResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/restore-queue-reporting/backup-restore_queue_list_active
      */
     public function restoreQueueListActive(): array
@@ -446,9 +446,9 @@ final readonly class AccountRestoration
      * Reporting).
      *
      * @return RestoreQueueListCompletedResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/restore-queue-reporting/backup-restore_queue_list_completed
      */
     public function restoreQueueListCompleted(): array
@@ -471,9 +471,9 @@ final readonly class AccountRestoration
      * Reporting).
      *
      * @return RestoreQueueListPendingResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/restore-queue-reporting/backup-restore_queue_list_pending
      */
     public function restoreQueueListPending(): array
@@ -495,9 +495,9 @@ final readonly class AccountRestoration
      * API-map identity: whm1:restore_queue_state#GET (wire name restore_queue_state; Restore Queue Reporting).
      *
      * @return RestoreQueueStateResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/restore-queue-reporting/backup-restore_queue_state
      */
     public function restoreQueueState(): array
@@ -521,7 +521,7 @@ final readonly class AccountRestoration
      * Account).
      *
      * @param string $user The cPanel account that you wish to transfer to the server.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/restore-account/nameconflict-verify_new_username_for_restore
      */
     public function verifyNewUsernameForRestore(string $user): void

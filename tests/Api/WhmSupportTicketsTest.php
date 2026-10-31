@@ -120,7 +120,7 @@ final class WhmSupportTicketsTest extends TestCase
             static fn (WhmClient $w): array => $w->supportTickets()->sshTest(2, 7648492),
             'server_num=2&ticket_id=7648492', '{"non_fatals":["audit_log"],"result":"SUCCESS"}'];
         yield 'SSH start opaque object fields retained' => ['ticket_ssh_test_start', 'POST',
-            static fn (WhmClient $w): array => $w->supportTickets()->sshTestStart(1, 7648492),
+            static fn (WhmClient $w): ?array => $w->supportTickets()->sshTestStart(1, 7648492),
             'server_num=1&ticket_id=7648492', '{"opaque":{"command":"never execute","token":"private"}}'];
         yield 'agreement acceptance void' => ['ticket_update_service_agreement_approval', 'POST',
             static function (WhmClient $w): void {
@@ -195,6 +195,9 @@ final class WhmSupportTicketsTest extends TestCase
                 continue;
             }
             foreach ([null, 'null', '[1]', 'false', '1', '"object"'] as $bad) {
+                if ($operation === 'ticket_ssh_test_start' && ($bad === null || $bad === 'null')) {
+                    continue;
+                }
                 yield $name . ' root ' . ($bad ?? 'missing') => [$operation, $call, $bad];
             }
         }
@@ -219,7 +222,7 @@ final class WhmSupportTicketsTest extends TestCase
         yield 'architecture support integer' => ['ticket_get_support_info', $info, '{"arch_supported":"-1"}'];
         yield 'distro support integer' => ['ticket_get_support_info', $info, '{"distro_supported":false}'];
         yield 'company ID integer' => ['ticket_get_support_info', $info, '{"company_id":1.5}'];
-        yield 'support URL string' => ['ticket_get_support_info', $info, '{"pub_support_contact":null}'];
+        yield 'support URL string' => ['ticket_get_support_info', $info, '{"pub_support_contact":42}'];
         $list = static fn (WhmClient $w): array => $w->supportTickets()->list(2, 7648492);
         foreach (
             [
@@ -281,6 +284,146 @@ final class WhmSupportTicketsTest extends TestCase
         }
         $http->addResponse(new Response(200, [], self::envelope('ticket_ssh_test_start', '{}')));
         self::assertSame([], $client->whm()->supportTickets()->sshTestStart(1, 7648492));
+    }
+
+    #[DataProvider('sshStartPayloads')]
+    public function testSshStartPreservesMissingNullAndOpaqueObjectsAfterAcceptedOutcome(?string $payload): void
+    {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope('ticket_ssh_test_start', $payload)));
+        self::assertSame(
+            $payload === null ? null : json_decode($payload, true, 512, JSON_THROW_ON_ERROR),
+            $client->whm()->supportTickets()->sshTestStart(1, 7648492),
+        );
+        self::assertSame(1, $client->whm()->responseMeta()?->whmResult());
+        self::assertSame('ticket_ssh_test_start', $client->whm()->responseMeta()?->whm['command'] ?? null);
+        self::assertCount(1, $http->getRequests());
+    }
+
+    /** @return iterable<string, array{?string}> */
+    public static function sshStartPayloads(): iterable
+    {
+        yield 'absent data' => [null];
+        yield 'null data' => ['null'];
+        yield 'empty object' => ['{}'];
+        yield 'nested opaque fields' => ['{"opaque":{"nested":[null,{},[1,"private"]]},"empty":[]}'];
+    }
+
+    #[DataProvider('conditionalSupportFields')]
+    public function testConditionalSupportFieldsPreserveOmissionNullAndEmptyStrings(string $payload): void
+    {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope('ticket_get_support_info', $payload)));
+        self::assertSame(
+            json_decode($payload, true, 512, JSON_THROW_ON_ERROR),
+            $client->whm()->supportTickets()->getSupportInfo(),
+        );
+        self::assertCount(1, $http->getRequests());
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function conditionalSupportFields(): iterable
+    {
+        yield 'all omitted' => ['{}'];
+        foreach (['logo_url', 'pub_support_contact', 'pub_tech_contact'] as $field) {
+            yield $field . ' null' => ['{"' . $field . '":null}'];
+            yield $field . ' empty string' => ['{"' . $field . '":""}'];
+        }
+    }
+
+    #[DataProvider('conditionalGrantTimestamps')]
+    public function testConditionalGrantTimestampKeepsAllSiblingFields(string $time): void
+    {
+        [$client, $http] = self::client();
+        $payload = '{"auths":[{"servers":[{"auth_status":"NOT_AUTHED"' . $time
+            . ',"server_name":"Fixture","server_num":2,"ssh":"192.0.2.1:22",'
+            . '"ssh_username":"fixture","whm_ip":"192.0.2.1"}],"ticket_id":7648492,'
+            . '"ticket_status":"OPEN","ticket_subject":"Fixture"}],"non_fatals":[]}';
+        $http->addResponse(new Response(200, [], self::envelope('ticket_list', $payload)));
+        self::assertSame(
+            json_decode($payload, true, 512, JSON_THROW_ON_ERROR),
+            $client->whm()->supportTickets()->list(2, 7648492),
+        );
+        self::assertCount(1, $http->getRequests());
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function conditionalGrantTimestamps(): iterable
+    {
+        yield 'omitted' => [''];
+        yield 'null' => [',"auth_time":null'];
+        yield 'zero' => [',"auth_time":0'];
+        yield 'integer' => [',"auth_time":1400603208'];
+    }
+
+    /** @param Call $call */
+    #[DataProvider('echoedIds')]
+    public function testWriteEchoesNormalizeOnlyBoundedCanonicalIntegerStrings(
+        string $operation,
+        Closure $call,
+        string $field,
+    ): void {
+        [$client, $http] = self::client();
+        foreach ([0, 1, -1, PHP_INT_MIN, PHP_INT_MAX] as $number) {
+            foreach ([$number, (string) $number] as $wire) {
+                $payload = json_encode([$field => $wire], JSON_THROW_ON_ERROR);
+                $http->addResponse(new Response(200, [], self::envelope($operation, $payload)));
+                self::assertSame([$field => $number], $call($client->whm()));
+                self::assertSame(1, $client->whm()->responseMeta()?->whmResult());
+            }
+        }
+        self::assertCount(10, $http->getRequests());
+    }
+
+    /** @return iterable<string, array{string, Call, string}> */
+    public static function echoedIds(): iterable
+    {
+        foreach (['server_num', 'ticket_id'] as $field) {
+            yield 'grant ' . $field => ['ticket_grant',
+                static fn (WhmClient $w): array => $w->supportTickets()->grant('private', 1, 7648492), $field];
+            yield 'revoke ' . $field => ['ticket_revoke',
+                static fn (WhmClient $w): array => $w->supportTickets()->revoke(1, 'fixture', 7648492), $field];
+        }
+    }
+
+    /** @param Call $call */
+    #[DataProvider('invalidEchoedIds')]
+    public function testWriteEchoesRejectInvalidValuesAfterAcceptedOutcomeWithoutRetry(
+        string $operation,
+        Closure $call,
+        string $payload,
+    ): void {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope($operation, $payload)));
+        try {
+            $call($client->whm());
+            self::fail('Expected invalid echoed ID.');
+        } catch (PayloadMismatchException $exception) {
+            self::assertTrue($exception->outcomeConfirmed);
+            self::assertSame($exception->metadata, $client->whm()->responseMeta());
+            self::assertSame(1, $exception->metadata?->whmResult());
+            self::assertCount(1, $http->getRequests());
+        }
+    }
+
+    /** @return iterable<string, array{string, Call, string}> */
+    public static function invalidEchoedIds(): iterable
+    {
+        foreach (self::echoedIds() as $name => [$operation, $call, $field]) {
+            foreach (
+                ['"+1"', '"01"', '"-0"', '"1.0"', '"1e0"', '" 1"', '"1 "', 'true', '1.0',
+                'null', '[]', '{}', '"9223372036854775808"', '"-9223372036854775809"'] as $bad
+            ) {
+                yield $name . ' ' . $bad => [$operation, $call, '{"' . $field . '":' . $bad . '}'];
+            }
+        }
+        foreach (['logo_url', 'pub_support_contact', 'pub_tech_contact'] as $field) {
+            foreach (['false', '0', '[]', '{}'] as $bad) {
+                yield $field . ' ' . $bad => ['ticket_get_support_info',
+                    static fn (WhmClient $w): array => $w->supportTickets()->getSupportInfo(),
+                    '{"' . $field . '":' . $bad . '}'];
+            }
+        }
     }
 
     public function testSourceEnumsDoNotAddUnreviewedClosedStringContracts(): void
