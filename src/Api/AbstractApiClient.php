@@ -7,6 +7,7 @@ namespace HostingPal\WhmApiClient\Api;
 use HostingPal\WhmApiClient\Api\Engine\JsonBody;
 use HostingPal\WhmApiClient\Api\Engine\JsonRouting;
 use HostingPal\WhmApiClient\Api\Engine\MultipartEncoder;
+use HostingPal\WhmApiClient\Api\Engine\MultipartInput;
 use HostingPal\WhmApiClient\Api\Engine\OrderedFields;
 use HostingPal\WhmApiClient\Api\Engine\ParameterExpander;
 use HostingPal\WhmApiClient\Config\ClientConfig;
@@ -14,6 +15,8 @@ use HostingPal\WhmApiClient\Exception\ApiException;
 use HostingPal\WhmApiClient\Exception\TransportException;
 use HostingPal\WhmApiClient\Exception\TransportFailure;
 use HostingPal\WhmApiClient\Http\HttpTransport;
+use HostingPal\WhmApiClient\Http\StreamingMultipartBody;
+use HostingPal\WhmApiClient\Http\StreamingMultipartEncoder;
 use HostingPal\WhmApiClient\Response\ApiResponse;
 use HostingPal\WhmApiClient\Response\EnvelopeReader;
 use HostingPal\WhmApiClient\Response\ResponseMetadata;
@@ -42,6 +45,7 @@ use SensitiveParameter;
  * and any GET query (see HttpTransport::send()).
  *
  * @phpstan-type Parameters array<string, string|int|list<string>|NumberedList|RepeatedList|SuffixNumberedList>
+ * @phpstan-type MultipartQuery array<string, string|int|list<string>|NumberedList|RepeatedList|SuffixNumberedList|null>
  */
 abstract class AbstractApiClient
 {
@@ -175,6 +179,25 @@ abstract class AbstractApiClient
     }
 
     /**
+     * Send a validated multipart declaration through the shared execution path.
+     *
+     * The handle owns route validation. Query, URI and authentication encoding
+     * finish before source preparation. The fresh streaming body is released on
+     * every exit, including an API-layer failure before entering the transport.
+     *
+     * @param OrderedFields $query Already validated caller fields and fixed routing.
+     */
+    final protected function executeMultipartPost(
+        string $path,
+        #[SensitiveParameter] OrderedFields $query,
+        #[SensitiveParameter] MultipartInput $body,
+        ResponseRoute $route,
+        OutcomePolicy $outcome = OutcomePolicy::Flag,
+    ): ApiResponse {
+        return $this->execute(RequestMethod::Post, $path, $query, $body, $route, $outcome);
+    }
+
+    /**
      * Validate the new JSON entrypoints' explicit query before legacy filtering.
      *
      * Presence checks precede value expansion so even reserved nulls are rejected.
@@ -210,7 +233,7 @@ abstract class AbstractApiClient
      * Run the shared lifecycle: reset, encode, send once, read the envelope, record.
      *
      * @param Parameters|OrderedFields $query
-     * @param Parameters|OrderedFields|JsonBody $body
+     * @param Parameters|OrderedFields|JsonBody|MultipartInput $body
      * @throws InvalidArgumentException If a parameter value or a multi-value parameter is invalid.
      * @throws ApiException If transport, HTTP, or the API envelope fails.
      */
@@ -220,7 +243,7 @@ abstract class AbstractApiClient
         #[SensitiveParameter]
         array|OrderedFields $query,
         #[SensitiveParameter]
-        array|OrderedFields|JsonBody $body,
+        array|OrderedFields|JsonBody|MultipartInput $body,
         ResponseRoute $route,
         OutcomePolicy $outcome,
         RequestBodyFormat $bodyFormat = RequestBodyFormat::Form,
@@ -237,7 +260,9 @@ abstract class AbstractApiClient
         ];
         $content = null;
         if ($method === RequestMethod::Post) {
-            if ($body instanceof JsonBody) {
+            if ($body instanceof MultipartInput) {
+                $content = StreamingMultipartEncoder::encode($body->parts);
+            } elseif ($body instanceof JsonBody) {
                 $content = $body->content;
                 if ($content !== null) {
                     $headers['Content-Type'] = 'application/json';
@@ -251,31 +276,37 @@ abstract class AbstractApiClient
         }
 
         try {
-            $response = $this->transport->send($method->value, $uri, $headers, $content);
-        } catch (ClientExceptionInterface $exception) {
-            throw new TransportException(
-                match (true) {
-                    $exception instanceof NetworkExceptionInterface => TransportFailure::Network,
-                    $exception instanceof RequestExceptionInterface => TransportFailure::Request,
-                    default => TransportFailure::Other,
-                },
-                $exception::class,
-                $this->config->credentials->redact($exception->getMessage()),
-            );
-        }
-
-        try {
-            $result = EnvelopeReader::read($response, $route, $outcome);
-        } catch (ApiException $exception) {
-            if ($exception->metadata !== null) {
-                $this->recordResponseMeta($exception->metadata);
+            try {
+                $response = $this->transport->send($method->value, $uri, $headers, $content);
+            } catch (ClientExceptionInterface $exception) {
+                throw new TransportException(
+                    match (true) {
+                        $exception instanceof NetworkExceptionInterface => TransportFailure::Network,
+                        $exception instanceof RequestExceptionInterface => TransportFailure::Request,
+                        default => TransportFailure::Other,
+                    },
+                    $exception::class,
+                    $this->config->credentials->redact($exception->getMessage()),
+                );
             }
-            throw $exception;
+
+            try {
+                $result = EnvelopeReader::read($response, $route, $outcome);
+            } catch (ApiException $exception) {
+                if ($exception->metadata !== null) {
+                    $this->recordResponseMeta($exception->metadata);
+                }
+                throw $exception;
+            }
+
+            $this->recordResponseMeta($result->metadata);
+
+            return $result;
+        } finally {
+            if ($content instanceof StreamingMultipartBody) {
+                $content->close();
+            }
         }
-
-        $this->recordResponseMeta($result->metadata);
-
-        return $result;
     }
 
     /**

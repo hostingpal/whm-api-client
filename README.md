@@ -17,7 +17,9 @@ The separate `callJson()` entrypoints send validated raw JSON bytes through WHM
 or direct cPanel UAPI; WHM-bridged UAPI JSON is rejected locally. `call()` remains
 GET/form-only. `statsManager()->saveConfiguration()` provides the first typed JSON
 body, through direct cPanel UAPI only, with account-wide replacement semantics.
-Three typed SSL methods support reviewed multipart string fields. The library provides token
+Generic `callMultipart()` streams ordered text/file parts through WHM or direct
+cPanel UAPI; bridged generic multipart is rejected locally. Three typed SSL
+methods retain their reviewed multipart string fields. The library provides token
 authentication, direct and WHM-routed UAPI, typed array payloads, API exceptions,
 and per-client response metadata over a PSR HTTP transport.
 
@@ -857,7 +859,9 @@ excluded upstream. Private keys and PEM inputs are sensitive, and writes use POS
 multipart bodies. Routing and authentication remain unchanged on both routes;
 these methods do not accept filesystem paths or file handles. Generic `call()`
 continues to support form bodies only. Binary multipart file fields are rejected
-during generation because filename uploads are unsupported.
+during generation while typed filename uploads remain deferred. Separate generic
+`callMultipart()` supports explicit Upload descriptors on WHM/direct UAPI without
+changing these SSL contracts.
 
 `getCabundle(cert: $pem)` sends the certificate as a form POST to avoid URL
 length limits and certificate contents in access logs. `installSsl()` marks
@@ -2451,6 +2455,78 @@ filtering is unchanged. `CallResult`, `OutcomePolicy`, metadata snapshots and th
 standard transport/HTTP/envelope/API exceptions work as above; failures never retry
 or change body encoding. Library value-bearing trace frames are sensitive; a
 third-party HTTP client's own frames can still contain the authenticated request.
+
+### Raw multipart calls
+
+Use `whm()->callMultipart($operation, $parts, $query = [], $outcome = OutcomePolicy::Flag)`
+or direct cPanel `uapi()->callMultipart($module, $operation, $parts, $query = [], $outcome = OutcomePolicy::Flag)`.
+Both always POST through the handle's configured host, authentication and account.
+Generic UAPI multipart requires direct cPanel credentials; bridged handles reject
+locally after clearing metadata, before source I/O. Existing typed SSL multipart
+string calls retain their reviewed bridge support.
+
+```php
+use HostingPal\WhmApiClient\Upload;
+
+// Choose an operation documented to accept these parts and a standard envelope.
+$parts = [
+    ['name' => 'label', 'value' => 'literal text &+%'],
+    ['name' => 'attachment', 'value' => Upload::fromPath($path, filename: 'report.bin')],
+    ['name' => 'label', 'value' => 'a repeated text field'],
+    ['name' => 'attachment', 'value' => Upload::fromString('empty.bin', '')],
+];
+$result = $directClient->uapi()->callMultipart($module, $operation, $parts);
+// For a compatible WHM operation: $client->whm()->callMultipart($operation, $parts).
+```
+
+Parts are a sequential list of exact `name`/`value` records. Names are nonempty
+literal `[A-Za-z0-9_.-]+` strings; values are strings or `Upload` descriptors.
+Strings always mean text, including path-looking strings. Repeated names and
+text/file interleaving retain their order; no endpoint numbering is inferred.
+Raw bytes, NULs, empty files and empty text are preserved without form encoding.
+An empty part list sends only a closing delimiter. The library chooses the
+boundary and sends an exact `Content-Length`; no chunked fallback is supplied.
+
+Query uses the existing scalar/list-marker representation plus multipart-only
+null omission. Names remain in the URL and are encoded once. Keep secrets in
+parts because servers may log the query. Both routes reserve the case-sensitive
+`api.` prefix, including bare `api.` and arbitrary future names; direct UAPI also
+reserves exactly `cpanel.user`, `cpanel.module` and `cpanel.function`. Raw reserved
+query keys reject even when null. Expanded query fields and parts also reject
+reserved names. An emitted query field cannot share a part name; a nonreserved
+null query value emits nothing and creates no collision. Token-valid `API.version`,
+`apiVersion` and bare `api` remain literal data. Validation clears this handle's
+metadata first and checks the complete declaration before any source open/read.
+
+`Upload::fromPath()` defers opening; relative paths anchor at descriptor creation.
+Initial path support is POSIX-style local regular files. Sizes rely on filesystem
+metadata; virtual files can report sizes that do not describe their readable bytes.
+Use stable ordinary files or supply explicit bytes/streams. `fromString()` retains
+exact bytes. `Upload::fromStream($filename, $stream, size: $remainingBytes)` borrows a
+PSR stream at its call-time cursor. Omit size only when `getSize() - tell()` gives
+a known valid remainder; an explicit size must agree with a derivable remainder.
+Unknown, invalid or overflowing lengths reject before reads/HTTP. An assertion
+covers the entire remainder; the library does not probe beyond it to detect excess.
+Do not advance or mutate sources during a call or alias one underlying resource
+through multiple wrappers. The same borrowed stream object cannot appear twice.
+Paths/strings can be reused; later borrowed calls use the then-current position.
+
+Construction and incremental reads are bounded; an injected HTTP client may
+buffer, and explicit PSR `getContents()`/string conversion can allocate the body.
+Owned files close on success, partial consumption and failure. Borrowed streams
+are never closed, detached or rewound. A read error or detected boundary collision
+can follow partial delivery. One call makes one attempt: no retry, rollback or
+remote file ownership/cleanup is inferred from any outcome.
+
+Standard `CallResult`, envelope errors and metadata handling apply without endpoint
+schema validation. The default `Flag` policy raises `ApiErrorException` for an
+all-failed status `0` without exposing its data/per-file reasons; metadata excludes
+that payload too. Explicit `OutcomePolicy::Unchecked` retains raw data for caller
+inspection while preserving HTTP and unusable-envelope errors. Library value-bearing
+trace frames and local error messages omit query/part data; caller/vendor request
+logging remains outside that boundary. Generic multipart adds no typed-operation
+coverage or live endpoint acceptance guarantee. Fileman adoption and endpoint
+verification remain separate work.
 
 ### WHM API tokens, sessions and introspection
 
