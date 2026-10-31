@@ -957,3 +957,23 @@ or override write coverage. The reviewer explicitly accepts the two masked
 application findings as nonblocking while keeping them failed and unwaived.
 These later named observations never alter either artifact or establish the
 identities/counts hidden in its wildcards. No capture was rerun for this correction.
+
+## WHM API tools, 2026-10-31
+
+`2026-10-31-whm-api-tools.json` at `465be19` on `11.138.0.19` records five
+GET observations: version plus four typed API-tools reads. All
+HTTP/API/payload/probe checks pass. Strict assessment remains failed and unwaived
+for a masked empty-list unknown-field observation in `get_api_pages`; masking
+establishes neither identity nor underlying field count. Token/function
+inventories were populated and legacy call rows empty. No credential lookup,
+token/session mutation or URL fetch ran. SHA-256:
+`eef3b63351acad16364534ceec676a6ab454f72fb901ded0b72be99e9f3088bc`.
+
+Separate [review 5720856204](https://github.com/hostingpal/whm-api-client/pull/57#pullrequestreview-5720856204)
+names `result` and cites upstream source plus the pinned call-statistics row
+family for the correction. It also reports AppConfig WHM URL arrays, outside
+this capture. These observations do not identify historical wildcard entries,
+expand this artifact's coverage or clear its strict finding. Populated page rows
+remain source/offline; all seven POST methods remain live-unobserved. Follow-up
+`8x0.2.44` remains open. The completed capture is immutable and is not repeated
+merely to obtain a green report.

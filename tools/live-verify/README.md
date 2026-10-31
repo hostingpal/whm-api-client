@@ -1449,3 +1449,21 @@ The requested 2026-10-31 run is complete in
 All three HTTP/API/payload/probe outcomes pass; two masked application item and
 subitem unknown-field observations retain a failed, unwaived strict assessment
 under `8x0.2.43`. Do not rerun this completed capture merely to clear findings.
+
+## WHM API tools
+
+Run `WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs php tools/live-verify/whm-api-tools.php --output=docs/api/evidence/YYYY-MM-DD-whm-api-tools.json`.
+
+Five parameterless GETs select version, applist, api_token_list, get_api_calls and
+get_api_pages. Token-list schema contains metadata, not raw credentials. Usage
+entries are function names or file paths. Only masked structural evidence is
+persisted. Existing committed-input, exact request guard, opt-in, verified TLS
+and new-only output requirements apply. No token/session change, secret lookup,
+login-link creation or URL fetch runs. Follow-up `8x0.2.44` retains unobserved behavior.
+
+The completed `465be19` capture has five GET observations covering four typed
+API-tools reads plus version; it does not cover AppConfig. Its masked empty-list
+unknown-field observation remains strict failed and unwaived. The separately
+reviewed `result` wrapper correction does not alter the historical artifact or
+establish its hidden key identity/count. No repeat is required merely for green
+status, and no credential/session action is part of this recipe.
