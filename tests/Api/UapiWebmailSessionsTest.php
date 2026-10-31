@@ -196,7 +196,8 @@ final class UapiWebmailSessionsTest extends TestCase
 
     public function testInheritedEmptyObjectArrayCompatibility(): void
     {
-        // Associative JSON decoding conflates these empty object positions; see 8x0.2.50.
+        // The existing object validator accepts empty JSON arrays when no fields are required;
+        // this slice preserves that compatibility behavior (8x0.2.50).
         foreach (['direct', 'bridge'] as $route) {
             [$client, $http] = self::client($route);
             foreach (self::operations() as $key => [$accessor]) {

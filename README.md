@@ -3945,9 +3945,8 @@ app establishes neither browser reachability nor successful login.
 
 Inventory roots are nonnullable lists of objects; creator roots are nonnullable
 objects. Missing data, null roots, wrong nonempty containers and invalid known
-field types fail, with unknown siblings filtered by existing shape rules. The
-inherited associative JSON decoder conflates empty arrays and objects in object
-positions (follow-up `8x0.2.50`); this slice preserves that runtime behavior.
+field types fail, with unknown siblings filtered by existing shape rules. The existing object validator accepts empty JSON arrays when no fields are
+required; this slice preserves that compatibility behavior (8x0.2.50).
 Cached accessors perform no I/O. Every method makes exactly one API request.
 
 Current generated coverage is 1,188 operations (600 UAPI, 588 WHM), 103 groups and

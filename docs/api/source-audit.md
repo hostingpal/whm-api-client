@@ -7239,9 +7239,8 @@ server list ordering, named/native signatures, cached accessors, one request,
 API/HTTP/JSON/transport/outer-WHM/payload error precedence and metadata reset.
 Exception arguments enabled during actual runner failures verify sensitive
 private inputs and response frames. Missing/null roots and nonempty wrong
-containers fail. The inherited associative JSON decoder conflates [] and {}
-in object positions; strict empty-object/array distinction remains outside
-this slice under existing follow-up `8x0.2.50`, with no runtime change or contract weakening.
+containers fail. The existing object validator accepts empty JSON arrays when no fields
+are required; this slice preserves that compatibility behavior (8x0.2.50).
 
 Coverage becomes 1,188 operations (600 UAPI, 588 WHM), 103 groups and 209 outputs
 (208 PHP files plus coverage). Existing overlays/generated contracts, runtime,
