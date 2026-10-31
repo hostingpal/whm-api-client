@@ -1,0 +1,1049 @@
+{
+    "schema_version": 1,
+    "read_only_section": {
+        "recipe": "account-environment-review-v1",
+        "status": "passed",
+        "probes": [
+            {
+                "operation": "whm1:version",
+                "variant": "whm1:version#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T01:23:50Z",
+                "revision": "c4576669980a1ab22952f96b976a34bf0db7be58",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "a104c6ecb50eac33b47fad0dce288f86d82f149b",
+                "overlay_sha256": "e2faecad92200771b86c2efed87f666f7b52d4291f7487b6c9ba4b3969572d5a",
+                "effective_contract_sha256": "a3b55069b379516f20fcf82f959226d68b68ac515a7e55c0bde8842d39effd60",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.version": [
+                        "string"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.version": [
+                        "string"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "uapi:Variables/get_user_information",
+                "variant": "uapi:Variables/get_user_information#GET",
+                "argument_variant": "reviewed-present-fields-except-token",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T01:23:50Z",
+                "revision": "c4576669980a1ab22952f96b976a34bf0db7be58",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "a104c6ecb50eac33b47fad0dce288f86d82f149b",
+                "overlay_sha256": "e2faecad92200771b86c2efed87f666f7b52d4291f7487b6c9ba4b3969572d5a",
+                "effective_contract_sha256": "fb073c5c83ca948f9fe7e5c516af0c6f5fcdec55dc8b8a2e5c03db85a70b0963",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.backup_enabled": [
+                        "numeric-string"
+                    ],
+                    "$.data.bandwidth_limit": [
+                        "int"
+                    ],
+                    "$.data.cgi_enabled": [
+                        "numeric-string"
+                    ],
+                    "$.data.contact_email": [
+                        "empty-string"
+                    ],
+                    "$.data.contact_email_2": [
+                        "empty-string"
+                    ],
+                    "$.data.cpanel_root_directory": [
+                        "string"
+                    ],
+                    "$.data.created": [
+                        "numeric-string"
+                    ],
+                    "$.data.created_in_version": [
+                        "string"
+                    ],
+                    "$.data.database_owner": [
+                        "string"
+                    ],
+                    "$.data.dead_domains": [
+                        "list"
+                    ],
+                    "$.data.dead_domains[]": [
+                        "string"
+                    ],
+                    "$.data.demo_mode": [
+                        "numeric-string"
+                    ],
+                    "$.data.disk_block_limit": [
+                        "numeric-string"
+                    ],
+                    "$.data.dkim_enabled": [
+                        "numeric-string"
+                    ],
+                    "$.data.domain": [
+                        "string"
+                    ],
+                    "$.data.domains": [
+                        "list"
+                    ],
+                    "$.data.domains[]": [
+                        "string"
+                    ],
+                    "$.data.feature": [
+                        "object"
+                    ],
+                    "$.data.feature.*": [
+                        "numeric-string"
+                    ],
+                    "$.data.feature_list": [
+                        "string"
+                    ],
+                    "$.data.gid": [
+                        "int"
+                    ],
+                    "$.data.home": [
+                        "string"
+                    ],
+                    "$.data.home_directory_links": [
+                        "empty-list"
+                    ],
+                    "$.data.ip": [
+                        "string"
+                    ],
+                    "$.data.lang": [
+                        "missing"
+                    ],
+                    "$.data.last_modified": [
+                        "int"
+                    ],
+                    "$.data.legacy_backup_enabled": [
+                        "numeric-string"
+                    ],
+                    "$.data.locale": [
+                        "string"
+                    ],
+                    "$.data.mailbox_format": [
+                        "string"
+                    ],
+                    "$.data.maximum_addon_domains": [
+                        "numeric-string"
+                    ],
+                    "$.data.maximum_databases": [
+                        "string"
+                    ],
+                    "$.data.maximum_defer_fail_percentage": [
+                        "missing"
+                    ],
+                    "$.data.maximum_email_account_disk_quota": [
+                        "string"
+                    ],
+                    "$.data.maximum_emails_per_hour": [
+                        "missing"
+                    ],
+                    "$.data.maximum_ftp_accounts": [
+                        "string"
+                    ],
+                    "$.data.maximum_mail_accounts": [
+                        "string"
+                    ],
+                    "$.data.maximum_mailing_lists": [
+                        "string"
+                    ],
+                    "$.data.maximum_parked_domains": [
+                        "numeric-string"
+                    ],
+                    "$.data.maximum_passenger_apps": [
+                        "numeric-string"
+                    ],
+                    "$.data.maximum_subdomains": [
+                        "string"
+                    ],
+                    "$.data.mxcheck": [
+                        "object"
+                    ],
+                    "$.data.mxcheck.*": [
+                        "string"
+                    ],
+                    "$.data.notify_account_authn_link": [
+                        "numeric-string"
+                    ],
+                    "$.data.notify_account_authn_link_notification_disabled": [
+                        "numeric-string"
+                    ],
+                    "$.data.notify_account_login": [
+                        "numeric-string"
+                    ],
+                    "$.data.notify_account_login_for_known_netblock": [
+                        "numeric-string"
+                    ],
+                    "$.data.notify_account_login_notification_disabled": [
+                        "numeric-string"
+                    ],
+                    "$.data.notify_autossl_expiry": [
+                        "numeric-string"
+                    ],
+                    "$.data.notify_autossl_expiry_coverage": [
+                        "numeric-string"
+                    ],
+                    "$.data.notify_autossl_renewal_coverage": [
+                        "numeric-string"
+                    ],
+                    "$.data.notify_autossl_renewal_coverage_reduced": [
+                        "numeric-string"
+                    ],
+                    "$.data.notify_autossl_renewal_uncovered_domains": [
+                        "numeric-string"
+                    ],
+                    "$.data.notify_bandwidth_limit": [
+                        "missing"
+                    ],
+                    "$.data.notify_contact_address_change": [
+                        "numeric-string"
+                    ],
+                    "$.data.notify_contact_address_change_notification_disabled": [
+                        "numeric-string"
+                    ],
+                    "$.data.notify_disk_limit": [
+                        "numeric-string"
+                    ],
+                    "$.data.notify_password_change": [
+                        "numeric-string"
+                    ],
+                    "$.data.notify_password_change_notification_disabled": [
+                        "numeric-string"
+                    ],
+                    "$.data.notify_ssl_expiry": [
+                        "missing"
+                    ],
+                    "$.data.notify_twofactorauth_change": [
+                        "missing"
+                    ],
+                    "$.data.notify_twofactorauth_change_notification_disabled": [
+                        "missing"
+                    ],
+                    "$.data.owner": [
+                        "string"
+                    ],
+                    "$.data.package_extensions": [
+                        "empty-list"
+                    ],
+                    "$.data.plan": [
+                        "string"
+                    ],
+                    "$.data.pushbullet_access_token": [
+                        "missing"
+                    ],
+                    "$.data.shell": [
+                        "string"
+                    ],
+                    "$.data.spf_enabled": [
+                        "numeric-string"
+                    ],
+                    "$.data.ssl_default_key_type": [
+                        "string"
+                    ],
+                    "$.data.theme": [
+                        "string"
+                    ],
+                    "$.data.uid": [
+                        "int"
+                    ],
+                    "$.data.user": [
+                        "string"
+                    ],
+                    "$.data.utf8_mailbox": [
+                        "numeric-string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.backup_enabled": [
+                        "numeric-string"
+                    ],
+                    "$.bandwidth_limit": [
+                        "int"
+                    ],
+                    "$.cgi_enabled": [
+                        "numeric-string"
+                    ],
+                    "$.contact_email": [
+                        "empty-string"
+                    ],
+                    "$.contact_email_2": [
+                        "empty-string"
+                    ],
+                    "$.cpanel_root_directory": [
+                        "string"
+                    ],
+                    "$.created": [
+                        "numeric-string"
+                    ],
+                    "$.created_in_version": [
+                        "string"
+                    ],
+                    "$.database_owner": [
+                        "string"
+                    ],
+                    "$.dead_domains": [
+                        "list"
+                    ],
+                    "$.dead_domains[]": [
+                        "string"
+                    ],
+                    "$.demo_mode": [
+                        "numeric-string"
+                    ],
+                    "$.disk_block_limit": [
+                        "numeric-string"
+                    ],
+                    "$.dkim_enabled": [
+                        "numeric-string"
+                    ],
+                    "$.domain": [
+                        "string"
+                    ],
+                    "$.domains": [
+                        "list"
+                    ],
+                    "$.domains[]": [
+                        "string"
+                    ],
+                    "$.feature": [
+                        "object"
+                    ],
+                    "$.feature.*": [
+                        "numeric-string"
+                    ],
+                    "$.feature_list": [
+                        "string"
+                    ],
+                    "$.gid": [
+                        "int"
+                    ],
+                    "$.home": [
+                        "string"
+                    ],
+                    "$.home_directory_links": [
+                        "empty-list"
+                    ],
+                    "$.ip": [
+                        "string"
+                    ],
+                    "$.lang": [
+                        "missing"
+                    ],
+                    "$.last_modified": [
+                        "int"
+                    ],
+                    "$.legacy_backup_enabled": [
+                        "numeric-string"
+                    ],
+                    "$.locale": [
+                        "string"
+                    ],
+                    "$.mailbox_format": [
+                        "string"
+                    ],
+                    "$.maximum_addon_domains": [
+                        "numeric-string"
+                    ],
+                    "$.maximum_databases": [
+                        "string"
+                    ],
+                    "$.maximum_defer_fail_percentage": [
+                        "missing"
+                    ],
+                    "$.maximum_email_account_disk_quota": [
+                        "string"
+                    ],
+                    "$.maximum_emails_per_hour": [
+                        "missing"
+                    ],
+                    "$.maximum_ftp_accounts": [
+                        "string"
+                    ],
+                    "$.maximum_mail_accounts": [
+                        "string"
+                    ],
+                    "$.maximum_mailing_lists": [
+                        "string"
+                    ],
+                    "$.maximum_parked_domains": [
+                        "numeric-string"
+                    ],
+                    "$.maximum_passenger_apps": [
+                        "numeric-string"
+                    ],
+                    "$.maximum_subdomains": [
+                        "string"
+                    ],
+                    "$.mxcheck": [
+                        "object"
+                    ],
+                    "$.mxcheck.*": [
+                        "string"
+                    ],
+                    "$.notify_account_authn_link": [
+                        "numeric-string"
+                    ],
+                    "$.notify_account_authn_link_notification_disabled": [
+                        "numeric-string"
+                    ],
+                    "$.notify_account_login": [
+                        "numeric-string"
+                    ],
+                    "$.notify_account_login_for_known_netblock": [
+                        "numeric-string"
+                    ],
+                    "$.notify_account_login_notification_disabled": [
+                        "numeric-string"
+                    ],
+                    "$.notify_autossl_expiry": [
+                        "numeric-string"
+                    ],
+                    "$.notify_autossl_expiry_coverage": [
+                        "numeric-string"
+                    ],
+                    "$.notify_autossl_renewal_coverage": [
+                        "numeric-string"
+                    ],
+                    "$.notify_autossl_renewal_coverage_reduced": [
+                        "numeric-string"
+                    ],
+                    "$.notify_autossl_renewal_uncovered_domains": [
+                        "numeric-string"
+                    ],
+                    "$.notify_bandwidth_limit": [
+                        "missing"
+                    ],
+                    "$.notify_contact_address_change": [
+                        "numeric-string"
+                    ],
+                    "$.notify_contact_address_change_notification_disabled": [
+                        "numeric-string"
+                    ],
+                    "$.notify_disk_limit": [
+                        "numeric-string"
+                    ],
+                    "$.notify_password_change": [
+                        "numeric-string"
+                    ],
+                    "$.notify_password_change_notification_disabled": [
+                        "numeric-string"
+                    ],
+                    "$.notify_ssl_expiry": [
+                        "missing"
+                    ],
+                    "$.notify_twofactorauth_change": [
+                        "missing"
+                    ],
+                    "$.notify_twofactorauth_change_notification_disabled": [
+                        "missing"
+                    ],
+                    "$.owner": [
+                        "string"
+                    ],
+                    "$.package_extensions": [
+                        "empty-list"
+                    ],
+                    "$.plan": [
+                        "string"
+                    ],
+                    "$.pushbullet_access_token": [
+                        "missing"
+                    ],
+                    "$.shell": [
+                        "string"
+                    ],
+                    "$.spf_enabled": [
+                        "numeric-string"
+                    ],
+                    "$.ssl_default_key_type": [
+                        "string"
+                    ],
+                    "$.theme": [
+                        "string"
+                    ],
+                    "$.uid": [
+                        "int"
+                    ],
+                    "$.user": [
+                        "string"
+                    ],
+                    "$.utf8_mailbox": [
+                        "numeric-string"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "uapi:Variables/get_user_information",
+                "variant": "uapi:Variables/get_user_information#GET",
+                "argument_variant": "reviewed-present-fields-except-token",
+                "route": "bridged-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T01:23:50Z",
+                "revision": "c4576669980a1ab22952f96b976a34bf0db7be58",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "a104c6ecb50eac33b47fad0dce288f86d82f149b",
+                "overlay_sha256": "e2faecad92200771b86c2efed87f666f7b52d4291f7487b6c9ba4b3969572d5a",
+                "effective_contract_sha256": "fb073c5c83ca948f9fe7e5c516af0c6f5fcdec55dc8b8a2e5c03db85a70b0963",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.backup_enabled": [
+                        "numeric-string"
+                    ],
+                    "$.data.uapi.data.bandwidth_limit": [
+                        "int"
+                    ],
+                    "$.data.uapi.data.cgi_enabled": [
+                        "numeric-string"
+                    ],
+                    "$.data.uapi.data.contact_email": [
+                        "empty-string"
+                    ],
+                    "$.data.uapi.data.contact_email_2": [
+                        "empty-string"
+                    ],
+                    "$.data.uapi.data.cpanel_root_directory": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.created": [
+                        "numeric-string"
+                    ],
+                    "$.data.uapi.data.created_in_version": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.database_owner": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.dead_domains": [
+                        "list"
+                    ],
+                    "$.data.uapi.data.dead_domains[]": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.demo_mode": [
+                        "numeric-string"
+                    ],
+                    "$.data.uapi.data.disk_block_limit": [
+                        "numeric-string"
+                    ],
+                    "$.data.uapi.data.dkim_enabled": [
+                        "numeric-string"
+                    ],
+                    "$.data.uapi.data.domain": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.domains": [
+                        "list"
+                    ],
+                    "$.data.uapi.data.domains[]": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.feature": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.feature.*": [
+                        "numeric-string"
+                    ],
+                    "$.data.uapi.data.feature_list": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.gid": [
+                        "numeric-string"
+                    ],
+                    "$.data.uapi.data.home": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.home_directory_links": [
+                        "empty-list"
+                    ],
+                    "$.data.uapi.data.ip": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.lang": [
+                        "missing"
+                    ],
+                    "$.data.uapi.data.last_modified": [
+                        "int"
+                    ],
+                    "$.data.uapi.data.legacy_backup_enabled": [
+                        "numeric-string"
+                    ],
+                    "$.data.uapi.data.locale": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.mailbox_format": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.maximum_addon_domains": [
+                        "numeric-string"
+                    ],
+                    "$.data.uapi.data.maximum_databases": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.maximum_defer_fail_percentage": [
+                        "missing"
+                    ],
+                    "$.data.uapi.data.maximum_email_account_disk_quota": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.maximum_emails_per_hour": [
+                        "missing"
+                    ],
+                    "$.data.uapi.data.maximum_ftp_accounts": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.maximum_mail_accounts": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.maximum_mailing_lists": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.maximum_parked_domains": [
+                        "numeric-string"
+                    ],
+                    "$.data.uapi.data.maximum_passenger_apps": [
+                        "numeric-string"
+                    ],
+                    "$.data.uapi.data.maximum_subdomains": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.mxcheck": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.mxcheck.*": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.notify_account_authn_link": [
+                        "numeric-string"
+                    ],
+                    "$.data.uapi.data.notify_account_authn_link_notification_disabled": [
+                        "numeric-string"
+                    ],
+                    "$.data.uapi.data.notify_account_login": [
+                        "numeric-string"
+                    ],
+                    "$.data.uapi.data.notify_account_login_for_known_netblock": [
+                        "numeric-string"
+                    ],
+                    "$.data.uapi.data.notify_account_login_notification_disabled": [
+                        "numeric-string"
+                    ],
+                    "$.data.uapi.data.notify_autossl_expiry": [
+                        "numeric-string"
+                    ],
+                    "$.data.uapi.data.notify_autossl_expiry_coverage": [
+                        "numeric-string"
+                    ],
+                    "$.data.uapi.data.notify_autossl_renewal_coverage": [
+                        "numeric-string"
+                    ],
+                    "$.data.uapi.data.notify_autossl_renewal_coverage_reduced": [
+                        "numeric-string"
+                    ],
+                    "$.data.uapi.data.notify_autossl_renewal_uncovered_domains": [
+                        "numeric-string"
+                    ],
+                    "$.data.uapi.data.notify_bandwidth_limit": [
+                        "missing"
+                    ],
+                    "$.data.uapi.data.notify_contact_address_change": [
+                        "numeric-string"
+                    ],
+                    "$.data.uapi.data.notify_contact_address_change_notification_disabled": [
+                        "numeric-string"
+                    ],
+                    "$.data.uapi.data.notify_disk_limit": [
+                        "numeric-string"
+                    ],
+                    "$.data.uapi.data.notify_password_change": [
+                        "numeric-string"
+                    ],
+                    "$.data.uapi.data.notify_password_change_notification_disabled": [
+                        "numeric-string"
+                    ],
+                    "$.data.uapi.data.notify_ssl_expiry": [
+                        "missing"
+                    ],
+                    "$.data.uapi.data.notify_twofactorauth_change": [
+                        "missing"
+                    ],
+                    "$.data.uapi.data.notify_twofactorauth_change_notification_disabled": [
+                        "missing"
+                    ],
+                    "$.data.uapi.data.owner": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.package_extensions": [
+                        "empty-list"
+                    ],
+                    "$.data.uapi.data.plan": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.pushbullet_access_token": [
+                        "missing"
+                    ],
+                    "$.data.uapi.data.shell": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.spf_enabled": [
+                        "numeric-string"
+                    ],
+                    "$.data.uapi.data.ssl_default_key_type": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.theme": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.uid": [
+                        "int"
+                    ],
+                    "$.data.uapi.data.user": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.utf8_mailbox": [
+                        "numeric-string"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "empty-object"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.backup_enabled": [
+                        "numeric-string"
+                    ],
+                    "$.bandwidth_limit": [
+                        "int"
+                    ],
+                    "$.cgi_enabled": [
+                        "numeric-string"
+                    ],
+                    "$.contact_email": [
+                        "empty-string"
+                    ],
+                    "$.contact_email_2": [
+                        "empty-string"
+                    ],
+                    "$.cpanel_root_directory": [
+                        "string"
+                    ],
+                    "$.created": [
+                        "numeric-string"
+                    ],
+                    "$.created_in_version": [
+                        "string"
+                    ],
+                    "$.database_owner": [
+                        "string"
+                    ],
+                    "$.dead_domains": [
+                        "list"
+                    ],
+                    "$.dead_domains[]": [
+                        "string"
+                    ],
+                    "$.demo_mode": [
+                        "numeric-string"
+                    ],
+                    "$.disk_block_limit": [
+                        "numeric-string"
+                    ],
+                    "$.dkim_enabled": [
+                        "numeric-string"
+                    ],
+                    "$.domain": [
+                        "string"
+                    ],
+                    "$.domains": [
+                        "list"
+                    ],
+                    "$.domains[]": [
+                        "string"
+                    ],
+                    "$.feature": [
+                        "object"
+                    ],
+                    "$.feature.*": [
+                        "numeric-string"
+                    ],
+                    "$.feature_list": [
+                        "string"
+                    ],
+                    "$.gid": [
+                        "numeric-string"
+                    ],
+                    "$.home": [
+                        "string"
+                    ],
+                    "$.home_directory_links": [
+                        "empty-list"
+                    ],
+                    "$.ip": [
+                        "string"
+                    ],
+                    "$.lang": [
+                        "missing"
+                    ],
+                    "$.last_modified": [
+                        "int"
+                    ],
+                    "$.legacy_backup_enabled": [
+                        "numeric-string"
+                    ],
+                    "$.locale": [
+                        "string"
+                    ],
+                    "$.mailbox_format": [
+                        "string"
+                    ],
+                    "$.maximum_addon_domains": [
+                        "numeric-string"
+                    ],
+                    "$.maximum_databases": [
+                        "string"
+                    ],
+                    "$.maximum_defer_fail_percentage": [
+                        "missing"
+                    ],
+                    "$.maximum_email_account_disk_quota": [
+                        "string"
+                    ],
+                    "$.maximum_emails_per_hour": [
+                        "missing"
+                    ],
+                    "$.maximum_ftp_accounts": [
+                        "string"
+                    ],
+                    "$.maximum_mail_accounts": [
+                        "string"
+                    ],
+                    "$.maximum_mailing_lists": [
+                        "string"
+                    ],
+                    "$.maximum_parked_domains": [
+                        "numeric-string"
+                    ],
+                    "$.maximum_passenger_apps": [
+                        "numeric-string"
+                    ],
+                    "$.maximum_subdomains": [
+                        "string"
+                    ],
+                    "$.mxcheck": [
+                        "object"
+                    ],
+                    "$.mxcheck.*": [
+                        "string"
+                    ],
+                    "$.notify_account_authn_link": [
+                        "numeric-string"
+                    ],
+                    "$.notify_account_authn_link_notification_disabled": [
+                        "numeric-string"
+                    ],
+                    "$.notify_account_login": [
+                        "numeric-string"
+                    ],
+                    "$.notify_account_login_for_known_netblock": [
+                        "numeric-string"
+                    ],
+                    "$.notify_account_login_notification_disabled": [
+                        "numeric-string"
+                    ],
+                    "$.notify_autossl_expiry": [
+                        "numeric-string"
+                    ],
+                    "$.notify_autossl_expiry_coverage": [
+                        "numeric-string"
+                    ],
+                    "$.notify_autossl_renewal_coverage": [
+                        "numeric-string"
+                    ],
+                    "$.notify_autossl_renewal_coverage_reduced": [
+                        "numeric-string"
+                    ],
+                    "$.notify_autossl_renewal_uncovered_domains": [
+                        "numeric-string"
+                    ],
+                    "$.notify_bandwidth_limit": [
+                        "missing"
+                    ],
+                    "$.notify_contact_address_change": [
+                        "numeric-string"
+                    ],
+                    "$.notify_contact_address_change_notification_disabled": [
+                        "numeric-string"
+                    ],
+                    "$.notify_disk_limit": [
+                        "numeric-string"
+                    ],
+                    "$.notify_password_change": [
+                        "numeric-string"
+                    ],
+                    "$.notify_password_change_notification_disabled": [
+                        "numeric-string"
+                    ],
+                    "$.notify_ssl_expiry": [
+                        "missing"
+                    ],
+                    "$.notify_twofactorauth_change": [
+                        "missing"
+                    ],
+                    "$.notify_twofactorauth_change_notification_disabled": [
+                        "missing"
+                    ],
+                    "$.owner": [
+                        "string"
+                    ],
+                    "$.package_extensions": [
+                        "empty-list"
+                    ],
+                    "$.plan": [
+                        "string"
+                    ],
+                    "$.pushbullet_access_token": [
+                        "missing"
+                    ],
+                    "$.shell": [
+                        "string"
+                    ],
+                    "$.spf_enabled": [
+                        "numeric-string"
+                    ],
+                    "$.ssl_default_key_type": [
+                        "string"
+                    ],
+                    "$.theme": [
+                        "string"
+                    ],
+                    "$.uid": [
+                        "int"
+                    ],
+                    "$.user": [
+                        "string"
+                    ],
+                    "$.utf8_mailbox": [
+                        "numeric-string"
+                    ]
+                },
+                "discrepancies": []
+            }
+        ]
+    }
+}

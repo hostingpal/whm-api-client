@@ -3,6 +3,53 @@
   "family": "uapi",
   "group": "Themes",
   "operations": {
-    "uapi:Themes/get_theme_base": {"exclude": {"reason": "Deprecated; does not return useful output.", "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-13", "note": "Flagged deprecated: true; This function is deprecated and does not return useful output."}]}}
+    "uapi:Themes/get_theme_base": {
+      "exclude": {
+        "reason": "Deprecated; does not return useful output.",
+        "evidence": [
+          {
+            "kind": "doc",
+            "version": "pinned 2026-10-13",
+            "date": "2026-10-13",
+            "note": "Flagged deprecated: true; This function is deprecated and does not return useful output."
+          }
+        ]
+      }
+    },
+    "uapi:Themes/list": {
+      "name": "listThemes",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later. Lists the selected account's available themes; returned items are strings and an empty list is preserved."
+        },
+        {
+          "kind": "documented",
+          "text": "Omit showMailThemes to retain the server default 0. Explicit false sends 0 and true sends 1; true includes the account's mail themes. This does not change the active theme."
+        }
+      ]
+    },
+    "uapi:Themes/update": {
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Themes/update declares x-readonly=false and x-rollback=none. Use form POST, retaining any credentials outside query strings. "
+        }
+      ],
+      "name": "update",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later. Applies the named theme to the selected account's cPanel interface with no rollback. The supplied theme string is forwarded unchanged."
+        },
+        {
+          "kind": "documented",
+          "text": "Status 1 means the theme changed; status 0 means no change or failure and remains an API error. The data schema permits a nullable object: preserve explicit null and opaque object fields, and reject an absent data member."
+        }
+      ]
+    }
   }
 }

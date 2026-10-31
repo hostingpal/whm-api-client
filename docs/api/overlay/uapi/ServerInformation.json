@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "ServerInformation",
+  "accessor": "serverInformation",
+  "class": "ServerInformation",
+  "operations": {
+    "uapi:ServerInformation/get_information": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later. Returns service, device and server-health rows. Integer status 0/1 and the documented unknown string describe each resource, separately from the UAPI result."
+        },
+        {
+          "kind": "documented",
+          "text": "Usage and service values remain strings, including percentages and decimal text. Row fields may be omitted, including error and version; this read does not start, stop or configure services."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "/ServerInformation/get_information declares x-readonly: true and a GET operation. Pinned cpanel.openapi.json.gz decompressed-byte SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; stored gzip SHA-256: ba2ba938969c2e98f9bdb259f4072d182af215ba8a44402846de077ba6b85358."
+        }
+      ]
+    }
+  }
+}
