@@ -2769,7 +2769,9 @@ Resource maximum/usage, StatsBar percent and bandwidth month-start values accept
 lossless canonical integer strings only in their reviewed fields. A null
 resource URL remains distinct from omission; fractional strings are not rounded
 or silently coerced. StatsBar preserves observed null `count` values and string
-or string-list `role` values; other percentage and flag rules stay unchanged.
+or object `role` values whose dynamic values are strings or string lists. The
+role map follows the final structural capture; it does not identify the map keys
+or their meaning. Other percentage and flag rules stay unchanged.
 `listSites()` normalizes only exact quoted `ssl` flags to integer 0/1, preserving
 omission and the native flags. These field corrections follow the
 [PR38 reviewer observations](https://github.com/hostingpal/whm-api-client/pull/38#pullrequestreview-5719939412)
@@ -2836,3 +2838,38 @@ offline-tested. Ten of the eleven new functions pass through both routes; error-
 payloads remain unobserved. No settings, analyzer execution or log mutation ran.
 The original capture stays unchanged. Corrected artifact SHA-256:
 `904c85e93c2774646f68ddbbf38685355164f6bec9c1f19bc8e3d72e96438521`.
+
+
+### Requested varied resource/statistics capture
+
+The immutable [review capture](evidence/2026-10-31-resource-statistics-review-final.json)
+at `294b1cc432bd9a9929a49cade5b2425297c89802` on `11.138.0.19` contains exactly
+27 GET observations. All HTTP statuses are 200 and all API outcomes pass;
+25 payload/probe checks pass. The three Bandwidth query depths each pass on
+both routes with integer leaves. Analog site inventory has populated rows,
+with direct numeric-string and bridged integer SSL flags, and `suexec` returns
+populated typed log rows on both routes. Log contents are not retained.
+
+Both mixed StatsBar observations fail payload/probe validation at `role`: the
+raw structure is `missing|object|string`, with map values `string|list<string>`.
+The first review correction interpreted the review's PHP "array" description as
+a JSON list. This artifact disproves that assumption. The narrow subsequent
+correction replaces that nonempty-list alternative with a bounded map, retains
+scalar strings and omission, and adds independent malformed-value and masking
+regressions. Existing empty-map compatibility remains unchanged. This correction
+is generated and offline-tested; it was not used by this capture.
+
+Both StatsBar observations also retain a separate masked `$[].*` unknown-field
+failure (direct string, bridged null/string). Masking establishes neither key
+names nor counts; no fields or acknowledgments are inferred. The artifact stays
+strictly failed and unwaived under `8x0.2.25`. Empty daily/report/analyzer results
+do not establish populated variants. No server file, configuration, resource or
+log content changed. Earlier captures remain byte-identical; this capture is
+not replayed to clear its status. SHA-256:
+`c3c7ac8302133d4d92212f4e47d6455b95e60710adcb04209cf485e5690aed90`.
+
+The dedicated catalog uses fixed argument-variant labels for its three bandwidth
+depths while retaining each pinned `#GET` variant and the exact URI guard. The
+shared read-only assessor checks ordered labels and rejects missing, extra,
+duplicate or mixed labeled/unlabeled identities. Unlabeled existing catalogs keep
+their evidence format; no discrepancy acknowledgment policy changes.

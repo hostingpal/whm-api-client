@@ -56,7 +56,16 @@ final class StatsBarSpec
                         'type' => 'union',
                         'anyOf' => [
                             ['type' => 'string'],
-                            ['type' => 'list', 'items' => ['type' => 'string']],
+                            [
+                                'type' => 'map',
+                                'values' => [
+                                    'type' => 'union',
+                                    'anyOf' => [
+                                        ['type' => 'string'],
+                                        ['type' => 'list', 'items' => ['type' => 'string']],
+                                    ],
+                                ],
+                            ],
                         ],
                     ],
                     'rowtype' => ['type' => 'string'],

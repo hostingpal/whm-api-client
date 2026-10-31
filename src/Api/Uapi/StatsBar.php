@@ -39,7 +39,7 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  *     percent20?: int,
  *     percent5?: int,
  *     phrase?: string,
- *     role?: string|list<string>,
+ *     role?: string|array<array-key, string|list<string>>,
  *     rowtype?: string,
  *     units?: string,
  *     zeroisunlimited?: 0|1,
@@ -89,10 +89,17 @@ final readonly class StatsBar
      *
      * Observed: Reviewer read-only checks on cPanel 11.138.0.19 (PR38 review 5719939412) found count=null for
      * apacheversion, cpanelversion, hostingpackage, hostname, kernelversion, machinetype, mysqlversion,
-     * operatingsystem, perlversion, sharedip, shorthostname and theme through both routes. parkeddomains returned an
-     * array role. Preserve count as nullable string and role as string or a list of strings; neither becomes required
-     * and other fields keep their existing rules. This correction is attributed reviewer evidence; the pinned formal
-     * schemas declare both fields as strings.
+     * operatingsystem, perlversion, sharedip, shorthostname and theme through both routes. Preserve count as nullable
+     * string, distinct from omission. The pinned formal count schema declares a string; other fields retain their
+     * existing rules.
+     *
+     * Observed: The immutable 2026-10-31-resource-statistics-review-final.json capture at
+     * 294b1cc432bd9a9929a49cade5b2425297c89802 on cPanel 11.138.0.19 establishes role as a string or an object whose
+     * dynamic values are strings or lists of strings through both routes. Preserve those opaque map keys without
+     * inferring names or meanings. The earlier reviewer description of an array did not distinguish a JSON object from
+     * a list; nonempty root lists are not accepted. Existing empty-map compatibility accepts an empty JSON list as an
+     * empty map. Null, numeric values, nested objects and non-string list members are not inferred. Separate unknown
+     * row fields in that failed capture remain unmodeled, strict and unwaived.
      *
      * API-map identity: uapi:StatsBar/get_stats#GET (wire name get_stats).
      *

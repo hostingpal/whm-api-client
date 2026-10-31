@@ -21,7 +21,7 @@ final class ResourceStatisticsReviewProbes
      * Execute 27 exact GETs: WHM version, then eleven account functions through both UAPI routes.
      *
      * Bandwidth queries select only npr.rs/http within the original October 2026 UTC bounds. The statistics
-     * display mixes a normal counter, reviewed nullable counts and the parked-domain role list. Analog site
+     * display mixes a normal counter, reviewed nullable counts and the parked-domain role object. Analog site
      * inventory and one suexec log entry exercise the requested alternatives without changing configuration.
      * The shared runner retains only the original responses' sanitized structure, never log text or field values.
      *

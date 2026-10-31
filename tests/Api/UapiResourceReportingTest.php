@@ -179,7 +179,7 @@ final class UapiResourceReportingTest extends TestCase
 
     /** @param list<array<string, mixed>> $expected */
     #[DataProvider('statsBarVariantPayloads')]
-    public function testReviewedStatsBarVariantsPreserveNullCountsAndRoleLists(
+    public function testReviewedStatsBarVariantsPreserveNullCountsAndRoleMaps(
         string $route,
         string $display,
         string $payload,
@@ -198,7 +198,7 @@ final class UapiResourceReportingTest extends TestCase
     /** @return iterable<string, array{string, string, string, list<array<string, mixed>>}> */
     public static function statsBarVariantPayloads(): iterable
     {
-        // Synthetic values exercise the field variants reported in review 5719939412.
+        // Synthetic values exercise review 5719939412 and the final capture role structure; keys carry no semantics.
         $nullCountKeys = ['apacheversion', 'cpanelversion', 'hostingpackage', 'hostname', 'kernelversion',
             'machinetype', 'mysqlversion', 'operatingsystem', 'perlversion', 'sharedip', 'shorthostname', 'theme'];
         $nullCountRows = [];
@@ -212,16 +212,18 @@ final class UapiResourceReportingTest extends TestCase
                 '[' . implode(',', $nullCountRows) . ',{"name":"diskusage","count":"1.75 MB"},'
                 . '{"name":"bandwidthusage"}]',
                 [...$nullCountExpected, ['count' => '1.75 MB', 'name' => 'diskusage'], ['name' => 'bandwidthusage']]],
-            'list empty string and omitted roles' => ['parkeddomains|diskusage|bandwidthusage',
-                '[{"name":"parkeddomains","role":["DNS","WebServer"]},{"role":[]},'
-                . '{"role":"WebServer"},{}]',
+            'map empty scalar and omitted roles' => ['parkeddomains|diskusage|bandwidthusage',
+                '[{"name":"parkeddomains","role":{"alpha":"first","beta":["second","third"],"gamma":[]}},'
+                . '{"role":{}},{"role":"WebServer"},{}]',
                 [
-                    ['name' => 'parkeddomains', 'role' => ['DNS', 'WebServer']],
+                    ['name' => 'parkeddomains', 'role' => ['alpha' => 'first', 'beta' => ['second', 'third'],
+                        'gamma' => []]],
                     ['role' => []],
                     ['role' => 'WebServer'],
                     [],
                 ],
             ],
+            'existing empty map compatibility' => ['parkeddomains', '[{"role":[]}]', [['role' => []]]],
         ];
         foreach (['direct', 'bare', 'bridge'] as $route) {
             foreach ($cases as $name => [$display, $payload, $expected]) {
@@ -408,7 +410,10 @@ final class UapiResourceReportingTest extends TestCase
         }
         $fields['StatsBar/get_stats']['count'] = ['0', 'false', '[]', '{}'];
         $fields['StatsBar/get_stats']['role'] = ['null', '0', 'false', '[0]', '[null]', '[true]', '[{}]',
-            '[[]]', '["DNS",0]', '{"name":"DNS"}'];
+            '[[]]', '["DNS",0]', '["DNS"]', '["DNS","WebServer"]', '{"alpha":null}', '{"alpha":0}',
+            '{"alpha":1.5}', '{"alpha":false}', '{"alpha":{}}', '{"alpha":{"nested":"value"}}',
+            '{"alpha":[0]}', '{"alpha":[null]}', '{"alpha":[false]}', '{"alpha":[{}]}',
+            '{"alpha":[[]]}', '{"alpha":["first",0]}'];
         foreach (['_maxed', 'condition', 'is_maxed', 'normalized', 'zeroisunlimited'] as $field) {
             $fields['StatsBar/get_stats'][$field] = ['null', '"0"', 'true', '2', '1.5'];
         }

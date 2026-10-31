@@ -374,7 +374,9 @@ Resource maximum/usage, StatsBar percent and bandwidth month-start values accept
 lossless canonical integer strings only in their reviewed fields. A null
 resource URL remains distinct from omission; fractional strings are not rounded
 or silently coerced. StatsBar preserves observed null `count` values and string
-or string-list `role` values; other percentage and flag rules stay unchanged.
+or object `role` values whose dynamic values are strings or string lists. The
+role map follows the final structural capture; it does not identify the map keys
+or their meaning. Other percentage and flag rules stay unchanged.
 `listSites()` normalizes only exact quoted `ssl` flags to integer 0/1, preserving
 omission and the native flags. These field corrections follow the
 [PR38 reviewer observations](https://github.com/hostingpal/whm-api-client/pull/38#pullrequestreview-5719939412)
@@ -394,6 +396,12 @@ the root-owned mode-0600 `/var/cpanel/cpanel.config`. The same operation with
 `log: 'suexec'` returned populated typed rows on both routes. This is an attributed
 environment observation, not a general API restriction. The server file was left
 unchanged and the earlier failed artifacts remain failed and unwaived.
+The subsequent 27-GET review capture passes every HTTP/API outcome and 25 payload
+checks, including all three query depths, Analog sites and populated `suexec`
+rows. Its two StatsBar role mismatches establish the bounded-map correction;
+two additional masked unknown-field findings remain strict and unwaived. The
+artifact stays failed, and the subsequent role correction is offline-tested.
+See `docs/api/source-audit.md` for the exact revision, hash and coverage limits.
 
 The corrected [statistics capture](docs/api/evidence/2026-10-31-resource-statistics-corrected.json)
 at `a439c3c` on `11.138.0.19` records 23 HTTP-200 GETs. Twenty-one API/payload/probe

@@ -54,13 +54,16 @@ final class ResourceStatisticsReviewProbesTest extends TestCase
         self::assertSame(['float'], $report['probes'][7]['payload_paths']['$.*.*']);
         self::assertSame(['int'], $report['probes'][9]['payload_paths']['$.*.*.*']);
         self::assertSame(['missing', 'null', 'string'], $report['probes'][13]['payload_paths']['$[].count']);
-        self::assertSame(['list', 'string'], $report['probes'][13]['payload_paths']['$[].role']);
+        self::assertSame(['object', 'string'], $report['probes'][13]['payload_paths']['$[].role']);
+        self::assertSame(['list', 'string'], $report['probes'][13]['payload_paths']['$[].role.*']);
+        self::assertSame(['string'], $report['probes'][13]['payload_paths']['$[].role.*[]']);
         self::assertSame(['missing', 'numeric-string'], $report['probes'][13]['payload_paths']['$[].percent']);
         self::assertSame(['string'], $report['probes'][17]['payload_paths']['$[].entry']);
         $json = json_encode($report, JSON_THROW_ON_ERROR);
         foreach (
             ['private-domain', 'private-protocol', 'private-date', 'private-log-content',
-                'private-whm', 'private-cpanel', 'private-stat-value', '/private/report.html', 'npr.rs'] as $value
+                'private-whm', 'private-cpanel', 'private-stat-value', 'private-role-key',
+                'private-role-list', 'private-role-value', '/private/report.html', 'npr.rs'] as $value
         ) {
             self::assertStringNotContainsString($value, $json);
         }
@@ -260,7 +263,8 @@ final class ResourceStatisticsReviewProbesTest extends TestCase
     {
         return '[{"id":"bandwidthusage","_count":"12","count":"private-stat-value","percent":"12",'
             . '"role":"WebServer"},{"id":"apacheversion","count":null,"role":"WebServer"},'
-            . '{"id":"parkeddomains","_count":"0","role":["WebServer","DNS"]}]';
+            . '{"id":"parkeddomains","_count":"0","role":{"private-role-key":"private-role-value",'
+            . '"private-role-list":["WebServer","DNS"]}}]';
     }
 
     /** @return Context */
