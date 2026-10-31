@@ -98,9 +98,16 @@ final readonly class LogManager
      * This function retrieves the account's log archival settings.
      *
      * Documented: Available in cPanel 82 and later. Retrieves the selected account's archival settings. archive_logs,
-     * prune_archive and using_default remain strict integer 0/1 flags. retention_days is a number of days; zero retains
-     * logs indefinitely. When no custom retention value is set, the returned retention_days is the server-wide default.
-     * using_default distinguishes the server default from a custom value. Optional fields remain omitted.
+     * prune_archive and using_default have public integer 0/1 flag results. retention_days is a number of days; zero
+     * retains logs indefinitely. When no custom retention value is set, the returned retention_days is the server-wide
+     * default. using_default distinguishes the server default from a custom value. Optional fields remain omitted.
+     *
+     * Observed: The 2026-10-31 capture on cPanel 11.138.0.19 observed numeric-string wire values for archive_logs,
+     * prune_archive and retention_days through direct UAPI and the WHM bridge. Only archive_logs/prune_archive accept
+     * exact quoted 0/1 flags, and only retention_days accepts lossless canonical in-range integer strings. Results
+     * normalize to the documented integer types. The structural capture does not establish which quoted flag values
+     * occurred or prove both values were observed. using_default and sibling operation fields retain their prior strict
+     * contracts.
      *
      * API-map identity: uapi:LogManager/get_settings#GET (wire name get_settings).
      *

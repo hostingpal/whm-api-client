@@ -33,9 +33,9 @@ final class LogManagerSpec
         'returns' => [
             'type' => 'object',
             'fields' => [
-                'archive_logs' => ['type' => 'flag'],
-                'prune_archive' => ['type' => 'flag'],
-                'retention_days' => ['type' => 'int'],
+                'archive_logs' => ['type' => 'flag', 'accept' => ['string-flag']],
+                'prune_archive' => ['type' => 'flag', 'accept' => ['string-flag']],
+                'retention_days' => ['type' => 'int', 'accept' => ['numeric-string']],
                 'using_default' => ['type' => 'flag'],
             ],
         ],

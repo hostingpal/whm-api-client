@@ -30,7 +30,11 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available in cPanel 82 and later. Retrieves the selected account's archival settings. archive_logs, prune_archive and using_default remain strict integer 0/1 flags. retention_days is a number of days; zero retains logs indefinitely. When no custom retention value is set, the returned retention_days is the server-wide default. using_default distinguishes the server default from a custom value. Optional fields remain omitted."
+          "text": "Available in cPanel 82 and later. Retrieves the selected account's archival settings. archive_logs, prune_archive and using_default have public integer 0/1 flag results. retention_days is a number of days; zero retains logs indefinitely. When no custom retention value is set, the returned retention_days is the server-wide default. using_default distinguishes the server default from a custom value. Optional fields remain omitted."
+        },
+        {
+          "kind": "observed",
+          "text": "The 2026-10-31 capture on cPanel 11.138.0.19 observed numeric-string wire values for archive_logs, prune_archive and retention_days through direct UAPI and the WHM bridge. Only archive_logs/prune_archive accept exact quoted 0/1 flags, and only retention_days accepts lossless canonical in-range integer strings. Results normalize to the documented integer types. The structural capture does not establish which quoted flag values occurred or prove both values were observed. using_default and sibling operation fields retain their prior strict contracts."
         }
       ],
       "evidence": [
@@ -39,8 +43,59 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /LogManager/get_settings declares x-readonly=true. Query requiredness, wire spelling and response data schema are retained. UAPI source SHA256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc. No role restrictions or string-integer response variants are declared in this operation."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Original immutable capture docs/api/evidence/2026-10-31-log-administration.json, SHA256 093432542f5f0dd5ac066707112c3f7e0ae8b5d76bfc29c4fefb3e96160a4550, at revision e5476c1b9fd2d8a94f371ab05caee86b46f4ab37: uapi:LogManager/get_settings#GET, routes direct-uapi and bridged-uapi, method GET, server 11.138.0.19, source SHA256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, effective contract SHA256 9606b78ab293fee8ae02f2053429babf67878a0fc01d807a486e3d3622eb6a32. HTTP 200 and API success on both routes; payload path $.archive_logs is numeric-string and has type_mismatch on each route. The pinned field is an integer 0/1 flag. Admit only exact quoted \"0\"/\"1\" and normalize to that public integer flag; structural evidence does not identify which quoted value occurred and does not prove both values were observed. Original immutable capture docs/api/evidence/2026-10-31-log-administration.json, SHA256 093432542f5f0dd5ac066707112c3f7e0ae8b5d76bfc29c4fefb3e96160a4550, at revision e5476c1b9fd2d8a94f371ab05caee86b46f4ab37: uapi:LogManager/get_settings#GET, routes direct-uapi and bridged-uapi, method GET, server 11.138.0.19, source SHA256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, effective contract SHA256 9606b78ab293fee8ae02f2053429babf67878a0fc01d807a486e3d3622eb6a32. HTTP 200 and API success on both routes; payload path $.prune_archive is numeric-string and has type_mismatch on each route. The pinned field is an integer 0/1 flag. Admit only exact quoted \"0\"/\"1\" and normalize to that public integer flag; structural evidence does not identify which quoted value occurred and does not prove both values were observed. Original immutable capture docs/api/evidence/2026-10-31-log-administration.json, SHA256 093432542f5f0dd5ac066707112c3f7e0ae8b5d76bfc29c4fefb3e96160a4550, at revision e5476c1b9fd2d8a94f371ab05caee86b46f4ab37: uapi:LogManager/get_settings#GET, routes direct-uapi and bridged-uapi, method GET, server 11.138.0.19, source SHA256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, effective contract SHA256 9606b78ab293fee8ae02f2053429babf67878a0fc01d807a486e3d3622eb6a32. HTTP 200 and API success on both routes; payload path $.retention_days is numeric-string and has type_mismatch on each route. The pinned field is integer days. Admit only lossless canonical integer strings within PHP integer bounds, normalize to int, and reject fractions, noncanonical forms, booleans, floats and overflow. No sibling field or other operation is changed.",
+          "fingerprint": "docs/api/evidence/2026-10-31-log-administration.json"
         }
-      ]
+      ],
+      "response": {
+        "archive_logs": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Original immutable capture docs/api/evidence/2026-10-31-log-administration.json, SHA256 093432542f5f0dd5ac066707112c3f7e0ae8b5d76bfc29c4fefb3e96160a4550, at revision e5476c1b9fd2d8a94f371ab05caee86b46f4ab37: uapi:LogManager/get_settings#GET, routes direct-uapi and bridged-uapi, method GET, server 11.138.0.19, source SHA256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, effective contract SHA256 9606b78ab293fee8ae02f2053429babf67878a0fc01d807a486e3d3622eb6a32. HTTP 200 and API success on both routes; payload path $.archive_logs is numeric-string and has type_mismatch on each route. The pinned field is an integer 0/1 flag. Admit only exact quoted \"0\"/\"1\" and normalize to that public integer flag; structural evidence does not identify which quoted value occurred and does not prove both values were observed.",
+              "fingerprint": "docs/api/evidence/2026-10-31-log-administration.json"
+            }
+          ]
+        },
+        "prune_archive": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Original immutable capture docs/api/evidence/2026-10-31-log-administration.json, SHA256 093432542f5f0dd5ac066707112c3f7e0ae8b5d76bfc29c4fefb3e96160a4550, at revision e5476c1b9fd2d8a94f371ab05caee86b46f4ab37: uapi:LogManager/get_settings#GET, routes direct-uapi and bridged-uapi, method GET, server 11.138.0.19, source SHA256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, effective contract SHA256 9606b78ab293fee8ae02f2053429babf67878a0fc01d807a486e3d3622eb6a32. HTTP 200 and API success on both routes; payload path $.prune_archive is numeric-string and has type_mismatch on each route. The pinned field is an integer 0/1 flag. Admit only exact quoted \"0\"/\"1\" and normalize to that public integer flag; structural evidence does not identify which quoted value occurred and does not prove both values were observed.",
+              "fingerprint": "docs/api/evidence/2026-10-31-log-administration.json"
+            }
+          ]
+        },
+        "retention_days": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Original immutable capture docs/api/evidence/2026-10-31-log-administration.json, SHA256 093432542f5f0dd5ac066707112c3f7e0ae8b5d76bfc29c4fefb3e96160a4550, at revision e5476c1b9fd2d8a94f371ab05caee86b46f4ab37: uapi:LogManager/get_settings#GET, routes direct-uapi and bridged-uapi, method GET, server 11.138.0.19, source SHA256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, effective contract SHA256 9606b78ab293fee8ae02f2053429babf67878a0fc01d807a486e3d3622eb6a32. HTTP 200 and API success on both routes; payload path $.retention_days is numeric-string and has type_mismatch on each route. The pinned field is integer days. Admit only lossless canonical integer strings within PHP integer bounds, normalize to int, and reject fractions, noncanonical forms, booleans, floats and overflow. No sibling field or other operation is changed.",
+              "fingerprint": "docs/api/evidence/2026-10-31-log-administration.json"
+            }
+          ]
+        }
+      }
     },
     "uapi:LogManager/list_archives": {
       "method": "GET",

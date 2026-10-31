@@ -14,6 +14,10 @@
         {
           "kind": "documented",
           "text": "default_retention and per-account retention_days are integer days; zero means logs are retained indefinitely. An explicit null account retention_days means the account uses the server default, while omission remains absent. using_default remains a native boolean, unlike UAPI LogManager integer flags. Account user/domain strings, optional fields and empty account lists are preserved. API success establishes inventory only and does not prove eventual retention enforcement."
+        },
+        {
+          "kind": "observed",
+          "text": "The 2026-10-31 WHM capture on cPanel 11.138.0.19 returned default_retention as a numeric string. Only that field accepts lossless canonical in-range integer strings and normalizes them to the public integer result. Account retention_days retains its optional nullable integer contract, and using_default remains native boolean. No sibling normalization is inferred."
         }
       ],
       "evidence": [
@@ -22,8 +26,31 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /list_accounts_retention GET declares x-readonly=true with no parameters. Preserve the optional account fields, nullable integer retention_days and native boolean using_default exactly. WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. No role restriction or string-integer response variant is declared."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Original immutable capture docs/api/evidence/2026-10-31-log-administration.json, SHA256 093432542f5f0dd5ac066707112c3f7e0ae8b5d76bfc29c4fefb3e96160a4550, at revision e5476c1b9fd2d8a94f371ab05caee86b46f4ab37: whm1:list_accounts_retention#GET, route whm, method GET, server 11.138.0.19, source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, effective contract SHA256 bfd96205005e54ff67022686ebc3feb11faaf742dfd414081f7e98d2d26c530a. HTTP 200 and API success; payload path $.default_retention is numeric-string with type_mismatch. The pinned field is integer days. Admit only lossless canonical integer strings within PHP integer bounds and normalize to int. No account field or other operation is changed.",
+          "fingerprint": "docs/api/evidence/2026-10-31-log-administration.json"
         }
-      ]
+      ],
+      "response": {
+        "default_retention": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Original immutable capture docs/api/evidence/2026-10-31-log-administration.json, SHA256 093432542f5f0dd5ac066707112c3f7e0ae8b5d76bfc29c4fefb3e96160a4550, at revision e5476c1b9fd2d8a94f371ab05caee86b46f4ab37: whm1:list_accounts_retention#GET, route whm, method GET, server 11.138.0.19, source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, effective contract SHA256 bfd96205005e54ff67022686ebc3feb11faaf742dfd414081f7e98d2d26c530a. HTTP 200 and API success; payload path $.default_retention is numeric-string with type_mismatch. The pinned field is integer days. Admit only lossless canonical integer strings within PHP integer bounds and normalize to int. No account field or other operation is changed.",
+              "fingerprint": "docs/api/evidence/2026-10-31-log-administration.json"
+            }
+          ]
+        }
+      }
     }
   }
 }

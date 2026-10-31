@@ -54,6 +54,11 @@ final readonly class Logs
      * strings, optional fields and empty account lists are preserved. API success establishes inventory only and does
      * not prove eventual retention enforcement.
      *
+     * Observed: The 2026-10-31 WHM capture on cPanel 11.138.0.19 returned default_retention as a numeric string. Only
+     * that field accepts lossless canonical in-range integer strings and normalizes them to the public integer result.
+     * Account retention_days retains its optional nullable integer contract, and using_default remains native boolean.
+     * No sibling normalization is inferred.
+     *
      * API-map identity: whm1:list_accounts_retention#GET (wire name list_accounts_retention; Logs).
      *
      * @return ListAccountsRetentionResult

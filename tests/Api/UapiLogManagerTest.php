@@ -96,6 +96,15 @@ final class UapiLogManagerTest extends TestCase
                 ['{}', []], ['[]', []],
             ],
         ];
+        // Operation-specific live compatibility: public results remain native integers.
+        foreach (['archive_logs', 'prune_archive'] as $field) {
+            foreach (['0', '1'] as $value) {
+                $cases['get_settings'][] = ['{"' . $field . '":"' . $value . '"}', [$field => (int) $value]];
+            }
+        }
+        foreach (['0', '30', (string) PHP_INT_MAX, (string) PHP_INT_MIN] as $value) {
+            $cases['get_settings'][] = ['{"retention_days":"' . $value . '"}', ['retention_days' => (int) $value]];
+        }
         foreach (['delete_archive', 'set_settings'] as $function) {
             $cases[$function] = [
             ['null', null], ['false', false], ['0', 0], ['1.25', 1.25], ['""', ''],
@@ -139,8 +148,8 @@ final class UapiLogManagerTest extends TestCase
     public static function invalidPayloads(): iterable
     {
         $cases = [
-            'get_settings' => [null, 'null', 'false', '0', '""', '[{}]', '{"archive_logs":"1"}',
-                '{"archive_logs":true}', '{"prune_archive":2}', '{"retention_days":"30"}',
+            'get_settings' => [null, 'null', 'false', '0', '""', '[{}]',
+                '{"archive_logs":true}', '{"prune_archive":2}',
                 '{"retention_days":1.5}', '{"using_default":null}'],
             'list_archives' => [null, 'null', 'false', '{}', '0', '""', '[null]', '[{"file":0}]',
                 '[{"mtime":"1557835866"}]', '[{"mtime":null}]', '[{"path":false}]',
@@ -155,6 +164,24 @@ final class UapiLogManagerTest extends TestCase
                 '{"path":false}', '{"size":"4096"}'],
             'delete_archive' => [null], 'set_settings' => [null],
         ];
+        foreach (['archive_logs', 'prune_archive'] as $field) {
+            foreach (
+                ['null', 'true', 'false', '1.0', '2', '"2"', '"01"', '"1.0"', '"-0"',
+                '"true"', '""', '[]', '{}'] as $value
+            ) {
+                $cases['get_settings'][] = '{"' . $field . '":' . $value . '}';
+            }
+        }
+        foreach (
+            ['null', 'true', 'false', '1.0', '"00"', '"+1"', '"-0"', '" 1"', '"1 "',
+            '"1e2"', '"1.0"', '"1.5"', '"' . PHP_INT_MAX . '0"', '"' . PHP_INT_MIN . '0"',
+            '[]', '{}'] as $value
+        ) {
+            $cases['get_settings'][] = '{"retention_days":' . $value . '}';
+        }
+        // Acceptance on the reviewed fields must not leak into siblings.
+        $cases['get_settings'][] = '{"archive_logs":"1","using_default":"1"}';
+        $cases['get_settings'][] = '{"prune_archive":"0","using_default":"0"}';
         foreach (['direct', 'bridge'] as $route) {
             foreach ($cases as $function => $payloads) {
                 foreach ($payloads as $index => $payload) {

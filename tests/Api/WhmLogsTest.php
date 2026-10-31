@@ -59,6 +59,10 @@ final class WhmLogsTest extends TestCase
             ], 'default_retention' => 14]];
         yield 'indefinite' => ['{"default_retention":0,"accounts":[{"retention_days":0}]}',
             ['accounts' => [['retention_days' => 0]], 'default_retention' => 0]];
+        foreach (['0', '14', (string) PHP_INT_MAX, (string) PHP_INT_MIN] as $value) {
+            yield 'canonical integer ' . $value => ['{"default_retention":"' . $value . '"}',
+                ['default_retention' => (int) $value]];
+        }
         yield 'empty accounts' => ['{"accounts":[]}', ['accounts' => []]];
         yield 'omitted fields' => ['{}', []];
         yield 'legacy empty object' => ['[]', []];
@@ -89,7 +93,14 @@ final class WhmLogsTest extends TestCase
     public static function invalidPayloads(): iterable
     {
         foreach (
-            [null, 'null', 'false', '0', '""', '[{}]', '{"default_retention":"14"}',
+            ['null', 'true', 'false', '1.0', '"00"', '"+1"', '"-0"', '" 1"', '"1 "',
+            '"1e2"', '"1.0"', '"1.5"', '"' . PHP_INT_MAX . '0"', '"' . PHP_INT_MIN . '0"',
+            '[]', '{}'] as $index => $value
+        ) {
+            yield 'invalid default ' . $index => ['{"default_retention":' . $value . '}'];
+        }
+        foreach (
+            [null, 'null', 'false', '0', '""', '[{}]',
             '{"default_retention":null}', '{"default_retention":1.5}', '{"accounts":{}}',
             '{"accounts":null}', '{"accounts":[null]}', '{"accounts":[{"user":1}]}',
             '{"accounts":[{"domain":null}]}', '{"accounts":[{"retention_days":"30"}]}',

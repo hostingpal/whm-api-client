@@ -33,7 +33,7 @@ final class LogsSpec
                         ],
                     ],
                 ],
-                'default_retention' => ['type' => 'int'],
+                'default_retention' => ['type' => 'int', 'accept' => ['numeric-string']],
             ],
         ],
     ];
