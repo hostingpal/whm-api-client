@@ -1338,3 +1338,8 @@ Two fixed GETs read version and list_integration_groups with user=npr. Existing
 committed-input, exact request guard, opt-in, verified TLS and new-only structural
 output rules apply. No hook commands, credential links or user configuration are
 read; no hook/link/token mutation or URL fetch runs. `8x0.2.49` retains gaps.
+
+The WHM integrations capture at `7b6f5ce` on `11.138.0.19` passes two GET checks and
+strict assessment with zero discrepancies. Integration groups are empty; no
+populated rows, hooks, credentials, user configurations or mutations are observed.
+Follow-up `8x0.2.49` retains gaps; `8x0.10.5` tracks the depth-limit generator audit.

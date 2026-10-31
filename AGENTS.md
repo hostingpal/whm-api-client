@@ -1287,6 +1287,12 @@ development-tool choice, not a runtime dependency of the PHP package. Preserve p
 refresh them explicitly; routine checks must remain offline. The tool design
 is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
 
+
+The WHM integrations capture at `7b6f5ce` on `11.138.0.19` passes two GET checks and
+strict assessment with zero discrepancies. Integration groups are empty; no
+populated rows, hooks, credentials, user configurations or mutations are observed.
+Follow-up `8x0.2.49` retains gaps; `8x0.10.5` tracks the depth-limit generator audit.
+
 ## Architecture and Conventions
 
 - Follow the [agreed PHP client interface](docs/superpowers/specs/2026-10-13-php-client-design.md):
