@@ -337,6 +337,9 @@ func (b *builder) params(op model.Operation, v model.Variant, ov overlay.Operati
 		documented[p.Name] = true
 		if o, ok := ov.Params[p.Name]; ok && o.Omit {
 			omitted[p.Name] = true
+			if o.OmitEmpty != nil {
+				b.problem(op.ID + ": omitted parameter " + p.Name + " cannot have omit_empty")
+			}
 			if o.Wire != "" {
 				b.problem(op.ID + ": omitted parameter " + p.Name + " cannot have wire corrections")
 			}
@@ -382,6 +385,14 @@ func (b *builder) params(op model.Operation, v model.Variant, ov overlay.Operati
 		}
 		if o.Encoding != "" {
 			param.PHPType, param.DocType, param.Encoding = encodingTypes(o.Encoding, param)
+		}
+		if o.OmitEmpty != nil {
+			if !*o.OmitEmpty || decl["required"] == true || param.Required || param.Encoding != "repeat" ||
+				!b.schemas.stringList(p.Locator.SourceID, decl["schema"]) {
+				b.problem(op.ID + ": parameter " + p.Name + ": omit_empty requires true on an optional repeat-encoded string-list source and optional final requiredness")
+			} else {
+				param.OmitEmpty = true
+			}
 		}
 		if o.Wire != "" && (!overlay.IsCorrectedWireName(p.Name) || !overlay.IsCorrectedWireName(o.Wire) ||
 			param.Encoding != "scalar" || (spec.Type != "string" && spec.Type != "int" && spec.Type != "number")) {

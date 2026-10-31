@@ -1467,3 +1467,19 @@ unknown-field observation remains strict failed and unwaived. The separately
 reviewed `result` wrapper correction does not alter the historical artifact or
 establish its hidden key identity/count. No repeat is required merely for green
 status, and no credential/session action is part of this recipe.
+
+## Expanded WHM web-server inventory
+
+Run `WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs php tools/live-verify/whm-webserver-configuration.php --output=docs/api/evidence/YYYY-MM-DD-whm-webserver-configuration.json`.
+
+Nine fixed parameterless GETs read version and eight EasyApache/PHP inventories.
+Only masked structural evidence is persisted. Existing committed-input, exact
+request guard, opt-in, verified TLS and new-only output requirements apply.
+No INI content, arbitrary file or private configuration selector is supplied;
+no conversion/profile/PHP/FPM mutation or URL fetch runs. `8x0.2.45` retains gaps.
+
+Both committed web-server captures are complete and immutable. Their two
+masked unknown observations remain strict failed and unwaived, explicitly
+nonblocking in review 5720977511. The separate reviewer INI reads and source
+corrections do not expand this fixed catalog. No repeated capture or server
+configuration write is required merely for integration or green status.

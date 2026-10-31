@@ -15,6 +15,7 @@ use SensitiveParameter;
 /**
  * Encode a generated method's named arguments into wire parameters.
  *
+ * An explicit omit_empty parameter setting also omits exactly an empty list.
  * Null arguments are omitted, so an explicit null and an omitted argument send
  * the same request. Flags become 0/1; repeated, WHM-numbered and suffix-numbered
  * values become their
@@ -35,7 +36,8 @@ final class ArgumentEncoder
      * Encode arguments in spec order under their wire names.
      *
      * Each declared parameter with a non-null argument is emitted under its wire
-     * name using its declared encoding; undeclared arguments are rejected.
+     * name using its declared encoding; explicit omit_empty on repeat skips [].
+     * Undeclared arguments are rejected.
      *
      * @param array<mixed> $params Parameter specs keyed by PHP argument name.
      * @param array<string, mixed> $arguments Arguments keyed by PHP argument name.
@@ -61,6 +63,10 @@ final class ArgumentEncoder
             $wire = is_array($param) ? ($param['name'] ?? null) : null;
             if (!is_array($param) || !is_string($wire)) {
                 throw new LogicException('Invalid parameter spec for ' . $name . '.');
+            }
+
+            if (($param['omit_empty'] ?? false) === true && $param['encoding'] === 'repeat' && $value === []) {
+                continue;
             }
 
             $encoded[$wire] = match ($param['encoding'] ?? null) {

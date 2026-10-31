@@ -977,3 +977,19 @@ expand this artifact's coverage or clear its strict finding. Populated page rows
 remain source/offline; all seven POST methods remain live-unobserved. Follow-up
 `8x0.2.44` remains open. The completed capture is immutable and is not repeated
 merely to obtain a green report.
+
+## WHM PHP/web-server inventory, 2026-10-31
+
+- `2026-10-31-whm-webserver-configuration.json` at `3d43621`: nine HTTP/API successes, six payload/probe passes; three known-field mismatches and two masked unknown observations. SHA-256 `1522b42c63825127dc0f925e953c545f93ae89ad4c9df2c9d8cc99307a35b31b`.
+- `2026-10-31-whm-webserver-configuration-corrected.json` at `b535c57`: nine HTTP/API/payload/probe passes; both masked unknown observations remain strict failures without waivers. SHA-256 `9bff10d45c4bebe06189c8b0039efe5e625e2f08c6653cdefc40c0785af53d66`.
+
+Both captures use fixed GETs on `11.138.0.19`, with no INI content read,
+configuration mutation or URL fetch. Follow-up `8x0.2.45` remains open.
+
+Review 5720977511 separately reports 22 successful WHM GET calls, including
+type-only INI reads, and explicitly accepts the two masked findings as
+nonblocking and unwaived. Typed vhost-source fields, custom/vendor version
+compatibility and optional write results use independently cited source
+contracts; they do not identify historical wildcard keys or rewrite either
+artifact. All ten POST methods remain unobserved. No new capture ran for the
+review corrections or master integration.

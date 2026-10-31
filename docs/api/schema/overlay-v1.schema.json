@@ -51,6 +51,7 @@
         "encoding": {"enum": ["scalar", "bool", "repeat", "numbered", "suffix-numbered", "suffix-numbered-scalar"]},
         "sensitive": {"type": "boolean"},
         "omit": {"type": "boolean"},
+        "omit_empty": {"const": true},
         "required": {"type": "boolean"},
         "enum_doc": {"type": "boolean"}
       },

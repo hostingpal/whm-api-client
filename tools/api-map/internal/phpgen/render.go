@@ -279,12 +279,17 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 	w.line(indent + " *")
 	multi := false
 	scalarMulti := false
+	omitEmpty := false
 	for _, p := range op.Params {
 		description := p.Description
 		if !p.Required {
 			description = strings.TrimSpace(description + " Null omits it.")
 		}
+		if p.OmitEmpty {
+			description = strings.TrimSpace(description + " Empty list omits it.")
+		}
 		w.paramDoc(indent, p, description)
+		omitEmpty = omitEmpty || p.OmitEmpty
 		multi = multi || isMultiple(p.Encoding)
 		scalarMulti = scalarMulti || p.Encoding == "suffix-numbered-scalar"
 	}
@@ -300,7 +305,10 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 		w.line(indent + " *     the outcome is not checked.")
 	}
 	if multi {
-		if scalarMulti {
+		if omitEmpty {
+			w.line(indent + " * @throws InvalidArgumentException If a non-omittable list argument is empty,")
+			w.line(indent + " *     or any list is keyed or contains non-strings.")
+		} else if scalarMulti {
 			w.line(indent + " * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.")
 		} else {
 			w.line(indent + " * @throws InvalidArgumentException If a list argument is empty or contains non-strings.")
@@ -410,8 +418,12 @@ func specClass(g effective.Group) string {
 		} else {
 			w.line("        'params' => [")
 			for _, p := range op.Params {
+				setting := ""
+				if p.OmitEmpty {
+					setting = ", 'omit_empty' => true"
+				}
 				entry := "            " + phpString(p.PHP) + " => ['name' => " + phpString(p.Wire) +
-					", 'encoding' => " + phpString(p.Encoding) + "],"
+					", 'encoding' => " + phpString(p.Encoding) + setting + "],"
 				if len(entry) <= lineWidth {
 					w.line(entry)
 					continue
@@ -419,6 +431,9 @@ func specClass(g effective.Group) string {
 				w.line("            " + phpString(p.PHP) + " => [")
 				w.line("                'name' => " + phpString(p.Wire) + ",")
 				w.line("                'encoding' => " + phpString(p.Encoding) + ",")
+				if p.OmitEmpty {
+					w.line("                'omit_empty' => true,")
+				}
 				w.line("            ],")
 			}
 			w.line("        ],")

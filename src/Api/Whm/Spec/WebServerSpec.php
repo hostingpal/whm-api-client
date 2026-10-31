@@ -13,6 +13,251 @@ namespace HostingPal\WhmApiClient\Api\Whm\Spec;
  */
 final class WebServerSpec
 {
+    public const CONVERT_ALL_DOMAINS_TO_FPM = [
+        'function' => 'convert_all_domains_to_fpm',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'build_id' => ['type' => 'int'],
+            ],
+        ],
+    ];
+
+    public const EA4_GET_ADDITIONAL_PKG_PREFIXES = [
+        'function' => 'ea4_get_additional_pkg_prefixes',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'additional_pkg_prefixes' => ['type' => 'list', 'items' => ['type' => 'string']],
+            ],
+        ],
+        'unwrap' => 'additional_pkg_prefixes',
+    ];
+
+    public const EA4_GET_CURRENTLY_INSTALLED_PACKAGES = [
+        'function' => 'ea4_get_currently_installed_packages',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'packages' => ['type' => 'list', 'items' => ['type' => 'string']],
+            ],
+        ],
+        'unwrap' => 'packages',
+    ];
+
+    public const EA4_LIST_PROFILES = [
+        'function' => 'ea4_list_profiles',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'values' => [
+                'type' => 'list',
+                'items' => [
+                    'type' => 'object',
+                    'fields' => [
+                        'desc' => ['type' => 'string'],
+                        'name' => ['type' => 'string'],
+                        'path' => ['type' => 'string'],
+                        'pkgs' => ['type' => 'list', 'items' => ['type' => 'string']],
+                        'tags' => ['type' => 'list', 'items' => ['type' => 'string']],
+                        'validation_data' => [
+                            'type' => 'object',
+                            'fields' => [
+                                'not_on_server' => ['type' => 'list', 'items' => ['type' => 'string']],
+                            ],
+                        ],
+                        'version' => [
+                            'type' => 'union',
+                            'anyOf' => [
+                                ['type' => 'string'],
+                                ['type' => 'number'],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'fields' => [
+                'cpanel' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'active' => ['type' => 'flag'],
+                            'desc' => ['type' => 'string'],
+                            'name' => ['type' => 'string'],
+                            'pkgs' => ['type' => 'list', 'items' => ['type' => 'string']],
+                            'tags' => ['type' => 'list', 'items' => ['type' => 'string']],
+                            'validation_data' => [
+                                'type' => 'object',
+                                'fields' => [
+                                    'not_on_server' => ['type' => 'list', 'items' => ['type' => 'string']],
+                                ],
+                            ],
+                            'version' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'string'],
+                                    ['type' => 'number'],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                'custom' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'desc' => ['type' => 'string'],
+                            'name' => ['type' => 'string'],
+                            'path' => ['type' => 'string'],
+                            'pkgs' => ['type' => 'list', 'items' => ['type' => 'string']],
+                            'tags' => ['type' => 'list', 'items' => ['type' => 'string']],
+                            'validation_data' => [
+                                'type' => 'object',
+                                'fields' => [
+                                    'not_on_server' => ['type' => 'list', 'items' => ['type' => 'string']],
+                                ],
+                            ],
+                            'version' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'string'],
+                                    ['type' => 'number'],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const EA4_METAINFO = [
+        'function' => 'ea4_metainfo',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'map',
+            'values' => [
+                'type' => 'union',
+                'anyOf' => [
+                    ['type' => 'map', 'values' => ['type' => 'mixed']],
+                    ['type' => 'string'],
+                    ['type' => 'list', 'items' => ['type' => 'string']],
+                ],
+            ],
+        ],
+    ];
+
+    public const EA4_RECOMMENDATIONS = [
+        'function' => 'ea4_recommendations',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'map',
+            'values' => [
+                'type' => 'list',
+                'items' => [
+                    'type' => 'object',
+                    'fields' => [
+                        'desc' => ['type' => 'string'],
+                        'level' => ['type' => 'string'],
+                        'name' => ['type' => 'string'],
+                        'on' => ['type' => 'string'],
+                        'options' => [
+                            'type' => 'list',
+                            'items' => [
+                                'type' => 'object',
+                                'fields' => [
+                                    'items' => ['type' => 'list', 'items' => ['type' => 'string']],
+                                    'level' => ['type' => 'string'],
+                                    'recommended' => ['type' => 'bool'],
+                                    'text' => ['type' => 'string'],
+                                    'url' => ['type' => 'string'],
+                                ],
+                            ],
+                        ],
+                        'url' => [
+                            'type' => 'union',
+                            'anyOf' => [
+                                ['type' => 'string'],
+                                ['type' => 'bool'],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const EA4_SAVE_PROFILE = [
+        'function' => 'ea4_save_profile',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'filename' => ['name' => 'filename', 'encoding' => 'scalar'],
+            'name' => ['name' => 'name', 'encoding' => 'scalar'],
+            'packages' => ['name' => 'pkg', 'encoding' => 'repeat'],
+            'desc' => ['name' => 'desc', 'encoding' => 'scalar'],
+            'overwrite' => ['name' => 'overwrite', 'encoding' => 'bool'],
+            'tags' => ['name' => 'tag', 'encoding' => 'repeat', 'omit_empty' => true],
+            'version' => ['name' => 'version', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'already_exists' => ['type' => 'flag'],
+                'path' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const EOL_PHP_SITES = [
+        'function' => 'eol_php_sites',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'eol_php_sites' => ['type' => 'int'],
+            ],
+        ],
+        'unwrap' => 'eol_php_sites',
+    ];
+
+    public const GET_FPM_COUNT_AND_UTILIZATION = [
+        'function' => 'get_fpm_count_and_utilization',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'domains_to_be_enabled' => ['type' => 'int'],
+                'domains_using_fpm' => ['type' => 'int'],
+                'memory_needed' => ['type' => 'int'],
+                'number_of_new_fpm_accounts_we_can_handle' => ['type' => 'int'],
+                'show_warning' => ['type' => 'flag'],
+                'total_domains' => ['type' => 'int'],
+            ],
+        ],
+    ];
+
     public const IS_CONVERSION_IN_PROGRESS = [
         'function' => 'is_conversion_in_progress',
         'method' => 'GET',
@@ -67,6 +312,23 @@ final class WebServerSpec
         'unwrap' => 'version_handlers',
     ];
 
+    public const PHP_GET_IMPACTED_DOMAINS = [
+        'function' => 'php_get_impacted_domains',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'domains' => ['name' => 'domain', 'encoding' => 'repeat'],
+            'systemDefault' => ['name' => 'system_default', 'encoding' => 'bool'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'domains' => ['type' => 'list', 'items' => ['type' => 'string']],
+            ],
+        ],
+        'unwrap' => 'domains',
+    ];
+
     public const PHP_GET_INSTALLED_VERSIONS = [
         'function' => 'php_get_installed_versions',
         'method' => 'GET',
@@ -109,6 +371,66 @@ final class WebServerSpec
         'unwrap' => 'version',
     ];
 
+    public const PHP_GET_VHOST_VERSIONS = [
+        'function' => 'php_get_vhost_versions',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'versions' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'account' => ['type' => 'string'],
+                            'account_owner' => ['type' => 'string'],
+                            'documentroot' => ['type' => 'string'],
+                            'homedir' => ['type' => 'string'],
+                            'is_suspended' => ['type' => 'flag'],
+                            'main_domain' => ['type' => 'flag'],
+                            'php_fpm' => ['type' => 'flag'],
+                            'php_fpm_pool_parms' => [
+                                'type' => 'object',
+                                'fields' => [
+                                    'pm_max_children' => ['type' => 'int'],
+                                    'pm_max_requests' => ['type' => 'int'],
+                                    'pm_process_idle_timeout' => ['type' => 'int'],
+                                ],
+                            ],
+                            'phpversion_source' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    [
+                                        'type' => 'list',
+                                        'items' => [
+                                            'type' => 'object',
+                                            'fields' => [
+                                                'domain' => ['type' => 'string'],
+                                                'system_default' => ['type' => 'int'],
+                                            ],
+                                        ],
+                                    ],
+                                    [
+                                        'type' => 'object',
+                                        'fields' => [
+                                            'domain' => ['type' => 'string'],
+                                            'system_default' => ['type' => 'int'],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                            'version' => ['type' => 'string'],
+                            'vhost' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+        'unwrap' => 'versions',
+    ];
+
     public const PHP_GET_VHOSTS_BY_VERSION = [
         'function' => 'php_get_vhosts_by_version',
         'method' => 'GET',
@@ -123,5 +445,143 @@ final class WebServerSpec
             ],
         ],
         'unwrap' => 'vhosts',
+    ];
+
+    public const PHP_INI_GET_CONTENT = [
+        'function' => 'php_ini_get_content',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'version' => ['name' => 'version', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'content' => ['type' => 'string'],
+            ],
+        ],
+        'unwrap' => 'content',
+    ];
+
+    public const PHP_INI_GET_DIRECTIVES = [
+        'function' => 'php_ini_get_directives',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'version' => ['name' => 'version', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'directives' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'default_value' => ['type' => 'string'],
+                            'info' => ['type' => 'string'],
+                            'key' => ['type' => 'string'],
+                            'php_ini_mode' => ['type' => 'string'],
+                            'type' => ['type' => 'string'],
+                            'value' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+        'unwrap' => 'directives',
+    ];
+
+    public const PHP_INI_SET_CONTENT = [
+        'function' => 'php_ini_set_content',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'content' => ['name' => 'content', 'encoding' => 'scalar'],
+            'version' => ['name' => 'version', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'map', 'values' => ['type' => 'mixed']],
+        'optional' => true,
+    ];
+
+    public const PHP_INI_SET_DIRECTIVES = [
+        'function' => 'php_ini_set_directives',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'directives' => ['name' => 'directive', 'encoding' => 'repeat'],
+            'version' => ['name' => 'version', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'map', 'values' => ['type' => 'mixed']],
+        'optional' => true,
+    ];
+
+    public const PHP_SET_DEFAULT_ACCOUNTS_TO_FPM = [
+        'function' => 'php_set_default_accounts_to_fpm',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'defaultAccountsToFpm' => ['name' => 'default_accounts_to_fpm', 'encoding' => 'bool'],
+        ],
+        'returns' => ['type' => 'mixed'],
+        'optional' => true,
+    ];
+
+    public const PHP_SET_HANDLER = [
+        'function' => 'php_set_handler',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'handler' => ['name' => 'handler', 'encoding' => 'scalar'],
+            'version' => ['name' => 'version', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
+    public const PHP_SET_OLD_FPM_FLAG = [
+        'function' => 'php_set_old_fpm_flag',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'success' => ['type' => 'flag'],
+            ],
+        ],
+    ];
+
+    public const PHP_SET_SESSION_SAVE_PATH = [
+        'function' => 'php_set_session_save_path',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'overwrite' => ['name' => 'overwrite', 'encoding' => 'bool'],
+            'path' => ['name' => 'path', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
+    public const PHP_SET_SYSTEM_DEFAULT_VERSION = [
+        'function' => 'php_set_system_default_version',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'version' => ['name' => 'version', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
+    public const PHP_SET_VHOST_VERSIONS = [
+        'function' => 'php_set_vhost_versions',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'version' => ['name' => 'version', 'encoding' => 'scalar'],
+            'vhosts' => ['name' => 'vhost', 'encoding' => 'numbered'],
+            'phpFpm' => ['name' => 'php_fpm', 'encoding' => 'bool'],
+            'phpFpmPoolParms' => ['name' => 'php_fpm_pool_parms', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
     ];
 }
