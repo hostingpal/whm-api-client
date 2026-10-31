@@ -4428,3 +4428,111 @@ All 23 POST methods and remaining successful-access variants remain unobserved
 under `8x0.2.40`. No credential, key, private URL or TFA secret was read, no state
 changed and no new live capture ran. The original three-GET artifact is complete
 and immutable.
+
+## WHM SSL certificate management
+
+`whm()->ssl()` exposes 32 of the 34 pinned SSL Certificates operations: ten GET
+reads and 22 form POST calls, including source-classified POST fetch operations.
+Provider reset/selection remains excluded under `8x0.1.28` because `x_*` denotes
+dynamic input names, not a literal parameter. Provider inventories preserve strict
+named fields and opaque additional values; treat returned provider data as private.
+
+PEM, private-key, CA-bundle and passphrase inputs remain sensitive. Domain exclusion
+arrays use documented numbered names; deferred installation uses repeated fields
+whose five lists callers must align by position, including each certificate and
+private key. Neither the client nor its type checks validate equal lengths or
+pairing. An empty bundle requests server-side bundle download. The metadata setter accepts caller-serialized JSON text encoded once as
+a form field; its current native `string|int` boundary does not establish integer
+semantics or automatic object encoding (`8x0.1.23`). This is not a JSON request body.
+
+Generation stores key/CSR material even when certificate generation is skipped.
+Service certificate installation requires a separate service restart; the client
+does not perform it. Exclusion replacement, disable/reset/install and background
+checks can alter hosting behavior; queued work or a PID does not establish
+issuance, renewal, installation or TLS delivery. No retry, rollback or polling is
+added. `installSsl()` returns its own `status` and `warning_domains` alongside
+the checked WHM envelope outcome. Callers must inspect those fields: a successful
+`metadata.result` does not imply nested `status: 1`, and nested failure is not
+converted into an exception. `listCertificates()` without `user` includes all
+accounts' certificate metadata; specify the intended account when isolation is
+required. Virtual-host deletion has no rollback and must not be retried simply
+because response validation failed after a confirmed outcome.
+
+Certificate fields preserve omission, native values and literal dotted keys.
+Separate WHM reviewer observations support string terms-of-service acceptance
+(despite the conflicting pinned flag), canonical integer strings in best-service
+expiry and FQDN certificate dates/length, exact quoted flags, and null FQDN
+verification-error/issuer-organization values. Vhost self-signed flags preserve
+the exact empty string without assigning it new meaning; deletion flags accept
+exact quoted 0/1. The five shared reset/install service-certificate leaves use
+source-family compatibility only; those writes were not observed.
+`fetchServiceSslComponents()` keeps its native integer contracts, and unconfirmed
+vhost `subject.commonName` variants stay unsupported.
+
+`rebuildInstalledSslDatabase()` is a documented no-op. It and deferred enqueue
+accept absent/null successful data as reviewed source-only compatibility, while
+present payloads keep their existing opaque-data validation. No missing/null
+response from either method was observed.
+
+All 32 methods have independent offline contracts. The bounded nine-GET catalog
+reads version, schedule, log catalog metadata, metadata flags, problems/exclusions
+for designated `npr`/`npr.rs`, the best domain for the pinned `whostmgr` service
+example, and the account's certificate inventory. It reads no log contents,
+private-key/component PEM or unspecified provider values and makes no changes.
+Follow-up `8x0.2.39` retains remaining live behavior.
+
+The initial [WHM SSL capture](evidence/2026-10-31-whm-ssl.json) at
+`df3a6341a08d85eb9c011e617db7edbcc2c967cc` on `11.138.0.19` records nine
+HTTP/API successes and seven payload/probe passes. The best-service-domain
+expiration is null. Certificate inventory has null owner-list items and literal
+`issuer.organizationName` values, plus numeric-string modulus lengths and expiry
+timestamps. Five operation-specific field rules preserve these observed variants;
+other fields and WHM/UAPI operations remain unchanged. Owner-list null items do
+not make the list itself nullable, and no meaning is assigned to null values.
+
+Integer-string compatibility stays canonical and lossless, rejecting noncanonical
+strings, fractional values and overflow. Structural evidence does not establish
+every accepted canonical spelling. No provider data, private key, component PEM
+or log contents were read and no mutation or URL request ran. The original strict
+assessment stays failed and immutable; `8x0.2.39` retains remaining live behavior.
+Initial SHA-256:
+`f1bded7e795124bb9d053a568a002b17db6b03766a4ec19cd9a416363142ea29`.
+
+The [corrected WHM SSL capture](evidence/2026-10-31-whm-ssl-corrected.json) at
+`4317e1af1a4065134fae5e8addbd6c9cf083e985` on `11.138.0.19` passes all nine
+HTTP/API/payload/probe checks and strict assessment with zero discrepancies.
+The five operation-specific corrections pass, with populated certificate inventory.
+No installation, service restart, TLS serving/trust, AutoSSL issuance/renewal,
+provider configuration or key lifecycle behavior is established.
+
+No certificate, exclusion, configuration or scheduling setting changed. No private
+key, component PEM, provider payload or log content was read, and no URL was fetched.
+The original failed artifact stays unchanged; `8x0.2.39` retains unobserved behavior.
+Corrected SHA-256:
+`1e3117fc43dc790b0891b3571313b44f60953ce4b6e0d20305c0bc32ccacb498`.
+
+### PR53 independent review and correction boundaries
+
+[Claude review 5720639651](https://github.com/hostingpal/whm-api-client/pull/53#pullrequestreview-5720639651)
+reports WHM observations on `11.138.0.19`, with type-only output and a disposable
+`wrvssl` account created and removed by the reviewer. The account-scoped
+exclusion cycle and install/delete operations used a locally generated
+self-signed certificate. Those reports remain separate from the committed
+nine-GET captures and do not expand their scope.
+
+The reported normal-data failures identify the exact terms-of-service string,
+best-service expiry, FQDN certificate fields, empty vhost self-signed flag and
+quoted deletion flag. The corresponding service reset/install family corrections
+are source/offline evidence; no server-wide write was run. The dismissed vhost
+`subject.commonName` remains unchanged. Nested install status and warning domains
+must be inspected independently of the checked metadata outcome.
+
+Only rebuild and deferred enqueue permit an omitted/null successful payload under
+the reviewed zero-property/opaque-object source contract. These response variants
+remain unobserved; present values are still validated. The client performs no
+automatic retry, rollback or alignment check for the five enqueue lists.
+
+No new live request, capture, credential/private-key read, server-wide write or
+URL fetch ran for these corrections. Both prior artifacts are immutable.
+Remaining operations, variants, TLS serving/trust, issuance and service-certificate
+changes stay open under `8x0.2.39`; input gaps `8x0.1.28` and `8x0.1.23` remain.
