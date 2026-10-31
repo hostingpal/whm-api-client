@@ -22,7 +22,7 @@ final class SshSpec
         'returns' => [
             'type' => 'object',
             'fields' => [
-                'port' => ['type' => 'int'],
+                'port' => ['type' => 'int', 'accept' => ['numeric-string']],
             ],
         ],
     ];

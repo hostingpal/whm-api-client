@@ -32,7 +32,10 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  * @phpstan-type GetScanPathsResult array{
  *     id?: string,
  *     message?: string,
- * }
+ * }|list<array{
+ *     id?: string,
+ *     message?: string,
+ * }>
  * @phpstan-type GetScanStatusResult array{
  *     current_file?: string,
  *     infected_files?: list<string>,
@@ -42,7 +45,7 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  *     time_started?: string,
  *     total_file_count?: int,
  *     total_file_size_MiB?: int,
- * }
+ * }|null
  * @phpstan-type ListInfectedFilesResult list<array{
  *     file?: string,
  *     virus_type?: string,
@@ -111,9 +114,14 @@ final readonly class ClamScanner
      * disinfection and polls checkDisinfectionStatus. This client does not start or poll automatically. disinfectFiles
      * is excluded pending JSON transport under whm-api-client-8x0.1.18.
      *
-     * Documented: Available scan types depend on the administrator settings in Configure ClamAV. The pinned data schema
-     * is one object with optional id and message, not a list. id documents home, mail, public_html and public_ftp; no
-     * list alternative is inferred from the plural name.
+     * Documented: Available scan types depend on the administrator settings in Configure ClamAV. The pinned formal data
+     * schema is one object with optional id and message strings. id documents home, mail, public_html and public_ftp;
+     * the field descriptions describe one path/type record.
+     *
+     * Observed: The initial 2026-10-31 capture observed a list of objects on both routes. Its sanitized root-mismatch
+     * paths mask leaf names, so they establish no named live field types. Preserve the formal object and also accept a
+     * list of the same documented optional id/message record as a source-based compatibility inference. No unknown live
+     * fields are added. Null and missing payloads remain invalid.
      *
      * API-map identity: uapi:ClamScanner/get_scan_paths#GET (wire name get_scan_paths).
      *
@@ -146,6 +154,10 @@ final readonly class ClamScanner
      * the separately named total megabyte quantity. time_started is an epoch timestamp string, not an integer. Preserve
      * omission separately from zero, empty lists and empty strings.
      *
+     * Observed: The initial 2026-10-31 capture returned explicit null data with API success on both routes. Preserve
+     * null separately from the documented status object and an absent payload. The capture establishes no reason for
+     * null, scan state or completion behavior; no scan was started.
+     *
      * API-map identity: uapi:ClamScanner/get_scan_status#GET (wire name get_scan_status).
      *
      * @return GetScanStatusResult
@@ -154,7 +166,7 @@ final readonly class ClamScanner
      *     any change the operation makes has already taken effect.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/antivirus-protection-(clamav)/clamscanner-get_scan_status
      */
-    public function getScanStatus(): array
+    public function getScanStatus(): ?array
     {
         /** @var GetScanStatusResult $result Validated against ClamScannerSpec::GET_SCAN_STATUS. */
         $result = ($this->run)(ClamScannerSpec::GET_SCAN_STATUS, []);

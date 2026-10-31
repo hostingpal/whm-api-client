@@ -3149,3 +3149,21 @@ No scan, disinfection, security-setting change, block change, external unlink,
 host-key verification, login or remote URL fetch occurs. Empty inventories do not
 prove populated row contracts, and API success does not prove security enforcement.
 Remaining behavior is tracked under `8x0.2.31`.
+
+The initial [security/access capture](evidence/2026-10-31-security-access.json)
+at `91fce03c2cc0e24893d9c269b51a2c7d02644f0b` on `11.138.0.19` records 25 HTTP
+200 observations: ten API/payload/probe passes, eight successful-API payload
+mismatches and seven API failures. Both scan-path calls return lists of objects;
+the original root mismatch masks their field names. The list alternative uses
+the documented per-path `id`/`message` record and the source's available-paths prose,
+which is a source-based item interpretation, not proof of named live leaf fields.
+The formal object alternative remains supported. Both scan-status responses are
+explicit null, both SSH ports are numeric strings, and both last-login responses
+are scalar strings. Only those contract alternatives gain compatibility.
+
+Both ModSecurity methods fail on both routes, and all three external-authentication
+reads fail through the bridge. No cause is established or failure waived. No scan,
+disinfection, security-setting change, unlink, host-key action or login occurs.
+Follow-up `8x0.2.31` retains these errors and every unobserved variant. The original
+capture remains failed and immutable. SHA-256:
+`4697e246b36b465efa814273d583d2c50c72d795352f3205eba0d983ac14ea77`.

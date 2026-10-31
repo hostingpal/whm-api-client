@@ -18,7 +18,7 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  * according to the configured credentials, with a single attempt and no retries. The handle clears responseMeta()
  * before every attempt and records the envelope snapshot before API or payload errors.
  *
- * @phpstan-type GetLastOrCurrentLoggedInIpResult list<string>
+ * @phpstan-type GetLastOrCurrentLoggedInIpResult string|list<string>
  */
 final readonly class LastLogin
 {
@@ -40,9 +40,13 @@ final readonly class LastLogin
      * Documented: Available in cPanel 11.48 and later; returns the IP address of the user who most recently logged in
      * using the selected account context. No request arguments or defaults are declared in the pinned operation.
      *
-     * Documented: The pinned payload is a list of strings, rather than a scalar address. Preserve list order,
-     * duplicates and an empty list; do not infer nullable values or perform IP normalization. A missing data member is
-     * a payload mismatch.
+     * Documented: The pinned payload is a list of strings. Preserve list order, duplicates and an empty list; do not
+     * infer nullable values or perform IP normalization. A missing data member is a payload mismatch.
+     *
+     * Observed: The original security-access capture on cPanel 11.138.0.19 returned a scalar string through both
+     * routes. The result preserves that string or the documented list of strings without wrapping, address validation
+     * or normalization. Empty strings and exact spelling remain unchanged; null and absent data remain invalid. Masked
+     * evidence does not reveal the returned address or establish every string format.
      *
      * API-map identity: uapi:LastLogin/get_last_or_current_logged_in_ip#GET (wire name
      * get_last_or_current_logged_in_ip).
@@ -53,7 +57,7 @@ final readonly class LastLogin
      *     any change the operation makes has already taken effect.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/login-information/lastlogin-get_last_or_current_logged_in_ip
      */
-    public function getLastOrCurrentLoggedInIp(): array
+    public function getLastOrCurrentLoggedInIp(): string|array
     {
         /**
          * @var GetLastOrCurrentLoggedInIpResult $result

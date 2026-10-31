@@ -19,6 +19,12 @@ final class LastLoginSpec
         'method' => 'GET',
         'outcome' => 'flag',
         'params' => [],
-        'returns' => ['type' => 'list', 'items' => ['type' => 'string']],
+        'returns' => [
+            'type' => 'union',
+            'anyOf' => [
+                ['type' => 'string'],
+                ['type' => 'list', 'items' => ['type' => 'string']],
+            ],
+        ],
     ];
 }

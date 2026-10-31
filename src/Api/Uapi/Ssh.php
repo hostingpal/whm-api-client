@@ -46,8 +46,13 @@ final readonly class Ssh
      * Documented: Available in cPanel 11.42 and later; uses the selected account context. No request arguments or
      * defaults are declared in the pinned operation.
      *
-     * Documented: Returns the server SSH port as an optional integer; no numeric-string coercion is inferred. Reading
-     * the port does not connect to SSH or establish SSH availability.
+     * Documented: Returns the server SSH port as an optional integer. Reading the port does not connect to SSH or
+     * establish SSH availability.
+     *
+     * Observed: The original security-access capture on cPanel 11.138.0.19 observed numeric-string port values through
+     * both routes. Only canonical strings that round-trip within the PHP integer range normalize to integers; alternate
+     * spellings, fractions and overflow remain rejected. Structural evidence does not establish the exact string
+     * spelling. Omitted port stays omitted; no null is inferred.
      *
      * API-map identity: uapi:SSH/get_port#GET (wire name get_port).
      *

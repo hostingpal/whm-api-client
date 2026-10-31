@@ -12,7 +12,11 @@
         },
         {
           "kind": "documented",
-          "text": "The pinned payload is a list of strings, rather than a scalar address. Preserve list order, duplicates and an empty list; do not infer nullable values or perform IP normalization. A missing data member is a payload mismatch."
+          "text": "The pinned payload is a list of strings. Preserve list order, duplicates and an empty list; do not infer nullable values or perform IP normalization. A missing data member is a payload mismatch."
+        },
+        {
+          "kind": "observed",
+          "text": "The original security-access capture on cPanel 11.138.0.19 returned a scalar string through both routes. The result preserves that string or the documented list of strings without wrapping, address validation or normalization. Empty strings and exact spelling remain unchanged; null and absent data remain invalid. Masked evidence does not reveal the returned address or establish every string format."
         }
       ],
       "probe": {
@@ -23,7 +27,43 @@
           "bridged-uapi"
         ],
         "expected": "success"
-      }
+      },
+      "response": {
+        "": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "list",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Original immutable docs/api/evidence/2026-10-31-security-access.json (SHA-256 4697e246b36b465efa814273d583d2c50c72d795352f3205eba0d983ac14ea77), captured at revision 91fce03c2cc0e24893d9c269b51a2c7d02644f0b on cPanel 11.138.0.19 from pinned source SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, records HTTP 200 and API success on direct-uapi and bridged-uapi GET routes. LastLogin/get_last_or_current_logged_in_ip payload root $ has string type and the original type_mismatch finding under effective contract ef81136486e5b6037406dc0413335851014b7a60ea1af90f9642631cf6035b82, while the pinned formal schema declares list<string>. Preserve both contracts using only string|list<string> at the payload root. Preserve exact strings and list entries without address normalization, parsing or scalar wrapping; no integer, float, boolean, object, null or absent-payload coercion is inferred. The evidence masks string values and establishes no address format. Preserve the original failed artifact unchanged.",
+              "fingerprint": "docs/api/evidence/2026-10-31-security-access.json"
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Original immutable docs/api/evidence/2026-10-31-security-access.json (SHA-256 4697e246b36b465efa814273d583d2c50c72d795352f3205eba0d983ac14ea77), captured at revision 91fce03c2cc0e24893d9c269b51a2c7d02644f0b on cPanel 11.138.0.19 from pinned source SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, records HTTP 200 and API success on direct-uapi and bridged-uapi GET routes. LastLogin/get_last_or_current_logged_in_ip payload root $ has string type and the original type_mismatch finding under effective contract ef81136486e5b6037406dc0413335851014b7a60ea1af90f9642631cf6035b82, while the pinned formal schema declares list<string>. Preserve both contracts using only string|list<string> at the payload root. Preserve exact strings and list entries without address normalization, parsing or scalar wrapping; no integer, float, boolean, object, null or absent-payload coercion is inferred. The evidence masks string values and establishes no address format. Preserve the original failed artifact unchanged.",
+          "fingerprint": "docs/api/evidence/2026-10-31-security-access.json"
+        }
+      ]
     }
   }
 }

@@ -51,10 +51,25 @@ final class ClamScannerSpec
         'outcome' => 'flag',
         'params' => [],
         'returns' => [
-            'type' => 'object',
-            'fields' => [
-                'id' => ['type' => 'string'],
-                'message' => ['type' => 'string'],
+            'type' => 'union',
+            'anyOf' => [
+                [
+                    'type' => 'object',
+                    'fields' => [
+                        'id' => ['type' => 'string'],
+                        'message' => ['type' => 'string'],
+                    ],
+                ],
+                [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'id' => ['type' => 'string'],
+                            'message' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
             ],
         ],
     ];
@@ -67,6 +82,7 @@ final class ClamScannerSpec
         'params' => [],
         'returns' => [
             'type' => 'object',
+            'nullable' => true,
             'fields' => [
                 'current_file' => ['type' => 'string'],
                 'infected_files' => ['type' => 'list', 'items' => ['type' => 'string']],

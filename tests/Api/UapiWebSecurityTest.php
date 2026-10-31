@@ -73,7 +73,16 @@ final class UapiWebSecurityTest extends TestCase
                 ['id' => 'home', 'message' => 'Scan Entire Home Directory']],
                 ['{"id":"mail","message":""}', ['id' => 'mail', 'message' => '']],
                 ['{"id":"public_ftp"}', ['id' => 'public_ftp']],
-                ['{"id":"public_html"}', ['id' => 'public_html']]];
+                ['{"id":"public_html"}', ['id' => 'public_html']],
+                // The capture establishes a list of objects; these field contracts come from the pinned record.
+                ['[]', []],
+                ['[{"id":"home","message":"Scan Entire Home Directory"},'
+                    . '{"id":"mail","message":""},{"id":"public_html"},'
+                    . '{"id":"public_ftp"},{}]',
+                    [
+            ['id' => 'home', 'message' => 'Scan Entire Home Directory'],
+                        ['id' => 'mail', 'message' => ''], ['id' => 'public_html'], ['id' => 'public_ftp'], []]],
+                ['[{"message":"Description only","future":true}]', [['message' => 'Description only']]]];
         }
         if ($function === 'get_scan_status') {
             return [
@@ -87,7 +96,7 @@ final class UapiWebSecurityTest extends TestCase
                     . '"time_started":"","total_file_count":0,"total_file_size_MiB":0}',
                     ['infected_files' => [], 'scan_complete' => 0, 'scanned_file_count' => 0,
                         'scanned_file_size' => 0, 'time_started' => '', 'total_file_count' => 0,
-                        'total_file_size_MiB' => 0]]];
+                        'total_file_size_MiB' => 0]], ['null', null]];
         }
         if ($function === 'check_disinfection_status') {
             return [
@@ -178,7 +187,7 @@ final class UapiWebSecurityTest extends TestCase
         foreach (['direct', 'bare', 'bridge'] as $route) {
             foreach (self::operations() as [$module, $function]) {
                 $cases = [null, 'false', '1', '1.5', '"value"'];
-                if ($module !== 'BlockIP' && $function !== 'start_scan') {
+                if ($module !== 'BlockIP' && $function !== 'start_scan' && $function !== 'get_scan_status') {
                     $cases[] = 'null';
                 }
                 if ($module === 'BlockIP') {
@@ -190,7 +199,24 @@ final class UapiWebSecurityTest extends TestCase
                         $cases[] = '{"installed":' . $bad . '}';
                     }
                 } elseif ($function === 'get_scan_paths') {
-                    array_push($cases, '[{"id":"home"}]', '{"id":null}', '{"id":1}', '{"message":false}');
+                    array_push(
+                        $cases,
+                        '{"id":null}',
+                        '{"id":1}',
+                        '{"message":false}',
+                        '[null]',
+                        '[false]',
+                        '[1]',
+                        '[[{}]]',
+                        '[{"id":null}]',
+                        '[{"id":1}]',
+                        '[{"id":false}]',
+                        '[{"id":[]}]',
+                        '[{"message":null}]',
+                        '[{"message":1}]',
+                        '[{"message":false}]',
+                        '[{"message":[]}]',
+                    );
                 } elseif ($function === 'get_scan_status') {
                     array_push(
                         $cases,

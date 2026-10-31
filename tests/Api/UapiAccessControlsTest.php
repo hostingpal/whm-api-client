@@ -19,14 +19,14 @@ use Psr\Http\Message\RequestInterface;
 /** Independent literal contracts for KnownHosts, ExternalAuthentication, SSH and LastLogin. */
 final class UapiAccessControlsTest extends TestCase
 {
-    /** @param array<array-key, mixed>|int|null $expected */
+    /** @param array<array-key, mixed>|int|string|null $expected */
     #[DataProvider('validPayloads')]
     public function testExactRequestAndPayload(
         string $route,
         string $module,
         string $function,
         string $payload,
-        array|int|null $expected,
+        array|int|string|null $expected,
     ): void {
         [$client, $http] = self::client($route);
         $account = $client->uapi('npr');
@@ -41,7 +41,19 @@ final class UapiAccessControlsTest extends TestCase
         self::assertArrayNotHasKey('data', $meta->uapi ?? []);
     }
 
-    /** @return iterable<string, array{string, string, string, string, array<array-key, mixed>|int|null}> */
+    #[DataProvider('routes')]
+    public function testObservedPortStringNormalizesAndLoginStringPreservesSpelling(string $route): void
+    {
+        [$client, $http] = self::client($route);
+        $account = $client->uapi('npr');
+        $http->addResponse(new Response(200, [], self::envelope($route, '{"port":"8954"}')));
+        self::assertSame(['port' => 8954], $account->ssh()->getPort());
+        $http->addResponse(new Response(200, [], self::envelope($route, '"2001:0DB8::0001"')));
+        self::assertSame('2001:0DB8::0001', $account->lastLogin()->getLastOrCurrentLoggedInIp());
+        self::assertCount(2, $http->getRequests());
+    }
+
+    /** @return iterable<string, array{string, string, string, string, array<array-key, mixed>|int|string|null}> */
     public static function validPayloads(): iterable
     {
         foreach (self::operationRoutes() as $label => [$route, $module, $function]) {
@@ -51,7 +63,7 @@ final class UapiAccessControlsTest extends TestCase
         }
     }
 
-    /** @return list<array{string, array<array-key, mixed>|int|null}> */
+    /** @return list<array{string, array<array-key, mixed>|int|string|null}> */
     private static function validCases(string $module, string $function): array
     {
         if ($module === 'KnownHosts') {
@@ -107,7 +119,13 @@ final class UapiAccessControlsTest extends TestCase
                         'provider_protocol' => 'openid_connect', 'subject_unique_identifier' => 123456789]]]];
         }
         if ($function === 'get_port') {
-            return [['{}', []], ['{"port":22}', ['port' => 22]], ['{"port":65535}', ['port' => 65535]]];
+            return [
+                ['{}', []], ['{"port":22}', ['port' => 22]], ['{"port":65535}', ['port' => 65535]],
+                ['{"port":"22"}', ['port' => 22]], ['{"port":"0"}', ['port' => 0]],
+                ['{"port":"-1"}', ['port' => -1]],
+                ['{"port":"9223372036854775807"}', ['port' => PHP_INT_MAX]],
+                ['{"port":"-9223372036854775808"}', ['port' => PHP_INT_MIN]],
+            ];
         }
         if ($function === 'get_shell') {
             return [
@@ -116,7 +134,12 @@ final class UapiAccessControlsTest extends TestCase
                 ['{"has_terminal_access":true,"shell":"/bin/bash"}',
                     ['has_terminal_access' => true, 'shell' => '/bin/bash']]];
         }
-        return [['[]', []], ['["192.0.2.1","192.0.2.1",""]', ['192.0.2.1', '192.0.2.1', '']]];
+        return [
+            ['[]', []], ['["192.0.2.1","192.0.2.1",""]', ['192.0.2.1', '192.0.2.1', '']],
+            ['"192.0.2.1"', '192.0.2.1'], ['""', ''], ['" 192.0.2.1 "', ' 192.0.2.1 '],
+            ['"2001:0DB8::0001"', '2001:0DB8::0001'], ['"001.002.003.004"', '001.002.003.004'],
+            ['"0"', '0'], ['"1.5"', '1.5'], ['"future value"', 'future value'],
+        ];
     }
 
     /** @return list<array{string, array<array-key, mixed>|null}> */
@@ -164,7 +187,10 @@ final class UapiAccessControlsTest extends TestCase
     {
         foreach (self::operationRoutes() as $label => [$route, $module, $function]) {
             $opaque = $function === 'delete' || $function === 'remove_authn_link';
-            $cases = [null, 'false', 'true', '1.5', '"text"'];
+            $cases = [null, 'false', 'true', '1.5'];
+            if ($module !== 'LastLogin') {
+                $cases[] = '"text"';
+            }
             if (!$opaque) {
                 $cases[] = 'null';
             }
@@ -220,7 +246,13 @@ final class UapiAccessControlsTest extends TestCase
                     }
                 }
             } elseif ($function === 'get_port') {
-                array_push($cases, '[{}]', '{"port":null}', '{"port":"22"}', '{"port":22.5}', '{"port":true}');
+                array_push($cases, '[{}]', '{"port":null}', '{"port":22.5}', '{"port":true}');
+                foreach (
+                    ['', ' ', ' 22', '22 ', '+22', '022', '-0', '22.0', '22.5', '2e1',
+                    '9223372036854775808', '-9223372036854775809'] as $bad
+                ) {
+                    $cases[] = json_encode(['port' => $bad], JSON_THROW_ON_ERROR);
+                }
             } elseif ($function === 'get_shell') {
                 array_push(
                     $cases,
@@ -233,7 +265,16 @@ final class UapiAccessControlsTest extends TestCase
                     '{"shell":[]}',
                 );
             } else {
-                array_push($cases, '{}', '[0]', '[null]', '[false]', '[{}]');
+                array_push(
+                    $cases,
+                    '{}',
+                    '[0]',
+                    '[null]',
+                    '[false]',
+                    '[{}]',
+                    '["192.0.2.1",null]',
+                    '{"ip":"192.0.2.1"}',
+                );
             }
             foreach ($cases as $index => $payload) {
                 yield "$label $index" => [$route, $module, $function, $payload];
