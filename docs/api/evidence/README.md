@@ -395,6 +395,74 @@ changed, and no returned URL was fetched. No contract was broadened from an API
 failure, and no repeated capture was run merely to seek a passing status. SHA-256:
 `48b5b71e8feb9107310383e50f311f39d99301a3fb57c4179a00d12c97e44a64`.
 
+## Account environment and preferences
+
+The initial [account-environment capture](2026-10-31-account-environment.json)
+at `e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6` on `11.138.0.19` records 27 HTTP
+200 GETs: twenty API/payload/probe passes, four payload mismatches, two API failures
+and one bridge request failure. Its 83 discrepancies comprise 78 type mismatches
+and five masked unknown-field entries. Thirty-two server flags and six server
+integer quantities arrive as numeric strings on both routes; the bridge session
+host is null; direct EA4 recommendation URLs include booleans alongside strings.
+These observations support only those field corrections. The unknown preference,
+recommendation and server fields remain untyped and unwaived. Both PHP-recommendation
+reads fail at the API; the other EA4 bridge response has `data.uapi: null`, so no
+UAPI payload is available. The capture establishes no cause for these failures.
+
+The domain-selected user requests return only `domain`; other user fields, including
+`pushbullet_access_token`, are absent. Locale, theme, preference and server-information
+rows are populated; the enhancement list is empty. This read-only capture establishes
+no contact, locale, theme, preference or token mutation behavior. Follow-up `8x0.2.28`
+retains all failures, unknown fields and unobserved variants. Original SHA-256:
+`e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd`.
+
+The [corrected account-environment capture](2026-10-31-account-environment-corrected.json)
+at `c85a39ef45f108bfef0264eb3a2e01c5167761a6` on `11.138.0.19` records 27 HTTP
+200 GETs. Twenty-four API/payload/probe checks pass, with no known-field type
+mismatches. Both PHP-recommendation API calls and the general recommendation
+bridge call still fail. Five masked unknown-field observations remain: notification
+preferences on both routes, direct general recommendations and server variables on
+both routes. Strict status remains failed with no waivers or acknowledgments.
+Eleven new functions pass on both routes; general recommendations pass directly.
+The enhancement list is empty and the user read is domain-only. No mutation,
+secret retrieval or broader user-field behavior is established. Follow-up `8x0.2.28`
+remains open. Original evidence is unchanged. Corrected SHA-256:
+`654442a1e360c28534c4b80c320ffdde2ca0d96ffdd87f8342fd1b6b47a3eb78`.
+
+## WHM backup and restoration
+
+The initial [backup/restoration capture](2026-10-31-backup-restoration.json)
+at `88e01bd54f1939e4937fd3673f2b174a6353e7ab` on `11.138.0.19` records eleven
+HTTP-200 and successful WHM API observations. Ten payload/probe checks pass;
+`backup_config_get` has three known-field type mismatches and one masked unknown-field observation with integer values. The getter's `backup_weekly_day` is an integer; its original string
+contract is retained alongside that observed variant. Only `check_min_free_space`
+and `prebackup` gain exact quoted-flag acceptance. No other configuration field
+is widened and the unknown field remains untyped and unwaived.
+
+Backup metadata users/domains, archive inventory and every queue collection are
+empty. Restoration module rows are populated. These reads establish no populated
+backup/queue rows, destination behavior, backup creation, restoration, migration,
+queue mutation or configuration-write semantics. All original findings remain in
+`8x0.2.29`; source contradictions are unresolved. Initial SHA-256:
+`4b788b00b69944d305473bd89004e6199914cf2b366ed90676b3313aac32daca`.
+
+The [corrected backup/restoration capture](2026-10-31-backup-restoration-corrected.json)
+at `a5b6e3a959185702d9e2146dc6323e0c69ec3cdf` on `11.138.0.19` records eleven
+HTTP/API successes and ten payload/probe passes. The weekday integer and
+`check_min_free_space` quoted flag now pass. `prebackup` still fails its strict
+0/1 contract: the artifact classifies it only as numeric-string, which does not
+establish its spelling or a valid flag value. The optional exact quoted-flag
+acceptance does not make this response compatible. No broader numeric coercion,
+new enum value or guessed sentinel is added. That capture also retains one masked unknown-field observation with integer
+values; wildcard masking establishes neither its name nor field count. Strict status stays failed with no acknowledgments.
+
+Both artifacts remain immutable. Empty inventories/queues establish no populated
+row schemas; the module summary is populated. No mutation, backup creation,
+restoration or configuration behavior is established. Follow-up `8x0.2.29` retains
+the historical `prebackup` mismatch, masked unknown-field observation and
+remaining source/live gaps. Corrected SHA-256:
+`f910fcd3377c881e07d496fd727bec622016bd8df33552cfe381552752acde47`.
+
 ## Team and user management
 
 The initial [team/user-management capture](2026-10-31-team-user-management.json)

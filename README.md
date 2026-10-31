@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 46 generated typed groups cover 462 documented operations (see
+The 57 generated typed groups cover 524 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, read-only DNS zones
 and resolvers, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -602,6 +602,91 @@ confirm its identity and zero marker. No content was read and no resource was
 created or changed. The root-owned uid/gid variants remain supported by Claude's
 separate report. Earlier artifacts stay immutable.
 
+The account environment and preference slice exposes twenty compatible methods
+across ContactInformation, Contactus, Locale, Themes, Notifications,
+AccountEnhancements, EA4, ServerInformation and Variables. Fourteen reads use GET;
+six secret-bearing or state-changing operations use form POST. The JSON-body
+`ContactInformation/set_notification_preferences` operation remains excluded under
+`8x0.1.18`, and the deprecated theme-base operation remains excluded.
+
+Contact addresses use documented repeated form fields. `setEmailAddresses()`
+permits omitting `oldAddresses` when the account has no current contact addresses;
+with existing addresses, omission still fails the server's old-address check.
+`unsetEmailAddresses()` requires the complete old-address list. New-address and
+password inputs retain their source requiredness; passwords and Pushbullet tokens
+are sensitive parameters. The token getter also uses POST and returns sensitive
+payload data. Contact mutations with no documented data return void; locale
+setting preserves its present unspecified payload, while theme update preserves
+nullable opaque objects and rejects an absent payload.
+
+Theme options preserve omission and explicit false. Enhancement availability data
+is separate from UAPI status: a successful data value of zero is not an API error.
+The enhancement-list source omits its container type and has inconsistent object
+prose/items structure, so the result remains mixed rather than acquiring an
+invented list contract. Notification preference rows retain the suspicious literal
+`additionalProperties` source property without inferring a dynamic-field schema.
+
+Variable reads preserve optional fields and nullable values.
+`variables()->getUserInformation(name: ...)` and `getServerInformation(name: ...)`
+accept one string or a nonempty list encoded as repeated `name` keys. Omission
+retains the server's all-field behavior; `getSessionInformation()` keeps a scalar
+selector. Source prose/examples establish dynamic feature-flag and domain/MX maps
+where the formal schema misplaced `additionalProperties`. Server/session/user
+fields and opaque values are returned as data; recommendations do not install
+packages or change configuration.
+
+Every user-information integer field, including integer alternatives and feature
+flag values, accepts canonical lossless integer strings under the reviewed family
+rule; flags accept only exact quoted `0`/`1`. Native integers and omission remain
+unchanged. Existing string alternatives remain available, including noncanonical
+and out-of-range strings in `maximum_*` fields; no new closed enum is enforced.
+This family combines reviewer observations with source-based inference, without
+claiming that every field was observed. `contact_email` and `contact_email_2` also
+preserve explicit null, separately from empty strings and omitted keys.
+
+The 32 observed server flags accept exact quoted `0`/`1`; eight integer quantities
+accept canonical lossless integer strings. Six quantities were observed with
+numeric values. Compatibility for `file_upload_maximum_bytes` and
+`minimum_password_strength_mysql` is inferred from the reviewer-inspected shared
+configuration-copy path; those two fields were seen only as null. Optional fields
+and null remain distinct. Session host additionally accepts null, observed through
+the bridge. Only outer EA4 recommendation URLs accept `bool|string`; option URLs
+stay strings. Boolean URL values are payload data with no inferred sentinel
+meaning. Unknown fields remain untyped, and failed EA4 calls do not establish a
+successful response contract.
+
+The live catalog selects twelve parameterless reads and the user-domain read
+`getUserInformation(name: 'domain')` through both routes, plus WHM version (27 GETs).
+The user selector requests only the documented domain field; the unfiltered user
+read can include `pushbullet_access_token` and is excluded from this catalog.
+Enhancement lookup by ID and token retrieval are also excluded. No contact, locale,
+theme or preference settings change. Other user-field live coverage, successful
+payload variants and mutations remain tracked under `8x0.2.28`; structural captures
+never persist tokens, addresses or server/session/user values.
+
+The corrected account-environment capture at `c85a39e` on `11.138.0.19` passes
+24 of 27 GET API/payload/probe checks, with zero known-field type mismatches.
+Two EA4 API failures, one EA4 bridge failure and five masked unknown-field
+observations keep strict status failed and remain unwaived under `8x0.2.28`.
+Eleven functions pass on both routes and general EA4 recommendations pass directly.
+No mutation or secret retrieval ran; user information remains domain-only.
+
+The final [reviewed user-information capture](docs/api/evidence/2026-10-31-account-environment-reviewed.json)
+at `c4576669980a1ab22952f96b976a34bf0db7be58` on `11.138.0.19` passes all three
+GET observations: WHM version and the fixed 60-field user selector on both routes.
+All HTTP/API/payload/probe checks and strict assessment pass with zero discrepancies.
+The token selector and seven pinned fields absent on `npr` are excluded; no wire
+form is established for those seven. No mutation or token retrieval ran. Earlier
+EA4 failures and masked findings remain immutable and unwaived under `8x0.2.28`.
+Reviewer mutation/lifecycle reports remain separate from this committed read capture.
+
+Separate [Claude reviewer evidence](https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923)
+on cPanel `11.138.0.19` reproduces `getPhpRecommendations()` API failures through
+direct UAPI and the WHM bridge. Inspection of `Cpanel/API/EA4.pm` ties the failures
+to the absence of `/etc/cpanel/ea4/recommendations/custom_php_recommendation.json`.
+`ApiErrorException` is the correct outcome for this observed server state; the
+failed captures remain failed and unwaived.
+
 The Mime group covers all 14 pinned functions: six reads use GET and eight
 mutations use form POST. No domain selector is documented for hotlink
 configuration. MIME deletion targets the MIME type, while handler deletion
@@ -906,6 +991,63 @@ Parameters outside a generated method's signature (for example per-domain
 server's `uid` is accepted as the observed canonical decimal string and normalized
 to the pinned integer; see the
 [runtime observations](docs/api/source-audit.md#runtime-observations-2026-10-14).
+
+### WHM backup and restoration
+
+The WHM backup and restoration groups expose 42 methods: 26 in `backups()` and
+all sixteen in `accountRestoration()`. Fourteen explicit source reads use GET;
+28 operations use form POST, including inventory-like backup methods whose pinned
+`x-readonly` value is false. `backup_destination_set` remains excluded under
+`8x0.1.22`: its composed provider-specific form schema is not supported by the
+current generator, and its JSON examples conflict with the formal form content.
+Generic compatible form access does not establish typed destination-update coverage.
+
+Destination creation requires name, type and disabled; provider-specific inputs
+are optional in the PHP signature only where pinned prose makes their requirement
+conditional. Supply the fields required by the selected provider. Credentials,
+private keys, passwords and OAuth secrets remain sensitive. Returned secrets and
+OAuth URLs are payload data; the client does not fetch them. Archive and staging
+paths refer to server-side files, not local uploads.
+
+Omitted settings retain server defaults; false and zero are sent explicitly.
+The backup setter's `keeplocal` prose contradicts the getter's retention meaning;
+the client forwards the flag without inversion. `backupMonthlyDates` accepts
+an integer or a comma-separated string, following the pinned prose and reviewed
+upstream validator; the weekly day remains a single integer. Migration's
+`no_convert` name conflicts with its positive conversion prose; the flag is
+forwarded unchanged. `backup_set_list.backup_set` preserves a list of user/date
+rows. A combined listing can have a null destination legend, and remote `where`
+values may be transport IDs rather than the pinned `remote` label.
+
+The two pkgacct session GETs were observed to create an empty server directory
+before failing for an unknown session ID. Use only IDs returned by
+`startBackgroundPkgacct()`; other input forms were not tested. These observations
+come from [Claude review 5720277974](https://github.com/hostingpal/whm-api-client/pull/42#pullrequestreview-5720277974),
+not the committed GET capture. Remaining coverage stays in `8x0.2.29`.
+
+Backup configuration and strict retention can affect stored archives. Packaging
+and restoration can overwrite account content; restoration may delete its source
+archive when requested. Queue activation acts on queued accounts, while each
+clear method documents the tasks it removes. Restricted restoration carries the
+source's experimental limitations. Session identifiers do not establish completion.
+The client does not retry or roll back these operations. Metadata-only operations,
+including username conflict verification, return void and use API errors for
+failure. Completed queue records preserve nullable counts/warnings, integer result
+codes and string timestamps; omitted fields remain absent.
+
+All 42 methods have offline contract coverage. The fixed live catalog selects WHM
+version, four parameterless backup reads and six restoration status/module reads
+(11 GETs). It excludes destination credentials, OAuth requests, session logs,
+backup creation, account restoration, queue changes, migration and configuration
+writes. Populated variants and all remaining live behavior stay in `8x0.2.29`.
+
+The immutable WHM backup/restoration capture at `a5b6e3a` on `11.138.0.19`
+records 11 HTTP/API successes and ten payload/probe passes. Its `prebackup`
+validation failure and one masked unknown-field observation with integer values
+remain strict failures, unwaived under `8x0.2.29`. A wildcard identifies neither
+the underlying name nor field count. Backup and queue inventories are empty,
+module rows populated, and no mutation ran. Later reviewer observations and
+contract corrections are separate from that historical capture.
 
 ### Team and user management
 

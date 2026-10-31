@@ -1,0 +1,300 @@
+{
+  "schema_version": "1.0",
+  "family": "whm1",
+  "group": "Account Restoration",
+  "accessor": "accountRestoration",
+  "operations": {
+    "whm1:restore_modules_summary": {
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is true; use GET for this read."
+        }
+      ]
+    },
+    "whm1:restore_queue_activate": {
+      "method": "POST",
+      "void": true,
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is false; use form POST for this mutation to keep operation parameters out of the URL. The pinned success envelope declares metadata only and no data member."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Activating the queue triggers a process that restores every queued account."
+        }
+      ]
+    },
+    "whm1:restore_queue_add_task": {
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is false; use form POST for this mutation to keep operation parameters out of the URL."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "The backup date is documented as YYYY-MM-DD although the example includes a full timestamp. Omitted destination defaults to local; omitted restore flags default to 0."
+        }
+      ]
+    },
+    "whm1:restore_queue_clear_all_completed_tasks": {
+      "method": "POST",
+      "void": true,
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is false; use form POST for this mutation to keep operation parameters out of the URL. The pinned success envelope declares metadata only and no data member."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "This function removes successfully completed tasks from the restoration queue."
+        }
+      ]
+    },
+    "whm1:restore_queue_clear_all_failed_tasks": {
+      "method": "POST",
+      "void": true,
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is false; use form POST for this mutation to keep operation parameters out of the URL. The pinned success envelope declares metadata only and no data member."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "This function removes any failed tasks from the restoration queue."
+        }
+      ]
+    },
+    "whm1:restore_queue_clear_all_pending_tasks": {
+      "method": "POST",
+      "void": true,
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is false; use form POST for this mutation to keep operation parameters out of the URL. The pinned success envelope declares metadata only and no data member."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "This function removes any pending tasks from the restoration queue."
+        }
+      ]
+    },
+    "whm1:restore_queue_clear_all_tasks": {
+      "method": "POST",
+      "void": true,
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is false; use form POST for this mutation to keep operation parameters out of the URL. The pinned success envelope declares metadata only and no data member."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "This function removes all tasks from the restoration queue."
+        }
+      ]
+    },
+    "whm1:restore_queue_clear_completed_task": {
+      "method": "POST",
+      "void": true,
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is false; use form POST for this mutation to keep operation parameters out of the URL. The pinned success envelope declares metadata only and no data member."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "This function removes a single completed task from the restoration queue."
+        }
+      ]
+    },
+    "whm1:restore_queue_clear_pending_task": {
+      "method": "POST",
+      "void": true,
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is false; use form POST for this mutation to keep operation parameters out of the URL. The pinned success envelope declares metadata only and no data member."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "This function removes a single pending task from the restoration queue."
+        }
+      ]
+    },
+    "whm1:restore_queue_is_active": {
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is true; use GET for this read."
+        }
+      ]
+    },
+    "whm1:restore_queue_list_active": {
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is true; use GET for this read."
+        }
+      ]
+    },
+    "whm1:restore_queue_list_completed": {
+      "method": "GET",
+      "response": {
+        "restore_job[].status_info.status": {
+          "add": {
+            "type": "int"
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "The pinned restore_queue_list_completed response example restore_queue_add_task_function includes status_info.status as integer 2, although the schema omits it. The restorepkg examples omit it, so preserve it as optional; the single example does not establish a closed status enum."
+            }
+          ]
+        },
+        "restore_job[].status_info.statusmsg": {
+          "add": {
+            "type": "string"
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "The pinned restore_queue_list_completed response example restore_queue_add_task_function includes status_info.statusmsg as the string warning, although the schema omits it. The restorepkg examples omit it, so preserve it as optional payload text without interpreting it."
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is true; use GET for this read."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "The pinned documentation warns that output varies dramatically; backup_restore_manager with list_finished determines it. Preserve optional status fields, nullable counters and warnings, and string timestamps."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned CentOS 7 SPF warning is not relevant because TXT records replace deprecated SPF records; updating to the documented BIND-capable operating system version resolves it."
+        }
+      ]
+    },
+    "whm1:restore_queue_list_pending": {
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is true; use GET for this read."
+        }
+      ]
+    },
+    "whm1:restore_queue_state": {
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is true; use GET for this read."
+        }
+      ]
+    },
+    "whm1:restoreaccount": {
+      "method": "POST",
+      "name": "restoreAccount",
+      "void": true,
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is false; use form POST for this mutation to keep operation parameters out of the URL. The pinned success envelope declares metadata only and no data member."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "The pinned CentOS 7 SPF warning is not relevant because TXT records replace deprecated SPF records; updating to the documented BIND-capable operating system version resolves it."
+        },
+        {
+          "kind": "documented",
+          "text": "Include at least one of all, mail, subs or mysql. Setting all to 1 creates the account before restoring and fails if the account already exists; 0 restores only."
+        },
+        {
+          "kind": "documented",
+          "text": "Custom Whostmgr::Transfers modules must allow Cpanel::Demultiplexer output capture for XML output. Restoration output is metadata rather than a documented data payload."
+        }
+      ]
+    },
+    "whm1:verify_new_username_for_restore": {
+      "method": "GET",
+      "void": true,
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is true; use GET for this read. The pinned success envelope declares metadata only and no data member."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "A detected username conflict is reported as an API failure with its message in metadata.reason; this is not a boolean payload."
+        }
+      ]
+    }
+  }
+}
