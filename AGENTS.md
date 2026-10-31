@@ -1382,6 +1382,13 @@ version and provider inventory only: no commission IDs, OAuth exchange, token
 validation, commerce/provider/attribute changes or purchases. Remaining live
 variants, formal-route ambiguity and all POST behavior stay under `8x0.2.52`.
 
+
+The Market provider capture at 38edb29 on 11.138.0.19 passes both GET checks and
+strict assessment with zero discrepancies. Provider rows are populated; only this
+inventory plus version is observed. No commerce route, commission ID, product,
+private token, OAuth exchange, mutation or URL fetch ran. Formal Commerce routing
+and all remaining live variants stay under 8x0.2.52.
+
 ## Architecture and Conventions
 
 - Follow the [agreed PHP client interface](docs/superpowers/specs/2026-10-13-php-client-design.md):

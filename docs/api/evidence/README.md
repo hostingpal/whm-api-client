@@ -817,3 +817,18 @@ updates, profile activation, licensing, node connectivity or notification delive
 No mutation, credential read or URL request ran. Follow-up `8x0.2.38` retains the
 unknown findings and unobserved variants. Corrected SHA-256:
 `db24e53879fff4754369b984969640b51ea483713ad71c735d6d1bb1be88f6b8`.
+
+## WHM Market provider inventory evidence
+
+The [Market provider capture](2026-10-31-whm-market.json) at
+`38edb29f84902cbe27b81dbfa926571fadaabefb` on `11.138.0.19` passes both GET
+observations and strict assessment with zero discrepancies. Provider rows are
+populated, including integer enabled/supports_commission flags and an integer
+commission divisor. This establishes the observed provider inventory shape, not
+commission configuration, prices, payments, purchases or provider changes.
+
+No commerce route, product payload, commission ID, private token, OAuth exchange
+or mutation was exercised, and no returned URL was fetched. The formal Commerce
+route contradiction remains unresolved. All remaining methods/variants stay under
+`8x0.2.52`. SHA-256:
+`8b1b468eb3ab91072cd0a676ac7d9337c3359bbde80497703451b24ecda1ee7d`.

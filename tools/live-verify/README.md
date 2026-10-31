@@ -1364,3 +1364,9 @@ Two fixed GETs read version and provider inventory. Existing opt-in, exact reque
 guard, committed-input, TLS and immutable structural-output rules apply. No
 commission IDs, private product information, token exchange, provider/commerce
 changes, purchases or URL fetches run. Keep live gaps under `8x0.2.52`.
+
+The Market provider capture at 38edb29 on 11.138.0.19 passes both GET checks and
+strict assessment with zero discrepancies. Provider rows are populated; only this
+inventory plus version is observed. No commerce route, commission ID, product,
+private token, OAuth exchange, mutation or URL fetch ran. Formal Commerce routing
+and all remaining live variants stay under 8x0.2.52.

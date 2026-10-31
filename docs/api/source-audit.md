@@ -4373,3 +4373,18 @@ All twelve functions have offline contracts. The bounded two-GET catalog reads
 version and provider inventory only: no commission IDs, OAuth exchange, token
 validation, commerce/provider/attribute changes or purchases. Remaining live
 variants, formal-route ambiguity and all POST behavior stay under `8x0.2.52`.
+
+## WHM Market provider inventory evidence
+
+The [Market provider capture](evidence/2026-10-31-whm-market.json) at
+`38edb29f84902cbe27b81dbfa926571fadaabefb` on `11.138.0.19` passes both GET
+observations and strict assessment with zero discrepancies. Provider rows are
+populated, including integer enabled/supports_commission flags and an integer
+commission divisor. This establishes the observed provider inventory shape, not
+commission configuration, prices, payments, purchases or provider changes.
+
+No commerce route, product payload, commission ID, private token, OAuth exchange
+or mutation was exercised, and no returned URL was fetched. The formal Commerce
+route contradiction remains unresolved. All remaining methods/variants stay under
+`8x0.2.52`. SHA-256:
+`8b1b468eb3ab91072cd0a676ac7d9337c3359bbde80497703451b24ecda1ee7d`.
