@@ -85,6 +85,8 @@ trait UapiGroups
 
     private ?Notifications $notificationsGroup = null;
 
+    private ?Nova $novaGroup = null;
+
     private ?Park $parkGroup = null;
 
     private ?PassengerApps $passengerAppsGroup = null;
@@ -100,6 +102,8 @@ trait UapiGroups
     private ?Restore $restoreGroup = null;
 
     private ?ServerInformation $serverInformationGroup = null;
+
+    private ?Sitejet $sitejetGroup = null;
 
     private ?SpamAssassin $spamAssassinGroup = null;
 
@@ -502,6 +506,16 @@ trait UapiGroups
     }
 
     /**
+     * Select the Nova operations without making a request.
+     *
+     * The Nova module for UAPI.
+     */
+    public function nova(): Nova
+    {
+        return $this->novaGroup ??= new Nova($this->run(...));
+    }
+
+    /**
      * Select the Park operations without making a request.
      *
      * The Park module for UAPI.
@@ -579,6 +593,16 @@ trait UapiGroups
     public function serverInformation(): ServerInformation
     {
         return $this->serverInformationGroup ??= new ServerInformation($this->run(...));
+    }
+
+    /**
+     * Select the Sitejet operations without making a request.
+     *
+     * The Sitejet module for UAPI.
+     */
+    public function sitejet(): Sitejet
+    {
+        return $this->sitejetGroup ??= new Sitejet($this->run(...));
     }
 
     /**

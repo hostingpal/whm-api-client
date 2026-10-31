@@ -2,8 +2,702 @@
   "schema_version": "1.0",
   "family": "uapi",
   "group": "Sitejet",
+  "accessor": "sitejet",
   "operations": {
-    "uapi:Sitejet/get_templates": {"exclude": {"reason": "Deprecated without a successor.", "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-13", "note": "Flagged deprecated: true."}]}},
-    "uapi:Sitejet/set_template": {"exclude": {"reason": "Deprecated without a successor.", "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-13", "note": "Flagged deprecated: true."}]}}
+    "uapi:Sitejet/add_api_token": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 110 and later. Operates on the selected cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "This function adds an existing Sitejet API token to a cPanel user. Note: You can create a Sitejet API token with the Sitejet:create_account function."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified."
+        },
+        {
+          "kind": "documented",
+          "text": "Stores an existing external-builder API token for this account. Token input stays sensitive. The nullable opaque result preserves explicit null and unknown object fields; absent data is a mismatch."
+        },
+        {
+          "kind": "documented",
+          "text": "The client makes exactly one request, without automatic retries or rollback. An API success does not establish completed publication, rendering or interactive SSO login."
+        },
+        {
+          "kind": "documented",
+          "text": "api_token: The Sitejet API token to add."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "/Sitejet/add_api_token The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified. Parameter requiredness, defaults and wire casing remain pinned; no live execution is implied."
+        }
+      ],
+      "params": {
+        "api_token": {
+          "php": "apiToken",
+          "sensitive": true
+        }
+      }
+    },
+    "uapi:Sitejet/can_create_domains": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 110 and later. Operates on the selected cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "This function returns whether a cPanel account can create new subdomains or addon domains. Note: Creating a new addon domain is dependent on the creation of subdomains. If the cPanel account has reached its limit for subdomains, you cannot create a new addon domain, even if the limit for addon domains has not been reached."
+        },
+        {
+          "kind": "documented",
+          "text": "Pinned x-readonly=true permits GET."
+        },
+        {
+          "kind": "documented",
+          "text": "This capability read does not create a domain. The source omits type but explicitly enumerates integer 1 and 0; use the existing strict integer flag contract. Reaching the subdomain limit also prevents addon-domain creation."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "/Sitejet/can_create_domains Pinned x-readonly=true permits GET. Parameter requiredness, defaults and wire casing remain pinned; no live execution is implied."
+        }
+      ],
+      "response": {
+        "": {
+          "replace": {
+            "type": "flag"
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /Sitejet/can_create_domains data omits type but its enum and prose explicitly specify integer 0 and 1. Repair only this field to the existing strict flag contract; no quoted/boolean coercion is established."
+            }
+          ]
+        }
+      }
+    },
+    "uapi:Sitejet/create_account": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 110 and later. Operates on the selected cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "This function creates a Sitejet API token for a cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified."
+        },
+        {
+          "kind": "documented",
+          "text": "Creates an external-builder API token for this account. Returned key is sensitive payload data; do not log it. This response does not establish successful SSO login."
+        },
+        {
+          "kind": "documented",
+          "text": "The client makes exactly one request, without automatic retries or rollback. An API success does not establish completed publication, rendering or interactive SSO login."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "/Sitejet/create_account The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified. Parameter requiredness, defaults and wire casing remain pinned; no live execution is implied."
+        }
+      ]
+    },
+    "uapi:Sitejet/create_restore_point": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 120 and later. Operates on the selected cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "This function creates a restore point for a domain's document root and removes the domain's files."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified."
+        },
+        {
+          "kind": "documented",
+          "text": "Creates a restore point AND removes the domain document-root files. Treat this as destructive; the client provides no retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "The response is a nullable opaque object: preserve explicit null and unknown fields, reject absent data, and retain shared empty-list compatibility for an empty object."
+        },
+        {
+          "kind": "documented",
+          "text": "The client makes exactly one request, without automatic retries or rollback. An API success does not establish completed publication, rendering or interactive SSO login."
+        },
+        {
+          "kind": "documented",
+          "text": "domain: A cPanel account's domain."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "/Sitejet/create_restore_point The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified. Parameter requiredness, defaults and wire casing remain pinned; no live execution is implied."
+        }
+      ]
+    },
+    "uapi:Sitejet/create_website": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 110 and later. Operates on the selected cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "This function creates a Sitejet ID for the specified domain. Note: A unique Sitejet ID is assigned to each domain on the cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified."
+        },
+        {
+          "kind": "documented",
+          "text": "Creates an external Sitejet website identifier, with a unique ID per domain. metadata is caller-supplied encoded JSON TEXT in a form field; it is sent once, without JSON body transport, decoding or invented metadata structure. Contact/customer strings and metadata are sensitive. websiteID in this response differs from websiteId in preview parameters and inventory metadata; preserve the exact source casing."
+        },
+        {
+          "kind": "documented",
+          "text": "The client makes exactly one request, without automatic retries or rollback. An API success does not establish completed publication, rendering or interactive SSO login."
+        },
+        {
+          "kind": "documented",
+          "text": "company: The name of the company the website represents."
+        },
+        {
+          "kind": "documented",
+          "text": "domain: A cPanel account's domain."
+        },
+        {
+          "kind": "documented",
+          "text": "assignTo: Assign website to other user."
+        },
+        {
+          "kind": "documented",
+          "text": "city: The city where the company or website owner is located."
+        },
+        {
+          "kind": "documented",
+          "text": "country: The country where the company or website owner is located."
+        },
+        {
+          "kind": "documented",
+          "text": "email: The email address of the website owner."
+        },
+        {
+          "kind": "documented",
+          "text": "firstname: The first name of the website owner."
+        },
+        {
+          "kind": "documented",
+          "text": "language: The language to use for the Sitejet Website Builder."
+        },
+        {
+          "kind": "documented",
+          "text": "lastname: The last name of the website owner."
+        },
+        {
+          "kind": "documented",
+          "text": "metadata: Additional metadata for the website."
+        },
+        {
+          "kind": "documented",
+          "text": "note: Additional notes about the website."
+        },
+        {
+          "kind": "documented",
+          "text": "phone: The phone number of the company or website owner."
+        },
+        {
+          "kind": "documented",
+          "text": "street: The street address of the company or website owner."
+        },
+        {
+          "kind": "documented",
+          "text": "title: The website title."
+        },
+        {
+          "kind": "documented",
+          "text": "zip: The zip code where the company or website owner is located."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "/Sitejet/create_website The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified. Parameter requiredness, defaults and wire casing remain pinned; no live execution is implied."
+        }
+      ],
+      "params": {
+        "company": {
+          "sensitive": true
+        },
+        "assignTo": {
+          "sensitive": true
+        },
+        "city": {
+          "sensitive": true
+        },
+        "country": {
+          "sensitive": true
+        },
+        "email": {
+          "sensitive": true
+        },
+        "firstname": {
+          "sensitive": true
+        },
+        "lastname": {
+          "sensitive": true
+        },
+        "metadata": {
+          "sensitive": true
+        },
+        "note": {
+          "sensitive": true
+        },
+        "phone": {
+          "sensitive": true
+        },
+        "street": {
+          "sensitive": true
+        },
+        "title": {
+          "sensitive": true
+        },
+        "zip": {
+          "sensitive": true
+        }
+      }
+    },
+    "uapi:Sitejet/get_all_user_sitejet_info": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 110 and later. Operates on the selected cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "This function returns the Sitejet domains' information for the cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified."
+        },
+        {
+          "kind": "documented",
+          "text": "The source items schema establishes a list of domain records. The source omits type on fullcms, can_backup and is_empty_docroot but enumerates integer 1 and 0; preserve strict integer flags. Space is in MB and latest_publish_date is an integer Unix timestamp. is_empty_docroot differs from Nova is_docroot_empty; preserve both spellings. No files or returned URLs are opened by the client."
+        },
+        {
+          "kind": "documented",
+          "text": "The client makes exactly one request, without automatic retries or rollback. An API success does not establish completed publication, rendering or interactive SSO login."
+        },
+        {
+          "kind": "documented",
+          "text": "domain: The single domain to return Sitejet information."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "/Sitejet/get_all_user_sitejet_info The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified. Parameter requiredness, defaults and wire casing remain pinned; no live execution is implied."
+        }
+      ],
+      "response": {
+        "": {
+          "replace": {
+            "type": "list",
+            "items": {
+              "type": "object",
+              "fields": {
+                "domain": {
+                  "type": "string"
+                },
+                "metadata": {
+                  "type": "object",
+                  "fields": {
+                    "company": {
+                      "type": "string"
+                    },
+                    "cpanelDomainGUID": {
+                      "type": "string"
+                    },
+                    "fullcms": {
+                      "type": "flag"
+                    },
+                    "language": {
+                      "type": "string"
+                    },
+                    "latest_publish_date": {
+                      "type": "int"
+                    },
+                    "publish_status": {
+                      "type": "flag"
+                    },
+                    "websiteId": {
+                      "type": "int"
+                    }
+                  }
+                },
+                "quota": {
+                  "type": "object",
+                  "fields": {
+                    "available_space": {
+                      "type": "int"
+                    },
+                    "can_backup": {
+                      "type": "flag"
+                    },
+                    "is_empty_docroot": {
+                      "type": "flag"
+                    },
+                    "required_space": {
+                      "type": "int"
+                    }
+                  }
+                },
+                "redirection_enabled": {
+                  "type": "flag"
+                },
+                "shared_doc_root": {
+                  "type": "flag"
+                },
+                "is_restore_point_available": {
+                  "type": "flag"
+                },
+                "is_temporary_domain": {
+                  "type": "flag"
+                },
+                "status": {
+                  "type": "object",
+                  "fields": {
+                    "has_sitejet_published": {
+                      "type": "flag"
+                    },
+                    "has_sitejet_website": {
+                      "type": "flag"
+                    },
+                    "is_sitejet": {
+                      "type": "flag"
+                    },
+                    "ssl_status": {
+                      "type": "flag"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /Sitejet/get_all_user_sitejet_info describes domain records and supplies items but omits the root array type. The explicit item properties, leaf types, integer 0/1 enums and examples establish this bounded list contract. Every field remains optional. Do not infer quoted numbers, booleans, extra keys or unlisted recursive shapes."
+            }
+          ]
+        }
+      }
+    },
+    "uapi:Sitejet/get_api_token": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 110 and later. Operates on the selected cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "This function returns the cPanel account's Sitejet API token."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified."
+        },
+        {
+          "kind": "documented",
+          "text": "The returned token is sensitive payload data; do not log it. This private-token retrieval uses form POST."
+        },
+        {
+          "kind": "documented",
+          "text": "The client makes exactly one request, without automatic retries or rollback. An API success does not establish completed publication, rendering or interactive SSO login."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "/Sitejet/get_api_token The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified. Parameter requiredness, defaults and wire casing remain pinned; no live execution is implied."
+        }
+      ]
+    },
+    "uapi:Sitejet/get_preview_url": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 110 and later. Operates on the selected cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "This function returns a Sitejet website's preview URL."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified."
+        },
+        {
+          "kind": "documented",
+          "text": "websiteId remains an integer identifier of unspecified wider meaning. The returned URL is payload data; the client does not fetch it or establish rendered-site compatibility."
+        },
+        {
+          "kind": "documented",
+          "text": "The client makes exactly one request, without automatic retries or rollback. An API success does not establish completed publication, rendering or interactive SSO login."
+        },
+        {
+          "kind": "documented",
+          "text": "websiteId: The Sitejet website ID for the domain."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "/Sitejet/get_preview_url The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified. Parameter requiredness, defaults and wire casing remain pinned; no live execution is implied."
+        }
+      ]
+    },
+    "uapi:Sitejet/get_sso_link": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 110 and later. Operates on the selected cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "This function returns a Sitejet website's SSO URL."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified."
+        },
+        {
+          "kind": "documented",
+          "text": "referrer can include a cPanel session token and stays sensitive. The optional ui_mode source strings are forwarded unchanged. The client does not follow the SSO URL or establish an interactive login."
+        },
+        {
+          "kind": "documented",
+          "text": "The client makes exactly one request, without automatic retries or rollback. An API success does not establish completed publication, rendering or interactive SSO login."
+        },
+        {
+          "kind": "documented",
+          "text": "domain: The cPanel account's Sitejet domain."
+        },
+        {
+          "kind": "documented",
+          "text": "referrer: The cPanel interface referral URL."
+        },
+        {
+          "kind": "documented",
+          "text": "ui_mode: Specifies which Sitejet SaaS user interface mode the user will be redirected to."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "/Sitejet/get_sso_link The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified. Parameter requiredness, defaults and wire casing remain pinned; no live execution is implied."
+        }
+      ],
+      "params": {
+        "referrer": {
+          "sensitive": true
+        },
+        "ui_mode": {
+          "php": "uiMode"
+        }
+      }
+    },
+    "uapi:Sitejet/is_publish_in_progress": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 110 and later. Operates on the selected cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "This function reports whether a Sitejet publish is currently running for a domain, and under which process ID."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified."
+        },
+        {
+          "kind": "documented",
+          "text": "in_progress=0 means no publication to follow, not permission to publish: migration can hold the same lock and start_publish can fail. in_progress=1 can omit pid while the daemon starts. This call performs one request with no polling loop. The source mentions poll_publish, which is not a pinned operation in this Sitejet slice; no method is invented."
+        },
+        {
+          "kind": "documented",
+          "text": "The client makes exactly one request, without automatic retries or rollback. An API success does not establish completed publication, rendering or interactive SSO login."
+        },
+        {
+          "kind": "documented",
+          "text": "domain: The domain for the Sitejet website."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "/Sitejet/is_publish_in_progress The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified. Parameter requiredness, defaults and wire casing remain pinned; no live execution is implied."
+        }
+      ]
+    },
+    "uapi:Sitejet/restore_document_root": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 120 and later. Operates on the selected cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "This function reverts a document root to the restore point."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified."
+        },
+        {
+          "kind": "documented",
+          "text": "Reverts the domain document root to the restore point. Existing content can change; the client provides no retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "The response is a nullable opaque object: preserve explicit null and unknown fields, reject absent data, and retain shared empty-list compatibility for an empty object."
+        },
+        {
+          "kind": "documented",
+          "text": "The client makes exactly one request, without automatic retries or rollback. An API success does not establish completed publication, rendering or interactive SSO login."
+        },
+        {
+          "kind": "documented",
+          "text": "domain: A cPanel account's domain."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "/Sitejet/restore_document_root The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified. Parameter requiredness, defaults and wire casing remain pinned; no live execution is implied."
+        }
+      ]
+    },
+    "uapi:Sitejet/start_publish": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 110 and later. Operates on the selected cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "This function publishes a domain's Sitejet website."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified."
+        },
+        {
+          "kind": "documented",
+          "text": "Starts publication to the domain document root. cleanup=1 removes previous document-root files; omitted cleanup retains the upstream default, which is not specified in this schema. cleanup remains an integer rather than a new boolean input. file_name is deprecated response data; the source says poll_publish derives its path from pid, but that function is absent from the pinned Sitejet module. Returned pid/file_name do not prove completion; no client retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "The client makes exactly one request, without automatic retries or rollback. An API success does not establish completed publication, rendering or interactive SSO login."
+        },
+        {
+          "kind": "documented",
+          "text": "domain: The domain for the Sitejet website."
+        },
+        {
+          "kind": "documented",
+          "text": "cleanup: Whether to cleanup the domain's document_root directory during the publication process. * 1 \u2014 Remove previous files in domain's document_root directory during the publication process. * 0 \u2014 Do not remove any files in domain's document_root directory during the publication process."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "/Sitejet/start_publish The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified. Parameter requiredness, defaults and wire casing remain pinned; no live execution is implied."
+        }
+      ]
+    },
+    "uapi:Sitejet/get_templates": {
+      "exclude": {
+        "reason": "Deprecated without a successor.",
+        "evidence": [
+          {
+            "kind": "doc",
+            "version": "pinned 2026-10-13",
+            "date": "2026-10-13",
+            "note": "Flagged deprecated: true."
+          }
+        ]
+      }
+    },
+    "uapi:Sitejet/set_template": {
+      "exclude": {
+        "reason": "Deprecated without a successor.",
+        "evidence": [
+          {
+            "kind": "doc",
+            "version": "pinned 2026-10-13",
+            "date": "2026-10-13",
+            "note": "Flagged deprecated: true."
+          }
+        ]
+      }
+    }
   }
 }

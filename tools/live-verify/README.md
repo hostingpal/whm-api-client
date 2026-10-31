@@ -1378,3 +1378,13 @@ issuer names and the integer policy flag were read. No secret, private URL, key,
 configuration or link data was requested, and no state changed. It establishes
 no login, TFA challenge, SSH access or mutation compatibility. `8x0.2.40` remains
 open for all unobserved functions and variants.
+
+## Site-builder domain capabilities
+
+Run `WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs php tools/live-verify/site-builders.php --output=docs/api/evidence/YYYY-MM-DD-site-builders.json`.
+
+Five fixed GETs read version and Nova/Sitejet can_create_domains through both UAPI
+routes. Existing opt-in, committed-input, exact request guard, TLS and immutable
+structural-output rules apply. No external account/site creation, private token or
+content retrieval, SSO/OAuth, publishing/restoration or URL fetch runs. Capability
+results do not establish successful creation or rendering. Keep gaps under `8x0.2.57`.

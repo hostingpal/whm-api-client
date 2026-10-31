@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 78 generated typed groups cover 813 documented operations (see
+The 80 generated typed groups cover 836 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, read-only DNS zones
 and resolvers, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -1940,3 +1940,41 @@ Project-authored code and documentation are licensed under the
 The bundled cPanel documentation snapshots retain their upstream terms and are
 not covered by the project's MIT license. See the
 [third-party documentation notice](docs/api/README.md#licensing).
+
+## Nova and Sitejet site builders
+
+`uapi()->nova()` covers all eleven pinned functions and `uapi()->sitejet()` all
+twelve nondeprecated functions. Six source-declared reads use GET; seventeen
+operations without a read-only declaration use conservative form POST. That
+transport decision does not itself prove mutation. Existing deprecated Sitejet
+template operations remain excluded. Source availability is cPanel 110, except
+Sitejet restore-point/document-root restoration at 120; Nova requires AI App Builder.
+
+Tokens, SSO parameters, credential URLs, signatures, customer/contact details and
+metadata inputs remain sensitive. Prompt tokens remain caller-supplied base64
+text, and Sitejet metadata remains caller-supplied JSON text encoded once as a
+form field. The client does not decode tokens, fetch URLs, extract archives or
+publish files locally. Source inventory list/flag repairs restore explicitly
+documented schemas without runtime changes or speculative coercion.
+
+Nova accountExists() checks local token presence, not remote login. ensureAccount()
+may provision a remote account. Sitejet createAccount() creates a token;
+createWebsite() returns websiteID, distinct from the source websiteId spelling in
+inventory/preview responses. Conditional return_url requirements remain documented
+while the source optional parameter stays optional. Omitted cleanup retains each
+source default; explicit zero survives. Cleanup=1 can delete prior document-root
+content. Sitejet createRestorePoint() both backs up and removes domain files;
+restoreDocumentRoot() replaces current contents. These operations are not retried.
+
+Polling methods make one request without automatic loops. Sitejet publication
+status can be 1 before a pid exists; 0 may coexist with a migration lock and does
+not establish that publication is safe. Its prose mentions poll_publish, absent
+from the pinned Sitejet module; no method is invented. Opaque nullable mutation
+results preserve fields/null and reject missing data. API success does not prove
+rendered website output, SSO login or complete publication/restoration.
+
+All twenty-three methods have independent direct and bridged UAPI contracts.
+The fixed five-GET catalog reads version and Nova/Sitejet domain-creation capability
+on both routes. It creates no account/site, reads no private token or site content,
+performs no publish/restore/OAuth/SSO operation and fetches no URL. Remaining live
+operations/variants and owned lifecycle work stay under `8x0.2.57`.
