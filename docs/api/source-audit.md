@@ -4781,7 +4781,8 @@ omitting every selector is not a guarantee of complete inventory.
 `getAvailableApplications()` supports the reviewed omissions in group and item
 records, including optional string group descriptions. Null descriptions were
 not observed and remain unsupported by the current contract. Present fields still
-validate, and native integer order fields remain strict. Unspecified extension templates may return metadata only; HTML and URLs
+validate, and native integer order fields remain strict. Unspecified extension
+templates may return metadata only; HTML and URLs
 remain payload data and are never executed or fetched.
 
 The original two-GET capture at `a5c08af` on `11.138.0.19` strictly passes with
@@ -4791,6 +4792,14 @@ artifact is not rewritten or repeated. Separate reviewer GET reports support the
 contract corrections; no package, extension, feature-list or override write was
 observed. Remaining behavior and the empty-match contradiction stay under
 `8x0.2.43`; shared empty-container evidence ambiguity remains `8x0.2.50`.
+
+The requested three-GET capture at `1336c4d` on `11.138.0.19` records successful
+HTTP/API/payload/probe outcomes for version, stock-default package information
+and the application catalog. Two masked unknown-field observations in application
+item/subitem records keep its strict assessment failed and unwaived under
+`8x0.2.43`. Wildcards establish neither field identity nor underlying field count.
+The capture is complete and must not be repeated merely to clear findings. No
+mutation, arbitrary file read, template execution or URL fetch ran.
 
 ### PR56 contract review
 
@@ -4811,8 +4820,18 @@ inventory string field. Populated matching rows remain unobserved.
 The existing capture remains byte-identical, including its original effective
 contract and empty-container assessment. Artifact SHA-256:
 `16cafa35a705d064dabd8e3885b326bcbf6c0defe5b53853fcdc4e21f333bcbb`.
-The requested package-info/application probes use a separate guarded recipe;
-preparation and offline tests do not establish a new live observation.
+The requested package-info/application probes ran once through the separate
+guarded recipe at `1336c4df3c0d48d41362938af4556991d9b249bd`. The new immutable
+artifact is `2026-10-31-whm-hosting-plans-reviewed.json`, SHA-256
+`fa47311ac73ed16812b86cd1a6367b921f2b2484dd4ffb0f3c083cc6db3497ab`.
+Its strict failure retains the two masked unknown-field observations at
+`$.groups[].items[].*` and `$.groups[].items[].subitems[].*`. No known-field
+mismatch or unsuccessful API call occurred. Stock package limits were null;
+canonical numeric-limit strings and populated matching rows remain unobserved.
+Application groups/items/subitems were populated, and the optional group
+description appeared as string or absent. This structural capture does not
+establish row counts or raw values. All 85 earlier artifacts and 24 pinned
+source files remain byte-identical. No resource was created or changed.
 
 [Clarification 6539624881](https://github.com/hostingpal/whm-api-client/pull/56#issuecomment-6539624881)
 reports the same type counts with and without `raw`: one of 29 group rows had a

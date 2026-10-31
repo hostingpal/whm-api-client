@@ -1624,7 +1624,8 @@ omitting every selector is not a guarantee of complete inventory.
 `getAvailableApplications()` supports the reviewed omissions in group and item
 records, including optional string group descriptions. Null descriptions were
 not observed and remain unsupported by the current contract. Present fields still
-validate, and native integer order fields remain strict. Unspecified extension templates may return metadata only; HTML and URLs
+validate, and native integer order fields remain strict. Unspecified extension
+templates may return metadata only; HTML and URLs
 remain payload data and are never executed or fetched.
 
 The original two-GET capture at `a5c08af` on `11.138.0.19` strictly passes with
@@ -1634,6 +1635,14 @@ artifact is not rewritten or repeated. Separate reviewer GET reports support the
 contract corrections; no package, extension, feature-list or override write was
 observed. Remaining behavior and the empty-match contradiction stay under
 `8x0.2.43`; shared empty-container evidence ambiguity remains `8x0.2.50`.
+
+The requested three-GET capture at `1336c4d` on `11.138.0.19` records successful
+HTTP/API/payload/probe outcomes for version, stock-default package information
+and the application catalog. Two masked unknown-field observations in application
+item/subitem records keep its strict assessment failed and unwaived under
+`8x0.2.43`. Wildcards establish neither field identity nor underlying field count.
+The capture is complete and must not be repeated merely to clear findings. No
+mutation, arbitrary file read, template execution or URL fetch ran.
 
 ## Architecture and Conventions
 

@@ -1443,3 +1443,9 @@ inferred default for the required `name` parameter. Its exact request guards,
 explicit live opt-in, committed-input checks and structural-only publication are
 unchanged. No write, arbitrary file selector, template execution or URL fetch is
 included. It writes a new immutable artifact; the original capture is preserved.
+
+The requested 2026-10-31 run is complete in
+`docs/api/evidence/2026-10-31-whm-hosting-plans-reviewed.json` at `1336c4d`.
+All three HTTP/API/payload/probe outcomes pass; two masked application item and
+subitem unknown-field observations retain a failed, unwaived strict assessment
+under `8x0.2.43`. Do not rerun this completed capture merely to clear findings.
