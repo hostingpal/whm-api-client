@@ -3113,6 +3113,167 @@ or deployment contracts were exercised by it, and the reviewer explicitly requir
 no new read-only capture. A future guarded POST-read recipe, remaining timestamp
 variants and the directory-deletion discrepancy stay under `8x0.2.27`.
 
+## Account environment and preferences (2026-10-31)
+
+The account environment and preference slice exposes twenty compatible methods
+across ContactInformation, Contactus, Locale, Themes, Notifications,
+AccountEnhancements, EA4, ServerInformation and Variables. Fourteen reads use GET;
+six secret-bearing or state-changing operations use form POST. The JSON-body
+`ContactInformation/set_notification_preferences` operation remains excluded under
+`8x0.1.18`, and the deprecated theme-base operation remains excluded.
+
+Contact addresses use documented repeated form fields. The setter requires the
+new addresses and password; omit `oldAddresses` only when the account has no
+contacts. Existing contacts still require their complete old-address list to pass
+the server race check. Unset keeps that list and password required. Passwords and
+Pushbullet tokens are sensitive parameters. The token getter also uses POST and
+returns sensitive payload data. Contact mutations with no documented data return
+void; locale setting preserves its present unspecified payload, while theme update
+preserves nullable opaque objects and rejects an absent payload.
+
+Theme options preserve omission and explicit false. Enhancement availability data
+is separate from UAPI status: a successful data value of zero is not an API error.
+The enhancement-list source omits its container type and has inconsistent object
+prose/items structure, so the result remains mixed rather than acquiring an
+invented list contract. Notification preference rows retain the suspicious literal
+`additionalProperties` source property without inferring a dynamic-field schema.
+
+Variable reads preserve optional fields and nullable values. User/server name
+selectors accept a string or repeated string list; the session selector stays
+scalar. Source prose/examples establish dynamic feature-flag and domain/MX maps
+where the formal schema misplaced `additionalProperties`; the dynamic-map repair
+is limited to those field nodes. Server/session/user fields and opaque values are returned as data;
+recommendations do not install packages or change configuration.
+
+The 32 observed server flags accept exact quoted `0`/`1`; all eight server integer
+quantities accept canonical lossless integer strings, with six value-observed and
+two source-inferred. User integer/flag fields and feature flags have the reviewed
+family compatibility described below; existing limit-string alternatives remain
+unchanged. Contact email fields preserve explicit null, empty string and omission.
+Session host additionally accepts null, observed through the bridge. Only outer EA4 recommendation URLs accept `bool|string`;
+option URLs stay strings. Boolean URL values are payload data with no inferred
+sentinel meaning. Unknown fields remain untyped, and failed EA4 calls do not
+establish a successful response contract.
+
+The live catalog selects twelve parameterless reads and the user-domain read
+`getUserInformation(name: 'domain')` through both routes, plus WHM version (27 GETs).
+The user selector requests only the documented domain field; the unfiltered user
+read can include `pushbullet_access_token` and is excluded from this catalog.
+Enhancement lookup by ID and token retrieval are also excluded. No contact, locale,
+theme or preference settings change. Other user-field live coverage, successful
+payload variants and mutations remain tracked under `8x0.2.28`; structural captures
+never persist tokens, addresses or server/session/user values.
+
+The initial [account-environment capture](evidence/2026-10-31-account-environment.json)
+at `e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6` on `11.138.0.19` records 27 HTTP
+200 GETs: twenty API/payload/probe passes, four payload mismatches, two API failures
+and one bridge request failure. Its 83 discrepancies comprise 78 type mismatches
+and five masked unknown-field entries. Thirty-two server flags and six server
+integer quantities arrive as numeric strings on both routes; the bridge session
+host is null; direct EA4 recommendation URLs include booleans alongside strings.
+These observations support only those field corrections. The unknown preference,
+recommendation and server fields remain untyped and unwaived. Both PHP-recommendation
+reads fail at the API; the other EA4 bridge response has `data.uapi: null`, so no
+UAPI payload is available. The capture establishes no cause for these failures.
+
+The domain-selected user requests return only `domain`; other user fields, including
+`pushbullet_access_token`, are absent. Locale, theme, preference and server-information
+rows are populated; the enhancement list is empty. This read-only capture establishes
+no contact, locale, theme, preference or token mutation behavior. Follow-up `8x0.2.28`
+retains all failures, unknown fields and unobserved variants. Original SHA-256:
+`e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd`.
+
+The [corrected account-environment capture](evidence/2026-10-31-account-environment-corrected.json)
+at `c85a39ef45f108bfef0264eb3a2e01c5167761a6` on `11.138.0.19` records 27 HTTP
+200 GETs. Twenty-four API/payload/probe checks pass, with no known-field type
+mismatches. Both PHP-recommendation API calls and the general recommendation
+bridge call still fail. Five masked unknown-field observations remain: notification
+preferences on both routes, direct general recommendations and server variables on
+both routes. Strict status remains failed with no waivers or acknowledgments.
+Eleven new functions pass on both routes; general recommendations pass directly.
+The enhancement list is empty and the user read is domain-only. No mutation,
+secret retrieval or broader user-field behavior is established. Follow-up `8x0.2.28`
+remains open. Original evidence is unchanged. Corrected SHA-256:
+`654442a1e360c28534c4b80c320ffdde2ca0d96ffdd87f8342fd1b6b47a3eb78`.
+
+### Account-environment external review corrections
+
+[Claude's review of `a361c45`](https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923)
+identified two failures outside the original domain-only user capture: unfiltered
+user information rejected valid wire values, and the typed contact setter could
+not supply an account's first contact address. The reviewer reports cPanel
+`11.138.0.19` through direct and bridged routes, reads on `npr`, and contact/theme/
+locale/token checks on disposable `wrvenv`, whose removal was verified after each
+run. These are attributed reviewer observations, separate from committed captures.
+
+For user information, the reviewer traced results through `%Cpanel::CPDATA` and
+`%Cpanel::USERDATA` without numeric coercion. The same `gid` was an integer directly
+and a digit string through the bridge. The reviewed compatibility family therefore
+covers canonical lossless integer strings in every integer/flag field and feature
+flag value for this operation. Native integers and omission remain unchanged;
+flags still accept only zero and one. Unobserved siblings are source-based
+compatibility inferences, not additional live observations. Existing `maximum_*`
+string alternatives remain available; no new closed enum enforcement is inferred.
+Contact email fields additionally preserve the null states observed after a
+one-address set or complete unset, separately from empty strings and omission.
+
+Server information's two remaining nullable integers follow the same documented
+configuration-copy path as its six corrected siblings. Their numeric values were
+not observed on this server, and no server-wide configuration was changed to
+manufacture them. Repeated-name selection for user/server information follows
+reviewed source `get_multiple('name')` and both-route selection observations;
+session information keeps its scalar selector. The [full reviewer mapping clarification](https://github.com/hostingpal/whm-api-client/pull/41#issuecomment-6536895626)
+records all eleven skip/disable source-key mappings, including `skipbwlimitcheck`
+to `skip_bandwidth_limit_check`. Its pinned statement that 1 suspends HTTP service
+also conflicts with the skip-key meaning. The overlay records each exact mapping
+and preserves flags without inversion; only source mappings were inspected, not
+runtime behavior or enforcement.
+
+The first-contact setter now permits omitting `oldAddresses` only for an account
+with no existing contact addresses. The reviewer observed successful explicit-null
+results in that state; omission with existing addresses still fails the server's
+race check. The unset method retains a required complete old-address list. Wrong
+password/list failures and single-request/no-retry behavior remain intact.
+
+The reviewer attributes both PHP-recommendation API failures to an absent
+`/etc/cpanel/ea4/recommendations/custom_php_recommendation.json`; the API exception
+is retained. The general-recommendations bridge failure remains a successful WHM
+envelope containing null UAPI data, correctly rejected, with no established cause.
+Unknown findings remain unwaived and explicitly nonblocking. Reviewer-observed
+notification preference rows contain `onchangeparent`, `type`, `infotext`, and
+`value`, with no literal `additionalProperties`; those unmodeled fields remain
+follow-up `8x0.2.28`, not a new typed schema inferred from masked historical keys.
+
+The new bounded review recipe selects 60 pinned user fields confirmed present on
+`npr` by [review 5720313728](https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720313728),
+plus WHM version. Its fixed list excludes `pushbullet_access_token` and seven
+pinned fields absent on this account: `lang`, `maximum_defer_fail_percentage`, `maximum_emails_per_hour`, `notify_bandwidth_limit`, `notify_ssl_expiry`, `notify_twofactorauth_change`, `notify_twofactorauth_change_notification_disabled`.
+An absent scalar or list selector fails the entire request; the seven fields
+remain client-supported, with no wire-form claim from this capture. It requests no token,
+performs no mutation, and will capture only sanitized structure at the reviewed
+corrected revision. This paragraph describes the recipe, not a completed run.
+The original account-environment artifacts keep their original failures and hashes.
+
+
+### Final account-environment review capture (2026-10-31)
+
+The final [reviewed user-information capture](evidence/2026-10-31-account-environment-reviewed.json)
+at `c4576669980a1ab22952f96b976a34bf0db7be58` on `11.138.0.19` passes all three
+GET observations: WHM version and the fixed 60-field user selector on both routes.
+All HTTP/API/payload/probe checks and strict assessment pass with zero discrepancies.
+The token selector and seven pinned fields absent on `npr` are excluded; no wire
+form is established for those seven. No mutation or token retrieval ran. Earlier
+EA4 failures and masked findings remain immutable and unwaived under `8x0.2.28`.
+Reviewer mutation/lifecycle reports remain separate from this committed read capture.
+
+Artifact SHA-256: `e191517fda7b8ec3a4eb8bfd4df75d75d831cebc917d739e63a8f96a7744b5e4`.
+The single run follows [Claude review 5720313728](https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720313728)
+after its three corrections. The allowlist is fixed in source, never derived from
+live responses. All 60 prior JSON artifacts and 24 pinned-source files are unchanged.
+The correction passed 31,127 offline tests / 233,646 assertions plus formatting,
+maximum PHPStan, strict Composer, source/map/generation and full Go tests/vet.
+No settings or resources were changed, so no mutation cleanup was needed.
+
 ## WHM backup and account restoration (2026-10-31)
 
 The WHM backup and restoration groups expose 42 methods: 26 in `backups()` and

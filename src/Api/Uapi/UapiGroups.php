@@ -13,11 +13,17 @@ namespace HostingPal\WhmApiClient\Api\Uapi;
  */
 trait UapiGroups
 {
+    private ?AccountEnhancements $accountEnhancementsGroup = null;
+
     private ?AddonDomain $addonDomainGroup = null;
 
     private ?Bandwidth $bandwidthGroup = null;
 
     private ?BoxTrapper $boxTrapperGroup = null;
+
+    private ?ContactInformation $contactInformationGroup = null;
+
+    private ?ContactUs $contactUsGroup = null;
 
     private ?CpGreyList $cpGreyListGroup = null;
 
@@ -39,6 +45,8 @@ trait UapiGroups
 
     private ?DynamicDns $dynamicDnsGroup = null;
 
+    private ?Ea4 $ea4Group = null;
+
     private ?Email $emailGroup = null;
 
     private ?EmailAuth $emailAuthGroup = null;
@@ -51,9 +59,13 @@ trait UapiGroups
 
     private ?LangPhp $langPhpGroup = null;
 
+    private ?Locale $localeGroup = null;
+
     private ?Mime $mimeGroup = null;
 
     private ?Mysql $mysqlGroup = null;
+
+    private ?Notifications $notificationsGroup = null;
 
     private ?Park $parkGroup = null;
 
@@ -64,6 +76,8 @@ trait UapiGroups
     private ?Quota $quotaGroup = null;
 
     private ?ResourceUsage $resourceUsageGroup = null;
+
+    private ?ServerInformation $serverInformationGroup = null;
 
     private ?SpamAssassin $spamAssassinGroup = null;
 
@@ -77,11 +91,25 @@ trait UapiGroups
 
     private ?SubDomain $subDomainGroup = null;
 
+    private ?Themes $themesGroup = null;
+
+    private ?Variables $variablesGroup = null;
+
     private ?VersionControl $versionControlGroup = null;
 
     private ?VersionControlDeployment $versionControlDeploymentGroup = null;
 
     private ?WebVhosts $webVhostsGroup = null;
+
+    /**
+     * Select the AccountEnhancements operations without making a request.
+     *
+     * UAPI AccountEnhancements module functions.
+     */
+    public function accountEnhancements(): AccountEnhancements
+    {
+        return $this->accountEnhancementsGroup ??= new AccountEnhancements($this->run(...));
+    }
 
     /**
      * Select the AddonDomain operations without making a request.
@@ -111,6 +139,26 @@ trait UapiGroups
     public function boxTrapper(): BoxTrapper
     {
         return $this->boxTrapperGroup ??= new BoxTrapper($this->run(...));
+    }
+
+    /**
+     * Select the ContactInformation operations without making a request.
+     *
+     * The ContactInformation module for UAPI.
+     */
+    public function contactInformation(): ContactInformation
+    {
+        return $this->contactInformationGroup ??= new ContactInformation($this->run(...));
+    }
+
+    /**
+     * Select the Contactus operations without making a request.
+     *
+     * The Contactus module for UAPI.
+     */
+    public function contactUs(): ContactUs
+    {
+        return $this->contactUsGroup ??= new ContactUs($this->run(...));
     }
 
     /**
@@ -214,6 +262,16 @@ trait UapiGroups
     }
 
     /**
+     * Select the EA4 operations without making a request.
+     *
+     * The EA4 module for UAPI.
+     */
+    public function ea4(): Ea4
+    {
+        return $this->ea4Group ??= new Ea4($this->run(...));
+    }
+
+    /**
      * Select the Email operations without making a request.
      *
      * The Email module for UAPI.
@@ -274,6 +332,16 @@ trait UapiGroups
     }
 
     /**
+     * Select the Locale operations without making a request.
+     *
+     * The Locale module for UAPI.
+     */
+    public function locale(): Locale
+    {
+        return $this->localeGroup ??= new Locale($this->run(...));
+    }
+
+    /**
      * Select the Mime operations without making a request.
      *
      * The Mime module for UAPI.
@@ -291,6 +359,16 @@ trait UapiGroups
     public function mysql(): Mysql
     {
         return $this->mysqlGroup ??= new Mysql($this->run(...));
+    }
+
+    /**
+     * Select the Notifications operations without making a request.
+     *
+     * The Notifications module for UAPI.
+     */
+    public function notifications(): Notifications
+    {
+        return $this->notificationsGroup ??= new Notifications($this->run(...));
     }
 
     /**
@@ -341,6 +419,16 @@ trait UapiGroups
     public function resourceUsage(): ResourceUsage
     {
         return $this->resourceUsageGroup ??= new ResourceUsage($this->run(...));
+    }
+
+    /**
+     * Select the ServerInformation operations without making a request.
+     *
+     * The ServerInformation module for UAPI.
+     */
+    public function serverInformation(): ServerInformation
+    {
+        return $this->serverInformationGroup ??= new ServerInformation($this->run(...));
     }
 
     /**
@@ -401,6 +489,26 @@ trait UapiGroups
     public function subDomain(): SubDomain
     {
         return $this->subDomainGroup ??= new SubDomain($this->run(...));
+    }
+
+    /**
+     * Select the Themes operations without making a request.
+     *
+     * The Themes module for UAPI.
+     */
+    public function themes(): Themes
+    {
+        return $this->themesGroup ??= new Themes($this->run(...));
+    }
+
+    /**
+     * Select the Variables operations without making a request.
+     *
+     * The Variables module for UAPI.
+     */
+    public function variables(): Variables
+    {
+        return $this->variablesGroup ??= new Variables($this->run(...));
     }
 
     /**

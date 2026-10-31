@@ -1,0 +1,44 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "Locale",
+  "operations": {
+    "uapi:Locale/get_attributes": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later. Returns the current account locale's direction, encoding, locale and name as optional strings. Direction documents ltr/rtl; omitted fields and empty strings remain distinct."
+        }
+      ]
+    },
+    "uapi:Locale/list_locales": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later. Returns the account's available interface languages. Optional direction, local_name, locale and name fields retain their strings; local_name is the language's own name. Empty lists and omitted fields are preserved."
+        }
+      ]
+    },
+    "uapi:Locale/set_locale": {
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Locale/set_locale declares x-readonly=false and x-rollback=none. Use form POST, retaining any credentials outside query strings. The response data schema is {}, so preserve present mixed data rather than inventing void or null-only behavior."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later. Changes the selected account's locale with no rollback. Supply the abbreviated locale name returned by listLocales(); the client forwards the string unchanged."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned data schema is unconstrained. Preserve any present JSON value, including null, false, zero, empty strings and opaque objects; an absent data member remains a mismatch."
+        }
+      ]
+    }
+  }
+}
