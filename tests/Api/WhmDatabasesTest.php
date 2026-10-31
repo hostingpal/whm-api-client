@@ -201,20 +201,20 @@ final class WhmDatabasesTest extends TestCase
             '{"profile_validated":"fixture"}', ['profile_validated' => 'fixture'],
         ];
         yield 'rename mysql database' => [
-            'rename_mysql_database', 'renameMysqlDatabase', ['example_new', 'example_old', 'example'], 'POST',
-            'newname=example_new&oldname=example_old&cpuser=example', null, null,
+            'rename_mysql_database', 'renameMysqlDatabase', ['example_old', 'example_new', 'example'], 'POST',
+            'oldname=example_old&newname=example_new&cpuser=example', null, null,
         ];
         yield 'rename mysql user' => [
-            'rename_mysql_user', 'renameMysqlUser', ['example_new', 'example_old'], 'POST',
-            'newname=example_new&oldname=example_old', null, null,
+            'rename_mysql_user', 'renameMysqlUser', ['example_old', 'example_new'], 'POST',
+            'oldname=example_old&newname=example_new', null, null,
         ];
         yield 'rename postgresql database' => [
-            'rename_postgresql_database', 'renamePostgresqlDatabase', ['example_new', 'example_old'], 'POST',
-            'newname=example_new&oldname=example_old', null, null,
+            'rename_postgresql_database', 'renamePostgresqlDatabase', ['example_old', 'example_new'], 'POST',
+            'oldname=example_old&newname=example_new', null, null,
         ];
         yield 'rename postgresql user' => [
-            'rename_postgresql_user', 'renamePostgresqlUser', ['example_new', 'example_old', 'synthetic &', 'example'],
-            'POST', 'newname=example_new&oldname=example_old&password=synthetic%20%26&cpuser=example', null, null,
+            'rename_postgresql_user', 'renamePostgresqlUser', ['example_old', 'example_new', 'synthetic &', 'example'],
+            'POST', 'oldname=example_old&newname=example_new&password=synthetic%20%26&cpuser=example', null, null,
         ];
         yield 'root password preserves false update flag' => [
             'set_local_mysql_root_password', 'setLocalMysqlRootPassword', ['synthetic &', false], 'POST',
@@ -223,12 +223,12 @@ final class WhmDatabasesTest extends TestCase
             ['configs_updated' => 0, 'password_reset' => 1, 'profile_updated' => 0],
         ];
         yield 'mysql password' => [
-            'set_mysql_password', 'setMysqlPassword', ['synthetic &', 'example_user', 'example'], 'POST',
-            'password=synthetic%20%26&user=example_user&cpuser=example', null, null,
+            'set_mysql_password', 'setMysqlPassword', ['example_user', 'synthetic &', 'example'], 'POST',
+            'user=example_user&password=synthetic%20%26&cpuser=example', null, null,
         ];
         yield 'postgresql password' => [
-            'set_postgresql_password', 'setPostgresqlPassword', ['synthetic &', 'example_user'], 'POST',
-            'password=synthetic%20%26&user=example_user', null, null,
+            'set_postgresql_password', 'setPostgresqlPassword', ['example_user', 'synthetic &'], 'POST',
+            'user=example_user&password=synthetic%20%26', null, null,
         ];
         yield 'start upgrade preserves numeric version and only returns id' => [
             'start_background_mysql_upgrade', 'startBackgroundMysqlUpgrade', [5.7], 'POST', 'version=5.7',
@@ -430,11 +430,11 @@ final class WhmDatabasesTest extends TestCase
         yield 'profile map row list' => [
             'remote_mysql_read_profiles', 'remoteMysqlReadProfiles', [], '{"fixture":[1]}',
         ];
-        yield 'profile map quoted localhost example is not inferred' => [
+        yield 'profile map rejects noncanonical localhost flag' => [
             'remote_mysql_read_profiles',
             'remoteMysqlReadProfiles',
             [],
-            '{"fixture":{"is_localhost_profile":"1"}}',
+            '{"fixture":{"is_localhost_profile":"01"}}',
         ];
         yield 'profile map supported boolean' => [
             'remote_mysql_read_profiles',
@@ -688,6 +688,254 @@ final class WhmDatabasesTest extends TestCase
             self::assertSame(0, $client->whm()->responseMeta()?->whmResult());
         }
         self::assertCount(1, $http->getRequests());
+    }
+
+    /**
+     * @param list<mixed> $arguments
+     * @param array<array-key, mixed> $expected
+     */
+    #[DataProvider('reviewedProfilePayloads')]
+    public function testReviewedProfileFieldsNormalizeWithoutLosingOtherFields(
+        string $operation,
+        string $method,
+        array $arguments,
+        string $payload,
+        array $expected,
+    ): void {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope($operation, $payload)));
+        self::assertSame($expected, $client->whm()->databases()->{$method}(...$arguments));
+        self::assertCount(1, $http->getRequests());
+    }
+
+    /** @return iterable<string, array{string, string, list<mixed>, string, array<array-key, mixed>}> */
+    public static function reviewedProfilePayloads(): iterable
+    {
+        foreach (self::profileReads() as [$operation, $method, $arguments, $key]) {
+            foreach ([0, 3306, PHP_INT_MAX, PHP_INT_MIN] as $port) {
+                foreach ([$port, (string) $port] as $index => $wire) {
+                    $payload = [$key => ['mysql_pass' => 'synthetic secret', 'mysql_port' => $wire]];
+                    yield "$method port $port $index" => [$operation, $method, $arguments,
+                        json_encode($payload, JSON_THROW_ON_ERROR),
+                        [$key => ['mysql_pass' => 'synthetic secret', 'mysql_port' => $port]]];
+                }
+            }
+            yield "$method no undeclared cpcloud added" => [$operation, $method, $arguments,
+                json_encode([$key => ['cpcloud' => '1', 'mysql_host' => 'db.example.test']], JSON_THROW_ON_ERROR),
+                [$key => ['mysql_host' => 'db.example.test']]];
+        }
+        foreach (self::reviewedFlags() as [$operation, $method, $arguments, $key, $field]) {
+            foreach ([0, 1, '0', '1'] as $index => $wire) {
+                yield "$method $field $index" => [$operation, $method, $arguments,
+                    json_encode([$key => [$field => $wire]], JSON_THROW_ON_ERROR),
+                    [$key => [$field => $wire === 0 || $wire === '0' ? 0 : 1]]];
+            }
+        }
+        // Literal pinned MyProfile2 example; its two quoted flags normalize, all other fields stay exact.
+        yield 'pinned MyProfile2' => [
+            'remote_mysql_read_profiles', 'remoteMysqlReadProfiles', [],
+            '{"MyProfile2":{"active":0,"is_localhost_profile":"1","mysql_host":"192.168.0.2",'
+                . '"mysql_pass":"123456luggage","mysql_port":3306,"mysql_user":"username",'
+                . '"mysql_version_is_supported":"0","setup_via":"Main terminal"}}',
+            ['MyProfile2' => ['active' => 0, 'is_localhost_profile' => 1, 'mysql_host' => '192.168.0.2',
+                'mysql_pass' => '123456luggage', 'mysql_port' => 3306, 'mysql_user' => 'username',
+                'mysql_version_is_supported' => 0, 'setup_via' => 'Main terminal']],
+        ];
+    }
+
+    /** @return list<array{string, string, list<mixed>, string}> */
+    private static function profileReads(): array
+    {
+        return [
+            ['remote_mysql_read_profile', 'remoteMysqlReadProfile', ['fixture'], 'profile_details'],
+            ['remote_mysql_read_profiles', 'remoteMysqlReadProfiles', [], 'fixture'],
+        ];
+    }
+
+    /** @return list<array{string, string, list<mixed>, string, string}> */
+    private static function reviewedFlags(): array
+    {
+        return [
+            ['remote_mysql_create_profile', 'remoteMysqlCreateProfile',
+                ['h', 'synthetic', 3306, 'u', 'n'], 'profile_details', 'cpcloud'],
+            ['remote_mysql_create_profile_via_ssh', 'remoteMysqlCreateProfileViaSsh',
+                ['h', 'n', 22, 'root'], 'profile_details', 'cpcloud'],
+            ['remote_mysql_read_profiles', 'remoteMysqlReadProfiles', [], 'fixture', 'is_localhost_profile'],
+            ['remote_mysql_read_profiles', 'remoteMysqlReadProfiles', [], 'fixture', 'mysql_version_is_supported'],
+        ];
+    }
+
+    /** @param list<mixed> $arguments */
+    #[DataProvider('profileCorrectionBoundaries')]
+    public function testProfileCorrectionsKeepOtherTypesAndCanonicalBoundariesStrict(
+        string $operation,
+        string $method,
+        array $arguments,
+        string $payload,
+    ): void {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope($operation, $payload)));
+        try {
+            $client->whm()->databases()->{$method}(...$arguments);
+            self::fail('Profile compatibility must not coerce malformed or unreviewed fields.');
+        } catch (PayloadMismatchException $exception) {
+            self::assertTrue($exception->outcomeConfirmed);
+            self::assertSame(json_decode($payload, true, 512, JSON_THROW_ON_ERROR), $exception->payload);
+        }
+        self::assertCount(1, $http->getRequests());
+    }
+
+    /** @return iterable<string, array{string, string, list<mixed>, string}> */
+    public static function profileCorrectionBoundaries(): iterable
+    {
+        $invalidPorts = ['', '00', '03306', '+3306', '-0', '3306.0', '3e3', ' 3306', "3306\n",
+            (string) PHP_INT_MAX . '0', (string) PHP_INT_MIN . '0', null, true, false, 3306.0, [], new \stdClass()];
+        foreach (self::profileReads() as [$operation, $method, $arguments, $key]) {
+            foreach ($invalidPorts as $index => $wire) {
+                yield "$method port $index" => [$operation, $method, $arguments,
+                    json_encode([$key => ['mysql_port' => $wire]], JSON_THROW_ON_ERROR | JSON_PRESERVE_ZERO_FRACTION)];
+            }
+            $strictFields = ['active' => '1', 'mysql_pass' => null, 'mysql_host' => 0, 'mysql_user' => false];
+            foreach ($strictFields as $field => $wire) {
+                yield "$method unrelated $field" => [$operation, $method, $arguments,
+                    json_encode([$key => [$field => $wire]], JSON_THROW_ON_ERROR)];
+            }
+        }
+        $invalidFlags = ['', '00', '01', '-0', '+1', '1.0', ' 1', "1\n", '2', 2, -1, true, false, null, 1.0, []];
+        foreach (self::reviewedFlags() as [$operation, $method, $arguments, $key, $field]) {
+            foreach ($invalidFlags as $i => $wire) {
+                yield "$method $field $i" => [$operation, $method, $arguments,
+                    json_encode([$key => [$field => $wire]], JSON_THROW_ON_ERROR | JSON_PRESERVE_ZERO_FRACTION)];
+            }
+        }
+        $mutations = [
+            ['remote_mysql_create_profile', 'remoteMysqlCreateProfile', ['h', 'synthetic', 3306, 'u', 'n']],
+            ['remote_mysql_create_profile_via_ssh', 'remoteMysqlCreateProfileViaSsh', ['h', 'n', 22, 'root']],
+            ['remote_mysql_delete_profile', 'remoteMysqlDeleteProfile', ['fixture']],
+            ['remote_mysql_update_profile', 'remoteMysqlUpdateProfile', ['fixture']],
+        ];
+        foreach ($mutations as [$operation, $method, $arguments]) {
+            yield "$method mutation port stays strict" => [$operation, $method, $arguments,
+                '{"profile_details":{"mysql_port":"3306"}}'];
+        }
+    }
+
+    #[DataProvider('nullableDatabaseInventories')]
+    public function testUnknownUserNullInventoryStaysDistinctFromOmissionAndEmptyInventory(
+        string $payload,
+        mixed $expected,
+    ): void {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope('list_mysql_databases_and_users', $payload)));
+        self::assertSame($expected, $client->whm()->databases()->listMysqlDatabasesAndUsers('synthetic-user'));
+        self::assertCount(1, $http->getRequests());
+    }
+
+    /** @return iterable<string, array{string, array<array-key, mixed>}> */
+    public static function nullableDatabaseInventories(): iterable
+    {
+        yield 'unknown user' => ['{"mysql_databases":null}', ['mysql_databases' => null]];
+        yield 'absent' => ['{}', []];
+        yield 'existing user empty list' => ['{"mysql_databases":[]}', ['mysql_databases' => []]];
+        yield 'existing user empty map' => ['{"mysql_databases":{}}', ['mysql_databases' => []]];
+        yield 'populated' => ['{"mysql_databases":{"synthetic_db":["synthetic_user"]}}',
+            ['mysql_databases' => ['synthetic_db' => ['synthetic_user']]]];
+    }
+
+    public function testProfileFailurePayloadRemainsSensitiveAndIsNotIncludedInTheMessage(): void
+    {
+        foreach (self::profileReads() as [$operation, $method, $arguments, $key]) {
+            [$client, $http] = self::client();
+            $payload = [$key => ['mysql_pass' => 'synthetic plaintext secret', 'mysql_port' => 'invalid']];
+            $http->addResponse(new Response(200, [], self::envelope(
+                $operation,
+                json_encode($payload, JSON_THROW_ON_ERROR),
+            )));
+            try {
+                $client->whm()->databases()->{$method}(...$arguments);
+                self::fail('Invalid port must fail even when a password is present.');
+            } catch (PayloadMismatchException $exception) {
+                self::assertSame($payload, $exception->payload);
+                self::assertStringNotContainsString('synthetic plaintext secret', $exception->getMessage());
+            }
+            self::assertCount(1, $http->getRequests());
+        }
+    }
+
+    #[DataProvider('upgradeVersions')]
+    public function testUpgradeVersionStringsKeepTheirExactSpelling(string|int|float $version, string $encoded): void
+    {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope(
+            'start_background_mysql_upgrade',
+            '{"upgrade_id":"synthetic"}',
+        )));
+        self::assertSame(
+            ['upgrade_id' => 'synthetic'],
+            $client->whm()->databases()->startBackgroundMysqlUpgrade($version),
+        );
+        $request = $http->getLastRequest();
+        self::assertInstanceOf(RequestInterface::class, $request);
+        self::assertSame('version=' . $encoded, (string) $request->getBody());
+        self::assertSame('POST', $request->getMethod());
+        self::assertSame('api.version=1', $request->getUri()->getQuery());
+        self::assertCount(1, $http->getRequests());
+    }
+
+    /** @return iterable<string, array{string|int|float, string}> */
+    public static function upgradeVersions(): iterable
+    {
+        yield 'exact MariaDB minor' => ['10.10', '10.10'];
+        yield 'trailing zero' => ['10.0', '10.0'];
+        yield 'string form encoded once' => ['10.10+fixture', '10.10%2Bfixture'];
+        yield 'integer compatibility' => [8, '8'];
+        yield 'fraction compatibility' => [5.7, '5.7'];
+        yield 'integral float compatibility' => [8.0, '8.0'];
+    }
+
+    public function testReturnedInstallableVersionCanBePassedDirectlyToUpgrade(): void
+    {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope(
+            'installable_mysql_versions',
+            '{"versions":[{"server":"mariadb","version":"10.10"}]}',
+        )));
+        $http->addResponse(new Response(200, [], self::envelope('start_background_mysql_upgrade', '{}')));
+        $group = $client->whm()->databases();
+        $versions = $group->installableMysqlVersions();
+        $version = $versions['versions'][0]['version'] ?? null;
+        self::assertSame('10.10', $version);
+        $group->startBackgroundMysqlUpgrade($version);
+        $request = $http->getLastRequest();
+        self::assertInstanceOf(RequestInterface::class, $request);
+        self::assertSame('version=10.10', (string) $request->getBody());
+        self::assertCount(2, $http->getRequests());
+    }
+
+    public function testPasswordAndRenameSignaturesPutKeysFirstAndOptionalOwnerLast(): void
+    {
+        [$client] = self::client();
+        $group = $client->whm()->databases();
+        $signatures = [
+            'setMysqlPassword' => ['user', 'password', 'cpuser'],
+            'setPostgresqlPassword' => ['user', 'password', 'cpuser'],
+            'renameMysqlDatabase' => ['oldname', 'newname', 'cpuser'],
+            'renameMysqlUser' => ['oldname', 'newname', 'cpuser'],
+            'renamePostgresqlDatabase' => ['oldname', 'newname', 'cpuser'],
+            'renamePostgresqlUser' => ['oldname', 'newname', 'password', 'cpuser'],
+        ];
+        foreach ($signatures as $method => $expected) {
+            $parameters = (new ReflectionMethod($group, $method))->getParameters();
+            $names = array_map(static fn ($parameter): string => $parameter->getName(), $parameters);
+            self::assertSame($expected, $names);
+            foreach ($parameters as $parameter) {
+                self::assertSame($parameter->getName() === 'cpuser', $parameter->isOptional());
+                self::assertSame(
+                    $parameter->getName() === 'password',
+                    $parameter->getAttributes(SensitiveParameter::class) !== [],
+                );
+            }
+        }
     }
 
     private static function envelope(string $operation, ?string $payload): string

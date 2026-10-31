@@ -73,7 +73,7 @@ use SensitiveParameter;
  *         prefix_length?: int,
  *         use_db_prefix?: 0|1,
  *     },
- *     mysql_databases?: array<array-key, list<string>>,
+ *     mysql_databases?: array<array-key, list<string>>|null,
  * }
  * @phpstan-type RemoteMysqlCreateProfileResult array{
  *     profile_details?: array{
@@ -240,6 +240,10 @@ final readonly class Databases
      * error_log, log and state fields report background progress; a successful API envelope alone does not mean an
      * upgrade succeeded. Log text is returned as payload data and is not fetched or interpreted by the client.
      *
+     * Observed: On 11.138.0.19, the reviewer observed ApiErrorException for an unknown upgrade ID and found no
+     * directory created for that ID. This observation does not establish an upgrade outcome or a universal filesystem
+     * guarantee.
+     *
      * API-map identity: whm1:background_mysql_upgrade_status#GET (wire name background_mysql_upgrade_status; Manage
      * MySQL Server).
      *
@@ -303,10 +307,11 @@ final readonly class Databases
      * Documented: Returns recommendations, without applying database configuration changes. Large output is possible;
      * the source recommends filtering and sorting. Recommendation values remain strings, including unit suffixes.
      *
-     * Observed: The immutable 2026-10-31 WHM Databases capture on cPanel 11.138.0.19 returned payload as a map with
-     * dynamic keys and object values containing strings. It masks both map keys and row field names. The effective
-     * union preserves the pinned list plus a map of the same optional name/reason/value string records; applying those
-     * named fields to map rows is source-based inference, not named live-field proof.
+     * Observed: The initial 2026-10-31 WHM Databases capture observed a payload map but masked map keys and row field
+     * names after a container mismatch. The corrected capture at 00ba48d402f0a60cd975ec38cf5166545a8c0286 on
+     * 11.138.0.19 records named name, reason and value string leaves in map rows. Dynamic map keys remain masked and no
+     * key identity or value is inferred. Preserve the pinned list alternative alongside the observed map, with the same
+     * optional string fields.
      *
      * API-map identity: whm1:get_database_optimizations#GET (wire name get_database_optimizations; MySQL Databases).
      *
@@ -464,6 +469,10 @@ final readonly class Databases
      * mysql_config.use_db_prefix without revealing its value. Only exact quoted 0/1 forms normalize to their pinned
      * integer flags at this field; prefix_length and other numeric fields remain unchanged.
      *
+     * Observed: On 11.138.0.19, the reviewer observed mysql_databases: null for an unknown account with WHM success,
+     * while an existing account with no databases returned an empty list. Preserve null, omission and an empty array
+     * distinctly; this observed null case is not a universal account-existence guarantee.
+     *
      * API-map identity: whm1:list_mysql_databases_and_users#GET (wire name list_mysql_databases_and_users; MySQL
      * Databases).
      *
@@ -500,6 +509,10 @@ final readonly class Databases
      * Documented: Profile operations can affect remote connection configuration and trust. The password input is
      * sensitive, and profile_details may return the MySQL password; treat the returned payload as sensitive and do not
      * log it. Creation is a single attempt without retries or rollback.
+     *
+     * Observed: The reviewer observed quoted cpcloud in stored-profile data on 11.138.0.19. The declared cpcloud
+     * response flag also accepts exact strings 0/1 and normalizes to integer 0/1 by source-family inference. This
+     * creation operation was not run in that review; its port and other fields retain their pinned types.
      *
      * API-map identity: whm1:remote_mysql_create_profile#GET (wire name remote_mysql_create_profile; Remote MySQL
      * Databases).
@@ -558,6 +571,10 @@ final readonly class Databases
      * root password and key passphrase inputs are sensitive. The returned profile_details may contain the MySQL
      * password and must be treated as sensitive payload data. SSH setup can affect remote trust, connections and server
      * state; it is not retried or rolled back.
+     *
+     * Observed: The reviewer observed quoted cpcloud in stored-profile data on 11.138.0.19. The declared cpcloud
+     * response flag also accepts exact strings 0/1 and normalizes to integer 0/1 by source-family inference. This
+     * creation operation was not run in that review; its port and other fields retain their pinned types.
      *
      * API-map identity: whm1:remote_mysql_create_profile_via_ssh#GET (wire name remote_mysql_create_profile_via_ssh;
      * Remote MySQL Databases).
@@ -726,6 +743,13 @@ final readonly class Databases
      *
      * Documented: Although this operation displays profile details, the pinned x-readonly=false declaration selects
      * form POST. The profile_details payload may contain the MySQL password; treat it as sensitive and do not log it.
+     * On a payload mismatch, PayloadMismatchException::$payload retains the unvalidated response and can contain
+     * plaintext mysql_pass. Treat both successful results and failure payloads as secrets; do not log or serialize
+     * them.
+     *
+     * Observed: On 11.138.0.19, the reviewer observed mysql_port as a digit string, including in the stock localhost
+     * profile. Canonical decimal strings within PHP integer bounds normalize losslessly to int; malformed and
+     * overflowing strings remain invalid. The other fields retain their separately reviewed contracts.
      *
      * API-map identity: whm1:remote_mysql_read_profile#GET (wire name remote_mysql_read_profile; Remote MySQL
      * Databases).
@@ -755,12 +779,19 @@ final readonly class Databases
      *
      * Documented: Although this operation displays profiles, the pinned x-readonly=false declaration selects form POST.
      * Profile names remain dynamic map keys, including empty profile objects. Profile payloads may contain MySQL
-     * passwords; treat them as sensitive and do not log them.
+     * passwords; treat them as sensitive and do not log them. On a payload mismatch, PayloadMismatchException::$payload
+     * retains the unvalidated response and can contain plaintext mysql_pass. Treat both successful results and failure
+     * payloads as secrets; do not log or serialize them.
      *
      * Documented: The formal schema places the profile record under a literal properties.additionalProperties member,
      * but its prose explicitly identifies the profile name as the return name and its example shows multiple named
-     * profile records. The evidenced effective map retains every pinned profile field. Quoted example flags do not
-     * widen the formal integer 0/1 field contracts.
+     * profile records. The evidenced effective map retains every pinned profile field. Only is_localhost_profile and
+     * mysql_version_is_supported additionally accept exact quoted 0/1 from the pinned MyProfile2 example and normalize
+     * to integer flags. active remains strict. No cpcloud field is added to this read contract.
+     *
+     * Observed: On 11.138.0.19, the reviewer observed mysql_port as a digit string, including in the stock localhost
+     * profile. Canonical decimal strings within PHP integer bounds normalize losslessly to int; malformed and
+     * overflowing strings remain invalid. The other fields retain their separately reviewed contracts.
      *
      * API-map identity: whm1:remote_mysql_read_profiles#GET (wire name remote_mysql_read_profiles; Remote MySQL
      * Databases).
@@ -893,19 +924,25 @@ final readonly class Databases
      * Documented: The pinned response envelope contains metadata only, with no data member or payload schema. This
      * method returns void and relies on the WHM outcome.
      *
+     * Observed: The pinned description permits a successful rename with warnings when old data or grants could not be
+     * removed. The reviewer observed only standard WHM metadata on clean renames; the location and shape of
+     * partial-success warnings remain unobserved under 8x0.2.33. This void method checks the WHM outcome and provides
+     * no typed warnings result. Do not infer that a successful envelope proves complete removal of the old resources,
+     * and do not retry automatically.
+     *
      * API-map identity: whm1:rename_mysql_database#GET (wire name rename_mysql_database; MySQL Databases).
      *
-     * @param string $newname The database's new name.
      * @param string $oldname The database's current name.
+     * @param string $newname The database's new name.
      * @param string|null $cpuser The database's owner. Null omits it.
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/mysql-databases/db-rename_mysql_database
      */
-    public function renameMysqlDatabase(string $newname, string $oldname, ?string $cpuser = null): void
+    public function renameMysqlDatabase(string $oldname, string $newname, ?string $cpuser = null): void
     {
         ($this->run)(DatabasesSpec::RENAME_MYSQL_DATABASE, [
-            'newname' => $newname,
             'oldname' => $oldname,
+            'newname' => $newname,
             'cpuser' => $cpuser,
         ]);
     }
@@ -928,17 +965,17 @@ final readonly class Databases
      *
      * API-map identity: whm1:rename_mysql_user#GET (wire name rename_mysql_user; MySQL Databases).
      *
-     * @param string $newname The database user's new name.
      * @param string $oldname The database user's current name.
+     * @param string $newname The database user's new name.
      * @param string|null $cpuser The database user's owner. Null omits it.
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/mysql-databases/db-rename_mysql_user
      */
-    public function renameMysqlUser(string $newname, string $oldname, ?string $cpuser = null): void
+    public function renameMysqlUser(string $oldname, string $newname, ?string $cpuser = null): void
     {
         ($this->run)(DatabasesSpec::RENAME_MYSQL_USER, [
-            'newname' => $newname,
             'oldname' => $oldname,
+            'newname' => $newname,
             'cpuser' => $cpuser,
         ]);
     }
@@ -963,17 +1000,17 @@ final readonly class Databases
      * API-map identity: whm1:rename_postgresql_database#GET (wire name rename_postgresql_database; PostgreSQL
      * Databases).
      *
-     * @param string $newname The database's new name.
      * @param string $oldname The database's current name.
+     * @param string $newname The database's new name.
      * @param string|null $cpuser The database's owner. Null omits it.
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/postgresql-databases/db-rename_postgresql_database
      */
-    public function renamePostgresqlDatabase(string $newname, string $oldname, ?string $cpuser = null): void
+    public function renamePostgresqlDatabase(string $oldname, string $newname, ?string $cpuser = null): void
     {
         ($this->run)(DatabasesSpec::RENAME_POSTGRESQL_DATABASE, [
-            'newname' => $newname,
             'oldname' => $oldname,
+            'newname' => $newname,
             'cpuser' => $cpuser,
         ]);
     }
@@ -996,23 +1033,23 @@ final readonly class Databases
      *
      * API-map identity: whm1:rename_postgresql_user#GET (wire name rename_postgresql_user; PostgreSQL Databases).
      *
-     * @param string $newname The database user's new name.
      * @param string $oldname The database user's current name.
+     * @param string $newname The database user's new name.
      * @param string $password The database user's new password.
      * @param string|null $cpuser The database user's owner. Null omits it.
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/postgresql-databases/db-rename_postgresql_user
      */
     public function renamePostgresqlUser(
-        string $newname,
         string $oldname,
+        string $newname,
         #[SensitiveParameter]
         string $password,
         ?string $cpuser = null,
     ): void {
         ($this->run)(DatabasesSpec::RENAME_POSTGRESQL_USER, [
-            'newname' => $newname,
             'oldname' => $oldname,
+            'newname' => $newname,
             'password' => $password,
             'cpuser' => $cpuser,
         ]);
@@ -1084,21 +1121,21 @@ final readonly class Databases
      *
      * API-map identity: whm1:set_mysql_password#GET (wire name set_mysql_password; MySQL Databases).
      *
-     * @param string $password The database user's new password.
      * @param string $user The database username.
+     * @param string $password The database user's new password.
      * @param string|null $cpuser The cPanel user that controls the database user. Null omits it.
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/mysql-databases/db-set_mysql_password
      */
     public function setMysqlPassword(
+        string $user,
         #[SensitiveParameter]
         string $password,
-        string $user,
         ?string $cpuser = null,
     ): void {
         ($this->run)(DatabasesSpec::SET_MYSQL_PASSWORD, [
-            'password' => $password,
             'user' => $user,
+            'password' => $password,
             'cpuser' => $cpuser,
         ]);
     }
@@ -1121,21 +1158,21 @@ final readonly class Databases
      *
      * API-map identity: whm1:set_postgresql_password#GET (wire name set_postgresql_password; PostgreSQL Databases).
      *
-     * @param string $password The database user's new password.
      * @param string $user The account's username.
+     * @param string $password The database user's new password.
      * @param string|null $cpuser The database user's owner. Null omits it.
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/postgresql-databases/db-set_postgresql_password
      */
     public function setPostgresqlPassword(
+        string $user,
         #[SensitiveParameter]
         string $password,
-        string $user,
         ?string $cpuser = null,
     ): void {
         ($this->run)(DatabasesSpec::SET_POSTGRESQL_PASSWORD, [
-            'password' => $password,
             'user' => $user,
+            'password' => $password,
             'cpuser' => $cpuser,
         ]);
     }
@@ -1152,23 +1189,28 @@ final readonly class Databases
      * role](https://docs.cpanel.net/knowledge-base/general-systems-administration/how-to-use-server-profiles/#roles)
      * and remote MySQL® is **not** already configured, the system **disables** this function.
      *
-     * Documented: Starts a background upgrade to the required numeric MySQL or MariaDB version, documented to contain
-     * one decimal. Supplying the already installed version reinstalls that engine. This can change database/server
-     * state immediately and has no client retries or rollback. The returned upgrade_id is a log location relative to
-     * /var/cpanel/logs/; it does not establish successful completion, availability or compatibility. Inspect status
-     * separately.
+     * Documented: Starts a background upgrade to the required MySQL or MariaDB version. Pass the exact string returned
+     * by the version inventory APIs: 10.10 must not be converted to float 10.1. Integer and float inputs remain
+     * accepted for compatibility. Supplying the already installed version reinstalls that engine. This can change
+     * database/server state immediately and has no client retries or rollback. The returned upgrade_id is a log
+     * location relative to /var/cpanel/logs/; it does not establish successful completion, availability or
+     * compatibility. Inspect status separately.
      *
      * API-map identity: whm1:start_background_mysql_upgrade#GET (wire name start_background_mysql_upgrade; Manage MySQL
      * Server).
      *
-     * @param int|float $version The desired MySQL® or MariaDB® version.
+     * @param string|int|float $version The desired MySQL or MariaDB version. The pinned source describes a number
+     *     containing one decimal, while installable/latest version APIs return major.minor strings. Pass the exact
+     *     returned string to preserve versions such as 10.10; converting that value to float changes it to 10.1.
+     *     Existing integer and float inputs remain supported. No version-format or supported-version validation is
+     *     inferred.
      * @return StartBackgroundMysqlUpgradeResult
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/manage-mysql-server/mysql-start_background_mysql_upgrade
      */
-    public function startBackgroundMysqlUpgrade(int|float $version): array
+    public function startBackgroundMysqlUpgrade(string|int|float $version): array
     {
         /**
          * @var StartBackgroundMysqlUpgradeResult $result

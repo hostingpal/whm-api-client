@@ -13,7 +13,11 @@ namespace HostingPal\WhmApiClient\Api\Whm;
  */
 trait WhmGroups
 {
+    private ?AccountRestoration $accountRestorationGroup = null;
+
     private ?Accounts $accountsGroup = null;
+
+    private ?Backups $backupsGroup = null;
 
     private ?Databases $databasesGroup = null;
 
@@ -26,6 +30,16 @@ trait WhmGroups
     private ?WebServer $webServerGroup = null;
 
     /**
+     * Select the Account Restoration operations without making a request.
+     *
+     * WHM API 1 functions in the documented Account Restoration group.
+     */
+    public function accountRestoration(): AccountRestoration
+    {
+        return $this->accountRestorationGroup ??= new AccountRestoration($this->run(...));
+    }
+
+    /**
      * Select the Accounts operations without making a request.
      *
      * WHM API 1 functions in the documented Accounts group.
@@ -33,6 +47,16 @@ trait WhmGroups
     public function accounts(): Accounts
     {
         return $this->accountsGroup ??= new Accounts($this->run(...));
+    }
+
+    /**
+     * Select the Backups operations without making a request.
+     *
+     * WHM API 1 functions in the documented Backups group.
+     */
+    public function backups(): Backups
+    {
+        return $this->backupsGroup ??= new Backups($this->run(...));
     }
 
     /**

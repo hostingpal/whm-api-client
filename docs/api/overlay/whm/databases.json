@@ -35,6 +35,10 @@
         {
           "kind": "documented",
           "text": "The required upgrade_id is the logfile name relative to /var/cpanel/logs/. The optional error, error_log, log and state fields report background progress; a successful API envelope alone does not mean an upgrade succeeded. Log text is returned as payload data and is not fetched or interpreted by the client."
+        },
+        {
+          "kind": "observed",
+          "text": "On 11.138.0.19, the reviewer observed ApiErrorException for an unknown upgrade ID and found no directory created for that ID. This observation does not establish an upgrade outcome or a universal filesystem guarantee."
         }
       ],
       "evidence": [
@@ -43,6 +47,13 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /background_mysql_upgrade_status GET declares x-readonly=true. Use an explicit GET for this read."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer 5720420360 reports that an unknown upgrade ID raised ApiErrorException and created no directory on the reviewed server. The checker and upgrade starter were not run.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/46#pullrequestreview-5720420360"
         }
       ]
     },
@@ -80,7 +91,7 @@
         },
         {
           "kind": "observed",
-          "text": "The immutable 2026-10-31 WHM Databases capture on cPanel 11.138.0.19 returned payload as a map with dynamic keys and object values containing strings. It masks both map keys and row field names. The effective union preserves the pinned list plus a map of the same optional name/reason/value string records; applying those named fields to map rows is source-based inference, not named live-field proof."
+          "text": "The initial 2026-10-31 WHM Databases capture observed a payload map but masked map keys and row field names after a container mismatch. The corrected capture at 00ba48d402f0a60cd975ec38cf5166545a8c0286 on 11.138.0.19 records named name, reason and value string leaves in map rows. Dynamic map keys remain masked and no key identity or value is inferred. Preserve the pinned list alternative alongside the observed map, with the same optional string fields."
         }
       ],
       "evidence": [
@@ -96,6 +107,13 @@
           "date": "2026-10-31",
           "note": "Immutable docs/api/evidence/2026-10-31-whm-databases.json SHA-256 263cf2cfb1d5ec0c0c8a3fe6884e9b7611bc636db38f9977512cb052dd7e3a47, captured at e0ac45dfd43464abec2d87f7883aca2b1ab5fe6e on cPanel 11.138.0.19, pinned source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. whm1:get_database_optimizations#GET through the WHM GET route returned HTTP 200 and API success, but payload validation failed at $.payload. Structural payload paths record $.payload object, $.payload.* object and $.payload.*.* string. The container mismatch masks all map keys and record field names. This establishes the map container and object/string structure only, not named row fields or identities. Add only a map-of-pinned-records alternative beside the formal list. Do not infer opaque row fields, arbitrary scalars, null records or new keys. The original failed artifact remains unchanged and unwaived.",
           "fingerprint": "docs/api/evidence/2026-10-31-whm-databases.json"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Immutable docs/api/evidence/2026-10-31-whm-databases-corrected.json SHA-256 b97b7f1bbf91bccc8d048026a1d99c38ecaa049730c165507fde5fe53b111ba1 at revision 00ba48d402f0a60cd975ec38cf5166545a8c0286 records successful WHM GET get_database_optimizations with no discrepancies. Payload paths include $.payload object, $.payload.* object and $.payload.*.name/reason/value string leaves. This establishes those named field types, not dynamic map-key identities, counts or field values. Preserve the original failed masked artifact unchanged.",
+          "fingerprint": "docs/api/evidence/2026-10-31-whm-databases-corrected.json"
         }
       ],
       "response": {
@@ -144,7 +162,7 @@
               "kind": "doc",
               "version": "pinned 2026-10-13",
               "date": "2026-10-31",
-              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, /get_database_optimizations GET responses/200/content/application~1json/schema/properties/data/properties/payload/items declares an object with optional string name, reason and value. Retain the formal list alternative and every pinned record field unchanged. Applying that pinned record schema to values of the observed map is source-based family inference; those row names and meanings are not established by masked live evidence."
+              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, /get_database_optimizations GET responses/200/content/application~1json/schema/properties/data/properties/payload/items declares an object with optional string name, reason and value. Retain the formal list alternative and every pinned record field unchanged. The initial map-record compatibility was source-based inference; the separately cited corrected capture subsequently observed the named name/reason/value string leaves. Dynamic map-key identities remain masked."
             },
             {
               "kind": "live",
@@ -152,6 +170,13 @@
               "date": "2026-10-31",
               "note": "Immutable docs/api/evidence/2026-10-31-whm-databases.json SHA-256 263cf2cfb1d5ec0c0c8a3fe6884e9b7611bc636db38f9977512cb052dd7e3a47, captured at e0ac45dfd43464abec2d87f7883aca2b1ab5fe6e on cPanel 11.138.0.19, pinned source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. whm1:get_database_optimizations#GET through the WHM GET route returned HTTP 200 and API success, but payload validation failed at $.payload. Structural payload paths record $.payload object, $.payload.* object and $.payload.*.* string. The container mismatch masks all map keys and record field names. This establishes the map container and object/string structure only, not named row fields or identities. Add only a map-of-pinned-records alternative beside the formal list. Do not infer opaque row fields, arbitrary scalars, null records or new keys. The original failed artifact remains unchanged and unwaived.",
               "fingerprint": "docs/api/evidence/2026-10-31-whm-databases.json"
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Immutable docs/api/evidence/2026-10-31-whm-databases-corrected.json SHA-256 b97b7f1bbf91bccc8d048026a1d99c38ecaa049730c165507fde5fe53b111ba1 at revision 00ba48d402f0a60cd975ec38cf5166545a8c0286 records successful WHM GET get_database_optimizations with no discrepancies. Payload paths include $.payload object, $.payload.* object and $.payload.*.name/reason/value string leaves. This establishes those named field types, not dynamic map-key identities, counts or field values. Preserve the original failed masked artifact unchanged.",
+              "fingerprint": "docs/api/evidence/2026-10-31-whm-databases-corrected.json"
             }
           ]
         }
@@ -255,6 +280,10 @@
         {
           "kind": "observed",
           "text": "The immutable 2026-10-31 WHM Databases capture on cPanel 11.138.0.19 records a numeric-string at mysql_config.use_db_prefix without revealing its value. Only exact quoted 0/1 forms normalize to their pinned integer flags at this field; prefix_length and other numeric fields remain unchanged."
+        },
+        {
+          "kind": "observed",
+          "text": "On 11.138.0.19, the reviewer observed mysql_databases: null for an unknown account with WHM success, while an existing account with no databases returned an empty list. Preserve null, omission and an empty array distinctly; this observed null case is not a universal account-existence guarantee."
         }
       ],
       "evidence": [
@@ -270,6 +299,13 @@
           "date": "2026-10-31",
           "note": "Immutable docs/api/evidence/2026-10-31-whm-databases.json SHA-256 263cf2cfb1d5ec0c0c8a3fe6884e9b7611bc636db38f9977512cb052dd7e3a47, captured at e0ac45dfd43464abec2d87f7883aca2b1ab5fe6e on cPanel 11.138.0.19, pinned source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. whm1:list_mysql_databases_and_users#GET through the WHM GET route returned HTTP 200 and API success, with a type mismatch at $.mysql_config.use_db_prefix whose structural type is numeric-string. Its pinned integer enum is [0,1]. Normalize only the exact string forms \"0\" and \"1\" at this field, retaining integer 0/1 outputs and native flags. Reject noncanonical forms, fractional strings, booleans, null and values outside 0/1; no sibling numeric or flag field changes. The structural capture does not reveal the actual flag value. The original failed artifact remains unchanged and unwaived.",
           "fingerprint": "docs/api/evidence/2026-10-31-whm-databases.json"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer 5720420360 at 668d390c967d75428c985591829369e0b8e1a008 observed successful WHM list_mysql_databases_and_users for an unknown user with mysql_databases: null on 11.138.0.19. An existing account without databases returned an empty list. Preserve explicit null separately from omission and the empty map/list compatibility; keep the declared map of string lists and mysql_config fields unchanged. This attributed observation does not establish a universal account-existence check.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/46#pullrequestreview-5720420360"
         }
       ],
       "response": {
@@ -284,6 +320,18 @@
               "date": "2026-10-31",
               "note": "Immutable docs/api/evidence/2026-10-31-whm-databases.json SHA-256 263cf2cfb1d5ec0c0c8a3fe6884e9b7611bc636db38f9977512cb052dd7e3a47, captured at e0ac45dfd43464abec2d87f7883aca2b1ab5fe6e on cPanel 11.138.0.19, pinned source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. whm1:list_mysql_databases_and_users#GET through the WHM GET route returned HTTP 200 and API success, with a type mismatch at $.mysql_config.use_db_prefix whose structural type is numeric-string. Its pinned integer enum is [0,1]. Normalize only the exact string forms \"0\" and \"1\" at this field, retaining integer 0/1 outputs and native flags. Reject noncanonical forms, fractional strings, booleans, null and values outside 0/1; no sibling numeric or flag field changes. The structural capture does not reveal the actual flag value. The original failed artifact remains unchanged and unwaived.",
               "fingerprint": "docs/api/evidence/2026-10-31-whm-databases.json"
+            }
+          ]
+        },
+        "mysql_databases": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer 5720420360 at 668d390c967d75428c985591829369e0b8e1a008 observed successful WHM list_mysql_databases_and_users for an unknown user with mysql_databases: null on 11.138.0.19. An existing account without databases returned an empty list. Preserve explicit null separately from omission and the empty map/list compatibility; keep the declared map of string lists and mysql_config fields unchanged. This attributed observation does not establish a universal account-existence check.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/46#pullrequestreview-5720420360"
             }
           ]
         }
@@ -303,6 +351,10 @@
         {
           "kind": "documented",
           "text": "Profile operations can affect remote connection configuration and trust. The password input is sensitive, and profile_details may return the MySQL password; treat the returned payload as sensitive and do not log it. Creation is a single attempt without retries or rollback."
+        },
+        {
+          "kind": "observed",
+          "text": "The reviewer observed quoted cpcloud in stored-profile data on 11.138.0.19. The declared cpcloud response flag also accepts exact strings 0/1 and normalizes to integer 0/1 by source-family inference. This creation operation was not run in that review; its port and other fields retain their pinned types."
         }
       ],
       "params": {
@@ -316,8 +368,31 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /remote_mysql_create_profile GET declares x-readonly=false. Use form POST for this operation, including reads marked x-readonly=false; keep routing in the URL."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer 5720420360 at 668d390c967d75428c985591829369e0b8e1a008 observed quoted cpcloud in stored-profile reads and requests compatibility wherever the field is already typed. Only remote_mysql_create_profile and remote_mysql_create_profile_via_ssh declare cpcloud in their response schemas. Accept only exact \"0\"/\"1\" and normalize to the pinned integer flag in those two responses. This is source-family compatibility inferred from the observed stored-profile representation, not a claim that either server-wide creation operation ran. Do not add cpcloud to the typed reads or widen mutation mysql_port fields.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/46#pullrequestreview-5720420360"
         }
-      ]
+      ],
+      "response": {
+        "profile_details.cpcloud": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer 5720420360 at 668d390c967d75428c985591829369e0b8e1a008 observed quoted cpcloud in stored-profile reads and requests compatibility wherever the field is already typed. Only remote_mysql_create_profile and remote_mysql_create_profile_via_ssh declare cpcloud in their response schemas. Accept only exact \"0\"/\"1\" and normalize to the pinned integer flag in those two responses. This is source-family compatibility inferred from the observed stored-profile representation, not a claim that either server-wide creation operation ran. Do not add cpcloud to the typed reads or widen mutation mysql_port fields.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/46#pullrequestreview-5720420360"
+            }
+          ]
+        }
+      }
     },
     "whm1:remote_mysql_create_profile_via_ssh": {
       "method": "POST",
@@ -333,6 +408,10 @@
         {
           "kind": "documented",
           "text": "sshkey_name identifies a stored SSH key rather than containing private-key material. SSH password, root password and key passphrase inputs are sensitive. The returned profile_details may contain the MySQL password and must be treated as sensitive payload data. SSH setup can affect remote trust, connections and server state; it is not retried or rolled back."
+        },
+        {
+          "kind": "observed",
+          "text": "The reviewer observed quoted cpcloud in stored-profile data on 11.138.0.19. The declared cpcloud response flag also accepts exact strings 0/1 and normalizes to integer 0/1 by source-family inference. This creation operation was not run in that review; its port and other fields retain their pinned types."
         }
       ],
       "params": {
@@ -361,8 +440,31 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /remote_mysql_create_profile_via_ssh parameters sshkey_name is explicitly the name of the SSH key (example VinzClortho), not private-key bytes; its separate sshkey_passphrase is sensitive. Password/key and escalation/passphrase conditions are explicit in the parameter descriptions."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer 5720420360 at 668d390c967d75428c985591829369e0b8e1a008 observed quoted cpcloud in stored-profile reads and requests compatibility wherever the field is already typed. Only remote_mysql_create_profile and remote_mysql_create_profile_via_ssh declare cpcloud in their response schemas. Accept only exact \"0\"/\"1\" and normalize to the pinned integer flag in those two responses. This is source-family compatibility inferred from the observed stored-profile representation, not a claim that either server-wide creation operation ran. Do not add cpcloud to the typed reads or widen mutation mysql_port fields.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/46#pullrequestreview-5720420360"
         }
-      ]
+      ],
+      "response": {
+        "profile_details.cpcloud": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer 5720420360 at 668d390c967d75428c985591829369e0b8e1a008 observed quoted cpcloud in stored-profile reads and requests compatibility wherever the field is already typed. Only remote_mysql_create_profile and remote_mysql_create_profile_via_ssh declare cpcloud in their response schemas. Accept only exact \"0\"/\"1\" and normalize to the pinned integer flag in those two responses. This is source-family compatibility inferred from the observed stored-profile representation, not a claim that either server-wide creation operation ran. Do not add cpcloud to the typed reads or widen mutation mysql_port fields.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/46#pullrequestreview-5720420360"
+            }
+          ]
+        }
+      }
     },
     "whm1:remote_mysql_delete_profile": {
       "method": "POST",
@@ -473,7 +575,11 @@
         },
         {
           "kind": "documented",
-          "text": "Although this operation displays profile details, the pinned x-readonly=false declaration selects form POST. The profile_details payload may contain the MySQL password; treat it as sensitive and do not log it."
+          "text": "Although this operation displays profile details, the pinned x-readonly=false declaration selects form POST. The profile_details payload may contain the MySQL password; treat it as sensitive and do not log it. On a payload mismatch, PayloadMismatchException::$payload retains the unvalidated response and can contain plaintext mysql_pass. Treat both successful results and failure payloads as secrets; do not log or serialize them."
+        },
+        {
+          "kind": "observed",
+          "text": "On 11.138.0.19, the reviewer observed mysql_port as a digit string, including in the stock localhost profile. Canonical decimal strings within PHP integer bounds normalize losslessly to int; malformed and overflowing strings remain invalid. The other fields retain their separately reviewed contracts."
         }
       ],
       "evidence": [
@@ -482,8 +588,31 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /remote_mysql_read_profile GET declares x-readonly=false. Use form POST for this operation, including reads marked x-readonly=false; keep routing in the URL."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer 5720420360 at 668d390c967d75428c985591829369e0b8e1a008 observed mysql_port as a digit string in both remote_mysql_read_profile and remote_mysql_read_profiles through WHM on 11.138.0.19, including the stock localhost profile. Normalize only canonical decimal strings within PHP integer bounds to the pinned integer type; preserve omitted fields and strict sibling fields. This is an attributed reviewer read observation, not a new committed capture. Mutation-response ports are not widened.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/46#pullrequestreview-5720420360"
         }
-      ]
+      ],
+      "response": {
+        "profile_details.mysql_port": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer 5720420360 at 668d390c967d75428c985591829369e0b8e1a008 observed mysql_port as a digit string in both remote_mysql_read_profile and remote_mysql_read_profiles through WHM on 11.138.0.19, including the stock localhost profile. Normalize only canonical decimal strings within PHP integer bounds to the pinned integer type; preserve omitted fields and strict sibling fields. This is an attributed reviewer read observation, not a new committed capture. Mutation-response ports are not widened.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/46#pullrequestreview-5720420360"
+            }
+          ]
+        }
+      }
     },
     "whm1:remote_mysql_read_profiles": {
       "method": "POST",
@@ -494,11 +623,15 @@
         },
         {
           "kind": "documented",
-          "text": "Although this operation displays profiles, the pinned x-readonly=false declaration selects form POST. Profile names remain dynamic map keys, including empty profile objects. Profile payloads may contain MySQL passwords; treat them as sensitive and do not log them."
+          "text": "Although this operation displays profiles, the pinned x-readonly=false declaration selects form POST. Profile names remain dynamic map keys, including empty profile objects. Profile payloads may contain MySQL passwords; treat them as sensitive and do not log them. On a payload mismatch, PayloadMismatchException::$payload retains the unvalidated response and can contain plaintext mysql_pass. Treat both successful results and failure payloads as secrets; do not log or serialize them."
         },
         {
           "kind": "documented",
-          "text": "The formal schema places the profile record under a literal properties.additionalProperties member, but its prose explicitly identifies the profile name as the return name and its example shows multiple named profile records. The evidenced effective map retains every pinned profile field. Quoted example flags do not widen the formal integer 0/1 field contracts."
+          "text": "The formal schema places the profile record under a literal properties.additionalProperties member, but its prose explicitly identifies the profile name as the return name and its example shows multiple named profile records. The evidenced effective map retains every pinned profile field. Only is_localhost_profile and mysql_version_is_supported additionally accept exact quoted 0/1 from the pinned MyProfile2 example and normalize to integer flags. active remains strict. No cpcloud field is added to this read contract."
+        },
+        {
+          "kind": "observed",
+          "text": "On 11.138.0.19, the reviewer observed mysql_port as a digit string, including in the stock localhost profile. Canonical decimal strings within PHP integer bounds normalize losslessly to int; malformed and overflowing strings remain invalid. The other fields retain their separately reviewed contracts."
         }
       ],
       "response": {
@@ -512,7 +645,10 @@
                   "type": "flag"
                 },
                 "is_localhost_profile": {
-                  "type": "flag"
+                  "type": "flag",
+                  "accept": [
+                    "string-flag"
+                  ]
                 },
                 "mysql_host": {
                   "type": "string"
@@ -521,13 +657,19 @@
                   "type": "string"
                 },
                 "mysql_port": {
-                  "type": "int"
+                  "type": "int",
+                  "accept": [
+                    "numeric-string"
+                  ]
                 },
                 "mysql_user": {
                   "type": "string"
                 },
                 "mysql_version_is_supported": {
-                  "type": "flag"
+                  "type": "flag",
+                  "accept": [
+                    "string-flag"
+                  ]
                 },
                 "setup_via": {
                   "type": "string"
@@ -540,7 +682,20 @@
               "kind": "doc",
               "version": "pinned 2026-10-13",
               "date": "2026-10-31",
-              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /remote_mysql_read_profiles GET responses/200/content/application~1json/schema/properties/data places the record under properties.additionalProperties, but its description says the profile name is the return name and data/example has MyProfile, MyProfile2 and localhost records. Correct only this misplaced container to a root map whose values retain all eight declared optional fields: active, is_localhost_profile, mysql_host, mysql_pass, mysql_port, mysql_user, mysql_version_is_supported and setup_via. Preserve strict integer 0/1 flags despite conflicting quoted example values; no live compatibility or additional fields are inferred."
+              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /remote_mysql_read_profiles GET responses/200/content/application~1json/schema/properties/data places the record under properties.additionalProperties, but its description says the profile name is the return name and data/example has MyProfile, MyProfile2 and localhost records. Correct only this misplaced container to a root map whose values retain all eight declared optional fields: active, is_localhost_profile, mysql_host, mysql_pass, mysql_port, mysql_user, mysql_version_is_supported and setup_via. This establishes only the root map and its eight optional fields. Separately cited source-example and reviewer evidence adds narrow scalar compatibility without adding fields."
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer 5720420360 at 668d390c967d75428c985591829369e0b8e1a008 observed mysql_port as a digit string in both remote_mysql_read_profile and remote_mysql_read_profiles through WHM on 11.138.0.19, including the stock localhost profile. Normalize only canonical decimal strings within PHP integer bounds to the pinned integer type; preserve omitted fields and strict sibling fields. This is an attributed reviewer read observation, not a new committed capture. Mutation-response ports are not widened.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/46#pullrequestreview-5720420360"
+            },
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned whm.openapi.json SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, /remote_mysql_read_profiles/get/responses/200/content/application~1json/schema/properties/data/example/MyProfile2 quotes is_localhost_profile as \"1\" and mysql_version_is_supported as \"0\", despite their integer 0/1 field schemas. Accept only exact string flags \"0\" and \"1\" for these two map-row fields and normalize to integer flags. Reviewer 5720420360 observed native integers for these fields; the quoted variants are source-example compatibility, not claimed live observations. active and all other flags remain unchanged."
             }
           ]
         }
@@ -551,6 +706,19 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /remote_mysql_read_profiles GET declares x-readonly=false. Use form POST for this operation, including reads marked x-readonly=false; keep routing in the URL."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer 5720420360 at 668d390c967d75428c985591829369e0b8e1a008 observed mysql_port as a digit string in both remote_mysql_read_profile and remote_mysql_read_profiles through WHM on 11.138.0.19, including the stock localhost profile. Normalize only canonical decimal strings within PHP integer bounds to the pinned integer type; preserve omitted fields and strict sibling fields. This is an attributed reviewer read observation, not a new committed capture. Mutation-response ports are not widened.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/46#pullrequestreview-5720420360"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, /remote_mysql_read_profiles/get/responses/200/content/application~1json/schema/properties/data/example/MyProfile2 quotes is_localhost_profile as \"1\" and mysql_version_is_supported as \"0\", despite their integer 0/1 field schemas. Accept only exact string flags \"0\" and \"1\" for these two map-row fields and normalize to integer flags. Reviewer 5720420360 observed native integers for these fields; the quoted variants are source-example compatibility, not claimed live observations. active and all other flags remain unchanged."
         }
       ]
     },
@@ -619,6 +787,10 @@
         {
           "kind": "documented",
           "text": "The pinned response envelope contains metadata only, with no data member or payload schema. This method returns void and relies on the WHM outcome."
+        },
+        {
+          "kind": "observed",
+          "text": "The pinned description permits a successful rename with warnings when old data or grants could not be removed. The reviewer observed only standard WHM metadata on clean renames; the location and shape of partial-success warnings remain unobserved under 8x0.2.33. This void method checks the WHM outcome and provides no typed warnings result. Do not infer that a successful envelope proves complete removal of the old resources, and do not retry automatically."
         }
       ],
       "void": true,
@@ -634,7 +806,25 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /rename_mysql_database GET responses/200/content/application~1json/schema/properties has metadata only and no data property; expose void instead of inventing a payload."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /rename_mysql_database/get parameters define the resource identifier and credential or destination separately. Order the public arguments as oldname, newname, cpuser, keeping optional cpuser last, the original wire names and requiredness, and password sensitivity. This follows the repository key-first convention and review 5720420360; parameter order does not change the upstream parameter meanings."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer 5720420360 observed clean rename_mysql_database responses containing only version, result, command and reason metadata. No partial failure or warning location was observed. Retain the pinned possible-success-with-warning caveat without inventing a warnings accessor or returned data field; follow-up 8x0.2.33 remains open.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/46#pullrequestreview-5720420360"
         }
+      ],
+      "order": [
+        "oldname",
+        "newname",
+        "cpuser"
       ]
     },
     "whm1:rename_mysql_user": {
@@ -666,7 +856,18 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /rename_mysql_user GET responses/200/content/application~1json/schema/properties has metadata only and no data property; expose void instead of inventing a payload."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /rename_mysql_user/get parameters define the resource identifier and credential or destination separately. Order the public arguments as oldname, newname, cpuser, keeping optional cpuser last, the original wire names and requiredness, and password sensitivity. This follows the repository key-first convention and review 5720420360; parameter order does not change the upstream parameter meanings."
         }
+      ],
+      "order": [
+        "oldname",
+        "newname",
+        "cpuser"
       ]
     },
     "whm1:rename_postgresql_database": {
@@ -698,7 +899,18 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /rename_postgresql_database GET responses/200/content/application~1json/schema/properties has metadata only and no data property; expose void instead of inventing a payload."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /rename_postgresql_database/get parameters define the resource identifier and credential or destination separately. Order the public arguments as oldname, newname, cpuser, keeping optional cpuser last, the original wire names and requiredness, and password sensitivity. This follows the repository key-first convention and review 5720420360; parameter order does not change the upstream parameter meanings."
         }
+      ],
+      "order": [
+        "oldname",
+        "newname",
+        "cpuser"
       ]
     },
     "whm1:rename_postgresql_user": {
@@ -735,7 +947,19 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /rename_postgresql_user GET responses/200/content/application~1json/schema/properties has metadata only and no data property; expose void instead of inventing a payload."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /rename_postgresql_user/get parameters define the resource identifier and credential or destination separately. Order the public arguments as oldname, newname, password, cpuser, keeping optional cpuser last, the original wire names and requiredness, and password sensitivity. This follows the repository key-first convention and review 5720420360; parameter order does not change the upstream parameter meanings."
         }
+      ],
+      "order": [
+        "oldname",
+        "newname",
+        "password",
+        "cpuser"
       ]
     },
     "whm1:set_local_mysql_root_password": {
@@ -802,7 +1026,18 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /set_mysql_password GET responses/200/content/application~1json/schema/properties has metadata only and no data property; expose void instead of inventing a payload."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /set_mysql_password/get parameters define the resource identifier and credential or destination separately. Order the public arguments as user, password, cpuser, keeping optional cpuser last, the original wire names and requiredness, and password sensitivity. This follows the repository key-first convention and review 5720420360; parameter order does not change the upstream parameter meanings."
         }
+      ],
+      "order": [
+        "user",
+        "password",
+        "cpuser"
       ]
     },
     "whm1:set_postgresql_password": {
@@ -839,7 +1074,18 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /set_postgresql_password GET responses/200/content/application~1json/schema/properties has metadata only and no data property; expose void instead of inventing a payload."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /set_postgresql_password/get parameters define the resource identifier and credential or destination separately. Order the public arguments as user, password, cpuser, keeping optional cpuser last, the original wire names and requiredness, and password sensitivity. This follows the repository key-first convention and review 5720420360; parameter order does not change the upstream parameter meanings."
         }
+      ],
+      "order": [
+        "user",
+        "password",
+        "cpuser"
       ]
     },
     "whm1:start_background_mysql_upgrade": {
@@ -851,7 +1097,7 @@
         },
         {
           "kind": "documented",
-          "text": "Starts a background upgrade to the required numeric MySQL or MariaDB version, documented to contain one decimal. Supplying the already installed version reinstalls that engine. This can change database/server state immediately and has no client retries or rollback. The returned upgrade_id is a log location relative to /var/cpanel/logs/; it does not establish successful completion, availability or compatibility. Inspect status separately."
+          "text": "Starts a background upgrade to the required MySQL or MariaDB version. Pass the exact string returned by the version inventory APIs: 10.10 must not be converted to float 10.1. Integer and float inputs remain accepted for compatibility. Supplying the already installed version reinstalls that engine. This can change database/server state immediately and has no client retries or rollback. The returned upgrade_id is a log location relative to /var/cpanel/logs/; it does not establish successful completion, availability or compatibility. Inspect status separately."
         }
       ],
       "evidence": [
@@ -860,8 +1106,20 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /start_background_mysql_upgrade GET declares x-readonly=false. Use form POST for this operation, including reads marked x-readonly=false; keep routing in the URL."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594: /start_background_mysql_upgrade/get/parameters/version declares number and major.minor prose, while /installable_mysql_versions and /latest_available_mysql_version return version strings. Review 5720420360 independently replayed float conversion of \"10.10\" as version=10.1. Use the evidence-gated scalar number widening string|int|float and preserve exact string encoding, while retaining existing numeric inputs, requiredness and wire name. This is source/offline transport evidence; no upgrade was run."
         }
-      ]
+      ],
+      "params": {
+        "version": {
+          "type": "string|int|float",
+          "description": "The desired MySQL or MariaDB version. The pinned source describes a number containing one decimal, while installable/latest version APIs return major.minor strings. Pass the exact returned string to preserve versions such as 10.10; converting that value to float changes it to 10.1. Existing integer and float inputs remain supported. No version-format or supported-version validation is inferred."
+        }
+      }
     },
     "whm1:update_sql_config": {
       "exclude": {

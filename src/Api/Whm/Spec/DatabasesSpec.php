@@ -198,7 +198,11 @@ final class DatabasesSpec
                         'use_db_prefix' => ['type' => 'flag', 'accept' => ['string-flag']],
                     ],
                 ],
-                'mysql_databases' => ['type' => 'map', 'values' => ['type' => 'list', 'items' => ['type' => 'string']]],
+                'mysql_databases' => [
+                    'type' => 'map',
+                    'nullable' => true,
+                    'values' => ['type' => 'list', 'items' => ['type' => 'string']],
+                ],
             ],
         ],
     ];
@@ -223,7 +227,7 @@ final class DatabasesSpec
                     'type' => 'object',
                     'fields' => [
                         'active' => ['type' => 'flag'],
-                        'cpcloud' => ['type' => 'flag'],
+                        'cpcloud' => ['type' => 'flag', 'accept' => ['string-flag']],
                         'mysql_host' => ['type' => 'string'],
                         'mysql_pass' => ['type' => 'string'],
                         'mysql_port' => ['type' => 'int'],
@@ -258,7 +262,7 @@ final class DatabasesSpec
                 'profile_details' => [
                     'type' => 'object',
                     'fields' => [
-                        'cpcloud' => ['type' => 'flag'],
+                        'cpcloud' => ['type' => 'flag', 'accept' => ['string-flag']],
                         'mysql_host' => ['type' => 'string'],
                         'mysql_pass' => ['type' => 'string'],
                         'mysql_port' => ['type' => 'int'],
@@ -383,7 +387,7 @@ final class DatabasesSpec
                         'active' => ['type' => 'flag'],
                         'mysql_host' => ['type' => 'string'],
                         'mysql_pass' => ['type' => 'string'],
-                        'mysql_port' => ['type' => 'int'],
+                        'mysql_port' => ['type' => 'int', 'accept' => ['numeric-string']],
                         'mysql_user' => ['type' => 'string'],
                         'setup_via' => ['type' => 'string'],
                     ],
@@ -404,12 +408,12 @@ final class DatabasesSpec
                 'type' => 'object',
                 'fields' => [
                     'active' => ['type' => 'flag'],
-                    'is_localhost_profile' => ['type' => 'flag'],
+                    'is_localhost_profile' => ['type' => 'flag', 'accept' => ['string-flag']],
                     'mysql_host' => ['type' => 'string'],
                     'mysql_pass' => ['type' => 'string'],
-                    'mysql_port' => ['type' => 'int'],
+                    'mysql_port' => ['type' => 'int', 'accept' => ['numeric-string']],
                     'mysql_user' => ['type' => 'string'],
-                    'mysql_version_is_supported' => ['type' => 'flag'],
+                    'mysql_version_is_supported' => ['type' => 'flag', 'accept' => ['string-flag']],
                     'setup_via' => ['type' => 'string'],
                 ],
             ],
@@ -467,8 +471,8 @@ final class DatabasesSpec
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [
-            'newname' => ['name' => 'newname', 'encoding' => 'scalar'],
             'oldname' => ['name' => 'oldname', 'encoding' => 'scalar'],
+            'newname' => ['name' => 'newname', 'encoding' => 'scalar'],
             'cpuser' => ['name' => 'cpuser', 'encoding' => 'scalar'],
         ],
         'returns' => null,
@@ -479,8 +483,8 @@ final class DatabasesSpec
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [
-            'newname' => ['name' => 'newname', 'encoding' => 'scalar'],
             'oldname' => ['name' => 'oldname', 'encoding' => 'scalar'],
+            'newname' => ['name' => 'newname', 'encoding' => 'scalar'],
             'cpuser' => ['name' => 'cpuser', 'encoding' => 'scalar'],
         ],
         'returns' => null,
@@ -491,8 +495,8 @@ final class DatabasesSpec
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [
-            'newname' => ['name' => 'newname', 'encoding' => 'scalar'],
             'oldname' => ['name' => 'oldname', 'encoding' => 'scalar'],
+            'newname' => ['name' => 'newname', 'encoding' => 'scalar'],
             'cpuser' => ['name' => 'cpuser', 'encoding' => 'scalar'],
         ],
         'returns' => null,
@@ -503,8 +507,8 @@ final class DatabasesSpec
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [
-            'newname' => ['name' => 'newname', 'encoding' => 'scalar'],
             'oldname' => ['name' => 'oldname', 'encoding' => 'scalar'],
+            'newname' => ['name' => 'newname', 'encoding' => 'scalar'],
             'password' => ['name' => 'password', 'encoding' => 'scalar'],
             'cpuser' => ['name' => 'cpuser', 'encoding' => 'scalar'],
         ],
@@ -534,8 +538,8 @@ final class DatabasesSpec
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [
-            'password' => ['name' => 'password', 'encoding' => 'scalar'],
             'user' => ['name' => 'user', 'encoding' => 'scalar'],
+            'password' => ['name' => 'password', 'encoding' => 'scalar'],
             'cpuser' => ['name' => 'cpuser', 'encoding' => 'scalar'],
         ],
         'returns' => null,
@@ -546,8 +550,8 @@ final class DatabasesSpec
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [
-            'password' => ['name' => 'password', 'encoding' => 'scalar'],
             'user' => ['name' => 'user', 'encoding' => 'scalar'],
+            'password' => ['name' => 'password', 'encoding' => 'scalar'],
             'cpuser' => ['name' => 'cpuser', 'encoding' => 'scalar'],
         ],
         'returns' => null,

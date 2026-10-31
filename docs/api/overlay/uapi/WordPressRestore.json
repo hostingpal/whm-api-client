@@ -1,0 +1,242 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "WordPressRestore",
+  "class": "WordPressRestore",
+  "accessor": "wordPressRestore",
+  "operations": {
+    "uapi:WordPressRestore/any_running": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Requires the WordPress Manager cPanel plugin, available from WordPress Manager 3.0. The site argument, where present, is the caller-selected WordPress URL without a protocol prefix and may contain a path. No site value is inferred. The client does not poll SSE paths or fetch archive URLs."
+        },
+        {
+          "kind": "documented",
+          "text": "All documented response object fields are optional. Omission is distinct from explicit null, empty lists and zero flags. Integer flags remain 0|1 without string or boolean normalization. This method is explicitly read-only in the pinned source and uses GET."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned full examples place any_running, sites and last_outcome directly under data; the formal schema places the same fields under optional items. Both placements are preserved in one object, including when both are present. Their fields remain optional and retain zero flags, explicit documented null and empty collections. These shapes are supported by pinned documentation and offline replay; no successful live WordPress response was observed."
+        },
+        {
+          "kind": "documented",
+          "text": "sites preserves the known list row shape with optional nullable-string id and string site/type fields, plus the formal unstructured object alternative, which has only been documented as empty. No populated keyed-record schema is inferred. The source describes restore-process IDs as unimplemented/null-only while the formal id schema is nullable string. last_outcome.error is nullable string; status remains text and have_outcome is a 0|1 integer flag. any_running=0 alone does not establish completed restoration."
+        },
+        {
+          "kind": "observed",
+          "text": "On the reviewed cPanel 11.138.0.19 installation, this method failed through both direct and bridged UAPI because Cpanel/API/WordPressRestore.pm was missing. The installed cpanel-wpx-plugin did not provide a usable module. This is an installation-specific capability failure; no successful payload or route incompatibility was established."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /WordPressRestore/any_running GET declares x-readonly=true; use GET for the explicitly read-only operation. Source decompressed SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/45#pullrequestreview-5720426019 and source-availability clarification https://github.com/hostingpal/whm-api-client/pull/45#issuecomment-6537452942: all WordPressRestore methods failed through both routes on cPanel 11.138.0.19 with a missing Cpanel/API/WordPressRestore.pm module. The files were absent and cpanel-wpx-plugin supplied no backup/restore modules. This records the observed capability failure only; response contracts remain pinned-source/offline evidence."
+        }
+      ],
+      "response": {
+        "": {
+          "replace": {
+            "type": "object",
+            "fields": {
+              "any_running": {
+                "type": "flag"
+              },
+              "last_outcome": {
+                "type": "object",
+                "fields": {
+                  "error": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "have_outcome": {
+                    "type": "flag"
+                  },
+                  "site": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  }
+                }
+              },
+              "sites": {
+                "type": "union",
+                "anyOf": [
+                  {
+                    "type": "list",
+                    "items": {
+                      "type": "object",
+                      "fields": {
+                        "id": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "site": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "map",
+                    "values": {
+                      "type": "mixed"
+                    }
+                  }
+                ]
+              },
+              "items": {
+                "type": "object",
+                "fields": {
+                  "any_running": {
+                    "type": "flag"
+                  },
+                  "last_outcome": {
+                    "type": "object",
+                    "fields": {
+                      "error": {
+                        "type": "string",
+                        "nullable": true
+                      },
+                      "have_outcome": {
+                        "type": "flag"
+                      },
+                      "site": {
+                        "type": "string"
+                      },
+                      "status": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "sites": {
+                    "type": "union",
+                    "anyOf": [
+                      {
+                        "type": "list",
+                        "items": {
+                          "type": "object",
+                          "fields": {
+                            "id": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "site": {
+                              "type": "string"
+                            },
+                            "type": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "type": "map",
+                        "values": {
+                          "type": "mixed"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /WordPressRestore/any_running InProgress and NotInProgress full examples place any_running, sites and last_outcome directly under data; the formal data schema places RestoreInProgress or RestoreNotInProgress under optional items. Preserve both placements together in one object with optional fields, avoiding first-match optional-object union loss. RestoreInProgress supplies the known optional nullable-string id and string site/type list row; RestoreNotInProgress formally declares an unstructured object sites. Review https://github.com/hostingpal/whm-api-client/pull/45#pullrequestreview-5720426019 and clarification https://github.com/hostingpal/whm-api-client/pull/45#issuecomment-6537452942 approve retaining that opaque-object alternative without inferring a populated keyed-record map or narrowing it. WordPress modules were unavailable on cPanel 11.138.0.19, so this is pinned-source evidence with offline replay, not a live success. Source decompressed SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+            }
+          ]
+        }
+      }
+    },
+    "uapi:WordPressRestore/cleanup": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Requires the WordPress Manager cPanel plugin, available from WordPress Manager 3.0. The site argument, where present, is the caller-selected WordPress URL without a protocol prefix and may contain a path. No site value is inferred. The client does not poll SSE paths or fetch archive URLs."
+        },
+        {
+          "kind": "documented",
+          "text": "All documented response object fields are optional. Omission is distinct from explicit null, empty lists and zero flags. Integer flags remain 0|1 without string or boolean normalization. This state-changing method uses one form POST with no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Cleans temporary system resources after restoration. The data is an integer 0|1 flag, with 0 meaning unsuccessful cleanup. It is distinct from the UAPI envelope status. Null and absent payloads are mismatches; cleanup is not a promise to undo restored files or to delete archives."
+        },
+        {
+          "kind": "observed",
+          "text": "On the reviewed cPanel 11.138.0.19 installation, this method failed through both direct and bridged UAPI because Cpanel/API/WordPressRestore.pm was missing. The installed cpanel-wpx-plugin did not provide a usable module. This is an installation-specific capability failure; no successful payload or route incompatibility was established."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /WordPressRestore/cleanup GET declares x-readonly=false. Its x-rollback=none classification is retained; use form POST for this state-changing operation. Source decompressed SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/45#pullrequestreview-5720426019 and source-availability clarification https://github.com/hostingpal/whm-api-client/pull/45#issuecomment-6537452942: all WordPressRestore methods failed through both routes on cPanel 11.138.0.19 with a missing Cpanel/API/WordPressRestore.pm module. The files were absent and cpanel-wpx-plugin supplied no backup/restore modules. This records the observed capability failure only; response contracts remain pinned-source/offline evidence."
+        }
+      ],
+      "name": "cleanup"
+    },
+    "uapi:WordPressRestore/start": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Requires the WordPress Manager cPanel plugin, available from WordPress Manager 3.0. The site argument, where present, is the caller-selected WordPress URL without a protocol prefix and may contain a path. No site value is inferred. The client does not poll SSE paths or fetch archive URLs."
+        },
+        {
+          "kind": "documented",
+          "text": "All documented response object fields are optional. Omission is distinct from explicit null, empty lists and zero flags. Integer flags remain 0|1 without string or boolean normalization. This state-changing method uses one form POST with no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "backupPath is the path to an existing server-side backup archive, forwarded unchanged as backup_path, not a local file upload. Starts restoration of the selected site and returns an optional restore_id. The source declares no rollback. Restoration changes site state and its process ID alone does not establish completion."
+        },
+        {
+          "kind": "observed",
+          "text": "On the reviewed cPanel 11.138.0.19 installation, this method failed through both direct and bridged UAPI because Cpanel/API/WordPressRestore.pm was missing. The installed cpanel-wpx-plugin did not provide a usable module. This is an installation-specific capability failure; no successful payload or route incompatibility was established."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /WordPressRestore/start GET declares x-readonly=false. Its x-rollback=none classification is retained; use form POST for this state-changing operation. Source decompressed SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/45#pullrequestreview-5720426019 and source-availability clarification https://github.com/hostingpal/whm-api-client/pull/45#issuecomment-6537452942: all WordPressRestore methods failed through both routes on cPanel 11.138.0.19 with a missing Cpanel/API/WordPressRestore.pm module. The files were absent and cpanel-wpx-plugin supplied no backup/restore modules. This records the observed capability failure only; response contracts remain pinned-source/offline evidence."
+        }
+      ],
+      "name": "start"
+    }
+  }
+}
