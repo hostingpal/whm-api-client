@@ -1,0 +1,80 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "SSH",
+  "accessor": "ssh",
+  "class": "Ssh",
+  "operations": {
+    "uapi:SSH/get_port": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later; uses the selected account context. No request arguments or defaults are declared in the pinned operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns the server SSH port as an optional integer. Reading the port does not connect to SSH or establish SSH availability."
+        },
+        {
+          "kind": "observed",
+          "text": "The original security-access capture on cPanel 11.138.0.19 observed numeric-string port values through both routes. Only canonical strings that round-trip within the PHP integer range normalize to integers; alternate spellings, fractions and overflow remain rejected. Structural evidence does not establish the exact string spelling. Omitted port stays omitted; no null is inferred."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {},
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      },
+      "response": {
+        "port": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Original immutable docs/api/evidence/2026-10-31-security-access.json (SHA-256 4697e246b36b465efa814273d583d2c50c72d795352f3205eba0d983ac14ea77), captured at revision 91fce03c2cc0e24893d9c269b51a2c7d02644f0b on cPanel 11.138.0.19 from pinned source SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, records HTTP 200 and API success on direct-uapi and bridged-uapi GET routes. SSH/get_port payload $.port has numeric-string type and the original type_mismatch finding under effective contract bc4e77f74e23c0a59810c81ff189022c1f8d87b86bd34c06c1556caa5ef33f6d. Admit only the existing canonical bounded integer-string conversion on port; alternate spellings, fractions and overflow remain rejected. Structural numeric-string evidence does not reveal the exact spelling or establish every possible numeric format. Optional presence, null rejection and all sibling fields remain unchanged. Preserve the original failed artifact unchanged.",
+              "fingerprint": "docs/api/evidence/2026-10-31-security-access.json"
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Original immutable docs/api/evidence/2026-10-31-security-access.json (SHA-256 4697e246b36b465efa814273d583d2c50c72d795352f3205eba0d983ac14ea77), captured at revision 91fce03c2cc0e24893d9c269b51a2c7d02644f0b on cPanel 11.138.0.19 from pinned source SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, records HTTP 200 and API success on direct-uapi and bridged-uapi GET routes. SSH/get_port payload $.port has numeric-string type and the original type_mismatch finding under effective contract bc4e77f74e23c0a59810c81ff189022c1f8d87b86bd34c06c1556caa5ef33f6d. Admit only the existing canonical bounded integer-string conversion on port; alternate spellings, fractions and overflow remain rejected. Structural numeric-string evidence does not reveal the exact spelling or establish every possible numeric format. Optional presence, null rejection and all sibling fields remain unchanged. Preserve the original failed artifact unchanged.",
+          "fingerprint": "docs/api/evidence/2026-10-31-security-access.json"
+        }
+      ]
+    },
+    "uapi:SSH/get_shell": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later; uses the selected account context. No request arguments or defaults are declared in the pinned operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns optional boolean has_terminal_access and optional string shell for the selected account. Preserve false and empty strings separately from omission; integer 0/1 flags are not booleans for this response. This read does not open a shell or establish successful SSH authentication."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {},
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      }
+    }
+  }
+}

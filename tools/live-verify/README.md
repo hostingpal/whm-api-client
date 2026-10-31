@@ -1157,6 +1157,29 @@ pass; five API failures and one masked unknown-field observation with null value
 keep strict status failed and unwaived under `8x0.2.30`. No team listing, password
 retrieval, user/role/service mutation or message sending ran.
 
+## Security and access controls
+
+`security-access.php` binds `security-access-v1` to 25 exact GET observations:
+WHM version and twelve parameterless account reads, each direct and bridged for
+`npr`. It covers four ClamScanner status/path/infection reads, two ModSecurity reads,
+three ExternalAuthentication reads, both SSH reads and LastLogin. No host, identity,
+file or network target is guessed. KnownHosts/verify is excluded from this fixed
+parameterless catalog; the recipe binds no verification target.
+
+```bash
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+  php tools/live-verify/security-access.php \
+  --output=docs/api/evidence/security-access-new.json
+```
+
+Both tokens, committed inputs, verified TLS, exact URI/method/body guard, no retries
+and new-only output publication are required. Evidence stores structural paths and
+types only, wildcarding dynamic keys; file paths, identities, IPs, icons and URLs
+are not persisted as values. No scan, disinfection, blocking, protection changes,
+external-authentication unlink, host-key mutation/verification, login or URL fetch
+runs. Strict assessment accepts no discrepancies or acknowledgments. Follow-up
+`8x0.2.31` retains all unobserved methods, variants and enforcement behavior.
+
 ## WHM SSL inventory
 
 ```sh

@@ -497,3 +497,37 @@ no team listing, password retrieval, user mutation or message sending occurs.
 The original failed capture is unchanged. Follow-up `8x0.2.30` retains all API
 failures, unknown-field findings and unobserved variants. Corrected SHA-256:
 `3d16299d29f632b4874dd99c0e400f0301dd4a89d60a7a5ff60d49ab68d0a435`.
+
+## Security and access controls
+
+The initial [security/access capture](2026-10-31-security-access.json)
+at `91fce03c2cc0e24893d9c269b51a2c7d02644f0b` on `11.138.0.19` records 25 HTTP
+200 observations: ten API/payload/probe passes, eight successful-API payload
+mismatches and seven API failures. Both scan-path calls return lists of objects;
+the original root mismatch masks their field names. The list alternative uses
+the documented per-path `id`/`message` record and the source's available-paths prose,
+which is a source-based item interpretation, not proof of named live leaf fields.
+The formal object alternative remains supported. Both scan-status responses are
+explicit null, both SSH ports are numeric strings, and both last-login responses
+are scalar strings. Only those contract alternatives gain compatibility.
+
+Both ModSecurity methods fail on both routes, and all three external-authentication
+reads fail through the bridge. The capture itself establishes no cause, and no
+failure is waived. No scan,
+disinfection, security-setting change, unlink, host-key action or login occurs.
+Follow-up `8x0.2.31` retains these errors and every unobserved variant. The original
+capture remains failed and immutable. SHA-256:
+`4697e246b36b465efa814273d583d2c50c72d795352f3205eba0d983ac14ea77`.
+
+The corrected [security/access capture](2026-10-31-security-access-corrected.json)
+at `aee24c1081727cd66b8ef86aced5bd27d7e83375` on `11.138.0.19` records 25 HTTP
+200 observations: eighteen API/payload/probe passes and the same seven API
+failures. There are zero payload discrepancies. Scan-path lists now establish
+string `id` and `message` leaves on both routes; scan status remains null, SSH
+ports normalize canonical integer strings and last-login results remain scalar
+strings. No populated infected-file rows or enforcement behavior is established.
+Strict assessment remains failed for the API errors, without a waiver. The
+separate reviewer assessment is recorded in the source audit. No mutation ran.
+Both artifacts remain immutable and follow-up
+`8x0.2.31` retains the unobserved methods and variants. SHA-256:
+`6c0d5ace2ea0795b778c68f552bd2d0852ab8848fb26bc213823ce4916bb63a0`.

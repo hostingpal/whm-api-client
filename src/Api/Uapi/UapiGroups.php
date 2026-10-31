@@ -19,7 +19,11 @@ trait UapiGroups
 
     private ?Bandwidth $bandwidthGroup = null;
 
+    private ?BlockIp $blockIpGroup = null;
+
     private ?BoxTrapper $boxTrapperGroup = null;
+
+    private ?ClamScanner $clamScannerGroup = null;
 
     private ?ContactInformation $contactInformationGroup = null;
 
@@ -51,17 +55,25 @@ trait UapiGroups
 
     private ?EmailAuth $emailAuthGroup = null;
 
+    private ?ExternalAuthentication $externalAuthenticationGroup = null;
+
     private ?Features $featuresGroup = null;
 
     private ?Fileman $filemanGroup = null;
 
     private ?Ftp $ftpGroup = null;
 
+    private ?KnownHosts $knownHostsGroup = null;
+
     private ?LangPhp $langPhpGroup = null;
+
+    private ?LastLogin $lastLoginGroup = null;
 
     private ?Locale $localeGroup = null;
 
     private ?Mime $mimeGroup = null;
+
+    private ?ModSecurity $modSecurityGroup = null;
 
     private ?Mysql $mysqlGroup = null;
 
@@ -82,6 +94,8 @@ trait UapiGroups
     private ?ServerInformation $serverInformationGroup = null;
 
     private ?SpamAssassin $spamAssassinGroup = null;
+
+    private ?Ssh $sshGroup = null;
 
     private ?Ssl $sslGroup = null;
 
@@ -144,6 +158,16 @@ trait UapiGroups
     }
 
     /**
+     * Select the BlockIP operations without making a request.
+     *
+     * The BlockIP module for UAPI.
+     */
+    public function blockIp(): BlockIp
+    {
+        return $this->blockIpGroup ??= new BlockIp($this->run(...));
+    }
+
+    /**
      * Select the BoxTrapper operations without making a request.
      *
      * The BoxTrapper module for UAPI.
@@ -151,6 +175,16 @@ trait UapiGroups
     public function boxTrapper(): BoxTrapper
     {
         return $this->boxTrapperGroup ??= new BoxTrapper($this->run(...));
+    }
+
+    /**
+     * Select the ClamScanner operations without making a request.
+     *
+     * The ClamScanner module provides methods for ClamAV® virus scans and disinfection.
+     */
+    public function clamScanner(): ClamScanner
+    {
+        return $this->clamScannerGroup ??= new ClamScanner($this->run(...));
     }
 
     /**
@@ -304,6 +338,16 @@ trait UapiGroups
     }
 
     /**
+     * Select the ExternalAuthentication operations without making a request.
+     *
+     * The ExternalAuthentication module for UAPI.
+     */
+    public function externalAuthentication(): ExternalAuthentication
+    {
+        return $this->externalAuthenticationGroup ??= new ExternalAuthentication($this->run(...));
+    }
+
+    /**
      * Select the Features operations without making a request.
      *
      * The Features module for UAPI.
@@ -334,6 +378,16 @@ trait UapiGroups
     }
 
     /**
+     * Select the KnownHosts operations without making a request.
+     *
+     * The KnownHosts module for UAPI.
+     */
+    public function knownHosts(): KnownHosts
+    {
+        return $this->knownHostsGroup ??= new KnownHosts($this->run(...));
+    }
+
+    /**
      * Select the LangPHP operations without making a request.
      *
      * The LangPHP module for UAPI.
@@ -341,6 +395,16 @@ trait UapiGroups
     public function langPhp(): LangPhp
     {
         return $this->langPhpGroup ??= new LangPhp($this->run(...));
+    }
+
+    /**
+     * Select the LastLogin operations without making a request.
+     *
+     * The LastLogin module for UAPI.
+     */
+    public function lastLogin(): LastLogin
+    {
+        return $this->lastLoginGroup ??= new LastLogin($this->run(...));
     }
 
     /**
@@ -361,6 +425,16 @@ trait UapiGroups
     public function mime(): Mime
     {
         return $this->mimeGroup ??= new Mime($this->run(...));
+    }
+
+    /**
+     * Select the ModSecurity operations without making a request.
+     *
+     * The ModSecurity module for UAPI.
+     */
+    public function modSecurity(): ModSecurity
+    {
+        return $this->modSecurityGroup ??= new ModSecurity($this->run(...));
     }
 
     /**
@@ -461,6 +535,16 @@ trait UapiGroups
     public function spamAssassin(): SpamAssassin
     {
         return $this->spamAssassinGroup ??= new SpamAssassin($this->run(...));
+    }
+
+    /**
+     * Select the SSH operations without making a request.
+     *
+     * The SSH module for UAPI.
+     */
+    public function ssh(): Ssh
+    {
+        return $this->sshGroup ??= new Ssh($this->run(...));
     }
 
     /**

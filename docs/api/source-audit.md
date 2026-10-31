@@ -3521,6 +3521,119 @@ strings. The reviewer did not trace AdminBin numeric serialization, so both
 representations are compatibility, not live Team observations. No closed date
 range or ten-digit runtime constraint is inferred from one source validator.
 
+## Security and access controls (2026-10-31)
+
+The security and access section exposes 24 compatible methods across `blockIp()`,
+`modSecurity()`, `clamScanner()`, `knownHosts()`, `externalAuthentication()`, `ssh()`
+and `lastLogin()`. Thirteen reads use GET and eleven mutations use form POST.
+ClamScanner JSON disinfection remains excluded under `8x0.1.18`; generic form
+calls cannot provide that body contract.
+
+IP block inputs retain documented address, hostname and range spellings. ModSecurity
+domain filters are caller-supplied comma-separated strings, encoded once; dependency
+lists identify other affected domains. Per-domain exception fields preserve both
+explicit null and omission. A failed call can still change some domains: re-read
+`listDomains()` before deciding how to proceed. API status remains checked and no
+mutation is retried or rolled back automatically.
+
+ClamScanner preserves source scan types, administrator availability, byte/megabyte
+units, integer counters and lossless integer-or-string start timestamps. `getScanPaths()` preserves its pinned object and observed list-of-records
+alternatives; `getScanStatus()` also accepts the observed explicit null. Disinfection log alternatives use the established generator
+merge, preserving common required `type` and all optional branch fields; no
+per-discriminator validation is inferred. Scanning is a POST operation and does
+not establish successful disinfection. The JSON disinfection operation is absent.
+
+KnownHosts mutations change the selected account's SSH trust file. The reviewer
+observed `create()` obtaining key material without a supplied key; this observation
+does not establish network contact by `verify()`, which remains outside the fixed
+capture. Its payload status is separate from the API status. Provider URLs/icons and public
+key/fingerprint strings remain payload data, without fetching or rendering.
+External account unlinking is a mutation. Subject identifiers preserve integers or
+strings end to end, including strings larger than PHP integers. `removeAuthnLink()`
+sends the provider argument as `provider_id`; successful unlinking is unobserved. SSH access is a
+boolean capability, not proof of login. SSH ports normalize only canonical integer
+strings, and last-login addresses preserve scalar-string and string-list alternatives.
+
+All 24 methods have offline contract coverage. The fixed live catalog performs
+25 GET observations: WHM version plus twelve parameterless scanner, ModSecurity,
+external-authentication, SSH and last-login reads through both account routes.
+No scan, disinfection, security-setting change, block change, external unlink,
+host-key verification, login or remote URL fetch occurs. Empty inventories do not
+prove populated row contracts, and API success does not prove security enforcement.
+Remaining behavior is tracked under `8x0.2.31`.
+
+The initial [security/access capture](evidence/2026-10-31-security-access.json)
+at `91fce03c2cc0e24893d9c269b51a2c7d02644f0b` on `11.138.0.19` records 25 HTTP
+200 observations: ten API/payload/probe passes, eight successful-API payload
+mismatches and seven API failures. Both scan-path calls return lists of objects;
+the original root mismatch masks their field names. The list alternative uses
+the documented per-path `id`/`message` record and the source's available-paths prose,
+which is a source-based item interpretation, not proof of named live leaf fields.
+The formal object alternative remains supported. Both scan-status responses are
+explicit null, both SSH ports are numeric strings, and both last-login responses
+are scalar strings. Only those contract alternatives gain compatibility.
+
+Both ModSecurity methods fail on both routes, and all three external-authentication
+reads fail through the bridge. The capture itself establishes no cause, and no
+failure is waived. No scan,
+disinfection, security-setting change, unlink, host-key action or login occurs.
+Follow-up `8x0.2.31` retains these errors and every unobserved variant. The original
+capture remains failed and immutable. SHA-256:
+`4697e246b36b465efa814273d583d2c50c72d795352f3205eba0d983ac14ea77`.
+
+The corrected [security/access capture](evidence/2026-10-31-security-access-corrected.json)
+at `aee24c1081727cd66b8ef86aced5bd27d7e83375` on `11.138.0.19` records 25 HTTP
+200 observations: eighteen API/payload/probe passes and the same seven API
+failures. There are zero payload discrepancies. Scan-path lists now establish
+string `id` and `message` leaves on both routes; scan status remains null, SSH
+ports normalize canonical integer strings and last-login results remain scalar
+strings. No populated infected-file rows or enforcement behavior is established.
+Strict assessment remains failed for the API errors, without a waiver. Causes
+were assessed separately in the reviewer report below. No mutation ran. Both artifacts remain immutable and follow-up
+`8x0.2.31` retains the unobserved methods and variants. SHA-256:
+`6c0d5ace2ea0795b778c68f552bd2d0852ab8848fb26bc213823ce4916bb63a0`.
+
+### Security/access review corrections and evidence boundary
+
+[Claude review 5720388941](https://github.com/hostingpal/whm-api-client/pull/44#pullrequestreview-5720388941)
+reports cPanel `11.138.0.19` observations through direct and bridged routes. Reads
+used `npr`; mutations used a disposable account created and removed by the
+reviewer. The reviewer confirmed account cleanup, enabled ModSecurity only for
+that account, used TEST-NET IP blocks and targeted this server for known-host calls.
+These reports are separate from both immutable committed GET captures.
+
+All four ModSecurity writes returned explicit null `exception` values after
+successfully changing state. Their bounded correction keeps omission distinct.
+The upstream implementation can set per-domain data before returning status zero;
+`Flag` still raises `ApiErrorException`, and callers must re-read `listDomains()`
+because some domains may have changed. The original read failures reflect the
+account's missing `modsecurity` feature; enabled-account reads passed both routes.
+
+ExternalAuthentication bridge calls fail because the module file is absent on
+this installation, while direct calls use the compiled server. This version-specific
+capability observation does not prohibit bridge routing on other installations.
+The review's direct argument probes establish `provider_id` as the removal wire
+name, but use invented identifiers and establish no successful unlink. The public
+provider argument keeps its name while the generated spec uses the corrected wire
+name. Subject identifiers preserve `int|string` without floating conversion on the
+getter and remover: the pinned 21-digit example requires lossless string support.
+Populated links and successful unlinking remain source/offline evidence only.
+
+`getScanStatus()` returned integer `time_started` on both routes after an attempted
+scan, including a failed attempt. The correction preserves both integer and string
+values without coercion; the other status fields remain strict. `startScan()` failed
+because ClamAV is not installed. Completed scanning and disinfection are unobserved.
+The format-only `scan_type` input limitation is tracked under `8x0.1.26` for generator
+correction before the first tagged release; no server-wide installation is implied.
+
+KnownHosts `create()` obtained key material without a supplied key, so contact is
+recorded as a reviewer observation for creation. No network-contact claim is made
+for verification. The reviewer separately exercised the KnownHosts and BlockIP
+lifecycles on both routes. `checkDisinfectionStatus()` fractional IDs remain
+unobserved. These observations neither replace the historical artifacts nor waive
+their API failures. Follow-up `8x0.2.31` remains open for committed mutation evidence,
+capability-dependent successes, populated variants and enforcement behavior.
+
 ## WHM SSL certificate management
 
 `whm()->ssl()` exposes 32 of the 34 pinned SSL Certificates operations: ten GET

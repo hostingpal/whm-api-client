@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 58 generated typed groups cover 556 documented operations (see
+The 65 generated typed groups cover 580 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, read-only DNS zones
 and resolvers, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -1102,6 +1102,55 @@ password-strength through both routes. Seven direct inventory null corrections
 pass; five API failures and one masked unknown-field observation with null values
 keep strict status failed and unwaived under `8x0.2.30`. No team listing, password
 retrieval, user/role/service mutation or message sending ran.
+
+### Security and access controls
+
+The security and access section exposes 24 compatible methods across `blockIp()`,
+`modSecurity()`, `clamScanner()`, `knownHosts()`, `externalAuthentication()`, `ssh()`
+and `lastLogin()`. Thirteen reads use GET and eleven mutations use form POST.
+ClamScanner JSON disinfection remains excluded under `8x0.1.18`; generic form
+calls cannot provide that body contract.
+
+IP block inputs retain documented address, hostname and range spellings. ModSecurity
+domain filters are caller-supplied comma-separated strings, encoded once; dependency
+lists identify other affected domains. Per-domain exception fields preserve both
+explicit null and omission. A failed call can still change some domains: re-read
+`listDomains()` before deciding how to proceed. API status remains checked and no
+mutation is retried or rolled back automatically.
+
+ClamScanner preserves source scan types, administrator availability, byte/megabyte
+units, integer counters and lossless integer-or-string start timestamps. `getScanPaths()` preserves its pinned object and observed list-of-records
+alternatives; `getScanStatus()` also accepts the observed explicit null. Disinfection log alternatives use the established generator
+merge, preserving common required `type` and all optional branch fields; no
+per-discriminator validation is inferred. Scanning is a POST operation and does
+not establish successful disinfection. The JSON disinfection operation is absent.
+
+KnownHosts mutations change the selected account's SSH trust file. The reviewer
+observed `create()` obtaining key material without a supplied key; this observation
+does not establish network contact by `verify()`, which remains outside the fixed
+capture. Its payload status is separate from the API status. Provider URLs/icons and public
+key/fingerprint strings remain payload data, without fetching or rendering.
+External account unlinking is a mutation. Subject identifiers preserve integers or
+strings end to end, including strings larger than PHP integers. `removeAuthnLink()`
+sends the provider argument as `provider_id`; successful unlinking is unobserved. SSH access is a
+boolean capability, not proof of login. SSH ports normalize only canonical integer
+strings, and last-login addresses preserve scalar-string and string-list alternatives.
+
+All 24 methods have offline contract coverage. The fixed live catalog performs
+25 GET observations: WHM version plus twelve parameterless scanner, ModSecurity,
+external-authentication, SSH and last-login reads through both account routes.
+No scan, disinfection, security-setting change, block change, external unlink,
+host-key verification, login or remote URL fetch occurs. Empty inventories do not
+prove populated row contracts, and API success does not prove security enforcement.
+Remaining behavior is tracked under `8x0.2.31`.
+
+On reviewed cPanel `11.138.0.19`, missing account ModSecurity access explains its
+read failures; enabled-account reads passed. ExternalAuthentication failed over
+the bridge because its module file was absent, while direct calls worked. These
+are installation-specific observations, not client route restrictions. ClamAV
+was absent, so completed scans remain unobserved. Reviewer lifecycle reports are
+separate from immutable capture evidence; see the source audit. Format-only
+`scan_type` input correction remains tracked in `8x0.1.26` before release.
 
 ### Generic calls
 
