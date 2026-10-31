@@ -119,19 +119,19 @@ These symbols share one canonical operation, route and response contract; counts
 | `uapi:Backup/restore_email_filters` | Binary multipart restore/upload contract is outside this slice; tracked under whm-api-client-8x0.1.19. Generic form calls do not supply binary multipart uploads. |
 | `uapi:Backup/restore_email_forwarders` | Binary multipart restore/upload contract is outside this slice; tracked under whm-api-client-8x0.1.19. Generic form calls do not supply binary multipart uploads. |
 | `uapi:Backup/restore_files` | Binary multipart restore/upload contract is outside this slice; tracked under whm-api-client-8x0.1.19. Generic form calls do not supply binary multipart uploads. |
-| `uapi:ClamScanner/disinfect_files` | Requires an application/json request body with a dynamic actions object mapping infected-file paths to disinfection choices. JSON transport remains under whm-api-client-8x0.1.18; generic GET/form POST calls cannot represent this body. This operation is not deprecated. |
-| `uapi:ContactInformation/set_notification_preferences` | Requires an application/json request body; JSON transport remains tracked in whm-api-client-8x0.1.18. Generic form calls do not provide JSON support. |
+| `uapi:ClamScanner/disinfect_files` | Requires an application/json request body with a dynamic actions object mapping infected-file paths to disinfection choices; typed JSON-body support remains tracked under whm-api-client-8x0.1.18. Raw callJson() supplies no typed contract and establishes no endpoint compatibility. This operation is not deprecated. |
+| `uapi:ContactInformation/set_notification_preferences` | Requires an application/json request body; typed JSON-body support remains tracked under whm-api-client-8x0.1.18. Raw callJson() supplies no typed contract and establishes no endpoint compatibility. |
 | `uapi:DCV/ensure_domains_can_pass_dcv` | Deprecated; use DCV/check_domains_via_http. |
 | `uapi:Fileman/upload_files` | Requires binary multipart file parts and is explicitly unavailable through WHM uapi_cpanel; outside this GET/form slice. Transport follow-up whm-api-client-8x0.1.19 retains multipart work. |
 | `uapi:SSL/check_shared_cert` | Deprecated without a successor. |
 | `uapi:Sitejet/get_templates` | Deprecated without a successor. |
 | `uapi:Sitejet/set_template` | Deprecated without a successor. |
-| `uapi:StatsManager/save_configuration` | Requires an application/json request body containing nested changes/analyzers objects. JSON transport remains under whm-api-client-8x0.1.18; generic calls support only GET/form POST and cannot represent this body. This operation is not deprecated. |
+| `uapi:StatsManager/save_configuration` | Requires an application/json request body containing nested changes/analyzers objects; typed JSON-body support remains tracked under whm-api-client-8x0.1.18. Raw callJson() supplies no typed contract and establishes no endpoint compatibility. This operation is not deprecated. |
 | `uapi:Themes/get_theme_base` | Deprecated; does not return useful output. |
 | `whm1:accesshash` | Deprecated legacy access hash; API tokens replace it (api_token_create), not as a drop-in. |
 | `whm1:addzonerecord` | The referenced form body uses anyOf/discriminator DNS record alternatives unsupported by the current generator; preserving every required record field needs reviewed body-schema support. Tracked under whm-api-client-8x0.1.30. |
 | `whm1:backup_destination_set` | The formal form body uses anyOf/allOf provider schemas rather than supported plain properties; composed form-body support and the conflicting JSON code samples require review under whm-api-client-8x0.1.22. |
-| `whm1:batch_create_cphulk_records` | Requires a JSON request body; deferred under whm-api-client-8x0.1.18. Generic form calls do not implement JSON transport. |
+| `whm1:batch_create_cphulk_records` | Requires a JSON request body; typed JSON-body support remains tracked under whm-api-client-8x0.1.18. Raw callJson() supplies no typed contract and establishes no endpoint compatibility. |
 | `whm1:disable_mail_sni` | Deprecated and always fails. |
 | `whm1:dumpzone` | Deprecated; use parse_dns_zone, which returns the same zone data in a different format. |
 | `whm1:editzonerecord` | The referenced form body uses anyOf/discriminator DNS record alternatives unsupported by the current generator; preserving every required record field needs reviewed body-schema support. Tracked under whm-api-client-8x0.1.30. |
@@ -140,14 +140,14 @@ These symbols share one canonical operation, route and response contract; counts
 | `whm1:get_ecommerce` | Deprecated without a successor. |
 | `whm1:get_remote_access_hash` | Deprecated remote access key; API tokens replace it (api_token_list), not as a drop-in. |
 | `whm1:mass_edit_dns_zone` | The form parameters add/edit are repeated serialized JSON strings and remove is a repeated integer list; the current repeated-parameter contract accepts string items only. The complete operation is excluded rather than dropping remove or treating this as a JSON request body. Tracked under whm-api-client-8x0.1.30. |
-| `whm1:personalization_get` | Requires a JSON request body; typed JSON transport remains tracked under whm-api-client-8x0.1.18. Generic form calls do not implement it. |
-| `whm1:personalization_set` | Requires a JSON request body; typed JSON transport remains tracked under whm-api-client-8x0.1.18. Generic form calls do not implement it. |
-| `whm1:php_fpm_config_get` | Requires an application/json request body; typed JSON transport remains tracked under whm-api-client-8x0.1.18. Generic calls support form encoding only. |
-| `whm1:php_fpm_config_set` | Requires an application/json request body; typed JSON transport remains tracked under whm-api-client-8x0.1.18. Generic calls support form encoding only. |
+| `whm1:personalization_get` | Requires a JSON request body; typed JSON-body support remains tracked under whm-api-client-8x0.1.18. Raw callJson() supplies no typed contract and establishes no endpoint compatibility. |
+| `whm1:personalization_set` | Requires a JSON request body; typed JSON-body support remains tracked under whm-api-client-8x0.1.18. Raw callJson() supplies no typed contract and establishes no endpoint compatibility. |
+| `whm1:php_fpm_config_get` | Requires an application/json request body; typed JSON-body support remains tracked under whm-api-client-8x0.1.18. Raw callJson() supplies no typed contract and establishes no endpoint compatibility. |
+| `whm1:php_fpm_config_set` | Requires an application/json request body; typed JSON-body support remains tracked under whm-api-client-8x0.1.18. Raw callJson() supplies no typed contract and establishes no endpoint compatibility. |
 | `whm1:read_featurelist` | Deprecated; use getFeaturelistData() (get_featurelist_data). |
 | `whm1:restore_config_from_upload` | Requires multipart/form-data file with type:string format:binary plus module. Reviewed multipart string-field support does not implement arbitrary binary file upload. Tracked under whm-api-client-8x0.1.19. |
-| `whm1:save_connected_application` | Requires an application/json request body containing name and arbitrary connected-application data; current typed scalar/form transport does not implement JSON request bodies. Tracked under whm-api-client-8x0.1.18. |
+| `whm1:save_connected_application` | Requires an application/json request body containing name and arbitrary connected-application data; typed JSON-body support remains tracked under whm-api-client-8x0.1.18. Raw callJson() supplies no typed contract and establishes no endpoint compatibility. |
 | `whm1:set_ecommerce` | Deprecated without a successor. |
 | `whm1:system_needs_reboot` | Pinned 200 JSON schema places needs_reboot and details beside metadata with no data member. Current typed WHM runner returns only data, so void would silently discard the documented result and a fabricated data wrapper would not match the source. Dedicated envelope/payload follow-up required; no runtime widening in this slice. |
-| `whm1:twofactorauth_set_tfa_config_for_user` | Requires an application/json request body, unsupported by the form-only generic and typed transport in this slice; tracked under whm-api-client-8x0.1.18. |
-| `whm1:update_sql_config` | Requires an application/json request body; typed JSON transport remains tracked under whm-api-client-8x0.1.18. Generic calls support form encoding only. |
+| `whm1:twofactorauth_set_tfa_config_for_user` | Requires an application/json request body; typed JSON-body support remains tracked under whm-api-client-8x0.1.18. Raw callJson() supplies no typed contract and establishes no endpoint compatibility. |
+| `whm1:update_sql_config` | Requires an application/json request body; typed JSON-body support remains tracked under whm-api-client-8x0.1.18. Raw callJson() supplies no typed contract and establishes no endpoint compatibility. |

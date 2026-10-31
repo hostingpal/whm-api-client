@@ -992,7 +992,7 @@
     },
     "whm1:twofactorauth_set_tfa_config_for_user": {
       "exclude": {
-        "reason": "Requires an application/json request body, unsupported by the form-only generic and typed transport in this slice; tracked under whm-api-client-8x0.1.18.",
+        "reason": "Requires an application/json request body; typed JSON-body support remains tracked under whm-api-client-8x0.1.18. Raw callJson() supplies no typed contract and establishes no endpoint compatibility.",
         "evidence": [
           {
             "kind": "doc",

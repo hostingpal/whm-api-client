@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace HostingPal\WhmApiClient\Api;
 
+use HostingPal\WhmApiClient\Api\Engine\JsonBody;
 use HostingPal\WhmApiClient\Api\Engine\MultipartEncoder;
 use HostingPal\WhmApiClient\Api\Engine\OrderedFields;
 use HostingPal\WhmApiClient\Api\Engine\ParameterExpander;
@@ -29,7 +30,8 @@ use SensitiveParameter;
  * request without retries, and records a usable envelope before returning a payload
  * or raising an API error. Metadata is instance-local. GET places parameters in the
  * query string; POST keeps routing fields there and form-encodes the operation
- * parameters in the body. The outcome policy is declared per request.
+ * parameters in the body. Explicit JSON bodies retain validated bytes. The outcome
+ * policy is declared per request.
  * Every library frame that receives request parameters marks them
  * #[SensitiveParameter], so the library's frames in exception traces carry no
  * passwords, tokens or other parameters even when PHP records call arguments
@@ -148,10 +150,67 @@ abstract class AbstractApiClient
     }
 
     /**
+     * Execute one JSON POST through the common one-attempt lifecycle.
+     *
+     * The owning handle clears metadata before validating caller input and controls
+     * route capability. Present content retains exact bytes; absence sends no
+     * content or Content-Type. Authentication and envelope handling stay shared.
+     *
+     * @param Parameters|OrderedFields $query
+     */
+    final protected function executeJsonPost(
+        string $path,
+        #[SensitiveParameter] array|OrderedFields $query,
+        #[SensitiveParameter] JsonBody $body,
+        ResponseRoute $route,
+        OutcomePolicy $outcome = OutcomePolicy::Flag,
+    ): ApiResponse {
+        $this->beginRequest();
+        if ($route === ResponseRoute::BridgedUapi) {
+            throw new InvalidArgumentException('JSON bodies require a direct cPanel UAPI handle.');
+        }
+
+        return $this->execute(RequestMethod::Post, $path, $query, $body, $route, $outcome);
+    }
+
+    /**
+     * Validate the new JSON entrypoints' explicit query before legacy filtering.
+     *
+     * Presence checks precede value expansion so even reserved nulls are rejected.
+     * Expansion checks final wire names, using static, data-free diagnostics.
+     * Generated dispatch checks OrderedFields here before withRouting(); the JSON
+     * executor accepts the resulting already-routed query. Existing generic call()
+     * filtering and collision semantics are unaffected.
+     *
+     * @param Parameters|OrderedFields $query
+     * @param list<string> $reserved
+     */
+    final protected function validateJsonQuery(
+        #[SensitiveParameter] array|OrderedFields $query,
+        array $reserved,
+    ): void {
+        if ($query instanceof OrderedFields) {
+            $query->assertNoReserved($reserved);
+
+            return;
+        }
+        foreach ($query as $name => $value) {
+            if (in_array($name, $reserved, true)) {
+                throw new InvalidArgumentException('The query overlaps a reserved routing field.');
+            }
+            foreach (ParameterExpander::expand((string) $name, $value) as $field) {
+                if (in_array($field['name'], $reserved, true)) {
+                    throw new InvalidArgumentException('The query overlaps a reserved routing field.');
+                }
+            }
+        }
+    }
+
+    /**
      * Run the shared lifecycle: reset, encode, send once, read the envelope, record.
      *
      * @param Parameters|OrderedFields $query
-     * @param Parameters|OrderedFields $body
+     * @param Parameters|OrderedFields|JsonBody $body
      * @throws InvalidArgumentException If a parameter value or a multi-value parameter is invalid.
      * @throws ApiException If transport, HTTP, or the API envelope fails.
      */
@@ -161,7 +220,7 @@ abstract class AbstractApiClient
         #[SensitiveParameter]
         array|OrderedFields $query,
         #[SensitiveParameter]
-        array|OrderedFields $body,
+        array|OrderedFields|JsonBody $body,
         ResponseRoute $route,
         OutcomePolicy $outcome,
         RequestBodyFormat $bodyFormat = RequestBodyFormat::Form,
@@ -178,7 +237,12 @@ abstract class AbstractApiClient
         ];
         $content = null;
         if ($method === RequestMethod::Post) {
-            if ($bodyFormat === RequestBodyFormat::Multipart) {
+            if ($body instanceof JsonBody) {
+                $content = $body->content;
+                if ($content !== null) {
+                    $headers['Content-Type'] = 'application/json';
+                }
+            } elseif ($bodyFormat === RequestBodyFormat::Multipart) {
                 [$headers['Content-Type'], $content] = MultipartEncoder::encode($body);
             } else {
                 $headers['Content-Type'] = 'application/x-www-form-urlencoded';

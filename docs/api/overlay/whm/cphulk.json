@@ -8,7 +8,7 @@
   "operations": {
     "whm1:batch_create_cphulk_records": {
       "exclude": {
-        "reason": "Requires a JSON request body; deferred under whm-api-client-8x0.1.18. Generic form calls do not implement JSON transport.",
+        "reason": "Requires a JSON request body; typed JSON-body support remains tracked under whm-api-client-8x0.1.18. Raw callJson() supplies no typed contract and establishes no endpoint compatibility.",
         "evidence": [
           {
             "kind": "doc",

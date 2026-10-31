@@ -210,7 +210,9 @@ Preserve zero/unlimited/disabled semantics, optional fields and integer status f
 local byte limits can lag updates and distributed totals differ from local usage.
 `whm()->call()` and `uapi()->call()` provide generic GET and form-encoded POST
 access for operations compatible with the parameter representation, route and
-envelope handling. They do not support JSON or multipart request bodies. The
+envelope handling. These legacy call() methods do not support JSON or multipart
+request bodies. Separate callJson() entrypoints provide raw JSON POST through WHM
+and direct cPanel UAPI; bridged UAPI rejects JSON locally after metadata reset. The
 pinned inventory includes 13 JSON operations (8 WHM, 5 UAPI) and 9 multipart
 operations (1 WHM, 8 UAPI); selected implementations remain open under
 `whm-api-client-8x0.1.18` and `whm-api-client-8x0.1.19`. Generic access is not
@@ -241,8 +243,8 @@ behavior; it does not establish IMAP/SMTP access or live coverage of all 96 meth
 
 The SSL module exposes all 49 nondeprecated functions. Typed fetch-key/cabundle,
 upload-cert and upload-key calls use reviewed multipart string fields, configured
-by an explicit body: multipart spec. Generic calls remain form-only; JSON and
-arbitrary file/multipart uploads are unsupported. Multipart names/values are
+by an explicit body: multipart spec. Legacy call() remains form-only; arbitrary file/multipart uploads are unsupported.
+The separate callJson() entrypoints do not expand typed SSL coverage. Multipart names/values are
 validated after metadata reset, all value-bearing frames are sensitive, routing
 stays in the URL and a collision-free delimiter preserves field bytes. Generator
 body_fields corrections require evidence and compatible duplicate schemas.
@@ -410,7 +412,7 @@ The resource and web statistics slice exposes eleven GET operations across
 Bandwidth protocols, retention and grouped queries complement resource limits,
 statistics-bar values, domain bandwidth, daily AwStats counters, error logs,
 report-file inventory and analyzer configuration. `StatsManager/save_configuration`
-requires a JSON request body and remains excluded under `8x0.1.18`; generic form
+requires a JSON request body and remains excluded from typed coverage under `8x0.1.18`; generic form
 calls do not provide that transport.
 
 Pipe-separated grouping, domain, protocol and display arguments are supplied as
@@ -850,7 +852,7 @@ retrieval, user/role/service mutation or message sending ran.
 The security and access section exposes 24 compatible methods across `blockIp()`,
 `modSecurity()`, `clamScanner()`, `knownHosts()`, `externalAuthentication()`, `ssh()`
 and `lastLogin()`. Thirteen reads use GET and eleven mutations use form POST.
-ClamScanner JSON disinfection remains excluded under `8x0.1.18`; generic form
+Typed ClamScanner JSON disinfection remains excluded under `8x0.1.18`; generic form
 calls cannot provide that body contract.
 
 IP block inputs retain documented address, hostname and range spellings. ModSecurity
@@ -1449,7 +1451,7 @@ immutable and `8x0.2.38` retains remaining live coverage and unknown findings.
 `whm()->authentication()` exposes 30 of the 32 pinned Authentication operations
 for SSH keys, authentication providers, external-account links and two-factor
 configuration/policy. Seven use GET and 23 use form POST. Deprecated `accesshash`
-remains excluded; JSON `twofactorauth_set_tfa_config_for_user` remains under
+remains excluded; typed JSON `twofactorauth_set_tfa_config_for_user` remains under
 `8x0.1.18`. The login-URL method uses POST as a conservative client privacy
 policy, despite the pinned GET-only declaration. The pinned redirect example has
 a `state` value; it does not establish that redirects always contain tokens.
@@ -1620,7 +1622,7 @@ for inventories, enhancements, conversion status, quota/bandwidth controls,
 password policy, Digest Authentication and document roots. Password-strength
 calculation uses POST because its password input is sensitive.
 
-JSON personalization calls remain under `8x0.1.18`. Conversion initiation accepts
+Typed JSON personalization calls remain under `8x0.1.18`. Conversion initiation accepts
 `copyMysqlDatabases` as an old-to-new string map with literal `copymysqldb-` prefix;
 null or [] copies no databases. `moveMysqlDatabases`/`moveMysqlUsers` preserve
 unsuffixed scalar fields and use one-based suffixes for nonempty lists.
@@ -2148,7 +2150,7 @@ Artifact SHA-256:
 
 `whm()->webServer()` exposes 28 of 30 pinned functions: eighteen GET reads and
 ten form POST operations for EasyApache profiles, PHP/FPM configuration, INI
-content/directives and PHP versions. The two FPM JSON-body operations remain
+content/directives and PHP versions. The two typed FPM JSON-body operations remain
 excluded under `8x0.1.18`.
 
 Package, tag and directive lists use repeated wire fields; virtual hosts use the
@@ -2417,8 +2419,21 @@ remaining compatibility stay under `8x0.2.46`; no repeat is needed for integrati
   validation, reserved fields removed from caller parameters, `CallResult` with the payload
   converted to arrays and no schema. They support GET queries and form-encoded
   POST bodies only, with operation-specific parameter, route and envelope limits;
-  JSON and multipart bodies remain unsupported on all routes. They are an escape
-  hatch, not coverage; typed coverage comes from generation.
+  JSON and multipart bodies remain unsupported by call(). Separate callJson()
+  entrypoints accept validated raw JSON strings, always POST application/json,
+  through WHM or direct UAPI only. Bridged UAPI rejects locally after metadata
+  reset, before I/O. Preserve exact valid bytes, including duplicate ordinary keys,
+  huge numbers, escapes and all root kinds; native validation at depth 512 accepts
+  at most 511 nested containers. Explicit query uses the existing Parameters
+  representation, stays in the URL and is encoded once; keep secrets in the body.
+  New-only reservations reject explicit/expanded query and decoded root member
+  presence, including escaped names and nulls: WHM api.version; direct UAPI also
+  cpanel.user/module/function. Nested members remain data. Legacy call() filtering
+  stays unchanged. Both return CallResult with standard envelopes/outcome policies;
+  neither raw transport nor wrapper names establish typed or live coverage.
+  Internal JsonBody distinguishes absent (no bytes/Content-Type) from present
+  string 'null'; future typed dispatch resolves omission before serialization.
+  Typed coverage comes from generation.
 - Each attempt clears old response metadata. A usable envelope records an
   immutable snapshot before API or payload errors. `ResponseMetadata::$whm`
   retains raw WHM metadata; `$uapi` retains the UAPI result envelope without `data`.

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace HostingPal\WhmApiClient;
 
 use HostingPal\WhmApiClient\Api\AbstractApiClient;
+use HostingPal\WhmApiClient\Api\Engine\JsonBody;
 use HostingPal\WhmApiClient\Api\Engine\OperationRunner;
 use HostingPal\WhmApiClient\Api\Engine\OperationSpec;
 use HostingPal\WhmApiClient\Api\Engine\OrderedFields;
@@ -31,7 +32,8 @@ use SensitiveParameter;
  * Typed groups are generated from the pinned API map and overlay (see docs/api/coverage.md);
  * call() provides GET and form-encoded POST access without a typed group through
  * the same routing, authentication, and envelope handling. Reviewed generated
- * operations can select multipart string fields; generic calls remain form-only.
+ * operations can select multipart string fields; call() remains form-only.
+ * callJson() provides explicit raw JSON POST access on direct cPanel handles only.
  *
  * @phpstan-import-type Parameters from AbstractApiClient
  */
@@ -130,6 +132,57 @@ final class UapiClient extends AbstractApiClient
         }
 
         return CallResult::fromApiResponse($this->request($module, $function, $parameters, $method, $outcome));
+    }
+
+    /**
+     * POST an already serialized JSON document for this direct cPanel account.
+     *
+     * WHM-bridged handles reject this route locally after metadata reset. Direct
+     * access uses only this handle's host, credentials and account. Valid JSON roots
+     * retain exact bytes without endpoint schema validation; api.version and the
+     * cpanel.user/module/function routing names are rejected in query fields and
+     * root object members, including nulls. Nested member names remain data.
+     * Query uses the existing parameter representation and is encoded once. Keep
+     * secrets in the body: servers may log the separate query. The untyped result,
+     * outcome policy, envelope errors and metadata follow call(); no retries occur.
+     * Choose a JSON-compatible operation with a standard envelope. This raw escape
+     * hatch establishes neither typed coverage nor live endpoint compatibility.
+     *
+     * @param Parameters $query Explicit URL query data, never merged into the body.
+     * @throws InvalidArgumentException If bridged, or a name, JSON document or query is invalid; metadata clears first.
+     * @throws ApiException If transport, HTTP, or the API envelope fails.
+     * @see https://api.docs.cpanel.net/cpanel/introduction
+     */
+    public function callJson(
+        string $module,
+        string $operation,
+        #[SensitiveParameter] string $json,
+        #[SensitiveParameter] array $query = [],
+        OutcomePolicy $outcome = OutcomePolicy::Flag,
+    ): CallResult {
+        $this->beginRequest();
+        if ($this->isBridged()) {
+            throw new InvalidArgumentException('JSON bodies require a direct cPanel UAPI handle.');
+        }
+        foreach ([$module, $operation] as $segment) {
+            if (preg_match('/\A[A-Za-z0-9_]+\z/', $segment) !== 1) {
+                throw new InvalidArgumentException(
+                    'UAPI module and function names contain only letters, digits, and underscores.',
+                );
+            }
+        }
+        $reserved = ['api.version', 'cpanel.user', 'cpanel.module', 'cpanel.function'];
+        $this->validateJsonQuery($query, $reserved);
+        $body = JsonBody::present($json);
+        $body->assertNoReservedRoot($reserved);
+
+        return CallResult::fromApiResponse($this->executeJsonPost(
+            '/execute/' . $module . '/' . $operation,
+            $query,
+            $body,
+            ResponseRoute::DirectUapi,
+            $outcome,
+        ));
     }
 
     /**

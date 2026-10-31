@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace HostingPal\WhmApiClient;
 
 use HostingPal\WhmApiClient\Api\AbstractApiClient;
+use HostingPal\WhmApiClient\Api\Engine\JsonBody;
 use HostingPal\WhmApiClient\Api\Engine\OperationRunner;
 use HostingPal\WhmApiClient\Api\Engine\OperationSpec;
 use HostingPal\WhmApiClient\Api\Engine\OrderedFields;
@@ -29,8 +30,8 @@ use SensitiveParameter;
  * constructing it performs no authentication request or other network I/O.
  * Typed groups are generated from the pinned API map and overlay (see docs/api/coverage.md);
  * call() provides GET and form-encoded POST access without a typed group through
- * the same routing, authentication, and envelope handling. JSON and multipart
- * request bodies are not supported.
+ * the same routing, authentication, and envelope handling. callJson() provides
+ * explicit raw JSON POST access; generic multipart bodies remain unsupported.
  *
  * @phpstan-import-type Parameters from AbstractApiClient
  */
@@ -98,6 +99,49 @@ final class WhmClient extends AbstractApiClient
         }
 
         return CallResult::fromApiResponse($this->request($function, $parameters, $method, $outcome));
+    }
+
+    /**
+     * POST an already serialized JSON document to a WHM API 1 operation.
+     *
+     * The configured host and credentials own the request. Valid JSON roots retain
+     * their exact bytes without endpoint schema validation; api.version stays fixed
+     * in the URL and is rejected in caller query fields and root object members.
+     * Query uses the existing parameter representation and is encoded once. Keep
+     * secrets in the body: servers may log the separate query. The untyped result,
+     * outcome policy, envelope errors and metadata follow call(); no retries occur.
+     * The caller must choose a JSON-compatible operation with a standard envelope.
+     * Raw access establishes neither typed coverage nor wrapper compatibility.
+     *
+     * @param Parameters $query Explicit URL query data, never merged into the body.
+     * @throws InvalidArgumentException If a name, JSON document or query is invalid; metadata is cleared first.
+     * @throws ApiException If transport, HTTP, or the API envelope fails.
+     * @see https://api.docs.cpanel.net/whm/introduction
+     */
+    public function callJson(
+        string $operation,
+        #[SensitiveParameter] string $json,
+        #[SensitiveParameter] array $query = [],
+        OutcomePolicy $outcome = OutcomePolicy::Flag,
+    ): CallResult {
+        $this->beginRequest();
+        if (preg_match('/\A[A-Za-z0-9_]+(?:\/[A-Za-z0-9_]+)*\z/', $operation) !== 1) {
+            throw new InvalidArgumentException(
+                'WHM function names contain only letters, digits, underscores, and "/" separators.',
+            );
+        }
+        $reserved = array_keys(self::RESERVED);
+        $this->validateJsonQuery($query, $reserved);
+        $body = JsonBody::present($json);
+        $body->assertNoReservedRoot($reserved);
+
+        return CallResult::fromApiResponse($this->executeJsonPost(
+            '/json-api/' . $operation,
+            self::RESERVED + $query,
+            $body,
+            ResponseRoute::Whm,
+            $outcome,
+        ));
     }
 
     /**

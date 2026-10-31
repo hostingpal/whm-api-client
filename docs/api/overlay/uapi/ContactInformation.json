@@ -93,7 +93,7 @@
     },
     "uapi:ContactInformation/set_notification_preferences": {
       "exclude": {
-        "reason": "Requires an application/json request body; JSON transport remains tracked in whm-api-client-8x0.1.18. Generic form calls do not provide JSON support.",
+        "reason": "Requires an application/json request body; typed JSON-body support remains tracked under whm-api-client-8x0.1.18. Raw callJson() supplies no typed contract and establishes no endpoint compatibility.",
         "evidence": [
           {
             "kind": "doc",

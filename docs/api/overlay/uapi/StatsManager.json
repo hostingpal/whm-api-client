@@ -30,7 +30,7 @@
     },
     "uapi:StatsManager/save_configuration": {
       "exclude": {
-        "reason": "Requires an application/json request body containing nested changes/analyzers objects. JSON transport remains under whm-api-client-8x0.1.18; generic calls support only GET/form POST and cannot represent this body. This operation is not deprecated.",
+        "reason": "Requires an application/json request body containing nested changes/analyzers objects; typed JSON-body support remains tracked under whm-api-client-8x0.1.18. Raw callJson() supplies no typed contract and establishes no endpoint compatibility. This operation is not deprecated.",
         "evidence": [
           {
             "kind": "doc",
