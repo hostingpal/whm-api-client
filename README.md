@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 40 generated typed groups cover 427 documented operations (see
+The 42 generated typed groups cover 457 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, read-only DNS zones
 and resolvers, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -1288,3 +1288,35 @@ Project-authored code and documentation are licensed under the
 The bundled cPanel documentation snapshots retain their upstream terms and are
 not covered by the project's MIT license. See the
 [third-party documentation notice](docs/api/README.md#licensing).
+
+## WHM login and mail protection
+
+`whm()->cpHulk()` implements sixteen pinned cPHulk functions, and
+`whm()->mail()` implements fourteen Greylisting functions. Fifteen reads use GET;
+fifteen mutations use form POST. The JSON batch-record operation remains under
+`8x0.1.18`. The provider-configuration setter is excluded under `8x0.1.25` because
+its `PROVIDERKEY` placeholder represents a dynamic parameter name, not a literal
+wire field. The pre-existing Mail SNI exclusion stays intact.
+
+cPHulk configuration can change login protection, firewall blocking and commands
+run after attacks. Command and generic configuration-value inputs remain sensitive.
+Enabling or disabling protection, editing trusted or blocked addresses, and flushing
+login history take effect on the selected server; the client does not retry or
+roll them back. Per-item results and service flags remain separate from API success.
+Greylisting time settings retain their documented units and defaults, and trusted
+provider changes affect future mail handling without proving delivery behavior.
+
+Documented IP/provider lists use the reviewed base-name then `-1`, `-2` encoding.
+Alternative prose using a `-0` first index remains unverified. Omitted values keep
+server defaults, while explicit false and zero are sent. Response maps preserve
+dynamic keys and optional fields; source ambiguities remain explicit rather than
+being silently renamed or broadened. The provider-untrust response keeps its
+counterintuitive documented result-field shapes.
+
+All thirty methods have independent offline contract coverage. The fixed eight-GET
+catalog selects WHM version, cPHulk status and country inventory, and Greylisting
+status, server netblock trust, common-provider configuration, numeric configuration
+and trusted-host inventory. It reads no authentication logs, deferred-message
+records or configured command text. It changes no protection, trust, history or
+mail state and sends no messages. Follow-up `8x0.2.35` retains all unobserved
+variants and enforcement behavior.

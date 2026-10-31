@@ -4,6 +4,489 @@
   "group": "Mail",
   "accessor": "mail",
   "operations": {
-    "whm1:disable_mail_sni": {"exclude": {"reason": "Deprecated and always fails.", "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-13", "note": "Flagged deprecated: true; This function is deprecated and always fails."}]}}
-  }
+    "whm1:disable_mail_sni": {
+      "exclude": {
+        "reason": "Deprecated and always fails.",
+        "evidence": [
+          {
+            "kind": "doc",
+            "version": "pinned 2026-10-13",
+            "date": "2026-10-13",
+            "note": "Flagged deprecated: true; This function is deprecated and always fails."
+          }
+        ]
+      }
+    },
+    "whm1:cpgreylist_is_server_netblock_trusted": {
+      "name": "cpgreylistIsServerNetblockTrusted",
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpgreylist_is_server_netblock_trusted x-readonly=true: reads use GET and mutations use form POST. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned cpgreylist_is_server_netblock_trusted x-cpanel-available-version is 11.50; preserve this exact availability floor in the generated method documentation. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.50 and later."
+        }
+      ]
+    },
+    "whm1:cpgreylist_list_entries_for_common_mail_provider": {
+      "name": "cpgreylistListEntriesForCommonMailProvider",
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpgreylist_list_entries_for_common_mail_provider x-readonly=true: reads use GET and mutations use form POST. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. The provider description documents incremented names; its pinned single-value CLI uses provider directly. The reviewed existing numbered encoder emits provider for the first value, then provider-1, provider-2. The source alternative provider-0 first-index spelling remains unverified; no different starting-index support is inferred."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned cpgreylist_list_entries_for_common_mail_provider x-cpanel-available-version is 11.52; preserve this exact availability floor in the generated method documentation. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "order": [
+        "provider"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.52 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "A string sends the documented single provider parameter. A list emits provider, provider-1, provider-2 through the existing numbered encoding; alternative starting indices have no live verification."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned providers map contains an ips object with optional fields, not an inferred list of address rows."
+        }
+      ],
+      "params": {
+        "provider": {
+          "php": "providers",
+          "encoding": "numbered"
+        }
+      }
+    },
+    "whm1:cpgreylist_load_common_mail_providers_config": {
+      "name": "cpgreylistLoadCommonMailProvidersConfig",
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpgreylist_load_common_mail_providers_config x-readonly=true: reads use GET and mutations use form POST. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned cpgreylist_load_common_mail_providers_config x-cpanel-available-version is 11.52; preserve this exact availability floor in the generated method documentation. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.52 and later."
+        }
+      ]
+    },
+    "whm1:cpgreylist_save_common_mail_providers_config": {
+      "exclude": {
+        "reason": "PROVIDERKEY is a dynamic parameter-name placeholder, not a literal wire key. Exclude the whole operation until reviewed dynamic-key encoding exists (whm-api-client-8x0.1.25).",
+        "evidence": [
+          {
+            "kind": "doc",
+            "version": "pinned 2026-10-13",
+            "date": "2026-10-31",
+            "note": "The pinned PROVIDERKEY description states that its name is the provider key and gives google=0; a generated literal PROVIDERKEY argument would send the wrong wire request."
+          }
+        ]
+      }
+    },
+    "whm1:cpgreylist_status": {
+      "name": "cpgreylistStatus",
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpgreylist_status x-readonly=true: reads use GET and mutations use form POST. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned cpgreylist_status x-cpanel-available-version is 11.50; preserve this exact availability floor in the generated method documentation. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.50 and later."
+        }
+      ]
+    },
+    "whm1:cpgreylist_trust_entries_for_common_mail_provider": {
+      "name": "cpgreylistTrustEntriesForCommonMailProvider",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpgreylist_trust_entries_for_common_mail_provider x-readonly=false: reads use GET and mutations use form POST. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. The provider description documents incremented names; its pinned single-value CLI uses provider directly. The reviewed existing numbered encoder emits provider for the first value, then provider-1, provider-2. The source alternative provider-0 first-index spelling remains unverified; no different starting-index support is inferred."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned cpgreylist_trust_entries_for_common_mail_provider x-cpanel-available-version is 11.52; preserve this exact availability floor in the generated method documentation. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "order": [
+        "provider"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.52 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "A string sends the documented single provider parameter. A list emits provider, provider-1, provider-2 through the existing numbered encoding; alternative starting indices have no live verification."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes server-wide mail deferral policy. Trusted IP addresses bypass Greylisting; untrusted addresses can be deferred. No client retry or rollback is provided."
+        }
+      ],
+      "params": {
+        "provider": {
+          "php": "providers",
+          "encoding": "numbered"
+        }
+      }
+    },
+    "whm1:cpgreylist_untrust_entries_for_common_mail_provider": {
+      "name": "cpgreylistUntrustEntriesForCommonMailProvider",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpgreylist_untrust_entries_for_common_mail_provider x-readonly=false: reads use GET and mutations use form POST. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. The provider description documents incremented names; its pinned single-value CLI uses provider directly. The reviewed existing numbered encoder emits provider for the first value, then provider-1, provider-2. The source alternative provider-0 first-index spelling remains unverified; no different starting-index support is inferred."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned cpgreylist_untrust_entries_for_common_mail_provider x-cpanel-available-version is 11.52; preserve this exact availability floor in the generated method documentation. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "order": [
+        "provider"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.52 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "A string sends the documented single provider parameter. A list emits provider, provider-1, provider-2 through the existing numbered encoding; alternative starting indices have no live verification."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned formal schema places ips_untrusted records under providers_failed and strings under providers_untrusted. These counterintuitive names and shapes are preserved; no field swap is inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes server-wide mail deferral policy. Trusted IP addresses bypass Greylisting; untrusted addresses can be deferred. No client retry or rollback is provided."
+        }
+      ],
+      "params": {
+        "provider": {
+          "php": "providers",
+          "encoding": "numbered"
+        }
+      }
+    },
+    "whm1:create_cpgreylist_trusted_host": {
+      "name": "createCpgreylistTrustedHost",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned create_cpgreylist_trusted_host x-readonly=false: reads use GET and mutations use form POST. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. The ip description documents incremented names; its pinned single-value CLI uses ip directly. The reviewed existing numbered encoder emits ip for the first value, then ip-1, ip-2. The source alternative ip-1 first-index spelling remains unverified; no different starting-index support is inferred."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned create_cpgreylist_trusted_host x-cpanel-available-version is 11.50; preserve this exact availability floor in the generated method documentation. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "order": [
+        "ip",
+        "comment"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.50 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "A string sends the documented single ip parameter. A list emits ip, ip-1, ip-2 through the existing numbered encoding; alternative starting indices have no live verification."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned ips_failed schema declares only an optional comment string. Dynamic IP keys are not invented from the field name."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes server-wide mail deferral policy. Trusted IP addresses bypass Greylisting; untrusted addresses can be deferred. No client retry or rollback is provided."
+        }
+      ],
+      "params": {
+        "ip": {
+          "php": "ips",
+          "encoding": "numbered"
+        }
+      }
+    },
+    "whm1:delete_cpgreylist_trusted_host": {
+      "name": "deleteCpgreylistTrustedHost",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned delete_cpgreylist_trusted_host x-readonly=false: reads use GET and mutations use form POST. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. The ip description documents incremented names; its pinned single-value CLI uses ip directly. The reviewed existing numbered encoder emits ip for the first value, then ip-1, ip-2. The source alternative ip-1 first-index spelling remains unverified; no different starting-index support is inferred."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned delete_cpgreylist_trusted_host x-cpanel-available-version is 11.50; preserve this exact availability floor in the generated method documentation. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "order": [
+        "ip"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.50 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "A string sends the documented single ip parameter. A list emits ip, ip-1, ip-2 through the existing numbered encoding; alternative starting indices have no live verification."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes server-wide mail deferral policy. Trusted IP addresses bypass Greylisting; untrusted addresses can be deferred. No client retry or rollback is provided."
+        }
+      ],
+      "params": {
+        "ip": {
+          "php": "ips",
+          "encoding": "numbered"
+        }
+      }
+    },
+    "whm1:disable_cpgreylist": {
+      "name": "disableCpgreylist",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned disable_cpgreylist x-readonly=false: reads use GET and mutations use form POST. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. The pinned successful response documents metadata only, with no data payload."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned disable_cpgreylist x-cpanel-available-version is 11.50; preserve this exact availability floor in the generated method documentation. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "void": true,
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.50 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes server-wide mail deferral policy. Trusted IP addresses bypass Greylisting; untrusted addresses can be deferred. No client retry or rollback is provided."
+        }
+      ]
+    },
+    "whm1:enable_cpgreylist": {
+      "name": "enableCpgreylist",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned enable_cpgreylist x-readonly=false: reads use GET and mutations use form POST. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. The pinned successful response documents metadata only, with no data payload."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned enable_cpgreylist x-cpanel-available-version is 11.50; preserve this exact availability floor in the generated method documentation. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "void": true,
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.50 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes server-wide mail deferral policy. Trusted IP addresses bypass Greylisting; untrusted addresses can be deferred. No client retry or rollback is provided."
+        }
+      ]
+    },
+    "whm1:load_cpgreylist_config": {
+      "name": "loadCpgreylistConfig",
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned load_cpgreylist_config x-readonly=true: reads use GET and mutations use form POST. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned load_cpgreylist_config x-cpanel-available-version is 11.50; preserve this exact availability floor in the generated method documentation. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.50 and later."
+        }
+      ]
+    },
+    "whm1:read_cpgreylist_deferred_entries": {
+      "name": "readCpgreylistDeferredEntries",
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned read_cpgreylist_deferred_entries x-readonly=true: reads use GET and mutations use form POST. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned read_cpgreylist_deferred_entries x-cpanel-available-version is 11.50; preserve this exact availability floor in the generated method documentation. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.50 and later."
+        }
+      ]
+    },
+    "whm1:read_cpgreylist_trusted_hosts": {
+      "name": "readCpgreylistTrustedHosts",
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned read_cpgreylist_trusted_hosts x-readonly=true: reads use GET and mutations use form POST. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned read_cpgreylist_trusted_hosts x-cpanel-available-version is 11.50; preserve this exact availability floor in the generated method documentation. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.50 and later."
+        }
+      ]
+    },
+    "whm1:save_cpgreylist_config": {
+      "name": "saveCpgreylistConfig",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned save_cpgreylist_config x-readonly=false: reads use GET and mutations use form POST. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned save_cpgreylist_config x-cpanel-available-version is 11.50; preserve this exact availability floor in the generated method documentation. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "order": [
+        "child_timeout_secs",
+        "initial_block_time_mins",
+        "max_child_procs",
+        "must_try_time_mins",
+        "purge_interval_mins",
+        "record_exp_time_mins",
+        "spf_bypass"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.50 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "The source requires at least one setting although each parameter is individually optional; supply one or more. Timeout is seconds; block, retry, purge and record-expiry durations are minutes. Block time is at most 240 minutes, retry time 1440 minutes, and record expiry 43200 minutes. Child timeout, process count and purge interval affect the daemon and should change only when necessary."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes server-wide mail deferral policy. Trusted IP addresses bypass Greylisting; untrusted addresses can be deferred. No client retry or rollback is provided."
+        }
+      ]
+    }
+  },
+  "description": "Server-wide mail operations, including Greylisting policy, trusted hosts, common providers and deferred triplets. Trust and configuration changes alter mail deferral policy. Returned triplets contain sender and recipient addresses; the client does not deliver mail or fetch returned addresses."
 }

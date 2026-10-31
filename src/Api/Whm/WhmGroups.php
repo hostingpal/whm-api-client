@@ -15,9 +15,13 @@ trait WhmGroups
 {
     private ?Accounts $accountsGroup = null;
 
+    private ?CpHulk $cpHulkGroup = null;
+
     private ?Dns $dnsGroup = null;
 
     private ?HostingPlans $hostingPlansGroup = null;
+
+    private ?Mail $mailGroup = null;
 
     private ?Server $serverGroup = null;
 
@@ -31,6 +35,18 @@ trait WhmGroups
     public function accounts(): Accounts
     {
         return $this->accountsGroup ??= new Accounts($this->run(...));
+    }
+
+    /**
+     * Select the Login Security (cPHulk) operations without making a request.
+     *
+     * Server-wide cPHulk login security, configuration, address lists and history. Configuration and list changes
+     * affect login policy immediately; history removals are destructive. Returned commands and login records are
+     * payload data and may contain sensitive information.
+     */
+    public function cpHulk(): CpHulk
+    {
+        return $this->cpHulkGroup ??= new CpHulk($this->run(...));
     }
 
     /**
@@ -51,6 +67,18 @@ trait WhmGroups
     public function hostingPlans(): HostingPlans
     {
         return $this->hostingPlansGroup ??= new HostingPlans($this->run(...));
+    }
+
+    /**
+     * Select the Mail operations without making a request.
+     *
+     * Server-wide mail operations, including Greylisting policy, trusted hosts, common providers and deferred triplets.
+     * Trust and configuration changes alter mail deferral policy. Returned triplets contain sender and recipient
+     * addresses; the client does not deliver mail or fetch returned addresses.
+     */
+    public function mail(): Mail
+    {
+        return $this->mailGroup ??= new Mail($this->run(...));
     }
 
     /**

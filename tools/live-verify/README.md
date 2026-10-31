@@ -1018,3 +1018,19 @@ payload-schema evidence. All fourteen methods are offline-tested; separate
 reviewer lifecycle observations and their limits are recorded in the source audit.
 Committed lifecycle evidence remains under `8x0.2.27`. This capture changed no
 repository or application state.
+
+## WHM login and mail protection inventory
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/whm-login-mail-protection.php \
+  --output=docs/api/evidence/YYYY-MM-DD-whm-login-mail-protection.json
+```
+
+The fixed eight GET requests read WHM version, cPHulk status/country inventory,
+and Greylisting status, server netblock trust, common-provider configuration,
+configuration limits and trusted hosts. Existing exact request guards, opt-in,
+committed-input checks, verified TLS and structural evidence capture apply.
+Authentication logs, deferred mail records and configured command text are
+excluded. No protection, trust, history, configuration or mail state is changed,
+and no message is sent. Source/runtime gaps remain under `8x0.2.35`.
