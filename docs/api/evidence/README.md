@@ -879,6 +879,37 @@ operation or mutation compatibility, including the effective POST login-URL meth
 All remaining operations and variants stay under `8x0.2.40`. Immutable SHA-256:
 `79245a336ed4daacbc6ac02c1bc48a3c72f64dee68f42987b5ab1dafb6366c81`.
 
+## GPG public-key and two-factor status evidence
+
+The [GPG/two-factor capture](2026-10-31-gpg-two-factor.json) at
+`f213ab81d8e6b775c786a67cba1d518e96718d47` on `11.138.0.19` passes all five
+GET observations and strict assessment with zero discrepancies. Public-key
+inventories are empty on both routes; that capture establishes no populated key
+row or timestamp variants. Two-factor status returns an integer is_enabled with issuer
+omitted on both routes; no specific flag value or login enforcement is inferred
+from the structural artifact.
+
+That capture exported, created, imported and deleted no keys, read no secret-key
+inventory or private/team configuration, and ran no authentication mutation.
+Remaining route/compatibility variants and committed mutation evidence stay under
+`8x0.2.54`. SHA-256:
+`b88fe3ee6f8af6de0676022bb4449d997a2a5a578b2e624688db963702adb127`.
+
+Separate [review 5722555389](https://github.com/hostingpal/whm-api-client/pull/66#pullrequestreview-5722555389)
+at `9b34fd5b791857625f3c7b5085f919a0a81bf124` on `11.138.0.19` used disposable
+`wrvgpg` with token/account/home cleanup confirmed. It observed populated list
+fields through both routes, empty-string generation payload mismatches after keys
+were created, raw-armored import preserving the ID and normalized re-export,
+and leading-zero TOTP API enrollment/removal. Other reviewer routes are unspecified.
+Six POST methods have explicit reviewer execution evidence: GPG generation with
+payload mismatch, secret export, import, deletion, TOTP enrollment and removal.
+The reported fixture secret generation does not separately identify
+`generateUserConfiguration()` or its typed result; team configuration also remains
+unobserved. The narrow response corrections pass offline fixtures; no
+successful typed corrected-head acceptance or login enforcement is claimed.
+This reviewer report does not alter the immutable five-GET artifact or catalog.
+Remaining routes/variants and committed mutation evidence stay under `8x0.2.54`.
+
 ## WHM SSL certificate inventory capture
 
 The initial [WHM SSL capture](2026-10-31-whm-ssl.json) at

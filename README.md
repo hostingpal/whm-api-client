@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 87 generated typed groups cover 1,074 documented operations (see
+The 89 generated typed groups cover 1,086 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, DNS zone and DNSSEC
 management, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -311,7 +311,6 @@ An empty live list does not verify the types of records it never returned.
 | `whm()->hostingPlans()` | `addOverrideFeaturesForUser()`, `addPackage()`, `addPackageExtension()`, `deleteFeaturelist()`, `deletePackage()`, `deletePackageExtension()`, `editPackage()`, `getAvailableApplications()`, `getFeatureMetadata()`, `getFeatureNames()`, `getFeaturelistData()`, `getFeaturelists()`, `getFeaturelistsByPackageTypes()`, `getPackageExtensionForm()`, `getPackageInfo()`, `getUsersFeaturesSettings()`, `listPackages()`, `matchPackages()`, `removeOverrideFeaturesForUser()`, `verifyUserHasFeature()` |
 | `whm()->dns()` | DNS zone inventory, DNSSEC keys, domains and server DNS administration (40); see [generated methods](src/Api/Whm/Dns.php). |
 | `whm()->authentication()` | SSH keys, providers, external-account links and two-factor authentication (30); see [generated methods](src/Api/Whm/Authentication.php). |
-
 | `whm()->ssl()` | WHM certificate, service SSL and AutoSSL operations (32); see [generated methods](src/Api/Whm/Ssl.php). |
 
 ### cPanel UAPI
@@ -324,6 +323,8 @@ An empty live list does not verify the types of records it never returned.
 | `uapi()->park()` | Domain alias creation, removal and inventory (3). |
 | `uapi()->subDomain()` | Subdomain creation, removal, document roots and validation metadata (6). |
 | `uapi()->webVhosts()` | Account virtual-host and SSL-capability inventories (2). |
+| `uapi()->gpg()` | All 7 pinned functions: key inventory, export, import, generation and deletion; see [generated methods](src/Api/Uapi/Gpg.php). |
+| `uapi()->twoFactorAuth()` | All 5 pinned functions: account/team configuration, material generation, setup and removal; see [generated methods](src/Api/Uapi/TwoFactorAuth.php). |
 | `uapi()->directoryIndexes()` | Directory indexing reads and configuration (3). |
 | `uapi()->directoryPrivacy()` | Password-protection state and directory user management (6). |
 | `uapi()->directoryProtection()` | Leech-protection directory inventory (1). |
@@ -2060,12 +2061,20 @@ stateless token authentication all raising `ApiErrorException`:
 "The system failed to restore the saved session." These failed reads establish no
 successful payload compatibility. The pinned URL samples use `/cpsess##########/`
 and the OAuth source says the validated token is stored on the current session.
-A WHM session appears required according to the reviewer's inference; the session
-code path was not traced, and this is not a universal authentication diagnosis.
-The client has no session or cookie handling. It remains uncertain whether
-`validateOauth2Code()` could succeed yet leave no reusable session for later calls.
-All ten POST methods remain unobserved. Session compatibility and remaining live
-variants stay open under `8x0.2.53`; no live call or capture ran for these fixes.
+The [final reviewer source trace 5722449280](https://github.com/hostingpal/whm-api-client/pull/65#pullrequestreview-5722449280)
+on `11.138.0.19` establishes that `Whostmgr::TicketSupport::Token->new` calls
+`Cpanel::Session::Restore::restoreSession()` and fails with the recorded error
+when no session exists. `Whostmgr/TicketSupport.pm:31` builds remote Customer
+Portal calls through that object; `ticket_validate_oauth2_code` directly calls
+`Token->new()->fetch($args)`. Thus `validateOauth2Code()` cannot succeed
+statelessly. This is an attributed reviewer source trace, not code inspected in
+the locally pinned documentation. It applies to paths reaching the Customer
+Portal; no session requirement is established for local-only methods.
+
+The client has no session or cookie handling. All fourteen methods have no
+observed success path and all ten POST methods remain unobserved. This carries
+forward the documentation correction `whm-api-client-m6p`; session compatibility,
+all success payloads and remaining live variants stay under `8x0.2.53`.
 
 Stub-ticket creation, access grants/revocations, firewall changes, remote SSH
 checks, OAuth exchange/session state and agreement acceptance can have external
@@ -2075,6 +2084,86 @@ access or security enforcement. Exact per-method version floors remain in PHPDoc
 All fourteen methods have independent offline contracts; generated coverage,
 offline validation and the separate reviewer report remain distinct.
 
+
+### UAPI GPG and two-factor authentication
+
+`uapi()->gpg()` covers all seven pinned functions and `uapi()->twoFactorAuth()`
+all five. Four reads use GET and eight mutations/secret-bearing operations use
+form POST. GPG requires cPanel 82; two-factor operations require cPanel 54.
+Private key data, passphrases, shared secrets and verification tokens remain
+sensitive. Key identifiers select records and are distinct from key material.
+
+`setUserConfiguration(secret, tfaToken)` accepts `string|int` as a client
+correction: prefer a string such as `'012345'` to preserve leading zeroes.
+Native integers and zero remain accepted. The pinned schema says integer with
+`maxLength: 6`, while the CLI sample quotes `'528112'`; no padding, token
+validator or TOTP computation is added. Both arguments remain sensitive.
+
+The upstream `importKey()` parameter instruction, "You must URI-encode this
+value", is retained. Its percent-encoded parameter example and double-encoded
+URL sample (`%250A`) are misleading for the behavior observed by reviewer
+5722555389 on `11.138.0.19`: upstream reads `key_data` without an extra decode.
+Pass raw armored text; the client form-encodes it once. The reviewer reimported
+an owned public key containing 34 `+` and 33 `/` characters after deleting it;
+the same ID returned and re-export matched after whitespace/header normalization.
+This establishes neither exact raw-byte/header preservation nor all-version
+compatibility. No correction reran the operation.
+
+The separate populated-key review `5722555389` at
+`9b34fd5b791857625f3c7b5085f919a0a81bf124` on `11.138.0.19` observed digit-string
+`bits` in both inventories and digit-string `created` and expiring `expires` in
+secret-key rows, through both direct and bridged GET. Non-expiring secret-key
+`expires` was exactly `''`. The former typed contracts raised
+`PayloadMismatchException`. The correction normalizes only these four integer
+leaves from bounded canonical integer strings, retaining native integers,
+optional omission and explicit zero. Secret-key `expires` additionally preserves
+`''` distinctly from 0. Null, noncanonical and overflowing numeric strings remain
+invalid. Public-key timestamps stay exact strings, including empty non-expiry.
+
+Both reviewer key creations returned `''` and raised `PayloadMismatchException`
+with `outcomeConfirmed=true`, yet both keys existed afterward. `generateKey()`
+now accepts exactly `''` alongside the pinned nullable opaque map. Missing data,
+nonempty strings, other scalars and nonempty lists remain invalid. Retrying after
+a confirmed outcome can create another key. These corrections pass independent
+offline fixtures; successful typed acceptance on the corrected head has not been
+live-observed. Preserve source optional fields, strict 0|1 flags and null/missing
+distinctions. The `tfa_removed` singleton and duplicated-1 configured-state prose
+discrepancy remain explicit without adding general enum enforcement.
+
+Key generation depends on entropy and may time out; timeout does not establish
+whether a key was created. Key deletion and two-factor setup/removal can alter
+account security immediately. Calls add no retry, rollback, local cryptography
+or authentication flow. API success does not prove signing, encryption or login
+enforcement. Returned secrets/key contents are sensitive payload data.
+
+All twelve methods have independent direct and bridged UAPI contracts. The fixed
+five-GET catalog reads version, public-key inventory and two-factor status through
+both routes. It exports no key, reads no secret-key inventory or private/team
+configuration, and makes no key/authentication changes. Remaining live variants
+and controlled lifecycle verification stay under `8x0.2.54`.
+
+Historical [review 5721152661](https://github.com/hostingpal/whm-api-client/pull/66#pullrequestreview-5721152661)
+reported six successful GETs on `11.138.0.19`: empty public/secret-key inventories
+and two-factor status through both routes. Those empty lists supplied no item
+fields. The later [review 5722555389](https://github.com/hostingpal/whm-api-client/pull/66#pullrequestreview-5722555389)
+used disposable `wrvgpg`, generated expiring/non-expiring keys, revoked its temporary
+token and confirmed account/home cleanup. It also confirms typed public/secret
+export, deletion and raw-armored import; bad import/deletion inputs raised
+`ApiErrorException`.
+
+The reviewer generated secrets until an independently computed TOTP had a leading
+zero, enrolled with that string (`tfa_configured`), observed enabled state by GET,
+and removed enrollment (`tfa_removed`); a wrong code raised `ApiErrorException`.
+This establishes API enrollment/removal, not actual login enforcement. Six POST
+methods have explicit reviewer execution evidence: GPG generation (with payload
+mismatch), secret export, import, deletion, TOTP enrollment and removal. Secret
+generation for the fixture is reported, but `generateUserConfiguration()` and its
+typed result are not separately established. `getTeamUserConfiguration()` also
+remains unobserved. Only the list reads are explicitly attributed to both routes;
+no route is inferred for the other reviewer operations. The committed five-GET
+capture, separate reviewer execution and corrected offline acceptance remain
+separate. Remaining routes, compatibility variants, committed mutation evidence,
+team configuration, login and cryptographic behavior stay under `8x0.2.54`.
 
 ### Generic calls
 

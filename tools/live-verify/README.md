@@ -1418,6 +1418,37 @@ configuration or link data was requested, and no state changed. It establishes
 no login, TFA challenge, SSH access or mutation compatibility. `8x0.2.40` remains
 open for all unobserved functions and variants.
 
+## GPG public inventory and two-factor status
+
+Run `WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs php tools/live-verify/gpg-two-factor.php --output=docs/api/evidence/YYYY-MM-DD-gpg-two-factor.json`.
+
+Five fixed GETs read version and selected-account public-key inventory/two-factor
+status through both UAPI routes. Existing opt-in, committed-input, exact request
+guard, TLS and immutable structural-output rules apply. No key export, secret-key
+inventory, private/team configuration, key/authentication mutation or login test
+runs. Keep remaining live coverage under `8x0.2.54`.
+
+The GPG/two-factor capture at f213ab8 on 11.138.0.19 passes five GET checks and
+strict assessment with zero discrepancies. Both public-key lists are empty;
+two-factor status has integer is_enabled with issuer omitted. In that capture, no key content,
+secret inventory, private/team configuration, key/authentication mutation or
+login enforcement was tested. Remaining live work stays under 8x0.2.54.
+
+Separate [review 5722555389](https://github.com/hostingpal/whm-api-client/pull/66#pullrequestreview-5722555389)
+at `9b34fd5b791857625f3c7b5085f919a0a81bf124` on `11.138.0.19` used disposable
+`wrvgpg` with token/account/home cleanup confirmed. It observed populated list
+fields through both routes, empty-string generation payload mismatches after keys
+were created, raw-armored import preserving the ID and normalized re-export,
+and leading-zero TOTP API enrollment/removal. Other reviewer routes are unspecified.
+Six POST methods have explicit reviewer execution evidence: GPG generation with
+payload mismatch, secret export, import, deletion, TOTP enrollment and removal.
+The reported fixture secret generation does not separately identify
+`generateUserConfiguration()` or its typed result; team configuration also remains
+unobserved. The narrow response corrections pass offline fixtures; no
+successful typed corrected-head acceptance or login enforcement is claimed.
+This reviewer report does not alter the immutable five-GET artifact or catalog.
+Remaining routes/variants and committed mutation evidence stay under `8x0.2.54`.
+
 ## WHM SSL inventory
 
 ```sh

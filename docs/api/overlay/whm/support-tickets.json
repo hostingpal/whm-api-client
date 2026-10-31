@@ -57,7 +57,7 @@
         },
         {
           "kind": "observed",
-          "text": "The PR65 reviewer reports this WHM GET on 11.138.0.19 with stateless token authentication raising ApiErrorException: \"The system failed to restore the saved session.\" No successful payload compatibility is established; see the group-level session inference and open whm-api-client-8x0.2.53."
+          "text": "The PR65 reviewer reports this WHM GET on 11.138.0.19 with stateless token authentication raising ApiErrorException: \"The system failed to restore the saved session.\" No successful payload compatibility is established; see the group-level attributed reviewer source trace and open whm-api-client-8x0.2.53."
         }
       ],
       "evidence": [
@@ -71,7 +71,7 @@
           "kind": "live",
           "version": "11.138.0.19",
           "date": "2026-10-31",
-          "note": "The PR65 reviewer reports this WHM GET on 11.138.0.19 with stateless token authentication raising ApiErrorException: \"The system failed to restore the saved session.\" No successful payload compatibility is established; see the group-level session inference and open whm-api-client-8x0.2.53. Separate reviewer report at original head 1847c97694013013167638bd33ab89db4b8002cd: https://github.com/hostingpal/whm-api-client/pull/65. No new call or capture ran for this correction; the reviewer did not trace the session code path and ran no POST."
+          "note": "The PR65 reviewer reports this WHM GET on 11.138.0.19 with stateless token authentication raising ApiErrorException: \"The system failed to restore the saved session.\" No successful payload compatibility is established; see the group-level attributed reviewer source trace and open whm-api-client-8x0.2.53. Separate reviewer report at original head 1847c97694013013167638bd33ab89db4b8002cd: https://github.com/hostingpal/whm-api-client/pull/65. No new call or capture ran for this correction; the original review ran no POST. The final reviewer source trace 5722449280 establishes the Customer Portal session path described on the group; local-only methods are not covered."
         }
       ]
     },
@@ -97,7 +97,7 @@
         },
         {
           "kind": "observed",
-          "text": "The PR65 reviewer reports this WHM GET on 11.138.0.19 with stateless token authentication raising ApiErrorException: \"The system failed to restore the saved session.\" No successful payload compatibility is established; see the group-level session inference and open whm-api-client-8x0.2.53."
+          "text": "The PR65 reviewer reports this WHM GET on 11.138.0.19 with stateless token authentication raising ApiErrorException: \"The system failed to restore the saved session.\" No successful payload compatibility is established; see the group-level attributed reviewer source trace and open whm-api-client-8x0.2.53."
         }
       ],
       "evidence": [
@@ -111,7 +111,7 @@
           "kind": "live",
           "version": "11.138.0.19",
           "date": "2026-10-31",
-          "note": "The PR65 reviewer reports this WHM GET on 11.138.0.19 with stateless token authentication raising ApiErrorException: \"The system failed to restore the saved session.\" No successful payload compatibility is established; see the group-level session inference and open whm-api-client-8x0.2.53. Separate reviewer report at original head 1847c97694013013167638bd33ab89db4b8002cd: https://github.com/hostingpal/whm-api-client/pull/65. No new call or capture ran for this correction; the reviewer did not trace the session code path and ran no POST."
+          "note": "The PR65 reviewer reports this WHM GET on 11.138.0.19 with stateless token authentication raising ApiErrorException: \"The system failed to restore the saved session.\" No successful payload compatibility is established; see the group-level attributed reviewer source trace and open whm-api-client-8x0.2.53. Separate reviewer report at original head 1847c97694013013167638bd33ab89db4b8002cd: https://github.com/hostingpal/whm-api-client/pull/65. No new call or capture ran for this correction; the original review ran no POST. The final reviewer source trace 5722449280 establishes the Customer Portal session path described on the group; local-only methods are not covered."
         }
       ],
       "response": {
@@ -241,7 +241,7 @@
         },
         {
           "kind": "observed",
-          "text": "The PR65 reviewer reports this WHM GET on 11.138.0.19 with stateless token authentication raising ApiErrorException: \"The system failed to restore the saved session.\" No successful payload compatibility is established; see the group-level session inference and open whm-api-client-8x0.2.53."
+          "text": "The PR65 reviewer reports this WHM GET on 11.138.0.19 with stateless token authentication raising ApiErrorException: \"The system failed to restore the saved session.\" No successful payload compatibility is established; see the group-level attributed reviewer source trace and open whm-api-client-8x0.2.53."
         }
       ],
       "evidence": [
@@ -255,7 +255,7 @@
           "kind": "live",
           "version": "11.138.0.19",
           "date": "2026-10-31",
-          "note": "The PR65 reviewer reports this WHM GET on 11.138.0.19 with stateless token authentication raising ApiErrorException: \"The system failed to restore the saved session.\" No successful payload compatibility is established; see the group-level session inference and open whm-api-client-8x0.2.53. Separate reviewer report at original head 1847c97694013013167638bd33ab89db4b8002cd: https://github.com/hostingpal/whm-api-client/pull/65. No new call or capture ran for this correction; the reviewer did not trace the session code path and ran no POST."
+          "note": "The PR65 reviewer reports this WHM GET on 11.138.0.19 with stateless token authentication raising ApiErrorException: \"The system failed to restore the saved session.\" No successful payload compatibility is established; see the group-level attributed reviewer source trace and open whm-api-client-8x0.2.53. Separate reviewer report at original head 1847c97694013013167638bd33ab89db4b8002cd: https://github.com/hostingpal/whm-api-client/pull/65. No new call or capture ran for this correction; the original review ran no POST. The final reviewer source trace 5722449280 establishes the Customer Portal session path described on the group; local-only methods are not covered."
         }
       ],
       "order": [
@@ -544,6 +544,10 @@
         {
           "kind": "policy",
           "text": "code and redirectUri are sensitive because callback query data can contain credentials or state. Both values are sent once as form data and encoded once; the client does not follow the redirect. Inspect responseMeta() for API outcome. Session reuse remains unestablished; see the group-level limitation."
+        },
+        {
+          "kind": "documented",
+          "text": "Reviewer source trace 5722449280 on 11.138.0.19: Whostmgr::TicketSupport::Token->new calls Cpanel::Session::Restore::restoreSession() and fails with \"The system failed to restore the saved session.\" when none exists. Whostmgr/TicketSupport.pm:31 builds remote Customer Portal calls through that object. ticket_validate_oauth2_code directly calls Token->new()->fetch($args), so validateOauth2Code() cannot succeed statelessly. This trace establishes the session requirement for paths reaching the Customer Portal, not local-only methods. It is attributed reviewer evidence, not code inspected in the local pinned documentation."
         }
       ],
       "evidence": [
@@ -552,6 +556,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /ticket_validate_oauth2_code has x-readonly=false, x-cpanel-available-version=60, and the reviewed parameter and 200-response schemas. Canonical WHM x-tagGroups assigns Support Access and Ticket Management tags to cPanel Support Tickets. Preserve source requiredness, omission, scalar wire types and optional result fields. All operations say they are unavailable through the command line; mutating operations use form POST. WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "reviewer source trace on 11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer source trace 5722449280 on 11.138.0.19: Whostmgr::TicketSupport::Token->new calls Cpanel::Session::Restore::restoreSession() and fails with \"The system failed to restore the saved session.\" when none exists. Whostmgr/TicketSupport.pm:31 builds remote Customer Portal calls through that object. ticket_validate_oauth2_code directly calls Token->new()->fetch($args), so validateOauth2Code() cannot succeed statelessly. This trace establishes the session requirement for paths reaching the Customer Portal, not local-only methods. It is attributed reviewer evidence, not code inspected in the local pinned documentation. See https://github.com/hostingpal/whm-api-client/pull/65#pullrequestreview-5722449280; whm-api-client-m6p. No successful live payload or POST is claimed."
         }
       ],
       "order": [
@@ -590,7 +600,7 @@
         },
         {
           "kind": "observed",
-          "text": "The PR65 reviewer reports this WHM GET on 11.138.0.19 with stateless token authentication raising ApiErrorException: \"The system failed to restore the saved session.\" No successful payload compatibility is established; see the group-level session inference and open whm-api-client-8x0.2.53."
+          "text": "The PR65 reviewer reports this WHM GET on 11.138.0.19 with stateless token authentication raising ApiErrorException: \"The system failed to restore the saved session.\" No successful payload compatibility is established; see the group-level attributed reviewer source trace and open whm-api-client-8x0.2.53."
         }
       ],
       "evidence": [
@@ -604,7 +614,7 @@
           "kind": "live",
           "version": "11.138.0.19",
           "date": "2026-10-31",
-          "note": "The PR65 reviewer reports this WHM GET on 11.138.0.19 with stateless token authentication raising ApiErrorException: \"The system failed to restore the saved session.\" No successful payload compatibility is established; see the group-level session inference and open whm-api-client-8x0.2.53. Separate reviewer report at original head 1847c97694013013167638bd33ab89db4b8002cd: https://github.com/hostingpal/whm-api-client/pull/65. No new call or capture ran for this correction; the reviewer did not trace the session code path and ran no POST."
+          "note": "The PR65 reviewer reports this WHM GET on 11.138.0.19 with stateless token authentication raising ApiErrorException: \"The system failed to restore the saved session.\" No successful payload compatibility is established; see the group-level attributed reviewer source trace and open whm-api-client-8x0.2.53. Separate reviewer report at original head 1847c97694013013167638bd33ab89db4b8002cd: https://github.com/hostingpal/whm-api-client/pull/65. No new call or capture ran for this correction; the original review ran no POST. The final reviewer source trace 5722449280 establishes the Customer Portal session path described on the group; local-only methods are not covered."
         }
       ]
     },
@@ -669,5 +679,5 @@
       ]
     }
   },
-  "description": "WHM API 1 functions in the documented cPanel Support Tickets group.\n\nObserved: The PR65 reviewer called getSupportAgreement(), getSupportInfo(), whitelistCheck() and list() through WHM GET on 11.138.0.19 with this client's stateless token authentication. All four raised ApiErrorException: \"The system failed to restore the saved session.\" These failed reads establish no successful payload compatibility. All ten POST methods remain unobserved.\n\nDocumented: The pinned URL examples use /cpsess##########/json-api/, agreement and support-info reads require a cPanelID token in the current session, and validateOauth2Code() stores the validated token on the current session.\n\nInference: A WHM session appears to be required, based on the reviewer's reading of the failure and source text; the session code path was not traced. This is not a universal authentication diagnosis. The client has no session or cookie handling. It remains uncertain whether validateOauth2Code() could succeed yet leave no reusable session for later calls.\n\nPolicy: Keep these typed contracts available with this compatibility limit; no session management, automatic retry or inferred success is added. Session compatibility and all unobserved methods remain open under whm-api-client-8x0.2.53."
+  "description": "WHM API 1 functions in the documented cPanel Support Tickets group.\n\nObserved: The PR65 reviewer called getSupportAgreement(), getSupportInfo(), whitelistCheck() and list() through WHM GET on 11.138.0.19 with this client's stateless token authentication. All four raised ApiErrorException: \"The system failed to restore the saved session.\" These failed reads establish no successful payload compatibility. All ten POST methods remain unobserved.\n\nDocumented: The pinned URL examples use /cpsess##########/json-api/, agreement and support-info reads require a cPanelID token in the current session, and validateOauth2Code() stores the validated token on the current session.\n\nReviewer source trace 5722449280 on 11.138.0.19: Whostmgr::TicketSupport::Token->new calls Cpanel::Session::Restore::restoreSession() and fails with \"The system failed to restore the saved session.\" when none exists. Whostmgr/TicketSupport.pm:31 builds remote Customer Portal calls through that object. ticket_validate_oauth2_code directly calls Token->new()->fetch($args), so validateOauth2Code() cannot succeed statelessly. This trace establishes the session requirement for paths reaching the Customer Portal, not local-only methods. It is attributed reviewer evidence, not code inspected in the local pinned documentation. The client has no session or cookie handling. All fourteen methods have no observed success path.\n\nPolicy: Keep these typed contracts available with this compatibility limit; no session management, automatic retry or inferred success is added. Session compatibility and all unobserved methods remain open under whm-api-client-8x0.2.53."
 }

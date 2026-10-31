@@ -281,12 +281,15 @@ trait WhmGroups
      * saved session." These failed reads establish no successful payload compatibility. All ten POST methods remain
      * unobserved. Documented: The pinned URL examples use /cpsess##########/json-api/, agreement and support-info reads
      * require a cPanelID token in the current session, and validateOauth2Code() stores the validated token on the
-     * current session. Inference: A WHM session appears to be required, based on the reviewer's reading of the failure
-     * and source text; the session code path was not traced. This is not a universal authentication diagnosis. The
-     * client has no session or cookie handling. It remains uncertain whether validateOauth2Code() could succeed yet
-     * leave no reusable session for later calls. Policy: Keep these typed contracts available with this compatibility
-     * limit; no session management, automatic retry or inferred success is added. Session compatibility and all
-     * unobserved methods remain open under whm-api-client-8x0.2.53.
+     * current session. Reviewer source trace 5722449280 on 11.138.0.19: Whostmgr::TicketSupport::Token->new calls
+     * Cpanel::Session::Restore::restoreSession() and fails with "The system failed to restore the saved session." when
+     * none exists. Whostmgr/TicketSupport.pm:31 builds remote Customer Portal calls through that object.
+     * ticket_validate_oauth2_code directly calls Token->new()->fetch($args), so validateOauth2Code() cannot succeed
+     * statelessly. This trace establishes the session requirement for paths reaching the Customer Portal, not
+     * local-only methods. It is attributed reviewer evidence, not code inspected in the local pinned documentation. The
+     * client has no session or cookie handling. All fourteen methods have no observed success path. Policy: Keep these
+     * typed contracts available with this compatibility limit; no session management, automatic retry or inferred
+     * success is added. Session compatibility and all unobserved methods remain open under whm-api-client-8x0.2.53.
      */
     public function supportTickets(): SupportTickets
     {

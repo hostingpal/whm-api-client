@@ -69,6 +69,8 @@ trait UapiGroups
 
     private ?Ftp $ftpGroup = null;
 
+    private ?Gpg $gpgGroup = null;
+
     private ?KnownHosts $knownHostsGroup = null;
 
     private ?LangPhp $langPhpGroup = null;
@@ -120,6 +122,8 @@ trait UapiGroups
     private ?TeamRoles $teamRolesGroup = null;
 
     private ?Themes $themesGroup = null;
+
+    private ?TwoFactorAuth $twoFactorAuthGroup = null;
 
     private ?UserManager $userManagerGroup = null;
 
@@ -422,6 +426,16 @@ trait UapiGroups
     }
 
     /**
+     * Select the GPG operations without making a request.
+     *
+     * The GPG module for UAPI.
+     */
+    public function gpg(): Gpg
+    {
+        return $this->gpgGroup ??= new Gpg($this->run(...));
+    }
+
+    /**
      * Select the KnownHosts operations without making a request.
      *
      * The KnownHosts module for UAPI.
@@ -679,6 +693,16 @@ trait UapiGroups
     public function themes(): Themes
     {
         return $this->themesGroup ??= new Themes($this->run(...));
+    }
+
+    /**
+     * Select the TwoFactorAuth operations without making a request.
+     *
+     * The TwoFactorAuth module for UAPI.
+     */
+    public function twoFactorAuth(): TwoFactorAuth
+    {
+        return $this->twoFactorAuthGroup ??= new TwoFactorAuth($this->run(...));
     }
 
     /**
