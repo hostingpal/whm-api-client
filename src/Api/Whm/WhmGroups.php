@@ -19,6 +19,8 @@ trait WhmGroups
 
     private ?Backups $backupsGroup = null;
 
+    private ?Commerce $commerceGroup = null;
+
     private ?CpHulk $cpHulkGroup = null;
 
     private ?Databases $databasesGroup = null;
@@ -30,6 +32,8 @@ trait WhmGroups
     private ?IpAddresses $ipAddressesGroup = null;
 
     private ?Mail $mailGroup = null;
+
+    private ?Market $marketGroup = null;
 
     private ?ModSecurity $modSecurityGroup = null;
 
@@ -67,6 +71,16 @@ trait WhmGroups
     public function backups(): Backups
     {
         return $this->backupsGroup ??= new Backups($this->run(...));
+    }
+
+    /**
+     * Select the Commerce Integration operations without making a request.
+     *
+     * Sitejet Commerce configuration and cPanel Store or Market login-token validation.
+     */
+    public function commerce(): Commerce
+    {
+        return $this->commerceGroup ??= new Commerce($this->run(...));
     }
 
     /**
@@ -134,6 +148,16 @@ trait WhmGroups
     public function mail(): Mail
     {
         return $this->mailGroup ??= new Mail($this->run(...));
+    }
+
+    /**
+     * Select the cPanel Market operations without making a request.
+     *
+     * cPanel Market provider inventory, product information, attributes and commission configuration.
+     */
+    public function market(): Market
+    {
+        return $this->marketGroup ??= new Market($this->run(...));
     }
 
     /**

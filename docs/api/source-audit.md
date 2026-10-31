@@ -4237,3 +4237,31 @@ and `/addips/get` supplies the metadata message contract. No new live request or
 capture ran for these corrections. All ten form POST methods, including the NAT
 check helper, remain unobserved under `8x0.2.37`. Both historical artifacts remain
 immutable; no schema finding was waived or replayed.
+
+## WHM Commerce and Market
+
+`whm()->commerce()` exposes three nondeprecated Commerce Integration functions;
+`whm()->market()` covers all nine cPanel Market functions. Two provider inventory
+reads use GET; ten operations use form POST, including source operations without
+an explicit read-only declaration. The two deprecated ecommerce functions remain
+excluded. Preserve source versions (Commerce 11.122, token validation 62, Market 56).
+
+Formal get_commerce/set_commerce paths and metadata commands conflict with the
+Sitejet-prefixed CLI/URL examples. The client follows formal bare operation names;
+neither route is live-verified. No slash routing or fallback request is added.
+Tokens, redirect/storefront URLs and product-attribute values remain sensitive.
+Returned URLs, icons, schemas and product content are payload data, never fetched
+or executed. Provider/commission changes can affect commerce configuration;
+these methods do not retry, roll back or establish purchase/payment behavior.
+
+Adjusted product rows preserve all declared fields and source-declared additional
+properties as mixed values, while known fields remain strict. One source-backed
+deep string leaf repair preserves nested identity-verification options beyond the
+generator depth limit; the global generator is unchanged. Source string flags
+retain reviewed quoted 0/1 compatibility only where declared. Omitted optional
+fields, explicit false/zero, source void and unspecified data remain distinct.
+
+All twelve functions have offline contracts. The bounded two-GET catalog reads
+version and provider inventory only: no commission IDs, OAuth exchange, token
+validation, commerce/provider/attribute changes or purchases. Remaining live
+variants, formal-route ambiguity and all POST behavior stay under `8x0.2.52`.

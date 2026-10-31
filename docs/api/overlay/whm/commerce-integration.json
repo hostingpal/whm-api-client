@@ -4,7 +4,134 @@
   "group": "Commerce Integration",
   "accessor": "commerce",
   "operations": {
-    "whm1:get_ecommerce": {"exclude": {"reason": "Deprecated without a successor.", "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-13", "note": "Flagged deprecated: true."}]}},
-    "whm1:set_ecommerce": {"exclude": {"reason": "Deprecated without a successor.", "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-13", "note": "Flagged deprecated: true."}]}}
-  }
+    "whm1:get_ecommerce": {
+      "exclude": {
+        "reason": "Deprecated without a successor.",
+        "evidence": [
+          {
+            "kind": "doc",
+            "version": "pinned 2026-10-13",
+            "date": "2026-10-13",
+            "note": "Flagged deprecated: true."
+          }
+        ]
+      }
+    },
+    "whm1:set_ecommerce": {
+      "exclude": {
+        "reason": "Deprecated without a successor.",
+        "evidence": [
+          {
+            "kind": "doc",
+            "version": "pinned 2026-10-13",
+            "date": "2026-10-13",
+            "note": "Flagged deprecated: true."
+          }
+        ]
+      }
+    },
+    "whm1:get_commerce": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11.122. This function returns Sitejet Commerce data."
+        },
+        {
+          "kind": "documented",
+          "text": "The formal OpenAPI path and metadata.command use get_commerce, but pinned CLI and URL examples prepend Sitejet/. This method follows the formal bare operation name. Neither route has verified live compatibility; the formal route may fail on a server. This source discrepancy remains tracked under whm-api-client-8x0.2.52."
+        },
+        {
+          "kind": "documented",
+          "text": "Preserve optional is_enabled as an integer 0|1 flag and optional storeurl as a string. The returned storefront URL may contain credentials; treat the result as sensitive and do not fetch it."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /get_commerce/get does not declare x-readonly. Use conservative POST; the documented get verb alone does not establish read-only behavior."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /get_commerce/get formal path and responses.200 application/json schema metadata.command example are get_commerce; x-codeSamples CLI uses Sitejet/get_commerce and URL uses /json-api/Sitejet/get_commerce. Follow the formal operation identity without adding unsupported slash routing. No live-route compatibility is established."
+        }
+      ]
+    },
+    "whm1:set_commerce": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11.122. This function enables Sitejet Commerce for all users and allows the hosting provider to set a custom URL for their payment platform, which customers can use to purchase the Sitejet Commerce upgrade."
+        },
+        {
+          "kind": "documented",
+          "text": "The formal OpenAPI path and metadata.command use set_commerce, but pinned CLI and URL examples prepend Sitejet/. This method follows the formal bare operation name. Neither route has verified live compatibility; the formal route may fail on a server. This source discrepancy remains tracked under whm-api-client-8x0.2.52."
+        },
+        {
+          "kind": "documented",
+          "text": "Enables or disables Sitejet Commerce for all users. Omitted storeurl retains the documented Sitejet Commerce store default; false is sent as allowCommerce=0. A supplied storefront URL can contain credentials and remains sensitive. URLs are sent as payload data and are never fetched."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned response documents metadata only and no data payload; this method returns void. The client sends one request with no retry or rollback."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /set_commerce/get does not declare x-readonly. Use conservative POST; the documented get verb alone does not establish read-only behavior."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /set_commerce/get formal path and responses.200 application/json schema metadata.command example are set_commerce; x-codeSamples CLI uses Sitejet/set_commerce and URL uses /json-api/Sitejet/set_commerce. Follow the formal operation identity without adding unsupported slash routing. No live-route compatibility is established."
+        }
+      ],
+      "params": {
+        "storeurl": {
+          "php": "storeUrl",
+          "sensitive": true
+        }
+      }
+    },
+    "whm1:validate_login_token": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 62. This function validates a login token with the cPanel Store or a cPanel Market provider, and then returns access tokens."
+        },
+        {
+          "kind": "documented",
+          "text": "Validates the login token with the selected provider and returns optional access_token and refresh_token strings inside the optional payload list. The login token, redirect URL and returned tokens are sensitive. The client does not follow the redirect URL or fetch any provider URL, and never retries token validation."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /validate_login_token/get declares x-readonly=false."
+        }
+      ],
+      "params": {
+        "login_token": {
+          "sensitive": true
+        },
+        "url_after_login": {
+          "sensitive": true
+        }
+      }
+    }
+  },
+  "class": "Commerce",
+  "description": "Sitejet Commerce configuration and cPanel Store or Market login-token validation."
 }

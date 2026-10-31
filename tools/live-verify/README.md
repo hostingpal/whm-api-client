@@ -1329,3 +1329,12 @@ GET observations and strict assessment with zero discrepancies. IPv6 range
 where observed. IPv4/IPv6/range rows are populated; range-user lists are empty.
 No network or address/range change ran. The original failed capture is immutable
 and follow-up `8x0.2.37` retains all remaining live coverage.
+
+## WHM Market provider inventory
+
+Run `WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs php tools/live-verify/whm-market.php --output=docs/api/evidence/YYYY-MM-DD-whm-market.json`.
+
+Two fixed GETs read version and provider inventory. Existing opt-in, exact request
+guard, committed-input, TLS and immutable structural-output rules apply. No
+commission IDs, private product information, token exchange, provider/commerce
+changes, purchases or URL fetches run. Keep live gaps under `8x0.2.52`.
