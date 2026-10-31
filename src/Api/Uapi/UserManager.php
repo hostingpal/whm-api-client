@@ -19,7 +19,7 @@ use SensitiveParameter;
  * according to the configured credentials, with a single attempt and no retries. The handle clears responseMeta()
  * before every attempt and records the envelope snapshot before API or payload errors.
  *
- * @phpstan-type ChangePasswordResult array<array-key, mixed>|null
+ * @phpstan-type ChangePasswordResult string|array<array-key, mixed>|null
  * @phpstan-type CheckAccountConflictsResult array{
  *     accounts?: array{
  *         alternate_email?: string|null,
@@ -75,23 +75,27 @@ use SensitiveParameter;
  *     conflict?: 0|1,
  * }
  * @phpstan-type CreateUserResult array{
- *     alternate_email?: string,
- *     avatar_url?: string,
+ *     alternate_email?: string|null,
+ *     avatar_url?: string|null,
  *     can_delete?: 0|1,
  *     can_set_password?: 0|1,
  *     can_set_quota?: 0|1,
  *     dismissed?: 0|1,
  *     dismissed_merge_candidates?: list<array{
- *         alternate_email?: string,
- *         avatar_url?: string,
+ *         alternate_email?: string|null,
+ *         avatar_url?: string|null,
  *         can_delete?: 0|1,
  *         can_set_password?: 0|1,
  *         can_set_quota?: 0|1,
  *         dismissed?: 0|1,
- *         domain?: string,
+ *         dismissed_merge_candidates?: list<mixed>,
+ *         domain?: string|null,
  *         full_username?: string,
  *         guid?: string,
+ *         has_expired_invite?: 0|1,
+ *         has_invite?: 0|1,
  *         has_siblings?: 0|1,
+ *         invite_expiration?: int|null,
  *         issues?: list<array{
  *             area?: string,
  *             limit?: int,
@@ -100,9 +104,10 @@ use SensitiveParameter;
  *             type?: string,
  *             used?: int,
  *         }>,
+ *         merge_candidates?: list<mixed>,
  *         parent_type?: string|null,
- *         phone_number?: string,
- *         real_name?: string,
+ *         phone_number?: string|null,
+ *         real_name?: string|null,
  *         services?: array{
  *             email?: array{
  *                 enabled?: 0|1,
@@ -111,7 +116,7 @@ use SensitiveParameter;
  *             ftp?: array{
  *                 enabled?: 0|1,
  *                 homedir?: string,
- *                 quota?: string,
+ *                 quota?: string|null,
  *             },
  *             webdisk?: array{
  *                 enabled?: 0|1,
@@ -126,13 +131,13 @@ use SensitiveParameter;
  *         type?: string,
  *         username?: string,
  *     }>,
- *     domain?: string,
+ *     domain?: string|null,
  *     full_username?: string,
  *     guid?: string,
  *     has_expired_invite?: 0|1,
  *     has_invite?: 0|1,
  *     has_siblings?: 0|1,
- *     invite_expiration?: int,
+ *     invite_expiration?: int|null,
  *     issues?: list<array{
  *         area?: string,
  *         limit?: int,
@@ -142,16 +147,20 @@ use SensitiveParameter;
  *         used?: int,
  *     }>,
  *     merge_candidates?: list<array{
- *         alternate_email?: string,
- *         avatar_url?: string,
+ *         alternate_email?: string|null,
+ *         avatar_url?: string|null,
  *         can_delete?: 0|1,
  *         can_set_password?: 0|1,
  *         can_set_quota?: 0|1,
  *         dismissed?: 0|1,
- *         domain?: string,
+ *         dismissed_merge_candidates?: list<mixed>,
+ *         domain?: string|null,
  *         full_username?: string,
  *         guid?: string,
+ *         has_expired_invite?: 0|1,
+ *         has_invite?: 0|1,
  *         has_siblings?: 0|1,
+ *         invite_expiration?: int|null,
  *         issues?: list<array{
  *             area?: string,
  *             limit?: int,
@@ -160,9 +169,10 @@ use SensitiveParameter;
  *             type?: string,
  *             used?: int,
  *         }>,
+ *         merge_candidates?: list<mixed>,
  *         parent_type?: string|null,
- *         phone_number?: string,
- *         real_name?: string,
+ *         phone_number?: string|null,
+ *         real_name?: string|null,
  *         services?: array{
  *             email?: array{
  *                 enabled?: 0|1,
@@ -171,7 +181,7 @@ use SensitiveParameter;
  *             ftp?: array{
  *                 enabled?: 0|1,
  *                 homedir?: string,
- *                 quota?: string,
+ *                 quota?: string|null,
  *             },
  *             webdisk?: array{
  *                 enabled?: 0|1,
@@ -187,8 +197,8 @@ use SensitiveParameter;
  *         username?: string,
  *     }>,
  *     parent_type?: string|null,
- *     phone_number?: string,
- *     real_name?: string,
+ *     phone_number?: string|null,
+ *     real_name?: string|null,
  *     services?: array{
  *         email?: array{
  *             enabled?: 0|1,
@@ -197,7 +207,7 @@ use SensitiveParameter;
  *         ftp?: array{
  *             enabled?: 0|1,
  *             homedir?: string,
- *             quota?: string,
+ *             quota?: string|null,
  *         },
  *         webdisk?: array{
  *             enabled?: 0|1,
@@ -289,70 +299,69 @@ use SensitiveParameter;
  *     username?: string,
  * }
  * @phpstan-type EditUserResult array{
- *     alternate_email?: string,
- *     avatar_url?: string,
+ *     alternate_email?: string|null,
+ *     avatar_url?: string|null,
  *     can_delete?: 0|1,
  *     can_set_password?: 0|1,
  *     can_set_quota?: 0|1,
  *     dismissed?: 0|1,
  *     dismissed_merge_candidates?: list<array{
- *         merge_candidates?: list<array{
- *             alternate_email?: string,
- *             avatar_url?: string,
- *             can_delete?: 0|1,
- *             can_set_password?: 0|1,
- *             can_set_quota?: 0|1,
- *             dismissed?: 0|1,
- *             domain?: string,
- *             full_username?: string,
- *             guid?: string,
- *             has_expired_invite?: 0|1,
- *             has_invite?: 0|1,
- *             has_siblings?: 0|1,
- *             invite_expiration?: int,
- *             issues?: list<array{
- *                 area?: mixed,
- *                 limit?: mixed,
- *                 message?: mixed,
- *                 service?: mixed,
- *                 type?: mixed,
- *                 used?: mixed,
- *             }>,
- *             merge_candidates?: list<array<array-key, mixed>>,
- *             parent_type?: string|null,
- *             phone_number?: string,
- *             real_name?: string,
- *             services?: array{
- *                 email?: array{
- *                     enabled?: mixed,
- *                     quota?: mixed,
- *                 },
- *                 ftp?: array{
- *                     enabled?: mixed,
- *                     homedir?: mixed,
- *                     quota?: mixed,
- *                 },
- *                 webdisk?: array{
- *                     enabled?: mixed,
- *                     homedir?: mixed,
- *                     perms?: mixed,
- *                     private?: mixed,
- *                 },
- *             },
- *             special?: 0|1,
- *             sub_account_exists?: 0|1|null,
- *             synced_password?: 0|1|null,
+ *         alternate_email?: string|null,
+ *         avatar_url?: string|null,
+ *         can_delete?: 0|1,
+ *         can_set_password?: 0|1,
+ *         can_set_quota?: 0|1,
+ *         dismissed?: 0|1,
+ *         dismissed_merge_candidates?: list<mixed>,
+ *         domain?: string|null,
+ *         full_username?: string,
+ *         guid?: string,
+ *         has_expired_invite?: 0|1,
+ *         has_invite?: 0|1,
+ *         has_siblings?: 0|1,
+ *         invite_expiration?: int|null,
+ *         issues?: list<array{
+ *             area?: string,
+ *             limit?: int,
+ *             message?: string,
+ *             service?: string,
  *             type?: string,
- *             username?: string,
+ *             used?: int,
  *         }>,
+ *         merge_candidates?: list<mixed>,
+ *         parent_type?: string|null,
+ *         phone_number?: string|null,
+ *         real_name?: string|null,
+ *         services?: array{
+ *             email?: array{
+ *                 enabled?: 0|1,
+ *                 quota?: int,
+ *             },
+ *             ftp?: array{
+ *                 enabled?: 0|1,
+ *                 homedir?: string,
+ *                 quota?: int|null,
+ *             },
+ *             webdisk?: array{
+ *                 enabled?: 0|1,
+ *                 homedir?: string,
+ *                 perms?: string,
+ *                 private?: 0|1,
+ *             },
+ *         },
+ *         special?: 0|1,
+ *         sub_account_exists?: 0|1|null,
+ *         synced_password?: 0|1|null,
+ *         type?: string,
+ *         username?: string,
  *     }>,
- *     domain?: string,
+ *     domain?: string|null,
  *     full_username?: string,
  *     guid?: string,
  *     has_expired_invite?: 0|1,
  *     has_invite?: 0|1,
  *     has_siblings?: 0|1,
- *     invite_expiration?: int,
+ *     invite_expiration?: int|null,
  *     issues?: list<array{
  *         area?: string,
  *         limit?: int,
@@ -362,19 +371,20 @@ use SensitiveParameter;
  *         used?: int,
  *     }>,
  *     merge_candidates?: list<array{
- *         alternate_email?: string,
- *         avatar_url?: string,
+ *         alternate_email?: string|null,
+ *         avatar_url?: string|null,
  *         can_delete?: 0|1,
  *         can_set_password?: 0|1,
  *         can_set_quota?: 0|1,
  *         dismissed?: 0|1,
- *         domain?: string,
+ *         dismissed_merge_candidates?: list<mixed>,
+ *         domain?: string|null,
  *         full_username?: string,
  *         guid?: string,
  *         has_expired_invite?: 0|1,
  *         has_invite?: 0|1,
  *         has_siblings?: 0|1,
- *         invite_expiration?: int,
+ *         invite_expiration?: int|null,
  *         issues?: list<array{
  *             area?: string,
  *             limit?: int,
@@ -383,10 +393,10 @@ use SensitiveParameter;
  *             type?: string,
  *             used?: int,
  *         }>,
- *         merge_candidates?: list<array<array-key, mixed>>,
+ *         merge_candidates?: list<mixed>,
  *         parent_type?: string|null,
- *         phone_number?: string,
- *         real_name?: string,
+ *         phone_number?: string|null,
+ *         real_name?: string|null,
  *         services?: array{
  *             email?: array{
  *                 enabled?: 0|1,
@@ -395,7 +405,7 @@ use SensitiveParameter;
  *             ftp?: array{
  *                 enabled?: 0|1,
  *                 homedir?: string,
- *                 quota?: int,
+ *                 quota?: int|null,
  *             },
  *             webdisk?: array{
  *                 enabled?: 0|1,
@@ -411,8 +421,8 @@ use SensitiveParameter;
  *         username?: string,
  *     }>,
  *     parent_type?: string|null,
- *     phone_number?: string,
- *     real_name?: string,
+ *     phone_number?: string|null,
+ *     real_name?: string|null,
  *     services?: array{
  *         email?: array{
  *             enabled?: 0|1,
@@ -421,7 +431,7 @@ use SensitiveParameter;
  *         ftp?: array{
  *             enabled?: 0|1,
  *             homedir?: string,
- *             quota?: int,
+ *             quota?: int|null,
  *         },
  *         webdisk?: array{
  *             enabled?: 0|1,
@@ -443,7 +453,57 @@ use SensitiveParameter;
  *     can_set_password?: 0|1,
  *     can_set_quota?: 0|1,
  *     dismissed?: 0|1,
- *     dismissed_merge_candidates?: list<string>,
+ *     dismissed_merge_candidates?: list<array{
+ *         alternate_email?: string|null,
+ *         avatar_url?: string|null,
+ *         can_delete?: 0|1,
+ *         can_set_password?: 0|1,
+ *         can_set_quota?: 0|1,
+ *         dismissed?: 0|1,
+ *         dismissed_merge_candidates?: list<mixed>,
+ *         domain?: string|null,
+ *         full_username?: string,
+ *         guid?: string,
+ *         has_expired_invite?: 0|1,
+ *         has_invite?: 0|1,
+ *         has_siblings?: 0|1,
+ *         invite_expiration?: int|null,
+ *         issues?: list<array{
+ *             area?: string,
+ *             limit?: int,
+ *             message?: string,
+ *             service?: string,
+ *             type?: string,
+ *             used?: int,
+ *         }>,
+ *         merge_candidates?: list<mixed>,
+ *         parent_type?: string|null,
+ *         phone_number?: string|null,
+ *         real_name?: string|null,
+ *         services?: array{
+ *             email?: array{
+ *                 enabled?: 0|1,
+ *                 quota?: int,
+ *             },
+ *             ftp?: array{
+ *                 enabled?: 0|1,
+ *                 homedir?: string,
+ *                 quota?: int|null,
+ *             },
+ *             special?: 0|1,
+ *             webdisk?: array{
+ *                 enabled?: 0|1,
+ *                 homedir?: string,
+ *                 perms?: string,
+ *                 private?: 0|1,
+ *             },
+ *         },
+ *         special?: 0|1,
+ *         sub_account_exists?: 0|1|null,
+ *         synced_password?: 0|1|null,
+ *         type?: string,
+ *         username?: string,
+ *     }>,
  *     domain?: string|null,
  *     full_username?: string,
  *     guid?: string,
@@ -459,7 +519,57 @@ use SensitiveParameter;
  *         type?: string,
  *         used?: int,
  *     }>,
- *     merge_candidates?: list<string>,
+ *     merge_candidates?: list<array{
+ *         alternate_email?: string|null,
+ *         avatar_url?: string|null,
+ *         can_delete?: 0|1,
+ *         can_set_password?: 0|1,
+ *         can_set_quota?: 0|1,
+ *         dismissed?: 0|1,
+ *         dismissed_merge_candidates?: list<mixed>,
+ *         domain?: string|null,
+ *         full_username?: string,
+ *         guid?: string,
+ *         has_expired_invite?: 0|1,
+ *         has_invite?: 0|1,
+ *         has_siblings?: 0|1,
+ *         invite_expiration?: int|null,
+ *         issues?: list<array{
+ *             area?: string,
+ *             limit?: int,
+ *             message?: string,
+ *             service?: string,
+ *             type?: string,
+ *             used?: int,
+ *         }>,
+ *         merge_candidates?: list<mixed>,
+ *         parent_type?: string|null,
+ *         phone_number?: string|null,
+ *         real_name?: string|null,
+ *         services?: array{
+ *             email?: array{
+ *                 enabled?: 0|1,
+ *                 quota?: int,
+ *             },
+ *             ftp?: array{
+ *                 enabled?: 0|1,
+ *                 homedir?: string,
+ *                 quota?: int|null,
+ *             },
+ *             special?: 0|1,
+ *             webdisk?: array{
+ *                 enabled?: 0|1,
+ *                 homedir?: string,
+ *                 perms?: string,
+ *                 private?: 0|1,
+ *             },
+ *         },
+ *         special?: 0|1,
+ *         sub_account_exists?: 0|1|null,
+ *         synced_password?: 0|1|null,
+ *         type?: string,
+ *         username?: string,
+ *     }>,
  *     parent_type?: string|null,
  *     phone_number?: string|null,
  *     real_name?: string|null,
@@ -488,70 +598,69 @@ use SensitiveParameter;
  *     username?: string,
  * }>
  * @phpstan-type LookupServiceAccountResult array{
- *     alternate_email?: string,
- *     avatar_url?: string,
+ *     alternate_email?: string|null,
+ *     avatar_url?: string|null,
  *     can_delete?: 0|1,
  *     can_set_password?: 0|1,
  *     can_set_quota?: 0|1,
  *     dismissed?: 0|1,
  *     dismissed_merge_candidates?: list<array{
- *         merge_candidates?: list<array{
- *             alternate_email?: string,
- *             avatar_url?: string,
- *             can_delete?: 0|1,
- *             can_set_password?: 0|1,
- *             can_set_quota?: 0|1,
- *             dismissed?: 0|1,
- *             domain?: string,
- *             full_username?: string,
- *             guid?: string,
- *             has_expired_invite?: 0|1,
- *             has_invite?: 0|1,
- *             has_siblings?: 0|1,
- *             invite_expiration?: int,
- *             issues?: list<array{
- *                 area?: mixed,
- *                 limit?: mixed,
- *                 message?: mixed,
- *                 service?: mixed,
- *                 type?: mixed,
- *                 used?: mixed,
- *             }>,
- *             merge_candidates?: list<array<array-key, mixed>>,
- *             parent_type?: string|null,
- *             phone_number?: string,
- *             real_name?: string,
- *             services?: array{
- *                 email?: array{
- *                     enabled?: mixed,
- *                     quota?: mixed,
- *                 },
- *                 ftp?: array{
- *                     enabled?: mixed,
- *                     homedir?: mixed,
- *                     quota?: mixed,
- *                 },
- *                 webdisk?: array{
- *                     enabled?: mixed,
- *                     homedir?: mixed,
- *                     perms?: mixed,
- *                     private?: mixed,
- *                 },
- *             },
- *             special?: 0|1,
- *             sub_account_exists?: 0|1|null,
- *             synced_password?: 0|1|null,
+ *         alternate_email?: string|null,
+ *         avatar_url?: string|null,
+ *         can_delete?: 0|1,
+ *         can_set_password?: 0|1,
+ *         can_set_quota?: 0|1,
+ *         dismissed?: 0|1,
+ *         dismissed_merge_candidates?: list<mixed>,
+ *         domain?: string|null,
+ *         full_username?: string,
+ *         guid?: string,
+ *         has_expired_invite?: 0|1,
+ *         has_invite?: 0|1,
+ *         has_siblings?: 0|1,
+ *         invite_expiration?: int|null,
+ *         issues?: list<array{
+ *             area?: string,
+ *             limit?: int,
+ *             message?: string,
+ *             service?: string,
  *             type?: string,
- *             username?: string,
+ *             used?: int,
  *         }>,
+ *         merge_candidates?: list<mixed>,
+ *         parent_type?: string|null,
+ *         phone_number?: string|null,
+ *         real_name?: string|null,
+ *         services?: array{
+ *             email?: array{
+ *                 enabled?: 0|1,
+ *                 quota?: int,
+ *             },
+ *             ftp?: array{
+ *                 enabled?: 0|1,
+ *                 homedir?: string,
+ *                 quota?: int|null,
+ *             },
+ *             webdisk?: array{
+ *                 enabled?: 0|1,
+ *                 homedir?: string,
+ *                 perms?: string,
+ *                 private?: 0|1,
+ *             },
+ *         },
+ *         special?: 0|1,
+ *         sub_account_exists?: 0|1|null,
+ *         synced_password?: 0|1|null,
+ *         type?: string,
+ *         username?: string,
  *     }>,
- *     domain?: string,
+ *     domain?: string|null,
  *     full_username?: string,
  *     guid?: string,
  *     has_expired_invite?: 0|1,
  *     has_invite?: 0|1,
  *     has_siblings?: 0|1,
- *     invite_expiration?: int,
+ *     invite_expiration?: int|null,
  *     issues?: list<array{
  *         area?: string,
  *         limit?: int,
@@ -561,19 +670,20 @@ use SensitiveParameter;
  *         used?: int,
  *     }>,
  *     merge_candidates?: list<array{
- *         alternate_email?: string,
- *         avatar_url?: string,
+ *         alternate_email?: string|null,
+ *         avatar_url?: string|null,
  *         can_delete?: 0|1,
  *         can_set_password?: 0|1,
  *         can_set_quota?: 0|1,
  *         dismissed?: 0|1,
- *         domain?: string,
+ *         dismissed_merge_candidates?: list<mixed>,
+ *         domain?: string|null,
  *         full_username?: string,
  *         guid?: string,
  *         has_expired_invite?: 0|1,
  *         has_invite?: 0|1,
  *         has_siblings?: 0|1,
- *         invite_expiration?: int,
+ *         invite_expiration?: int|null,
  *         issues?: list<array{
  *             area?: string,
  *             limit?: int,
@@ -582,10 +692,10 @@ use SensitiveParameter;
  *             type?: string,
  *             used?: int,
  *         }>,
- *         merge_candidates?: list<array<array-key, mixed>>,
+ *         merge_candidates?: list<mixed>,
  *         parent_type?: string|null,
- *         phone_number?: string,
- *         real_name?: string,
+ *         phone_number?: string|null,
+ *         real_name?: string|null,
  *         services?: array{
  *             email?: array{
  *                 enabled?: 0|1,
@@ -594,7 +704,7 @@ use SensitiveParameter;
  *             ftp?: array{
  *                 enabled?: 0|1,
  *                 homedir?: string,
- *                 quota?: int,
+ *                 quota?: int|null,
  *             },
  *             webdisk?: array{
  *                 enabled?: 0|1,
@@ -610,8 +720,8 @@ use SensitiveParameter;
  *         username?: string,
  *     }>,
  *     parent_type?: string|null,
- *     phone_number?: string,
- *     real_name?: string,
+ *     phone_number?: string|null,
+ *     real_name?: string|null,
  *     services?: array{
  *         email?: array{
  *             enabled?: 0|1,
@@ -620,7 +730,7 @@ use SensitiveParameter;
  *         ftp?: array{
  *             enabled?: 0|1,
  *             homedir?: string,
- *             quota?: int,
+ *             quota?: int|null,
  *         },
  *         webdisk?: array{
  *             enabled?: 0|1,
@@ -649,10 +759,14 @@ use SensitiveParameter;
  *         can_set_password?: 0|1,
  *         can_set_quota?: 0|1,
  *         dismissed?: 0|1,
+ *         dismissed_merge_candidates?: list<mixed>,
  *         domain?: string|null,
  *         full_username?: string,
  *         guid?: string,
+ *         has_expired_invite?: 0|1,
+ *         has_invite?: 0|1,
  *         has_siblings?: 0|1,
+ *         invite_expiration?: int|null,
  *         issues?: list<array{
  *             area?: string,
  *             limit?: int,
@@ -673,7 +787,7 @@ use SensitiveParameter;
  *             ftp?: array{
  *                 enabled?: 0|1,
  *                 homedir?: string,
- *                 quota?: int,
+ *                 quota?: int|null,
  *             },
  *             special?: 0|1,
  *             webdisk?: array{
@@ -705,7 +819,58 @@ use SensitiveParameter;
  *         type?: string,
  *         used?: int,
  *     }>,
- *     merge_candidates?: list<mixed>,
+ *     merge_candidates?: list<array{
+ *         alternate_email?: string|null,
+ *         avatar_url?: string|null,
+ *         can_delete?: 0|1,
+ *         can_set_password?: 0|1,
+ *         can_set_quota?: 0|1,
+ *         dismissed?: 0|1,
+ *         dismissed_merge_candidates?: list<mixed>,
+ *         domain?: string|null,
+ *         full_username?: string,
+ *         guid?: string,
+ *         has_expired_invite?: 0|1,
+ *         has_invite?: 0|1,
+ *         has_siblings?: 0|1,
+ *         invite_expiration?: int|null,
+ *         issues?: list<array{
+ *             area?: string,
+ *             limit?: int,
+ *             message?: string,
+ *             service?: string,
+ *             type?: string,
+ *             used?: int,
+ *         }>,
+ *         merge_candidates?: list<mixed>,
+ *         parent_type?: string|null,
+ *         phone_number?: string|null,
+ *         real_name?: string|null,
+ *         services?: array{
+ *             email?: array{
+ *                 enabled?: 0|1,
+ *                 quota?: int,
+ *             },
+ *             ftp?: array{
+ *                 enabled?: 0|1,
+ *                 homedir?: string,
+ *                 quota?: int|null,
+ *             },
+ *             special?: 0|1,
+ *             webdisk?: array{
+ *                 enabled?: 0|1,
+ *                 enabledigest?: 0|1,
+ *                 homedir?: string,
+ *                 perms?: string,
+ *                 private?: 0|1,
+ *             },
+ *         },
+ *         special?: 0|1,
+ *         sub_account_exists?: 0|1|null,
+ *         synced_password?: 0|1|null,
+ *         type?: string,
+ *         username?: string,
+ *     }>,
  *     parent_type?: string|null,
  *     phone_number?: string|null,
  *     real_name?: string|null,
@@ -717,7 +882,7 @@ use SensitiveParameter;
  *         ftp?: array{
  *             enabled?: 0|1,
  *             homedir?: string,
- *             quota?: int,
+ *             quota?: int|null,
  *         },
  *         special?: 0|1,
  *         webdisk?: array{
@@ -735,22 +900,27 @@ use SensitiveParameter;
  *     username?: string,
  * }
  * @phpstan-type MergeServiceAccountResult array{
- *     alternate_email?: string,
- *     avatar_url?: string,
+ *     alternate_email?: string|null,
+ *     avatar_url?: string|null,
  *     can_delete?: 0|1,
  *     can_set_password?: 0|1,
  *     can_set_quota?: 0|1,
  *     dismissed?: 0|1,
  *     dismissed_merge_candidates?: list<array{
- *         alternate_email?: string,
- *         avatar_url?: string,
+ *         alternate_email?: string|null,
+ *         avatar_url?: string|null,
  *         can_delete?: 0|1,
  *         can_set_password?: 0|1,
  *         can_set_quota?: 0|1,
- *         domain?: string,
+ *         dismissed?: 0|1,
+ *         dismissed_merge_candidates?: list<mixed>,
+ *         domain?: string|null,
  *         full_username?: string,
  *         guid?: string,
+ *         has_expired_invite?: 0|1,
+ *         has_invite?: 0|1,
  *         has_siblings?: 0|1,
+ *         invite_expiration?: int|null,
  *         issues?: list<array{
  *             area?: string,
  *             limit?: int,
@@ -759,9 +929,10 @@ use SensitiveParameter;
  *             type?: string,
  *             used?: int,
  *         }>,
+ *         merge_candidates?: list<mixed>,
  *         parent_type?: string|null,
- *         phone_number?: string,
- *         real_name?: string,
+ *         phone_number?: string|null,
+ *         real_name?: string|null,
  *         services?: array{
  *             email?: array{
  *                 enabled?: 0|1,
@@ -770,7 +941,7 @@ use SensitiveParameter;
  *             ftp?: array{
  *                 enabled?: 0|1,
  *                 homedir?: string,
- *                 quota?: int,
+ *                 quota?: int|null,
  *             },
  *             webdisk?: array{
  *                 enabled?: 0|1,
@@ -785,13 +956,13 @@ use SensitiveParameter;
  *         type?: string,
  *         username?: string,
  *     }>,
- *     domain?: string,
+ *     domain?: string|null,
  *     full_username?: string,
  *     guid?: string,
  *     has_expired_invite?: 0|1,
  *     has_invite?: 0|1,
  *     has_siblings?: 0|1,
- *     invite_expiration?: int,
+ *     invite_expiration?: int|null,
  *     issues?: list<array{
  *         area?: string,
  *         limit?: int,
@@ -801,15 +972,20 @@ use SensitiveParameter;
  *         used?: int,
  *     }>,
  *     merge_candidates?: list<array{
- *         alternate_email?: string,
- *         avatar_url?: string,
+ *         alternate_email?: string|null,
+ *         avatar_url?: string|null,
  *         can_delete?: 0|1,
  *         can_set_password?: 0|1,
  *         can_set_quota?: 0|1,
- *         domain?: string,
+ *         dismissed?: 0|1,
+ *         dismissed_merge_candidates?: list<mixed>,
+ *         domain?: string|null,
  *         full_username?: string,
  *         guid?: string,
+ *         has_expired_invite?: 0|1,
+ *         has_invite?: 0|1,
  *         has_siblings?: 0|1,
+ *         invite_expiration?: int|null,
  *         issues?: list<array{
  *             area?: string,
  *             limit?: int,
@@ -818,9 +994,10 @@ use SensitiveParameter;
  *             type?: string,
  *             used?: int,
  *         }>,
+ *         merge_candidates?: list<mixed>,
  *         parent_type?: string|null,
- *         phone_number?: string,
- *         real_name?: string,
+ *         phone_number?: string|null,
+ *         real_name?: string|null,
  *         services?: array{
  *             email?: array{
  *                 enabled?: 0|1,
@@ -829,7 +1006,7 @@ use SensitiveParameter;
  *             ftp?: array{
  *                 enabled?: 0|1,
  *                 homedir?: string,
- *                 quota?: int,
+ *                 quota?: int|null,
  *             },
  *             webdisk?: array{
  *                 enabled?: 0|1,
@@ -845,8 +1022,8 @@ use SensitiveParameter;
  *         username?: string,
  *     }>,
  *     parent_type?: string|null,
- *     phone_number?: string,
- *     real_name?: string,
+ *     phone_number?: string|null,
+ *     real_name?: string|null,
  *     services?: array{
  *         email?: array{
  *             enabled?: 0|1,
@@ -855,7 +1032,7 @@ use SensitiveParameter;
  *         ftp?: array{
  *             enabled?: 0|1,
  *             homedir?: string,
- *             quota?: int,
+ *             quota?: int|null,
  *         },
  *         webdisk?: array{
  *             enabled?: 0|1,
@@ -898,8 +1075,19 @@ final readonly class UserManager
      * enablemysql defaults to 0 upstream. Both the current and new passwords are sensitive form inputs. The source
      * declares no rollback.
      *
-     * Documented: Returns a nullable object without pinned fields. Preserve opaque object fields and explicit null; an
-     * absent data member is a payload mismatch.
+     * Documented: The pinned response schema permits a nullable object without fields. Preserve opaque object fields
+     * and explicit null; an absent data member remains a payload mismatch.
+     *
+     * Observed: On the reviewed 11.138.0.19 server, the WHM bridge could not load Cpanel/API/UserManager.pm because
+     * that module file was absent, while direct cPanel calls used the compiled server implementation. The observed
+     * bridge failure is ApiErrorException, not InvalidResponseException. This is a server-version/state capability
+     * observation; the client retains bridge routing and does not assume other installations have the same limitation.
+     *
+     * Observed: On 11.138.0.19, successful password changes can return an opaque string, preserved without assumptions
+     * about its content. UserManager string-success compatibility is inferred from the reviewer-identified Users result
+     * path and counterpart contract; only its wrong-password failure was exercised, so successful UserManager execution
+     * still needs reviewer confirmation. Existing nullable-object results remain supported. Password arguments stay
+     * sensitive and the client never retries the mutation.
      *
      * API-map identity: uapi:UserManager/change_password#GET (wire name change_password).
      *
@@ -918,7 +1106,7 @@ final readonly class UserManager
         #[SensitiveParameter]
         string $oldpass,
         ?bool $enablemysql = null,
-    ): ?array {
+    ): string|array|null {
         /** @var ChangePasswordResult $result Validated against UserManagerSpec::CHANGE_PASSWORD. */
         $result = ($this->run)(UserManagerSpec::CHANGE_PASSWORD, [
             'newpass' => $newpass,
@@ -942,6 +1130,11 @@ final readonly class UserManager
      * accounts is a documented object, not an inferred list. Nullable contact/invitation fields, optional service
      * fields and integer status flags remain distinct from omission. No identifiers are inferred or looked up
      * automatically.
+     *
+     * Observed: On the reviewed 11.138.0.19 server, the WHM bridge could not load Cpanel/API/UserManager.pm because
+     * that module file was absent, while direct cPanel calls used the compiled server implementation. The observed
+     * bridge failure is ApiErrorException, not InvalidResponseException. This is a server-version/state capability
+     * observation; the client retains bridge routing and does not assume other installations have the same limitation.
      *
      * API-map identity: uapi:UserManager/check_account_conflicts#GET (wire name check_account_conflicts).
      *
@@ -978,6 +1171,25 @@ final readonly class UserManager
      * home; the FTP directory must exist. The FTP parameter prose contains a self-referential requiredness statement;
      * no client-side condition is inferred. Web Disk home is required when Web Disk is enabled. Digest Authentication
      * is discouraged except for the documented Windows/self-signed compatibility case. The source declares no rollback.
+     *
+     * Observed: Reviewer observations on 11.138.0.19 and pinned ServiceAccount fields support nullable alternate_email,
+     * avatar_url, domain, invite_expiration, phone_number, real_name and services.ftp.quota wherever declared. Preserve
+     * omission, null and populated values separately; parent_type, sub_account_exists and synced_password retain
+     * documented null alternatives. Propagation to sibling operations is a family inference, not a live observation of
+     * each field. Creation FTP quota remains string and other operation contracts integer; non-null wire forms remain
+     * unresolved. checkAccountConflicts and deleteUser are outside this correction.
+     *
+     * Observed: The reviewer observed a populated merge candidate as a Subaccount record. Source inspection identifies
+     * the same Record serializer for dismissed candidates, whose populated form was not observed. Known candidate
+     * fields retain this operation's record types and optionality; each candidate's own merge_candidates and
+     * dismissed_merge_candidates are opaque lists. This finite boundary preserves deeper values without claiming
+     * recursive validation or a guaranteed maximum nesting depth. Unknown fields such as team_owner remain outside the
+     * typed contract.
+     *
+     * Observed: On the reviewed 11.138.0.19 server, the WHM bridge could not load Cpanel/API/UserManager.pm because
+     * that module file was absent, while direct cPanel calls used the compiled server implementation. The observed
+     * bridge failure is ApiErrorException, not InvalidResponseException. This is a server-version/state capability
+     * observation; the client retains bridge routing and does not assume other installations have the same limitation.
      *
      * API-map identity: uapi:UserManager/create_user#GET (wire name create_user).
      *
@@ -1080,6 +1292,11 @@ final readonly class UserManager
      * no matches return only metadata. An omitted or null payload therefore returns null; present objects retain their
      * pinned fields. username excludes the domain and domain must be owned by the selected cPanel account.
      *
+     * Observed: On the reviewed 11.138.0.19 server, the WHM bridge could not load Cpanel/API/UserManager.pm because
+     * that module file was absent, while direct cPanel calls used the compiled server implementation. The observed
+     * bridge failure is ApiErrorException, not InvalidResponseException. This is a server-version/state capability
+     * observation; the client retains bridge routing and does not assume other installations have the same limitation.
+     *
      * Returns null when the server sends no data.
      *
      * API-map identity: uapi:UserManager/delete_user#GET (wire name delete_user).
@@ -1116,6 +1333,11 @@ final readonly class UserManager
      * upstream; the client does not invent a cross-parameter validator. The data schema is unspecified, so the result
      * remains mixed, including explicit null. An absent data member remains a payload mismatch. The source declares no
      * rollback.
+     *
+     * Observed: On the reviewed 11.138.0.19 server, the WHM bridge could not load Cpanel/API/UserManager.pm because
+     * that module file was absent, while direct cPanel calls used the compiled server implementation. The observed
+     * bridge failure is ApiErrorException, not InvalidResponseException. This is a server-version/state capability
+     * observation; the client retains bridge routing and does not assume other installations have the same limitation.
      *
      * API-map identity: uapi:UserManager/dismiss_merge#GET (wire name dismiss_merge).
      *
@@ -1167,6 +1389,25 @@ final readonly class UserManager
      * are enabled; the FTP directory must exist. Service/Digest/private flags default to 0, permissions to rw and type
      * to sub upstream. Digest Authentication is discouraged except for the documented compatibility case. Explicit
      * empty real_name is supported; null optional inputs are omitted by the client.
+     *
+     * Observed: Reviewer observations on 11.138.0.19 and pinned ServiceAccount fields support nullable alternate_email,
+     * avatar_url, domain, invite_expiration, phone_number, real_name and services.ftp.quota wherever declared. Preserve
+     * omission, null and populated values separately; parent_type, sub_account_exists and synced_password retain
+     * documented null alternatives. Propagation to sibling operations is a family inference, not a live observation of
+     * each field. Creation FTP quota remains string and other operation contracts integer; non-null wire forms remain
+     * unresolved. checkAccountConflicts and deleteUser are outside this correction.
+     *
+     * Observed: The reviewer observed a populated merge candidate as a Subaccount record. Source inspection identifies
+     * the same Record serializer for dismissed candidates, whose populated form was not observed. Known candidate
+     * fields retain this operation's record types and optionality; each candidate's own merge_candidates and
+     * dismissed_merge_candidates are opaque lists. This finite boundary preserves deeper values without claiming
+     * recursive validation or a guaranteed maximum nesting depth. Unknown fields such as team_owner remain outside the
+     * typed contract.
+     *
+     * Observed: On the reviewed 11.138.0.19 server, the WHM bridge could not load Cpanel/API/UserManager.pm because
+     * that module file was absent, while direct cPanel calls used the compiled server implementation. The observed
+     * bridge failure is ApiErrorException, not InvalidResponseException. This is a server-version/state capability
+     * observation; the client retains bridge routing and does not assume other installations have the same limitation.
      *
      * API-map identity: uapi:UserManager/edit_user#GET (wire name edit_user).
      *
@@ -1251,9 +1492,28 @@ final readonly class UserManager
      * Documented: flat defaults to 0, which includes same-name Subaccounts under merge_candidates; flat=1 suppresses
      * those nested candidates. Returns a list with optional fields, not an account keyed map. synced_password is a
      * nullable integer 0/1 synchronization flag, not a password. Keep optional contact fields, service flags, quotas
-     * and empty candidate lists as documented; no recursive candidate records are inferred from the string-list schema.
-     * Quotas are in MB and FTP quota 0 means unlimited. The pinned special flag prose differs between operations;
-     * retain each operation's description rather than inferring a shared permission meaning.
+     * and empty candidate lists as documented; candidate records use the reviewed finite shape and opaque nested-list
+     * boundary. Quotas are in MB and FTP quota 0 means unlimited. The pinned special flag prose differs between
+     * operations; retain each operation's description rather than inferring a shared permission meaning.
+     *
+     * Observed: Reviewer observations on 11.138.0.19 and pinned ServiceAccount fields support nullable alternate_email,
+     * avatar_url, domain, invite_expiration, phone_number, real_name and services.ftp.quota wherever declared. Preserve
+     * omission, null and populated values separately; parent_type, sub_account_exists and synced_password retain
+     * documented null alternatives. Propagation to sibling operations is a family inference, not a live observation of
+     * each field. Creation FTP quota remains string and other operation contracts integer; non-null wire forms remain
+     * unresolved. checkAccountConflicts and deleteUser are outside this correction.
+     *
+     * Observed: The reviewer observed a populated merge candidate as a Subaccount record. Source inspection identifies
+     * the same Record serializer for dismissed candidates, whose populated form was not observed. Known candidate
+     * fields retain this operation's record types and optionality; each candidate's own merge_candidates and
+     * dismissed_merge_candidates are opaque lists. This finite boundary preserves deeper values without claiming
+     * recursive validation or a guaranteed maximum nesting depth. Unknown fields such as team_owner remain outside the
+     * typed contract.
+     *
+     * Observed: On the reviewed 11.138.0.19 server, the WHM bridge could not load Cpanel/API/UserManager.pm because
+     * that module file was absent, while direct cPanel calls used the compiled server implementation. The observed
+     * bridge failure is ApiErrorException, not InvalidResponseException. This is a server-version/state capability
+     * observation; the client retains bridge routing and does not assume other installations have the same limitation.
      *
      * API-map identity: uapi:UserManager/list_users#GET (wire name list_users).
      *
@@ -1285,6 +1545,29 @@ final readonly class UserManager
      * Documented: Looks up an explicitly supplied full username and email, ftp or webdisk service type. No identifier
      * is inferred. Optional candidate and service fields retain their pinned types, and synchronization/existence flags
      * remain integer 0/1 with the documented null alternatives. FTP quota 0 means unlimited and quota units are MB.
+     *
+     * Observed: Reviewer observations on 11.138.0.19 and pinned ServiceAccount fields support nullable alternate_email,
+     * avatar_url, domain, invite_expiration, phone_number, real_name and services.ftp.quota wherever declared. Preserve
+     * omission, null and populated values separately; parent_type, sub_account_exists and synced_password retain
+     * documented null alternatives. Propagation to sibling operations is a family inference, not a live observation of
+     * each field. Creation FTP quota remains string and other operation contracts integer; non-null wire forms remain
+     * unresolved. checkAccountConflicts and deleteUser are outside this correction.
+     *
+     * Observed: The reviewer observed a populated merge candidate as a Subaccount record. Source inspection identifies
+     * the same Record serializer for dismissed candidates, whose populated form was not observed. Known candidate
+     * fields retain this operation's record types and optionality; each candidate's own merge_candidates and
+     * dismissed_merge_candidates are opaque lists. This finite boundary preserves deeper values without claiming
+     * recursive validation or a guaranteed maximum nesting depth. Unknown fields such as team_owner remain outside the
+     * typed contract.
+     *
+     * Observed: On the reviewed 11.138.0.19 server, the WHM bridge could not load Cpanel/API/UserManager.pm because
+     * that module file was absent, while direct cPanel calls used the compiled server implementation. The observed
+     * bridge failure is ApiErrorException, not InvalidResponseException. This is a server-version/state capability
+     * observation; the client retains bridge routing and does not assume other installations have the same limitation.
+     *
+     * Observed: On 11.138.0.19, looking up a nonexistent service account produced a raw upstream Perl array-reference
+     * exception in an API-failure envelope. It correctly raises ApiErrorException; the diagnostic does not establish a
+     * client-side decoding fault.
      *
      * API-map identity: uapi:UserManager/lookup_service_account#GET (wire name lookup_service_account).
      *
@@ -1318,8 +1601,27 @@ final readonly class UserManager
      *
      * Documented: Looks up the explicitly supplied Subaccount GUID; the client does not infer it from a username.
      * Optional contact fields and invitation expiration preserve documented nulls. Service quotas are in MB and FTP
-     * quota 0 means unlimited. The pinned ServiceAccount schema references itself for merge candidates; recursive
-     * expansion beyond the generator's documented schema boundary is not evidence of live response behavior.
+     * quota 0 means unlimited. The pinned ServiceAccount schema references itself for merge candidates; the reviewed
+     * finite record keeps nested candidate lists opaque instead of claiming recursive validation.
+     *
+     * Observed: Reviewer observations on 11.138.0.19 and pinned ServiceAccount fields support nullable alternate_email,
+     * avatar_url, domain, invite_expiration, phone_number, real_name and services.ftp.quota wherever declared. Preserve
+     * omission, null and populated values separately; parent_type, sub_account_exists and synced_password retain
+     * documented null alternatives. Propagation to sibling operations is a family inference, not a live observation of
+     * each field. Creation FTP quota remains string and other operation contracts integer; non-null wire forms remain
+     * unresolved. checkAccountConflicts and deleteUser are outside this correction.
+     *
+     * Observed: The reviewer observed a populated merge candidate as a Subaccount record. Source inspection identifies
+     * the same Record serializer for dismissed candidates, whose populated form was not observed. Known candidate
+     * fields retain this operation's record types and optionality; each candidate's own merge_candidates and
+     * dismissed_merge_candidates are opaque lists. This finite boundary preserves deeper values without claiming
+     * recursive validation or a guaranteed maximum nesting depth. Unknown fields such as team_owner remain outside the
+     * typed contract.
+     *
+     * Observed: On the reviewed 11.138.0.19 server, the WHM bridge could not load Cpanel/API/UserManager.pm because
+     * that module file was absent, while direct cPanel calls used the compiled server implementation. The observed
+     * bridge failure is ApiErrorException, not InvalidResponseException. This is a server-version/state capability
+     * observation; the client retains bridge routing and does not assume other installations have the same limitation.
      *
      * API-map identity: uapi:UserManager/lookup_user#GET (wire name lookup_user).
      *
@@ -1352,6 +1654,25 @@ final readonly class UserManager
      * requirement. Multiple services must share username and domain. The source declares no rollback. Quotas are in MB,
      * FTP quota 0 means unlimited, and optional/nullable integer synchronization flags remain distinct from omitted
      * fields.
+     *
+     * Observed: Reviewer observations on 11.138.0.19 and pinned ServiceAccount fields support nullable alternate_email,
+     * avatar_url, domain, invite_expiration, phone_number, real_name and services.ftp.quota wherever declared. Preserve
+     * omission, null and populated values separately; parent_type, sub_account_exists and synced_password retain
+     * documented null alternatives. Propagation to sibling operations is a family inference, not a live observation of
+     * each field. Creation FTP quota remains string and other operation contracts integer; non-null wire forms remain
+     * unresolved. checkAccountConflicts and deleteUser are outside this correction.
+     *
+     * Observed: The reviewer observed a populated merge candidate as a Subaccount record. Source inspection identifies
+     * the same Record serializer for dismissed candidates, whose populated form was not observed. Known candidate
+     * fields retain this operation's record types and optionality; each candidate's own merge_candidates and
+     * dismissed_merge_candidates are opaque lists. This finite boundary preserves deeper values without claiming
+     * recursive validation or a guaranteed maximum nesting depth. Unknown fields such as team_owner remain outside the
+     * typed contract.
+     *
+     * Observed: On the reviewed 11.138.0.19 server, the WHM bridge could not load Cpanel/API/UserManager.pm because
+     * that module file was absent, while direct cPanel calls used the compiled server implementation. The observed
+     * bridge failure is ApiErrorException, not InvalidResponseException. This is a server-version/state capability
+     * observation; the client retains bridge routing and does not assume other installations have the same limitation.
      *
      * API-map identity: uapi:UserManager/merge_service_account#GET (wire name merge_service_account).
      *
@@ -1400,6 +1721,11 @@ final readonly class UserManager
      *
      * Documented: Returns a nullable object without pinned fields. Preserve opaque object fields and explicit null; an
      * absent data member is a payload mismatch.
+     *
+     * Observed: On the reviewed 11.138.0.19 server, the WHM bridge could not load Cpanel/API/UserManager.pm because
+     * that module file was absent, while direct cPanel calls used the compiled server implementation. The observed
+     * bridge failure is ApiErrorException, not InvalidResponseException. This is a server-version/state capability
+     * observation; the client retains bridge routing and does not assume other installations have the same limitation.
      *
      * API-map identity: uapi:UserManager/unlink_service_account#GET (wire name unlink_service_account).
      *

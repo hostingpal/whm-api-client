@@ -19,7 +19,7 @@ use SensitiveParameter;
  * according to the configured credentials, with a single attempt and no retries. The handle clears responseMeta()
  * before every attempt and records the envelope snapshot before API or payload errors.
  *
- * @phpstan-type ChangePasswordResult array<array-key, mixed>|null
+ * @phpstan-type ChangePasswordResult string|array<array-key, mixed>|null
  */
 final readonly class Users
 {
@@ -47,8 +47,13 @@ final readonly class Users
      * documented for the listed Windows clients accessing Web Disk over an unencrypted connection. The source declares
      * no rollback.
      *
-     * Documented: Returns a nullable object without pinned fields. Preserve opaque object fields and explicit null; an
-     * absent data member is a payload mismatch.
+     * Documented: The pinned response schema permits a nullable object without fields. Preserve opaque object fields
+     * and explicit null; an absent data member remains a payload mismatch.
+     *
+     * Observed: On 11.138.0.19, successful password changes can return an opaque string, preserved without assumptions
+     * about its content. The reviewer observed successful Users password changes returning a string from the upstream
+     * change result. Existing nullable-object results remain supported. Password arguments stay sensitive and the
+     * client never retries the mutation.
      *
      * API-map identity: uapi:Users/change_password#GET (wire name change_password).
      *
@@ -69,7 +74,7 @@ final readonly class Users
         string $oldpass,
         ?bool $enabledigest = null,
         ?bool $enablemysql = null,
-    ): ?array {
+    ): string|array|null {
         /** @var ChangePasswordResult $result Validated against UsersSpec::CHANGE_PASSWORD. */
         $result = ($this->run)(UsersSpec::CHANGE_PASSWORD, [
             'newpass' => $newpass,

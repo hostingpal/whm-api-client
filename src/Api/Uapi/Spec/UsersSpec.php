@@ -24,6 +24,13 @@ final class UsersSpec
             'enabledigest' => ['name' => 'enabledigest', 'encoding' => 'bool'],
             'enablemysql' => ['name' => 'enablemysql', 'encoding' => 'bool'],
         ],
-        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+        'returns' => [
+            'type' => 'union',
+            'nullable' => true,
+            'anyOf' => [
+                ['type' => 'string'],
+                ['type' => 'map', 'values' => ['type' => 'mixed']],
+            ],
+        ],
     ];
 }

@@ -3126,21 +3126,27 @@ Team role operations can grant owner privileges. `setRoles()` replaces the whole
 role set; omitting its role value removes all roles. Creation's `roles` field is
 comma-separated, while role updates use singular `role`. Activation and password
 reset requests can send email. Service changes can create, associate or remove
-service subaccounts. Team creation and expiry setting return integer expiration
-timestamps; other Team mutations preserve nullable opaque objects and reject
+service subaccounts. Team creation without an expiry can return null; supplied
+expiry results preserve integer timestamps with canonical numeric-string
+compatibility. Other Team mutations preserve nullable opaque objects and reject
 missing payloads. Each method retains its source version floor.
 
-`listTeam()` preserves the source array/hash alternatives, including password
-payload fields. The hash schema has literal `users.username` and `users.info`
-fields; it is not inferred as a dynamic username map. The array's `suspend_date`
-is integer while the hash version is string. Team role descriptions retain their
-pinned object shape. Team counts and nullable subaccount flags are payload values,
-separate from the UAPI status.
+`listTeam()` preserves array and hash alternatives, including sensitive password
+payload fields. The hash result uses dynamic username keys under `users`; source
+inspection corrects the pinned literal `username`/`info` reading. Optional unset
+date and last-login empty strings stay distinct from omitted fields. Team role
+descriptions are a list of role records. These corrections are source-backed and
+offline-tested; Team is unavailable on the reviewed server. Team counts and
+nullable subaccount flags are payload values, separate from UAPI status.
 
 User-manager operations preserve source service settings, merge candidates and
-optional fields. Explicit-null prose corrects only the applicable parent-type,
-subaccount-existence and synchronized-password fields in referenced schemas.
-Recursive candidate tails retain the generator's existing opaque boundary.
+optional fields. The reviewed shared record family preserves null for unset
+contact/profile fields and FTP quota, alongside pinned nullable parent-type,
+subaccount-existence and synchronized-password fields. Operation-specific non-null
+FTP quota types remain unchanged. Password-change success may return opaque text;
+callers must not assume its content. Candidates preserve the known record shape,
+with their own nested candidate lists kept as opaque lists. This finite boundary
+retains deeper data without inventing recursive structure.
 `deleteUser()` permits missing data only where the pinned prose expressly specifies
 metadata-only completion; ordinary nullable-object mutations still reject missing
 data. Required create-user passwords remain required. Web Disk deletion with
@@ -3186,3 +3192,54 @@ no team listing, password retrieval, user mutation or message sending occurs.
 The original failed capture is unchanged. Follow-up `8x0.2.30` retains all API
 failures, unknown-field findings and unobserved variants. Corrected SHA-256:
 `3d16299d29f632b4874dd99c0e400f0301dd4a89d60a7a5ff60d49ab68d0a435`.
+
+
+### Team/user review evidence boundaries (2026-10-31)
+
+[Claude review 5720337990](https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990)
+reports direct reads on designated `npr` and disposable-account mutations on
+`wrvenv`, with account removal confirmed after each pass on `11.138.0.19`.
+These separate reviewer observations do not expand either committed GET artifact.
+Successful create/edit/merge/password changes can take effect before payload
+validation fails; callers must not retry them. The existing outcome-confirmed
+exception and no-retry policy remain essential.
+
+UserManager's bridge API error was attributed to absent `Cpanel/API/UserManager.pm`
+while direct execution uses the compiled server. This is observed server/version
+capability, not a universal direct-only API rule or a new client route restriction.
+Unknown service-account lookup can raise an upstream Perl exception surfaced as
+`ApiErrorException`; it is not a client payload-validation failure.
+
+Team is unavailable on this server: `team_manager` is disabled and could not be
+enabled as an account feature, while TeamRoles also checks the server `teams`
+capability. Team list/hash, expiry and role-description corrections therefore
+rest on attributed upstream source inspection and offline replay, not live success.
+No Team feature installation or enablement is part of these corrections.
+
+The reviewer separately identified `team_owner` null and, with WebDisk enabled,
+`services.webdisk.enabledigest` integer as untyped fields. Those names do not
+identify any historical masked wildcard; findings remain unwaived in `8x0.2.30`.
+Populated conflict-account shapes and non-null FTP quota representation remain
+unobserved/unresolved. The create-user string quota and other operation integer
+quota contracts retain their separate documented non-null boundaries.
+No further live capture has been performed or inferred by these corrections.
+
+
+[Clarification 6537241960](https://github.com/hostingpal/whm-api-client/pull/43#issuecomment-6537241960)
+provides a bounded candidate structure and attributes both serializers to
+`Cpanel/UserManager/Record.pm:357-364`. One populated direct candidate was observed;
+the printer capped objects at 24 keys, so that inventory is not exhaustive.
+Dismissed candidates share the Record serializer by source inspection and were
+not observed populated. Assignment call sites suggest empty deeper candidate
+lists in practice but give no guarantee. The reviewed finite boundary therefore
+types each candidate's known record fields and preserves its nested candidate
+lists as `list<mixed>`, without claiming a recursive schema or discarding deeper
+payload data. Optional service properties stay optional; `team_owner` remains
+outside the typed contract and in the existing follow-up.
+
+The same clarification supplies source-only Team types: version and subaccount
+GUID are strings including empty strings; creation, last-login, expiry and
+suspend timestamps allow canonical integer strings or integers and exact empty
+strings. The reviewer did not trace AdminBin numeric serialization, so both
+representations are compatibility, not live Team observations. No closed date
+range or ten-digit runtime constraint is inferred from one source validator.

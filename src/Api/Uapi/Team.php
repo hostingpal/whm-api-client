@@ -28,47 +28,52 @@ use SensitiveParameter;
  * }
  * @phpstan-type ListTeamResult list<array{
  *     'contact-email'?: string,
- *     created?: int,
- *     expire_date?: int,
+ *     contact_email?: string,
+ *     created?: int|'',
+ *     expire_date?: int|'',
  *     expire_reason?: string,
- *     lastlogin?: int,
+ *     lastlogin?: int|'',
  *     locale?: string,
  *     notes?: string,
  *     password?: string,
  *     roles?: list<string>,
  *     'secondary-contact-email'?: string,
+ *     secondary_contact_email?: string,
  *     services?: array{
  *         email?: string,
  *         ftp?: int,
  *         webdisk?: string,
  *     },
- *     suspend_date?: int,
+ *     subacct_guid?: string,
+ *     suspend_date?: int|'',
  *     suspend_reason?: string,
  *     username?: string,
  * }>|array{
  *     owner?: string,
- *     users?: array{
- *         info?: array{
- *             'contact-email'?: string,
- *             created?: int,
- *             expire_date?: int,
- *             expire_reason?: string,
- *             lastlogin?: int,
- *             locale?: string,
- *             notes?: string,
- *             password?: string,
- *             roles?: list<string>,
- *             'secondary-contact-email'?: string,
- *             services?: array{
- *                 email?: string,
- *                 ftp?: int,
- *                 webdisk?: string,
- *             },
- *             suspend_date?: string,
- *             suspend_reason?: string,
+ *     users?: array<array-key, array{
+ *         'contact-email'?: string,
+ *         contact_email?: string,
+ *         created?: int|'',
+ *         expire_date?: int|'',
+ *         expire_reason?: string,
+ *         lastlogin?: int|'',
+ *         locale?: string,
+ *         notes?: string,
+ *         password?: string,
+ *         roles?: list<string>,
+ *         'secondary-contact-email'?: string,
+ *         secondary_contact_email?: string,
+ *         services?: array{
+ *             email?: string,
+ *             ftp?: int,
+ *             webdisk?: string,
  *         },
+ *         subacct_guid?: string,
+ *         suspend_date?: int|'',
+ *         suspend_reason?: string,
  *         username?: string,
- *     },
+ *     }>,
+ *     version?: string,
  * }
  * @phpstan-type PasswordResetRequestResult array<array-key, mixed>|null
  * @phpstan-type ReinstateTeamUserResult array<array-key, mixed>|null
@@ -136,19 +141,18 @@ final readonly class Team
      * arguments, including null, remain omitted; explicit empty strings, false and zero are sent according to their
      * parameter types. No client-side defaults are substituted.
      *
-     * Documented: Creates the team user and returns an integer Unix expiration timestamp, not a nullable object. Supply
-     * either password or activation_email; activation_email=1 sends an email allowing the team user to set a password.
-     * The client does not enforce this cross-parameter condition or send a message independently. Password is sensitive
-     * and stays in the form POST body.
+     * Documented: Creates the team user. Supply either password or activation_email; activation_email=1 sends an email
+     * allowing the team user to set a password. The client does not enforce this cross-parameter condition or send a
+     * message independently. Password is sensitive and stays in the form POST body.
      *
      * Documented: roles is a comma-separated string; this operation rejects the singular role parameter. A team user
      * without roles cannot use any features. Adding a team user can grant team owner level privileges. notes must not
      * contain private information and is documented with a 100-character maximum.
      *
-     * Documented: expire_date is an integer Unix Epoch Time or a string offset such as 120days. The response is the
-     * resulting integer Unix timestamp. Optional service flags default to 0 upstream; Web Disk permissions default to
-     * rw. Email quota is a string in MB; 0 or unlimited means unlimited and the system maximum still applies. Omitting
-     * quota retains the defined system value.
+     * Documented: expire_date is an integer Unix Epoch Time or a string offset such as 120days. When returned, the
+     * response is the resulting Unix timestamp. Optional service flags default to 0 upstream; Web Disk permissions
+     * default to rw. Email quota is a string in MB; 0 or unlimited means unlimited and the system maximum still
+     * applies. Omitting quota retains the defined system value.
      *
      * Documented: A subaccount is always created, without service subaccounts by default. FTP and Web Disk home
      * directories are relative to the cPanel account home. The FTP directory must exist; the source says its homedir
@@ -156,6 +160,11 @@ final readonly class Team
      * client validation. Web Disk homedir is required when Web Disk is enabled. Web Disk private selects 0700 versus
      * public 0755. Digest authentication is discouraged and only documented for compatibility on certain Windows
      * clients with self-signed cpsrvd/cpdavd certificates.
+     *
+     * Documented: Reviewed upstream source on cPanel 11.138.0.19 returns null when expire_date is omitted and an
+     * expiration timestamp when supplied. Canonical integer-string timestamps normalize to int within PHP's integer
+     * range; explicit null stays null and absent data is a payload mismatch. Team was unavailable on that server, so
+     * this correction has source and offline replay evidence only.
      *
      * API-map identity: uapi:Team/add_team_user#GET (wire name add_team_user).
      *
@@ -186,7 +195,7 @@ final readonly class Team
      *     omits it.
      * @param bool|null $servicesWebdiskPrivate Whether to set the directory's permissions to public or private. Null
      *     omits it.
-     * @return int
+     * @return int|null
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
@@ -212,8 +221,8 @@ final readonly class Team
         ?string $servicesWebdiskHomedir = null,
         ?string $servicesWebdiskPerms = null,
         ?bool $servicesWebdiskPrivate = null,
-    ): int {
-        /** @var int $result Validated against TeamSpec::ADD_TEAM_USER. */
+    ): ?int {
+        /** @var int|null $result Validated against TeamSpec::ADD_TEAM_USER. */
         $result = ($this->run)(TeamSpec::ADD_TEAM_USER, [
             'email1' => $email1,
             'user' => $user,
@@ -423,15 +432,25 @@ final readonly class Team
      * arguments, including null, remain omitted; explicit empty strings, false and zero are sent according to their
      * parameter types. No client-side defaults are substituted.
      *
-     * Documented: Returns an array by default or a hash when requested via format. Preserve the pinned alternatives
-     * exactly: array rows include username and integer suspend_date; the hash has optional owner and users, with
-     * optional username and info fields inside users and string suspend_date inside info. The source does not establish
-     * a dynamic username-keyed hash.
+     * Documented: Returns a list by default or an object with a username-keyed users map when format is hash. Both
+     * forms retain the same optional record fields. Reviewed upstream source uses contact_email and
+     * secondary_contact_email; the pinned hyphenated spellings remain supported as separate optional keys. No
+     * contact-key renaming is performed.
      *
      * Documented: The pinned TeamArray and TeamHash info records include a password string. It is sensitive payload
      * data and is returned intact; consumers must protect the result. This method is excluded from the bounded live
      * evidence catalog to avoid collecting passwords. Roles remain string lists and services retains the pinned email
      * string, ftp integer and webdisk string. Empty and omitted values remain distinct.
+     *
+     * Documented: Cpanel/Team/Config.pm from cPanel 11.138.0.19 supports exact empty strings for created, expire_date,
+     * suspend_date and lastlogin. Canonical integer strings normalize to int within PHP's integer range; those four
+     * fields preserve an exact empty string. AdminBin serialization was not traced, so integer timestamps remain
+     * accepted. These corrections rely on source inspection and offline replay because Team is unavailable on that
+     * server.
+     *
+     * Documented: Reviewed upstream source supplies optional string version on the hash result and string subacct_guid
+     * in user records; both retain exact empty strings. The source currently uses v1.1, but no closed version enum is
+     * inferred. Null and nonstring values do not match these fields.
      *
      * API-map identity: uapi:Team/list_team#GET (wire name list_team).
      *
@@ -632,6 +651,10 @@ final readonly class Team
      * Documented: Replaces an existing expiration date and reason. date accepts integer Unix Epoch Time or a string
      * offset in days such as 120days; the result is the resulting integer Unix timestamp, not a status flag. An omitted
      * reason remains omitted and an empty reason is sent.
+     *
+     * Documented: Reviewed upstream source on cPanel 11.138.0.19 can return the supplied epoch as a digit string.
+     * Canonical integer strings normalize to int within PHP's integer range; null and absent data fail. Team was
+     * unavailable, so this is source and offline replay evidence only.
      *
      * API-map identity: uapi:Team/set_expire#GET (wire name set_expire).
      *

@@ -194,10 +194,10 @@ final class UapiUserManagementTest extends TestCase
     /**
      * @return array{
      *     alternate_email: string, avatar_url: string, can_delete: int, can_set_password: int,
-     *     can_set_quota: int, dismissed: int, dismissed_merge_candidates: list<string>, domain: string,
+     *     can_set_quota: int, dismissed: int, dismissed_merge_candidates: array{}, domain: string,
      *     full_username: string, guid: string, has_expired_invite: int, has_invite: int, has_siblings: int,
      *     invite_expiration: int, issues: list<array{area: string, limit: int, message: string,
-     *         service: string, type: string, used: int}>, merge_candidates: list<string>, parent_type: string,
+     *         service: string, type: string, used: int}>, merge_candidates: array{}, parent_type: string,
      *     phone_number: string, real_name: string, services: array{
      *         email: array{enabled: int, quota: int}, ftp: array{enabled: int, homedir: string, quota: int},
      *         special: int, webdisk: array{enabled: int, homedir: string, perms: string, private: int}
@@ -208,10 +208,10 @@ final class UapiUserManagementTest extends TestCase
     {
         return ['alternate_email' => '', 'avatar_url' => '', 'can_delete' => 0,
             'can_set_password' => 1, 'can_set_quota' => 0, 'dismissed' => 0,
-            'dismissed_merge_candidates' => ['mail'], 'domain' => 'example.test',
+            'dismissed_merge_candidates' => [], 'domain' => 'example.test',
             'full_username' => 'fixture@example.test', 'guid' => 'synthetic-guid',
             'has_expired_invite' => 0, 'has_invite' => 1, 'has_siblings' => 0,
-            'invite_expiration' => 1600162200, 'issues' => [self::issue()], 'merge_candidates' => ['ftp'],
+            'invite_expiration' => 1600162200, 'issues' => [self::issue()], 'merge_candidates' => [],
             'parent_type' => 'sub', 'phone_number' => '+15551234567', 'real_name' => '',
             'services' => ['email' => ['enabled' => 1, 'quota' => 500],
                 'ftp' => ['enabled' => 0, 'homedir' => '/fixture', 'quota' => 0], 'special' => 0,
@@ -275,6 +275,9 @@ final class UapiUserManagementTest extends TestCase
                 } else {
                     $cases = ['false', '1', '1.5', '"text"'];
                 }
+                if ($function === 'change_password') {
+                    $cases = [null, 'false', '1', '1.5', '["text"]'];
+                }
                 if (
                     $module === 'UserManager'
                     && !in_array($function, ['change_password', 'unlink_service_account'], true)
@@ -293,8 +296,10 @@ final class UapiUserManagementTest extends TestCase
                             '[{"synced_password":2}]',
                             '[{"services":{"email":{"quota":"500"}}}]',
                             '[{"issues":[{"used":"1"}]}]',
-                            '[{"merge_candidates":[{}]}]',
-                            '[{"dismissed_merge_candidates":[{}]}]',
+                            '[{"merge_candidates":["not-a-record"]}]',
+                            '[{"dismissed_merge_candidates":["not-a-record"]}]',
+                            '[{"merge_candidates":[{"real_name":false}]}]',
+                            '[{"dismissed_merge_candidates":[{"services":{"email":{"enabled":2}}}]}]',
                             '[{"full_username":null}]',
                             '[{"can_delete":null}]',
                             '[{"services":{"email":{"quota":null}}}]',
@@ -325,17 +330,39 @@ final class UapiUserManagementTest extends TestCase
                         if ($function === 'edit_user' || $function === 'lookup_service_account') {
                             array_push(
                                 $cases,
-                                '{"alternate_email":null}',
                                 '{"synced_password":"0"}',
                                 '{"merge_candidates":[{"sub_account_exists":true}]}',
-                                '{"dismissed_merge_candidates":[{"merge_candidates":[{"synced_password":2}]}]}',
+                                '{"dismissed_merge_candidates":[{"synced_password":2}]}',
                             );
                         }
                         if ($function === 'create_user') {
                             $cases[] = '{"services":{"ftp":{"quota":0}}}';
                         }
-                        if ($function === 'create_user' || $function === 'delete_user') {
+                        if ($function === 'delete_user') {
                             $cases[] = '{"alternate_email":null}';
+                        }
+                        if ($function !== 'delete_user') {
+                            array_push(
+                                $cases,
+                                '{"alternate_email":false}',
+                                '{"avatar_url":0}',
+                                '{"domain":1}',
+                                '{"invite_expiration":"0"}',
+                                '{"phone_number":0}',
+                                '{"real_name":false}',
+                                '{"parent_type":false}',
+                                '{"sub_account_exists":2}',
+                                '{"services":{"email":{"quota":null}}}',
+                                '{"services":{"ftp":{"homedir":null}}}',
+                                '{"services":{"ftp":{"quota":false}}}',
+                                '{"merge_candidates":["not-a-record"]}',
+                                '{"dismissed_merge_candidates":[null]}',
+                                '{"merge_candidates":[{"real_name":false}]}',
+                                '{"dismissed_merge_candidates":[{"services":{"email":{"enabled":2}}}]}',
+                            );
+                            if ($function !== 'create_user') {
+                                $cases[] = '{"services":{"ftp":{"quota":"0"}}}';
+                            }
                         }
                         if ($function === 'lookup_user') {
                             array_push(
@@ -400,6 +427,151 @@ final class UapiUserManagementTest extends TestCase
         }
     }
 
+    /** @param array<string, mixed>|list<array<string, mixed>> $expected */
+    #[DataProvider('sharedNullableRecords')]
+    public function testSharedNullFieldsDoNotRejectSuccessfulUserOperations(
+        string $route,
+        string $function,
+        array $expected,
+    ): void {
+        [$client, $http] = self::client($route);
+        $account = $client->uapi('npr');
+        $http->addResponse(new Response(200, [], self::envelope(
+            $route,
+            json_encode($expected, JSON_THROW_ON_ERROR),
+        )));
+        try {
+            $actual = self::invoke($account, 'UserManager', $function);
+        } catch (PayloadMismatchException) {
+            self::fail('A successful shared Subaccount record must preserve its evidenced null fields.');
+        } finally {
+            self::assertCount(1, $http->getRequests());
+        }
+        self::assertSame(self::ordered($expected), self::ordered($actual));
+        self::assertRequest($http, $route, 'UserManager', $function, self::parameters('UserManager', $function));
+        self::assertSame(1, $account->responseMeta()?->uapiStatus());
+    }
+
+    /** @return iterable<string, array{string, string, array<string, mixed>|list<array<string, mixed>>}> */
+    public static function sharedNullableRecords(): iterable
+    {
+        // Fixed family from review 5720337990, the original list capture and pinned ServiceAccount null prose.
+        // Clarification 6537241960 identifies the same finite Record for both candidate lists.
+        $base = ['alternate_email' => null, 'avatar_url' => null, 'domain' => null,
+            'parent_type' => null, 'phone_number' => null, 'real_name' => null,
+            'services' => ['ftp' => ['quota' => null]], 'sub_account_exists' => null, 'synced_password' => null];
+        $invited = $base + ['invite_expiration' => null];
+        foreach (['direct', 'bare', 'bridge'] as $route) {
+            foreach (
+                ['create_user', 'edit_user', 'merge_service_account',
+                'lookup_service_account', 'lookup_user'] as $function
+            ) {
+                yield "$route $function root" => [$route, $function, $invited];
+            }
+            yield "$route list_users root" => [$route, 'list_users', [$invited]];
+            foreach (['create_user', 'merge_service_account'] as $function) {
+                foreach (['merge_candidates', 'dismissed_merge_candidates'] as $field) {
+                    yield "$route $function $field" => [$route, $function, [$field => [$base]]];
+                }
+            }
+            foreach (['edit_user', 'lookup_service_account'] as $function) {
+                yield "$route $function merge candidate" => [$route, $function,
+                    ['merge_candidates' => [$invited]]];
+                yield "$route $function dismissed candidate" => [$route, $function,
+                    ['dismissed_merge_candidates' => [$invited]]];
+            }
+            yield "$route lookup_user dismissed candidate" => [$route, 'lookup_user',
+                ['dismissed_merge_candidates' => [$base]]];
+        }
+    }
+
+    /** @param array<string, mixed>|list<array<string, mixed>> $expected */
+    #[DataProvider('finiteCandidateRecords')]
+    public function testCandidateRecordsPreserveFieldsAndOpaqueNestedLists(
+        string $route,
+        string $function,
+        array $expected,
+    ): void {
+        [$client, $http] = self::client($route);
+        $account = $client->uapi('npr');
+        $http->addResponse(new Response(200, [], self::envelope(
+            $route,
+            json_encode($expected, JSON_THROW_ON_ERROR),
+        )));
+        try {
+            $actual = self::invoke($account, 'UserManager', $function);
+        } catch (PayloadMismatchException) {
+            self::fail('Candidates are records whose own candidate lists retain opaque contents.');
+        } finally {
+            self::assertCount(1, $http->getRequests());
+        }
+        self::assertSame(self::ordered($expected), self::ordered($actual));
+    }
+
+    /** @return iterable<string, array{string, string, array<string, mixed>|list<array<string, mixed>>}> */
+    public static function finiteCandidateRecords(): iterable
+    {
+        // Literal known fields from pinned records and reviewer clarification 6537241960.
+        // Only merge candidates were populated live; dismissed shape is source-inferred.
+        $candidate = ['username' => 'fixture', 'domain' => 'example.test',
+            'full_username' => 'fixture@example.test', 'guid' => 'synthetic-candidate',
+            'type' => 'service', 'parent_type' => 'sub', 'real_name' => null, 'phone_number' => null,
+            'alternate_email' => null, 'avatar_url' => null, 'invite_expiration' => null,
+            'can_delete' => 0, 'dismissed' => 0, 'issues' => [self::issue()],
+            'services' => ['email' => ['enabled' => 1, 'quota' => 0],
+                'ftp' => ['enabled' => 0], 'webdisk' => ['enabled' => 0]],
+            'merge_candidates' => [null, 'opaque', ['real_name' => false, 'future' => ['kept' => 1]]],
+            'dismissed_merge_candidates' => [false, ['unknown' => ['nested' => null]]]];
+        foreach (['direct', 'bare', 'bridge'] as $route) {
+            foreach (
+                ['create_user', 'edit_user', 'merge_service_account', 'lookup_service_account',
+                'lookup_user', 'list_users'] as $function
+            ) {
+                foreach (['merge_candidates', 'dismissed_merge_candidates'] as $field) {
+                    $payload = [$field => [$candidate]];
+                    yield "$route $function $field" => [$route, $function,
+                        $function === 'list_users' ? [$payload] : $payload];
+                }
+            }
+        }
+    }
+
+    #[DataProvider('passwordStringResults')]
+    public function testSuccessfulPasswordChangesReturnOpaqueStringsWithoutRetry(
+        string $route,
+        string $module,
+        string $expected,
+    ): void {
+        [$client, $http] = self::client($route);
+        $account = $client->uapi('npr');
+        $http->addResponse(new Response(200, [], self::envelope(
+            $route,
+            json_encode($expected, JSON_THROW_ON_ERROR),
+        )));
+        try {
+            $actual = self::invoke($account, $module, 'change_password');
+        } catch (PayloadMismatchException) {
+            self::fail('A successful password change must return the opaque string without a false payload failure.');
+        } finally {
+            self::assertCount(1, $http->getRequests());
+        }
+        self::assertSame($expected, $actual);
+        self::assertRequest($http, $route, $module, 'change_password', self::parameters($module, 'change_password'));
+        self::assertSame(1, $account->responseMeta()?->uapiStatus());
+    }
+
+    /** @return iterable<string, array{string, string, string}> */
+    public static function passwordStringResults(): iterable
+    {
+        foreach (['direct', 'bare', 'bridge'] as $route) {
+            foreach (['Users', 'UserManager'] as $module) {
+                foreach (['', '0', "Synthetic response; content is opaque.\n"] as $index => $value) {
+                    yield "$route $module $index" => [$route, $module, $value];
+                }
+            }
+        }
+    }
+
     /** @param array<string, mixed> $expected */
     #[DataProvider('nullableFlagPayloads')]
     public function testExplicitNullProseOverridesOnlyNamedFlagAndParentFields(
@@ -427,8 +599,8 @@ final class UapiUserManagementTest extends TestCase
                         '{"merge_candidates":[{"' . $field . '":null}]}',
                         ['merge_candidates' => [[$field => null]]]];
                     yield "$route $function dismissed candidate $field" => [$route, $function,
-                        '{"dismissed_merge_candidates":[{"merge_candidates":[{"' . $field . '":null}]}]}',
-                        ['dismissed_merge_candidates' => [['merge_candidates' => [[$field => null]]]]]];
+                        '{"dismissed_merge_candidates":[{"' . $field . '":null}]}',
+                        ['dismissed_merge_candidates' => [[$field => null]]]];
                 }
             }
             foreach (['sub_account_exists', 'synced_password'] as $field) {

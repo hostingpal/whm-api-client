@@ -18,11 +18,11 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  * according to the configured credentials, with a single attempt and no retries. The handle clears responseMeta()
  * before every attempt and records the envelope snapshot before API or payload errors.
  *
- * @phpstan-type ListFeatureDescriptionsResult array{
+ * @phpstan-type ListFeatureDescriptionsResult list<array{
  *     features?: list<string>,
  *     id?: string,
  *     title?: string,
- * }
+ * }>
  */
 final readonly class TeamRoles
 {
@@ -45,8 +45,10 @@ final readonly class TeamRoles
      * arguments, including null, remain omitted; explicit empty strings, false and zero are sent according to their
      * parameter types. No client-side defaults are substituted.
      *
-     * Documented: Returns the pinned FeatureDescriptions object with optional features string list, id string and title
-     * string. The formal source is an object, not a list of role objects; no example-driven widening is inferred.
+     * Documented: Returns a list of role objects with optional features string list, id string and title string.
+     * Reviewed Cpanel/Team/RoleDescription.pm on cPanel 11.138.0.19 returns an array reference; the pinned
+     * FeatureDescriptions object describes one element. Team was unavailable on that server, so this correction is
+     * supported by source inspection and offline replay only.
      *
      * API-map identity: uapi:TeamRoles/list_feature_descriptions#GET (wire name list_feature_descriptions).
      *

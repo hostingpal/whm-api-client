@@ -66,7 +66,7 @@
         },
         {
           "kind": "documented",
-          "text": "Creates the team user and returns an integer Unix expiration timestamp, not a nullable object. Supply either password or activation_email; activation_email=1 sends an email allowing the team user to set a password. The client does not enforce this cross-parameter condition or send a message independently. Password is sensitive and stays in the form POST body."
+          "text": "Creates the team user. Supply either password or activation_email; activation_email=1 sends an email allowing the team user to set a password. The client does not enforce this cross-parameter condition or send a message independently. Password is sensitive and stays in the form POST body."
         },
         {
           "kind": "documented",
@@ -74,11 +74,15 @@
         },
         {
           "kind": "documented",
-          "text": "expire_date is an integer Unix Epoch Time or a string offset such as 120days. The response is the resulting integer Unix timestamp. Optional service flags default to 0 upstream; Web Disk permissions default to rw. Email quota is a string in MB; 0 or unlimited means unlimited and the system maximum still applies. Omitting quota retains the defined system value."
+          "text": "expire_date is an integer Unix Epoch Time or a string offset such as 120days. When returned, the response is the resulting Unix timestamp. Optional service flags default to 0 upstream; Web Disk permissions default to rw. Email quota is a string in MB; 0 or unlimited means unlimited and the system maximum still applies. Omitting quota retains the defined system value."
         },
         {
           "kind": "documented",
           "text": "A subaccount is always created, without service subaccounts by default. FTP and Web Disk home directories are relative to the cPanel account home. The FTP directory must exist; the source says its homedir parameter is required if services.ftp.homedir is enabled, a self-referential condition retained without inventing client validation. Web Disk homedir is required when Web Disk is enabled. Web Disk private selects 0700 versus public 0755. Digest authentication is discouraged and only documented for compatibility on certain Windows clients with self-signed cpsrvd/cpdavd certificates."
+        },
+        {
+          "kind": "documented",
+          "text": "Reviewed upstream source on cPanel 11.138.0.19 returns null when expire_date is omitted and an expiration timestamp when supplied. Canonical integer-string timestamps normalize to int within PHP's integer range; explicit null stays null and absent data is a payload mismatch. Team was unavailable on that server, so this correction has source and offline replay evidence only."
         }
       ],
       "evidence": [
@@ -86,9 +90,28 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
-          "note": "Pinned /Team/add_team_user declares x-readonly=false. Use form POST for this selected-account mutation; password inputs, where present, are sensitive. Pinned response and parameter requiredness/types are retained without widening."
+          "note": "Pinned /Team/add_team_user declares x-readonly=false. Use form POST for this selected-account mutation; password inputs, where present, are sensitive. Pinned parameter requiredness/types are retained; the response correction is separately supported by reviewed upstream source."
         }
-      ]
+      ],
+      "response": {
+        "": {
+          "replace": {
+            "type": "int",
+            "accept": [
+              "numeric-string"
+            ],
+            "nullable": true
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "upstream source 11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer source inspection https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990 against b40a9e3158c7e6dd2ff139c5e76a03536fa9ce87: Cpanel/API/Team.pm add_team_user sets result data only when expire_date was supplied, so the normal response is null. A supplied epoch string is returned as a digit string. Preserve explicit null and normalize only canonical integer strings within PHP's integer range; an absent payload still fails. Team is unavailable on that server; this is upstream-source evidence with offline replay, not a live Team result."
+            }
+          ]
+        }
+      }
     },
     "uapi:Team/cancel_expire": {
       "method": "POST",
@@ -200,13 +223,297 @@
         },
         {
           "kind": "documented",
-          "text": "Returns an array by default or a hash when requested via format. Preserve the pinned alternatives exactly: array rows include username and integer suspend_date; the hash has optional owner and users, with optional username and info fields inside users and string suspend_date inside info. The source does not establish a dynamic username-keyed hash."
+          "text": "Returns a list by default or an object with a username-keyed users map when format is hash. Both forms retain the same optional record fields. Reviewed upstream source uses contact_email and secondary_contact_email; the pinned hyphenated spellings remain supported as separate optional keys. No contact-key renaming is performed."
         },
         {
           "kind": "documented",
           "text": "The pinned TeamArray and TeamHash info records include a password string. It is sensitive payload data and is returned intact; consumers must protect the result. This method is excluded from the bounded live evidence catalog to avoid collecting passwords. Roles remain string lists and services retains the pinned email string, ftp integer and webdisk string. Empty and omitted values remain distinct."
+        },
+        {
+          "kind": "documented",
+          "text": "Cpanel/Team/Config.pm from cPanel 11.138.0.19 supports exact empty strings for created, expire_date, suspend_date and lastlogin. Canonical integer strings normalize to int within PHP's integer range; those four fields preserve an exact empty string. AdminBin serialization was not traced, so integer timestamps remain accepted. These corrections rely on source inspection and offline replay because Team is unavailable on that server."
+        },
+        {
+          "kind": "documented",
+          "text": "Reviewed upstream source supplies optional string version on the hash result and string subacct_guid in user records; both retain exact empty strings. The source currently uses v1.1, but no closed version enum is inferred. Null and nonstring values do not match these fields."
         }
-      ]
+      ],
+      "response": {
+        "": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "list",
+                "items": {
+                  "type": "object",
+                  "fields": {
+                    "contact-email": {
+                      "type": "string"
+                    },
+                    "contact_email": {
+                      "type": "string"
+                    },
+                    "created": {
+                      "type": "union",
+                      "anyOf": [
+                        {
+                          "type": "int",
+                          "accept": [
+                            "numeric-string"
+                          ]
+                        },
+                        {
+                          "type": "string",
+                          "literal": ""
+                        }
+                      ]
+                    },
+                    "expire_date": {
+                      "type": "union",
+                      "anyOf": [
+                        {
+                          "type": "int",
+                          "accept": [
+                            "numeric-string"
+                          ]
+                        },
+                        {
+                          "type": "string",
+                          "literal": ""
+                        }
+                      ]
+                    },
+                    "expire_reason": {
+                      "type": "string"
+                    },
+                    "lastlogin": {
+                      "type": "union",
+                      "anyOf": [
+                        {
+                          "type": "int",
+                          "accept": [
+                            "numeric-string"
+                          ]
+                        },
+                        {
+                          "type": "string",
+                          "literal": ""
+                        }
+                      ]
+                    },
+                    "locale": {
+                      "type": "string"
+                    },
+                    "notes": {
+                      "type": "string"
+                    },
+                    "password": {
+                      "type": "string"
+                    },
+                    "roles": {
+                      "type": "list",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "secondary-contact-email": {
+                      "type": "string"
+                    },
+                    "secondary_contact_email": {
+                      "type": "string"
+                    },
+                    "services": {
+                      "type": "object",
+                      "fields": {
+                        "email": {
+                          "type": "string"
+                        },
+                        "ftp": {
+                          "type": "int"
+                        },
+                        "webdisk": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "subacct_guid": {
+                      "type": "string"
+                    },
+                    "suspend_date": {
+                      "type": "union",
+                      "anyOf": [
+                        {
+                          "type": "int",
+                          "accept": [
+                            "numeric-string"
+                          ]
+                        },
+                        {
+                          "type": "string",
+                          "literal": ""
+                        }
+                      ]
+                    },
+                    "suspend_reason": {
+                      "type": "string"
+                    },
+                    "username": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "fields": {
+                  "owner": {
+                    "type": "string"
+                  },
+                  "users": {
+                    "type": "map",
+                    "values": {
+                      "type": "object",
+                      "fields": {
+                        "contact-email": {
+                          "type": "string"
+                        },
+                        "contact_email": {
+                          "type": "string"
+                        },
+                        "created": {
+                          "type": "union",
+                          "anyOf": [
+                            {
+                              "type": "int",
+                              "accept": [
+                                "numeric-string"
+                              ]
+                            },
+                            {
+                              "type": "string",
+                              "literal": ""
+                            }
+                          ]
+                        },
+                        "expire_date": {
+                          "type": "union",
+                          "anyOf": [
+                            {
+                              "type": "int",
+                              "accept": [
+                                "numeric-string"
+                              ]
+                            },
+                            {
+                              "type": "string",
+                              "literal": ""
+                            }
+                          ]
+                        },
+                        "expire_reason": {
+                          "type": "string"
+                        },
+                        "lastlogin": {
+                          "type": "union",
+                          "anyOf": [
+                            {
+                              "type": "int",
+                              "accept": [
+                                "numeric-string"
+                              ]
+                            },
+                            {
+                              "type": "string",
+                              "literal": ""
+                            }
+                          ]
+                        },
+                        "locale": {
+                          "type": "string"
+                        },
+                        "notes": {
+                          "type": "string"
+                        },
+                        "password": {
+                          "type": "string"
+                        },
+                        "roles": {
+                          "type": "list",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "secondary-contact-email": {
+                          "type": "string"
+                        },
+                        "secondary_contact_email": {
+                          "type": "string"
+                        },
+                        "services": {
+                          "type": "object",
+                          "fields": {
+                            "email": {
+                              "type": "string"
+                            },
+                            "ftp": {
+                              "type": "int"
+                            },
+                            "webdisk": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "subacct_guid": {
+                          "type": "string"
+                        },
+                        "suspend_date": {
+                          "type": "union",
+                          "anyOf": [
+                            {
+                              "type": "int",
+                              "accept": [
+                                "numeric-string"
+                              ]
+                            },
+                            {
+                              "type": "string",
+                              "literal": ""
+                            }
+                          ]
+                        },
+                        "suspend_reason": {
+                          "type": "string"
+                        },
+                        "username": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "version": {
+                    "type": "string"
+                  }
+                }
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "upstream source 11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer source inspection https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990 against b40a9e3158c7e6dd2ff139c5e76a03536fa9ce87: Cpanel/Team/Config.pm load_array emits contact_email and secondary_contact_email, not the hyphenated keys in pinned TeamArray/TeamHash. The reviewed row has empty strings for unset expire_date and suspend_date, lastlogin falls back to an empty string, and created is read from a text file. Hash output users is keyed by username, not literal username/info fields. Both alternatives use the same precise optional record shape. Keep pinned hyphenated contact spellings optional, normalize canonical integer timestamp strings and preserve exact empty unset dates. Other record fields retain pinned types. Team is unavailable on that server; this is upstream-source evidence with offline replay, not a live Team result."
+            },
+            {
+              "kind": "doc",
+              "version": "upstream source 11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer source clarification https://github.com/hostingpal/whm-api-client/pull/43#issuecomment-6537241960: Cpanel/Team/Config.pm _parse_config returns version as a string, including an empty string when the header has no second token; Cpanel/Team/Constants.pm:62 currently supplies v1.1. Config.pm _decode always returns a string for subacct_guid, including an empty string. validate_config_fields accepts created as an empty string or ten digits, and the reviewer confirmed empty lastlogin/expire_date/suspend_date fallbacks. AdminBin serialization was not traced, so both integer and canonical integer-string timestamps remain accepted alongside exact empty strings; no new ten-digit runtime constraint is inferred. Keep all added fields optional. These are source findings and offline replays only: Team is unavailable on that server."
+            }
+          ]
+        }
+      }
     },
     "uapi:Team/password_reset_request": {
       "method": "POST",
@@ -366,6 +673,10 @@
         {
           "kind": "documented",
           "text": "Replaces an existing expiration date and reason. date accepts integer Unix Epoch Time or a string offset in days such as 120days; the result is the resulting integer Unix timestamp, not a status flag. An omitted reason remains omitted and an empty reason is sent."
+        },
+        {
+          "kind": "documented",
+          "text": "Reviewed upstream source on cPanel 11.138.0.19 can return the supplied epoch as a digit string. Canonical integer strings normalize to int within PHP's integer range; null and absent data fail. Team was unavailable, so this is source and offline replay evidence only."
         }
       ],
       "evidence": [
@@ -373,9 +684,27 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
-          "note": "Pinned /Team/set_expire declares x-readonly=false. Use form POST for this selected-account mutation; password inputs, where present, are sensitive. Pinned response and parameter requiredness/types are retained without widening."
+          "note": "Pinned /Team/set_expire declares x-readonly=false. Use form POST for this selected-account mutation; password inputs, where present, are sensitive. Pinned parameter requiredness/types are retained; the response correction is separately supported by reviewed upstream source."
         }
-      ]
+      ],
+      "response": {
+        "": {
+          "replace": {
+            "type": "int",
+            "accept": [
+              "numeric-string"
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "upstream source 11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer source inspection https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990 against b40a9e3158c7e6dd2ff139c5e76a03536fa9ce87: Cpanel/API/Team.pm set_expire returns a supplied epoch as a digit string. The pinned integer timestamp remains supported; normalize only canonical integer strings within PHP's integer range, without accepting null or an absent payload. Team is unavailable on that server; this is upstream-source evidence with offline replay, not a live Team result."
+            }
+          ]
+        }
+      }
     },
     "uapi:Team/set_locale": {
       "method": "POST",

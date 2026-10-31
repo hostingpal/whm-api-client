@@ -920,21 +920,27 @@ Team role operations can grant owner privileges. `setRoles()` replaces the whole
 role set; omitting its role value removes all roles. Creation's `roles` field is
 comma-separated, while role updates use singular `role`. Activation and password
 reset requests can send email. Service changes can create, associate or remove
-service subaccounts. Team creation and expiry setting return integer expiration
-timestamps; other Team mutations preserve nullable opaque objects and reject
+service subaccounts. Team creation without an expiry can return null; supplied
+expiry results preserve integer timestamps with canonical numeric-string
+compatibility. Other Team mutations preserve nullable opaque objects and reject
 missing payloads. Each method retains its source version floor.
 
-`listTeam()` preserves the source array/hash alternatives, including password
-payload fields. The hash schema has literal `users.username` and `users.info`
-fields; it is not inferred as a dynamic username map. The array's `suspend_date`
-is integer while the hash version is string. Team role descriptions retain their
-pinned object shape. Team counts and nullable subaccount flags are payload values,
-separate from the UAPI status.
+`listTeam()` preserves array and hash alternatives, including sensitive password
+payload fields. The hash result uses dynamic username keys under `users`; source
+inspection corrects the pinned literal `username`/`info` reading. Optional unset
+date and last-login empty strings stay distinct from omitted fields. Team role
+descriptions are a list of role records. These corrections are source-backed and
+offline-tested; Team is unavailable on the reviewed server. Team counts and
+nullable subaccount flags are payload values, separate from UAPI status.
 
 User-manager operations preserve source service settings, merge candidates and
-optional fields. Explicit-null prose corrects only the applicable parent-type,
-subaccount-existence and synchronized-password fields in referenced schemas.
-Recursive candidate tails retain the generator's existing opaque boundary.
+optional fields. The reviewed shared record family preserves null for unset
+contact/profile fields and FTP quota, alongside pinned nullable parent-type,
+subaccount-existence and synchronized-password fields. Operation-specific non-null
+FTP quota types remain unchanged. Password-change success may return opaque text;
+callers must not assume its content. Candidates preserve the known record shape,
+with their own nested candidate lists kept as opaque lists. This finite boundary
+retains deeper data without inventing recursive structure.
 `deleteUser()` permits missing data only where the pinned prose expressly specifies
 metadata-only completion; ordinary nullable-object mutations still reject missing
 data. Required create-user passwords remain required. Web Disk deletion with
@@ -947,6 +953,13 @@ each account read uses both routes. Team listings are excluded because their sou
 includes password fields. No GUID/service lookup identifiers are guessed, no account
 is modified and no invitation, activation or reset email is sent. All remaining
 methods and variants remain offline-tested under live follow-up `8x0.2.30`.
+
+The corrected team/user-management capture at `9922081` on `11.138.0.19` passes
+four of nine API/payload/probe checks: version, direct subaccount inventory and
+password-strength through both routes. Seven direct inventory null corrections
+pass; five API failures and one masked unknown-field observation with null values
+keep strict status failed and unwaived under `8x0.2.30`. No team listing, password
+retrieval, user/role/service mutation or message sending ran.
 
 ### Generic calls
 
@@ -1329,10 +1342,3 @@ Project-authored code and documentation are licensed under the
 The bundled cPanel documentation snapshots retain their upstream terms and are
 not covered by the project's MIT license. See the
 [third-party documentation notice](docs/api/README.md#licensing).
-
-The corrected team/user-management capture at `9922081` on `11.138.0.19` passes
-four of nine API/payload/probe checks: version, direct subaccount inventory and
-password-strength through both routes. Seven direct inventory null corrections
-pass; five API failures and one masked unknown-field observation with null values
-keep strict status failed and unwaived under `8x0.2.30`. No team listing, password
-retrieval, user/role/service mutation or message sending ran.

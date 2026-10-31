@@ -23,7 +23,14 @@ final class UserManagerSpec
             'oldpass' => ['name' => 'oldpass', 'encoding' => 'scalar'],
             'enablemysql' => ['name' => 'enablemysql', 'encoding' => 'bool'],
         ],
-        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+        'returns' => [
+            'type' => 'union',
+            'nullable' => true,
+            'anyOf' => [
+                ['type' => 'string'],
+                ['type' => 'map', 'values' => ['type' => 'mixed']],
+            ],
+        ],
     ];
 
     public const CHECK_ACCOUNT_CONFLICTS = [
@@ -149,8 +156,8 @@ final class UserManagerSpec
         'returns' => [
             'type' => 'object',
             'fields' => [
-                'alternate_email' => ['type' => 'string'],
-                'avatar_url' => ['type' => 'string'],
+                'alternate_email' => ['type' => 'string', 'nullable' => true],
+                'avatar_url' => ['type' => 'string', 'nullable' => true],
                 'can_delete' => ['type' => 'flag'],
                 'can_set_password' => ['type' => 'flag'],
                 'can_set_quota' => ['type' => 'flag'],
@@ -160,16 +167,20 @@ final class UserManagerSpec
                     'items' => [
                         'type' => 'object',
                         'fields' => [
-                            'alternate_email' => ['type' => 'string'],
-                            'avatar_url' => ['type' => 'string'],
+                            'alternate_email' => ['type' => 'string', 'nullable' => true],
+                            'avatar_url' => ['type' => 'string', 'nullable' => true],
                             'can_delete' => ['type' => 'flag'],
                             'can_set_password' => ['type' => 'flag'],
                             'can_set_quota' => ['type' => 'flag'],
                             'dismissed' => ['type' => 'flag'],
-                            'domain' => ['type' => 'string'],
+                            'dismissed_merge_candidates' => ['type' => 'list', 'items' => ['type' => 'mixed']],
+                            'domain' => ['type' => 'string', 'nullable' => true],
                             'full_username' => ['type' => 'string'],
                             'guid' => ['type' => 'string'],
+                            'has_expired_invite' => ['type' => 'flag'],
+                            'has_invite' => ['type' => 'flag'],
                             'has_siblings' => ['type' => 'flag'],
+                            'invite_expiration' => ['type' => 'int', 'nullable' => true],
                             'issues' => [
                                 'type' => 'list',
                                 'items' => [
@@ -184,9 +195,10 @@ final class UserManagerSpec
                                     ],
                                 ],
                             ],
+                            'merge_candidates' => ['type' => 'list', 'items' => ['type' => 'mixed']],
                             'parent_type' => ['type' => 'string', 'nullable' => true],
-                            'phone_number' => ['type' => 'string'],
-                            'real_name' => ['type' => 'string'],
+                            'phone_number' => ['type' => 'string', 'nullable' => true],
+                            'real_name' => ['type' => 'string', 'nullable' => true],
                             'services' => [
                                 'type' => 'object',
                                 'fields' => [
@@ -202,7 +214,7 @@ final class UserManagerSpec
                                         'fields' => [
                                             'enabled' => ['type' => 'flag'],
                                             'homedir' => ['type' => 'string'],
-                                            'quota' => ['type' => 'string'],
+                                            'quota' => ['type' => 'string', 'nullable' => true],
                                         ],
                                     ],
                                     'webdisk' => [
@@ -224,13 +236,13 @@ final class UserManagerSpec
                         ],
                     ],
                 ],
-                'domain' => ['type' => 'string'],
+                'domain' => ['type' => 'string', 'nullable' => true],
                 'full_username' => ['type' => 'string'],
                 'guid' => ['type' => 'string'],
                 'has_expired_invite' => ['type' => 'flag'],
                 'has_invite' => ['type' => 'flag'],
                 'has_siblings' => ['type' => 'flag'],
-                'invite_expiration' => ['type' => 'int'],
+                'invite_expiration' => ['type' => 'int', 'nullable' => true],
                 'issues' => [
                     'type' => 'list',
                     'items' => [
@@ -250,16 +262,20 @@ final class UserManagerSpec
                     'items' => [
                         'type' => 'object',
                         'fields' => [
-                            'alternate_email' => ['type' => 'string'],
-                            'avatar_url' => ['type' => 'string'],
+                            'alternate_email' => ['type' => 'string', 'nullable' => true],
+                            'avatar_url' => ['type' => 'string', 'nullable' => true],
                             'can_delete' => ['type' => 'flag'],
                             'can_set_password' => ['type' => 'flag'],
                             'can_set_quota' => ['type' => 'flag'],
                             'dismissed' => ['type' => 'flag'],
-                            'domain' => ['type' => 'string'],
+                            'dismissed_merge_candidates' => ['type' => 'list', 'items' => ['type' => 'mixed']],
+                            'domain' => ['type' => 'string', 'nullable' => true],
                             'full_username' => ['type' => 'string'],
                             'guid' => ['type' => 'string'],
+                            'has_expired_invite' => ['type' => 'flag'],
+                            'has_invite' => ['type' => 'flag'],
                             'has_siblings' => ['type' => 'flag'],
+                            'invite_expiration' => ['type' => 'int', 'nullable' => true],
                             'issues' => [
                                 'type' => 'list',
                                 'items' => [
@@ -274,9 +290,10 @@ final class UserManagerSpec
                                     ],
                                 ],
                             ],
+                            'merge_candidates' => ['type' => 'list', 'items' => ['type' => 'mixed']],
                             'parent_type' => ['type' => 'string', 'nullable' => true],
-                            'phone_number' => ['type' => 'string'],
-                            'real_name' => ['type' => 'string'],
+                            'phone_number' => ['type' => 'string', 'nullable' => true],
+                            'real_name' => ['type' => 'string', 'nullable' => true],
                             'services' => [
                                 'type' => 'object',
                                 'fields' => [
@@ -292,7 +309,7 @@ final class UserManagerSpec
                                         'fields' => [
                                             'enabled' => ['type' => 'flag'],
                                             'homedir' => ['type' => 'string'],
-                                            'quota' => ['type' => 'string'],
+                                            'quota' => ['type' => 'string', 'nullable' => true],
                                         ],
                                     ],
                                     'webdisk' => [
@@ -315,8 +332,8 @@ final class UserManagerSpec
                     ],
                 ],
                 'parent_type' => ['type' => 'string', 'nullable' => true],
-                'phone_number' => ['type' => 'string'],
-                'real_name' => ['type' => 'string'],
+                'phone_number' => ['type' => 'string', 'nullable' => true],
+                'real_name' => ['type' => 'string', 'nullable' => true],
                 'services' => [
                     'type' => 'object',
                     'fields' => [
@@ -332,7 +349,7 @@ final class UserManagerSpec
                             'fields' => [
                                 'enabled' => ['type' => 'flag'],
                                 'homedir' => ['type' => 'string'],
-                                'quota' => ['type' => 'string'],
+                                'quota' => ['type' => 'string', 'nullable' => true],
                             ],
                         ],
                         'webdisk' => [
@@ -515,8 +532,8 @@ final class UserManagerSpec
         'returns' => [
             'type' => 'object',
             'fields' => [
-                'alternate_email' => ['type' => 'string'],
-                'avatar_url' => ['type' => 'string'],
+                'alternate_email' => ['type' => 'string', 'nullable' => true],
+                'avatar_url' => ['type' => 'string', 'nullable' => true],
                 'can_delete' => ['type' => 'flag'],
                 'can_set_password' => ['type' => 'flag'],
                 'can_set_quota' => ['type' => 'flag'],
@@ -526,92 +543,82 @@ final class UserManagerSpec
                     'items' => [
                         'type' => 'object',
                         'fields' => [
-                            'merge_candidates' => [
+                            'alternate_email' => ['type' => 'string', 'nullable' => true],
+                            'avatar_url' => ['type' => 'string', 'nullable' => true],
+                            'can_delete' => ['type' => 'flag'],
+                            'can_set_password' => ['type' => 'flag'],
+                            'can_set_quota' => ['type' => 'flag'],
+                            'dismissed' => ['type' => 'flag'],
+                            'dismissed_merge_candidates' => ['type' => 'list', 'items' => ['type' => 'mixed']],
+                            'domain' => ['type' => 'string', 'nullable' => true],
+                            'full_username' => ['type' => 'string'],
+                            'guid' => ['type' => 'string'],
+                            'has_expired_invite' => ['type' => 'flag'],
+                            'has_invite' => ['type' => 'flag'],
+                            'has_siblings' => ['type' => 'flag'],
+                            'invite_expiration' => ['type' => 'int', 'nullable' => true],
+                            'issues' => [
                                 'type' => 'list',
                                 'items' => [
                                     'type' => 'object',
                                     'fields' => [
-                                        'alternate_email' => ['type' => 'string'],
-                                        'avatar_url' => ['type' => 'string'],
-                                        'can_delete' => ['type' => 'flag'],
-                                        'can_set_password' => ['type' => 'flag'],
-                                        'can_set_quota' => ['type' => 'flag'],
-                                        'dismissed' => ['type' => 'flag'],
-                                        'domain' => ['type' => 'string'],
-                                        'full_username' => ['type' => 'string'],
-                                        'guid' => ['type' => 'string'],
-                                        'has_expired_invite' => ['type' => 'flag'],
-                                        'has_invite' => ['type' => 'flag'],
-                                        'has_siblings' => ['type' => 'flag'],
-                                        'invite_expiration' => ['type' => 'int'],
-                                        'issues' => [
-                                            'type' => 'list',
-                                            'items' => [
-                                                'type' => 'object',
-                                                'fields' => [
-                                                    'area' => ['type' => 'mixed'],
-                                                    'limit' => ['type' => 'mixed'],
-                                                    'message' => ['type' => 'mixed'],
-                                                    'service' => ['type' => 'mixed'],
-                                                    'type' => ['type' => 'mixed'],
-                                                    'used' => ['type' => 'mixed'],
-                                                ],
-                                            ],
-                                        ],
-                                        'merge_candidates' => [
-                                            'type' => 'list',
-                                            'items' => ['type' => 'map', 'values' => ['type' => 'mixed']],
-                                        ],
-                                        'parent_type' => ['type' => 'string', 'nullable' => true],
-                                        'phone_number' => ['type' => 'string'],
-                                        'real_name' => ['type' => 'string'],
-                                        'services' => [
-                                            'type' => 'object',
-                                            'fields' => [
-                                                'email' => [
-                                                    'type' => 'object',
-                                                    'fields' => [
-                                                        'enabled' => ['type' => 'mixed'],
-                                                        'quota' => ['type' => 'mixed'],
-                                                    ],
-                                                ],
-                                                'ftp' => [
-                                                    'type' => 'object',
-                                                    'fields' => [
-                                                        'enabled' => ['type' => 'mixed'],
-                                                        'homedir' => ['type' => 'mixed'],
-                                                        'quota' => ['type' => 'mixed'],
-                                                    ],
-                                                ],
-                                                'webdisk' => [
-                                                    'type' => 'object',
-                                                    'fields' => [
-                                                        'enabled' => ['type' => 'mixed'],
-                                                        'homedir' => ['type' => 'mixed'],
-                                                        'perms' => ['type' => 'mixed'],
-                                                        'private' => ['type' => 'mixed'],
-                                                    ],
-                                                ],
-                                            ],
-                                        ],
-                                        'special' => ['type' => 'flag'],
-                                        'sub_account_exists' => ['type' => 'flag', 'nullable' => true],
-                                        'synced_password' => ['type' => 'flag', 'nullable' => true],
+                                        'area' => ['type' => 'string'],
+                                        'limit' => ['type' => 'int'],
+                                        'message' => ['type' => 'string'],
+                                        'service' => ['type' => 'string'],
                                         'type' => ['type' => 'string'],
-                                        'username' => ['type' => 'string'],
+                                        'used' => ['type' => 'int'],
                                     ],
                                 ],
                             ],
+                            'merge_candidates' => ['type' => 'list', 'items' => ['type' => 'mixed']],
+                            'parent_type' => ['type' => 'string', 'nullable' => true],
+                            'phone_number' => ['type' => 'string', 'nullable' => true],
+                            'real_name' => ['type' => 'string', 'nullable' => true],
+                            'services' => [
+                                'type' => 'object',
+                                'fields' => [
+                                    'email' => [
+                                        'type' => 'object',
+                                        'fields' => [
+                                            'enabled' => ['type' => 'flag'],
+                                            'quota' => ['type' => 'int'],
+                                        ],
+                                    ],
+                                    'ftp' => [
+                                        'type' => 'object',
+                                        'fields' => [
+                                            'enabled' => ['type' => 'flag'],
+                                            'homedir' => ['type' => 'string'],
+                                            'quota' => ['type' => 'int', 'nullable' => true],
+                                        ],
+                                    ],
+                                    'webdisk' => [
+                                        'type' => 'object',
+                                        'fields' => [
+                                            'enabled' => ['type' => 'flag'],
+                                            'homedir' => ['type' => 'string'],
+                                            'perms' => ['type' => 'string'],
+                                            'private' => ['type' => 'flag'],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                            'special' => ['type' => 'flag'],
+                            'sub_account_exists' => ['type' => 'flag', 'nullable' => true],
+                            'synced_password' => ['type' => 'flag', 'nullable' => true],
+                            'type' => ['type' => 'string'],
+                            'username' => ['type' => 'string'],
                         ],
                     ],
                 ],
-                'domain' => ['type' => 'string'],
+                'domain' => ['type' => 'string', 'nullable' => true],
                 'full_username' => ['type' => 'string'],
                 'guid' => ['type' => 'string'],
                 'has_expired_invite' => ['type' => 'flag'],
                 'has_invite' => ['type' => 'flag'],
                 'has_siblings' => ['type' => 'flag'],
-                'invite_expiration' => ['type' => 'int'],
+                'invite_expiration' => ['type' => 'int', 'nullable' => true],
                 'issues' => [
                     'type' => 'list',
                     'items' => [
@@ -631,19 +638,20 @@ final class UserManagerSpec
                     'items' => [
                         'type' => 'object',
                         'fields' => [
-                            'alternate_email' => ['type' => 'string'],
-                            'avatar_url' => ['type' => 'string'],
+                            'alternate_email' => ['type' => 'string', 'nullable' => true],
+                            'avatar_url' => ['type' => 'string', 'nullable' => true],
                             'can_delete' => ['type' => 'flag'],
                             'can_set_password' => ['type' => 'flag'],
                             'can_set_quota' => ['type' => 'flag'],
                             'dismissed' => ['type' => 'flag'],
-                            'domain' => ['type' => 'string'],
+                            'dismissed_merge_candidates' => ['type' => 'list', 'items' => ['type' => 'mixed']],
+                            'domain' => ['type' => 'string', 'nullable' => true],
                             'full_username' => ['type' => 'string'],
                             'guid' => ['type' => 'string'],
                             'has_expired_invite' => ['type' => 'flag'],
                             'has_invite' => ['type' => 'flag'],
                             'has_siblings' => ['type' => 'flag'],
-                            'invite_expiration' => ['type' => 'int'],
+                            'invite_expiration' => ['type' => 'int', 'nullable' => true],
                             'issues' => [
                                 'type' => 'list',
                                 'items' => [
@@ -658,13 +666,10 @@ final class UserManagerSpec
                                     ],
                                 ],
                             ],
-                            'merge_candidates' => [
-                                'type' => 'list',
-                                'items' => ['type' => 'map', 'values' => ['type' => 'mixed']],
-                            ],
+                            'merge_candidates' => ['type' => 'list', 'items' => ['type' => 'mixed']],
                             'parent_type' => ['type' => 'string', 'nullable' => true],
-                            'phone_number' => ['type' => 'string'],
-                            'real_name' => ['type' => 'string'],
+                            'phone_number' => ['type' => 'string', 'nullable' => true],
+                            'real_name' => ['type' => 'string', 'nullable' => true],
                             'services' => [
                                 'type' => 'object',
                                 'fields' => [
@@ -680,7 +685,7 @@ final class UserManagerSpec
                                         'fields' => [
                                             'enabled' => ['type' => 'flag'],
                                             'homedir' => ['type' => 'string'],
-                                            'quota' => ['type' => 'int'],
+                                            'quota' => ['type' => 'int', 'nullable' => true],
                                         ],
                                     ],
                                     'webdisk' => [
@@ -703,8 +708,8 @@ final class UserManagerSpec
                     ],
                 ],
                 'parent_type' => ['type' => 'string', 'nullable' => true],
-                'phone_number' => ['type' => 'string'],
-                'real_name' => ['type' => 'string'],
+                'phone_number' => ['type' => 'string', 'nullable' => true],
+                'real_name' => ['type' => 'string', 'nullable' => true],
                 'services' => [
                     'type' => 'object',
                     'fields' => [
@@ -720,7 +725,7 @@ final class UserManagerSpec
                             'fields' => [
                                 'enabled' => ['type' => 'flag'],
                                 'homedir' => ['type' => 'string'],
-                                'quota' => ['type' => 'int'],
+                                'quota' => ['type' => 'int', 'nullable' => true],
                             ],
                         ],
                         'webdisk' => [
@@ -762,7 +767,81 @@ final class UserManagerSpec
                     'can_set_password' => ['type' => 'flag'],
                     'can_set_quota' => ['type' => 'flag'],
                     'dismissed' => ['type' => 'flag'],
-                    'dismissed_merge_candidates' => ['type' => 'list', 'items' => ['type' => 'string']],
+                    'dismissed_merge_candidates' => [
+                        'type' => 'list',
+                        'items' => [
+                            'type' => 'object',
+                            'fields' => [
+                                'alternate_email' => ['type' => 'string', 'nullable' => true],
+                                'avatar_url' => ['type' => 'string', 'nullable' => true],
+                                'can_delete' => ['type' => 'flag'],
+                                'can_set_password' => ['type' => 'flag'],
+                                'can_set_quota' => ['type' => 'flag'],
+                                'dismissed' => ['type' => 'flag'],
+                                'dismissed_merge_candidates' => ['type' => 'list', 'items' => ['type' => 'mixed']],
+                                'domain' => ['type' => 'string', 'nullable' => true],
+                                'full_username' => ['type' => 'string'],
+                                'guid' => ['type' => 'string'],
+                                'has_expired_invite' => ['type' => 'flag'],
+                                'has_invite' => ['type' => 'flag'],
+                                'has_siblings' => ['type' => 'flag'],
+                                'invite_expiration' => ['type' => 'int', 'nullable' => true],
+                                'issues' => [
+                                    'type' => 'list',
+                                    'items' => [
+                                        'type' => 'object',
+                                        'fields' => [
+                                            'area' => ['type' => 'string'],
+                                            'limit' => ['type' => 'int'],
+                                            'message' => ['type' => 'string'],
+                                            'service' => ['type' => 'string'],
+                                            'type' => ['type' => 'string'],
+                                            'used' => ['type' => 'int'],
+                                        ],
+                                    ],
+                                ],
+                                'merge_candidates' => ['type' => 'list', 'items' => ['type' => 'mixed']],
+                                'parent_type' => ['type' => 'string', 'nullable' => true],
+                                'phone_number' => ['type' => 'string', 'nullable' => true],
+                                'real_name' => ['type' => 'string', 'nullable' => true],
+                                'services' => [
+                                    'type' => 'object',
+                                    'fields' => [
+                                        'email' => [
+                                            'type' => 'object',
+                                            'fields' => [
+                                                'enabled' => ['type' => 'flag'],
+                                                'quota' => ['type' => 'int'],
+                                            ],
+                                        ],
+                                        'ftp' => [
+                                            'type' => 'object',
+                                            'fields' => [
+                                                'enabled' => ['type' => 'flag'],
+                                                'homedir' => ['type' => 'string'],
+                                                'quota' => ['type' => 'int', 'nullable' => true],
+                                            ],
+                                        ],
+                                        'special' => ['type' => 'flag'],
+                                        'webdisk' => [
+                                            'type' => 'object',
+                                            'fields' => [
+                                                'enabled' => ['type' => 'flag'],
+                                                'homedir' => ['type' => 'string'],
+                                                'perms' => ['type' => 'string'],
+                                                'private' => ['type' => 'flag'],
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                                'special' => ['type' => 'flag'],
+                                'sub_account_exists' => ['type' => 'flag', 'nullable' => true],
+                                'synced_password' => ['type' => 'flag', 'nullable' => true],
+                                'type' => ['type' => 'string'],
+                                'username' => ['type' => 'string'],
+                            ],
+                        ],
+                    ],
                     'domain' => ['type' => 'string', 'nullable' => true],
                     'full_username' => ['type' => 'string'],
                     'guid' => ['type' => 'string'],
@@ -784,7 +863,81 @@ final class UserManagerSpec
                             ],
                         ],
                     ],
-                    'merge_candidates' => ['type' => 'list', 'items' => ['type' => 'string']],
+                    'merge_candidates' => [
+                        'type' => 'list',
+                        'items' => [
+                            'type' => 'object',
+                            'fields' => [
+                                'alternate_email' => ['type' => 'string', 'nullable' => true],
+                                'avatar_url' => ['type' => 'string', 'nullable' => true],
+                                'can_delete' => ['type' => 'flag'],
+                                'can_set_password' => ['type' => 'flag'],
+                                'can_set_quota' => ['type' => 'flag'],
+                                'dismissed' => ['type' => 'flag'],
+                                'dismissed_merge_candidates' => ['type' => 'list', 'items' => ['type' => 'mixed']],
+                                'domain' => ['type' => 'string', 'nullable' => true],
+                                'full_username' => ['type' => 'string'],
+                                'guid' => ['type' => 'string'],
+                                'has_expired_invite' => ['type' => 'flag'],
+                                'has_invite' => ['type' => 'flag'],
+                                'has_siblings' => ['type' => 'flag'],
+                                'invite_expiration' => ['type' => 'int', 'nullable' => true],
+                                'issues' => [
+                                    'type' => 'list',
+                                    'items' => [
+                                        'type' => 'object',
+                                        'fields' => [
+                                            'area' => ['type' => 'string'],
+                                            'limit' => ['type' => 'int'],
+                                            'message' => ['type' => 'string'],
+                                            'service' => ['type' => 'string'],
+                                            'type' => ['type' => 'string'],
+                                            'used' => ['type' => 'int'],
+                                        ],
+                                    ],
+                                ],
+                                'merge_candidates' => ['type' => 'list', 'items' => ['type' => 'mixed']],
+                                'parent_type' => ['type' => 'string', 'nullable' => true],
+                                'phone_number' => ['type' => 'string', 'nullable' => true],
+                                'real_name' => ['type' => 'string', 'nullable' => true],
+                                'services' => [
+                                    'type' => 'object',
+                                    'fields' => [
+                                        'email' => [
+                                            'type' => 'object',
+                                            'fields' => [
+                                                'enabled' => ['type' => 'flag'],
+                                                'quota' => ['type' => 'int'],
+                                            ],
+                                        ],
+                                        'ftp' => [
+                                            'type' => 'object',
+                                            'fields' => [
+                                                'enabled' => ['type' => 'flag'],
+                                                'homedir' => ['type' => 'string'],
+                                                'quota' => ['type' => 'int', 'nullable' => true],
+                                            ],
+                                        ],
+                                        'special' => ['type' => 'flag'],
+                                        'webdisk' => [
+                                            'type' => 'object',
+                                            'fields' => [
+                                                'enabled' => ['type' => 'flag'],
+                                                'homedir' => ['type' => 'string'],
+                                                'perms' => ['type' => 'string'],
+                                                'private' => ['type' => 'flag'],
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                                'special' => ['type' => 'flag'],
+                                'sub_account_exists' => ['type' => 'flag', 'nullable' => true],
+                                'synced_password' => ['type' => 'flag', 'nullable' => true],
+                                'type' => ['type' => 'string'],
+                                'username' => ['type' => 'string'],
+                            ],
+                        ],
+                    ],
                     'parent_type' => ['type' => 'string', 'nullable' => true],
                     'phone_number' => ['type' => 'string', 'nullable' => true],
                     'real_name' => ['type' => 'string', 'nullable' => true],
@@ -840,8 +993,8 @@ final class UserManagerSpec
         'returns' => [
             'type' => 'object',
             'fields' => [
-                'alternate_email' => ['type' => 'string'],
-                'avatar_url' => ['type' => 'string'],
+                'alternate_email' => ['type' => 'string', 'nullable' => true],
+                'avatar_url' => ['type' => 'string', 'nullable' => true],
                 'can_delete' => ['type' => 'flag'],
                 'can_set_password' => ['type' => 'flag'],
                 'can_set_quota' => ['type' => 'flag'],
@@ -851,92 +1004,82 @@ final class UserManagerSpec
                     'items' => [
                         'type' => 'object',
                         'fields' => [
-                            'merge_candidates' => [
+                            'alternate_email' => ['type' => 'string', 'nullable' => true],
+                            'avatar_url' => ['type' => 'string', 'nullable' => true],
+                            'can_delete' => ['type' => 'flag'],
+                            'can_set_password' => ['type' => 'flag'],
+                            'can_set_quota' => ['type' => 'flag'],
+                            'dismissed' => ['type' => 'flag'],
+                            'dismissed_merge_candidates' => ['type' => 'list', 'items' => ['type' => 'mixed']],
+                            'domain' => ['type' => 'string', 'nullable' => true],
+                            'full_username' => ['type' => 'string'],
+                            'guid' => ['type' => 'string'],
+                            'has_expired_invite' => ['type' => 'flag'],
+                            'has_invite' => ['type' => 'flag'],
+                            'has_siblings' => ['type' => 'flag'],
+                            'invite_expiration' => ['type' => 'int', 'nullable' => true],
+                            'issues' => [
                                 'type' => 'list',
                                 'items' => [
                                     'type' => 'object',
                                     'fields' => [
-                                        'alternate_email' => ['type' => 'string'],
-                                        'avatar_url' => ['type' => 'string'],
-                                        'can_delete' => ['type' => 'flag'],
-                                        'can_set_password' => ['type' => 'flag'],
-                                        'can_set_quota' => ['type' => 'flag'],
-                                        'dismissed' => ['type' => 'flag'],
-                                        'domain' => ['type' => 'string'],
-                                        'full_username' => ['type' => 'string'],
-                                        'guid' => ['type' => 'string'],
-                                        'has_expired_invite' => ['type' => 'flag'],
-                                        'has_invite' => ['type' => 'flag'],
-                                        'has_siblings' => ['type' => 'flag'],
-                                        'invite_expiration' => ['type' => 'int'],
-                                        'issues' => [
-                                            'type' => 'list',
-                                            'items' => [
-                                                'type' => 'object',
-                                                'fields' => [
-                                                    'area' => ['type' => 'mixed'],
-                                                    'limit' => ['type' => 'mixed'],
-                                                    'message' => ['type' => 'mixed'],
-                                                    'service' => ['type' => 'mixed'],
-                                                    'type' => ['type' => 'mixed'],
-                                                    'used' => ['type' => 'mixed'],
-                                                ],
-                                            ],
-                                        ],
-                                        'merge_candidates' => [
-                                            'type' => 'list',
-                                            'items' => ['type' => 'map', 'values' => ['type' => 'mixed']],
-                                        ],
-                                        'parent_type' => ['type' => 'string', 'nullable' => true],
-                                        'phone_number' => ['type' => 'string'],
-                                        'real_name' => ['type' => 'string'],
-                                        'services' => [
-                                            'type' => 'object',
-                                            'fields' => [
-                                                'email' => [
-                                                    'type' => 'object',
-                                                    'fields' => [
-                                                        'enabled' => ['type' => 'mixed'],
-                                                        'quota' => ['type' => 'mixed'],
-                                                    ],
-                                                ],
-                                                'ftp' => [
-                                                    'type' => 'object',
-                                                    'fields' => [
-                                                        'enabled' => ['type' => 'mixed'],
-                                                        'homedir' => ['type' => 'mixed'],
-                                                        'quota' => ['type' => 'mixed'],
-                                                    ],
-                                                ],
-                                                'webdisk' => [
-                                                    'type' => 'object',
-                                                    'fields' => [
-                                                        'enabled' => ['type' => 'mixed'],
-                                                        'homedir' => ['type' => 'mixed'],
-                                                        'perms' => ['type' => 'mixed'],
-                                                        'private' => ['type' => 'mixed'],
-                                                    ],
-                                                ],
-                                            ],
-                                        ],
-                                        'special' => ['type' => 'flag'],
-                                        'sub_account_exists' => ['type' => 'flag', 'nullable' => true],
-                                        'synced_password' => ['type' => 'flag', 'nullable' => true],
+                                        'area' => ['type' => 'string'],
+                                        'limit' => ['type' => 'int'],
+                                        'message' => ['type' => 'string'],
+                                        'service' => ['type' => 'string'],
                                         'type' => ['type' => 'string'],
-                                        'username' => ['type' => 'string'],
+                                        'used' => ['type' => 'int'],
                                     ],
                                 ],
                             ],
+                            'merge_candidates' => ['type' => 'list', 'items' => ['type' => 'mixed']],
+                            'parent_type' => ['type' => 'string', 'nullable' => true],
+                            'phone_number' => ['type' => 'string', 'nullable' => true],
+                            'real_name' => ['type' => 'string', 'nullable' => true],
+                            'services' => [
+                                'type' => 'object',
+                                'fields' => [
+                                    'email' => [
+                                        'type' => 'object',
+                                        'fields' => [
+                                            'enabled' => ['type' => 'flag'],
+                                            'quota' => ['type' => 'int'],
+                                        ],
+                                    ],
+                                    'ftp' => [
+                                        'type' => 'object',
+                                        'fields' => [
+                                            'enabled' => ['type' => 'flag'],
+                                            'homedir' => ['type' => 'string'],
+                                            'quota' => ['type' => 'int', 'nullable' => true],
+                                        ],
+                                    ],
+                                    'webdisk' => [
+                                        'type' => 'object',
+                                        'fields' => [
+                                            'enabled' => ['type' => 'flag'],
+                                            'homedir' => ['type' => 'string'],
+                                            'perms' => ['type' => 'string'],
+                                            'private' => ['type' => 'flag'],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                            'special' => ['type' => 'flag'],
+                            'sub_account_exists' => ['type' => 'flag', 'nullable' => true],
+                            'synced_password' => ['type' => 'flag', 'nullable' => true],
+                            'type' => ['type' => 'string'],
+                            'username' => ['type' => 'string'],
                         ],
                     ],
                 ],
-                'domain' => ['type' => 'string'],
+                'domain' => ['type' => 'string', 'nullable' => true],
                 'full_username' => ['type' => 'string'],
                 'guid' => ['type' => 'string'],
                 'has_expired_invite' => ['type' => 'flag'],
                 'has_invite' => ['type' => 'flag'],
                 'has_siblings' => ['type' => 'flag'],
-                'invite_expiration' => ['type' => 'int'],
+                'invite_expiration' => ['type' => 'int', 'nullable' => true],
                 'issues' => [
                     'type' => 'list',
                     'items' => [
@@ -956,19 +1099,20 @@ final class UserManagerSpec
                     'items' => [
                         'type' => 'object',
                         'fields' => [
-                            'alternate_email' => ['type' => 'string'],
-                            'avatar_url' => ['type' => 'string'],
+                            'alternate_email' => ['type' => 'string', 'nullable' => true],
+                            'avatar_url' => ['type' => 'string', 'nullable' => true],
                             'can_delete' => ['type' => 'flag'],
                             'can_set_password' => ['type' => 'flag'],
                             'can_set_quota' => ['type' => 'flag'],
                             'dismissed' => ['type' => 'flag'],
-                            'domain' => ['type' => 'string'],
+                            'dismissed_merge_candidates' => ['type' => 'list', 'items' => ['type' => 'mixed']],
+                            'domain' => ['type' => 'string', 'nullable' => true],
                             'full_username' => ['type' => 'string'],
                             'guid' => ['type' => 'string'],
                             'has_expired_invite' => ['type' => 'flag'],
                             'has_invite' => ['type' => 'flag'],
                             'has_siblings' => ['type' => 'flag'],
-                            'invite_expiration' => ['type' => 'int'],
+                            'invite_expiration' => ['type' => 'int', 'nullable' => true],
                             'issues' => [
                                 'type' => 'list',
                                 'items' => [
@@ -983,13 +1127,10 @@ final class UserManagerSpec
                                     ],
                                 ],
                             ],
-                            'merge_candidates' => [
-                                'type' => 'list',
-                                'items' => ['type' => 'map', 'values' => ['type' => 'mixed']],
-                            ],
+                            'merge_candidates' => ['type' => 'list', 'items' => ['type' => 'mixed']],
                             'parent_type' => ['type' => 'string', 'nullable' => true],
-                            'phone_number' => ['type' => 'string'],
-                            'real_name' => ['type' => 'string'],
+                            'phone_number' => ['type' => 'string', 'nullable' => true],
+                            'real_name' => ['type' => 'string', 'nullable' => true],
                             'services' => [
                                 'type' => 'object',
                                 'fields' => [
@@ -1005,7 +1146,7 @@ final class UserManagerSpec
                                         'fields' => [
                                             'enabled' => ['type' => 'flag'],
                                             'homedir' => ['type' => 'string'],
-                                            'quota' => ['type' => 'int'],
+                                            'quota' => ['type' => 'int', 'nullable' => true],
                                         ],
                                     ],
                                     'webdisk' => [
@@ -1028,8 +1169,8 @@ final class UserManagerSpec
                     ],
                 ],
                 'parent_type' => ['type' => 'string', 'nullable' => true],
-                'phone_number' => ['type' => 'string'],
-                'real_name' => ['type' => 'string'],
+                'phone_number' => ['type' => 'string', 'nullable' => true],
+                'real_name' => ['type' => 'string', 'nullable' => true],
                 'services' => [
                     'type' => 'object',
                     'fields' => [
@@ -1045,7 +1186,7 @@ final class UserManagerSpec
                             'fields' => [
                                 'enabled' => ['type' => 'flag'],
                                 'homedir' => ['type' => 'string'],
-                                'quota' => ['type' => 'int'],
+                                'quota' => ['type' => 'int', 'nullable' => true],
                             ],
                         ],
                         'webdisk' => [
@@ -1096,10 +1237,14 @@ final class UserManagerSpec
                             'can_set_password' => ['type' => 'flag'],
                             'can_set_quota' => ['type' => 'flag'],
                             'dismissed' => ['type' => 'flag'],
+                            'dismissed_merge_candidates' => ['type' => 'list', 'items' => ['type' => 'mixed']],
                             'domain' => ['type' => 'string', 'nullable' => true],
                             'full_username' => ['type' => 'string'],
                             'guid' => ['type' => 'string'],
+                            'has_expired_invite' => ['type' => 'flag'],
+                            'has_invite' => ['type' => 'flag'],
                             'has_siblings' => ['type' => 'flag'],
+                            'invite_expiration' => ['type' => 'int', 'nullable' => true],
                             'issues' => [
                                 'type' => 'list',
                                 'items' => [
@@ -1133,7 +1278,7 @@ final class UserManagerSpec
                                         'fields' => [
                                             'enabled' => ['type' => 'flag'],
                                             'homedir' => ['type' => 'string'],
-                                            'quota' => ['type' => 'int'],
+                                            'quota' => ['type' => 'int', 'nullable' => true],
                                         ],
                                     ],
                                     'special' => ['type' => 'flag'],
@@ -1178,7 +1323,82 @@ final class UserManagerSpec
                         ],
                     ],
                 ],
-                'merge_candidates' => ['type' => 'list', 'items' => ['type' => 'mixed']],
+                'merge_candidates' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'alternate_email' => ['type' => 'string', 'nullable' => true],
+                            'avatar_url' => ['type' => 'string', 'nullable' => true],
+                            'can_delete' => ['type' => 'flag'],
+                            'can_set_password' => ['type' => 'flag'],
+                            'can_set_quota' => ['type' => 'flag'],
+                            'dismissed' => ['type' => 'flag'],
+                            'dismissed_merge_candidates' => ['type' => 'list', 'items' => ['type' => 'mixed']],
+                            'domain' => ['type' => 'string', 'nullable' => true],
+                            'full_username' => ['type' => 'string'],
+                            'guid' => ['type' => 'string'],
+                            'has_expired_invite' => ['type' => 'flag'],
+                            'has_invite' => ['type' => 'flag'],
+                            'has_siblings' => ['type' => 'flag'],
+                            'invite_expiration' => ['type' => 'int', 'nullable' => true],
+                            'issues' => [
+                                'type' => 'list',
+                                'items' => [
+                                    'type' => 'object',
+                                    'fields' => [
+                                        'area' => ['type' => 'string'],
+                                        'limit' => ['type' => 'int'],
+                                        'message' => ['type' => 'string'],
+                                        'service' => ['type' => 'string'],
+                                        'type' => ['type' => 'string'],
+                                        'used' => ['type' => 'int'],
+                                    ],
+                                ],
+                            ],
+                            'merge_candidates' => ['type' => 'list', 'items' => ['type' => 'mixed']],
+                            'parent_type' => ['type' => 'string', 'nullable' => true],
+                            'phone_number' => ['type' => 'string', 'nullable' => true],
+                            'real_name' => ['type' => 'string', 'nullable' => true],
+                            'services' => [
+                                'type' => 'object',
+                                'fields' => [
+                                    'email' => [
+                                        'type' => 'object',
+                                        'fields' => [
+                                            'enabled' => ['type' => 'flag'],
+                                            'quota' => ['type' => 'int'],
+                                        ],
+                                    ],
+                                    'ftp' => [
+                                        'type' => 'object',
+                                        'fields' => [
+                                            'enabled' => ['type' => 'flag'],
+                                            'homedir' => ['type' => 'string'],
+                                            'quota' => ['type' => 'int', 'nullable' => true],
+                                        ],
+                                    ],
+                                    'special' => ['type' => 'flag'],
+                                    'webdisk' => [
+                                        'type' => 'object',
+                                        'fields' => [
+                                            'enabled' => ['type' => 'flag'],
+                                            'enabledigest' => ['type' => 'flag'],
+                                            'homedir' => ['type' => 'string'],
+                                            'perms' => ['type' => 'string'],
+                                            'private' => ['type' => 'flag'],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                            'special' => ['type' => 'flag'],
+                            'sub_account_exists' => ['type' => 'flag', 'nullable' => true],
+                            'synced_password' => ['type' => 'flag', 'nullable' => true],
+                            'type' => ['type' => 'string'],
+                            'username' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
                 'parent_type' => ['type' => 'string', 'nullable' => true],
                 'phone_number' => ['type' => 'string', 'nullable' => true],
                 'real_name' => ['type' => 'string', 'nullable' => true],
@@ -1197,7 +1417,7 @@ final class UserManagerSpec
                             'fields' => [
                                 'enabled' => ['type' => 'flag'],
                                 'homedir' => ['type' => 'string'],
-                                'quota' => ['type' => 'int'],
+                                'quota' => ['type' => 'int', 'nullable' => true],
                             ],
                         ],
                         'special' => ['type' => 'flag'],
@@ -1237,8 +1457,8 @@ final class UserManagerSpec
         'returns' => [
             'type' => 'object',
             'fields' => [
-                'alternate_email' => ['type' => 'string'],
-                'avatar_url' => ['type' => 'string'],
+                'alternate_email' => ['type' => 'string', 'nullable' => true],
+                'avatar_url' => ['type' => 'string', 'nullable' => true],
                 'can_delete' => ['type' => 'flag'],
                 'can_set_password' => ['type' => 'flag'],
                 'can_set_quota' => ['type' => 'flag'],
@@ -1248,15 +1468,20 @@ final class UserManagerSpec
                     'items' => [
                         'type' => 'object',
                         'fields' => [
-                            'alternate_email' => ['type' => 'string'],
-                            'avatar_url' => ['type' => 'string'],
+                            'alternate_email' => ['type' => 'string', 'nullable' => true],
+                            'avatar_url' => ['type' => 'string', 'nullable' => true],
                             'can_delete' => ['type' => 'flag'],
                             'can_set_password' => ['type' => 'flag'],
                             'can_set_quota' => ['type' => 'flag'],
-                            'domain' => ['type' => 'string'],
+                            'dismissed' => ['type' => 'flag'],
+                            'dismissed_merge_candidates' => ['type' => 'list', 'items' => ['type' => 'mixed']],
+                            'domain' => ['type' => 'string', 'nullable' => true],
                             'full_username' => ['type' => 'string'],
                             'guid' => ['type' => 'string'],
+                            'has_expired_invite' => ['type' => 'flag'],
+                            'has_invite' => ['type' => 'flag'],
                             'has_siblings' => ['type' => 'flag'],
+                            'invite_expiration' => ['type' => 'int', 'nullable' => true],
                             'issues' => [
                                 'type' => 'list',
                                 'items' => [
@@ -1271,9 +1496,10 @@ final class UserManagerSpec
                                     ],
                                 ],
                             ],
+                            'merge_candidates' => ['type' => 'list', 'items' => ['type' => 'mixed']],
                             'parent_type' => ['type' => 'string', 'nullable' => true],
-                            'phone_number' => ['type' => 'string'],
-                            'real_name' => ['type' => 'string'],
+                            'phone_number' => ['type' => 'string', 'nullable' => true],
+                            'real_name' => ['type' => 'string', 'nullable' => true],
                             'services' => [
                                 'type' => 'object',
                                 'fields' => [
@@ -1289,7 +1515,7 @@ final class UserManagerSpec
                                         'fields' => [
                                             'enabled' => ['type' => 'flag'],
                                             'homedir' => ['type' => 'string'],
-                                            'quota' => ['type' => 'int'],
+                                            'quota' => ['type' => 'int', 'nullable' => true],
                                         ],
                                     ],
                                     'webdisk' => [
@@ -1311,13 +1537,13 @@ final class UserManagerSpec
                         ],
                     ],
                 ],
-                'domain' => ['type' => 'string'],
+                'domain' => ['type' => 'string', 'nullable' => true],
                 'full_username' => ['type' => 'string'],
                 'guid' => ['type' => 'string'],
                 'has_expired_invite' => ['type' => 'flag'],
                 'has_invite' => ['type' => 'flag'],
                 'has_siblings' => ['type' => 'flag'],
-                'invite_expiration' => ['type' => 'int'],
+                'invite_expiration' => ['type' => 'int', 'nullable' => true],
                 'issues' => [
                     'type' => 'list',
                     'items' => [
@@ -1337,15 +1563,20 @@ final class UserManagerSpec
                     'items' => [
                         'type' => 'object',
                         'fields' => [
-                            'alternate_email' => ['type' => 'string'],
-                            'avatar_url' => ['type' => 'string'],
+                            'alternate_email' => ['type' => 'string', 'nullable' => true],
+                            'avatar_url' => ['type' => 'string', 'nullable' => true],
                             'can_delete' => ['type' => 'flag'],
                             'can_set_password' => ['type' => 'flag'],
                             'can_set_quota' => ['type' => 'flag'],
-                            'domain' => ['type' => 'string'],
+                            'dismissed' => ['type' => 'flag'],
+                            'dismissed_merge_candidates' => ['type' => 'list', 'items' => ['type' => 'mixed']],
+                            'domain' => ['type' => 'string', 'nullable' => true],
                             'full_username' => ['type' => 'string'],
                             'guid' => ['type' => 'string'],
+                            'has_expired_invite' => ['type' => 'flag'],
+                            'has_invite' => ['type' => 'flag'],
                             'has_siblings' => ['type' => 'flag'],
+                            'invite_expiration' => ['type' => 'int', 'nullable' => true],
                             'issues' => [
                                 'type' => 'list',
                                 'items' => [
@@ -1360,9 +1591,10 @@ final class UserManagerSpec
                                     ],
                                 ],
                             ],
+                            'merge_candidates' => ['type' => 'list', 'items' => ['type' => 'mixed']],
                             'parent_type' => ['type' => 'string', 'nullable' => true],
-                            'phone_number' => ['type' => 'string'],
-                            'real_name' => ['type' => 'string'],
+                            'phone_number' => ['type' => 'string', 'nullable' => true],
+                            'real_name' => ['type' => 'string', 'nullable' => true],
                             'services' => [
                                 'type' => 'object',
                                 'fields' => [
@@ -1378,7 +1610,7 @@ final class UserManagerSpec
                                         'fields' => [
                                             'enabled' => ['type' => 'flag'],
                                             'homedir' => ['type' => 'string'],
-                                            'quota' => ['type' => 'int'],
+                                            'quota' => ['type' => 'int', 'nullable' => true],
                                         ],
                                     ],
                                     'webdisk' => [
@@ -1401,8 +1633,8 @@ final class UserManagerSpec
                     ],
                 ],
                 'parent_type' => ['type' => 'string', 'nullable' => true],
-                'phone_number' => ['type' => 'string'],
-                'real_name' => ['type' => 'string'],
+                'phone_number' => ['type' => 'string', 'nullable' => true],
+                'real_name' => ['type' => 'string', 'nullable' => true],
                 'services' => [
                     'type' => 'object',
                     'fields' => [
@@ -1418,7 +1650,7 @@ final class UserManagerSpec
                             'fields' => [
                                 'enabled' => ['type' => 'flag'],
                                 'homedir' => ['type' => 'string'],
-                                'quota' => ['type' => 'int'],
+                                'quota' => ['type' => 'int', 'nullable' => true],
                             ],
                         ],
                         'webdisk' => [

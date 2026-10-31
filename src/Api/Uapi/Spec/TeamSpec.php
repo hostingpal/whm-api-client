@@ -50,7 +50,7 @@ final class TeamSpec
             'servicesWebdiskPerms' => ['name' => 'services.webdisk.perms', 'encoding' => 'scalar'],
             'servicesWebdiskPrivate' => ['name' => 'services.webdisk.private', 'encoding' => 'bool'],
         ],
-        'returns' => ['type' => 'int'],
+        'returns' => ['type' => 'int', 'nullable' => true, 'accept' => ['numeric-string']],
     ];
 
     public const CANCEL_EXPIRE = [
@@ -125,15 +125,35 @@ final class TeamSpec
                         'type' => 'object',
                         'fields' => [
                             'contact-email' => ['type' => 'string'],
-                            'created' => ['type' => 'int'],
-                            'expire_date' => ['type' => 'int'],
+                            'contact_email' => ['type' => 'string'],
+                            'created' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'int', 'accept' => ['numeric-string']],
+                                    ['type' => 'string', 'literal' => ''],
+                                ],
+                            ],
+                            'expire_date' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'int', 'accept' => ['numeric-string']],
+                                    ['type' => 'string', 'literal' => ''],
+                                ],
+                            ],
                             'expire_reason' => ['type' => 'string'],
-                            'lastlogin' => ['type' => 'int'],
+                            'lastlogin' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'int', 'accept' => ['numeric-string']],
+                                    ['type' => 'string', 'literal' => ''],
+                                ],
+                            ],
                             'locale' => ['type' => 'string'],
                             'notes' => ['type' => 'string'],
                             'password' => ['type' => 'string'],
                             'roles' => ['type' => 'list', 'items' => ['type' => 'string']],
                             'secondary-contact-email' => ['type' => 'string'],
+                            'secondary_contact_email' => ['type' => 'string'],
                             'services' => [
                                 'type' => 'object',
                                 'fields' => [
@@ -142,7 +162,14 @@ final class TeamSpec
                                     'webdisk' => ['type' => 'string'],
                                 ],
                             ],
-                            'suspend_date' => ['type' => 'int'],
+                            'subacct_guid' => ['type' => 'string'],
+                            'suspend_date' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'int', 'accept' => ['numeric-string']],
+                                    ['type' => 'string', 'literal' => ''],
+                                ],
+                            ],
                             'suspend_reason' => ['type' => 'string'],
                             'username' => ['type' => 'string'],
                         ],
@@ -153,36 +180,62 @@ final class TeamSpec
                     'fields' => [
                         'owner' => ['type' => 'string'],
                         'users' => [
-                            'type' => 'object',
-                            'fields' => [
-                                'info' => [
-                                    'type' => 'object',
-                                    'fields' => [
-                                        'contact-email' => ['type' => 'string'],
-                                        'created' => ['type' => 'int'],
-                                        'expire_date' => ['type' => 'int'],
-                                        'expire_reason' => ['type' => 'string'],
-                                        'lastlogin' => ['type' => 'int'],
-                                        'locale' => ['type' => 'string'],
-                                        'notes' => ['type' => 'string'],
-                                        'password' => ['type' => 'string'],
-                                        'roles' => ['type' => 'list', 'items' => ['type' => 'string']],
-                                        'secondary-contact-email' => ['type' => 'string'],
-                                        'services' => [
-                                            'type' => 'object',
-                                            'fields' => [
-                                                'email' => ['type' => 'string'],
-                                                'ftp' => ['type' => 'int'],
-                                                'webdisk' => ['type' => 'string'],
-                                            ],
+                            'type' => 'map',
+                            'values' => [
+                                'type' => 'object',
+                                'fields' => [
+                                    'contact-email' => ['type' => 'string'],
+                                    'contact_email' => ['type' => 'string'],
+                                    'created' => [
+                                        'type' => 'union',
+                                        'anyOf' => [
+                                            ['type' => 'int', 'accept' => ['numeric-string']],
+                                            ['type' => 'string', 'literal' => ''],
                                         ],
-                                        'suspend_date' => ['type' => 'string'],
-                                        'suspend_reason' => ['type' => 'string'],
                                     ],
+                                    'expire_date' => [
+                                        'type' => 'union',
+                                        'anyOf' => [
+                                            ['type' => 'int', 'accept' => ['numeric-string']],
+                                            ['type' => 'string', 'literal' => ''],
+                                        ],
+                                    ],
+                                    'expire_reason' => ['type' => 'string'],
+                                    'lastlogin' => [
+                                        'type' => 'union',
+                                        'anyOf' => [
+                                            ['type' => 'int', 'accept' => ['numeric-string']],
+                                            ['type' => 'string', 'literal' => ''],
+                                        ],
+                                    ],
+                                    'locale' => ['type' => 'string'],
+                                    'notes' => ['type' => 'string'],
+                                    'password' => ['type' => 'string'],
+                                    'roles' => ['type' => 'list', 'items' => ['type' => 'string']],
+                                    'secondary-contact-email' => ['type' => 'string'],
+                                    'secondary_contact_email' => ['type' => 'string'],
+                                    'services' => [
+                                        'type' => 'object',
+                                        'fields' => [
+                                            'email' => ['type' => 'string'],
+                                            'ftp' => ['type' => 'int'],
+                                            'webdisk' => ['type' => 'string'],
+                                        ],
+                                    ],
+                                    'subacct_guid' => ['type' => 'string'],
+                                    'suspend_date' => [
+                                        'type' => 'union',
+                                        'anyOf' => [
+                                            ['type' => 'int', 'accept' => ['numeric-string']],
+                                            ['type' => 'string', 'literal' => ''],
+                                        ],
+                                    ],
+                                    'suspend_reason' => ['type' => 'string'],
+                                    'username' => ['type' => 'string'],
                                 ],
-                                'username' => ['type' => 'string'],
                             ],
                         ],
+                        'version' => ['type' => 'string'],
                     ],
                 ],
             ],
@@ -257,7 +310,7 @@ final class TeamSpec
             'user' => ['name' => 'user', 'encoding' => 'scalar'],
             'reason' => ['name' => 'reason', 'encoding' => 'scalar'],
         ],
-        'returns' => ['type' => 'int'],
+        'returns' => ['type' => 'int', 'accept' => ['numeric-string']],
     ];
 
     public const SET_LOCALE = [

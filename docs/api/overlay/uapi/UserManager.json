@@ -21,7 +21,15 @@
         },
         {
           "kind": "documented",
-          "text": "Returns a nullable object without pinned fields. Preserve opaque object fields and explicit null; an absent data member is a payload mismatch."
+          "text": "The pinned response schema permits a nullable object without fields. Preserve opaque object fields and explicit null; an absent data member remains a payload mismatch."
+        },
+        {
+          "kind": "observed",
+          "text": "On the reviewed 11.138.0.19 server, the WHM bridge could not load Cpanel/API/UserManager.pm because that module file was absent, while direct cPanel calls used the compiled server implementation. The observed bridge failure is ApiErrorException, not InvalidResponseException. This is a server-version/state capability observation; the client retains bridge routing and does not assume other installations have the same limitation."
+        },
+        {
+          "kind": "observed",
+          "text": "On 11.138.0.19, successful password changes can return an opaque string, preserved without assumptions about its content. UserManager string-success compatibility is inferred from the reviewer-identified Users result path and counterpart contract; only its wrong-password failure was exercised, so successful UserManager execution still needs reviewer confirmation. Existing nullable-object results remain supported. Password arguments stay sensitive and the client never retries the mutation."
         }
       ],
       "params": {
@@ -39,8 +47,50 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /UserManager/change_password declares x-readonly=false. Use form POST for the selected-account mutation; password fields stay sensitive. Preserve pinned parameter requiredness, scalar types and literal dotted field names."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer 5720337990 at b40a9e3158c7e6dd2ff139c5e76a03536fa9ce87 attributes bridged list_users failure to absent Cpanel/API/UserManager.pm and direct execution to the compiled server. The module-level limitation applies to this installation; it is not a separately observed failure of every method. Preserve API-error classification and bridge routing.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer 5720337990 against b40a9e3158c7e6dd2ff139c5e76a03536fa9ce87 observed Users/change_password returning a string after the password changed; the previous nullable-map contract raised outcome-confirmed PayloadMismatchException. UserManager string-success compatibility is inferred from the reviewer-identified Users result path and counterpart contract; only its wrong-password failure was exercised, so successful UserManager execution still needs reviewer confirmation. Add string alongside the existing nullable opaque map, keeping missing-data rejection, status handling, sensitive parameters and POST/no-retry behavior.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
         }
-      ]
+      ],
+      "response": {
+        "": {
+          "replace": {
+            "type": "union",
+            "nullable": true,
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "map",
+                "values": {
+                  "type": "mixed"
+                }
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer 5720337990 against b40a9e3158c7e6dd2ff139c5e76a03536fa9ce87 observed Users/change_password returning a string after the password changed; the previous nullable-map contract raised outcome-confirmed PayloadMismatchException. UserManager string-success compatibility is inferred from the reviewer-identified Users result path and counterpart contract; only its wrong-password failure was exercised, so successful UserManager execution still needs reviewer confirmation. Add string alongside the existing nullable opaque map, keeping missing-data rejection, status handling, sensitive parameters and POST/no-retry behavior.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
+            }
+          ]
+        }
+      }
     },
     "uapi:UserManager/check_account_conflicts": {
       "order": [
@@ -54,6 +104,19 @@
         {
           "kind": "documented",
           "text": "Returns account conflict information; more than one matching account can repeat values in the arrays. accounts is a documented object, not an inferred list. Nullable contact/invitation fields, optional service fields and integer status flags remain distinct from omission. No identifiers are inferred or looked up automatically."
+        },
+        {
+          "kind": "observed",
+          "text": "On the reviewed 11.138.0.19 server, the WHM bridge could not load Cpanel/API/UserManager.pm because that module file was absent, while direct cPanel calls used the compiled server implementation. The observed bridge failure is ApiErrorException, not InvalidResponseException. This is a server-version/state capability observation; the client retains bridge routing and does not assume other installations have the same limitation."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer 5720337990 at b40a9e3158c7e6dd2ff139c5e76a03536fa9ce87 attributes bridged list_users failure to absent Cpanel/API/UserManager.pm and direct execution to the compiled server. The module-level limitation applies to this installation; it is not a separately observed failure of every method. Preserve API-error classification and bridge routing.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
         }
       ]
     },
@@ -87,6 +150,18 @@
         {
           "kind": "documented",
           "text": "Creates a Subaccount; password is required and shared by email, FTP and Web Disk services. send_invite=1 sends a reset-password email and requires alternate_email; services.email.send_welcome_email=1 sends client configuration instructions. Both default to 0. Service enablement and Digest/private flags default to 0, Web Disk permissions to rw and type to sub. Email quota is a string in this creation contract: 0 or unlimited means unlimited, omission retains the system default and the system maximum applies. Do not use the reserved avatar_url or phone_number inputs. FTP and Web Disk home directories are relative to the cPanel account home; the FTP directory must exist. The FTP parameter prose contains a self-referential requiredness statement; no client-side condition is inferred. Web Disk home is required when Web Disk is enabled. Digest Authentication is discouraged except for the documented Windows/self-signed compatibility case. The source declares no rollback."
+        },
+        {
+          "kind": "observed",
+          "text": "Reviewer observations on 11.138.0.19 and pinned ServiceAccount fields support nullable alternate_email, avatar_url, domain, invite_expiration, phone_number, real_name and services.ftp.quota wherever declared. Preserve omission, null and populated values separately; parent_type, sub_account_exists and synced_password retain documented null alternatives. Propagation to sibling operations is a family inference, not a live observation of each field. Creation FTP quota remains string and other operation contracts integer; non-null wire forms remain unresolved. checkAccountConflicts and deleteUser are outside this correction."
+        },
+        {
+          "kind": "observed",
+          "text": "The reviewer observed a populated merge candidate as a Subaccount record. Source inspection identifies the same Record serializer for dismissed candidates, whose populated form was not observed. Known candidate fields retain this operation's record types and optionality; each candidate's own merge_candidates and dismissed_merge_candidates are opaque lists. This finite boundary preserves deeper values without claiming recursive validation or a guaranteed maximum nesting depth. Unknown fields such as team_owner remain outside the typed contract."
+        },
+        {
+          "kind": "observed",
+          "text": "On the reviewed 11.138.0.19 server, the WHM bridge could not load Cpanel/API/UserManager.pm because that module file was absent, while direct cPanel calls used the compiled server implementation. The observed bridge failure is ApiErrorException, not InvalidResponseException. This is a server-version/state capability observation; the client retains bridge routing and does not assume other installations have the same limitation."
         }
       ],
       "params": {
@@ -101,8 +176,469 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /UserManager/create_user declares x-readonly=false. Use form POST for the selected-account mutation; password fields stay sensitive. Preserve pinned parameter requiredness, scalar types and literal dotted field names."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer 5720337990 at b40a9e3158c7e6dd2ff139c5e76a03536fa9ce87 identifies the shared Subaccount record across create/edit/merge/service lookup/user lookup/list. The bounded nullable family is alternate_email, avatar_url, domain, invite_expiration, phone_number, real_name, services.ftp.quota and existing documented parent_type/sub_account_exists/synced_password alternatives. Pinned ServiceAccount permits contact/domain/name nulls; original direct list_users artifact SHA-256 b0bbf85e9054d68f8a06eb984a63cdac76c81d9b9a2cf6cebb3e81c0d0c04116 observes the seven contact/invitation/FTP null fields. Per-field evidence separates direct observations from family inference. Creation FTP quota remains string, other operations integer; their non-null discrepancy remains unresolved. Preserve optionality and existing flags; checkAccountConflicts and deleteUser stay outside this correction.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer clarification 6537241960 identifies finite Record candidate shapes from one direct observation plus Record.pm and UserManager.pm source inspection. Dismissed candidates are source-inferred; nested candidate lists are deliberately list<mixed>, not recursive validation. No new committed live capture is claimed.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#issuecomment-6537241960"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer 5720337990 at b40a9e3158c7e6dd2ff139c5e76a03536fa9ce87 attributes bridged list_users failure to absent Cpanel/API/UserManager.pm and direct execution to the compiled server. The module-level limitation applies to this installation; it is not a separately observed failure of every method. Preserve API-error classification and bridge routing.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
         }
-      ]
+      ],
+      "response": {
+        "alternate_email": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "PR43 review 5720337990: create_user at alternate_email. Direct null observation reported for this successful operation. Operation evidence gives the pinned/immutable-list support. Add only null and preserve the existing scalar type and optional presence.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
+            }
+          ]
+        },
+        "avatar_url": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "PR43 review 5720337990: create_user at avatar_url. Direct null observation reported for this successful operation. Operation evidence gives the pinned/immutable-list support. Add only null and preserve the existing scalar type and optional presence.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
+            }
+          ]
+        },
+        "domain": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "PR43 review 5720337990: create_user at domain. Shared-record family inference, not a field-specific live observation of this operation. Operation evidence gives the pinned/immutable-list support. Add only null and preserve the existing scalar type and optional presence.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
+            }
+          ]
+        },
+        "invite_expiration": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "PR43 review 5720337990: create_user at invite_expiration. Direct null observation reported for this successful operation. Operation evidence gives the pinned/immutable-list support. Add only null and preserve the existing scalar type and optional presence.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
+            }
+          ]
+        },
+        "phone_number": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "PR43 review 5720337990: create_user at phone_number. Direct null observation reported for this successful operation. Operation evidence gives the pinned/immutable-list support. Add only null and preserve the existing scalar type and optional presence.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
+            }
+          ]
+        },
+        "real_name": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "PR43 review 5720337990: create_user at real_name. Shared-record family inference, not a field-specific live observation of this operation. Operation evidence gives the pinned/immutable-list support. Add only null and preserve the existing scalar type and optional presence.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
+            }
+          ]
+        },
+        "services.ftp.quota": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "PR43 review 5720337990: create_user at services.ftp.quota. Direct null observation reported for this successful operation. Operation evidence gives the pinned/immutable-list support. Add only null and preserve the existing scalar type and optional presence.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
+            }
+          ]
+        },
+        "merge_candidates": {
+          "replace": {
+            "type": "list",
+            "items": {
+              "type": "object",
+              "fields": {
+                "alternate_email": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "avatar_url": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "can_delete": {
+                  "type": "flag"
+                },
+                "can_set_password": {
+                  "type": "flag"
+                },
+                "can_set_quota": {
+                  "type": "flag"
+                },
+                "dismissed": {
+                  "type": "flag"
+                },
+                "dismissed_merge_candidates": {
+                  "type": "list",
+                  "items": {
+                    "type": "mixed"
+                  }
+                },
+                "domain": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "full_username": {
+                  "type": "string"
+                },
+                "guid": {
+                  "type": "string"
+                },
+                "has_expired_invite": {
+                  "type": "flag"
+                },
+                "has_invite": {
+                  "type": "flag"
+                },
+                "has_siblings": {
+                  "type": "flag"
+                },
+                "invite_expiration": {
+                  "type": "int",
+                  "nullable": true
+                },
+                "issues": {
+                  "type": "list",
+                  "items": {
+                    "type": "object",
+                    "fields": {
+                      "area": {
+                        "type": "string"
+                      },
+                      "limit": {
+                        "type": "int"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "service": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string"
+                      },
+                      "used": {
+                        "type": "int"
+                      }
+                    }
+                  }
+                },
+                "merge_candidates": {
+                  "type": "list",
+                  "items": {
+                    "type": "mixed"
+                  }
+                },
+                "parent_type": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "phone_number": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "real_name": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "services": {
+                  "type": "object",
+                  "fields": {
+                    "email": {
+                      "type": "object",
+                      "fields": {
+                        "enabled": {
+                          "type": "flag"
+                        },
+                        "quota": {
+                          "type": "int"
+                        }
+                      }
+                    },
+                    "ftp": {
+                      "type": "object",
+                      "fields": {
+                        "enabled": {
+                          "type": "flag"
+                        },
+                        "homedir": {
+                          "type": "string"
+                        },
+                        "quota": {
+                          "type": "string",
+                          "nullable": true
+                        }
+                      }
+                    },
+                    "webdisk": {
+                      "type": "object",
+                      "fields": {
+                        "enabled": {
+                          "type": "flag"
+                        },
+                        "homedir": {
+                          "type": "string"
+                        },
+                        "perms": {
+                          "type": "string"
+                        },
+                        "private": {
+                          "type": "flag"
+                        }
+                      }
+                    }
+                  }
+                },
+                "special": {
+                  "type": "flag"
+                },
+                "sub_account_exists": {
+                  "type": "flag",
+                  "nullable": true
+                },
+                "synced_password": {
+                  "type": "flag",
+                  "nullable": true
+                },
+                "type": {
+                  "type": "string"
+                },
+                "username": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Clarification 6537241960 reports one populated direct merge candidate on 11.138.0.19; the value-free printer capped objects at 24 keys. Record.pm:357-364 serializes both candidate lists using the same Record/as_hashref path, and UserManager.pm:749-774 assigns service records to either list. Populated dismissed candidates are source-inferred only. Use this operation's pinned known record fields, reviewed null family and quota type; keep issues/dismissed and optional service details. The candidate's own two candidate lists are list<mixed>, as explicitly requested by the reviewer: empty observed lists and call-site inspection do not prove recursion cannot occur. Preserve deeper payloads without inventing recursive field contracts. Do not add the untyped team_owner field or other unpinned extras.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#issuecomment-6537241960"
+            }
+          ]
+        },
+        "dismissed_merge_candidates": {
+          "replace": {
+            "type": "list",
+            "items": {
+              "type": "object",
+              "fields": {
+                "alternate_email": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "avatar_url": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "can_delete": {
+                  "type": "flag"
+                },
+                "can_set_password": {
+                  "type": "flag"
+                },
+                "can_set_quota": {
+                  "type": "flag"
+                },
+                "dismissed": {
+                  "type": "flag"
+                },
+                "dismissed_merge_candidates": {
+                  "type": "list",
+                  "items": {
+                    "type": "mixed"
+                  }
+                },
+                "domain": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "full_username": {
+                  "type": "string"
+                },
+                "guid": {
+                  "type": "string"
+                },
+                "has_expired_invite": {
+                  "type": "flag"
+                },
+                "has_invite": {
+                  "type": "flag"
+                },
+                "has_siblings": {
+                  "type": "flag"
+                },
+                "invite_expiration": {
+                  "type": "int",
+                  "nullable": true
+                },
+                "issues": {
+                  "type": "list",
+                  "items": {
+                    "type": "object",
+                    "fields": {
+                      "area": {
+                        "type": "string"
+                      },
+                      "limit": {
+                        "type": "int"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "service": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string"
+                      },
+                      "used": {
+                        "type": "int"
+                      }
+                    }
+                  }
+                },
+                "merge_candidates": {
+                  "type": "list",
+                  "items": {
+                    "type": "mixed"
+                  }
+                },
+                "parent_type": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "phone_number": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "real_name": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "services": {
+                  "type": "object",
+                  "fields": {
+                    "email": {
+                      "type": "object",
+                      "fields": {
+                        "enabled": {
+                          "type": "flag"
+                        },
+                        "quota": {
+                          "type": "int"
+                        }
+                      }
+                    },
+                    "ftp": {
+                      "type": "object",
+                      "fields": {
+                        "enabled": {
+                          "type": "flag"
+                        },
+                        "homedir": {
+                          "type": "string"
+                        },
+                        "quota": {
+                          "type": "string",
+                          "nullable": true
+                        }
+                      }
+                    },
+                    "webdisk": {
+                      "type": "object",
+                      "fields": {
+                        "enabled": {
+                          "type": "flag"
+                        },
+                        "homedir": {
+                          "type": "string"
+                        },
+                        "perms": {
+                          "type": "string"
+                        },
+                        "private": {
+                          "type": "flag"
+                        }
+                      }
+                    }
+                  }
+                },
+                "special": {
+                  "type": "flag"
+                },
+                "sub_account_exists": {
+                  "type": "flag",
+                  "nullable": true
+                },
+                "synced_password": {
+                  "type": "flag",
+                  "nullable": true
+                },
+                "type": {
+                  "type": "string"
+                },
+                "username": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Clarification 6537241960 reports one populated direct merge candidate on 11.138.0.19; the value-free printer capped objects at 24 keys. Record.pm:357-364 serializes both candidate lists using the same Record/as_hashref path, and UserManager.pm:749-774 assigns service records to either list. Populated dismissed candidates are source-inferred only. Use this operation's pinned known record fields, reviewed null family and quota type; keep issues/dismissed and optional service details. The candidate's own two candidate lists are list<mixed>, as explicitly requested by the reviewer: empty observed lists and call-site inspection do not prove recursion cannot occur. Preserve deeper payloads without inventing recursive field contracts. Do not add the untyped team_owner field or other unpinned extras.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#issuecomment-6537241960"
+            }
+          ]
+        }
+      }
     },
     "uapi:UserManager/delete_user": {
       "order": [
@@ -117,6 +653,10 @@
         {
           "kind": "documented",
           "text": "Deletes the Subaccount with no rollback. The documented result depends on remaining services: one matching service returns that service account, multiple matching services return a hypothetical Subaccount, and no matches return only metadata. An omitted or null payload therefore returns null; present objects retain their pinned fields. username excludes the domain and domain must be owned by the selected cPanel account."
+        },
+        {
+          "kind": "observed",
+          "text": "On the reviewed 11.138.0.19 server, the WHM bridge could not load Cpanel/API/UserManager.pm because that module file was absent, while direct cPanel calls used the compiled server implementation. The observed bridge failure is ApiErrorException, not InvalidResponseException. This is a server-version/state capability observation; the client retains bridge routing and does not assume other installations have the same limitation."
         }
       ],
       "method": "POST",
@@ -132,6 +672,13 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /UserManager/delete_user description explicitly says the function returns only metadata when no other matching service accounts exist, and when the username/domain match no service or hypothetical Subaccount. Allow absent/null data while validating present data against the pinned object schema; do not weaken the result to void."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer 5720337990 at b40a9e3158c7e6dd2ff139c5e76a03536fa9ce87 attributes bridged list_users failure to absent Cpanel/API/UserManager.pm and direct execution to the compiled server. The module-level limitation applies to this installation; it is not a separately observed failure of every method. Preserve API-error classification and bridge routing.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
         }
       ],
       "optional_payload": true
@@ -152,6 +699,10 @@
         {
           "kind": "documented",
           "text": "Removes the Link option for the selected service merge candidates. Supply at least one of services.email.dismiss, services.ftp.dismiss or services.webdisk.dismiss. These optional flags default to 0 upstream; the client does not invent a cross-parameter validator. The data schema is unspecified, so the result remains mixed, including explicit null. An absent data member remains a payload mismatch. The source declares no rollback."
+        },
+        {
+          "kind": "observed",
+          "text": "On the reviewed 11.138.0.19 server, the WHM bridge could not load Cpanel/API/UserManager.pm because that module file was absent, while direct cPanel calls used the compiled server implementation. The observed bridge failure is ApiErrorException, not InvalidResponseException. This is a server-version/state capability observation; the client retains bridge routing and does not assume other installations have the same limitation."
         }
       ],
       "method": "POST",
@@ -161,6 +712,13 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /UserManager/dismiss_merge declares x-readonly=false. Use form POST for the selected-account mutation; password fields stay sensitive. Preserve pinned parameter requiredness, scalar types and literal dotted field names."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer 5720337990 at b40a9e3158c7e6dd2ff139c5e76a03536fa9ce87 attributes bridged list_users failure to absent Cpanel/API/UserManager.pm and direct execution to the compiled server. The module-level limitation applies to this installation; it is not a separately observed failure of every method. Preserve API-error classification and bridge routing.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
         }
       ]
     },
@@ -192,6 +750,18 @@
         {
           "kind": "documented",
           "text": "Updates a Subaccount with no rollback. The optional password changes the password shared by email, FTP and Web Disk and is sensitive. Reserved avatar_url and phone_number inputs must not be used. Omitted email quota retains the system default; its pinned edit parameter is an integer even though the prose also mentions unlimited. Zero represents unlimited, and the system maximum applies. Do not infer a string parameter from that prose. FTP and Web Disk home paths are relative to the cPanel account home and are required when their services are enabled; the FTP directory must exist. Service/Digest/private flags default to 0, permissions to rw and type to sub upstream. Digest Authentication is discouraged except for the documented compatibility case. Explicit empty real_name is supported; null optional inputs are omitted by the client."
+        },
+        {
+          "kind": "observed",
+          "text": "Reviewer observations on 11.138.0.19 and pinned ServiceAccount fields support nullable alternate_email, avatar_url, domain, invite_expiration, phone_number, real_name and services.ftp.quota wherever declared. Preserve omission, null and populated values separately; parent_type, sub_account_exists and synced_password retain documented null alternatives. Propagation to sibling operations is a family inference, not a live observation of each field. Creation FTP quota remains string and other operation contracts integer; non-null wire forms remain unresolved. checkAccountConflicts and deleteUser are outside this correction."
+        },
+        {
+          "kind": "observed",
+          "text": "The reviewer observed a populated merge candidate as a Subaccount record. Source inspection identifies the same Record serializer for dismissed candidates, whose populated form was not observed. Known candidate fields retain this operation's record types and optionality; each candidate's own merge_candidates and dismissed_merge_candidates are opaque lists. This finite boundary preserves deeper values without claiming recursive validation or a guaranteed maximum nesting depth. Unknown fields such as team_owner remain outside the typed contract."
+        },
+        {
+          "kind": "observed",
+          "text": "On the reviewed 11.138.0.19 server, the WHM bridge could not load Cpanel/API/UserManager.pm because that module file was absent, while direct cPanel calls used the compiled server implementation. The observed bridge failure is ApiErrorException, not InvalidResponseException. This is a server-version/state capability observation; the client retains bridge routing and does not assume other installations have the same limitation."
         }
       ],
       "params": {
@@ -206,6 +776,27 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /UserManager/edit_user declares x-readonly=false. Use form POST for the selected-account mutation; password fields stay sensitive. Preserve pinned parameter requiredness, scalar types and literal dotted field names."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer 5720337990 at b40a9e3158c7e6dd2ff139c5e76a03536fa9ce87 identifies the shared Subaccount record across create/edit/merge/service lookup/user lookup/list. The bounded nullable family is alternate_email, avatar_url, domain, invite_expiration, phone_number, real_name, services.ftp.quota and existing documented parent_type/sub_account_exists/synced_password alternatives. Pinned ServiceAccount permits contact/domain/name nulls; original direct list_users artifact SHA-256 b0bbf85e9054d68f8a06eb984a63cdac76c81d9b9a2cf6cebb3e81c0d0c04116 observes the seven contact/invitation/FTP null fields. Per-field evidence separates direct observations from family inference. Creation FTP quota remains string, other operations integer; their non-null discrepancy remains unresolved. Preserve optionality and existing flags; checkAccountConflicts and deleteUser stay outside this correction.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer clarification 6537241960 identifies finite Record candidate shapes from one direct observation plus Record.pm and UserManager.pm source inspection. Dismissed candidates are source-inferred; nested candidate lists are deliberately list<mixed>, not recursive validation. No new committed live capture is claimed.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#issuecomment-6537241960"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer 5720337990 at b40a9e3158c7e6dd2ff139c5e76a03536fa9ce87 attributes bridged list_users failure to absent Cpanel/API/UserManager.pm and direct execution to the compiled server. The module-level limitation applies to this installation; it is not a separately observed failure of every method. Preserve API-error classification and bridge routing.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
         }
       ],
       "response": {
@@ -242,69 +833,441 @@
             }
           ]
         },
-        "merge_candidates[].parent_type": {
+        "alternate_email": {
           "nullable": true,
           "evidence": [
             {
-              "kind": "doc",
-              "version": "pinned 2026-10-13",
+              "kind": "live",
+              "version": "11.138.0.19",
               "date": "2026-10-31",
-              "note": "Pinned /UserManager/edit_user references #/components/schemas/EditUserSubaccountBase; its parent_type description explicitly permits null, although the formal scalar schema omits nullable. The same referenced base is used at merge_candidates[].. Preserve the existing string or integer 0/1 type and optional presence, adding only the documented null alternative at merge_candidates[].parent_type. Do not extend this correction to schemas without that prose."
+              "note": "PR43 review 5720337990: edit_user at alternate_email. Direct null observation reported for this successful operation. Operation evidence gives the pinned/immutable-list support. Add only null and preserve the existing scalar type and optional presence.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
             }
           ]
         },
-        "merge_candidates[].sub_account_exists": {
+        "avatar_url": {
           "nullable": true,
           "evidence": [
             {
-              "kind": "doc",
-              "version": "pinned 2026-10-13",
+              "kind": "live",
+              "version": "11.138.0.19",
               "date": "2026-10-31",
-              "note": "Pinned /UserManager/edit_user references #/components/schemas/EditUserSubaccountBase; its sub_account_exists description explicitly permits null, although the formal scalar schema omits nullable. The same referenced base is used at merge_candidates[].. Preserve the existing string or integer 0/1 type and optional presence, adding only the documented null alternative at merge_candidates[].sub_account_exists. Do not extend this correction to schemas without that prose."
+              "note": "PR43 review 5720337990: edit_user at avatar_url. Direct null observation reported for this successful operation. Operation evidence gives the pinned/immutable-list support. Add only null and preserve the existing scalar type and optional presence.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
             }
           ]
         },
-        "merge_candidates[].synced_password": {
+        "domain": {
           "nullable": true,
           "evidence": [
             {
-              "kind": "doc",
-              "version": "pinned 2026-10-13",
+              "kind": "live",
+              "version": "11.138.0.19",
               "date": "2026-10-31",
-              "note": "Pinned /UserManager/edit_user references #/components/schemas/EditUserSubaccountBase; its synced_password description explicitly permits null, although the formal scalar schema omits nullable. The same referenced base is used at merge_candidates[].. Preserve the existing string or integer 0/1 type and optional presence, adding only the documented null alternative at merge_candidates[].synced_password. Do not extend this correction to schemas without that prose."
+              "note": "PR43 review 5720337990: edit_user at domain. Shared-record family inference, not a field-specific live observation of this operation. Operation evidence gives the pinned/immutable-list support. Add only null and preserve the existing scalar type and optional presence.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
             }
           ]
         },
-        "dismissed_merge_candidates[].merge_candidates[].parent_type": {
+        "invite_expiration": {
           "nullable": true,
           "evidence": [
             {
-              "kind": "doc",
-              "version": "pinned 2026-10-13",
+              "kind": "live",
+              "version": "11.138.0.19",
               "date": "2026-10-31",
-              "note": "Pinned /UserManager/edit_user references #/components/schemas/EditUserSubaccountBase; its parent_type description explicitly permits null, although the formal scalar schema omits nullable. The same referenced base is used at dismissed_merge_candidates[].merge_candidates[].. Preserve the existing string or integer 0/1 type and optional presence, adding only the documented null alternative at dismissed_merge_candidates[].merge_candidates[].parent_type. Do not extend this correction to schemas without that prose."
+              "note": "PR43 review 5720337990: edit_user at invite_expiration. Direct null observation reported for this successful operation. Operation evidence gives the pinned/immutable-list support. Add only null and preserve the existing scalar type and optional presence.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
             }
           ]
         },
-        "dismissed_merge_candidates[].merge_candidates[].sub_account_exists": {
+        "phone_number": {
           "nullable": true,
           "evidence": [
             {
-              "kind": "doc",
-              "version": "pinned 2026-10-13",
+              "kind": "live",
+              "version": "11.138.0.19",
               "date": "2026-10-31",
-              "note": "Pinned /UserManager/edit_user references #/components/schemas/EditUserSubaccountBase; its sub_account_exists description explicitly permits null, although the formal scalar schema omits nullable. The same referenced base is used at dismissed_merge_candidates[].merge_candidates[].. Preserve the existing string or integer 0/1 type and optional presence, adding only the documented null alternative at dismissed_merge_candidates[].merge_candidates[].sub_account_exists. Do not extend this correction to schemas without that prose."
+              "note": "PR43 review 5720337990: edit_user at phone_number. Shared-record family inference, not a field-specific live observation of this operation. Operation evidence gives the pinned/immutable-list support. Add only null and preserve the existing scalar type and optional presence.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
             }
           ]
         },
-        "dismissed_merge_candidates[].merge_candidates[].synced_password": {
+        "real_name": {
           "nullable": true,
           "evidence": [
             {
-              "kind": "doc",
-              "version": "pinned 2026-10-13",
+              "kind": "live",
+              "version": "11.138.0.19",
               "date": "2026-10-31",
-              "note": "Pinned /UserManager/edit_user references #/components/schemas/EditUserSubaccountBase; its synced_password description explicitly permits null, although the formal scalar schema omits nullable. The same referenced base is used at dismissed_merge_candidates[].merge_candidates[].. Preserve the existing string or integer 0/1 type and optional presence, adding only the documented null alternative at dismissed_merge_candidates[].merge_candidates[].synced_password. Do not extend this correction to schemas without that prose."
+              "note": "PR43 review 5720337990: edit_user at real_name. Shared-record family inference, not a field-specific live observation of this operation. Operation evidence gives the pinned/immutable-list support. Add only null and preserve the existing scalar type and optional presence.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
+            }
+          ]
+        },
+        "services.ftp.quota": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "PR43 review 5720337990: edit_user at services.ftp.quota. Direct null observation reported for this successful operation. Operation evidence gives the pinned/immutable-list support. Add only null and preserve the existing scalar type and optional presence.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
+            }
+          ]
+        },
+        "merge_candidates": {
+          "replace": {
+            "type": "list",
+            "items": {
+              "type": "object",
+              "fields": {
+                "alternate_email": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "avatar_url": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "can_delete": {
+                  "type": "flag"
+                },
+                "can_set_password": {
+                  "type": "flag"
+                },
+                "can_set_quota": {
+                  "type": "flag"
+                },
+                "dismissed": {
+                  "type": "flag"
+                },
+                "dismissed_merge_candidates": {
+                  "type": "list",
+                  "items": {
+                    "type": "mixed"
+                  }
+                },
+                "domain": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "full_username": {
+                  "type": "string"
+                },
+                "guid": {
+                  "type": "string"
+                },
+                "has_expired_invite": {
+                  "type": "flag"
+                },
+                "has_invite": {
+                  "type": "flag"
+                },
+                "has_siblings": {
+                  "type": "flag"
+                },
+                "invite_expiration": {
+                  "type": "int",
+                  "nullable": true
+                },
+                "issues": {
+                  "type": "list",
+                  "items": {
+                    "type": "object",
+                    "fields": {
+                      "area": {
+                        "type": "string"
+                      },
+                      "limit": {
+                        "type": "int"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "service": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string"
+                      },
+                      "used": {
+                        "type": "int"
+                      }
+                    }
+                  }
+                },
+                "merge_candidates": {
+                  "type": "list",
+                  "items": {
+                    "type": "mixed"
+                  }
+                },
+                "parent_type": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "phone_number": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "real_name": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "services": {
+                  "type": "object",
+                  "fields": {
+                    "email": {
+                      "type": "object",
+                      "fields": {
+                        "enabled": {
+                          "type": "flag"
+                        },
+                        "quota": {
+                          "type": "int"
+                        }
+                      }
+                    },
+                    "ftp": {
+                      "type": "object",
+                      "fields": {
+                        "enabled": {
+                          "type": "flag"
+                        },
+                        "homedir": {
+                          "type": "string"
+                        },
+                        "quota": {
+                          "type": "int",
+                          "nullable": true
+                        }
+                      }
+                    },
+                    "webdisk": {
+                      "type": "object",
+                      "fields": {
+                        "enabled": {
+                          "type": "flag"
+                        },
+                        "homedir": {
+                          "type": "string"
+                        },
+                        "perms": {
+                          "type": "string"
+                        },
+                        "private": {
+                          "type": "flag"
+                        }
+                      }
+                    }
+                  }
+                },
+                "special": {
+                  "type": "flag"
+                },
+                "sub_account_exists": {
+                  "type": "flag",
+                  "nullable": true
+                },
+                "synced_password": {
+                  "type": "flag",
+                  "nullable": true
+                },
+                "type": {
+                  "type": "string"
+                },
+                "username": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Clarification 6537241960 reports one populated direct merge candidate on 11.138.0.19; the value-free printer capped objects at 24 keys. Record.pm:357-364 serializes both candidate lists using the same Record/as_hashref path, and UserManager.pm:749-774 assigns service records to either list. Populated dismissed candidates are source-inferred only. Use this operation's pinned known record fields, reviewed null family and quota type; keep issues/dismissed and optional service details. The candidate's own two candidate lists are list<mixed>, as explicitly requested by the reviewer: empty observed lists and call-site inspection do not prove recursion cannot occur. Preserve deeper payloads without inventing recursive field contracts. Do not add the untyped team_owner field or other unpinned extras.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#issuecomment-6537241960"
+            }
+          ]
+        },
+        "dismissed_merge_candidates": {
+          "replace": {
+            "type": "list",
+            "items": {
+              "type": "object",
+              "fields": {
+                "alternate_email": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "avatar_url": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "can_delete": {
+                  "type": "flag"
+                },
+                "can_set_password": {
+                  "type": "flag"
+                },
+                "can_set_quota": {
+                  "type": "flag"
+                },
+                "dismissed": {
+                  "type": "flag"
+                },
+                "dismissed_merge_candidates": {
+                  "type": "list",
+                  "items": {
+                    "type": "mixed"
+                  }
+                },
+                "domain": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "full_username": {
+                  "type": "string"
+                },
+                "guid": {
+                  "type": "string"
+                },
+                "has_expired_invite": {
+                  "type": "flag"
+                },
+                "has_invite": {
+                  "type": "flag"
+                },
+                "has_siblings": {
+                  "type": "flag"
+                },
+                "invite_expiration": {
+                  "type": "int",
+                  "nullable": true
+                },
+                "issues": {
+                  "type": "list",
+                  "items": {
+                    "type": "object",
+                    "fields": {
+                      "area": {
+                        "type": "string"
+                      },
+                      "limit": {
+                        "type": "int"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "service": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string"
+                      },
+                      "used": {
+                        "type": "int"
+                      }
+                    }
+                  }
+                },
+                "merge_candidates": {
+                  "type": "list",
+                  "items": {
+                    "type": "mixed"
+                  }
+                },
+                "parent_type": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "phone_number": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "real_name": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "services": {
+                  "type": "object",
+                  "fields": {
+                    "email": {
+                      "type": "object",
+                      "fields": {
+                        "enabled": {
+                          "type": "flag"
+                        },
+                        "quota": {
+                          "type": "int"
+                        }
+                      }
+                    },
+                    "ftp": {
+                      "type": "object",
+                      "fields": {
+                        "enabled": {
+                          "type": "flag"
+                        },
+                        "homedir": {
+                          "type": "string"
+                        },
+                        "quota": {
+                          "type": "int",
+                          "nullable": true
+                        }
+                      }
+                    },
+                    "webdisk": {
+                      "type": "object",
+                      "fields": {
+                        "enabled": {
+                          "type": "flag"
+                        },
+                        "homedir": {
+                          "type": "string"
+                        },
+                        "perms": {
+                          "type": "string"
+                        },
+                        "private": {
+                          "type": "flag"
+                        }
+                      }
+                    }
+                  }
+                },
+                "special": {
+                  "type": "flag"
+                },
+                "sub_account_exists": {
+                  "type": "flag",
+                  "nullable": true
+                },
+                "synced_password": {
+                  "type": "flag",
+                  "nullable": true
+                },
+                "type": {
+                  "type": "string"
+                },
+                "username": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Clarification 6537241960 reports one populated direct merge candidate on 11.138.0.19; the value-free printer capped objects at 24 keys. Record.pm:357-364 serializes both candidate lists using the same Record/as_hashref path, and UserManager.pm:749-774 assigns service records to either list. Populated dismissed candidates are source-inferred only. Use this operation's pinned known record fields, reviewed null family and quota type; keep issues/dismissed and optional service details. The candidate's own two candidate lists are list<mixed>, as explicitly requested by the reviewer: empty observed lists and call-site inspection do not prove recursion cannot occur. Preserve deeper payloads without inventing recursive field contracts. Do not add the untyped team_owner field or other unpinned extras.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#issuecomment-6537241960"
             }
           ]
         }
@@ -321,7 +1284,19 @@
         },
         {
           "kind": "documented",
-          "text": "flat defaults to 0, which includes same-name Subaccounts under merge_candidates; flat=1 suppresses those nested candidates. Returns a list with optional fields, not an account keyed map. synced_password is a nullable integer 0/1 synchronization flag, not a password. Keep optional contact fields, service flags, quotas and empty candidate lists as documented; no recursive candidate records are inferred from the string-list schema. Quotas are in MB and FTP quota 0 means unlimited. The pinned special flag prose differs between operations; retain each operation's description rather than inferring a shared permission meaning."
+          "text": "flat defaults to 0, which includes same-name Subaccounts under merge_candidates; flat=1 suppresses those nested candidates. Returns a list with optional fields, not an account keyed map. synced_password is a nullable integer 0/1 synchronization flag, not a password. Keep optional contact fields, service flags, quotas and empty candidate lists as documented; candidate records use the reviewed finite shape and opaque nested-list boundary. Quotas are in MB and FTP quota 0 means unlimited. The pinned special flag prose differs between operations; retain each operation's description rather than inferring a shared permission meaning."
+        },
+        {
+          "kind": "observed",
+          "text": "Reviewer observations on 11.138.0.19 and pinned ServiceAccount fields support nullable alternate_email, avatar_url, domain, invite_expiration, phone_number, real_name and services.ftp.quota wherever declared. Preserve omission, null and populated values separately; parent_type, sub_account_exists and synced_password retain documented null alternatives. Propagation to sibling operations is a family inference, not a live observation of each field. Creation FTP quota remains string and other operation contracts integer; non-null wire forms remain unresolved. checkAccountConflicts and deleteUser are outside this correction."
+        },
+        {
+          "kind": "observed",
+          "text": "The reviewer observed a populated merge candidate as a Subaccount record. Source inspection identifies the same Record serializer for dismissed candidates, whose populated form was not observed. Known candidate fields retain this operation's record types and optionality; each candidate's own merge_candidates and dismissed_merge_candidates are opaque lists. This finite boundary preserves deeper values without claiming recursive validation or a guaranteed maximum nesting depth. Unknown fields such as team_owner remain outside the typed contract."
+        },
+        {
+          "kind": "observed",
+          "text": "On the reviewed 11.138.0.19 server, the WHM bridge could not load Cpanel/API/UserManager.pm because that module file was absent, while direct cPanel calls used the compiled server implementation. The observed bridge failure is ApiErrorException, not InvalidResponseException. This is a server-version/state capability observation; the client retains bridge routing and does not assume other installations have the same limitation."
         }
       ],
       "probe": {
@@ -412,8 +1387,391 @@
               "note": "Immutable docs/api/evidence/2026-10-31-team-user-management.json, SHA-256 b0bbf85e9054d68f8a06eb984a63cdac76c81d9b9a2cf6cebb3e81c0d0c04116, captures uapi:UserManager/list_users#GET via direct-uapi at revision 5cae92f5ef3dfdb4ff9e83b8ab06be6d17867677 with flat=true. The original HTTP 200/API-success response records null at $[].services.ftp.quota, causing a type_mismatch against effective contract 44a369b60c83715ac4e0d634623f398c658cb19eafd437f99d0877c82f6c0da9. Add only explicit null at [].services.ftp.quota; retain optional presence and the existing scalar type. The bridge call failed at the API layer, so this is direct-route field evidence only. Unknown $[].* null remains untyped and unwaived; sibling operations and all other fields are unchanged. The initial artifact remains failed and immutable."
             }
           ]
+        },
+        "[].merge_candidates": {
+          "replace": {
+            "type": "list",
+            "items": {
+              "type": "object",
+              "fields": {
+                "alternate_email": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "avatar_url": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "can_delete": {
+                  "type": "flag"
+                },
+                "can_set_password": {
+                  "type": "flag"
+                },
+                "can_set_quota": {
+                  "type": "flag"
+                },
+                "dismissed": {
+                  "type": "flag"
+                },
+                "dismissed_merge_candidates": {
+                  "type": "list",
+                  "items": {
+                    "type": "mixed"
+                  }
+                },
+                "domain": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "full_username": {
+                  "type": "string"
+                },
+                "guid": {
+                  "type": "string"
+                },
+                "has_expired_invite": {
+                  "type": "flag"
+                },
+                "has_invite": {
+                  "type": "flag"
+                },
+                "has_siblings": {
+                  "type": "flag"
+                },
+                "invite_expiration": {
+                  "type": "int",
+                  "nullable": true
+                },
+                "issues": {
+                  "type": "list",
+                  "items": {
+                    "type": "object",
+                    "fields": {
+                      "area": {
+                        "type": "string"
+                      },
+                      "limit": {
+                        "type": "int"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "service": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string"
+                      },
+                      "used": {
+                        "type": "int"
+                      }
+                    }
+                  }
+                },
+                "merge_candidates": {
+                  "type": "list",
+                  "items": {
+                    "type": "mixed"
+                  }
+                },
+                "parent_type": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "phone_number": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "real_name": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "services": {
+                  "type": "object",
+                  "fields": {
+                    "email": {
+                      "type": "object",
+                      "fields": {
+                        "enabled": {
+                          "type": "flag"
+                        },
+                        "quota": {
+                          "type": "int"
+                        }
+                      }
+                    },
+                    "ftp": {
+                      "type": "object",
+                      "fields": {
+                        "enabled": {
+                          "type": "flag"
+                        },
+                        "homedir": {
+                          "type": "string"
+                        },
+                        "quota": {
+                          "type": "int",
+                          "nullable": true
+                        }
+                      }
+                    },
+                    "special": {
+                      "type": "flag"
+                    },
+                    "webdisk": {
+                      "type": "object",
+                      "fields": {
+                        "enabled": {
+                          "type": "flag"
+                        },
+                        "homedir": {
+                          "type": "string"
+                        },
+                        "perms": {
+                          "type": "string"
+                        },
+                        "private": {
+                          "type": "flag"
+                        }
+                      }
+                    }
+                  }
+                },
+                "special": {
+                  "type": "flag"
+                },
+                "sub_account_exists": {
+                  "type": "flag",
+                  "nullable": true
+                },
+                "synced_password": {
+                  "type": "flag",
+                  "nullable": true
+                },
+                "type": {
+                  "type": "string"
+                },
+                "username": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Clarification 6537241960 reports one populated direct merge candidate on 11.138.0.19; the value-free printer capped objects at 24 keys. Record.pm:357-364 serializes both candidate lists using the same Record/as_hashref path, and UserManager.pm:749-774 assigns service records to either list. Populated dismissed candidates are source-inferred only. Use this operation's pinned known record fields, reviewed null family and quota type; keep issues/dismissed and optional service details. The candidate's own two candidate lists are list<mixed>, as explicitly requested by the reviewer: empty observed lists and call-site inspection do not prove recursion cannot occur. Preserve deeper payloads without inventing recursive field contracts. Do not add the untyped team_owner field or other unpinned extras.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#issuecomment-6537241960"
+            }
+          ]
+        },
+        "[].dismissed_merge_candidates": {
+          "replace": {
+            "type": "list",
+            "items": {
+              "type": "object",
+              "fields": {
+                "alternate_email": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "avatar_url": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "can_delete": {
+                  "type": "flag"
+                },
+                "can_set_password": {
+                  "type": "flag"
+                },
+                "can_set_quota": {
+                  "type": "flag"
+                },
+                "dismissed": {
+                  "type": "flag"
+                },
+                "dismissed_merge_candidates": {
+                  "type": "list",
+                  "items": {
+                    "type": "mixed"
+                  }
+                },
+                "domain": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "full_username": {
+                  "type": "string"
+                },
+                "guid": {
+                  "type": "string"
+                },
+                "has_expired_invite": {
+                  "type": "flag"
+                },
+                "has_invite": {
+                  "type": "flag"
+                },
+                "has_siblings": {
+                  "type": "flag"
+                },
+                "invite_expiration": {
+                  "type": "int",
+                  "nullable": true
+                },
+                "issues": {
+                  "type": "list",
+                  "items": {
+                    "type": "object",
+                    "fields": {
+                      "area": {
+                        "type": "string"
+                      },
+                      "limit": {
+                        "type": "int"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "service": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string"
+                      },
+                      "used": {
+                        "type": "int"
+                      }
+                    }
+                  }
+                },
+                "merge_candidates": {
+                  "type": "list",
+                  "items": {
+                    "type": "mixed"
+                  }
+                },
+                "parent_type": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "phone_number": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "real_name": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "services": {
+                  "type": "object",
+                  "fields": {
+                    "email": {
+                      "type": "object",
+                      "fields": {
+                        "enabled": {
+                          "type": "flag"
+                        },
+                        "quota": {
+                          "type": "int"
+                        }
+                      }
+                    },
+                    "ftp": {
+                      "type": "object",
+                      "fields": {
+                        "enabled": {
+                          "type": "flag"
+                        },
+                        "homedir": {
+                          "type": "string"
+                        },
+                        "quota": {
+                          "type": "int",
+                          "nullable": true
+                        }
+                      }
+                    },
+                    "special": {
+                      "type": "flag"
+                    },
+                    "webdisk": {
+                      "type": "object",
+                      "fields": {
+                        "enabled": {
+                          "type": "flag"
+                        },
+                        "homedir": {
+                          "type": "string"
+                        },
+                        "perms": {
+                          "type": "string"
+                        },
+                        "private": {
+                          "type": "flag"
+                        }
+                      }
+                    }
+                  }
+                },
+                "special": {
+                  "type": "flag"
+                },
+                "sub_account_exists": {
+                  "type": "flag",
+                  "nullable": true
+                },
+                "synced_password": {
+                  "type": "flag",
+                  "nullable": true
+                },
+                "type": {
+                  "type": "string"
+                },
+                "username": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Clarification 6537241960 reports one populated direct merge candidate on 11.138.0.19; the value-free printer capped objects at 24 keys. Record.pm:357-364 serializes both candidate lists using the same Record/as_hashref path, and UserManager.pm:749-774 assigns service records to either list. Populated dismissed candidates are source-inferred only. Use this operation's pinned known record fields, reviewed null family and quota type; keep issues/dismissed and optional service details. The candidate's own two candidate lists are list<mixed>, as explicitly requested by the reviewer: empty observed lists and call-site inspection do not prove recursion cannot occur. Preserve deeper payloads without inventing recursive field contracts. Do not add the untyped team_owner field or other unpinned extras.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#issuecomment-6537241960"
+            }
+          ]
         }
-      }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer 5720337990 at b40a9e3158c7e6dd2ff139c5e76a03536fa9ce87 identifies the shared Subaccount record across create/edit/merge/service lookup/user lookup/list. The bounded nullable family is alternate_email, avatar_url, domain, invite_expiration, phone_number, real_name, services.ftp.quota and existing documented parent_type/sub_account_exists/synced_password alternatives. Pinned ServiceAccount permits contact/domain/name nulls; original direct list_users artifact SHA-256 b0bbf85e9054d68f8a06eb984a63cdac76c81d9b9a2cf6cebb3e81c0d0c04116 observes the seven contact/invitation/FTP null fields. Per-field evidence separates direct observations from family inference. Creation FTP quota remains string, other operations integer; their non-null discrepancy remains unresolved. Preserve optionality and existing flags; checkAccountConflicts and deleteUser stay outside this correction.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer clarification 6537241960 identifies finite Record candidate shapes from one direct observation plus Record.pm and UserManager.pm source inspection. Dismissed candidates are source-inferred; nested candidate lists are deliberately list<mixed>, not recursive validation. No new committed live capture is claimed.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#issuecomment-6537241960"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer 5720337990 at b40a9e3158c7e6dd2ff139c5e76a03536fa9ce87 attributes bridged list_users failure to absent Cpanel/API/UserManager.pm and direct execution to the compiled server. The module-level limitation applies to this installation; it is not a separately observed failure of every method. Preserve API-error classification and bridge routing.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
+        }
+      ]
     },
     "uapi:UserManager/lookup_service_account": {
       "order": [
@@ -428,6 +1786,22 @@
         {
           "kind": "documented",
           "text": "Looks up an explicitly supplied full username and email, ftp or webdisk service type. No identifier is inferred. Optional candidate and service fields retain their pinned types, and synchronization/existence flags remain integer 0/1 with the documented null alternatives. FTP quota 0 means unlimited and quota units are MB."
+        },
+        {
+          "kind": "observed",
+          "text": "Reviewer observations on 11.138.0.19 and pinned ServiceAccount fields support nullable alternate_email, avatar_url, domain, invite_expiration, phone_number, real_name and services.ftp.quota wherever declared. Preserve omission, null and populated values separately; parent_type, sub_account_exists and synced_password retain documented null alternatives. Propagation to sibling operations is a family inference, not a live observation of each field. Creation FTP quota remains string and other operation contracts integer; non-null wire forms remain unresolved. checkAccountConflicts and deleteUser are outside this correction."
+        },
+        {
+          "kind": "observed",
+          "text": "The reviewer observed a populated merge candidate as a Subaccount record. Source inspection identifies the same Record serializer for dismissed candidates, whose populated form was not observed. Known candidate fields retain this operation's record types and optionality; each candidate's own merge_candidates and dismissed_merge_candidates are opaque lists. This finite boundary preserves deeper values without claiming recursive validation or a guaranteed maximum nesting depth. Unknown fields such as team_owner remain outside the typed contract."
+        },
+        {
+          "kind": "observed",
+          "text": "On the reviewed 11.138.0.19 server, the WHM bridge could not load Cpanel/API/UserManager.pm because that module file was absent, while direct cPanel calls used the compiled server implementation. The observed bridge failure is ApiErrorException, not InvalidResponseException. This is a server-version/state capability observation; the client retains bridge routing and does not assume other installations have the same limitation."
+        },
+        {
+          "kind": "observed",
+          "text": "On 11.138.0.19, looking up a nonexistent service account produced a raw upstream Perl array-reference exception in an API-failure envelope. It correctly raises ApiErrorException; the diagnostic does not establish a client-side decoding fault."
         }
       ],
       "response": {
@@ -464,73 +1838,475 @@
             }
           ]
         },
-        "merge_candidates[].parent_type": {
+        "alternate_email": {
           "nullable": true,
           "evidence": [
             {
-              "kind": "doc",
-              "version": "pinned 2026-10-13",
+              "kind": "live",
+              "version": "11.138.0.19",
               "date": "2026-10-31",
-              "note": "Pinned /UserManager/lookup_service_account references #/components/schemas/LookupServiceAccountSubaccountBase; its parent_type description explicitly permits null, although the formal scalar schema omits nullable. The same referenced base is used at merge_candidates[].. Preserve the existing string or integer 0/1 type and optional presence, adding only the documented null alternative at merge_candidates[].parent_type. Do not extend this correction to schemas without that prose."
+              "note": "PR43 review 5720337990: lookup_service_account at alternate_email. Direct null observation reported for this successful operation. Operation evidence gives the pinned/immutable-list support. Add only null and preserve the existing scalar type and optional presence.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
             }
           ]
         },
-        "merge_candidates[].sub_account_exists": {
+        "avatar_url": {
           "nullable": true,
           "evidence": [
             {
-              "kind": "doc",
-              "version": "pinned 2026-10-13",
+              "kind": "live",
+              "version": "11.138.0.19",
               "date": "2026-10-31",
-              "note": "Pinned /UserManager/lookup_service_account references #/components/schemas/LookupServiceAccountSubaccountBase; its sub_account_exists description explicitly permits null, although the formal scalar schema omits nullable. The same referenced base is used at merge_candidates[].. Preserve the existing string or integer 0/1 type and optional presence, adding only the documented null alternative at merge_candidates[].sub_account_exists. Do not extend this correction to schemas without that prose."
+              "note": "PR43 review 5720337990: lookup_service_account at avatar_url. Direct null observation reported for this successful operation. Operation evidence gives the pinned/immutable-list support. Add only null and preserve the existing scalar type and optional presence.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
             }
           ]
         },
-        "merge_candidates[].synced_password": {
+        "domain": {
           "nullable": true,
           "evidence": [
             {
-              "kind": "doc",
-              "version": "pinned 2026-10-13",
+              "kind": "live",
+              "version": "11.138.0.19",
               "date": "2026-10-31",
-              "note": "Pinned /UserManager/lookup_service_account references #/components/schemas/LookupServiceAccountSubaccountBase; its synced_password description explicitly permits null, although the formal scalar schema omits nullable. The same referenced base is used at merge_candidates[].. Preserve the existing string or integer 0/1 type and optional presence, adding only the documented null alternative at merge_candidates[].synced_password. Do not extend this correction to schemas without that prose."
+              "note": "PR43 review 5720337990: lookup_service_account at domain. Shared-record family inference, not a field-specific live observation of this operation. Operation evidence gives the pinned/immutable-list support. Add only null and preserve the existing scalar type and optional presence.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
             }
           ]
         },
-        "dismissed_merge_candidates[].merge_candidates[].parent_type": {
+        "invite_expiration": {
           "nullable": true,
           "evidence": [
             {
-              "kind": "doc",
-              "version": "pinned 2026-10-13",
+              "kind": "live",
+              "version": "11.138.0.19",
               "date": "2026-10-31",
-              "note": "Pinned /UserManager/lookup_service_account references #/components/schemas/LookupServiceAccountSubaccountBase; its parent_type description explicitly permits null, although the formal scalar schema omits nullable. The same referenced base is used at dismissed_merge_candidates[].merge_candidates[].. Preserve the existing string or integer 0/1 type and optional presence, adding only the documented null alternative at dismissed_merge_candidates[].merge_candidates[].parent_type. Do not extend this correction to schemas without that prose."
+              "note": "PR43 review 5720337990: lookup_service_account at invite_expiration. Direct null observation reported for this successful operation. Operation evidence gives the pinned/immutable-list support. Add only null and preserve the existing scalar type and optional presence.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
             }
           ]
         },
-        "dismissed_merge_candidates[].merge_candidates[].sub_account_exists": {
+        "phone_number": {
           "nullable": true,
           "evidence": [
             {
-              "kind": "doc",
-              "version": "pinned 2026-10-13",
+              "kind": "live",
+              "version": "11.138.0.19",
               "date": "2026-10-31",
-              "note": "Pinned /UserManager/lookup_service_account references #/components/schemas/LookupServiceAccountSubaccountBase; its sub_account_exists description explicitly permits null, although the formal scalar schema omits nullable. The same referenced base is used at dismissed_merge_candidates[].merge_candidates[].. Preserve the existing string or integer 0/1 type and optional presence, adding only the documented null alternative at dismissed_merge_candidates[].merge_candidates[].sub_account_exists. Do not extend this correction to schemas without that prose."
+              "note": "PR43 review 5720337990: lookup_service_account at phone_number. Direct null observation reported for this successful operation. Operation evidence gives the pinned/immutable-list support. Add only null and preserve the existing scalar type and optional presence.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
             }
           ]
         },
-        "dismissed_merge_candidates[].merge_candidates[].synced_password": {
+        "real_name": {
           "nullable": true,
           "evidence": [
             {
-              "kind": "doc",
-              "version": "pinned 2026-10-13",
+              "kind": "live",
+              "version": "11.138.0.19",
               "date": "2026-10-31",
-              "note": "Pinned /UserManager/lookup_service_account references #/components/schemas/LookupServiceAccountSubaccountBase; its synced_password description explicitly permits null, although the formal scalar schema omits nullable. The same referenced base is used at dismissed_merge_candidates[].merge_candidates[].. Preserve the existing string or integer 0/1 type and optional presence, adding only the documented null alternative at dismissed_merge_candidates[].merge_candidates[].synced_password. Do not extend this correction to schemas without that prose."
+              "note": "PR43 review 5720337990: lookup_service_account at real_name. Direct null observation reported for this successful operation. Operation evidence gives the pinned/immutable-list support. Add only null and preserve the existing scalar type and optional presence.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
+            }
+          ]
+        },
+        "services.ftp.quota": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "PR43 review 5720337990: lookup_service_account at services.ftp.quota. Direct null observation reported for this successful operation. Operation evidence gives the pinned/immutable-list support. Add only null and preserve the existing scalar type and optional presence.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
+            }
+          ]
+        },
+        "merge_candidates": {
+          "replace": {
+            "type": "list",
+            "items": {
+              "type": "object",
+              "fields": {
+                "alternate_email": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "avatar_url": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "can_delete": {
+                  "type": "flag"
+                },
+                "can_set_password": {
+                  "type": "flag"
+                },
+                "can_set_quota": {
+                  "type": "flag"
+                },
+                "dismissed": {
+                  "type": "flag"
+                },
+                "dismissed_merge_candidates": {
+                  "type": "list",
+                  "items": {
+                    "type": "mixed"
+                  }
+                },
+                "domain": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "full_username": {
+                  "type": "string"
+                },
+                "guid": {
+                  "type": "string"
+                },
+                "has_expired_invite": {
+                  "type": "flag"
+                },
+                "has_invite": {
+                  "type": "flag"
+                },
+                "has_siblings": {
+                  "type": "flag"
+                },
+                "invite_expiration": {
+                  "type": "int",
+                  "nullable": true
+                },
+                "issues": {
+                  "type": "list",
+                  "items": {
+                    "type": "object",
+                    "fields": {
+                      "area": {
+                        "type": "string"
+                      },
+                      "limit": {
+                        "type": "int"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "service": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string"
+                      },
+                      "used": {
+                        "type": "int"
+                      }
+                    }
+                  }
+                },
+                "merge_candidates": {
+                  "type": "list",
+                  "items": {
+                    "type": "mixed"
+                  }
+                },
+                "parent_type": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "phone_number": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "real_name": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "services": {
+                  "type": "object",
+                  "fields": {
+                    "email": {
+                      "type": "object",
+                      "fields": {
+                        "enabled": {
+                          "type": "flag"
+                        },
+                        "quota": {
+                          "type": "int"
+                        }
+                      }
+                    },
+                    "ftp": {
+                      "type": "object",
+                      "fields": {
+                        "enabled": {
+                          "type": "flag"
+                        },
+                        "homedir": {
+                          "type": "string"
+                        },
+                        "quota": {
+                          "type": "int",
+                          "nullable": true
+                        }
+                      }
+                    },
+                    "webdisk": {
+                      "type": "object",
+                      "fields": {
+                        "enabled": {
+                          "type": "flag"
+                        },
+                        "homedir": {
+                          "type": "string"
+                        },
+                        "perms": {
+                          "type": "string"
+                        },
+                        "private": {
+                          "type": "flag"
+                        }
+                      }
+                    }
+                  }
+                },
+                "special": {
+                  "type": "flag"
+                },
+                "sub_account_exists": {
+                  "type": "flag",
+                  "nullable": true
+                },
+                "synced_password": {
+                  "type": "flag",
+                  "nullable": true
+                },
+                "type": {
+                  "type": "string"
+                },
+                "username": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Clarification 6537241960 reports one populated direct merge candidate on 11.138.0.19; the value-free printer capped objects at 24 keys. Record.pm:357-364 serializes both candidate lists using the same Record/as_hashref path, and UserManager.pm:749-774 assigns service records to either list. Populated dismissed candidates are source-inferred only. Use this operation's pinned known record fields, reviewed null family and quota type; keep issues/dismissed and optional service details. The candidate's own two candidate lists are list<mixed>, as explicitly requested by the reviewer: empty observed lists and call-site inspection do not prove recursion cannot occur. Preserve deeper payloads without inventing recursive field contracts. Do not add the untyped team_owner field or other unpinned extras.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#issuecomment-6537241960"
+            }
+          ]
+        },
+        "dismissed_merge_candidates": {
+          "replace": {
+            "type": "list",
+            "items": {
+              "type": "object",
+              "fields": {
+                "alternate_email": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "avatar_url": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "can_delete": {
+                  "type": "flag"
+                },
+                "can_set_password": {
+                  "type": "flag"
+                },
+                "can_set_quota": {
+                  "type": "flag"
+                },
+                "dismissed": {
+                  "type": "flag"
+                },
+                "dismissed_merge_candidates": {
+                  "type": "list",
+                  "items": {
+                    "type": "mixed"
+                  }
+                },
+                "domain": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "full_username": {
+                  "type": "string"
+                },
+                "guid": {
+                  "type": "string"
+                },
+                "has_expired_invite": {
+                  "type": "flag"
+                },
+                "has_invite": {
+                  "type": "flag"
+                },
+                "has_siblings": {
+                  "type": "flag"
+                },
+                "invite_expiration": {
+                  "type": "int",
+                  "nullable": true
+                },
+                "issues": {
+                  "type": "list",
+                  "items": {
+                    "type": "object",
+                    "fields": {
+                      "area": {
+                        "type": "string"
+                      },
+                      "limit": {
+                        "type": "int"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "service": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string"
+                      },
+                      "used": {
+                        "type": "int"
+                      }
+                    }
+                  }
+                },
+                "merge_candidates": {
+                  "type": "list",
+                  "items": {
+                    "type": "mixed"
+                  }
+                },
+                "parent_type": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "phone_number": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "real_name": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "services": {
+                  "type": "object",
+                  "fields": {
+                    "email": {
+                      "type": "object",
+                      "fields": {
+                        "enabled": {
+                          "type": "flag"
+                        },
+                        "quota": {
+                          "type": "int"
+                        }
+                      }
+                    },
+                    "ftp": {
+                      "type": "object",
+                      "fields": {
+                        "enabled": {
+                          "type": "flag"
+                        },
+                        "homedir": {
+                          "type": "string"
+                        },
+                        "quota": {
+                          "type": "int",
+                          "nullable": true
+                        }
+                      }
+                    },
+                    "webdisk": {
+                      "type": "object",
+                      "fields": {
+                        "enabled": {
+                          "type": "flag"
+                        },
+                        "homedir": {
+                          "type": "string"
+                        },
+                        "perms": {
+                          "type": "string"
+                        },
+                        "private": {
+                          "type": "flag"
+                        }
+                      }
+                    }
+                  }
+                },
+                "special": {
+                  "type": "flag"
+                },
+                "sub_account_exists": {
+                  "type": "flag",
+                  "nullable": true
+                },
+                "synced_password": {
+                  "type": "flag",
+                  "nullable": true
+                },
+                "type": {
+                  "type": "string"
+                },
+                "username": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Clarification 6537241960 reports one populated direct merge candidate on 11.138.0.19; the value-free printer capped objects at 24 keys. Record.pm:357-364 serializes both candidate lists using the same Record/as_hashref path, and UserManager.pm:749-774 assigns service records to either list. Populated dismissed candidates are source-inferred only. Use this operation's pinned known record fields, reviewed null family and quota type; keep issues/dismissed and optional service details. The candidate's own two candidate lists are list<mixed>, as explicitly requested by the reviewer: empty observed lists and call-site inspection do not prove recursion cannot occur. Preserve deeper payloads without inventing recursive field contracts. Do not add the untyped team_owner field or other unpinned extras.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#issuecomment-6537241960"
             }
           ]
         }
-      }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer 5720337990 at b40a9e3158c7e6dd2ff139c5e76a03536fa9ce87 identifies the shared Subaccount record across create/edit/merge/service lookup/user lookup/list. The bounded nullable family is alternate_email, avatar_url, domain, invite_expiration, phone_number, real_name, services.ftp.quota and existing documented parent_type/sub_account_exists/synced_password alternatives. Pinned ServiceAccount permits contact/domain/name nulls; original direct list_users artifact SHA-256 b0bbf85e9054d68f8a06eb984a63cdac76c81d9b9a2cf6cebb3e81c0d0c04116 observes the seven contact/invitation/FTP null fields. Per-field evidence separates direct observations from family inference. Creation FTP quota remains string, other operations integer; their non-null discrepancy remains unresolved. Preserve optionality and existing flags; checkAccountConflicts and deleteUser stay outside this correction.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer clarification 6537241960 identifies finite Record candidate shapes from one direct observation plus Record.pm and UserManager.pm source inspection. Dismissed candidates are source-inferred; nested candidate lists are deliberately list<mixed>, not recursive validation. No new committed live capture is claimed.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#issuecomment-6537241960"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer 5720337990 at b40a9e3158c7e6dd2ff139c5e76a03536fa9ce87 attributes bridged list_users failure to absent Cpanel/API/UserManager.pm and direct execution to the compiled server. The module-level limitation applies to this installation; it is not a separately observed failure of every method. Preserve API-error classification and bridge routing.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer 5720337990 reports the nonexistent-account lookup_service_account API failure. Preserve API-failure classification without recording arbitrary error content or treating it as InvalidResponseException.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
+        }
+      ]
     },
     "uapi:UserManager/lookup_user": {
       "order": [
@@ -543,7 +2319,19 @@
         },
         {
           "kind": "documented",
-          "text": "Looks up the explicitly supplied Subaccount GUID; the client does not infer it from a username. Optional contact fields and invitation expiration preserve documented nulls. Service quotas are in MB and FTP quota 0 means unlimited. The pinned ServiceAccount schema references itself for merge candidates; recursive expansion beyond the generator's documented schema boundary is not evidence of live response behavior."
+          "text": "Looks up the explicitly supplied Subaccount GUID; the client does not infer it from a username. Optional contact fields and invitation expiration preserve documented nulls. Service quotas are in MB and FTP quota 0 means unlimited. The pinned ServiceAccount schema references itself for merge candidates; the reviewed finite record keeps nested candidate lists opaque instead of claiming recursive validation."
+        },
+        {
+          "kind": "observed",
+          "text": "Reviewer observations on 11.138.0.19 and pinned ServiceAccount fields support nullable alternate_email, avatar_url, domain, invite_expiration, phone_number, real_name and services.ftp.quota wherever declared. Preserve omission, null and populated values separately; parent_type, sub_account_exists and synced_password retain documented null alternatives. Propagation to sibling operations is a family inference, not a live observation of each field. Creation FTP quota remains string and other operation contracts integer; non-null wire forms remain unresolved. checkAccountConflicts and deleteUser are outside this correction."
+        },
+        {
+          "kind": "observed",
+          "text": "The reviewer observed a populated merge candidate as a Subaccount record. Source inspection identifies the same Record serializer for dismissed candidates, whose populated form was not observed. Known candidate fields retain this operation's record types and optionality; each candidate's own merge_candidates and dismissed_merge_candidates are opaque lists. This finite boundary preserves deeper values without claiming recursive validation or a guaranteed maximum nesting depth. Unknown fields such as team_owner remain outside the typed contract."
+        },
+        {
+          "kind": "observed",
+          "text": "On the reviewed 11.138.0.19 server, the WHM bridge could not load Cpanel/API/UserManager.pm because that module file was absent, while direct cPanel calls used the compiled server implementation. The observed bridge failure is ApiErrorException, not InvalidResponseException. This is a server-version/state capability observation; the client retains bridge routing and does not assume other installations have the same limitation."
         }
       ],
       "response": {
@@ -569,29 +2357,408 @@
             }
           ]
         },
-        "dismissed_merge_candidates[].sub_account_exists": {
+        "services.ftp.quota": {
           "nullable": true,
           "evidence": [
             {
-              "kind": "doc",
-              "version": "pinned 2026-10-13",
+              "kind": "live",
+              "version": "11.138.0.19",
               "date": "2026-10-31",
-              "note": "Pinned /UserManager/lookup_user references #/components/schemas/ServiceAccount. Its sub_account_exists description explicitly says the function returns a null value when the account is not the corresponding service/subaccount; the formal integer flag schema omits nullable. Add only null at dismissed_merge_candidates[].sub_account_exists, retaining optional presence and strict integer 0/1. Recursive merge_candidates items remain at the existing mixed cycle boundary and receive no inferred schema."
+              "note": "PR43 review 5720337990: lookup_user at services.ftp.quota. Shared-record family inference, not a field-specific live observation of this operation. Operation evidence gives the pinned/immutable-list support. Add only null and preserve the existing scalar type and optional presence.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
             }
           ]
         },
-        "dismissed_merge_candidates[].synced_password": {
-          "nullable": true,
+        "merge_candidates": {
+          "replace": {
+            "type": "list",
+            "items": {
+              "type": "object",
+              "fields": {
+                "alternate_email": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "avatar_url": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "can_delete": {
+                  "type": "flag"
+                },
+                "can_set_password": {
+                  "type": "flag"
+                },
+                "can_set_quota": {
+                  "type": "flag"
+                },
+                "dismissed": {
+                  "type": "flag"
+                },
+                "dismissed_merge_candidates": {
+                  "type": "list",
+                  "items": {
+                    "type": "mixed"
+                  }
+                },
+                "domain": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "full_username": {
+                  "type": "string"
+                },
+                "guid": {
+                  "type": "string"
+                },
+                "has_expired_invite": {
+                  "type": "flag"
+                },
+                "has_invite": {
+                  "type": "flag"
+                },
+                "has_siblings": {
+                  "type": "flag"
+                },
+                "invite_expiration": {
+                  "type": "int",
+                  "nullable": true
+                },
+                "issues": {
+                  "type": "list",
+                  "items": {
+                    "type": "object",
+                    "fields": {
+                      "area": {
+                        "type": "string"
+                      },
+                      "limit": {
+                        "type": "int"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "service": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string"
+                      },
+                      "used": {
+                        "type": "int"
+                      }
+                    }
+                  }
+                },
+                "merge_candidates": {
+                  "type": "list",
+                  "items": {
+                    "type": "mixed"
+                  }
+                },
+                "parent_type": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "phone_number": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "real_name": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "services": {
+                  "type": "object",
+                  "fields": {
+                    "email": {
+                      "type": "object",
+                      "fields": {
+                        "enabled": {
+                          "type": "flag"
+                        },
+                        "quota": {
+                          "type": "int"
+                        }
+                      }
+                    },
+                    "ftp": {
+                      "type": "object",
+                      "fields": {
+                        "enabled": {
+                          "type": "flag"
+                        },
+                        "homedir": {
+                          "type": "string"
+                        },
+                        "quota": {
+                          "type": "int",
+                          "nullable": true
+                        }
+                      }
+                    },
+                    "special": {
+                      "type": "flag"
+                    },
+                    "webdisk": {
+                      "type": "object",
+                      "fields": {
+                        "enabled": {
+                          "type": "flag"
+                        },
+                        "enabledigest": {
+                          "type": "flag"
+                        },
+                        "homedir": {
+                          "type": "string"
+                        },
+                        "perms": {
+                          "type": "string"
+                        },
+                        "private": {
+                          "type": "flag"
+                        }
+                      }
+                    }
+                  }
+                },
+                "special": {
+                  "type": "flag"
+                },
+                "sub_account_exists": {
+                  "type": "flag",
+                  "nullable": true
+                },
+                "synced_password": {
+                  "type": "flag",
+                  "nullable": true
+                },
+                "type": {
+                  "type": "string"
+                },
+                "username": {
+                  "type": "string"
+                }
+              }
+            }
+          },
           "evidence": [
             {
-              "kind": "doc",
-              "version": "pinned 2026-10-13",
+              "kind": "live",
+              "version": "11.138.0.19",
               "date": "2026-10-31",
-              "note": "Pinned /UserManager/lookup_user references #/components/schemas/ServiceAccount. Its synced_password description explicitly says the function returns a null value when the account is not the corresponding service/subaccount; the formal integer flag schema omits nullable. Add only null at dismissed_merge_candidates[].synced_password, retaining optional presence and strict integer 0/1. Recursive merge_candidates items remain at the existing mixed cycle boundary and receive no inferred schema."
+              "note": "Clarification 6537241960 reports one populated direct merge candidate on 11.138.0.19; the value-free printer capped objects at 24 keys. Record.pm:357-364 serializes both candidate lists using the same Record/as_hashref path, and UserManager.pm:749-774 assigns service records to either list. Populated dismissed candidates are source-inferred only. Use this operation's pinned known record fields, reviewed null family and quota type; keep issues/dismissed and optional service details. The candidate's own two candidate lists are list<mixed>, as explicitly requested by the reviewer: empty observed lists and call-site inspection do not prove recursion cannot occur. Preserve deeper payloads without inventing recursive field contracts. Do not add the untyped team_owner field or other unpinned extras.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#issuecomment-6537241960"
+            }
+          ]
+        },
+        "dismissed_merge_candidates": {
+          "replace": {
+            "type": "list",
+            "items": {
+              "type": "object",
+              "fields": {
+                "alternate_email": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "avatar_url": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "can_delete": {
+                  "type": "flag"
+                },
+                "can_set_password": {
+                  "type": "flag"
+                },
+                "can_set_quota": {
+                  "type": "flag"
+                },
+                "dismissed": {
+                  "type": "flag"
+                },
+                "dismissed_merge_candidates": {
+                  "type": "list",
+                  "items": {
+                    "type": "mixed"
+                  }
+                },
+                "domain": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "full_username": {
+                  "type": "string"
+                },
+                "guid": {
+                  "type": "string"
+                },
+                "has_expired_invite": {
+                  "type": "flag"
+                },
+                "has_invite": {
+                  "type": "flag"
+                },
+                "has_siblings": {
+                  "type": "flag"
+                },
+                "invite_expiration": {
+                  "type": "int",
+                  "nullable": true
+                },
+                "issues": {
+                  "type": "list",
+                  "items": {
+                    "type": "object",
+                    "fields": {
+                      "area": {
+                        "type": "string"
+                      },
+                      "limit": {
+                        "type": "int"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "service": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string"
+                      },
+                      "used": {
+                        "type": "int"
+                      }
+                    }
+                  }
+                },
+                "merge_candidates": {
+                  "type": "list",
+                  "items": {
+                    "type": "mixed"
+                  }
+                },
+                "parent_type": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "phone_number": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "real_name": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "services": {
+                  "type": "object",
+                  "fields": {
+                    "email": {
+                      "type": "object",
+                      "fields": {
+                        "enabled": {
+                          "type": "flag"
+                        },
+                        "quota": {
+                          "type": "int"
+                        }
+                      }
+                    },
+                    "ftp": {
+                      "type": "object",
+                      "fields": {
+                        "enabled": {
+                          "type": "flag"
+                        },
+                        "homedir": {
+                          "type": "string"
+                        },
+                        "quota": {
+                          "type": "int",
+                          "nullable": true
+                        }
+                      }
+                    },
+                    "special": {
+                      "type": "flag"
+                    },
+                    "webdisk": {
+                      "type": "object",
+                      "fields": {
+                        "enabled": {
+                          "type": "flag"
+                        },
+                        "enabledigest": {
+                          "type": "flag"
+                        },
+                        "homedir": {
+                          "type": "string"
+                        },
+                        "perms": {
+                          "type": "string"
+                        },
+                        "private": {
+                          "type": "flag"
+                        }
+                      }
+                    }
+                  }
+                },
+                "special": {
+                  "type": "flag"
+                },
+                "sub_account_exists": {
+                  "type": "flag",
+                  "nullable": true
+                },
+                "synced_password": {
+                  "type": "flag",
+                  "nullable": true
+                },
+                "type": {
+                  "type": "string"
+                },
+                "username": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Clarification 6537241960 reports one populated direct merge candidate on 11.138.0.19; the value-free printer capped objects at 24 keys. Record.pm:357-364 serializes both candidate lists using the same Record/as_hashref path, and UserManager.pm:749-774 assigns service records to either list. Populated dismissed candidates are source-inferred only. Use this operation's pinned known record fields, reviewed null family and quota type; keep issues/dismissed and optional service details. The candidate's own two candidate lists are list<mixed>, as explicitly requested by the reviewer: empty observed lists and call-site inspection do not prove recursion cannot occur. Preserve deeper payloads without inventing recursive field contracts. Do not add the untyped team_owner field or other unpinned extras.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#issuecomment-6537241960"
             }
           ]
         }
-      }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer 5720337990 at b40a9e3158c7e6dd2ff139c5e76a03536fa9ce87 identifies the shared Subaccount record across create/edit/merge/service lookup/user lookup/list. The bounded nullable family is alternate_email, avatar_url, domain, invite_expiration, phone_number, real_name, services.ftp.quota and existing documented parent_type/sub_account_exists/synced_password alternatives. Pinned ServiceAccount permits contact/domain/name nulls; original direct list_users artifact SHA-256 b0bbf85e9054d68f8a06eb984a63cdac76c81d9b9a2cf6cebb3e81c0d0c04116 observes the seven contact/invitation/FTP null fields. Per-field evidence separates direct observations from family inference. Creation FTP quota remains string, other operations integer; their non-null discrepancy remains unresolved. Preserve optionality and existing flags; checkAccountConflicts and deleteUser stay outside this correction.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer clarification 6537241960 identifies finite Record candidate shapes from one direct observation plus Record.pm and UserManager.pm source inspection. Dismissed candidates are source-inferred; nested candidate lists are deliberately list<mixed>, not recursive validation. No new committed live capture is claimed.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#issuecomment-6537241960"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer 5720337990 at b40a9e3158c7e6dd2ff139c5e76a03536fa9ce87 attributes bridged list_users failure to absent Cpanel/API/UserManager.pm and direct execution to the compiled server. The module-level limitation applies to this installation; it is not a separately observed failure of every method. Preserve API-error classification and bridge routing.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
+        }
+      ]
     },
     "uapi:UserManager/merge_service_account": {
       "order": [
@@ -609,6 +2776,18 @@
         {
           "kind": "documented",
           "text": "Links email, FTP or Web Disk services to a Subaccount, creating the Subaccount if none exists. Supply at least one services.*.merge flag; defaults are 0 and the client does not enforce the cross-parameter requirement. Multiple services must share username and domain. The source declares no rollback. Quotas are in MB, FTP quota 0 means unlimited, and optional/nullable integer synchronization flags remain distinct from omitted fields."
+        },
+        {
+          "kind": "observed",
+          "text": "Reviewer observations on 11.138.0.19 and pinned ServiceAccount fields support nullable alternate_email, avatar_url, domain, invite_expiration, phone_number, real_name and services.ftp.quota wherever declared. Preserve omission, null and populated values separately; parent_type, sub_account_exists and synced_password retain documented null alternatives. Propagation to sibling operations is a family inference, not a live observation of each field. Creation FTP quota remains string and other operation contracts integer; non-null wire forms remain unresolved. checkAccountConflicts and deleteUser are outside this correction."
+        },
+        {
+          "kind": "observed",
+          "text": "The reviewer observed a populated merge candidate as a Subaccount record. Source inspection identifies the same Record serializer for dismissed candidates, whose populated form was not observed. Known candidate fields retain this operation's record types and optionality; each candidate's own merge_candidates and dismissed_merge_candidates are opaque lists. This finite boundary preserves deeper values without claiming recursive validation or a guaranteed maximum nesting depth. Unknown fields such as team_owner remain outside the typed contract."
+        },
+        {
+          "kind": "observed",
+          "text": "On the reviewed 11.138.0.19 server, the WHM bridge could not load Cpanel/API/UserManager.pm because that module file was absent, while direct cPanel calls used the compiled server implementation. The observed bridge failure is ApiErrorException, not InvalidResponseException. This is a server-version/state capability observation; the client retains bridge routing and does not assume other installations have the same limitation."
         }
       ],
       "method": "POST",
@@ -618,8 +2797,469 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /UserManager/merge_service_account declares x-readonly=false. Use form POST for the selected-account mutation; password fields stay sensitive. Preserve pinned parameter requiredness, scalar types and literal dotted field names."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer 5720337990 at b40a9e3158c7e6dd2ff139c5e76a03536fa9ce87 identifies the shared Subaccount record across create/edit/merge/service lookup/user lookup/list. The bounded nullable family is alternate_email, avatar_url, domain, invite_expiration, phone_number, real_name, services.ftp.quota and existing documented parent_type/sub_account_exists/synced_password alternatives. Pinned ServiceAccount permits contact/domain/name nulls; original direct list_users artifact SHA-256 b0bbf85e9054d68f8a06eb984a63cdac76c81d9b9a2cf6cebb3e81c0d0c04116 observes the seven contact/invitation/FTP null fields. Per-field evidence separates direct observations from family inference. Creation FTP quota remains string, other operations integer; their non-null discrepancy remains unresolved. Preserve optionality and existing flags; checkAccountConflicts and deleteUser stay outside this correction.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer clarification 6537241960 identifies finite Record candidate shapes from one direct observation plus Record.pm and UserManager.pm source inspection. Dismissed candidates are source-inferred; nested candidate lists are deliberately list<mixed>, not recursive validation. No new committed live capture is claimed.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#issuecomment-6537241960"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer 5720337990 at b40a9e3158c7e6dd2ff139c5e76a03536fa9ce87 attributes bridged list_users failure to absent Cpanel/API/UserManager.pm and direct execution to the compiled server. The module-level limitation applies to this installation; it is not a separately observed failure of every method. Preserve API-error classification and bridge routing.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
         }
-      ]
+      ],
+      "response": {
+        "alternate_email": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "PR43 review 5720337990: merge_service_account at alternate_email. Direct null observation reported for this successful operation. Operation evidence gives the pinned/immutable-list support. Add only null and preserve the existing scalar type and optional presence.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
+            }
+          ]
+        },
+        "avatar_url": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "PR43 review 5720337990: merge_service_account at avatar_url. Direct null observation reported for this successful operation. Operation evidence gives the pinned/immutable-list support. Add only null and preserve the existing scalar type and optional presence.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
+            }
+          ]
+        },
+        "domain": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "PR43 review 5720337990: merge_service_account at domain. Shared-record family inference, not a field-specific live observation of this operation. Operation evidence gives the pinned/immutable-list support. Add only null and preserve the existing scalar type and optional presence.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
+            }
+          ]
+        },
+        "invite_expiration": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "PR43 review 5720337990: merge_service_account at invite_expiration. Direct null observation reported for this successful operation. Operation evidence gives the pinned/immutable-list support. Add only null and preserve the existing scalar type and optional presence.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
+            }
+          ]
+        },
+        "phone_number": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "PR43 review 5720337990: merge_service_account at phone_number. Shared-record family inference, not a field-specific live observation of this operation. Operation evidence gives the pinned/immutable-list support. Add only null and preserve the existing scalar type and optional presence.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
+            }
+          ]
+        },
+        "real_name": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "PR43 review 5720337990: merge_service_account at real_name. Shared-record family inference, not a field-specific live observation of this operation. Operation evidence gives the pinned/immutable-list support. Add only null and preserve the existing scalar type and optional presence.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
+            }
+          ]
+        },
+        "services.ftp.quota": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "PR43 review 5720337990: merge_service_account at services.ftp.quota. Direct null observation reported for this successful operation. Operation evidence gives the pinned/immutable-list support. Add only null and preserve the existing scalar type and optional presence.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
+            }
+          ]
+        },
+        "merge_candidates": {
+          "replace": {
+            "type": "list",
+            "items": {
+              "type": "object",
+              "fields": {
+                "alternate_email": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "avatar_url": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "can_delete": {
+                  "type": "flag"
+                },
+                "can_set_password": {
+                  "type": "flag"
+                },
+                "can_set_quota": {
+                  "type": "flag"
+                },
+                "dismissed": {
+                  "type": "flag"
+                },
+                "dismissed_merge_candidates": {
+                  "type": "list",
+                  "items": {
+                    "type": "mixed"
+                  }
+                },
+                "domain": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "full_username": {
+                  "type": "string"
+                },
+                "guid": {
+                  "type": "string"
+                },
+                "has_expired_invite": {
+                  "type": "flag"
+                },
+                "has_invite": {
+                  "type": "flag"
+                },
+                "has_siblings": {
+                  "type": "flag"
+                },
+                "invite_expiration": {
+                  "type": "int",
+                  "nullable": true
+                },
+                "issues": {
+                  "type": "list",
+                  "items": {
+                    "type": "object",
+                    "fields": {
+                      "area": {
+                        "type": "string"
+                      },
+                      "limit": {
+                        "type": "int"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "service": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string"
+                      },
+                      "used": {
+                        "type": "int"
+                      }
+                    }
+                  }
+                },
+                "merge_candidates": {
+                  "type": "list",
+                  "items": {
+                    "type": "mixed"
+                  }
+                },
+                "parent_type": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "phone_number": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "real_name": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "services": {
+                  "type": "object",
+                  "fields": {
+                    "email": {
+                      "type": "object",
+                      "fields": {
+                        "enabled": {
+                          "type": "flag"
+                        },
+                        "quota": {
+                          "type": "int"
+                        }
+                      }
+                    },
+                    "ftp": {
+                      "type": "object",
+                      "fields": {
+                        "enabled": {
+                          "type": "flag"
+                        },
+                        "homedir": {
+                          "type": "string"
+                        },
+                        "quota": {
+                          "type": "int",
+                          "nullable": true
+                        }
+                      }
+                    },
+                    "webdisk": {
+                      "type": "object",
+                      "fields": {
+                        "enabled": {
+                          "type": "flag"
+                        },
+                        "homedir": {
+                          "type": "string"
+                        },
+                        "perms": {
+                          "type": "string"
+                        },
+                        "private": {
+                          "type": "flag"
+                        }
+                      }
+                    }
+                  }
+                },
+                "special": {
+                  "type": "flag"
+                },
+                "sub_account_exists": {
+                  "type": "flag",
+                  "nullable": true
+                },
+                "synced_password": {
+                  "type": "flag",
+                  "nullable": true
+                },
+                "type": {
+                  "type": "string"
+                },
+                "username": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Clarification 6537241960 reports one populated direct merge candidate on 11.138.0.19; the value-free printer capped objects at 24 keys. Record.pm:357-364 serializes both candidate lists using the same Record/as_hashref path, and UserManager.pm:749-774 assigns service records to either list. Populated dismissed candidates are source-inferred only. Use this operation's pinned known record fields, reviewed null family and quota type; keep issues/dismissed and optional service details. The candidate's own two candidate lists are list<mixed>, as explicitly requested by the reviewer: empty observed lists and call-site inspection do not prove recursion cannot occur. Preserve deeper payloads without inventing recursive field contracts. Do not add the untyped team_owner field or other unpinned extras.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#issuecomment-6537241960"
+            }
+          ]
+        },
+        "dismissed_merge_candidates": {
+          "replace": {
+            "type": "list",
+            "items": {
+              "type": "object",
+              "fields": {
+                "alternate_email": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "avatar_url": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "can_delete": {
+                  "type": "flag"
+                },
+                "can_set_password": {
+                  "type": "flag"
+                },
+                "can_set_quota": {
+                  "type": "flag"
+                },
+                "dismissed": {
+                  "type": "flag"
+                },
+                "dismissed_merge_candidates": {
+                  "type": "list",
+                  "items": {
+                    "type": "mixed"
+                  }
+                },
+                "domain": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "full_username": {
+                  "type": "string"
+                },
+                "guid": {
+                  "type": "string"
+                },
+                "has_expired_invite": {
+                  "type": "flag"
+                },
+                "has_invite": {
+                  "type": "flag"
+                },
+                "has_siblings": {
+                  "type": "flag"
+                },
+                "invite_expiration": {
+                  "type": "int",
+                  "nullable": true
+                },
+                "issues": {
+                  "type": "list",
+                  "items": {
+                    "type": "object",
+                    "fields": {
+                      "area": {
+                        "type": "string"
+                      },
+                      "limit": {
+                        "type": "int"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "service": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string"
+                      },
+                      "used": {
+                        "type": "int"
+                      }
+                    }
+                  }
+                },
+                "merge_candidates": {
+                  "type": "list",
+                  "items": {
+                    "type": "mixed"
+                  }
+                },
+                "parent_type": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "phone_number": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "real_name": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "services": {
+                  "type": "object",
+                  "fields": {
+                    "email": {
+                      "type": "object",
+                      "fields": {
+                        "enabled": {
+                          "type": "flag"
+                        },
+                        "quota": {
+                          "type": "int"
+                        }
+                      }
+                    },
+                    "ftp": {
+                      "type": "object",
+                      "fields": {
+                        "enabled": {
+                          "type": "flag"
+                        },
+                        "homedir": {
+                          "type": "string"
+                        },
+                        "quota": {
+                          "type": "int",
+                          "nullable": true
+                        }
+                      }
+                    },
+                    "webdisk": {
+                      "type": "object",
+                      "fields": {
+                        "enabled": {
+                          "type": "flag"
+                        },
+                        "homedir": {
+                          "type": "string"
+                        },
+                        "perms": {
+                          "type": "string"
+                        },
+                        "private": {
+                          "type": "flag"
+                        }
+                      }
+                    }
+                  }
+                },
+                "special": {
+                  "type": "flag"
+                },
+                "sub_account_exists": {
+                  "type": "flag",
+                  "nullable": true
+                },
+                "synced_password": {
+                  "type": "flag",
+                  "nullable": true
+                },
+                "type": {
+                  "type": "string"
+                },
+                "username": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Clarification 6537241960 reports one populated direct merge candidate on 11.138.0.19; the value-free printer capped objects at 24 keys. Record.pm:357-364 serializes both candidate lists using the same Record/as_hashref path, and UserManager.pm:749-774 assigns service records to either list. Populated dismissed candidates are source-inferred only. Use this operation's pinned known record fields, reviewed null family and quota type; keep issues/dismissed and optional service details. The candidate's own two candidate lists are list<mixed>, as explicitly requested by the reviewer: empty observed lists and call-site inspection do not prove recursion cannot occur. Preserve deeper payloads without inventing recursive field contracts. Do not add the untyped team_owner field or other unpinned extras.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#issuecomment-6537241960"
+            }
+          ]
+        }
+      }
     },
     "uapi:UserManager/unlink_service_account": {
       "order": [
@@ -640,6 +3280,10 @@
         {
           "kind": "documented",
           "text": "Returns a nullable object without pinned fields. Preserve opaque object fields and explicit null; an absent data member is a payload mismatch."
+        },
+        {
+          "kind": "observed",
+          "text": "On the reviewed 11.138.0.19 server, the WHM bridge could not load Cpanel/API/UserManager.pm because that module file was absent, while direct cPanel calls used the compiled server implementation. The observed bridge failure is ApiErrorException, not InvalidResponseException. This is a server-version/state capability observation; the client retains bridge routing and does not assume other installations have the same limitation."
         }
       ],
       "method": "POST",
@@ -649,6 +3293,13 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /UserManager/unlink_service_account declares x-readonly=false. Use form POST for the selected-account mutation; password fields stay sensitive. Preserve pinned parameter requiredness, scalar types and literal dotted field names."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer 5720337990 at b40a9e3158c7e6dd2ff139c5e76a03536fa9ce87 attributes bridged list_users failure to absent Cpanel/API/UserManager.pm and direct execution to the compiled server. The module-level limitation applies to this installation; it is not a separately observed failure of every method. Preserve API-error classification and bridge routing.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
         }
       ]
     }

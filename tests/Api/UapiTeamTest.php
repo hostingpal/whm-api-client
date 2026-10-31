@@ -18,9 +18,76 @@ use Psr\Http\Message\RequestInterface;
 use ReflectionParameter;
 use SensitiveParameter;
 
-/** Independent literal oracles from pinned Team, TeamArray, TeamHash, Services and FeatureDescriptions. */
+/** Literal oracles from pinned contracts and reviewed upstream source; no Team live behavior is asserted. */
 final class UapiTeamTest extends TestCase
 {
+    #[DataProvider('sourceCorrectionPayloads')]
+    public function testReviewedSourceResponsesPreserveTeamData(
+        string $route,
+        string $function,
+        ?string $format,
+        string $payload,
+        mixed $expected,
+    ): void {
+        [$client, $http] = self::client($route);
+        $account = $client->uapi('npr');
+        $http->addResponse(new Response(200, [], self::envelope($route, $payload)));
+
+        $actual = $function === 'list_team'
+            ? $account->team()->listTeam(format: $format)
+            : self::invoke($account, $function);
+
+        self::assertSame($expected, $actual);
+        self::assertRequest($http, $route, $function, $format === 'hash' ? 'format=hash' : self::parameters($function));
+        self::assertSame(1, $account->responseMeta()?->uapiStatus());
+        self::assertCount(1, $http->getRequests());
+    }
+
+    /** @return iterable<string, array{string, string, string|null, string, mixed}> */
+    public static function sourceCorrectionPayloads(): iterable
+    {
+        $cases = [
+            'creation without expiry' => ['add_team_user', null, 'null', null],
+            'creation with quoted epoch' => ['add_team_user', null, '"1674575562"', 1674575562],
+            'set expiry quoted epoch' => ['set_expire', null, '"1674575562"', 1674575562],
+            'unset dates and text creation epoch' => ['list_team', null,
+                '[{"username":"alice","contact_email":"alice@example.test","secondary_contact_email":"",'
+                    . '"created":"1650036110","expire_date":"","lastlogin":"","suspend_date":"",'
+                    . '"suspend_reason":"","expire_reason":""}]',
+                [['contact_email' => 'alice@example.test', 'created' => 1650036110, 'expire_date' => '',
+                    'expire_reason' => '', 'lastlogin' => '', 'secondary_contact_email' => '',
+                    'suspend_date' => '', 'suspend_reason' => '', 'username' => 'alice']]],
+            'two named users in hash' => ['list_team', 'hash',
+                '{"owner":"npr","users":{"alice":{"username":"alice","contact_email":"alice@example.test",'
+                    . '"roles":["email"]},"bob":{"username":"bob","contact_email":"bob@example.test",'
+                    . '"roles":["web"]}}}',
+                ['owner' => 'npr', 'users' => [
+                    'alice' => ['contact_email' => 'alice@example.test', 'roles' => ['email'], 'username' => 'alice'],
+                    'bob' => ['contact_email' => 'bob@example.test', 'roles' => ['web'], 'username' => 'bob'],
+                ]]],
+            'empty creation and subaccount identifiers' => ['list_team', null,
+                '[{"created":"","subacct_guid":""},{"created":"1650036110","subacct_guid":"guid-alice"}]',
+                [['created' => '', 'subacct_guid' => ''], ['created' => 1650036110, 'subacct_guid' => 'guid-alice']]],
+            'hash version and empty creation' => ['list_team', 'hash',
+                '{"version":"v1.1","users":{"alice":{"created":"","subacct_guid":"guid-alice"},'
+                    . '"bob":{"created":"","subacct_guid":""}}}',
+                ['users' => ['alice' => ['created' => '', 'subacct_guid' => 'guid-alice'],
+                    'bob' => ['created' => '', 'subacct_guid' => '']], 'version' => 'v1.1']],
+            'empty hash version' => ['list_team', 'hash', '{"version":""}', ['version' => '']],
+            'two role descriptions' => ['list_feature_descriptions', null,
+                '[{"features":["Backup"],"id":"web","title":"Web"},'
+                    . '{"features":[],"id":"database","title":"Database"}]',
+                [
+            ['features' => ['Backup'], 'id' => 'web', 'title' => 'Web'],
+                    ['features' => [], 'id' => 'database', 'title' => 'Database']]],
+        ];
+        foreach (['direct', 'bare', 'bridge'] as $route) {
+            foreach ($cases as $name => [$function, $format, $payload, $expected]) {
+                yield "$route $name" => [$route, $function, $format, $payload, $expected];
+            }
+        }
+    }
+
     public function testSelectorsBindAccountsWithoutIo(): void
     {
         [$client, $http] = self::client('bridge');
@@ -38,7 +105,7 @@ final class UapiTeamTest extends TestCase
     }
 
     #[DataProvider('successfulPayloads')]
-    public function testExactRequestsAndPinnedPayloads(
+    public function testExactRequestsAndReviewedPayloads(
         string $route,
         string $function,
         string $payload,
@@ -73,7 +140,14 @@ final class UapiTeamTest extends TestCase
     private static function validCases(string $function): array
     {
         if ($function === 'add_team_user' || $function === 'set_expire') {
-            return [['1674575562', 1674575562], ['0', 0], ['-1', -1]];
+            $cases = [
+            ['1674575562', 1674575562], ['0', 0], ['-1', -1], ['"1674575562"', 1674575562],
+                ['"0"', 0], ['"-1"', -1], ['"' . PHP_INT_MAX . '"', PHP_INT_MAX],
+                ['"' . PHP_INT_MIN . '"', PHP_INT_MIN]];
+            if ($function === 'add_team_user') {
+                array_unshift($cases, ['null', null]);
+            }
+            return $cases;
         }
         if ($function === 'get_team_users_with_roles_count') {
             return [
@@ -82,10 +156,10 @@ final class UapiTeamTest extends TestCase
         }
         if ($function === 'list_feature_descriptions') {
             return [
-            ['{}', []], ['{"features":["Backup","MySQL® Databases","PHP",""],'
-                . '"id":"database","title":"Database","future":0}',
-                ['features' => ['Backup', 'MySQL® Databases', 'PHP', ''], 'id' => 'database', 'title' => 'Database']],
-                ['{"features":[],"id":"","title":""}', ['features' => [], 'id' => '', 'title' => '']]];
+            ['[]', []], ['[{}]', [[]]], ['[{"features":["Backup","MySQL® Databases","PHP",""],'
+                . '"id":"database","title":"Database","future":0}]',
+                [['features' => ['Backup', 'MySQL® Databases', 'PHP', ''], 'id' => 'database', 'title' => 'Database']]],
+                ['[{"features":[],"id":"","title":""}]', [['features' => [], 'id' => '', 'title' => '']]]];
         }
         if ($function === 'list_team') {
             // The password is synthetic fixture payload data and must be preserved, never silently removed.
@@ -94,16 +168,13 @@ final class UapiTeamTest extends TestCase
                 'password' => 'synthetic-encrypted-password', 'roles' => ['email', 'web'],
                 'secondary-contact-email' => '', 'services' => ['email' => '500*2**20', 'ftp' => 0, 'webdisk' => 'rw'],
                 'suspend_date' => 1650046210, 'suspend_reason' => 'vacation', 'username' => 'fixture'];
-            $hashInfo = $info;
-            unset($hashInfo['username']);
-            $hashInfo['suspend_date'] = '1650046210';
-            $hash = ['owner' => 'npr', 'users' => ['info' => $hashInfo, 'username' => 'fixture']];
+            $hash = ['owner' => 'npr', 'users' => ['fixture' => $info]];
             return [
             ['[]', []], ['{}', []], [json_encode([$info], JSON_THROW_ON_ERROR), [$info]],
                 [json_encode($hash, JSON_THROW_ON_ERROR), $hash],
                 ['[{"roles":[],"services":{}},{}]', [['roles' => [], 'services' => []], []]],
-                ['{"users":{"info":{"password":"","suspend_date":"","services":{"ftp":1}}}}',
-                    ['users' => ['info' => ['password' => '', 'services' => ['ftp' => 1], 'suspend_date' => '']]]]];
+                ['{"users":{"fixture":{"password":"","suspend_date":"","services":{"ftp":1}}}}',
+                    ['users' => ['fixture' => ['password' => '', 'services' => ['ftp' => 1], 'suspend_date' => '']]]]];
         }
         return [
         ['null', null], ['{}', []], ['[]', []],
@@ -147,7 +218,25 @@ final class UapiTeamTest extends TestCase
             foreach (self::functions() as $function) {
                 $cases = [null, 'true', 'false', '1.5', '"value"'];
                 if ($function === 'add_team_user' || $function === 'set_expire') {
-                    array_push($cases, 'null', '[]', '{}', '"1674575562"');
+                    array_push(
+                        $cases,
+                        '[]',
+                        '{}',
+                        '""',
+                        '"00"',
+                        '"01"',
+                        '"+1"',
+                        '"-0"',
+                        '"1.0"',
+                        '"1e3"',
+                        '" 1"',
+                        '"1 "',
+                        '"' . PHP_INT_MAX . '0"',
+                        '"' . PHP_INT_MIN . '0"',
+                    );
+                    if ($function === 'set_expire') {
+                        $cases[] = 'null';
+                    }
                 } else {
                     $cases[] = '1';
                     if ($function === 'get_team_users_with_roles_count') {
@@ -156,12 +245,13 @@ final class UapiTeamTest extends TestCase
                         array_push(
                             $cases,
                             'null',
-                            '[{}]',
-                            '{"features":{}}',
-                            '{"features":[0]}',
-                            '{"features":null}',
-                            '{"id":0}',
-                            '{"title":null}',
+                            '{}',
+                            '[null]',
+                            '[{"features":{}}]',
+                            '[{"features":[0]}]',
+                            '[{"features":null}]',
+                            '[{"id":0}]',
+                            '[{"title":null}]',
                         );
                     } elseif ($function === 'list_team') {
                         array_push(
@@ -175,17 +265,33 @@ final class UapiTeamTest extends TestCase
                             '{"users":{"username":1}}',
                             '[{"password":null}]',
                             '[{"password":1}]',
-                            '[{"created":"0"}]',
+                            '[{"created":"invalid"}]',
                             '[{"expire_date":null}]',
                             '[{"roles":[1]}]',
                             '[{"roles":null}]',
                             '[{"services":{"email":0}}]',
                             '[{"services":{"ftp":"1"}}]',
                             '[{"services":{"webdisk":false}}]',
-                            '[{"suspend_date":"0"}]',
-                            '{"users":{"info":{"suspend_date":0}}}',
+                            '[{"suspend_date":"invalid"}]',
+                            '[{"contact_email":null}]',
+                            '[{"secondary_contact_email":1}]',
+                            '{"users":{"alice":{"contact_email":false}}}',
                             '{"users":{"info":{"password":null}}}',
                         );
+                        foreach (['null', '1', 'false', '[]', '{}'] as $value) {
+                            $cases[] = '{"version":' . $value . '}';
+                            $cases[] = '[{"subacct_guid":' . $value . '}]';
+                            $cases[] = '{"users":{"alice":{"subacct_guid":' . $value . '}}}';
+                        }
+                        foreach (['created', 'expire_date', 'lastlogin', 'suspend_date'] as $field) {
+                            foreach (
+                                ['null', 'true', '1.5', '"00"', '"01"', '"+1"', '"-0"', '"1.0"', '"1e3"',
+                                '" 1"', '"1 "', '"' . PHP_INT_MAX . '0"', '"' . PHP_INT_MIN . '0"'] as $value
+                            ) {
+                                $cases[] = '[{"' . $field . '":' . $value . '}]';
+                                $cases[] = '{"users":{"alice":{"' . $field . '":' . $value . '}}}';
+                            }
+                        }
                     } else {
                         $cases[] = '[{}]';
                     }

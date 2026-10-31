@@ -35,11 +35,11 @@ final class TeamUserManagementProbesTest extends TestCase
                 '{"metadata":{"result":1},"data":{"uapi":{"status":1,"errors":null,"data":{}}}}'],
             ['uapi:TeamRoles/list_feature_descriptions', 'direct-uapi',
                 'https://test.oblak.host:2083/execute/TeamRoles/list_feature_descriptions',
-                '{"status":1,"errors":null,"data":{}}'],
+                '{"status":1,"errors":null,"data":[]}'],
             ['uapi:TeamRoles/list_feature_descriptions', 'bridged-uapi',
                 'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
                     . '&cpanel.module=TeamRoles&cpanel.function=list_feature_descriptions',
-                '{"metadata":{"result":1},"data":{"uapi":{"status":1,"errors":null,"data":{}}}}'],
+                '{"metadata":{"result":1},"data":{"uapi":{"status":1,"errors":null,"data":[]}}}'],
             ['uapi:UserManager/list_users', 'direct-uapi',
                 'https://test.oblak.host:2083/execute/UserManager/list_users?flat=1',
                 '{"status":1,"errors":null,"data":[]}'],

@@ -11,9 +11,41 @@
         },
         {
           "kind": "documented",
-          "text": "Returns the pinned FeatureDescriptions object with optional features string list, id string and title string. The formal source is an object, not a list of role objects; no example-driven widening is inferred."
+          "text": "Returns a list of role objects with optional features string list, id string and title string. Reviewed Cpanel/Team/RoleDescription.pm on cPanel 11.138.0.19 returns an array reference; the pinned FeatureDescriptions object describes one element. Team was unavailable on that server, so this correction is supported by source inspection and offline replay only."
         }
-      ]
+      ],
+      "response": {
+        "": {
+          "replace": {
+            "type": "list",
+            "items": {
+              "type": "object",
+              "fields": {
+                "features": {
+                  "type": "list",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "id": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "upstream source 11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer source inspection https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990 against b40a9e3158c7e6dd2ff139c5e76a03536fa9ce87: Cpanel/Team/RoleDescription.pm returns the features_list_description_mapping array reference. Cpanel/API/TeamRoles.pm POD shows one role element, while pinned FeatureDescriptions models that element as the whole payload. Correct the root to a list, retaining each role's optional features string list, id string and title string. Team is unavailable on that server; this is upstream-source evidence with offline replay, not a live Team result."
+            }
+          ]
+        }
+      }
     }
   }
 }

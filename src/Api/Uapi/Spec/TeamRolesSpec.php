@@ -20,11 +20,14 @@ final class TeamRolesSpec
         'outcome' => 'flag',
         'params' => [],
         'returns' => [
-            'type' => 'object',
-            'fields' => [
-                'features' => ['type' => 'list', 'items' => ['type' => 'string']],
-                'id' => ['type' => 'string'],
-                'title' => ['type' => 'string'],
+            'type' => 'list',
+            'items' => [
+                'type' => 'object',
+                'fields' => [
+                    'features' => ['type' => 'list', 'items' => ['type' => 'string']],
+                    'id' => ['type' => 'string'],
+                    'title' => ['type' => 'string'],
+                ],
             ],
         ],
     ];

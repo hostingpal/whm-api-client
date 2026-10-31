@@ -22,7 +22,11 @@
         },
         {
           "kind": "documented",
-          "text": "Returns a nullable object without pinned fields. Preserve opaque object fields and explicit null; an absent data member is a payload mismatch."
+          "text": "The pinned response schema permits a nullable object without fields. Preserve opaque object fields and explicit null; an absent data member remains a payload mismatch."
+        },
+        {
+          "kind": "observed",
+          "text": "On 11.138.0.19, successful password changes can return an opaque string, preserved without assumptions about its content. The reviewer observed successful Users password changes returning a string from the upstream change result. Existing nullable-object results remain supported. Password arguments stay sensitive and the client never retries the mutation."
         }
       ],
       "params": {
@@ -40,8 +44,43 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /Users/change_password declares x-readonly=false. Use form POST for the selected-account mutation; password fields stay sensitive. Preserve pinned parameter requiredness, scalar types and literal dotted field names."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer 5720337990 against b40a9e3158c7e6dd2ff139c5e76a03536fa9ce87 observed Users/change_password returning a string after the password changed; the previous nullable-map contract raised outcome-confirmed PayloadMismatchException. The reviewer observed successful Users password changes returning a string from the upstream change result. Add string alongside the existing nullable opaque map, keeping missing-data rejection, status handling, sensitive parameters and POST/no-retry behavior.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
         }
-      ]
+      ],
+      "response": {
+        "": {
+          "replace": {
+            "type": "union",
+            "nullable": true,
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "map",
+                "values": {
+                  "type": "mixed"
+                }
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer 5720337990 against b40a9e3158c7e6dd2ff139c5e76a03536fa9ce87 observed Users/change_password returning a string after the password changed; the previous nullable-map contract raised outcome-confirmed PayloadMismatchException. The reviewer observed successful Users password changes returning a string from the upstream change result. Add string alongside the existing nullable opaque map, keeping missing-data rejection, status handling, sensitive parameters and POST/no-retry behavior.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
+            }
+          ]
+        }
+      }
     }
   }
 }
