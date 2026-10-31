@@ -12,11 +12,11 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available in cPanel and WHM 86 and later. Returns whether to display the survey banner and its link. The source declares x-readonly=false. display and new_user use the existing public integer 0|1 flag convention: exact quoted 0/1 source values normalize to integers and native 0/1 flags are accepted. max_dismiss remains a string, and user_type is the documented whm string. Other strings, integers, booleans and fractions are not accepted for the two flags. Response fields retain optional presence. Returned links can contain private tokens; treat them as payload data and never fetch them automatically."
+          "text": "Available in cPanel and WHM 86 and later. Returns whether to display the survey banner and its link. The source declares x-readonly=false. display and new_user use the existing public integer 0|1 flag convention: exact quoted 0/1 source values normalize to integers and native 0/1 flags are accepted. max_dismiss remains an exact string when present and nonnull, and user_type is the documented whm string. Other strings, integers, booleans and fractions are not accepted for the two flags. Response fields retain optional presence. Returned links can contain private tokens; treat them as payload data and never fetch them automatically. Review 5721307565 (https://github.com/hostingpal/whm-api-client/pull/70#pullrequestreview-5721307565) on cPanel 11.138.0.19 inspected InProductSurvey.pm and Cpanel/InProductSurvey.pm plus configuration: undefined links.whm.url, dismiss.max and submit event yield null link, max_dismiss and submit_event. This is source/config reasoning, not a survey call. The implementation saves start_time and a generated uuid under root inproductsurvey scope, and saves last_survey_link only when a link exists."
         },
         {
           "kind": "policy",
-          "text": "Client policy: send one request without automatic retry or rollback. Optional null arguments are omitted; accepted explicit zero and empty strings retain their supplied values."
+          "text": "Client policy: use one form POST without automatic retry or rollback. Preserve optional fields, the three nullable strings, exact empty strings and strict sibling types. Returned URLs are private payload data and are never fetched automatically."
         }
       ],
       "evidence": [
@@ -26,7 +26,42 @@
           "date": "2026-10-31",
           "note": "Pinned /get_in_product_survey_url parameters, x-readonly classification and response schema. Source declares x-readonly=false; use form POST. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
         }
-      ]
+      ],
+      "response": {
+        "link": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "review 5721307565 / 11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Review 5721307565 (https://github.com/hostingpal/whm-api-client/pull/70#pullrequestreview-5721307565) on cPanel 11.138.0.19: Source/config conclusion, not an observed survey call: the reviewed configuration lookups are undefined and generate_survey_link returns without a link when its base is absent. Allow null only for link, max_dismiss and submit_event; preserve omission, exact strings and all sibling contracts. Reviewer did not call this root-scoped writing operation."
+            }
+          ]
+        },
+        "max_dismiss": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "review 5721307565 / 11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Review 5721307565 (https://github.com/hostingpal/whm-api-client/pull/70#pullrequestreview-5721307565) on cPanel 11.138.0.19: Source/config conclusion, not an observed survey call: the reviewed configuration lookups are undefined and generate_survey_link returns without a link when its base is absent. Allow null only for link, max_dismiss and submit_event; preserve omission, exact strings and all sibling contracts. Reviewer did not call this root-scoped writing operation."
+            }
+          ]
+        },
+        "submit_event": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "review 5721307565 / 11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Review 5721307565 (https://github.com/hostingpal/whm-api-client/pull/70#pullrequestreview-5721307565) on cPanel 11.138.0.19: Source/config conclusion, not an observed survey call: the reviewed configuration lookups are undefined and generate_survey_link returns without a link when its base is absent. Allow null only for link, max_dismiss and submit_event; preserve omission, exact strings and all sibling contracts. Reviewer did not call this root-scoped writing operation."
+            }
+          ]
+        }
+      }
     }
   }
 }

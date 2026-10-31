@@ -7,6 +7,8 @@ namespace HostingPal\WhmApiClient\Tests\Tools\LiveVerify;
 use HostingPal\WhmApiClient\Api\Uapi\Spec\LangPhpSpec;
 use HostingPal\WhmApiClient\Api\Uapi\Spec\SslSpec;
 use HostingPal\WhmApiClient\Api\Whm\Spec\AccountsSpec;
+use HostingPal\WhmApiClient\Api\Whm\Spec\ServerSpec;
+use HostingPal\WhmApiClient\Api\Whm\Spec\SystemPackagesSpec;
 use HostingPal\WhmApiClient\Client as ApiClient;
 use HostingPal\WhmApiClient\Http\HttpTransport;
 use HostingPal\WhmApiClient\Tools\LiveVerify\CaptureClient;
@@ -14,6 +16,7 @@ use HostingPal\WhmApiClient\Tools\LiveVerify\DiscrepancyPolicy;
 use HostingPal\WhmApiClient\Tools\LiveVerify\EvidenceRunner;
 use HostingPal\WhmApiClient\Tools\LiveVerify\Probe;
 use HostingPal\WhmApiClient\Tools\LiveVerify\ProbeCatalog;
+use HostingPal\WhmApiClient\Tools\LiveVerify\ReadOnlySectionRunner;
 use Http\Mock\Client;
 use LogicException;
 use Nyholm\Psr7\Factory\Psr17Factory;
@@ -26,6 +29,70 @@ use RuntimeException;
 final class EvidenceRunnerTest extends TestCase
 {
     private const ROOT = __DIR__ . '/../../..';
+
+    /** @return iterable<string, array{string|null, bool, string, list<array{path: string, kind: string}>}> */
+    public static function optionalPayloadResponses(): iterable
+    {
+        yield 'optional absent' => [null, true, 'passed', []];
+        yield 'optional explicit null' => ['null', true, 'passed', []];
+        yield 'optional present invalid' => ['{"rpms":[1]}', true, 'failed',
+            [['path' => '$.rpms[]', 'kind' => 'type_mismatch']]];
+        yield 'required absent' => [null, false, 'failed', [['path' => '$', 'kind' => 'missing_required']]];
+    }
+
+    /** @param list<array{path: string, kind: string}> $discrepancies */
+    #[DataProvider('optionalPayloadResponses')]
+    public function testEffectiveOptionalPayloadContractFlowsIntoStrictEvidence(
+        ?string $payload,
+        bool $optional,
+        string $outcome,
+        array $discrepancies,
+    ): void {
+        $http = new Client();
+        $http->addResponse(new Response(200, [], '{"metadata":{"result":1},"data":{"version":"11.138.0.19"}}'));
+        $http->addResponse(new Response(200, [], '{"metadata":{"result":1}'
+            . ($payload === null ? '' : ',"data":' . $payload) . '}'));
+        $spec = $optional ? SystemPackagesSpec::LIST_RPMS : SystemPackagesSpec::PACKAGE_MANAGER_LIST_PACKAGES;
+        $operation = $optional ? 'list_rpms' : 'package_manager_list_packages';
+        $probe = new Probe(
+            'whm1:' . $operation,
+            'whm',
+            $spec,
+            'https://test.oblak.host:2087/json-api/' . $operation . '?api.version=1',
+            static fn (ApiClient $client): mixed => $optional
+                ? $client->whm()->systemPackages()->listRpms()
+            : $client->whm()->systemPackages()->listPackages(),
+        );
+        $version = new Probe(
+            'whm1:version',
+            'whm',
+            ServerSpec::VERSION,
+            'https://test.oblak.host:2087/json-api/version?api.version=1',
+            static fn (ApiClient $client): mixed => $client->whm()->server()->version(),
+        );
+        $report = (new ReadOnlySectionRunner($http, self::context()))->run(
+            [$version, $probe],
+            'optional-payload-test',
+            '1',
+            ['whm' => 'private-whm', 'cpanel' => 'private-cpanel'],
+        );
+        $record = $report['probes'][1];
+        self::assertCount(2, $http->getRequests());
+        self::assertSame($outcome, $record['probe_outcome']);
+        self::assertSame($outcome, $record['payload_validation']);
+        self::assertSame($discrepancies, $record['discrepancies']);
+        self::assertSame($outcome, $report['status']);
+        self::assertSame(
+            hash('sha256', json_encode($spec, JSON_THROW_ON_ERROR)),
+            $record['effective_contract_sha256'],
+        );
+        self::assertSame(self::context()['revision'], $record['revision']);
+        if ($payload === null) {
+            self::assertSame(['missing'], $record['payload_paths']['$']);
+        } elseif ($payload === 'null') {
+            self::assertSame(['null'], $record['payload_paths']['$']);
+        }
+    }
 
     public function testFailedRootUnionAddsCheckedAlternativeDiagnosticsWithoutReplayOrUnmasking(): void
     {

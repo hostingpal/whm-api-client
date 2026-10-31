@@ -93,9 +93,9 @@ final readonly class VersionControlDeployment
      *
      * @param string $repositoryRoot The repository's directory.
      * @return CreateResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/deployment-settings/versioncontroldeployment-create
      */
     public function create(string $repositoryRoot): ?array
@@ -129,9 +129,9 @@ final readonly class VersionControlDeployment
      * @param string|int $deployId The deployment ID (deploy_id) returned by create() or retrieve(), not the Task Queue
      *     task_id.
      * @return DeleteResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/deployment-settings/versioncontroldeployment-delete
      */
     public function delete(string|int $deployId): ?array
@@ -173,9 +173,9 @@ final readonly class VersionControlDeployment
      * API-map identity: uapi:VersionControlDeployment/retrieve#GET (wire name retrieve).
      *
      * @return RetrieveResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/deployment-settings/versioncontroldeployment-retrieve
      */
     public function retrieve(): array

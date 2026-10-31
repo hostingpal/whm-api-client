@@ -9,6 +9,35 @@ use PHPUnit\Framework\TestCase;
 
 final class FingerprintTest extends TestCase
 {
+    public function testOptionalPayloadAllowsOnlyOmissionAndExplicitNullBeyondRequiredContract(): void
+    {
+        $type = ['type' => 'object', 'fields' => ['count' => ['type' => 'int']], 'required' => ['count']];
+        self::assertSame(
+            ['paths' => ['$' => ['missing']], 'discrepancies' => []],
+            Fingerprint::analyze(null, false, $type, true),
+        );
+        self::assertSame(
+            ['paths' => ['$' => ['null']], 'discrepancies' => []],
+            Fingerprint::analyze(null, true, $type, true),
+        );
+        self::assertSame(
+            [['path' => '$', 'kind' => 'missing_required']],
+            Fingerprint::analyze(null, false, $type)['discrepancies'],
+        );
+        self::assertSame(
+            [['path' => '$', 'kind' => 'type_mismatch']],
+            Fingerprint::analyze(null, true, $type)['discrepancies'],
+        );
+        self::assertSame(
+            [['path' => '$.count', 'kind' => 'type_mismatch']],
+            Fingerprint::analyze((object) ['count' => 'bad'], true, $type, true)['discrepancies'],
+        );
+        self::assertSame(
+            [['path' => '$.count', 'kind' => 'missing_required']],
+            Fingerprint::analyze((object) [], true, $type, true)['discrepancies'],
+        );
+    }
+
     public function testUnknownKeysAndValuesNeverEscapeAndNestedUnknownNamesStayWildcarded(): void
     {
         $payload = (object) [

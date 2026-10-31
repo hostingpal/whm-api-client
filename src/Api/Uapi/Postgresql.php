@@ -71,9 +71,9 @@ final readonly class Postgresql
      *
      * @param string $name The database's name.
      * @return CreateDatabaseResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/postgresql-database-management/postgresql-create_database
      */
     public function createDatabase(string $name): ?array
@@ -101,9 +101,9 @@ final readonly class Postgresql
      * @param string $name The database user's name.
      * @param string $password The new user's password.
      * @return int|null
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/postgresql-user-management/postgresql-create_user
      */
     public function createUser(
@@ -135,9 +135,9 @@ final readonly class Postgresql
      *
      * @param string $name The database's name.
      * @return DeleteDatabaseResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/postgresql-database-management/postgresql-delete_database
      */
     public function deleteDatabase(string $name): ?array
@@ -166,9 +166,9 @@ final readonly class Postgresql
      *
      * @param string $name The PostgreSQL user's name.
      * @return DeleteUserResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/postgresql-user-management/postgresql-delete_user
      */
     public function deleteUser(string $name): ?array
@@ -192,9 +192,9 @@ final readonly class Postgresql
      * API-map identity: uapi:Postgresql/get_restrictions#GET (wire name get_restrictions).
      *
      * @return GetRestrictionsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/postgresql-database-management/postgresql-get_restrictions
      */
     public function getRestrictions(): array
@@ -224,9 +224,9 @@ final readonly class Postgresql
      * @param string $database The database's name.
      * @param string $user The database user's name.
      * @return GrantAllPrivilegesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/postgresql-user-management/postgresql-grant_all_privileges
      */
     public function grantAllPrivileges(string $database, string $user): ?array
@@ -250,9 +250,9 @@ final readonly class Postgresql
      * API-map identity: uapi:Postgresql/list_databases#GET (wire name list_databases).
      *
      * @return ListDatabasesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/postgresql-database-management/postgresql-list_databases
      */
     public function listDatabases(): array
@@ -276,9 +276,9 @@ final readonly class Postgresql
      * API-map identity: uapi:Postgresql/list_users#GET (wire name list_users).
      *
      * @return ListUsersResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/postgresql-user-management/postgresql-list_users
      */
     public function listUsers(): array
@@ -309,9 +309,9 @@ final readonly class Postgresql
      * @param string $oldName The database's current name.
      * @param string $newName The database's new name.
      * @return RenameDatabaseResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/postgresql-database-management/postgresql-rename_database
      */
     public function renameDatabase(string $oldName, string $newName): ?array
@@ -342,9 +342,9 @@ final readonly class Postgresql
      * @param string $newName The database user's new name.
      * @param string $password The database user's new password.
      * @return RenameUserResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/postgresql-user-management/postgresql-rename_user
      */
     public function renameUser(
@@ -383,9 +383,9 @@ final readonly class Postgresql
      * @param string $oldName The database user's current name.
      * @param string $newName The database user's new name.
      * @return RenameUserNoPasswordResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/postgresql-user-management/postgresql-rename_user_no_password
      */
     public function renameUserNoPassword(string $oldName, string $newName): ?array
@@ -415,9 +415,9 @@ final readonly class Postgresql
      * @param string $database The database's name.
      * @param string $user The database user's name.
      * @return RevokeAllPrivilegesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/postgresql-user-management/postgresql-revoke_all_privileges
      */
     public function revokeAllPrivileges(string $database, string $user): ?array
@@ -447,9 +447,9 @@ final readonly class Postgresql
      * @param string $user The database user's name.
      * @param string $password The user's new password.
      * @return SetPasswordResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/postgresql-user-management/postgresql-set_password
      */
     public function setPassword(
@@ -481,9 +481,9 @@ final readonly class Postgresql
      * API-map identity: uapi:Postgresql/update_privileges#GET (wire name update_privileges).
      *
      * @return UpdatePrivilegesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/postgresql-user-management/postgresql-update_privileges
      */
     public function updatePrivileges(): ?array

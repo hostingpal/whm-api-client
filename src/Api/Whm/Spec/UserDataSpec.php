@@ -20,11 +20,7 @@ final class UserDataSpec
         'params' => [
             'scope' => ['name' => 'scope', 'encoding' => 'scalar'],
         ],
-        'returns' => [
-            'type' => 'object',
-            'values' => ['type' => 'string'],
-            'fields' => [],
-        ],
+        'returns' => ['type' => 'map', 'values' => ['type' => 'string']],
     ];
 
     public const SET_SCOPED_USERDATA = [
@@ -33,13 +29,13 @@ final class UserDataSpec
         'outcome' => 'flag',
         'params' => [
             'scope' => ['name' => 'scope', 'encoding' => 'scalar'],
-            'json' => ['name' => 'json', 'encoding' => 'scalar'],
             'key' => ['name' => 'key', 'encoding' => 'scalar'],
             'value' => ['name' => 'value', 'encoding' => 'scalar'],
+            'json' => ['name' => 'json', 'encoding' => 'scalar'],
         ],
         'returns' => [
             'type' => 'object',
-            'values' => ['type' => 'string'],
+            'values' => ['type' => 'mixed'],
             'fields' => [],
         ],
     ];

@@ -33,7 +33,11 @@ trait UapiGroups
 
     private ?ContactUs $contactUsGroup = null;
 
+    private ?CpDavd $cpDavdGroup = null;
+
     private ?CpGreyList $cpGreyListGroup = null;
+
+    private ?Dav $davGroup = null;
 
     private ?DirectoryIndexes $directoryIndexesGroup = null;
 
@@ -69,6 +73,8 @@ trait UapiGroups
 
     private ?Ftp $ftpGroup = null;
 
+    private ?Gpg $gpgGroup = null;
+
     private ?KnownHosts $knownHostsGroup = null;
 
     private ?LangPhp $langPhpGroup = null;
@@ -77,6 +83,8 @@ trait UapiGroups
 
     private ?Locale $localeGroup = null;
 
+    private ?LogManager $logManagerGroup = null;
+
     private ?Mime $mimeGroup = null;
 
     private ?ModSecurity $modSecurityGroup = null;
@@ -84,6 +92,8 @@ trait UapiGroups
     private ?Mysql $mysqlGroup = null;
 
     private ?Notifications $notificationsGroup = null;
+
+    private ?Nova $novaGroup = null;
 
     private ?Park $parkGroup = null;
 
@@ -100,6 +110,8 @@ trait UapiGroups
     private ?Restore $restoreGroup = null;
 
     private ?ServerInformation $serverInformationGroup = null;
+
+    private ?Sitejet $sitejetGroup = null;
 
     private ?SpamAssassin $spamAssassinGroup = null;
 
@@ -120,6 +132,8 @@ trait UapiGroups
     private ?TeamRoles $teamRolesGroup = null;
 
     private ?Themes $themesGroup = null;
+
+    private ?TwoFactorAuth $twoFactorAuthGroup = null;
 
     private ?UserManager $userManagerGroup = null;
 
@@ -242,6 +256,16 @@ trait UapiGroups
     }
 
     /**
+     * Select the CPDAVD operations without making a request.
+     *
+     * The CPDAVD module for UAPI.
+     */
+    public function cpDavd(): CpDavd
+    {
+        return $this->cpDavdGroup ??= new CpDavd($this->run(...));
+    }
+
+    /**
      * Select the cPGreyList operations without making a request.
      *
      * The cPGreyList module for UAPI.
@@ -249,6 +273,16 @@ trait UapiGroups
     public function cpGreyList(): CpGreyList
     {
         return $this->cpGreyListGroup ??= new CpGreyList($this->run(...));
+    }
+
+    /**
+     * Select the DAV operations without making a request.
+     *
+     * The DAV module for UAPI.
+     */
+    public function dav(): Dav
+    {
+        return $this->davGroup ??= new Dav($this->run(...));
     }
 
     /**
@@ -422,6 +456,16 @@ trait UapiGroups
     }
 
     /**
+     * Select the GPG operations without making a request.
+     *
+     * The GPG module for UAPI.
+     */
+    public function gpg(): Gpg
+    {
+        return $this->gpgGroup ??= new Gpg($this->run(...));
+    }
+
+    /**
      * Select the KnownHosts operations without making a request.
      *
      * The KnownHosts module for UAPI.
@@ -462,6 +506,20 @@ trait UapiGroups
     }
 
     /**
+     * Select the LogManager operations without making a request.
+     *
+     * Selected-account log administration. Observed: reviewer 5721279104 inspected Cpanel/API/LogManager.pm on cPanel
+     * 11.138.0.19 and found the shared %API requirements WebServer role and rawlog feature for all six operations.
+     * Neither requirement is declared in the pinned snapshot; disabled-role/feature behavior was not runtime-tested.
+     * Policy: supplied paths/selectors are sent unchanged and the client performs no local filesystem access. Log
+     * contents are private payload data, including explicitly accessible exception payloads.
+     */
+    public function logManager(): LogManager
+    {
+        return $this->logManagerGroup ??= new LogManager($this->run(...));
+    }
+
+    /**
      * Select the Mime operations without making a request.
      *
      * The Mime module for UAPI.
@@ -499,6 +557,23 @@ trait UapiGroups
     public function notifications(): Notifications
     {
         return $this->notificationsGroup ??= new Notifications($this->run(...));
+    }
+
+    /**
+     * Select the Nova operations without making a request.
+     *
+     * Pinned availability is cPanel 110+. Observed: Reviewer 5721328890 on cPanel 11.138.0.19 reports all six Nova
+     * reads they called failed on both routes because Cpanel::API::Nova could not load. Reviewer-source inspection
+     * found the module file absent. All eleven methods are unavailable for verification on this server. Write failures
+     * are expected from the missing module but were not executed. Every Nova response shape, including overlay repairs,
+     * remains unobserved. Policy: Each call makes one request without automatic retry, polling, rollback or undo.
+     * Returned tokens, SSO URLs and account metadata are sensitive payload data. The client does not fetch returned
+     * URLs or inspect website files. API success does not establish publication completion, rendering or interactive
+     * SSO login.
+     */
+    public function nova(): Nova
+    {
+        return $this->novaGroup ??= new Nova($this->run(...));
     }
 
     /**
@@ -579,6 +654,18 @@ trait UapiGroups
     public function serverInformation(): ServerInformation
     {
         return $this->serverInformationGroup ??= new ServerInformation($this->run(...));
+    }
+
+    /**
+     * Select the Sitejet operations without making a request.
+     *
+     * Policy: Each call makes one request without automatic retry, polling, rollback or undo. Returned tokens, SSO URLs
+     * and account metadata are sensitive payload data. The client does not fetch returned URLs or inspect website
+     * files. API success does not establish publication completion, rendering or interactive SSO login.
+     */
+    public function sitejet(): Sitejet
+    {
+        return $this->sitejetGroup ??= new Sitejet($this->run(...));
     }
 
     /**
@@ -679,6 +766,16 @@ trait UapiGroups
     public function themes(): Themes
     {
         return $this->themesGroup ??= new Themes($this->run(...));
+    }
+
+    /**
+     * Select the TwoFactorAuth operations without making a request.
+     *
+     * The TwoFactorAuth module for UAPI.
+     */
+    public function twoFactorAuth(): TwoFactorAuth
+    {
+        return $this->twoFactorAuthGroup ??= new TwoFactorAuth($this->run(...));
     }
 
     /**

@@ -38,6 +38,9 @@ type File struct {
 // Operation holds per-operation decisions; zero values keep generator defaults.
 type Operation struct {
 	Name string `json:"name,omitempty"`
+	// Function qualifies a bare WHM function with one source-evidenced namespace.
+	// It preserves the canonical identity and leaf; UAPI corrections are forbidden.
+	Function string `json:"function,omitempty"`
 	// Variant selects the documented variant (by HTTP method) of an operation
 	// the map documents with several variants.
 	Variant    string            `json:"variant,omitempty"`
@@ -56,7 +59,7 @@ type Operation struct {
 	Notes           []Note                `json:"notes,omitempty"`
 	Exclude         *Exclusion            `json:"exclude,omitempty"`
 	Probe           json.RawMessage       `json:"probe,omitempty"`
-	// Evidence backs behaviour-changing settings: variant, method, outcome,
+	// Evidence backs behaviour-changing settings: function, variant, method, outcome,
 	// void, optional_payload, a parameter encoding and "sensitive": false on a
 	// parameter, parameter requiredness, scalar type/description corrections or
 	// suppressed enum documentation.
@@ -82,7 +85,8 @@ var NoteKinds = map[string]string{"documented": "Documented", "observed": "Obser
 // encoding, and needs evidence. An absent or true value preserves enum PHPDoc.
 // Type permits reviewed string|int widening of scalar string/integer inputs,
 // string|int|float widening of scalar number inputs, or a true presence guard
-// for optional scalar integer inputs whose exact source enum is [1].
+// for concrete nonnullable scalar integer inputs with exact source enum [1]
+// and unchanged requiredness (optional ?true or required true).
 // Description replaces the parameter text without truncating later sentences.
 // Wire corrects a simple scalar parameter name on the wire without changing its
 // public PHP name or source-based order. All corrections require operation evidence
@@ -97,6 +101,10 @@ type Param struct {
 	Encoding    string `json:"encoding,omitempty"`
 	Sensitive   *bool  `json:"sensitive,omitempty"`
 	Omit        bool   `json:"omit,omitempty"`
+	// OmitEmpty explicitly omits [] on optional repeated string-list inputs.
+	OmitEmpty *bool `json:"omit_empty,omitempty"`
+	// RejectEmpty requires an explicit nonblank, nonzero target.
+	RejectEmpty *bool `json:"reject_empty,omitempty"`
 }
 
 // Correction changes the documented response type at one payload path.

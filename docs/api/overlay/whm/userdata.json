@@ -4,7 +4,7 @@
   "group": "UserData",
   "accessor": "userData",
   "class": "UserData",
-  "description": "WHM scoped private configuration. Never log input or returned configuration values, including raw mismatch payloads.",
+  "description": "WHM scoped private configuration in root scope for any WHM caller. Never log input or returned configuration values, including raw mismatch payloads.",
   "operations": {
     "whm1:get_scoped_userdata": {
       "name": "getScopedUserdata",
@@ -12,11 +12,15 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available in cPanel and WHM 86 and later. Scope names and returned string-valued configuration maps are private data. The source marks this retrieval x-readonly=false, so use form POST."
+          "text": "Available in cPanel and WHM 86 and later. Scope names and returned string-valued configuration maps are private data. The pinned source marks this retrieval x-readonly=false. Review 5721307565 (https://github.com/hostingpal/whm-api-client/pull/70#pullrequestreview-5721307565) on cPanel 11.138.0.19 inspected UserData.pm: new_scoped uses root for any WHM caller and ensure_dirs creates directories under /var/cpanel/userdata/root/scope/ when the requested scope does not exist. It is not a pure read."
         },
         {
           "kind": "policy",
-          "text": "Client policy: send one request without automatic retry or rollback. Optional null arguments are omitted; accepted explicit zero and empty strings retain their supplied values."
+          "text": "Client policy: use one form POST without automatic retry or rollback and forward the exact supplied scope. Returned dynamic map values retain the pinned strict string contract; null or missing root payloads fail."
+        },
+        {
+          "kind": "observed",
+          "text": "Review 5721307565 (https://github.com/hostingpal/whm-api-client/pull/70#pullrequestreview-5721307565) on cPanel 11.138.0.19 reported typed and raw get_scoped_userdata on existing inproductsurvey scope passing with a populated string map, including numeric start_time returned as a digit string. This read observation does not establish the write response contract."
         }
       ],
       "evidence": [
@@ -25,30 +29,23 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /get_scoped_userdata parameters, x-readonly classification and response schema. Source declares x-readonly=false; use form POST. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "review 5721307565 / 11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review 5721307565 (https://github.com/hostingpal/whm-api-client/pull/70#pullrequestreview-5721307565) on cPanel 11.138.0.19: Reviewer-inspected UserData.pm new_scoped binds root for any WHM caller and creates missing scope directories. Reviewer separately reports runtime typed/raw get_scoped_userdata passing on existing inproductsurvey with string-valued data. The response uses the pinned additionalProperties string schema unchanged; no replacement or optional payload is needed."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review 5721307565 (https://github.com/hostingpal/whm-api-client/pull/70#pullrequestreview-5721307565) on cPanel 11.138.0.19 reports true-read typed and raw get_scoped_userdata on existing inproductsurvey with populated string map; numeric start_time returned as digit string. No other scope, write, new local read or capture is claimed."
         }
       ],
       "params": {
         "scope": {
           "sensitive": true
-        }
-      },
-      "response": {
-        "": {
-          "replace": {
-            "type": "object",
-            "values": {
-              "type": "string"
-            },
-            "fields": {}
-          },
-          "evidence": [
-            {
-              "kind": "doc",
-              "version": "pinned 2026-10-13",
-              "date": "2026-10-31",
-              "note": "Pinned /get_scoped_userdata data is an object with additionalProperties:{type:string}; examples map theme to dark and items_per_page to quoted 50. Preserve dynamic keys with strict string values, including empty strings; no nullable or absent data contract is declared. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
-            }
-          ]
         }
       }
     },
@@ -58,11 +55,11 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available in cPanel and WHM 86 and later. Creates or updates scoped configuration and returns the full string-valued map. Supply either pre-serialized json text or key/value arguments: upstream says json cannot be combined with key or value. The client forwards supplied arguments without inventing mutual-exclusion validation and form-encodes JSON text exactly once; it does not accept a PHP object or send a JSON request body. Omitted optional arguments have no documented default. Scope, key, value, JSON text and returned private configuration are sensitive."
+          "text": "Available in cPanel and WHM 86 and later. Creates or updates scoped configuration and returns the full updated map. Supply either pre-serialized json text or key/value arguments: upstream says json cannot be combined with key or value. Omitted optional arguments have no documented default. Scope, key, value, JSON text and returned private configuration are sensitive. Review 5721307565 (https://github.com/hostingpal/whm-api-client/pull/70#pullrequestreview-5721307565) on cPanel 11.138.0.19 inspected UserData.pm: new_scoped uses root for any WHM caller; arbitrary JSON values are assigned and the in-memory data map is returned after saving. This source-based write contract permits nested JSON values and differs from the pinned string-valued read map. The reviewer did not run a write."
         },
         {
           "kind": "policy",
-          "text": "Client policy: send one request without automatic retry or rollback. Optional null arguments are omitted; accepted explicit zero and empty strings retain their supplied values."
+          "text": "Client policy: use one form POST without automatic retry or rollback. The client forwards supplied arguments without a cross-field validator and form-encodes raw JSON text exactly once; it does not accept a PHP object or send a JSON request body. Optional null arguments are omitted. Exact supplied strings are forwarded, including zero, without promising server acceptance: empty key, value or json and missing/conflicting inputs are upstream API errors. Root payloads must remain objects; null/missing roots fail."
         }
       ],
       "evidence": [
@@ -71,6 +68,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /set_scoped_userdata parameters, x-readonly classification and response schema. Source declares x-readonly=false; use form POST. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "review 5721307565 / 11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review 5721307565 (https://github.com/hostingpal/whm-api-client/pull/70#pullrequestreview-5721307565) on cPanel 11.138.0.19: Reviewer-inspected source binds root for any WHM caller, rejects empty key/value/json with Empty, and rejects missing or conflicting inputs with InvalidParameter before writes. Forward exact strings without new cross-field validation or interpreting zero as empty. No write or fresh server inspection."
         }
       ],
       "params": {
@@ -92,20 +95,26 @@
           "replace": {
             "type": "object",
             "values": {
-              "type": "string"
+              "type": "mixed"
             },
             "fields": {}
           },
           "evidence": [
             {
               "kind": "doc",
-              "version": "pinned 2026-10-13",
+              "version": "review 5721307565 / 11.138.0.19",
               "date": "2026-10-31",
-              "note": "Pinned /set_scoped_userdata data is an object with additionalProperties:{type:string}; examples map theme to dark and items_per_page to quoted 50. Preserve dynamic keys with strict string values, including empty strings; no nullable or absent data contract is declared. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+              "note": "Review 5721307565 (https://github.com/hostingpal/whm-api-client/pull/70#pullrequestreview-5721307565) on cPanel 11.138.0.19: Reviewer-inspected UserData.pm assigns arbitrary JSON values with @{$data}{ keys %$json } = values %$json and returns $data from memory after save. Correct only dynamic object values to mixed, preserving the object root, omission/null rules and existing empty-container compatibility. No write was run; reads retain the separate pinned string map."
             }
           ]
         }
-      }
+      },
+      "order": [
+        "scope",
+        "key",
+        "value",
+        "json"
+      ]
     }
   }
 }

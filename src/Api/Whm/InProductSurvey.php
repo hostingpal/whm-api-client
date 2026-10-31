@@ -19,11 +19,11 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  *
  * @phpstan-type GetInProductSurveyUrlResult array{
  *     display?: 0|1,
- *     link?: string,
- *     max_dismiss?: string,
+ *     link?: string|null,
+ *     max_dismiss?: string|null,
  *     new_user?: 0|1,
  *     server_type?: string,
- *     submit_event?: string,
+ *     submit_event?: string|null,
  *     user_type?: string,
  * }
  */
@@ -46,20 +46,26 @@ final readonly class InProductSurvey
      *
      * Documented: Available in cPanel and WHM 86 and later. Returns whether to display the survey banner and its link.
      * The source declares x-readonly=false. display and new_user use the existing public integer 0|1 flag convention:
-     * exact quoted 0/1 source values normalize to integers and native 0/1 flags are accepted. max_dismiss remains a
-     * string, and user_type is the documented whm string. Other strings, integers, booleans and fractions are not
-     * accepted for the two flags. Response fields retain optional presence. Returned links can contain private tokens;
-     * treat them as payload data and never fetch them automatically.
+     * exact quoted 0/1 source values normalize to integers and native 0/1 flags are accepted. max_dismiss remains an
+     * exact string when present and nonnull, and user_type is the documented whm string. Other strings, integers,
+     * booleans and fractions are not accepted for the two flags. Response fields retain optional presence. Returned
+     * links can contain private tokens; treat them as payload data and never fetch them automatically. Review
+     * 5721307565 (https://github.com/hostingpal/whm-api-client/pull/70#pullrequestreview-5721307565) on cPanel
+     * 11.138.0.19 inspected InProductSurvey.pm and Cpanel/InProductSurvey.pm plus configuration: undefined
+     * links.whm.url, dismiss.max and submit event yield null link, max_dismiss and submit_event. This is source/config
+     * reasoning, not a survey call. The implementation saves start_time and a generated uuid under root inproductsurvey
+     * scope, and saves last_survey_link only when a link exists.
      *
-     * Policy: Client policy: send one request without automatic retry or rollback. Optional null arguments are omitted;
-     * accepted explicit zero and empty strings retain their supplied values.
+     * Policy: Client policy: use one form POST without automatic retry or rollback. Preserve optional fields, the three
+     * nullable strings, exact empty strings and strict sibling types. Returned URLs are private payload data and are
+     * never fetched automatically.
      *
      * API-map identity: whm1:get_in_product_survey_url#GET (wire name get_in_product_survey_url; InProductSurvey).
      *
      * @return GetInProductSurveyUrlResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/inproductsurvey/inproductsurvey-get_in_product_survey_url
      */
     public function getInProductSurveyUrl(): array

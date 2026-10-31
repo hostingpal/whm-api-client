@@ -20,7 +20,7 @@ final class CustomizationsSpec
         'params' => [
             'application' => ['name' => 'application', 'encoding' => 'scalar'],
             'theme' => ['name' => 'theme', 'encoding' => 'scalar'],
-            'path' => ['name' => 'path', 'encoding' => 'scalar'],
+            'path' => ['name' => 'path', 'encoding' => 'scalar', 'reject_empty' => true],
         ],
         'returns' => null,
     ];
@@ -33,6 +33,6 @@ final class CustomizationsSpec
             'application' => ['name' => 'application', 'encoding' => 'scalar'],
             'theme' => ['name' => 'theme', 'encoding' => 'scalar'],
         ],
-        'returns' => null,
+        'returns' => ['type' => 'mixed'],
     ];
 }

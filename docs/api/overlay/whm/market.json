@@ -1,0 +1,638 @@
+{
+  "schema_version": "1.0",
+  "family": "whm1",
+  "group": "cPanel Market",
+  "class": "Market",
+  "accessor": "market",
+  "description": "cPanel Market provider inventory, product information, attributes and commission configuration.",
+  "operations": {
+    "whm1:disable_market_provider": {
+      "name": "disableProvider",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 56. This function disables a cPanel Market provider."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned response documents metadata only and no data payload; this method returns void."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /disable_market_provider/get declares x-readonly=false and x-cpanel-available-version=56. Use form POST even when the summary describes retrieval, because the source does not classify it as read-only."
+        }
+      ]
+    },
+    "whm1:enable_market_provider": {
+      "name": "enableProvider",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 56. This function enables a\u00a0cPanel Market provider."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned response documents metadata only and no data payload; this method returns void."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /enable_market_provider/get declares x-readonly=false and x-cpanel-available-version=56. Use form POST even when the summary describes retrieval, because the source does not classify it as read-only."
+        }
+      ]
+    },
+    "whm1:get_adjusted_market_providers_products": {
+      "name": "getAdjustedProvidersProducts",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 56. This function lists all available cPanel Market products from enabled providers,\nwith the prices that the adjustments database modifies."
+        },
+        {
+          "kind": "policy",
+          "text": "Returned provider content, icons, schemas, attributes and URLs are payload data; the client does not render, execute or fetch them. Every call makes one request without retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Adjusted prices use number values and product_id is an integer. Preserve explicit null prices, nullable max_users and category, omitted fields and dynamic provider-specific extra values separately. Extra-value contents remain opaque."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /get_adjusted_market_providers_products/get declares x-readonly=false and x-cpanel-available-version=56. Use form POST even when the summary describes retrieval, because the source does not classify it as read-only."
+        }
+      ],
+      "response": {
+        "products[]": {
+          "replace": {
+            "type": "object",
+            "fields": {
+              "base_name": {
+                "type": "string"
+              },
+              "billing_type": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "display_name": {
+                "type": "string"
+              },
+              "enabled": {
+                "type": "flag"
+              },
+              "icon": {
+                "type": "string"
+              },
+              "icon_mime_type": {
+                "type": "string"
+              },
+              "license_term": {
+                "type": "int"
+              },
+              "max_users": {
+                "type": "int",
+                "nullable": true
+              },
+              "maximum_server_price": {
+                "type": "number",
+                "nullable": true
+              },
+              "minimum_server_price": {
+                "type": "number",
+                "nullable": true
+              },
+              "price": {
+                "type": "number",
+                "nullable": true
+              },
+              "price_unit": {
+                "type": "string"
+              },
+              "product": {
+                "type": "string"
+              },
+              "product_category": {
+                "type": "string",
+                "nullable": true
+              },
+              "product_group": {
+                "type": "string"
+              },
+              "product_id": {
+                "type": "int"
+              },
+              "provider_display_name": {
+                "type": "string"
+              },
+              "provider_name": {
+                "type": "string"
+              },
+              "recommended": {
+                "type": "flag"
+              },
+              "requires_ip": {
+                "type": "flag"
+              }
+            },
+            "values": {
+              "type": "mixed"
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /get_adjusted_market_providers_products/get data.products.items declares properties plus additionalProperties with only a description and no value type. Preserve all named properties with their exact formal types, integer flags, nullable prices/max_users/category and optional presence, and preserve every source-declared extra property as mixed through object.values. The description mentions x_ product-specific properties but defines no enforceable key-pattern schema or extra-value contract. Numeric prices and integer product_id here remain distinct from the string-valued unadjusted product schema."
+            }
+          ]
+        }
+      }
+    },
+    "whm1:get_market_providers_commission_config": {
+      "name": "getProvidersCommissionConfig",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 56. This function returns the commission configuration of all available cPanel Market providers."
+        },
+        {
+          "kind": "policy",
+          "text": "Returned provider content, icons, schemas, attributes and URLs are payload data; the client does not render, execute or fetch them. Every call makes one request without retry or rollback."
+        },
+        {
+          "kind": "observed",
+          "text": "PR64 review 5721097744 reports null local_commission_id and remote_commission_id on 11.138.0.19. Both remain optional strings when nonnull; provider names remain strict."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /get_market_providers_commission_config/get declares x-readonly=true and x-cpanel-available-version=56. Use GET for this documented read."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Separately reported by PR64 reviewer in review 5721097744 (https://github.com/hostingpal/whm-api-client/pull/64#pullrequestreview-5721097744), GET through WHM. local_commission_id and remote_commission_id were null; the original spec rejected them. This is reviewer evidence, not a committed runner capture or a new call by this correction."
+        }
+      ],
+      "response": {
+        "payload[].local_commission_id": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Separately reported by PR64 reviewer in review 5721097744 (https://github.com/hostingpal/whm-api-client/pull/64#pullrequestreview-5721097744), GET through WHM. get_market_providers_commission_config returned null local_commission_id. Retain optional string|null and strict provider-name siblings. This is reviewer evidence, not a committed runner capture or a new call by this correction."
+            }
+          ]
+        },
+        "payload[].remote_commission_id": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Separately reported by PR64 reviewer in review 5721097744 (https://github.com/hostingpal/whm-api-client/pull/64#pullrequestreview-5721097744), GET through WHM. get_market_providers_commission_config returned null remote_commission_id. Retain optional string|null and strict provider-name siblings. This is reviewer evidence, not a committed runner capture or a new call by this correction."
+            }
+          ]
+        }
+      }
+    },
+    "whm1:get_market_providers_list": {
+      "name": "getProvidersList",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 56. This function lists the available\u00a0cPanel Market providers."
+        },
+        {
+          "kind": "policy",
+          "text": "Returned provider content, icons, schemas, attributes and URLs are payload data; the client does not render, execute or fetch them. Every call makes one request without retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "even_commission_divisor is returned only when supports_commission is 1; omitted divisors stay absent. enabled and supports_commission remain integer 0|1 flags."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /get_market_providers_list/get declares x-readonly=true and x-cpanel-available-version=56. Use GET for this documented read."
+        }
+      ]
+    },
+    "whm1:get_market_providers_product_metadata": {
+      "name": "getProvidersProductMetadata",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 56. The return attributes depend on product_group: ssl_certificate returns SSLMarketProviderMetaData, containing additional SSL-certificate attributes; all other groups return only MarketProviderMetaData. The function does not return product_group; use getProvidersProducts() with product_id to obtain it."
+        },
+        {
+          "kind": "policy",
+          "text": "Returned provider content, icons, schemas, attributes and URLs are payload data; the client does not render, execute or fetch them. Every call makes one request without retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "The attributes object combines base-product and SSL-product metadata without dropping SSL-only optional fields. Each read_only value is an integer 0|1 flag. product_group is not returned by this operation; consult getProvidersProducts() when needed."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /get_market_providers_product_metadata/get declares x-readonly=false and x-cpanel-available-version=56. Use form POST even when the summary describes retrieval, because the source does not classify it as read-only."
+        }
+      ]
+    },
+    "whm1:get_market_providers_products": {
+      "name": "getProvidersProducts",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 56. This function lists products available in the server's cPanel Market."
+        },
+        {
+          "kind": "policy",
+          "text": "Returned provider content, icons, schemas, attributes and URLs are payload data; the client does not render, execute or fetch them. Every call makes one request without retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Unadjusted product_id and currency prices remain strings, unlike adjusted prices. The pinned 12-row example uses native integer x_price_per_domain, x_price_per_domain_maximum and x_price_per_domain_minimum values, and four null x_identity_verification lists. Additional product returns such as base_name and license_term are retained as opaque values; known fields and deep option labels remain strict."
+        },
+        {
+          "kind": "policy",
+          "text": "Preserve exact integer/string price values, optional and nullable fields, and source-declared additional product data. product_category accepts null by alignment with the adjusted read, without claiming a live observation. Exact quoted requires_ip 0/1 normalization remains limited to that flag."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /get_market_providers_products/get declares x-readonly=false and x-cpanel-available-version=56. Use form POST even when the summary describes retrieval, because the source does not classify it as read-only."
+        }
+      ],
+      "response": {
+        "products[].x_validation_type": {
+          "type": "string",
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. SSLCertificateMarketItem.x_validation_type omits type but explicitly enumerates the strings dv, ev and ov, gives the string example dv, and describes Domain/Extended/Organization Validation. Repair only this string type; enum values are documentary and do not establish runtime enum enforcement."
+            }
+          ]
+        },
+        "products[].x_identity_verification[].options[][]": {
+          "type": "string",
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. SSLCertificateMarketItem.allOf[1].properties.x_identity_verification.items.properties.options declares array items of arrays whose items have type:string. The descriptions identify value/label pairs. Existing bounded schema expansion reaches mixed at those nested leaves; restore only the explicit string leaf contract. Preserve optional presence and empty nested lists; do not invent exact pair-length validation."
+            }
+          ]
+        },
+        "products[].x_price_per_domain": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "int"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /get_market_providers_products/get data.products describes additional product returns. Its actual 12-row example has base_name and license_term, native integers for all three x_price_per_domain fields and four null x_identity_verification lists. Preserve native integer/string distinctions; do not coerce prices or weaken known fields. Nullable product_category aligns the adjusted product contract."
+            }
+          ]
+        },
+        "products[].x_price_per_domain_maximum": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "int"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /get_market_providers_products/get data.products describes additional product returns. Its actual 12-row example has base_name and license_term, native integers for all three x_price_per_domain fields and four null x_identity_verification lists. Preserve native integer/string distinctions; do not coerce prices or weaken known fields. Nullable product_category aligns the adjusted product contract."
+            }
+          ]
+        },
+        "products[].x_price_per_domain_minimum": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "int"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /get_market_providers_products/get data.products describes additional product returns. Its actual 12-row example has base_name and license_term, native integers for all three x_price_per_domain fields and four null x_identity_verification lists. Preserve native integer/string distinctions; do not coerce prices or weaken known fields. Nullable product_category aligns the adjusted product contract."
+            }
+          ]
+        },
+        "products[].x_identity_verification": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /get_market_providers_products/get data.products describes additional product returns. Its actual 12-row example has base_name and license_term, native integers for all three x_price_per_domain fields and four null x_identity_verification lists. Preserve native integer/string distinctions; do not coerce prices or weaken known fields. Nullable product_category aligns the adjusted product contract."
+            }
+          ]
+        },
+        "products[].product_category": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Both product reads return the product category. Match the adjusted read nullable category while retaining the unadjusted string branch and optional presence; this is source-family compatibility, not a live observation."
+            }
+          ]
+        },
+        "products[]": {
+          "replace": {
+            "type": "object",
+            "fields": {
+              "billing_type": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "display_name": {
+                "type": "string"
+              },
+              "icon": {
+                "type": "string"
+              },
+              "icon_mime_type": {
+                "type": "string"
+              },
+              "max_users": {
+                "type": "int",
+                "nullable": true
+              },
+              "maximum_server_price": {
+                "type": "string",
+                "nullable": true
+              },
+              "minimum_server_price": {
+                "type": "string",
+                "nullable": true
+              },
+              "price": {
+                "type": "string",
+                "nullable": true
+              },
+              "price_unit": {
+                "type": "string"
+              },
+              "product": {
+                "type": "string"
+              },
+              "product_category": {
+                "type": "string"
+              },
+              "product_group": {
+                "type": "string"
+              },
+              "product_id": {
+                "type": "string"
+              },
+              "provider_display_name": {
+                "type": "string"
+              },
+              "provider_name": {
+                "type": "string"
+              },
+              "requires_ip": {
+                "type": "flag",
+                "accept": [
+                  "string-flag"
+                ]
+              },
+              "x_certificate_term": {
+                "type": "list",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "x_identity_verification": {
+                "type": "list",
+                "items": {
+                  "type": "object",
+                  "fields": {
+                    "description": {
+                      "type": "string"
+                    },
+                    "is_optional": {
+                      "type": "int"
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "options": {
+                      "type": "list",
+                      "items": {
+                        "type": "list",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "pattern": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "x_max_http_redirects": {
+                "type": "int"
+              },
+              "x_payment_trigger": {
+                "type": "string"
+              },
+              "x_price_per_domain": {
+                "type": "string"
+              },
+              "x_price_per_domain_maximum": {
+                "type": "string"
+              },
+              "x_price_per_domain_minimum": {
+                "type": "string"
+              },
+              "x_price_per_wildcard_domain": {
+                "type": "string"
+              },
+              "x_price_per_wildcard_domain_maximum": {
+                "type": "string"
+              },
+              "x_price_per_wildcard_domain_minimum": {
+                "type": "string"
+              },
+              "x_ssl_per_domain_pricing": {
+                "type": "flag"
+              },
+              "x_supports_dns_dcv": {
+                "type": "flag"
+              },
+              "x_validation_type": {
+                "type": "string"
+              },
+              "x_warn_after": {
+                "type": "int"
+              },
+              "x_wildcard_parent_domain_free": {
+                "type": "flag"
+              }
+            },
+            "values": {
+              "type": "mixed"
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /get_market_providers_products/get data.products explicitly says additional returns may appear. Preserve every existing known field and deep options string schema, with opaque values for undeclared product fields including pinned example base_name/license_term; do not replace known fields with mixed."
+            }
+          ]
+        }
+      }
+    },
+    "whm1:set_market_product_attribute": {
+      "name": "setProductAttribute",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 56. This function sets an attribute for a cPanel Market provider's product."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned response documents metadata only and no data payload; this method returns void."
+        },
+        {
+          "kind": "policy",
+          "text": "Provider and product identify the target before attribute and value. Values remain exact caller-supplied strings, including empty and zero strings, and are treated as sensitive. The client sends one form POST without retry or rollback; no provider credential content is asserted by the source."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /set_market_product_attribute/get declares x-readonly=false and x-cpanel-available-version=56. Use form POST even when the summary describes retrieval, because the source does not classify it as read-only."
+        }
+      ],
+      "params": {
+        "value": {
+          "sensitive": true
+        }
+      },
+      "order": [
+        "provider",
+        "product_id",
+        "attribute",
+        "value"
+      ]
+    },
+    "whm1:set_market_provider_commission_id": {
+      "name": "setProviderCommissionId",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 56. This function sets the contact ID to which a cPanel Market provider will send commission."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned response documents metadata only and no data payload; this method returns void."
+        },
+        {
+          "kind": "policy",
+          "text": "Changes the contact identifier to which the selected provider sends commissions. The client does not validate account ownership, perform a purchase or confirm an external commission transfer."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /set_market_provider_commission_id/get declares x-readonly=false and x-cpanel-available-version=56. Use form POST even when the summary describes retrieval, because the source does not classify it as read-only."
+        }
+      ],
+      "order": [
+        "provider",
+        "commission_id"
+      ]
+    }
+  }
+}

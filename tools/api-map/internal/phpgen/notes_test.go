@@ -53,6 +53,9 @@ func TestRenderPolicyNoteWithoutChangingExecutableSpec(t *testing.T) {
 		"Documented: Requires a username.",
 		"Observed: The reviewed response included a numeric identifier.",
 		"Policy: Uses POST for conservative credential handling.",
+		"@throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.",
+		"@throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;",
+		"the operation may already have changed state; do not retry automatically.",
 	} {
 		if !strings.Contains(class, want) {
 			t.Errorf("missing %q in generated PHPDoc:\n%s", want, class)

@@ -197,9 +197,9 @@ final readonly class Authentication
      * @param string|null $text The text of the SSH public key file. Null omits it.
      * @param string|null $options A comma-separated list of options to include with the public SSH key. Null omits it.
      * @return AuthorizeSshKeyResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/ssh-keys-and-connections/ssh-authorizesshkey
      */
     public function authorizeSshKey(
@@ -242,9 +242,9 @@ final readonly class Authentication
      * @param string $host The remote server's hostname.
      * @param int|null $port The remote server's port number. Null omits it.
      * @return CheckRemoteSshConnectionResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/ssh-keys-and-connections/ssh-check_remote_ssh_connection
      */
     public function checkRemoteSshConnection(string $host, ?int $port = null): array
@@ -280,9 +280,9 @@ final readonly class Authentication
      * @param bool|null $keepFile Whether to keep the OpenSSH file on the server after conversion. Null omits it.
      * @param string|null $passphrase The private key file's passphrase. Null omits it.
      * @return ConvertOpenSshToPuttyResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/ssh-keys-and-connections/ssh-convertopensshtoputty
      */
     public function convertOpenSshToPutty(
@@ -322,9 +322,9 @@ final readonly class Authentication
      * @param bool|null $leaveAuthorized Whether authorization remains after deleting the SSH key. 1 leaves
      *     authorization in place; 0 does not. Omitting the argument retains the documented default 1. Null omits it.
      * @return DeleteSshKeyResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/ssh-keys-and-connections/ssh-deletesshkey
      */
     public function deleteSshKey(string $file, ?bool $leaveAuthorized = null): array
@@ -354,7 +354,7 @@ final readonly class Authentication
      *
      * @param string $providerId A valid identity provider's identification key.
      * @param 'cpaneld'|'webmaild'|'whostmgrd' $serviceName The cPanel & WHM service's name:
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/external-authentication/authentication-disable_authentication_provider
      */
     public function disableAuthenticationProvider(string $providerId, string $serviceName): void
@@ -382,9 +382,9 @@ final readonly class Authentication
      * disable_failing_authentication_providers; External Authentication).
      *
      * @return DisableFailingAuthenticationProvidersResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/external-authentication/authentication-disable_failing_authentication_providers
      */
     public function disableFailingAuthenticationProviders(): array
@@ -414,7 +414,7 @@ final readonly class Authentication
      *
      * @param string $providerId A valid identity provider's identification key.
      * @param 'cpaneld'|'webmaild'|'whostmgrd' $serviceName The cPanel & WHM service's name:
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/external-authentication/authentication-enable_authentication_provider
      */
     public function enableAuthenticationProvider(string $providerId, string $serviceName): void
@@ -452,9 +452,9 @@ final readonly class Authentication
      * @param string|null $name The key's filename. Null omits it.
      * @param string|null $passphrase The key's secure passphrase. Null omits it.
      * @return GenerateSshKeyPairResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/ssh-keys-and-connections/ssh-generatesshkeypair
      */
     public function generateSshKeyPair(
@@ -495,9 +495,9 @@ final readonly class Authentication
      * get_available_authentication_providers; External Authentication).
      *
      * @return GetAvailableAuthenticationProvidersResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/external-authentication/authentication-get_available_authentication_providers
      */
     public function getAvailableAuthenticationProviders(): array
@@ -532,9 +532,9 @@ final readonly class Authentication
      * @param string $urlAfterLogin The location to which the cPanel Store or cPanel Market provider redirects the
      *     user's browser after they log in.
      * @return GetLoginUrlResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/login-url/market-get_login_url
      */
     public function getLoginUrl(
@@ -571,9 +571,9 @@ final readonly class Authentication
      * @param string $providerId The identity provider's key.
      * @param 'cpaneld'|'whostmgrd'|'webmaild' $serviceName The cPanel & WHM service's name.
      * @return GetProviderClientConfigurationsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/external-authentication/authentication-get_provider_client_configurations
      */
     public function getProviderClientConfigurations(string $providerId, string $serviceName): array
@@ -610,9 +610,9 @@ final readonly class Authentication
      * @param string $providerId The identity provider's key.
      * @param 'cpaneld'|'whostmgrd'|'webmaild' $serviceName The cPanel & WHM service's name.
      * @return GetProviderConfigurationFieldsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/external-authentication/authentication-get_provider_configuration_fields
      */
     public function getProviderConfigurationFields(string $providerId, string $serviceName): array
@@ -645,9 +645,9 @@ final readonly class Authentication
      *
      * @param string $providerId The identity provider's key.
      * @return GetProviderDisplayConfigurationsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/external-authentication/authentication-get_provider_display_configurations
      */
     public function getProviderDisplayConfigurations(string $providerId): array
@@ -678,9 +678,9 @@ final readonly class Authentication
      * Authentication).
      *
      * @return GetUsersAuthnLinkedAccountsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/external-authentication/accounts-get_users_authn_linked_accounts
      */
     public function getUsersAuthnLinkedAccounts(): array
@@ -717,7 +717,7 @@ final readonly class Authentication
      * @param bool|null $extractPrivate Whether to extract and save only the private key. Null omits it.
      * @param bool|null $extractPublic Whether to extract and save only the public key. Null omits it.
      * @param string|null $passphrase The key's passphrase. Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/ssh-keys-and-connections/ssh-importsshkey
      */
     public function importSshKey(
@@ -758,7 +758,7 @@ final readonly class Authentication
      * @param string $providerId The name of the identity provider.
      * @param string $subjectUniqueIdentifier The unique identifier for the user at the identity provider.
      * @param string $preferredUsername The preferred username of the account on the identity provider.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/external-authentication/accounts-link_user_authn_provider
      */
     public function linkUserAuthnProvider(
@@ -801,9 +801,9 @@ final readonly class Authentication
      * @param bool|null $publicTexts Whether to include public key text. Null omits it.
      * @param bool|null $syncAuthorized Whether to synchronize the keys that can access the server. Null omits it.
      * @return ListSshKeysResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/ssh-keys-and-connections/ssh-listsshkeys
      */
     public function listSshKeys(
@@ -846,7 +846,7 @@ final readonly class Authentication
      * @param string $configurations The configuration values to set for the identity provider.
      * @param string $providerId The identity provider's key.
      * @param 'cpaneld'|'whostmgrd'|'webmaild' $serviceName The cPanel & WHM service's name.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/external-authentication/authentication-set_provider_client_configurations
      */
     public function setProviderClientConfigurations(
@@ -888,7 +888,7 @@ final readonly class Authentication
      *     objects. Form-encoded exactly once.
      * @param string $providerId The identity provider's key.
      * @param 'cpaneld'|'whostmgrd'|'webmaild' $serviceName The cPanel & WHM service's name.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/external-authentication/authentication-set_provider_display_configurations
      */
     public function setProviderDisplayConfigurations(
@@ -918,7 +918,7 @@ final readonly class Authentication
      * API-map identity: whm1:twofactorauth_disable_policy#GET (wire name twofactorauth_disable_policy; Two-Factor
      * Authentication).
      *
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/two-factor-authentication/twofactorauth-twofactorauth_disable_policy
      */
     public function twoFactorAuthDisablePolicy(): void
@@ -940,7 +940,7 @@ final readonly class Authentication
      * API-map identity: whm1:twofactorauth_enable_policy#GET (wire name twofactorauth_enable_policy; Two-Factor
      * Authentication).
      *
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/two-factor-authentication/twofactorauth-twofactorauth_enable_policy
      */
     public function twoFactorAuthEnablePolicy(): void
@@ -966,9 +966,9 @@ final readonly class Authentication
      * Two-Factor Authentication).
      *
      * @return TwoFactorAuthGenerateTfaConfigResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/two-factor-authentication/twofactorauth-twofactorauth_generate_tfa_config
      */
     public function twoFactorAuthGenerateTfaConfig(): array
@@ -996,9 +996,9 @@ final readonly class Authentication
      * Authentication).
      *
      * @return TwoFactorAuthGetIssuerResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/two-factor-authentication/twofactorauth-twofactorauth_get_issuer
      */
     public function twoFactorAuthGetIssuer(): array
@@ -1030,9 +1030,9 @@ final readonly class Authentication
      *
      * @param string $user The username for the account.
      * @return TwoFactorAuthGetTfaConfigForUserResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/two-factor-authentication/twofactorauth-twofactorauth_get_tfa_config_for_user
      */
     public function twoFactorAuthGetTfaConfigForUser(string $user): array
@@ -1067,9 +1067,9 @@ final readonly class Authentication
      *
      * @param string|null $user The username for a specified account. Null omits it.
      * @return TwoFactorAuthGetUserConfigsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/two-factor-authentication/twofactorauth-twofactorauth_get_user_configs
      */
     public function twoFactorAuthGetUserConfigs(?string $user = null): array
@@ -1099,9 +1099,9 @@ final readonly class Authentication
      * Authentication).
      *
      * @return TwoFactorAuthPolicyStatusResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/two-factor-authentication/twofactorauth-twofactorauth_policy_status
      */
     public function twoFactorAuthPolicyStatus(): array
@@ -1134,9 +1134,9 @@ final readonly class Authentication
      *
      * @param string $user The account's username.
      * @return TwoFactorAuthRemoveUserConfigResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/two-factor-authentication/twofactorauth-twofactorauth_remove_user_config
      */
     public function twoFactorAuthRemoveUserConfig(string $user): array
@@ -1166,7 +1166,7 @@ final readonly class Authentication
      * Authentication).
      *
      * @param string $issuer The issuer's name.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/two-factor-authentication/twofactorauth-twofactorauth_set_issuer
      */
     public function twoFactorAuthSetIssuer(string $issuer): void
@@ -1197,9 +1197,9 @@ final readonly class Authentication
      * @param string $secret A generated code for use with 2FA in Base32 format.
      * @param string $tfaToken The time-based one-time password (TOTP) that the authentication app provides.
      * @return TwoFactorAuthSetTfaConfigResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/two-factor-authentication/twofactorauth-twofactorauth_set_tfa_config
      */
     public function twoFactorAuthSetTfaConfig(
@@ -1240,7 +1240,7 @@ final readonly class Authentication
      * @param string $username The account's username.
      * @param string $providerId The system's internal key for the identity provider.
      * @param string $subjectUniqueIdentifier The unique identifier for the user at the identity provider.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/authentication-providers/accounts-unlink_user_authn_provider
      */
     public function unlinkUserAuthnProvider(string $username, string $providerId, string $subjectUniqueIdentifier): void

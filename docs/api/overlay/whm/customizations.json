@@ -4,7 +4,7 @@
   "group": "Customizations",
   "accessor": "customizations",
   "class": "Customizations",
-  "description": "WHM Jupiter interface customization selection and deletion. The pinned retrieval response contains no declared data contract; update serialization remains excluded.",
+  "description": "WHM Jupiter interface customization retrieval and deletion. Retrieval preserves opaque payload data; update serialization remains excluded.",
   "operations": {
     "whm1:delete_customizations": {
       "name": "deleteCustomizations",
@@ -12,11 +12,11 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available in cPanel and WHM 100 and later. Deletes customization data for the Jupiter theme only. Server owners and resellers can customize their users interface. application is cpanel or webmail. Omitted path deletes the customization data; a supplied path removes only the selected element using the supported dot-separated JSONPath subset. Deletion changes branding and has no client rollback. The source response declares metadata only, so the typed method returns void."
+          "text": "Available in cPanel and WHM 100 and later. Deletes customization data for the Jupiter theme only. Server owners and resellers can customize their users interface. application is cpanel or webmail. A selective path removes only the selected element using the supported dot-separated JSONPath subset. Deletion changes branding and has no client rollback. The source response declares metadata only, so the typed method returns void. Review 5721307565 (https://github.com/hostingpal/whm-api-client/pull/70#pullrequestreview-5721307565) on cPanel 11.138.0.19 inspected Whostmgr/API/1/Customizations.pm and Whostmgr/Customizations.pm: omitted path, exact empty string and exact string 0 select the whole default customization section. No delete was run."
         },
         {
           "kind": "policy",
-          "text": "Client policy: send one request without automatic retry or rollback. Optional null arguments are omitted; accepted explicit zero and empty strings retain their supplied values."
+          "text": "Client policy: use one form POST without automatic retry or rollback. Typed deletion requires an explicit nonnullable path and rejects trimmed blanks and trimmed zero before HTTP. Whitespace and trimmed-zero rejection are additional conservative policy; accepted paths are forwarded byte-exact without trimming. Missing/null arguments fail before the group callback and retain prior metadata; runner guard failures clear it. Deliberate whole-section deletion remains available through generic call() with form POST; it is irreversible."
         }
       ],
       "evidence": [
@@ -25,7 +25,24 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /delete_customizations parameters, x-readonly classification and response schema. Source declares x-readonly=false; use form POST. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "review 5721307565 / 11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review 5721307565 (https://github.com/hostingpal/whm-api-client/pull/70#pullrequestreview-5721307565) on cPanel 11.138.0.19: Reviewer-inspected source uses $path //= '' then DEFAULT_SECTION() . ( $path ? \".$path\" : '' ); exact empty/0/omitted paths select the whole section. Required nonnullable scalar path and reject_empty use existing client policy; trim-blank/trim-zero refusal is conservative. No deletion or local server inspection."
         }
+      ],
+      "params": {
+        "path": {
+          "required": true,
+          "reject_empty": true
+        }
+      },
+      "order": [
+        "application",
+        "theme",
+        "path"
       ]
     },
     "whm1:retrieve_customizations": {
@@ -34,11 +51,19 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available in cPanel and WHM 100 and later. Retrieves customization data for the Jupiter theme only; application is cpanel or webmail. The pinned response schema declares metadata only and supplies no data contract. This source limitation yields a void typed method; no branding fields or usable retrieval payload are promised."
+          "text": "Available in cPanel and WHM 100 and later. Retrieves customization data for the Jupiter theme only; application is cpanel or webmail. The pinned response schema declares metadata only and supplies no data contract. Review 5721307565 (https://github.com/hostingpal/whm-api-client/pull/70#pullrequestreview-5721307565) on cPanel 11.138.0.19 inspected Whostmgr/API/1/Customizations.pm and Whostmgr/Customizations.pm returning the result. The corrected method preserves present payloads as opaque mixed data without inventing a branding field schema."
         },
         {
           "kind": "policy",
           "text": "Client policy: send one request without automatic retry or rollback. Optional null arguments are omitted; accepted explicit zero and empty strings retain their supplied values."
+        },
+        {
+          "kind": "policy",
+          "text": "The opaque mixed boundary preserves explicit null as well as other JSON values; this is a generic compatibility boundary, not an observation of every value variant. Missing data remains a payload mismatch after confirmed API success."
+        },
+        {
+          "kind": "observed",
+          "text": "Review 5721307565 (https://github.com/hostingpal/whm-api-client/pull/70#pullrequestreview-5721307565) on cPanel 11.138.0.19 reports a true read: the old typed void method returned null while the raw retrieve_customizations call returned a full map with help, documentation and brand data. This is attributed reviewer runtime evidence, not a new local call or capture."
         }
       ],
       "evidence": [
@@ -47,12 +72,39 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /retrieve_customizations parameters, x-readonly classification and response schema. Source declares x-readonly=true; use GET. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review 5721307565 (https://github.com/hostingpal/whm-api-client/pull/70#pullrequestreview-5721307565) on cPanel 11.138.0.19 reports true-read typed/raw retrieve_customizations: typed void returned null and raw returned full map. No correction reran it or added a capture. Other JSON variants are opaque-boundary compatibility, not observed values."
         }
-      ]
+      ],
+      "response": {
+        "": {
+          "replace": {
+            "type": "mixed"
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "review 5721307565 / 11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Review 5721307565 (https://github.com/hostingpal/whm-api-client/pull/70#pullrequestreview-5721307565) on cPanel 11.138.0.19: Reviewer runtime: typed void returned null while raw retrieve_customizations returned a full map; reviewer-inspected implementation returns $result. Preserve present data through an opaque mixed root without declaring individual branding fields. No fresh live call or locally pinned implementation source; acceptance of null/other JSON variants is the generic boundary, not universal observed behavior."
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Review 5721307565 (https://github.com/hostingpal/whm-api-client/pull/70#pullrequestreview-5721307565) on cPanel 11.138.0.19 reports true-read typed/raw retrieve_customizations: typed void returned null and raw returned full map. No correction reran it or added a capture. Other JSON variants are opaque-boundary compatibility, not observed values."
+            }
+          ]
+        }
+      }
     },
     "whm1:update_customizations": {
       "exclude": {
-        "reason": "The data query parameter uses application/json content with a composed object schema, outside the current scalar query/form boundary. Serialization remains tracked under whm-api-client-8x0.1.22; no JSON request body is declared.",
+        "reason": "The required data query parameter uses application/json content with a composed object schema, outside the current scalar query/form boundary. Serialization is tracked under whm-api-client-8x0.1.22, with field-JSON design under whm-api-client-8x0.29; no JSON request body is declared.",
         "evidence": [
           {
             "kind": "doc",

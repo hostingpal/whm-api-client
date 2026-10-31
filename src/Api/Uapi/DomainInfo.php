@@ -338,9 +338,9 @@ final readonly class DomainInfo
      * @param bool|null $returnHttpsRedirectsStatus Whether to return the secure redirect status of the addon domains.
      *     Null omits it.
      * @return DomainsDataResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/domain-information/domaininfo-domains_data
      */
     public function domainsData(
@@ -367,9 +367,9 @@ final readonly class DomainInfo
      *
      * @param bool|null $hideTemporaryDomains Whether to hide temporary domains from the response arrays. Null omits it.
      * @return ListDomainsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/domain-information/domaininfo-list_domains
      */
     public function listDomains(?bool $hideTemporaryDomains = null): array
@@ -391,9 +391,9 @@ final readonly class DomainInfo
      * @param bool|null $hideTemporaryDomains Whether to hide domain aliases if the main domain is a temporary domain.
      *     Null omits it.
      * @return MainDomainBuiltinSubdomainAliasesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/domain-information/domaininfo-main_domain_builtin_subdomain_aliases
      */
     public function mainDomainBuiltinSubdomainAliases(?bool $hideTemporaryDomains = null): array
@@ -418,9 +418,9 @@ final readonly class DomainInfo
      *
      * @param bool|null $hideTemporaryDomains Whether to hide temporary domains from the response. Null omits it.
      * @return string|null
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/domain-information/domaininfo-primary_domain
      */
     public function primaryDomain(?bool $hideTemporaryDomains = null): ?string
@@ -458,9 +458,9 @@ final readonly class DomainInfo
      * @param bool|null $returnHttpsRedirectStatus Whether to return the secure redirect status of the addon domains.
      *     Null omits it.
      * @return SingleDomainDataResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/domain-information/domaininfo-single_domain_data
      */
     public function singleDomainData(

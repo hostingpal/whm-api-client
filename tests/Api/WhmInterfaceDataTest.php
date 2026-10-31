@@ -68,22 +68,13 @@ final class WhmInterfaceDataTest extends TestCase
     /** @return iterable<string, RequestCase> */
     public static function requests(): iterable
     {
-        yield 'retrieve metadata-only source' => ['retrieve_customizations', 'GET',
-            static function (WhmClient $w): void {
-                $w->customizations()->retrieveCustomizations('cpanel', 'jupiter');
-            }, 'application=cpanel&theme=jupiter', null];
-        yield 'delete optional path omitted' => ['delete_customizations', 'POST',
-            static function (WhmClient $w): void {
-                $w->customizations()->deleteCustomizations('webmail', 'jupiter');
-            }, 'application=webmail&theme=jupiter', null];
+        yield 'retrieve opaque result' => ['retrieve_customizations', 'GET',
+            static fn (WhmClient $w): mixed => $w->customizations()->retrieveCustomizations('cpanel', 'jupiter'),
+            'application=cpanel&theme=jupiter', '{"brand":{"future":[0,false,null]}}'];
         yield 'delete exact dot path preserved' => ['delete_customizations', 'POST',
             static function (WhmClient $w): void {
                 $w->customizations()->deleteCustomizations('cpanel', 'jupiter', 'brand.logo.description');
             }, 'application=cpanel&theme=jupiter&path=brand.logo.description', null];
-        yield 'delete empty path explicit' => ['delete_customizations', 'POST',
-            static function (WhmClient $w): void {
-                $w->customizations()->deleteCustomizations('cpanel', 'jupiter', '');
-            }, 'application=cpanel&theme=jupiter&path=', null];
         yield 'scoped read source explicitly non-readonly' => ['get_scoped_userdata', 'POST',
             static fn (WhmClient $w): array => $w->userData()->getScopedUserdata('scope & private'),
             'scope=scope%20%26%20private', '{"theme":"dark","items_per_page":"50","empty":""}'];
@@ -93,11 +84,6 @@ final class WhmInterfaceDataTest extends TestCase
         yield 'scoped set key value' => ['set_scoped_userdata', 'POST',
             static fn (WhmClient $w): array => $w->userData()->setScopedUserdata('scope', key: 'theme', value: 'dark'),
             'scope=scope&key=theme&value=dark', '{"theme":"dark","sibling":"kept"}'];
-        yield 'optional scoped arguments omitted' => ['set_scoped_userdata', 'POST',
-            static fn (WhmClient $w): array => $w->userData()->setScopedUserdata('scope'), 'scope=scope', '{}'];
-        yield 'all arguments are sent without invented exclusivity check' => ['set_scoped_userdata', 'POST',
-            static fn (WhmClient $w): array => $w->userData()->setScopedUserdata('scope', '{}', '', '0'),
-            'scope=scope&json=%7B%7D&key=&value=0', '{"zero":"0"}'];
         yield 'quoted zero stays supplied text' => ['get_scoped_userdata', 'POST',
             static fn (WhmClient $w): array => $w->userData()->getScopedUserdata('0'), 'scope=0', '{}'];
         yield 'survey enum flags normalize and other strings stay strings' => ['get_in_product_survey_url', 'POST',
@@ -111,10 +97,14 @@ final class WhmInterfaceDataTest extends TestCase
     public static function payloadCalls(): iterable
     {
         yield 'get scoped map' => [
-            static fn (WhmClient $w): array => $w->userData()->getScopedUserdata('scope'), 'map',
+            static fn (WhmClient $w): array => $w->userData()->getScopedUserdata('scope'), 'read-map',
         ];
         yield 'set scoped map' => [
-            static fn (WhmClient $w): array => $w->userData()->setScopedUserdata('scope'), 'map',
+            static fn (WhmClient $w): array => $w->userData()->setScopedUserdata(
+                'scope',
+                key: 'theme',
+                value: 'dark',
+            ), 'write-map',
         ];
         yield 'survey object' => [
             static fn (WhmClient $w): array => $w->inProductSurvey()->getInProductSurveyUrl(), 'survey',
@@ -140,16 +130,17 @@ final class WhmInterfaceDataTest extends TestCase
             foreach ([null, 'null', 'false', '0', '"text"', '[{}]'] as $index => $payload) {
                 yield $name . ' root ' . $index => [$call, $payload];
             }
-            if ($kind === 'map') {
+            if ($kind === 'read-map') {
                 foreach (['0', 'false', 'null', '[]', '{}', '1.5'] as $index => $value) {
                     yield $name . ' leaf ' . $index => [$call, '{"good":"yes","bad":' . $value . '}'];
                 }
-            } else {
+            } elseif ($kind === 'survey') {
                 $fields = ['display', 'link', 'max_dismiss', 'new_user', 'submit_event', 'server_type', 'user_type'];
                 foreach ($fields as $field) {
                     $invalid = in_array($field, ['display', 'new_user'], true)
                         ? ['2', '-1', '"2"', 'true', 'false', 'null', '[]', '{}', '1.5']
-                        : ['0', 'false', 'null', '[]', '{}'];
+                        : (in_array($field, ['link', 'max_dismiss', 'submit_event'], true)
+                            ? ['0', 'false', '[]', '{}'] : ['0', 'false', 'null', '[]', '{}']);
                     foreach ($invalid as $index => $value) {
                         yield $name . ' ' . $field . ' ' . $index => [
                             $call, '{"link":"valid","' . $field . '":' . $value . '}',
@@ -248,32 +239,32 @@ final class WhmInterfaceDataTest extends TestCase
         $original = ini_get('zend.exception_ignore_args');
         ini_set('zend.exception_ignore_args', '0');
         try {
-            foreach ([false, true] as $payloadFailure) {
-                [$client, $http] = self::client();
-                $response = $payloadFailure
-                    ? self::envelope('{"private":"trace-fixture-secret","bad":false}')
-                    : '{"metadata":{"result":0,"reason":"Fixture failure"}}';
-                $http->addResponse(new Response(200, [], $response));
-                try {
-                    $client->whm()->userData()->setScopedUserdata(
-                        'trace-fixture-secret',
-                        'trace-fixture-secret',
-                        'trace-fixture-secret',
-                        'trace-fixture-secret',
-                    );
-                    self::fail('Fixture must fail.');
-                } catch (ApiErrorException | PayloadMismatchException $exception) {
-                    $seen = [];
-                    self::assertFalse(self::hasSecret($exception->getTrace(), $seen));
-                    self::assertStringNotContainsString('trace-fixture-secret', $exception->getMessage());
-                    self::assertStringNotContainsString('trace-fixture-secret', $exception->getTraceAsString());
-                    if ($exception instanceof PayloadMismatchException) {
-                        self::assertStringNotContainsString(
-                            'trace-fixture-secret',
-                            print_r($exception->__debugInfo(), true),
-                        );
+            foreach ([false, true] as $jsonInput) {
+                foreach ([false, true] as $payloadFailure) {
+                    [$client, $http] = self::client();
+                    $response = $payloadFailure
+                        ? self::envelope('[{"private":"trace-fixture-secret"}]')
+                        : '{"metadata":{"result":0,"reason":"Fixture failure"}}';
+                    $http->addResponse(new Response(200, [], $response));
+                    try {
+                        $arguments = $jsonInput
+                            ? ['json' => '{"private":"trace-fixture-secret"}']
+                            : ['key' => 'trace-fixture-secret', 'value' => 'trace-fixture-secret'];
+                        $client->whm()->userData()->setScopedUserdata('trace-fixture-secret', ...$arguments);
+                        self::fail('Fixture must fail.');
+                    } catch (ApiErrorException | PayloadMismatchException $exception) {
+                        $seen = [];
+                        self::assertFalse(self::hasSecret($exception->getTrace(), $seen));
+                        self::assertStringNotContainsString('trace-fixture-secret', $exception->getMessage());
+                        self::assertStringNotContainsString('trace-fixture-secret', $exception->getTraceAsString());
+                        if ($exception instanceof PayloadMismatchException) {
+                            self::assertStringNotContainsString(
+                                'trace-fixture-secret',
+                                print_r($exception->__debugInfo(), true),
+                            );
+                        }
+                        self::assertCount(1, $http->getRequests());
                     }
-                    self::assertCount(1, $http->getRequests());
                 }
             }
         } finally {

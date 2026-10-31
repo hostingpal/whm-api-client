@@ -51,6 +51,8 @@
         "encoding": {"enum": ["scalar", "bool", "repeat", "numbered", "suffix-numbered", "suffix-numbered-scalar"]},
         "sensitive": {"type": "boolean"},
         "omit": {"type": "boolean"},
+        "omit_empty": {"const": true},
+        "reject_empty": {"const": true},
         "required": {"type": "boolean"},
         "enum_doc": {"type": "boolean"}
       },
@@ -99,6 +101,7 @@
       "type": "object",
       "properties": {
         "name": {"type": "string", "pattern": "^[a-z][A-Za-z0-9]*$"},
+        "function": {"type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*/[A-Za-z_][A-Za-z0-9_]*$"},
         "variant": {"enum": ["GET", "POST"]},
         "method": {"enum": ["GET", "POST"]},
         "body": {"enum": ["multipart"]},
