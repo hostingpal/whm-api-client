@@ -1758,8 +1758,8 @@ unchanged.
 
 ### Expanded WHM account management
 
-`whm()->accounts()` covers 45 of the 49 pinned functions. The expanded surface
-preserves the ten existing methods and adds 23 GET and twelve form POST methods
+`whm()->accounts()` covers 47 of the 49 pinned functions. The expanded surface
+preserves the ten existing methods and adds 23 GET and fourteen form POST methods
 for inventories, enhancements, conversion status, quota/bandwidth controls,
 password policy, Digest Authentication and document roots. Password-strength
 calculation uses POST because its password input is sensitive.
