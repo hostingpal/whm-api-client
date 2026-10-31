@@ -4842,6 +4842,98 @@ under `8x0.2.40`. No credential, key, private URL or TFA secret was read, no sta
 changed and no new live capture ran. The original three-GET artifact is complete
 and immutable.
 
+## Log administration
+
+`uapi()->logManager()` covers all six pinned functions for the selected account;
+`whm()->logs()->listAccountsRetention()` is WHM account-retention inventory.
+Five reads use GET and two mutations use form POST. LogManager requires cPanel
+82+, with deleteArchive() at 136+ and the error-log methods at 138+; the WHM
+retention inventory requires 136+. Reviewer 5721279104 inspected the server's
+`Cpanel/API/LogManager.pm` on `11.138.0.19`: shared `%API` requirements are the
+WebServer role and rawlog feature for all six UAPI operations. The pinned snapshots
+declare neither requirement, and disabled-role/feature behavior was not tested.
+
+The pinned settings text uses current `~/.cpanel-logs` flag values when present,
+with `cpanel.config` defaults when absent. Client policy omits null arguments and
+transmits explicit false as 0 and explicit zero unchanged. The reviewer stored
+and read back false/zero flags; omitted flags kept their current values after
+`setSettings(retentionDays: -1)`. Here -1 clears the per-user retention override,
+while zero retains indefinitely. The pinned schema supplies a minimum of -1;
+the reviewer observed a server bound of -1..999 and an API error for 1000.
+Native optional bool/int inputs and server-side range/cross-field validation stay
+unchanged, including rejection of a call without arguments. No local maximum
+check is added. These observations do not establish rotation or pruning.
+
+Integer 0|1 UAPI flags, boolean WHM using_default, optional fields and nullable
+retention/error-log metadata retain their contracts. The existing four capture-bound
+conversions remain scoped to WHM default_retention and UAPI get_settings
+archive_logs, prune_archive and retention_days. Separately, the reviewer observed
+empty direct viewErrorLog() returning `log_content: []` and `lines_read: "0"`;
+nonempty direct and bridged counts were native integers. Only lines_read additionally
+accepts canonical signed decimal strings within PHP integer bounds, normalizing
+to int. Native integer/omitted counts and strict sibling mtime/size/flags remain.
+Neither immutable log-administration capture contains viewErrorLog().
+
+Log contents are private payload data; do not log them or explicitly accessible
+PayloadMismatchException payloads. The client forwards paths/selectors unchanged,
+performs no local filesystem access, and makes one request with no retry or undo.
+Deletion/settings can permanently affect archives. Mutations retain unconstrained
+present JSON payloads, including null, and reject absent data. All seven methods
+have offline contracts, including both UAPI routes; the private-log mismatch test
+uses the shared trace suite with argument capture and positive controls.
+Existing StatsManager coverage and its deferred JSON save operation are unchanged.
+
+The fixed eight-GET catalog observes version, WHM retention and selected-account
+settings/archive/error-log metadata. It reads no log contents and makes no writes.
+The initial `e5476c1` artifact remains failed and immutable; the corrected
+`dd5e626` artifact on `11.138.0.19` passes all eight checks and strict assessment
+with zero discrepancies. Account/archive rows are populated; error-log lists are
+empty. Separate reviewer observations at `984c5c1` cover all seven methods on a
+disposable account, including reads, writes and API-error cases through both UAPI
+routes and the single WHM route. The reviewer revoked its token and removed the
+account/home. They establish no live verification of the current corrected head.
+Unreadable/symlink error rows with null size/mtime, php_fpm_error_log and actual
+rotation/pruning remain unobserved under `8x0.2.55`.
+
+## Log administration live evidence
+
+The initial [log metadata capture](evidence/2026-10-31-log-administration.json)
+at `e5476c1b9fd2d8a94f371ab05caee86b46f4ab37` on `11.138.0.19` records eight
+HTTP/API successes and five payload/probe passes. Seven known-field discrepancies
+occur across three observations: WHM default_retention is a numeric string; UAPI
+get_settings archive_logs, prune_archive and retention_days are numeric strings
+on both routes. Those four original capture-bound corrections use: lossless canonical
+integer strings for the two retention fields, exact quoted 0/1 for the two flags.
+Sibling fields remain strict and public normalized values remain integers. The
+structural artifact does not prove both quoted flag values were observed. Initial
+SHA-256: `093432542f5f0dd5ac066707112c3f7e0ae8b5d76bfc29c4fefb3e96160a4550`.
+
+The [corrected capture](evidence/2026-10-31-log-administration-corrected.json) at
+`dd5e626ae11f0f6c59e353a17d51bee4868aaa96` on `11.138.0.19` passes all eight
+HTTP/API/payload/probe checks and strict assessment with zero discrepancies.
+WHM account rows and archive inventories are populated; account retention days
+are null and using_default is boolean. Error-log inventories are empty on both
+routes, leaving their populated rows unobserved. No existing log content was read,
+no archive was deleted and no setting changed. API metadata does not establish
+actual retention/rotation. The initial failed artifact remains immutable and
+remaining variants/lifecycle stay under `8x0.2.55`. Corrected SHA-256:
+`743a081ee25a8971df4052534a96c60b05cde3483d9ed624857ccd82912e7255`.
+
+Separate review [5721279104](https://github.com/hostingpal/whm-api-client/pull/68#pullrequestreview-5721279104)
+at `984c5c16e47c43741b50e817a6f87149eb2f86d5` on `11.138.0.19` exercised
+all seven methods with synthetic logs/archives on a disposable account, both UAPI
+routes and the single WHM route. Its token was revoked and account/home removed.
+It observed empty direct `view_error_log` with `log_content: []` and string
+`lines_read: "0"`; nonempty direct/bridged counts were integers. This separate
+review observation motivates only that leaf's integer-string compatibility and
+is absent from both committed captures. The review also observed stored false/zero
+settings, unchanged omitted flags after clearing retention, server rejection of
+1000 outside -1..999 and of an empty-argument settings call. Reviewer source
+inspection found WebServer/rawlog requirements in shared `%API`; neither is
+pinned or a disabled-role runtime test. Unreadable/symlink null metadata,
+php_fpm_error_log and actual rotation/pruning remain open under `8x0.2.55`.
+No corrected-head live run is claimed.
+
 ## DAV calendars, contacts and delegation
 
 `uapi()->dav()` and `uapi()->cpDavd()` each cover all six pinned functions:

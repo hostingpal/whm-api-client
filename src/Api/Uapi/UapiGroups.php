@@ -83,6 +83,8 @@ trait UapiGroups
 
     private ?Locale $localeGroup = null;
 
+    private ?LogManager $logManagerGroup = null;
+
     private ?Mime $mimeGroup = null;
 
     private ?ModSecurity $modSecurityGroup = null;
@@ -497,6 +499,20 @@ trait UapiGroups
     public function locale(): Locale
     {
         return $this->localeGroup ??= new Locale($this->run(...));
+    }
+
+    /**
+     * Select the LogManager operations without making a request.
+     *
+     * Selected-account log administration. Observed: reviewer 5721279104 inspected Cpanel/API/LogManager.pm on cPanel
+     * 11.138.0.19 and found the shared %API requirements WebServer role and rawlog feature for all six operations.
+     * Neither requirement is declared in the pinned snapshot; disabled-role/feature behavior was not runtime-tested.
+     * Policy: supplied paths/selectors are sent unchanged and the client performs no local filesystem access. Log
+     * contents are private payload data, including explicitly accessible exception payloads.
+     */
+    public function logManager(): LogManager
+    {
+        return $this->logManagerGroup ??= new LogManager($this->run(...));
     }
 
     /**

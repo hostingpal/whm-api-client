@@ -70,6 +70,41 @@ final class SensitiveTraceTest extends TestCase
         }
     }
 
+    #[DataProvider('privateLogResponseRoutes')]
+    public function testPrivateLogContentStaysOutOfPayloadFailureTrace(string $route): void
+    {
+        [$client, $http] = self::client($route !== 'bridged');
+        $payload = '{"log_content":["' . self::SECRET . '"],"size":false}';
+        $result = '{"status":1,"data":' . $payload . '}';
+        $body = match ($route) {
+            'wrapped' => '{"result":' . $result . '}',
+            'bare' => $result,
+            default => '{"metadata":{"result":1},"data":{"uapi":' . $result . '}}',
+        };
+        $http->addResponse(new Response(200, [], $body));
+        $account = $client->uapi($route === 'bridged' ? 'npr' : null);
+        try {
+            $account->logManager()->viewErrorLog('npr.rs', 'docroot_error_log');
+            self::fail('Invalid sibling must fail without exposing the private log line.');
+        } catch (PayloadMismatchException $exception) {
+            self::assertTrue($exception->outcomeConfirmed);
+            self::assertSame($account->responseMeta(), $exception->metadata);
+            self::assertSame(1, $exception->metadata?->uapiStatus());
+            self::assertSame($route === 'bridged' ? 1 : null, $exception->metadata->whmResult());
+            self::assertSame(['log_content' => [self::SECRET], 'size' => false], $exception->payload);
+            self::assertSecretAbsent($exception);
+        }
+        self::assertCount(1, $http->getRequests());
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function privateLogResponseRoutes(): iterable
+    {
+        yield 'wrapped direct' => ['wrapped'];
+        yield 'bare direct' => ['bare'];
+        yield 'WHM bridge' => ['bridged'];
+    }
+
     public function testTheTraceSearchDetectsUnmarkedArguments(): void
     {
         $leak = static function (string $secret): never {
