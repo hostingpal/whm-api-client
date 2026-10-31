@@ -173,7 +173,8 @@ final class UapiClient extends AbstractApiClient
      *
      * Groups supply operation names and endpoint parameters. The bound module,
      * account, API version, and function are reserved on the bridge. Generated
-     * fields reject collisions before filtering; generic arrays retain reserved
+     * fields reject the entire case-sensitive api. prefix on both routes, and exact
+     * bridge controls when bridged, before filtering; generic arrays retain reserved
      * field removal. Execution clears metadata before
      * parameter validation or I/O, then retains usable envelope metadata before
      * API or group-level payload errors. Post keeps the routing fields in the
@@ -213,6 +214,9 @@ final class UapiClient extends AbstractApiClient
                 : $this->executeGet('/json-api/uapi_cpanel', $query, $route, $outcome);
         }
 
+        if ($parameters instanceof OrderedFields) {
+            $parameters->assertNoReserved([]);
+        }
         $path = '/execute/' . $module . '/' . $operation;
 
         return $method === RequestMethod::Post
