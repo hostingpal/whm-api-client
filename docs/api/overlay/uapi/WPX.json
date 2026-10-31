@@ -1,0 +1,532 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "WPX",
+  "class": "Wpx",
+  "accessor": "wpx",
+  "description": "Selected-account WordPress inventory, provisioning, administrator access, progress and removal.",
+  "operations": {
+    "uapi:WPX/change_admin_password": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 137; every WPX operation needs wp-toolkit and operates on the selected account. Ownership and prerequisites are server checks, not local guarantees."
+        },
+        {
+          "kind": "policy",
+          "text": "One request only: no implicit lookup, retry, polling, collision cleanup, file access, returned-URL fetch, restore or rollback. Supplied strings retain their bytes and are encoded once; null optional inputs omit, while false, zero and empty strings stay supplied. No new range, enum, pattern, URL, address-resolution or password-strength validation. Offline contracts do not establish live compatibility."
+        },
+        {
+          "kind": "documented",
+          "text": "Omit login only for an installation with exactly one administrator; otherwise supply an existing administrator from getAdminAccount(). Password and login are sensitive and sent in the POST body. Upstream accepts any nonempty password without its own strength rule."
+        },
+        {
+          "kind": "documented",
+          "text": "The source describes passing the password through a caller-private file without process-list, process-environment or WordPress Toolkit log exposure. This is documented behavior, not observed live evidence."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1WPX~1change_admin_password/post/description",
+          "note": "Selected formal POST variant and ordinary Flag outcome; preserve optional response fields without corrections. Use POST for this selected operation."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1WPX~1change_admin_password/post/requestBody",
+          "note": "The selected required application/x-www-form-urlencoded plain object supplies fields and requiredness through existing formBody extraction. Preserve exact property casing and body-required plus schema-required semantics. No multipart body_fields mapping or schema correction."
+        }
+      ],
+      "order": [
+        "id",
+        "password",
+        "login"
+      ],
+      "params": {
+        "password": {
+          "sensitive": true
+        },
+        "login": {
+          "sensitive": true
+        }
+      }
+    },
+    "uapi:WPX/create_nova_for_wordpress_website": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 137; every WPX operation needs wp-toolkit and operates on the selected account. Ownership and prerequisites are server checks, not local guarantees."
+        },
+        {
+          "kind": "policy",
+          "text": "One request only: no implicit lookup, retry, polling, collision cleanup, file access, returned-URL fetch, restore or rollback. Supplied strings retain their bytes and are encoded once; null optional inputs omit, while false, zero and empty strings stay supplied. No new range, enum, pattern, URL, address-resolution or password-strength validation. Offline contracts do not establish live compatibility."
+        },
+        {
+          "kind": "documented",
+          "text": "Creates a cPanel API token and a Nova magic link; it neither installs WordPress nor queues an installation. A later importWebsite callback starts the import. Requires nova-wordpress, mysql, redirects, apitokens and disk headroom; the source says it does not enforce the WordPress website-count limit. The source attributes token revocation on Nova failure; this is not live evidence. Collision queues nothing."
+        },
+        {
+          "kind": "documented",
+          "text": "promptToken is opaque caller-supplied base64: upstream supports standard/URL-safe variants with optional padding, at most 8192 sent characters and 5000 decoded bytes. The client never decodes or re-encodes. Omission or a blank prompt may consume a session prompt; a supplied nonblank prompt leaves that fallback intact."
+        },
+        {
+          "kind": "documented",
+          "text": "Upstream returnUrl must be HTTPS on the same cPanel host, with no userinfo and at most 2048 characters. Invalid values are ignored for a default, not rejected locally. The prompt, return URL and returned magic link are private; never log or fetch the magic link."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1WPX~1create_nova_for_wordpress_website/post/description",
+          "note": "Selected formal POST variant and ordinary Flag outcome; preserve optional response fields without corrections. Use POST for this selected operation."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1WPX~1create_nova_for_wordpress_website/post/requestBody",
+          "note": "The selected required application/x-www-form-urlencoded plain object supplies fields and requiredness through existing formBody extraction. Preserve exact property casing and body-required plus schema-required semantics. No multipart body_fields mapping or schema correction."
+        }
+      ],
+      "order": [
+        "domain",
+        "colorScheme",
+        "promptToken",
+        "return_url"
+      ],
+      "name": "createNovaForWordPressWebsite",
+      "params": {
+        "promptToken": {
+          "sensitive": true,
+          "php": "promptToken"
+        },
+        "return_url": {
+          "sensitive": true
+        },
+        "colorScheme": {
+          "php": "colorScheme"
+        }
+      }
+    },
+    "uapi:WPX/create_website": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 137; every WPX operation needs wp-toolkit and operates on the selected account. Ownership and prerequisites are server checks, not local guarantees."
+        },
+        {
+          "kind": "policy",
+          "text": "One request only: no implicit lookup, retry, polling, collision cleanup, file access, returned-URL fetch, restore or rollback. Supplied strings retain their bytes and are encoded once; null optional inputs omit, while false, zero and empty strings stay supplied. No new range, enum, pattern, URL, address-resolution or password-strength validation. Offline contracts do not establish live compatibility."
+        },
+        {
+          "kind": "documented",
+          "text": "Requires redirects, mysql, disk headroom and plan website-count allowance. The server normalizes the owned domain, which must have its own document root; the client forwards it unchanged. Omitted title defaults to the domain. Invalid title length/control characters can fail in the background after API success."
+        },
+        {
+          "kind": "documented",
+          "text": "Collision is a successful result that queues nothing. Running returns task_id and install_id without proving completion or health. The client never deletes an existing installation automatically. Use getTaskProgress(installId) explicitly; the SSE path needs an interactive session, not an API token."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1WPX~1create_website/post/description",
+          "note": "Selected formal POST variant and ordinary Flag outcome; preserve optional response fields without corrections. Use POST for this selected operation."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1WPX~1create_website/post/requestBody",
+          "note": "The selected required application/x-www-form-urlencoded plain object supplies fields and requiredness through existing formBody extraction. Preserve exact property casing and body-required plus schema-required semantics. No multipart body_fields mapping or schema correction."
+        }
+      ],
+      "order": [
+        "domain",
+        "title"
+      ]
+    },
+    "uapi:WPX/get_admin_account": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 137; every WPX operation needs wp-toolkit and operates on the selected account. Ownership and prerequisites are server checks, not local guarantees."
+        },
+        {
+          "kind": "policy",
+          "text": "One request only: no implicit lookup, retry, polling, collision cleanup, file access, returned-URL fetch, restore or rollback. Supplied strings retain their bytes and are encoded once; null optional inputs omit, while false, zero and empty strings stay supplied. No new range, enum, pattern, URL, address-resolution or password-strength validation. Offline contracts do not establish live compatibility."
+        },
+        {
+          "kind": "documented",
+          "text": "No administrator means current_user_id=null, empty strings and an empty available_logins list; failure to read administrators remains an API error. The stored password and active language are never returned. The informational login URL has no token."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1WPX~1get_admin_account/get/description",
+          "note": "Selected formal GET variant and ordinary Flag outcome; preserve optional response fields without corrections. Use GET for this selected operation."
+        }
+      ]
+    },
+    "uapi:WPX/get_credentials": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 137; every WPX operation needs wp-toolkit and operates on the selected account. Ownership and prerequisites are server checks, not local guarantees."
+        },
+        {
+          "kind": "policy",
+          "text": "One request only: no implicit lookup, retry, polling, collision cleanup, file access, returned-URL fetch, restore or rollback. Supplied strings retain their bytes and are encoded once; null optional inputs omit, while false, zero and empty strings stay supplied. No new range, enum, pattern, URL, address-resolution or password-strength validation. Offline contracts do not establish live compatibility."
+        },
+        {
+          "kind": "documented",
+          "text": "Each call mints a fresh one-use login token, consumed on first login. It never returns a WordPress password; the source describes empty login/password strings, while their formal string shapes are preserved. Empty login_url is meaningful. Never log or fetch the returned login URL."
+        },
+        {
+          "kind": "documented",
+          "text": "Upstream panelReturnUrl must be HTTPS on the same cPanel host, without userinfo and at most 2048 characters; rejected values are ignored for a default. The client forwards it unchanged in the POST body."
+        },
+        {
+          "kind": "policy",
+          "text": "Despite its getter name and selected source GET, this token-minting operation uses form POST under mutation policy. Live POST acceptance is unestablished; a GET-only server will fail until route-specific evidence corrects transport."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1WPX~1get_credentials/get/description",
+          "note": "Selected formal GET variant and ordinary Flag outcome; preserve optional response fields without corrections. The exact description says each call mints a new single-use token, so controller mutation policy selects form POST despite the documented GET. A GET-only server would fail until route-specific evidence corrects transport; no live acceptance is claimed."
+        }
+      ],
+      "order": [
+        "id",
+        "panel_return_url"
+      ],
+      "params": {
+        "panel_return_url": {
+          "sensitive": true
+        }
+      }
+    },
+    "uapi:WPX/get_site_activity": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 137; every WPX operation needs wp-toolkit and operates on the selected account. Ownership and prerequisites are server checks, not local guarantees."
+        },
+        {
+          "kind": "policy",
+          "text": "One request only: no implicit lookup, retry, polling, collision cleanup, file access, returned-URL fetch, restore or rollback. Supplied strings retain their bytes and are encoded once; null optional inputs omit, while false, zero and empty strings stay supplied. No new range, enum, pattern, URL, address-resolution or password-strength validation. Offline contracts do not establish live compatibility."
+        },
+        {
+          "kind": "documented",
+          "text": "Starts WordPress and can take 30 seconds. All-zero flags can mean boot failure or timeout, not proof of inactivity. has_user_activity reflects authored_content or uploaded_media only; the other flags are informational. Unknown or other-account IDs are API failures."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1WPX~1get_site_activity/get/description",
+          "note": "Selected formal GET variant and ordinary Flag outcome; preserve optional response fields without corrections. Use GET for this selected operation."
+        }
+      ]
+    },
+    "uapi:WPX/get_task_progress": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 137; every WPX operation needs wp-toolkit and operates on the selected account. Ownership and prerequisites are server checks, not local guarantees."
+        },
+        {
+          "kind": "policy",
+          "text": "One request only: no implicit lookup, retry, polling, collision cleanup, file access, returned-URL fetch, restore or rollback. Supplied strings retain their bytes and are encoded once; null optional inputs omit, while false, zero and empty strings stay supplied. No new range, enum, pattern, URL, address-resolution or password-strength validation. Offline contracts do not establish live compatibility."
+        },
+        {
+          "kind": "documented",
+          "text": "installId identifies retained progress/outcome logs, which remain readable after completion. Status and percentage do not change the envelope success rules. API-token clients explicitly use this method; SSE needs an interactive session. No automatic polling or path fetch."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1WPX~1get_task_progress/get/description",
+          "note": "Selected formal GET variant and ordinary Flag outcome; preserve optional response fields without corrections. Use GET for this selected operation."
+        }
+      ]
+    },
+    "uapi:WPX/get_task_status": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 137; every WPX operation needs wp-toolkit and operates on the selected account. Ownership and prerequisites are server checks, not local guarantees."
+        },
+        {
+          "kind": "policy",
+          "text": "One request only: no implicit lookup, retry, polling, collision cleanup, file access, returned-URL fetch, restore or rollback. Supplied strings retain their bytes and are encoded once; null optional inputs omit, while false, zero and empty strings stay supplied. No new range, enum, pattern, URL, address-resolution or password-strength validation. Offline contracts do not establish live compatibility."
+        },
+        {
+          "kind": "documented",
+          "text": "taskId checks queue membership only. done includes completed, removed, never-existing and other-account tasks and cannot prove success. getTaskProgress(installId) separately reports retained progress/outcome; the two IDs and methods are not interchangeable."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1WPX~1get_task_status/get/description",
+          "note": "Selected formal GET variant and ordinary Flag outcome; preserve optional response fields without corrections. Use GET for this selected operation."
+        }
+      ]
+    },
+    "uapi:WPX/get_website": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 137; every WPX operation needs wp-toolkit and operates on the selected account. Ownership and prerequisites are server checks, not local guarantees."
+        },
+        {
+          "kind": "policy",
+          "text": "One request only: no implicit lookup, retry, polling, collision cleanup, file access, returned-URL fetch, restore or rollback. Supplied strings retain their bytes and are encoded once; null optional inputs omit, while false, zero and empty strings stay supplied. No new range, enum, pattern, URL, address-resolution or password-strength validation. Offline contracts do not establish live compatibility."
+        },
+        {
+          "kind": "documented",
+          "text": "By-id lookup bypasses the brief listWebsites eventual-consistency lag. Missing and other-account IDs both return successful explicit null; absent data is a mismatch. Malformed requests and backend failures remain API errors. Optional nullable wptk_id needs guarding before use in a typed integer argument."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1WPX~1get_website/get/description",
+          "note": "Selected formal GET variant and ordinary Flag outcome; preserve optional response fields without corrections. Use GET for this selected operation."
+        }
+      ]
+    },
+    "uapi:WPX/has_reached_quota": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 137; every WPX operation needs wp-toolkit and operates on the selected account. Ownership and prerequisites are server checks, not local guarantees."
+        },
+        {
+          "kind": "policy",
+          "text": "One request only: no implicit lookup, retry, polling, collision cleanup, file access, returned-URL fetch, restore or rollback. Supplied strings retain their bytes and are encoded once; null optional inputs omit, while false, zero and empty strings stay supplied. No new range, enum, pattern, URL, address-resolution or password-strength validation. Offline contracts do not establish live compatibility."
+        },
+        {
+          "kind": "documented",
+          "text": "Reserves installation disk headroom and can return has_reached_quota=1 before actual quota exhaustion. This is distinct from WordPress website-count limits; payload zero remains normal UAPI success."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1WPX~1has_reached_quota/get/description",
+          "note": "Selected formal GET variant and ordinary Flag outcome; preserve optional response fields without corrections. Use GET for this selected operation."
+        }
+      ]
+    },
+    "uapi:WPX/import_website": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 137; every WPX operation needs wp-toolkit and operates on the selected account. Ownership and prerequisites are server checks, not local guarantees."
+        },
+        {
+          "kind": "policy",
+          "text": "One request only: no implicit lookup, retry, polling, collision cleanup, file access, returned-URL fetch, restore or rollback. Supplied strings retain their bytes and are encoded once; null optional inputs omit, while false, zero and empty strings stay supplied. No new range, enum, pattern, URL, address-resolution or password-strength validation. Offline contracts do not establish live compatibility."
+        },
+        {
+          "kind": "documented",
+          "text": "Requires nova-wordpress plus redirects, wp-toolkit and mysql, an HTTPS source resolving only to public addresses, and an owned destination domain with its own document root. These are server prerequisites; the client does not resolve or fetch the source URL. Source URL/user/password are sensitive and source_user/source_password are body-only."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitted overwrite uses upstream default 0; explicit false sends 0, while true can replace an existing installation. passwordType remains a supplied string. The background import can fail after API success. Collision queues nothing; running identifiers are not completion or health. Explicit getTaskProgress(installId) works for API tokens; the SSE path needs an interactive session."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1WPX~1import_website/post/description",
+          "note": "Selected formal POST variant and ordinary Flag outcome; preserve optional response fields without corrections. Use POST for this selected operation."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1WPX~1import_website/post/requestBody",
+          "note": "The selected required application/x-www-form-urlencoded plain object supplies fields and requiredness through existing formBody extraction. Preserve exact property casing and body-required plus schema-required semantics. No multipart body_fields mapping or schema correction."
+        }
+      ],
+      "order": [
+        "source_url",
+        "source_user",
+        "source_password",
+        "domain",
+        "overwrite",
+        "password_type"
+      ],
+      "params": {
+        "source_url": {
+          "sensitive": true
+        },
+        "source_user": {
+          "sensitive": true
+        },
+        "source_password": {
+          "sensitive": true
+        }
+      }
+    },
+    "uapi:WPX/list_websites": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 137; every WPX operation needs wp-toolkit and operates on the selected account. Ownership and prerequisites are server checks, not local guarantees."
+        },
+        {
+          "kind": "policy",
+          "text": "One request only: no implicit lookup, retry, polling, collision cleanup, file access, returned-URL fetch, restore or rollback. Supplied strings retain their bytes and are encoded once; null optional inputs omit, while false, zero and empty strings stay supplied. No new range, enum, pattern, URL, address-resolution or password-strength validation. Offline contracts do not establish live compatibility."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns only installations under the selected account home. Flat health flags are strict native integer 0|1; wptk_id is optional int|null. Optional domains/info, empty domains and absent fields remain distinct. List rows are nonnullable, unlike getWebsite()."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1WPX~1list_websites/get/description",
+          "note": "Selected formal GET variant and ordinary Flag outcome; preserve optional response fields without corrections. Use GET for this selected operation."
+        }
+      ]
+    },
+    "uapi:WPX/remove_installation": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 137; every WPX operation needs wp-toolkit and operates on the selected account. Ownership and prerequisites are server checks, not local guarantees."
+        },
+        {
+          "kind": "policy",
+          "text": "One request only: no implicit lookup, retry, polling, collision cleanup, file access, returned-URL fetch, restore or rollback. Supplied strings retain their bytes and are encoded once; null optional inputs omit, while false, zero and empty strings stay supplied. No new range, enum, pattern, URL, address-resolution or password-strength validation. Offline contracts do not establish live compatibility."
+        },
+        {
+          "kind": "documented",
+          "text": "Permanently removes the owned installation files and database, without recycle bin or retained copy; it cannot be undone. A second call fails. Unknown and other-account IDs are indistinguishable. No automatic retry or collision cleanup."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1WPX~1remove_installation/post/description",
+          "note": "Selected formal POST variant and ordinary Flag outcome; preserve optional response fields without corrections. Use POST for this selected operation."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1WPX~1remove_installation/post/requestBody",
+          "note": "The selected required application/x-www-form-urlencoded plain object supplies fields and requiredness through existing formBody extraction. Preserve exact property casing and body-required plus schema-required semantics. No multipart body_fields mapping or schema correction."
+        }
+      ]
+    },
+    "uapi:WPX/set_language": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 137; every WPX operation needs wp-toolkit and operates on the selected account. Ownership and prerequisites are server checks, not local guarantees."
+        },
+        {
+          "kind": "policy",
+          "text": "One request only: no implicit lookup, retry, polling, collision cleanup, file access, returned-URL fetch, restore or rollback. Supplied strings retain their bytes and are encoded once; null optional inputs omit, while false, zero and empty strings stay supplied. No new range, enum, pattern, URL, address-resolution or password-strength validation. Offline contracts do not establish live compatibility."
+        },
+        {
+          "kind": "documented",
+          "text": "May install translations before activating the WordPress locale, which differs from the cPanel locale. Unsupported published translations can fail upstream; no new locale validator is added. getAdminAccount does not read active language and no readback is invented."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1WPX~1set_language/post/description",
+          "note": "Selected formal POST variant and ordinary Flag outcome; preserve optional response fields without corrections. Use POST for this selected operation."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1WPX~1set_language/post/requestBody",
+          "note": "The selected required application/x-www-form-urlencoded plain object supplies fields and requiredness through existing formBody extraction. Preserve exact property casing and body-required plus schema-required semantics. No multipart body_fields mapping or schema correction."
+        }
+      ],
+      "order": [
+        "id",
+        "language"
+      ]
+    }
+  }
+}

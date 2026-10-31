@@ -7054,3 +7054,61 @@ Separate live `whm-api-client-8x0.2.66` remains OPEN: no server call, source upl
 clone/build/deploy, environment/domain/lifecycle mutation or returned URL fetch
 ran, and no server acceptance, persistence, application health, passphrase storage
 or cleanup compatibility is claimed.
+
+
+### 2026-10-31: complete generated UAPI WPX WordPress lifecycle
+
+Added all fourteen pinned WPX operations as `Wpx` / `uapi()->wpx()`, using the
+unchanged generated-client architecture. Source:
+`docs/api/sources/2026-10-13/cpanel.openapi.json.gz`, decompressed SHA-256
+`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`.
+Every overlay operation binds documentation evidence to its exact selected
+`/paths/~1WPX~1<function>/<method>/description`; all six formal POSTs additionally
+bind the required form `requestBody`. Existing automatic `formBody` extraction
+supplies exact fields and body/schema requiredness. Multipart `body_fields` is
+unrelated and is not used. No source, schema, generator, runtime or dependency
+changes were needed.
+
+Seven effective GET reads and seven form POST operations preserve the ordinary
+Flag UAPI outcome on both routes. `get_credentials` selects its formal GET source
+but uses effective form POST under the controller's mutation policy because the
+exact operation description says every call mints a new single-use token. This
+is a deliberate transport policy, not a source-method correction or live result.
+Compatibility cost: a GET-only server fails until route-specific evidence corrects
+transport; no live POST acceptance is claimed.
+
+Exact `colorScheme` and `promptToken` casing, body-only password/source credentials,
+canonical argument order, optional omission/false/zero/empty semantics and every
+formal optional response shape remain intact. The eight designated private inputs
+are sensitive; `passwordType` additionally retains the existing conservative
+password-name heuristic. No sensitivity override or response correction is added.
+`get_website` accepts explicit null while absent data fails; list rows remain
+nonnullable. Strict native integer flags and integer fields do not newly coerce
+strings or booleans. Singleton changed/removed enums retain the existing integer
+lowering rather than receiving an invented singleton validator.
+
+Generated notes and module guidance distinguish collision/no queued work, queued
+or running from installation completion/health, queue membership from retained
+progress, and Nova token/magic-link creation from the later import callback.
+Server prerequisites, URL/prompt limits, session fallback, private-file password
+handling and Nova-failure token revocation are attributed pinned documentation.
+The client does not resolve source URLs, consume returned links, poll, delete on
+collision, retry, restore or roll back. Destructive deletion and overwrite remain
+explicit caller operations, without live activity in this slice.
+
+Independent synthetic fixtures exercise all fourteen operations on both routes,
+literal PSR method/URI/auth/query/form/content-type, optional/default/native
+boundaries, nullable/absent payloads, strict known types, optional nested shapes,
+unknown sibling filtering, collision/running/progress/queue results, failure
+ordering, response metadata and exception-frame/snapshot privacy. Expected fixtures
+are authored independently of generated specs and overlay output.
+
+Compared with `4ab5b80587f8d524bbc0ccf5129f9901ef9ab8df`, canonical coverage adds
+exactly fourteen operations: 1,177 total (589 UAPI, 588 WHM), 99 groups and 201
+generated outputs (200 PHP files plus coverage). The 55 inherited map diagnostics
+remain visible and unwaived. Prior pinned sources, overlays, generated methods,
+map checksum and historical audit prefix are unchanged except the additive cached
+WPX accessor/property and coverage regeneration. Delivery `8x0.4.25` and live
+follow-up `8x0.2.67` stay separate. No live calls, installation/import/login,
+remote-address resolution, quota behavior, token consumption/revocation, language
+or health behavior, deletion or cleanup are established by offline validation.
