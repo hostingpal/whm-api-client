@@ -212,9 +212,46 @@ final class WhmResellersTest extends TestCase
         $this->testSourceRequestsAndPayloads($method, $arguments, $wire, $verb, $parameters, $payload, $expected);
     }
 
+    /** @return iterable<string, array{string, array<string, mixed>}> */
+    public static function accountLimitVariants(): iterable
+    {
+        yield 'native zero' => ['{"reseller":{"limit":0}}', ['reseller' => ['limit' => 0]]];
+        yield 'native positive integer' => ['{"reseller":{"limit":25}}', ['reseller' => ['limit' => 25]]];
+        yield 'explicit null' => ['{"reseller":{"limit":null}}', ['reseller' => ['limit' => null]]];
+        yield 'observed exact empty string' => ['{"reseller":{"limit":""}}', ['reseller' => ['limit' => '']]];
+        yield 'omitted limit' => ['{"reseller":{}}', ['reseller' => []]];
+    }
+
+    /** @param array<string, mixed> $expected */
+    #[DataProvider('accountLimitVariants')]
+    public function testAccountLimitPreservesOnlyNativeNullableIntegerAndExactEmptyString(
+        string $payload,
+        array $expected,
+    ): void {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope('acctcounts', $payload)));
+
+        self::assertSame($expected, $client->whm()->resellers()->accountCounts());
+        self::assertSame(1, $client->whm()->responseMeta()?->whmResult());
+        self::assertCount(1, $http->getRequests());
+    }
+
     /** @return iterable<string, array{string, array<array-key, mixed>, string, ?string}> */
     public static function malformedPayloads(): iterable
     {
+        foreach (
+            ['"0"', '"25"', '" "', '" 25"', '"25 "', '"0.00"', '"1.5"',
+            '"unlimited"', '0.0', '1.5', 'true', 'false', '[]', '{}'] as $index => $bad
+        ) {
+            yield 'strict limit boundary ' . $index => ['accountCounts', [], 'acctcounts',
+                '{"reseller":{"limit":' . $bad . '}}'];
+        }
+        foreach (['active', 'suspended'] as $field) {
+            foreach (['""', '"0"', '"1"', 'false', '0.0'] as $index => $bad) {
+                yield 'strict sibling ' . $field . ' ' . $index => ['accountCounts', [], 'acctcounts',
+                    '{"reseller":{"' . $field . '":' . $bad . '}}'];
+            }
+        }
         foreach (self::operations() as [$method, $arguments, $wire, , , $payload]) {
             if ($payload === null) {
                 continue;

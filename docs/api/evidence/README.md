@@ -462,3 +462,20 @@ restoration or configuration behavior is established. Follow-up `8x0.2.29` retai
 the historical `prebackup` mismatch, masked unknown-field observation and
 remaining source/live gaps. Corrected SHA-256:
 `f910fcd3377c881e07d496fd727bec622016bd8df33552cfe381552752acde47`.
+
+## WHM reseller inventory capture
+
+The initial [reseller capture](2026-10-31-whm-resellers.json) at
+`8acce7c186a2815c5f81275acfa053a6f52d3e3c` on `11.138.0.19` records six HTTP 200
+observations: four API/payload/probe passes, one successful API response with a
+payload mismatch and one API failure. `acctcounts` returns an exact empty string
+at `reseller.limit`. Compatibility preserves that literal alongside the pinned
+integer/null alternatives; its meaning is not inferred and it is not converted
+to zero or null. Sibling counters keep their original contracts.
+
+The default `getresellerips` call fails at the API layer, with no established
+cause or waiver. ACL and reseller inventories are empty; public contact name and
+URL are empty strings. No account, ACL, privilege, limit, contact, IP or nameserver
+changed, and no returned URL was fetched. The artifact remains failed and
+immutable; follow-up `8x0.2.36` retains remaining variants and lifecycle behavior.
+SHA-256: `76e0be8605fc048ab03c9bfd82c0fb98fefbf93d170c0fb619cde5902339c753`.

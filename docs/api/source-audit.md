@@ -3418,3 +3418,20 @@ ACL lists and reseller names. It supplies no guessed reseller identifier, change
 no accounts, privileges, limits, contact details, IPs or nameservers, and does not
 fetch returned contact URLs. Empty inventories do not establish populated row
 contracts. Follow-up `8x0.2.36` retains the remaining live behavior and variants.
+
+## WHM reseller inventory capture
+
+The initial [reseller capture](evidence/2026-10-31-whm-resellers.json) at
+`8acce7c186a2815c5f81275acfa053a6f52d3e3c` on `11.138.0.19` records six HTTP 200
+observations: four API/payload/probe passes, one successful API response with a
+payload mismatch and one API failure. `acctcounts` returns an exact empty string
+at `reseller.limit`. Compatibility preserves that literal alongside the pinned
+integer/null alternatives; its meaning is not inferred and it is not converted
+to zero or null. Sibling counters keep their original contracts.
+
+The default `getresellerips` call fails at the API layer, with no established
+cause or waiver. ACL and reseller inventories are empty; public contact name and
+URL are empty strings. No account, ACL, privilege, limit, contact, IP or nameserver
+changed, and no returned URL was fetched. The artifact remains failed and
+immutable; follow-up `8x0.2.36` retains remaining variants and lifecycle behavior.
+SHA-256: `76e0be8605fc048ab03c9bfd82c0fb98fefbf93d170c0fb619cde5902339c753`.

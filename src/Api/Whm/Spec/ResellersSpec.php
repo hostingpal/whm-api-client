@@ -27,7 +27,14 @@ final class ResellersSpec
                     'type' => 'object',
                     'fields' => [
                         'active' => ['type' => 'int'],
-                        'limit' => ['type' => 'int', 'nullable' => true],
+                        'limit' => [
+                            'type' => 'union',
+                            'nullable' => true,
+                            'anyOf' => [
+                                ['type' => 'int'],
+                                ['type' => 'string', 'literal' => ''],
+                            ],
+                        ],
                         'suspended' => ['type' => 'int', 'nullable' => true],
                         'user' => ['type' => 'string'],
                     ],

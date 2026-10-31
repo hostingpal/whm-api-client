@@ -21,7 +21,7 @@ use SensitiveParameter;
  * @phpstan-type AccountCountsResult array{
  *     reseller?: array{
  *         active?: int,
- *         limit?: int|null,
+ *         limit?: int|''|null,
  *         suspended?: int|null,
  *         user?: string,
  *     },
@@ -176,6 +176,11 @@ final readonly class Resellers
      * Documented: Available in cPanel & WHM 11 and later, according to the pinned operation. Omitting user queries the
      * authenticated account. Account ownership counts do not establish reseller privileges. A null limit means no
      * account creation limit; suspended may also be null. Fields remain optional.
+     *
+     * Observed: On cPanel & WHM 11.138.0.19, the initial read-only capture returned an exact empty-string
+     * reseller.limit. That literal is preserved distinctly from integer zero, null and omission, without inferring its
+     * meaning. No numeric-string conversion or sibling-field widening is applied; the original capture remains failed
+     * and immutable.
      *
      * API-map identity: whm1:acctcounts#GET (wire name acctcounts; Account Settings).
      *

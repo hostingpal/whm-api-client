@@ -14,6 +14,10 @@
         {
           "kind": "documented",
           "text": "Available in cPanel & WHM 11 and later, according to the pinned operation. Omitting user queries the authenticated account. Account ownership counts do not establish reseller privileges. A null limit means no account creation limit; suspended may also be null. Fields remain optional."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel & WHM 11.138.0.19, the initial read-only capture returned an exact empty-string reseller.limit. That literal is preserved distinctly from integer zero, null and omission, without inferring its meaning. No numeric-string conversion or sibling-field widening is applied; the original capture remains failed and immutable."
         }
       ],
       "evidence": [
@@ -22,8 +26,41 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /acctcounts x-cpanel-available-version=11; x-readonly=true. Parameter declarations, descriptions and response data schema establish the documented caveats; preserve their exact wire names and optional presence."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "The immutable docs/api/evidence/2026-10-31-whm-resellers.json capture (SHA256 76e0be8605fc048ab03c9bfd82c0fb98fefbf93d170c0fb619cde5902339c753), revision 8acce7c186a2815c5f81275acfa053a6f52d3e3c, records whm1:acctcounts#GET on the whm route with successful API outcome and an exact empty-string $.reseller.limit, causing the original integer payload mismatch. Preserve only this literal alongside the pinned integer and nullable forms, without assigning it unlimited, zero or null semantics. Numeric strings, nonempty or whitespace strings, fractional values, booleans and containers stay invalid. Only this leaf is corrected; sibling active/suspended integer contracts remain unchanged. Boundary fixtures are synthetic; the initial failed artifact is unchanged.",
+          "fingerprint": "docs/api/evidence/2026-10-31-whm-resellers.json#sha256=76e0be8605fc048ab03c9bfd82c0fb98fefbf93d170c0fb619cde5902339c753"
         }
-      ]
+      ],
+      "response": {
+        "reseller.limit": {
+          "replace": {
+            "type": "union",
+            "nullable": true,
+            "anyOf": [
+              {
+                "type": "int"
+              },
+              {
+                "type": "string",
+                "literal": ""
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "The immutable docs/api/evidence/2026-10-31-whm-resellers.json capture (SHA256 76e0be8605fc048ab03c9bfd82c0fb98fefbf93d170c0fb619cde5902339c753), revision 8acce7c186a2815c5f81275acfa053a6f52d3e3c, records whm1:acctcounts#GET on the whm route with successful API outcome and an exact empty-string $.reseller.limit, causing the original integer payload mismatch. Preserve only this literal alongside the pinned integer and nullable forms, without assigning it unlimited, zero or null semantics. Numeric strings, nonempty or whitespace strings, fractional values, booleans and containers stay invalid. Only this leaf is corrected; sibling active/suspended integer contracts remain unchanged. Boundary fixtures are synthetic; the initial failed artifact is unchanged.",
+              "fingerprint": "docs/api/evidence/2026-10-31-whm-resellers.json#sha256=76e0be8605fc048ab03c9bfd82c0fb98fefbf93d170c0fb619cde5902339c753"
+            }
+          ]
+        }
+      }
     },
     "whm1:get_public_contact": {
       "name": "getPublicContact",
