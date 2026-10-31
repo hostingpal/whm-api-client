@@ -25,6 +25,8 @@ trait WhmGroups
 
     private ?Server $serverGroup = null;
 
+    private ?Ssl $sslGroup = null;
+
     private ?WebServer $webServerGroup = null;
 
     /**
@@ -85,6 +87,16 @@ trait WhmGroups
     public function server(): Server
     {
         return $this->serverGroup ??= new Server($this->run(...));
+    }
+
+    /**
+     * Select the SSL Certificates operations without making a request.
+     *
+     * WHM API 1 functions in the documented SSL Certificates group.
+     */
+    public function ssl(): Ssl
+    {
+        return $this->sslGroup ??= new Ssl($this->run(...));
     }
 
     /**

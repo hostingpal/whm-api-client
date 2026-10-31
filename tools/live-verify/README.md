@@ -1156,3 +1156,21 @@ password-strength through both routes. Seven direct inventory null corrections
 pass; five API failures and one masked unknown-field observation with null values
 keep strict status failed and unwaived under `8x0.2.30`. No team listing, password
 retrieval, user/role/service mutation or message sending ran.
+
+## WHM SSL inventory
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/whm-ssl.php \
+  --output=docs/api/evidence/YYYY-MM-DD-whm-ssl.json
+```
+
+Nine exact GET requests read version, AutoSSL schedule, log catalog metadata,
+metadata flags, designated account/domain problems and exclusions, the best
+SSL domain for the pinned `whostmgr` example and certificate metadata for `npr`.
+The request guard, opt-in, committed inputs, verified TLS, structural-only capture
+and no-retry behavior are unchanged. Provider payloads, private keys, component
+PEM and log contents are omitted. No certificate generation, installation, reset,
+removal, provider/configuration change, background check or notification occurs.
+No returned URL is fetched. Strict findings remain failures; `8x0.2.39` retains
+unobserved operations and variants.

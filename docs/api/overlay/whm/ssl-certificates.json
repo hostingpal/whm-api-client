@@ -1,0 +1,724 @@
+{
+  "schema_version": "1.0",
+  "family": "whm1",
+  "group": "SSL Certificates",
+  "accessor": "ssl",
+  "class": "Ssl",
+  "operations": {
+    "whm1:add_autossl_user_excluded_domains": {
+      "name": "addAutoSslUserExcludedDomains",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 66."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST under the documented non-read-only classification. Each call executes immediately; the client provides no retries or rollback."
+        }
+      ],
+      "params": {
+        "domain": {
+          "encoding": "numbered"
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "add_autossl_user_excluded_domains documents multiple domain values as domain, domain-1, domain-2 or incremented parameter names. The existing numbered encoding retains the unsuffixed first value. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:delete_ssl_vhost": {
+      "name": "deleteSslVhost",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 82."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST under the documented non-read-only classification. Each call executes immediately; the client provides no retries or rollback."
+        }
+      ]
+    },
+    "whm1:disable_autossl": {
+      "name": "disableAutoSsl",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 58."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST under the documented non-read-only classification. Each call executes immediately; the client provides no retries or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Disables the AutoSSL feature for the server."
+        }
+      ]
+    },
+    "whm1:enqueue_deferred_ssl_installations": {
+      "name": "enqueueDeferredSslInstallations",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 88."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST under the documented non-read-only classification. Each call executes immediately; the client provides no retries or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Returned certificate, private-key, CSR, CA-bundle or provider material is payload data and may be sensitive. Do not log or persist secret-bearing results."
+        },
+        {
+          "kind": "documented",
+          "text": "Supply the same number of items in cab, crt, key, username and vhostName. Empty cab strings request automatic CA-bundle download. Queue acceptance does not prove installation, service readiness or TLS behavior."
+        }
+      ],
+      "params": {
+        "cab": {
+          "sensitive": true,
+          "encoding": "repeat"
+        },
+        "crt": {
+          "sensitive": true,
+          "encoding": "repeat"
+        },
+        "key": {
+          "sensitive": true,
+          "encoding": "repeat"
+        },
+        "username": {
+          "encoding": "repeat"
+        },
+        "vhost_name": {
+          "encoding": "repeat"
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "enqueue_deferred_ssl_installations explicitly permits repeated or incremented values for cab, crt, key, username and vhost_name. Repeated keys preserve positional correspondence without selecting an ambiguous numeric starting index. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:fetch_service_ssl_components": {
+      "name": "fetchServiceSslComponents",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 11.40."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST under the documented non-read-only classification. Each call executes immediately; the client provides no retries or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Returned certificate, private-key, CSR, CA-bundle or provider material is payload data and may be sensitive. Do not log or persist secret-bearing results."
+        }
+      ]
+    },
+    "whm1:fetch_ssl_certificates_for_fqdns": {
+      "name": "fetchSslCertificatesForFqdns",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 66."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST under the documented non-read-only classification. Each call executes immediately; the client provides no retries or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Returned certificate, private-key, CSR, CA-bundle or provider material is payload data and may be sensitive. Do not log or persist secret-bearing results."
+        },
+        {
+          "kind": "documented",
+          "text": "domains is caller-supplied comma-separated text, form-encoded once. Literal dotted issuer and subject keys remain literal payload keys. No UAPI SSL wire normalization is inferred."
+        }
+      ]
+    },
+    "whm1:fetch_ssl_vhosts": {
+      "name": "fetchSslVhosts",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 11.32."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST under the documented non-read-only classification. Each call executes immediately; the client provides no retries or rollback."
+        }
+      ]
+    },
+    "whm1:fetch_vhost_ssl_components": {
+      "name": "fetchVhostSslComponents",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 11.32."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST under the documented non-read-only classification. Each call executes immediately; the client provides no retries or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Returned certificate, private-key, CSR, CA-bundle or provider material is payload data and may be sensitive. Do not log or persist secret-bearing results."
+        }
+      ]
+    },
+    "whm1:fetchcrtinfo": {
+      "name": "fetchCertificateInfo",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 11.32."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST under the documented non-read-only classification. Each call executes immediately; the client provides no retries or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Returned certificate, private-key, CSR, CA-bundle or provider material is payload data and may be sensitive. Do not log or persist secret-bearing results."
+        }
+      ]
+    },
+    "whm1:fetchsslinfo": {
+      "name": "fetchSslInfo",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 11.32."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST under the documented non-read-only classification. Each call executes immediately; the client provides no retries or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Returned certificate, private-key, CSR, CA-bundle or provider material is payload data and may be sensitive. Do not log or persist secret-bearing results."
+        },
+        {
+          "kind": "documented",
+          "text": "Both crtdata and domain are optional in the pinned source; omitted selectors remain omitted. The result describes candidate certificates, not currently installed certificates."
+        }
+      ],
+      "params": {
+        "crtdata": {
+          "sensitive": true
+        }
+      }
+    },
+    "whm1:generatessl": {
+      "name": "generateSsl",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 11.32."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST under the documented non-read-only classification. Each call executes immediately; the client provides no retries or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Returned certificate, private-key, CSR, CA-bundle or provider material is payload data and may be sensitive. Do not log or persist secret-bearing results."
+        },
+        {
+          "kind": "documented",
+          "text": "Creates and stores a key and CSR even when skipCertificate is true. Omitting optional subject fields preserves the upstream CSR defaults."
+        }
+      ],
+      "params": {
+        "pass": {
+          "sensitive": true,
+          "php": "passphrase"
+        }
+      }
+    },
+    "whm1:get_autossl_check_schedule": {
+      "name": "getAutoSslCheckSchedule",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 58."
+        }
+      ]
+    },
+    "whm1:get_autossl_log": {
+      "name": "getAutoSslLog",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 58."
+        }
+      ]
+    },
+    "whm1:get_autossl_logs_catalog": {
+      "name": "getAutoSslLogsCatalog",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 58."
+        }
+      ]
+    },
+    "whm1:get_autossl_metadata": {
+      "name": "getAutoSslMetadata",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 60."
+        }
+      ]
+    },
+    "whm1:get_autossl_problems_for_domain": {
+      "name": "getAutoSslProblemsForDomain",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 68."
+        }
+      ]
+    },
+    "whm1:get_autossl_problems_for_user": {
+      "name": "getAutoSslProblemsForUser",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 68."
+        }
+      ]
+    },
+    "whm1:get_autossl_providers": {
+      "name": "getAutoSslProviders",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 58."
+        },
+        {
+          "kind": "documented",
+          "text": "Provider-specific additional fields remain opaque and may contain provider account or credential material. Named fields retain their documented types. Returned URLs are data and are not fetched."
+        }
+      ],
+      "response": {
+        "payload[]": {
+          "replace": {
+            "type": "object",
+            "fields": {
+              "display_name": {
+                "type": "string"
+              },
+              "enabled": {
+                "type": "flag"
+              },
+              "module_name": {
+                "type": "string"
+              },
+              "specs": {
+                "type": "object",
+                "fields": {
+                  "AVERAGE_DELIVERY_TIME": {
+                    "type": "int"
+                  },
+                  "DCV_METHODS": {
+                    "type": "list",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "DELIVERY_METHOD": {
+                    "type": "string"
+                  },
+                  "HTTP_DCV_MAX_REDIRECTS": {
+                    "type": "int"
+                  },
+                  "MAX_DOMAINS_PER_CERTIFICATE": {
+                    "type": "int"
+                  },
+                  "RATE_LIMIT_CERTIFICATES_PER_REGISTERED_DOMAIN_PER_WEEK": {
+                    "type": "int"
+                  },
+                  "SUPPORTS_ANCESTOR_DCV": {
+                    "type": "flag"
+                  },
+                  "SUPPORTS_WILDCARD": {
+                    "type": "flag"
+                  },
+                  "VALIDITY_PERIOD": {
+                    "type": "int"
+                  }
+                }
+              },
+              "x_account_id": {
+                "type": "string"
+              },
+              "x_terms_of_service": {
+                "type": "string"
+              },
+              "x_terms_of_service_accepted": {
+                "type": "flag"
+              }
+            },
+            "values": {
+              "type": "mixed"
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "get_autossl_providers payload.items declares named properties alongside additionalProperties with a description only and no type restriction. Preserve every pinned named field and its strict type, plus opaque additional values through object.values mixed. The prose says provider-specific names begin with x_; no concrete unknown key or value shape is inferred. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        }
+      }
+    },
+    "whm1:get_autossl_user_excluded_domains": {
+      "name": "getAutoSslUserExcludedDomains",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 66."
+        }
+      ]
+    },
+    "whm1:get_best_ssldomain_for_service": {
+      "name": "getBestSslDomainForService",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 56."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns the suggested service domain and certificate matching/validity metadata; this does not establish a successful TLS connection."
+        }
+      ]
+    },
+    "whm1:install_service_ssl_certificate": {
+      "name": "installServiceSslCertificate",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 11.40."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST under the documented non-read-only classification. Each call executes immediately; the client provides no retries or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Returned certificate, private-key, CSR, CA-bundle or provider material is payload data and may be sensitive. Do not log or persist secret-bearing results."
+        },
+        {
+          "kind": "documented",
+          "text": "Supply raw PEM strings. The client form-encodes them once; pre-encoded input is encoded again. Installation can immediately change hosted TLS configuration."
+        },
+        {
+          "kind": "documented",
+          "text": "The selected service must be restarted after installation; the client does not restart it."
+        }
+      ],
+      "params": {
+        "crt": {
+          "sensitive": true
+        },
+        "key": {
+          "sensitive": true
+        },
+        "cabundle": {
+          "sensitive": true
+        }
+      },
+      "response": {
+        "certificate_info.modulus_length": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "install_service_ssl_certificate certificate_info.modulus_length prose explicitly specifies null when the key is not RSA, although its integer schema lacks nullable. Preserve integer|null without numeric-string normalization. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        }
+      }
+    },
+    "whm1:installssl": {
+      "name": "installSsl",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 11.32."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST under the documented non-read-only classification. Each call executes immediately; the client provides no retries or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Supply raw PEM strings. The client form-encodes them once; pre-encoded input is encoded again. Installation can immediately change hosted TLS configuration."
+        }
+      ],
+      "params": {
+        "crt": {
+          "sensitive": true
+        },
+        "key": {
+          "sensitive": true
+        },
+        "cab": {
+          "sensitive": true
+        }
+      }
+    },
+    "whm1:listcrts": {
+      "name": "listCertificates",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 11."
+        }
+      ]
+    },
+    "whm1:rebuildinstalledssldb": {
+      "name": "rebuildInstalledSslDatabase",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 11.36."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST under the documented non-read-only classification. Each call executes immediately; the client provides no retries or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "This is a documented no-op: it always succeeds without rebuilding or changing installed-certificate state."
+        }
+      ]
+    },
+    "whm1:rebuilduserssldb": {
+      "name": "rebuildUserSslDatabase",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 11.38."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST under the documented non-read-only classification. Each call executes immediately; the client provides no retries or rollback."
+        }
+      ]
+    },
+    "whm1:remove_autossl_user_excluded_domains": {
+      "name": "removeAutoSslUserExcludedDomains",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 66."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST under the documented non-read-only classification. Each call executes immediately; the client provides no retries or rollback."
+        }
+      ],
+      "params": {
+        "domain": {
+          "encoding": "numbered"
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "remove_autossl_user_excluded_domains documents multiple domain values as domain, domain-1, domain-2 or incremented parameter names. The existing numbered encoding retains the unsuffixed first value. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:reset_autossl_provider": {
+      "exclude": {
+        "reason": "The documented x_* parameters represent dynamically named provider-specific fields. The typed parameter schema cannot safely represent this parameter map; follow-up whm-api-client-8x0.1.28 retains full provider configuration support.",
+        "evidence": [
+          {
+            "kind": "doc",
+            "version": "pinned 2026-10-13",
+            "date": "2026-10-31",
+            "note": "reset_autossl_provider defines additional query parameters beginning with x_, with x_terms_of_service_accepted as an example. A literal x_* field does not implement that contract. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+          }
+        ]
+      }
+    },
+    "whm1:reset_service_ssl_certificate": {
+      "name": "resetServiceSslCertificate",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 11.40."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST under the documented non-read-only classification. Each call executes immediately; the client provides no retries or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Returned certificate, private-key, CSR, CA-bundle or provider material is payload data and may be sensitive. Do not log or persist secret-bearing results."
+        },
+        {
+          "kind": "documented",
+          "text": "Generates and assigns a new self-signed certificate to the selected service, changing its TLS configuration immediately."
+        }
+      ]
+    },
+    "whm1:set_autossl_metadata": {
+      "name": "setAutoSslMetadata",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 60."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST under the documented non-read-only classification. Each call executes immediately; the client provides no retries or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Supply metadataJson as caller-serialized JSON object text. The client sends the text once as a form field and performs no JSON serialization or decoding. The current scalar native boundary also permits integers but establishes no documented integer semantics; native string-only JSON-content inputs remain tracked under whm-api-client-8x0.1.23. Any omitted metadata keys adopt system defaults. Prefer setAutoSslMetadataKey for one key."
+        }
+      ],
+      "params": {
+        "metadata_json": {
+          "sensitive": true,
+          "encoding": "scalar"
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "set_autossl_metadata defines metadata_json in query with application/json parameter content, expressly described as a JSON-encoded object. This is serialized JSON text in a form parameter, not a JSON request body. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:set_autossl_metadata_key": {
+      "name": "setAutoSslMetadataKey",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 70."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST under the documented non-read-only classification. Each call executes immediately; the client provides no retries or rollback."
+        }
+      ],
+      "params": {
+        "key": {
+          "sensitive": false
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "set_autossl_metadata_key key is an AutoSSL configuration selector such as notify_autossl_expiry, not private key material. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:set_autossl_provider": {
+      "exclude": {
+        "reason": "The documented x_* parameters represent dynamically named provider-specific fields. The typed parameter schema cannot safely represent this parameter map; follow-up whm-api-client-8x0.1.28 retains full provider configuration support.",
+        "evidence": [
+          {
+            "kind": "doc",
+            "version": "pinned 2026-10-13",
+            "date": "2026-10-31",
+            "note": "set_autossl_provider defines additional query parameters beginning with x_, with x_terms_of_service_accepted as an example. A literal x_* field does not implement that contract. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+          }
+        ]
+      }
+    },
+    "whm1:set_autossl_user_excluded_domains": {
+      "name": "setAutoSslUserExcludedDomains",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 66."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST under the documented non-read-only classification. Each call executes immediately; the client provides no retries or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Replaces the complete exclusion list. Omitting domain enables AutoSSL for every domain on the account; use addAutoSslUserExcludedDomains for an additive change."
+        }
+      ],
+      "params": {
+        "domain": {
+          "encoding": "numbered"
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "set_autossl_user_excluded_domains documents multiple domain values as domain, domain-1, domain-2 or incremented parameter names. The existing numbered encoding retains the unsuffixed first value. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:start_autossl_check_for_all_users": {
+      "name": "startAutoSslCheckForAllUsers",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 58."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST under the documented non-read-only classification. Each call executes immediately; the client provides no retries or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Starts background AutoSSL work. A returned process ID establishes neither completion nor successful certificate issuance; the client does not poll automatically."
+        }
+      ]
+    },
+    "whm1:start_autossl_check_for_one_user": {
+      "name": "startAutoSslCheckForOneUser",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM version 58."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST under the documented non-read-only classification. Each call executes immediately; the client provides no retries or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Starts background AutoSSL work. A returned process ID establishes neither completion nor successful certificate issuance; the client does not poll automatically."
+        }
+      ]
+    }
+  }
+}
