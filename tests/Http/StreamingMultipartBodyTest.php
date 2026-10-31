@@ -130,6 +130,40 @@ final class StreamingMultipartBodyTest extends TestCase
         self::assertSame(40000, array_sum($stream->requestedReadSizes));
     }
 
+    public function testHugeRequestedReadReturnsBoundedBytesAndPreservesTheCompleteBody(): void
+    {
+        $bytes = str_repeat("\0\xffb0", 10000);
+        $stream = new UploadProbeStream($bytes);
+        $body = StreamingMultipartEncoder::encode([
+            ['name' => 'f', 'value' => Upload::fromStream('binary', $stream)],
+        ], static fn (): string => 'test-boundary');
+        $expected = "--test-boundary\r\nContent-Disposition: form-data; name=\"f\"; filename=\"binary\"\r\n"
+            . "Content-Type: application/octet-stream\r\n\r\n" . $bytes . "\r\n--test-boundary--\r\n";
+        $size = strlen($expected);
+        self::assertSame($size, $body->getSize());
+        self::assertSame(0, $stream->reads);
+
+        $actual = $body->read(PHP_INT_MAX);
+        self::assertNotSame('', $actual);
+        self::assertLessThanOrEqual(8192, strlen($actual));
+        self::assertFalse($body->eof());
+        self::assertLessThan(strlen($bytes), $stream->tell());
+        self::assertSame(strlen($actual), $body->tell());
+        self::assertSame($size, $body->getSize());
+
+        while (!$body->eof()) {
+            $chunk = $body->read(PHP_INT_MAX);
+            self::assertNotSame('', $chunk);
+            self::assertLessThanOrEqual(8192, strlen($chunk));
+            $actual .= $chunk;
+            self::assertSame(strlen($actual), $body->tell());
+            self::assertSame($size, $body->getSize());
+        }
+        self::assertSame($expected, $actual);
+        self::assertSame(strlen($bytes), $stream->tell());
+        self::assertSame($size, $body->tell());
+    }
+
     #[DataProvider('collisionSplits')]
     public function testCollisionAcrossEveryReadSplitNeverEmitsTheDelimiter(int $chunk, int $read): void
     {

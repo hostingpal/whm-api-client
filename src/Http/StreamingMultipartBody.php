@@ -14,8 +14,9 @@ use WeakMap;
 /**
  * A read-only, forward-only multipart stream owning one prepared source set.
  *
- * Construction/size queries read no source bytes. Incremental source reads and
- * framing buffers are bounded to 8192 bytes plus a boundary-sized look-behind.
+ * Construction/size queries read no source bytes. Each read() returns at most
+ * 8192 bytes regardless of its requested length. Source reads and framing buffers
+ * are also bounded to 8192 bytes plus a boundary-sized look-behind.
  * Explicit getContents()/string conversion may allocate the requested output.
  * Collision/short-read errors can follow partial delivery and are never retried.
  *
@@ -157,12 +158,18 @@ final class StreamingMultipartBody implements StreamInterface
         return !$this->state()['closed'];
     }
 
+    /**
+     * Read a bounded block, advancing body and underlying source cursors.
+     *
+     * @phpstan-impure
+     */
     public function read(int $length): string
     {
         $state = $this->state();
         if ($length < 0 || $state['closed']) {
             throw new RuntimeException('Multipart body is closed or read length is invalid.');
         }
+        $length = min($length, 8192);
         $bytes = '';
         try {
             while (strlen($bytes) < $length && $state['position'] + strlen($bytes) < $state['size']) {
