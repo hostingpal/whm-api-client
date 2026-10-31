@@ -1179,3 +1179,19 @@ are not persisted as values. No scan, disinfection, blocking, protection changes
 external-authentication unlink, host-key mutation/verification, login or URL fetch
 runs. Strict assessment accepts no discrepancies or acknowledgments. Follow-up
 `8x0.2.31` retains all unobserved methods, variants and enforcement behavior.
+
+## WHM authentication metadata
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/whm-authentication.php \
+  --output=docs/api/evidence/YYYY-MM-DD-whm-authentication.json
+```
+
+Three exact parameterless GETs read version, TFA issuer names and policy status.
+The existing guard, opt-in, committed inputs, TLS verification, structural capture
+and no-retry rules apply. Provider and login URLs, keys, credential configuration,
+TFA secrets and linked-account data are omitted. No remote connection, URL request,
+key operation, provider/link/policy change or notification runs. This establishes
+no successful login, TFA challenge or SSH authorization; `8x0.2.40` retains other
+operations and variants, and strict findings remain failed without waivers.
