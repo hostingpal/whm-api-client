@@ -1203,6 +1203,159 @@ outside this catalog: ten use conservative POST selection, while four WebsiteBac
 mutations have explicit pinned POST/form contracts. Strict assessment
 accepts no discrepancies or acknowledgments; `8x0.2.32` retains all source/live gaps.
 
+## WHM database administration
+
+`whm-databases.php` binds `whm-databases-v1` to nine exact WHM GETs: version,
+current/latest/installable MySQL versions, database optimization information,
+database users, databases, MySQL database/user details for `npr`, and remote profile
+activation status. Only the account-detail read supplies `user=npr`; all others
+have only `api.version=1`. The source-declared status fields include no credentials.
+
+```bash
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+  php tools/live-verify/whm-databases.php \
+  --output=docs/api/evidence/whm-databases-new.json
+```
+
+The shared command requires both tokens and committed inputs even though this
+catalog uses only WHM. Exact URI/method/body guards, verified TLS, no retries and
+new-only output publication remain unchanged. Structural-only evidence wildcards
+database/profile keys and never persists values. Profile credential reads and
+background-upgrade status requiring an ID are excluded; no ID or network target
+is guessed. No upgrade, checker run, profile creation/validation/activation,
+password, rename or configuration mutation occurs. Strict assessment accepts no
+discrepancies or acknowledgments; `8x0.2.33` retains remaining live behavior.
+
+
+The corrected nine-GET artifact at `00ba48d` is already complete and strictly
+passing; retain it and the initial failed artifact. Separate reviewer profile-read
+and disposable-account lifecycle observations in review 5720420360 do not expand
+this catalog. Profile responses and unvalidated exception payloads may contain
+plaintext passwords; the catalog still excludes those credential reads.
+
+## WHM ModSecurity inventory
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/whm-modsecurity.php \
+  --output=docs/api/evidence/YYYY-MM-DD-whm-modsecurity.json
+```
+
+The fixed five-GET catalog reads WHM version, `modsec_get_configs`,
+`modsec_get_configs_with_changes_pending`, `modsec_get_vendors` and
+`modsec_is_installed` on the designated test server. It uses the existing exact
+request guard, opt-in, committed-input checks, verified TLS and structural evidence
+capture. It does not read raw configuration/rule text, audit logs or settings that
+may contain an access key. It sends no report, mutation, vendor download or URL
+fetch. Empty inventories establish no populated-row or enforcement behavior.
+Keep failures immutable and remaining coverage under `8x0.2.34`.
+
+
+On the reviewed `11.138.0.19` server, the pending-config read returns API result 0
+when there are no pending changes. `Flag` therefore raises `ApiErrorException`
+for this normal idle state as well as other failures; do not match error text or
+waive the immutable capture. Separate reviewer log/settings reads do not expand
+this catalog, and all thirty server-wide write/helper operations remain unobserved.
+
+## WHM login and mail protection inventory
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/whm-login-mail-protection.php \
+  --output=docs/api/evidence/YYYY-MM-DD-whm-login-mail-protection.json
+```
+
+The fixed eight GET requests read WHM version, cPHulk status/country inventory,
+and Greylisting status, server netblock trust, common-provider configuration,
+configuration limits and trusted hosts. Existing exact request guards, opt-in,
+committed-input checks, verified TLS and structural evidence capture apply.
+Authentication logs, deferred mail records and configured command text are
+excluded. No protection, trust, history, configuration or mail state is changed,
+and no message is sent. Source/runtime gaps remain under `8x0.2.35`.
+
+
+The three retained API failures were independently diagnosed as disabled Greylisting
+on `11.138.0.19`; status and configuration reads still work. Preserve both failed
+artifacts and strict assessments without waivers. Do not enable Greylisting or
+repeat the catalog merely to make it pass. Separate reviewer login-history reads
+and source-backed write-result corrections do not expand this eight-GET capture;
+all fifteen server-wide/lockout writes remain unobserved.
+
+## WHM reseller inventory
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/whm-resellers.php \
+  --output=docs/api/evidence/YYYY-MM-DD-whm-resellers.json
+```
+
+The fixed six GET requests read WHM version, account counts, public contact data,
+reseller IPs, ACL lists and reseller names. Optional user arguments are omitted;
+this does not establish an authenticated-user default. The reviewed root
+`getresellerips` call fails because its source requires an actual user value,
+while a named non-reseller also fails. Preserve this historical recipe and failed
+artifact; do not substitute a guessed selector or rerun merely for green.
+The existing exact request guard,
+opt-in, committed-input checks, verified TLS and structural capture remain active.
+No reseller is selected by a guessed identifier and no account, privilege, limit,
+contact, IP or nameserver is changed. Returned URLs are not fetched. Keep remaining
+variants and lifecycle verification under `8x0.2.36`.
+
+The corrected reseller capture at `e8751c3` passes five of six API/payload/probe
+checks with zero discrepancies. `getresellerips` still fails at the API; the
+separate reviewer report attributes it to the omitted user. Strict status remains
+failed and unwaived. The observed account limit
+empty string is preserved without inferred semantics. ACL/reseller inventories
+are empty. No settings changed; historical evidence and follow-up `8x0.2.36` remain.
+
+## WHM IP address inventory
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/whm-ip-addresses.php \
+  --output=docs/api/evidence/YYYY-MM-DD-whm-ip-addresses.json
+```
+
+Five fixed GETs read version, the default shared IP, IPv6 ranges, IPv4 addresses
+and IPv6 addresses. Existing exact request guards, opt-in, committed-input checks,
+verified TLS and structural evidence capture apply. No address/range is guessed;
+no NAT check, address change, interface shutdown, account move or mapping update
+runs. The evidence cannot establish routing, reachability or application delivery.
+Keep remaining live variants under `8x0.2.37`.
+
+The corrected WHM IP-address capture at `fde160d` on `11.138.0.19` passes all five
+GET observations and strict assessment with zero discrepancies. IPv6 range
+`enabled` accepts exact quoted flags; `mostrecent` and `note` accept null only
+where observed. IPv4/IPv6/range rows are populated; range-user lists are empty.
+No network or address/range change ran. The original failed capture is immutable
+and follow-up `8x0.2.37` retains all remaining live coverage.
+
+## Expanded WHM server inventory
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/whm-server-administration.php \
+  --output=docs/api/evidence/YYYY-MM-DD-whm-server-administration.json
+```
+
+Eight fixed GETs read version, contact-event importances, available/current
+profiles, minimum password-strength policy, installed versions, service status
+and dashboard hostname. Optional filters/selectors remain omitted. Existing
+exact request guards, opt-in, committed-input checks, verified TLS and structural
+capture apply. No credential, linked-node secret, arbitrary config or socket
+inventory is requested. No EULA, purchase, reboot/restart, update, activation,
+node-link, configuration, notification or URL-verification operation runs.
+Successful inventory does not establish service health, completion or remote
+connectivity. Remaining source/live variants stay under `8x0.2.38`.
+
+The corrected expanded WHM server capture at `742eaa8` on `11.138.0.19` passes
+all eight HTTP/API/payload/probe checks. Ten evidenced integer leaves accept
+canonical integer strings losslessly; siblings remain unchanged. Strict status
+still fails for two masked unknown-field observations in installed versions and
+service rows. They remain untyped and unwaived; no key identity/count is inferred.
+No mutation or private configuration read ran. Historical artifacts remain
+immutable and `8x0.2.38` retains remaining live coverage and unknown findings.
+
 ## WHM authentication metadata
 
 ```sh
