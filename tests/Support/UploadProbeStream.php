@@ -11,6 +11,9 @@ use RuntimeException;
 /** A real byte source with independently controllable PSR metadata and I/O counters. */
 final class UploadProbeStream implements StreamInterface
 {
+    /** @var list<int> */
+    public array $requestedReadSizes = [];
+    public ?int $maxReadLength = null;
     public int $reads = 0;
     public int $seeks = 0;
     public int $closes = 0;
@@ -111,10 +114,11 @@ final class UploadProbeStream implements StreamInterface
     public function read(int $length): string
     {
         ++$this->reads;
+        $this->requestedReadSizes[] = $length;
         if ($this->throwRead) {
             throw new RuntimeException('private-stream-content-secret');
         }
-        return $this->inner->read($length);
+        return $this->inner->read(min($length, $this->maxReadLength ?? $length));
     }
 
     public function getContents(): string
