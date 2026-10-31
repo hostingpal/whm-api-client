@@ -144,3 +144,79 @@ failures and collection truthiness rules are version-attributed in PHPDoc and
 [source audit](source-audit.md#dav-calendars-contacts-and-delegation). The immutable
 seven-GET artifact remains failed/unwaived; the fixed catalog is diagnostic, and
 two misleading success recipes are removed. No sources, runtime or generator changed.
+
+
+## Typed whole JSON body grammar
+
+The generator supports an explicit `body: "json"` selection, independently of
+form fields and JSON-valued string parameters. This foundation does not select
+any production JSON-body operation or change the coverage count. A selection must
+bind operation-level `doc` evidence to the exact pinned source SHA-256 and the
+selected variant's `/requestBody` JSON pointer. `variant` continues to identify the
+source method; the effective transport is fixed POST.
+
+The operation overlay uses:
+
+```json
+{
+  "body": "json",
+  "json_body": {
+    "php": "configuration",
+    "alias": "ConfigurationInput",
+    "routes": "direct"
+  }
+}
+```
+
+`php` names the whole public argument; it must not collide with a query argument.
+`alias` is a unique PHPStan alias ending in `Input`. `routes: "direct"` enables
+ordinary WHM API 1 or direct cPanel UAPI according to the selected family, while
+refusing the account bridge locally. Query declarations retain their own source
+order and wire names, apart from the existing required-before-optional ordering.
+They are never inferred as JSON members or moved into the body.
+
+Lowering uses a separate strict request schema. It supports explicit objects,
+sequential lists, strings, integers, finite numbers, booleans, nullability and
+scalar alternatives with disjoint PHP input domains. A formal integer enum
+containing exactly numeric `0` and `1` selects a bool input serialized as integer
+`0|1`; native JSON booleans remain booleans. Input aliases and response aliases are
+separate; response compatibility never admits numeric strings in request fields.
+Object fields keep their formal names and requiredness. Unknown members reject
+unless `additionalProperties` supplies an explicit supported value schema.
+
+A required body has a required native argument. Optional nonnullable roots use
+`null` as absence; an optional object/list uses `?array $body = null`. Required
+nullable roots accept explicit null as the complete JSON document `null`.
+`[]` becomes `{}` for an object schema and `[]` for a list schema. A present body
+sets exactly `Content-Type: application/json`; absence sends no bytes or JSON
+Content-Type. False, zero and empty strings remain present scalar documents.
+
+Narrow input corrections live in `json_body.corrections`, keyed by JSON pointers
+relative to the source schema (`""` means the root). An object correction may set
+`required` to a list of declared fields. A list correction may set `nonempty: true`;
+its PHPDoc becomes `non-empty-list<T>`. The default list permits an empty list.
+Each correction requires its own `evidence` list with the exact pinned SHA-256,
+full schema-node pointer and attribution in `note`. `json_body.required` can
+correct whole-body requiredness under the source-bound operation evidence.
+Snapshots stay unchanged. A correction cannot rename, replace or invent fields.
+These policies do not implement general enums, ranges or formats. Same-document
+references bind corrections to the resolved source-node pointer. Cross-document
+input corrections fail until their separate provenance can be represented.
+
+Generation fails for missing formal types, ambiguous container alternatives,
+unsupported composition, binary input, unschematized additional values, exhausted
+nesting budgets, optional nullable roots, and required reserved root members.
+The request grammar accepts up to 511 object/list containers, independently of the
+response resolver's fallback policy. The full case-sensitive `api.` prefix is
+reserved on JSON query/root members, including additional map keys; direct UAPI
+also reserves exact `cpanel.user`, `cpanel.module` and `cpanel.function`. Optional
+reserved root fields reject when present; nested names remain data. This policy
+is applied by whole-body execution and does not constrain the shared serializer
+when it is used for a JSON-valued form parameter.
+
+Generated operation constants carry `json_body: {php, required, routes, schema}`
+separately from `params`. Trusted malformed descriptors raise `LogicException`;
+invalid caller values raise `InvalidArgumentException`. Both fail before I/O after
+metadata reset. Successful dispatch uses the shared one-attempt JSON executor and
+the existing envelope, metadata and typed response validation rules. There is no
+retry, implicit read, mutation rollback or successful-live-write claim.

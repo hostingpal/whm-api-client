@@ -123,6 +123,11 @@ final class SpecChecker
         }
 
         self::params($spec['params'] ?? null);
+        if (OperationSpec::body($spec) === RequestBodyFormat::Json) {
+            self::jsonBody($spec);
+        } elseif (array_key_exists('json_body', $spec)) {
+            throw new LogicException('JSON body metadata requires JSON encoding.');
+        }
         if (OperationSpec::body($spec) === RequestBodyFormat::Multipart) {
             if (($spec['method'] ?? null) !== 'POST' || !isset($spec['module'])) {
                 throw new LogicException('Multipart requires a UAPI POST operation.');
@@ -169,6 +174,35 @@ final class SpecChecker
         ) {
             throw new LogicException('Invalid unwrap spec.');
         }
+    }
+
+    /** @param array<mixed> $spec */
+    private static function jsonBody(array $spec): void
+    {
+        $body = OperationSpec::jsonBody($spec);
+        $schema = StructuredJsonSchema::from($body['schema']);
+        if (!$body['required'] && self::acceptsNull($schema)) {
+            throw new LogicException('Optional nullable JSON bodies are unsupported.');
+        }
+        $reserved = isset($spec['module']) ? ['cpanel.user', 'cpanel.module', 'cpanel.function'] : [];
+        foreach ($schema->required as $name) {
+            if (str_starts_with($name, 'api.') || in_array($name, $reserved, true)) {
+                throw new LogicException('JSON schema requires a reserved root member.');
+            }
+        }
+    }
+
+    private static function acceptsNull(StructuredJsonSchema $schema): bool
+    {
+        if ($schema->nullable || $schema->type === 'null') {
+            return true;
+        }
+        foreach ($schema->alternatives as $branch) {
+            if (self::acceptsNull($branch)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** Check every parameter spec, whether or not a call supplies its argument. */

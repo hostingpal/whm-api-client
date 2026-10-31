@@ -23,6 +23,7 @@ var (
 		"call": true, "responseMeta": true, "username": true, "isBridged": true, "run": true, "dispatch": true,
 		"request": true, "beginRequest": true, "recordResponseMeta": true, "executeGet": true, "executePost": true,
 		"execute": true, "encode": true, "queryValues": true,
+		"callJson": true, "executeJsonPost": true, "validateJsonQuery": true,
 	}
 	// reservedArguments are PHP variables a generated method body already uses.
 	reservedArguments = map[string]bool{"this": true, "result": true}
@@ -198,6 +199,11 @@ func (b *builder) operation(op model.Operation, v model.Variant, ov overlay.Oper
 	result.Constant = b.constant(op, result.PHPName)
 	result.Alias = Pascal(result.PHPName) + "Result"
 	result.Params = b.params(op, v, ov, body)
+	if ov.Body == "json" {
+		result.JSONBody = b.jsonBody(op, v, ov, node, &result.Params)
+	} else if ov.JSONBody != nil {
+		b.problem(op.ID + ": json_body requires body json")
+	}
 	result.Method = b.method(op, v, ov, result.Params, len(body) > 0 || ov.Body != "")
 	if payload.issue != "" && !ov.Void {
 		b.problem(op.ID + ": " + payload.issue + "; declare void with evidence or exclude the operation")
@@ -289,6 +295,9 @@ func (b *builder) methodName(op model.Operation, ov overlay.Operation) string {
 // only when the body is required and its schema requires the field. It reports
 // false, with a problem, for any other body, which is never dropped silently.
 func (b *builder) formBody(op model.Operation, v model.Variant, ov overlay.Operation, node map[string]any) ([]model.Parameter, bool) {
+	if ov.Body == "json" {
+		return nil, true
+	}
 	if ov.Body == "multipart" {
 		return b.multipartBody(op, v, ov, node)
 	}
@@ -687,6 +696,15 @@ func (b *builder) finish(groups map[string]*Group) {
 		typeAliases := map[string]bool{}
 		for _, op := range group.Operations {
 			typeAliases[strings.ToLower(op.Alias)] = true
+		}
+		for _, op := range group.Operations {
+			if op.JSONBody != nil {
+				key := strings.ToLower(op.JSONBody.Alias)
+				if typeAliases[key] {
+					b.problem("group " + group.Name + ": duplicate type alias " + op.JSONBody.Alias)
+				}
+				typeAliases[key] = true
+			}
 		}
 		for _, op := range group.Operations {
 			for _, method := range op.Methods() {

@@ -122,7 +122,7 @@ final class StructuredJsonEncoder
     ): string {
         $parts = [];
         if ($schema->type === 'list') {
-            if (!array_is_list($value)) {
+            if (!array_is_list($value) || ($schema->nonempty && $value === [])) {
                 throw new InvalidArgumentException('Structured JSON lists require sequential arrays.');
             }
             $items = $schema->items ?? throw new LogicException('Missing structured JSON item schema.');

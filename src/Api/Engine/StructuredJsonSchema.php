@@ -13,7 +13,8 @@ use SensitiveParameter;
  * Descriptors use "type" (string, int, number, bool, flag, null, object, list or
  * union) and optional boolean "nullable". Objects require "fields" (string names
  * to descriptors), optionally "required" (a unique list of declared names) and
- * "values" (the descriptor for additional members). Lists require "items".
+ * "values" (the descriptor for additional members). Lists require "items" and may
+ * declare "nonempty": true. Without that explicit policy, empty lists are valid.
  * Unions require at least two scalar "anyOf" branches with disjoint PHP input
  * types. A flag accepts native bool only, emitting integer 0/1. Numbers accept
  * int or finite float; no response-side accepted variants apply to requests.
@@ -44,6 +45,7 @@ final readonly class StructuredJsonSchema
         #[SensitiveParameter] public ?self $items = null,
         #[SensitiveParameter] public ?self $values = null,
         #[SensitiveParameter] public array $alternatives = [],
+        public bool $nonempty = false,
     ) {
     }
 
@@ -72,7 +74,7 @@ final readonly class StructuredJsonSchema
         }
         $allowed = match ($type) {
             'object' => ['type', 'nullable', 'fields', 'required', 'values'],
-            'list' => ['type', 'nullable', 'items'],
+            'list' => ['type', 'nullable', 'items', 'nonempty'],
             'union' => ['type', 'nullable', 'anyOf'],
             default => ['type', 'nullable'],
         };
@@ -89,7 +91,10 @@ final readonly class StructuredJsonSchema
         }
         if ($type === 'list') {
             $items = self::node($schema['items'] ?? null, $containers + 1, $descriptors + 1);
-            return new self($type, $nullable, items: $items);
+            if (array_key_exists('nonempty', $schema) && $schema['nonempty'] !== true) {
+                throw new LogicException('Invalid structured JSON nonempty policy.');
+            }
+            return new self($type, $nullable, items: $items, nonempty: $schema['nonempty'] ?? false);
         }
         if ($type === 'union') {
             return self::union($schema, $nullable, $containers, $descriptors + 1);

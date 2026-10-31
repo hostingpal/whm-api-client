@@ -6,6 +6,7 @@ namespace HostingPal\WhmApiClient\Api\Engine;
 
 use Closure;
 use HostingPal\WhmApiClient\Api\OutcomePolicy;
+use HostingPal\WhmApiClient\Api\RequestBodyFormat;
 use HostingPal\WhmApiClient\Exception\ApiException;
 use HostingPal\WhmApiClient\Exception\InvalidResponseException;
 use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
@@ -40,7 +41,7 @@ final class OperationRunner
      *
      * @param array<mixed> $spec Generated operation spec.
      * @param array<string, mixed> $arguments Named arguments of the generated method.
-     * @param Closure(array<mixed>, OrderedFields): ApiResponse $dispatch
+     * @param Closure(array<mixed>, OrderedFields, ?JsonBody=): ApiResponse $dispatch
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the envelope and outcome were accepted but the payload differs from the
      *     spec; under the flag policy the operation took effect.
@@ -61,7 +62,45 @@ final class OperationRunner
             throw new LogicException('Operation spec is missing "params".');
         }
 
-        return self::result($spec, $dispatch($spec, ArgumentEncoder::encode($params, $arguments)));
+        $body = null;
+        if (OperationSpec::body($spec) === RequestBodyFormat::Json) {
+            $descriptor = OperationSpec::jsonBody($spec);
+            self::jsonQueryNames($params, $arguments, isset($spec['module']));
+            $name = $descriptor['php'];
+            $present = array_key_exists($name, $arguments);
+            if (!$present && $descriptor['required']) {
+                throw new InvalidArgumentException('Required JSON body is missing.');
+            }
+            $value = $arguments[$name] ?? null;
+            unset($arguments[$name]);
+            $body = !$descriptor['required'] && $value === null
+                ? JsonBody::absent()
+                : JsonBody::present(StructuredJsonEncoder::encode($value, $descriptor['schema']));
+        }
+        $parameters = ArgumentEncoder::encode($params, $arguments);
+        return self::result($spec, $dispatch($spec, $parameters, $body));
+    }
+
+    /**
+     * Reject reserved names before optional null arguments disappear during encoding.
+     *
+     * @param array<mixed> $params
+     * @param array<string, mixed> $arguments
+     */
+    private static function jsonQueryNames(
+        array $params,
+        #[SensitiveParameter] array $arguments,
+        bool $uapi,
+    ): void {
+        $reserved = $uapi ? ['cpanel.user', 'cpanel.module', 'cpanel.function'] : [];
+        foreach ($params as $argument => $param) {
+            if (!is_string($argument) || !is_array($param) || !is_string($param['name'] ?? null)) {
+                throw new LogicException('Invalid JSON query parameter spec.');
+            }
+            if (array_key_exists($argument, $arguments)) {
+                JsonRouting::assertAllowed($param['name'], $reserved);
+            }
+        }
     }
 
     /**

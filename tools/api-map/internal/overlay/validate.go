@@ -60,8 +60,14 @@ func Validate(set Set) []string {
 			if op.Void && op.OptionalPayload {
 				problems = append(problems, id+": void and optional_payload are exclusive")
 			}
-			if op.Body != "" && (op.Body != "multipart" || file.Family != "uapi") {
+			if op.Body != "" && (op.Body != "json" && (op.Body != "multipart" || file.Family != "uapi")) {
 				problems = append(problems, id+": reviewed multipart bodies require UAPI")
+			}
+			if (op.Body == "json") != (op.JSONBody != nil) {
+				problems = append(problems, id+": json body requires json_body descriptor")
+			}
+			if op.JSONBody != nil && (op.Exclude != nil || len(op.AdditionalMethods) > 0) {
+				problems = append(problems, id+": JSON bodies cannot combine with exclusions or additional methods")
 			}
 			if len(op.BodyFields) > 0 && op.Body != "multipart" {
 				problems = append(problems, id+": body_fields requires multipart")

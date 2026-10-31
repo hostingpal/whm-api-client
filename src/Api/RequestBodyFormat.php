@@ -9,4 +9,5 @@ enum RequestBodyFormat: string
 {
     case Form = 'form';
     case Multipart = 'multipart';
+    case Json = 'json';
 }

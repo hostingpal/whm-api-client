@@ -19,7 +19,13 @@ use LogicException;
  * - module: the UAPI module (UAPI operations only).
  * - method: 'GET' or 'POST'.
  * - outcome: 'flag' or 'unchecked'.
- * - body: optional 'form' (default) or 'multipart'; multipart is UAPI POST only.
+ * - body: optional 'form' (default), 'multipart' (UAPI POST only) or 'json' (POST).
+ * - json_body: only for body=json; {php: argument name, required: bool,
+ *   routes: 'direct', schema: strict StructuredJsonSchema descriptor}. The body
+ *   argument is separate from params, is always sensitive, and is serialized once.
+ *   Optional nonnullable roots use null for absence; required nullable roots encode
+ *   explicit null. Optional nullable roots fail as unsupported specs. JSON bodies
+ *   support WHM and direct UAPI; bridged UAPI fails locally without I/O.
  * - params: PHP argument name => array{name: wire name, encoding: 'scalar'|
  *   'bool'|'repeat'|'numbered'|'suffix-numbered'|'suffix-numbered-scalar', omit_empty?: true}, in
  *   signature order. Suffix encodings replace terminal * with one-based indices
@@ -97,6 +103,31 @@ final class OperationSpec
         }
         return RequestBodyFormat::tryFrom(self::text($spec, 'body'))
             ?? throw new LogicException('Unsupported operation body format.');
+    }
+
+    /**
+     * Read the separately validated whole-body argument descriptor.
+     *
+     * @param array<mixed> $spec
+     * @return array{php: string, required: bool, routes: string, schema: array<mixed>}
+     */
+    public static function jsonBody(array $spec): array
+    {
+        $body = $spec['json_body'] ?? null;
+        $params = $spec['params'] ?? null;
+        if (
+            ($spec['method'] ?? null) !== 'POST' || !is_array($body) || !is_array($params)
+            || !is_string($body['php'] ?? null) || $body['php'] === ''
+            || !is_bool($body['required'] ?? null) || ($body['routes'] ?? null) !== 'direct'
+            || !is_array($body['schema'] ?? null) || array_key_exists($body['php'], $params)
+            || array_diff(array_keys($body), ['php', 'required', 'routes', 'schema']) !== []
+        ) {
+            throw new LogicException('Invalid JSON body operation spec.');
+        }
+        return [
+            'php' => $body['php'], 'required' => $body['required'],
+            'routes' => $body['routes'], 'schema' => $body['schema'],
+        ];
     }
 
     /**
