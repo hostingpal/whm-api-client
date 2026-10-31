@@ -51,8 +51,11 @@ func Validate(set Set) []string {
 			seen[id] = name
 			op := file.Operations[id]
 			if op.Exclude != nil && (op.Name != "" || len(op.Params) > 0 || len(op.Response) > 0 || op.Unwrap != "" ||
-				len(op.AdditionalMethods) > 0 || op.Function != "" || op.OptionalPayload || op.Variant != "" || op.Body != "" || len(op.BodyFields) > 0) {
+				len(op.AdditionalMethods) > 0 || op.Function != "" || op.Rows != "" || op.OptionalPayload || op.Variant != "" || op.Body != "" || len(op.BodyFields) > 0 || op.MultipartUploads != nil) {
 				problems = append(problems, id+": excluded operations take no other settings")
+			}
+			if op.Rows != "" && (file.Family != "uapi" || op.Outcome != "unchecked" || op.Void || op.OptionalPayload || op.Unwrap != "") {
+				problems = append(problems, id+": rows requires unchecked UAPI without void, optional_payload or unwrap")
 			}
 			if op.Void && op.Unwrap != "" {
 				problems = append(problems, id+": void and unwrap are exclusive")
@@ -68,6 +71,9 @@ func Validate(set Set) []string {
 			}
 			if op.JSONBody != nil && (op.Exclude != nil || len(op.AdditionalMethods) > 0) {
 				problems = append(problems, id+": JSON bodies cannot combine with exclusions or additional methods")
+			}
+			if op.MultipartUploads != nil && (op.Body != "multipart" || file.Family != "uapi" || len(op.BodyFields) > 0 || len(op.AdditionalMethods) > 0) {
+				problems = append(problems, id+": multipart uploads require UAPI multipart without aliases or additional methods")
 			}
 			if len(op.BodyFields) > 0 && op.Body != "multipart" {
 				problems = append(problems, id+": body_fields requires multipart")
@@ -148,6 +154,9 @@ func missingEvidence(id string, op Operation) []string {
 	if op.Function != "" {
 		settings = append(settings, "function")
 	}
+	if op.MultipartUploads != nil {
+		settings = append(settings, "multipart_uploads")
+	}
 	if op.Body != "" {
 		settings = append(settings, "body")
 	}
@@ -159,6 +168,9 @@ func missingEvidence(id string, op Operation) []string {
 	}
 	if op.Method != "" {
 		settings = append(settings, "method")
+	}
+	if op.Rows != "" {
+		settings = append(settings, "rows")
 	}
 	if op.Outcome != "" {
 		settings = append(settings, "outcome")

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace HostingPal\WhmApiClient\Api\Engine;
 
+use HostingPal\WhmApiClient\Api\OutcomePolicy;
 use HostingPal\WhmApiClient\Api\RequestBodyFormat;
 use LogicException;
 
@@ -88,6 +89,10 @@ final class SpecChecker
         }
 
         self::flag($type, 'nullable');
+        self::flag($type, 'accept_empty_array');
+        if (array_key_exists('accept_empty_array', $type) && $kind !== 'object') {
+            throw new LogicException('Empty-array compatibility applies only to object specs.');
+        }
         $accept = $type['accept'] ?? [];
         if (!is_array($accept) || !array_is_list($accept)) {
             throw new LogicException('Invalid "accept" type spec.');
@@ -132,7 +137,10 @@ final class SpecChecker
         } elseif (array_key_exists('json_body', $spec)) {
             throw new LogicException('JSON body metadata requires JSON encoding.');
         }
-        if (OperationSpec::body($spec) === RequestBodyFormat::Multipart) {
+        if (array_key_exists('multipart_uploads', $spec)) {
+            UploadList::descriptor($spec);
+        }
+        if (OperationSpec::body($spec) === RequestBodyFormat::Multipart && !isset($spec['multipart_uploads'])) {
             if (($spec['method'] ?? null) !== 'POST' || !isset($spec['module'])) {
                 throw new LogicException('Multipart requires a UAPI POST operation.');
             }
@@ -161,6 +169,8 @@ final class SpecChecker
             throw new LogicException('Invalid optional spec.');
         }
 
+        self::rows($spec, $returns);
+
         $unwrap = $spec['unwrap'] ?? null;
         if ($unwrap === null) {
             return;
@@ -176,6 +186,45 @@ final class SpecChecker
             || !array_key_exists($unwrap, $fields)
         ) {
             throw new LogicException('Invalid unwrap spec.');
+        }
+    }
+
+    /**
+     * Limit no-row failure classification to explicit unchecked UAPI object batches.
+     *
+     * The list and its object items must be nonnullable. Field requiredness remains
+     * part of the payload schema; only status 0 additionally needs usable rows.
+     *
+     * @param array<mixed> $spec
+     */
+    private static function rows(array $spec, mixed $returns): void
+    {
+        if (!array_key_exists('rows', $spec)) {
+            return;
+        }
+
+        $name = $spec['rows'];
+        $fields = is_array($returns) ? ($returns['fields'] ?? null) : null;
+        $field = is_array($fields) && is_string($name) ? ($fields[$name] ?? null) : null;
+        $items = is_array($field) ? ($field['items'] ?? null) : null;
+        if (
+            !is_string($name)
+            || $name === ''
+            || !isset($spec['module'])
+            || OperationSpec::outcome($spec) !== OutcomePolicy::Unchecked
+            || array_key_exists('optional', $spec)
+            || array_key_exists('unwrap', $spec)
+            || !is_array($returns)
+            || ($returns['type'] ?? null) !== 'object'
+            || ($returns['nullable'] ?? false) === true
+            || !is_array($field)
+            || ($field['type'] ?? null) !== 'list'
+            || ($field['nullable'] ?? false) === true
+            || !is_array($items)
+            || ($items['type'] ?? null) !== 'object'
+            || ($items['nullable'] ?? false) === true
+        ) {
+            throw new LogicException('Invalid rows result policy.');
         }
     }
 

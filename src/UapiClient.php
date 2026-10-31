@@ -271,8 +271,20 @@ final class UapiClient extends AbstractApiClient
     private function dispatch(
         array $spec,
         #[SensitiveParameter] OrderedFields $parameters,
-        #[SensitiveParameter] ?JsonBody $body = null,
+        #[SensitiveParameter] JsonBody|MultipartInput|null $body = null,
     ): ApiResponse {
+        if ($body instanceof MultipartInput) {
+            if ($this->isBridged()) {
+                throw new InvalidArgumentException('File uploads require a direct cPanel UAPI handle.');
+            }
+            return $this->executeMultipartPost(
+                '/execute/' . OperationSpec::text($spec, 'module') . '/' . OperationSpec::text($spec, 'function'),
+                $parameters,
+                $body,
+                ResponseRoute::DirectUapi,
+                OperationSpec::outcome($spec),
+            );
+        }
         if ($body !== null) {
             if ($this->isBridged()) {
                 throw new InvalidArgumentException('JSON bodies require a direct cPanel UAPI handle.');

@@ -219,8 +219,11 @@ final class WhmClient extends AbstractApiClient
     private function dispatch(
         array $spec,
         #[SensitiveParameter] OrderedFields $parameters,
-        #[SensitiveParameter] ?JsonBody $body = null,
+        #[SensitiveParameter] JsonBody|MultipartInput|null $body = null,
     ): ApiResponse {
+        if ($body instanceof MultipartInput) {
+            throw new LogicException('Generated multipart uploads require UAPI.');
+        }
         if ($body !== null) {
             return $this->executeJsonPost(
                 '/json-api/' . OperationSpec::text($spec, 'function'),

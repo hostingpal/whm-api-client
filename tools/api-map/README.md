@@ -232,12 +232,19 @@ Operation entries (all keys optional):
   `void` (no payload) and `unwrap` (return one documented object field; exclusive
   with `void`). Read-only operations default to GET; mutating, unknown-risk and
   secret-bearing ones default to POST, and GET is refused for secret-bearing ones.
+- `rows`: a nonempty declared result-field name for an unchecked UAPI object
+  batch, without void, optional_payload or unwrap. Root, list and object rows must
+  be nonnullable. Exact source hash/pointer evidence binds the selected row field
+  in the reviewed result/data response schema; other source layouts are unsupported.
+  Status 0 plus explicit null or a fully validated empty row list raises API error;
+  missing data/rows or malformed known fields remain payload mismatches. Status 1
+  keeps pinned optional fields. Only Fileman/upload_files opts in here.
 - `optional_payload`: an omitted or null `data` member is a valid response; the
   spec gains `'optional' => true`, the method's return type becomes nullable and
   it returns null in that case (other payloads are validated as usual). Needs a
   documented payload and is exclusive with `void`.
 - `evidence`: operation-level evidence, required when the entry sets `variant`, `method`,
-  `outcome`, `void` or `optional_payload`, changes a parameter `required` setting,
+  `outcome`, `rows`, `void` or `optional_payload`, changes a parameter `required` setting,
   suppresses its enum documentation (`enum_doc: false`), sets a parameter `encoding` (it
   changes the wire request), corrects a parameter `wire`, `type` or `description`, or marks
   a parameter `"sensitive": false`.

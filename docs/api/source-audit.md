@@ -6885,3 +6885,140 @@ capture or live verification of this combined revision. The correction uses only
 offline regressions, including shared argument-privacy registration for both raw
 routes. No server request, credential access, source refresh or historical evidence
 rewrite accompanies this integration.
+
+
+## Typed Fileman binary upload adoption (2026-10-31)
+
+`uapi:Fileman/upload_files#POST` is now generated as
+`uploadFiles(array $files, ?string $dir=null, ?bool $getDiskInfo=null,
+?bool $overwrite=null, ?string $permissions=null): array`. This adds one canonical
+operation to the existing Fileman group: 1,107 total (521 UAPI, 586 WHM), 91 groups,
+185 outputs. The prior Fileman GET/form audits and artifacts above remain historical
+and immutable; no additional live call was made for this implementation.
+
+The pinned cPanel source decompressed SHA-256 is
+`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`.
+The selected `/paths/~1Fileman~1upload_files/post` operation binds the binary source
+at `/requestBody/content/multipart~1form-data/schema/properties/file-0`, numbering
+at `/requestBody/description`, and direct-only routing at `/description`.
+The explicit reviewed `multipart_uploads` descriptor selects a required nonempty
+sequential Upload list, literal `file-` prefix, zero start, direct route and the
+Fileman `< > ;` filename restriction. All declarations are validated before any
+file opens/reads. Query parameters retain their original source location and
+normal omission/false/string spelling; all five public arguments are sensitive
+in enabled argument traces, including query flags. No multipart text-field or path inference
+is introduced. Existing SSL string multipart generation remains unchanged.
+
+The source requires the File Storage role and cPanel 11.44+. It names stored files
+from filenames, describes later-duplicate renaming, account-home-relative/default
+directories, creation of missing destinations, antivirus rejection and per-file
+permission warnings. These remain attributed source statements, not client live
+verification or an exact stored-name guarantee. One invocation streams one request
+with exact Content-Length, with no retry, rollback or inferred remote ownership.
+
+The return shape remains the exact nonnullable object with optional counts,
+upload records (nullable integer size, strict integer 0/1 flags and string
+reasons/warnings), and optional diskinfo. The latter's explicit fixed-property
+plus additional-string schema is an unsupported *default lowering* shape. This
+adoption uses the existing evidence-bound object fields+values overlay replacement
+at diskinfo, retaining known int|string inode fields, exact decimal/infinity byte
+strings and string display extras, including numeric-looking keys. No unrelated
+source lowering is expanded. A separate object-only `accept_empty_array:false`
+correction at the result root preserves this operation's actual-object contract;
+all older specs and nested/default empty-container behavior remain unchanged.
+Runtime SpecChecker and structural Fingerprint enforce the same opt-in recursively.
+
+[PR74 review5722763413](https://github.com/hostingpal/whm-api-client/pull/74#pullrequestreview-5722763413)
+reports raw direct-UAPI `11.138.0.19` uploads and reviewer Perl inspection, performed
+outside this client. Those attributed observations motivate explicit typed
+Unchecked: partial status 1 and all-files-failed status 0 both return and validate
+counts/rows/reasons/warnings. The existing typed integer envelope check is retained;
+missing/null/malformed data raises PayloadMismatchException with the snapshot,
+unvalidated payload and outcomeConfirmed=false. No new exception or metadata
+payload is introduced. Generic callMultipart remains Flag by default; explicit
+generic Unchecked retains raw CallResult data. Reviewer observations are not a
+new owned client capture; `8x0.30.5` retains that separate work.
+
+Offline checks cover independently authored exact multipart bytes with NUL/non-UTF-8
+and an empty file, deterministic internal-boundary encoding, singleton/duplicate
+names, query/auth/routing, borrowed cursor/nonseekable exact sizes, list/filename
+and route failures before I/O with metadata reset, privacy, size preflight, and
+source release on payload/HTTP/transport/stream failures. Response fixtures cover
+both flags, partial/all failures and reasons/warnings, optional fields, empty
+objects, typed extras and strict invalid roots/members. Existing source/stream and
+generic/SSL suites retain their broader lifecycle coverage. Five binary operations
+remain unadopted under `8x0.30.7`/`.30.8`/`.30.9`; the nine-operation multipart
+inventory does not establish complete typed or live coverage. Inherited source
+acceptance and POSIX/reliable-metadata gates remain external-owned.
+
+
+## PR87 integration and no-row upload failure correction (2026-11-01)
+
+This correction integrates approved master `5f6961fb73e831cbd93d31111a537faf1d71d9d0`
+into the original Fileman branch at `52ad0ff0f39106c5fba7e20cc1127345b4cc0dea`
+with a normal merge. The preceding audit text and all historical source/evidence
+artifacts are retained. Current generated coverage is 1,144 canonical operations
+(550 UAPI, 594 WHM), 99 groups and 201 outputs; only Fileman/upload_files is newly
+adopted relative to that approved master. Existing generated methods and specs
+remain unchanged except the additive upload method/spec.
+
+PR87 review5724571009 and PR74 correction6548151118 supersede the earlier
+Fileman no-rows/null classification described above and in the multipart design.
+The reviewer reports real uploadFiles calls on disposable wrvup5 accounts on
+cPanel 11.138.0.19: full quota caused the form parser to discard all files, with
+status 0, uploads:[], failed/succeeded/warned all zero and the misleading at-least-
+one-file error. Reviewer Perl inspection attributes that to insufficient space
+in Cpanel/Form.pm before Fileman sees files. Invalid permissions and directory
+creation failures reportedly returned status 0 and explicit null data. The same
+review confirms useful row-bearing all-failed/partial batches and finite/unlimited
+diskinfo. These are attributed reviewer observations, not this integrator's live
+verification, proof of this combined revision on a server or a committed capture.
+No live call, source refresh, server/SSH/credential access or old capture replay
+accompanies this correction.
+
+The explicit, source-bound rows:uploads policy applies only to this operation.
+Integer status validation still runs first; outer WHM failures are unchanged.
+Status 0 with explicit null data raises exact ApiErrorException. A nonnull object
+is fully validated before an actual empty uploads list raises the same exception
+with the same metadata snapshot and envelope errors. Missing data/rows (including
+{}), wrong roots, null/non-list uploads and malformed known fields/rows retain
+PayloadMismatchException and outcomeConfirmed=false. Valid nonempty rows return
+normally even for all-file failure. Status 1 retains the pinned optional fields:
+{} and omitted/empty uploads are valid, while missing/null/malformed data is not.
+Those unobserved boundaries are explicit client policy; a legitimate future
+omitted-rows failure may still mismatch pending review. No scalar coercion,
+blanket status-0 failure, optional-root weakening or global Unchecked change was
+introduced. Features/has_feature, generic Unchecked and massModifyAccount remain
+unchanged.
+
+The validated overlay/effective/runtime grammar requires unchecked UAPI and a
+nonnullable object with a declared nonnullable list of nonnullable object rows,
+without optional/unwrap result modes. The generator binds the selected row field
+to its operation-scoped pinned source hash and result/data schema pointer. Bad
+types, field names and combinations reject before dispatch. The strict Fileman
+object root and all per-file/diskinfo types are preserved. Parent JSON roots, no-
+query rules and WHM version injection remain independent of multipart query rules.
+The inherited preflight test now requires the parent's exact static, unchained
+InvalidArgumentException; no duplicate preparation implementation was added.
+The original late-invalid-list zero-metadata/read probe regression remains intact.
+
+Independent offline fixtures reproduce null and empty all-zero failures, preserve
+row-bearing reasons and envelope errors, check fresh metadata and strict malformed
+boundaries, and exercise typed Features/generic compatibility. Malformed-spec
+fixtures cover pre-dispatch rejection in PHP and Go; rendering retains the policy.
+An enabled-argument real trace-rendering regression exposed the runner's bound
+dispatch Closure showing captured metadata through its bound handle. The sole
+correction marks that existing argument SensitiveParameter; callable behavior is
+unchanged. Removing that annotation or the operation opt-in, broadening the rule
+globally, or exempting status-1 null data is detected by bounded offline controls,
+with exact source restoration before final gates. This is local regression proof,
+not a claim about server storage, atomicity, rollback, retries, ownership or cleanup.
+
+The optional massModifyAccount suggestion was assessed against pinned source only.
+It describes per-user rows and metadata outcomes without an ordering guarantee,
+but provides no concrete
+reviewed omitted-row/null failure requiring a new policy. The approved grammar is
+UAPI-only, and the controller explicitly deferred this unrelated WHM adoption.
+No massmodifyacct overlay/spec/method or behavior was changed. Its existing row
+contracts and live/source evidence remain separate. Future PR88..101 work and
+the owned Fileman capture remain outside this correction.

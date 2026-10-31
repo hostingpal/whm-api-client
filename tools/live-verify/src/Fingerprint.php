@@ -126,7 +126,8 @@ final class Fingerprint
 
         if (
             $type['type'] === 'object'
-            && ($value instanceof stdClass || ($value === [] && ($type['required'] ?? []) === []))
+            && ($value instanceof stdClass
+                || ($value === [] && ($type['required'] ?? []) === [] && ($type['accept_empty_array'] ?? true)))
         ) {
             $this->object($value, $type, $path);
         } elseif ($type['type'] === 'list' && is_array($value) && array_is_list($value)) {

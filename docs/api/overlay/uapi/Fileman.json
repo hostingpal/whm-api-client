@@ -834,17 +834,177 @@
       ]
     },
     "uapi:Fileman/upload_files": {
-      "exclude": {
-        "reason": "Requires binary multipart file parts and is explicitly unavailable through WHM uapi_cpanel; outside this GET/form slice. Transport follow-up whm-api-client-8x0.1.19 retains multipart work.",
-        "evidence": [
-          {
+      "name": "uploadFiles",
+      "variant": "POST",
+      "body": "multipart",
+      "multipart_uploads": {
+        "php": "files",
+        "source": "file-0",
+        "prefix": "file-",
+        "start": 0,
+        "routes": "direct",
+        "filename_forbidden": "<>;"
+      },
+      "outcome": "unchecked",
+      "rows": "uploads",
+      "params": {
+        "dir": {"sensitive": true},
+        "get_disk_info": {"sensitive": true},
+        "overwrite": {"sensitive": true},
+        "permissions": {"sensitive": true}
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Fileman~1upload_files/post/responses/200/content/application~1json/schema/properties/result/properties/data/properties/uploads",
+          "note": "The selected result declares an optional nonnullable list of per-file objects. The explicit rows policy classifies only reviewed no-row failures and preserves pinned status-1 optionality."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19 (attributed reviewer only)",
+          "date": "2026-11-01",
+          "note": "PR87 review5724571009 and PR74 correction6548151118 report status 0 with explicit null for invalid permissions/directory failure, and uploads:[] plus zero counts when quota drops all files in the form parser. These are API errors; nonempty valid rows remain returned. Reviewer observations only; no owned client capture or repeated live request is claimed."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Fileman~1upload_files/post/requestBody/content/multipart~1form-data/schema/properties/file-0",
+          "note": "Required binary file part; generate only the reviewed nonempty Upload list."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Fileman~1upload_files/post/requestBody/description",
+          "note": "The body description explicitly numbers multiple file parts file-0, file-1, file-2."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Fileman~1upload_files/post/description",
+          "note": "Direct cPanel UAPI only: WHM uapi_cpanel is explicitly forbidden. Filenames additionally reject < > ;."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19 (attributed reviewer only)",
+          "date": "2026-10-31",
+          "note": "PR74 review5722763413 raw direct-UAPI observations and reviewer Perl inspection establish status 1 for partial success and status 0 for all-file failure while data retains counts and per-file reasons. Typed Unchecked preserves these structured results; this is reviewer server evidence, not this client or a committed owned client capture."
+        }
+      ],
+      "response": {
+        "": {
+          "accept_empty_array": false,
+          "evidence": [{
             "kind": "doc",
             "version": "pinned 2026-10-13",
-            "date": "2026-10-30",
-            "note": "The pinned /Fileman/upload_files POST description requires multipart/form-data file parts, discards file- query fields and prohibits calling through WHM API 1 uapi_cpanel. The request body declares a required binary file-0 field. Existing typed string multipart does not support file uploads."
-          }
-        ]
-      }
+            "date": "2026-10-31",
+            "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+            "pointer": "/paths/~1Fileman~1upload_files/post/responses/200/content/application~1json/schema/properties/result/properties/data",
+            "note": "The required Fileman result is an actual object with optional fields. Opt out of the shared empty-array compatibility only at this new root, independently of transport metadata."
+          }]
+        },
+        "diskinfo": {
+          "replace": {
+            "type": "object",
+            "fields": {
+              "file_upload_max_bytes": {
+                "type": "string"
+              },
+              "file_upload_must_leave_bytes": {
+                "type": "string"
+              },
+              "file_upload_remain": {
+                "type": "string"
+              },
+              "fileslimit": {
+                "type": "union",
+                "anyOf": [
+                  {
+                    "type": "int"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              },
+              "filesremain": {
+                "type": "union",
+                "anyOf": [
+                  {
+                    "type": "int"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              },
+              "filesused": {
+                "type": "union",
+                "anyOf": [
+                  {
+                    "type": "int"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              },
+              "spacelimit": {
+                "type": "string"
+              },
+              "spaceremain": {
+                "type": "string"
+              },
+              "spaceused": {
+                "type": "string"
+              }
+            },
+            "values": {
+              "type": "string"
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Fileman~1upload_files/post/responses/200/content/application~1json/schema/properties/result/properties/data/properties/diskinfo",
+              "note": "The source explicitly declares known optional fields plus additional string display values. Preserve declared-field precedence and string extras using the existing object values grammar."
+            }
+          ]
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.44 and later. Requires the File Storage role. Direct cPanel UAPI only; the WHM bridge, LiveAPI and command line cannot send these files."
+        },
+        {
+          "kind": "documented",
+          "text": "Filenames determine stored names. The server renames later duplicate names, scans files for viruses, creates a missing destination, and resolves relative dir against the account home directory; omission defaults to that home. Permissions are octal strings (0644 or 644); a permission failure can produce a per-file warning. These source statements are not locally live verified."
+        },
+        {
+          "kind": "policy",
+          "text": "Files must be a nonempty sequential list of Upload values; no path-string coercion, sparse renumbering or per-file requests. Omitted query options preserve server defaults, including overwrite=false. Inspect responseMeta()->uapiStatus() and all per-file results: either accepted status can include files that were not stored. With status 0, explicit null or a validated object with uploads:[] raises ApiErrorException; valid nonempty rows return normally, including all-file failure. Missing data or uploads and malformed known fields remain PayloadMismatchException with outcomeConfirmed=false. Status 1 retains the pinned optional fields and strict payload validation. Any error can follow stored files; the client provides no retry, rollback, cleanup, atomicity or ownership inference."
+        },
+        {
+          "kind": "observed",
+          "text": "The upstream error \"You must specify at least one file to upload.\" can mean insufficient disk space: the form parser may discard every file before Fileman sees them. This was reported by the PR87 reviewer on cPanel 11.138.0.19; it does not prove a file was stored."
+        },
+        {
+          "kind": "documented",
+          "text": "Optional diskinfo byte limits and usage stay decimal strings, including infinity; inode counts stay int|string. Additional human-readable display strings are retained. Absent fields do not mean zero."
+        }
+      ]
     }
   }
 }

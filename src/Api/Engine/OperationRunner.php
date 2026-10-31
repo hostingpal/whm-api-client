@@ -7,6 +7,7 @@ namespace HostingPal\WhmApiClient\Api\Engine;
 use Closure;
 use HostingPal\WhmApiClient\Api\OutcomePolicy;
 use HostingPal\WhmApiClient\Api\RequestBodyFormat;
+use HostingPal\WhmApiClient\Exception\ApiErrorException;
 use HostingPal\WhmApiClient\Exception\ApiException;
 use HostingPal\WhmApiClient\Exception\InvalidResponseException;
 use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
@@ -41,7 +42,7 @@ final class OperationRunner
      *
      * @param array<mixed> $spec Generated operation spec.
      * @param array<string, mixed> $arguments Named arguments of the generated method.
-     * @param Closure(array<mixed>, OrderedFields, ?JsonBody=): ApiResponse $dispatch
+     * @param Closure(array<mixed>, OrderedFields, JsonBody|MultipartInput|null=): ApiResponse $dispatch
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the envelope and outcome were accepted but the payload differs from the
      *     spec; under the flag policy the operation took effect.
@@ -54,6 +55,7 @@ final class OperationRunner
         array $spec,
         #[SensitiveParameter]
         array $arguments,
+        #[SensitiveParameter]
         Closure $dispatch,
     ): mixed {
         SpecChecker::check($spec);
@@ -76,7 +78,16 @@ final class OperationRunner
                 ? JsonBody::absent()
                 : JsonBody::present(StructuredJsonEncoder::encode($value, $descriptor['schema']));
         }
+        $uploads = null;
+        if (isset($spec['multipart_uploads'])) {
+            $descriptor = UploadList::descriptor($spec);
+            $uploads = UploadList::parts($arguments[$descriptor['php']] ?? null, $descriptor['prefix']);
+            unset($arguments[$descriptor['php']]);
+        }
         $parameters = ArgumentEncoder::encode($params, $arguments);
+        if ($uploads !== null) {
+            $body = MultipartInput::generated($uploads, $parameters);
+        }
         return self::result($spec, $dispatch($spec, $parameters, $body));
     }
 
@@ -93,14 +104,20 @@ final class OperationRunner
      * captured metadata, outside payload mismatch classification. An
      * unwrapped field must be present in the validated object.
      *
+     * An explicit "rows" policy preserves valid row-bearing status-0 batches, but
+     * classifies explicit null or a fully validated object with an empty row list
+     * as ApiErrorException. Missing data or rows and malformed known fields remain
+     * payload mismatches. Status 1 retains the declared field optionality.
+     *
      * The response reaching this point already passed the envelope checks and the
-     * outcome policy, so every payload failure raises PayloadMismatchException:
+     * outcome policy, so other payload failures raise PayloadMismatchException:
      * outcomeConfirmed is true under the flag policy (the operation took effect)
      * and false when the outcome was not checked. Spec defects stay LogicException.
      * Responses can contain or echo secrets; hide them from trace arguments while
      * retaining the explicit unvalidated payload on PayloadMismatchException.
      *
      * @param array<mixed> $spec
+     * @throws ApiErrorException If the opted-in status-0 result is null or has an empty validated row list.
      * @throws InvalidResponseException If a typed unchecked status/result is not integer 0 or 1.
      * @throws PayloadMismatchException If the payload does not satisfy the spec.
      * @throws LogicException If the spec is malformed.
@@ -118,6 +135,14 @@ final class OperationRunner
                 );
             }
         }
+        $rows = $spec['rows'] ?? null;
+        $failedRows = is_string($rows) && $response->metadata->uapiStatus() === 0;
+        if ($failedRows && $response->hasData && $response->data === null) {
+            throw new ApiErrorException(
+                'UAPI operation failed; inspect errors() or response metadata.',
+                $response->metadata,
+            );
+        }
         if ($returns === null) {
             return null;
         }
@@ -129,7 +154,19 @@ final class OperationRunner
         $confirmed = OperationSpec::outcome($spec) === OutcomePolicy::Flag;
         $read = new PayloadReader($response->metadata, OperationSpec::text($spec, 'function') . ' payload');
         try {
-            return self::validated($spec, $returns, $response, $read);
+            $value = self::validated($spec, $returns, $response, $read);
+            if ($failedRows) {
+                if (!is_array($value) || !array_key_exists($rows, $value)) {
+                    return $read->fail();
+                }
+                if ($value[$rows] === []) {
+                    throw new ApiErrorException(
+                        'UAPI operation failed; inspect errors() or response metadata.',
+                        $response->metadata,
+                    );
+                }
+            }
+            return $value;
         } catch (InvalidResponseException $exception) {
             throw new PayloadMismatchException(
                 $exception->getMessage(),

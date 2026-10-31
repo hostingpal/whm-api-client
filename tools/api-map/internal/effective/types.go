@@ -7,16 +7,17 @@ import "github.com/hostingpal/whm-api-client/tools/api-map/internal/overlay"
 
 // TypeSpec mirrors the PHP engine's type spec (see src/Response/ShapeValidator.php).
 type TypeSpec struct {
-	Literal  *string
-	Type     string
-	Nullable bool
-	Accept   []string
-	Preserve bool
-	Items    *TypeSpec
-	Values   *TypeSpec // map values, or opt-in undeclared object fields
-	Fields   []Field
-	Required []string
-	AnyOf    []TypeSpec
+	AcceptEmptyArray *bool `json:"accept_empty_array,omitempty"`
+	Literal          *string
+	Type             string
+	Nullable         bool
+	Accept           []string
+	Preserve         bool
+	Items            *TypeSpec
+	Values           *TypeSpec // map values, or opt-in undeclared object fields
+	Fields           []Field
+	Required         []string
+	AnyOf            []TypeSpec
 	// Issue names a documented construct the engine cannot represent at this
 	// node. The builder reports it as a problem unless an overlay replace
 	// covers the node; it is never rendered.
@@ -74,8 +75,9 @@ type Param struct {
 
 // Operation owns one canonical response/route contract and its public input mappings.
 type Operation struct {
-	JSONBody          *JSONBody `json:",omitempty"`
-	AdditionalMethods []Method  `json:",omitempty"`
+	MultipartUploads  *overlay.MultipartUploads `json:",omitempty"`
+	JSONBody          *JSONBody                 `json:",omitempty"`
+	AdditionalMethods []Method                  `json:",omitempty"`
 
 	ID          string
 	VariantID   string
@@ -84,6 +86,7 @@ type Operation struct {
 	Function    string
 	Method      string
 	Body        string
+	Rows        string // explicit no-row failure policy; does not alter global Unchecked
 	Outcome     string
 	PHPName     string
 	Constant    string

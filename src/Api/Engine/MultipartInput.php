@@ -30,6 +30,27 @@ final readonly class MultipartInput
     }
 
     /**
+     * Preserve generated query provenance and declaration collision semantics.
+     *
+     * @param list<array{name: string, value: Upload}> $parts
+     */
+    public static function generated(
+        #[SensitiveParameter] array $parts,
+        #[SensitiveParameter] OrderedFields $query,
+    ): self {
+        $reserved = ['cpanel.user', 'cpanel.module', 'cpanel.function'];
+        $validated = self::present($parts, [], $reserved);
+        $names = array_fill_keys(array_column($validated->parts, 'name'), true);
+        foreach ($query->all() as $field) {
+            JsonRouting::assertAllowed($field['name'], $reserved);
+            if (isset($names[$field['name']])) {
+                throw new InvalidArgumentException('Generated multipart fields overlap.');
+            }
+        }
+        return new self($validated->parts, $query);
+    }
+
+    /**
      * Check every declaration and emitted wire name before any source I/O.
      *
      * Query names follow the existing representation; part names use safe tokens.

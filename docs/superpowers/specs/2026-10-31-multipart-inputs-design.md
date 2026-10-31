@@ -403,20 +403,46 @@ Preserve and validate the same exact pinned return shape for integer envelope
 status `1` and `0`: all-success, one-good/one-bad and all-files-failed responses
 with valid data return counts, per-file rows, reasons and warnings. In particular,
 a single existing filename can return status `0` with a useful row reason.
-Status `1` does not establish that all files were stored, and status `0` alone does
-not throw under this typed policy. Callers inspect response metadata, counts,
-row status/reason and warnings. Do not synthesize partial- or total-failure
-exceptions or change the global `Flag` policy.
+Status `1` does not establish that all files were stored. An explicit per-operation
+`rows: 'uploads'` result policy raises `ApiErrorException` when status is `0` and
+`data` is explicitly null, or when the fully validated data object contains an
+actual empty `uploads` list. It carries the same metadata snapshot and envelope
+`errors()` as other API errors. Valid nonempty rows still return normally for
+partial or all-file failure. Callers inspect metadata, counts, row status/reason
+and warnings. Global `Unchecked` and `Flag` remain unchanged.
+
+The PR87 reviewer on `11.138.0.19` reported that a full account can cause the form
+parser to discard all files, producing zero counts, empty uploads and the
+misleading "You must specify at least one file to upload." error. That message
+can mean insufficient space. Invalid permissions and directory-creation failures
+were reported with explicit null data. These are attributed reviewer observations,
+not an owned client capture or a new live verification claim. This amendment
+supersedes the original no-rows/null failure rule following PR87 review5724571009
+and PR74 correction6548151118.
 
 Unchecked does not waive envelope or payload validation. The existing typed UAPI
 engine requires integer status `0|1`; missing, malformed or noninteger status is
 an `InvalidResponseException`. HTTP and unusable-envelope failures still fail.
-The data object remains required even though its pinned members are optional:
-missing, null or malformed data, or an invalid member shape, raises
-`PayloadMismatchException` with the response snapshot, unvalidated payload and
-`outcomeConfirmed=false` under Unchecked. Valid data is not weakened to opaque or
-optional output. Any failure can follow stored files; never retry automatically,
-roll back or infer cleanup from a flag or exception.
+The data object remains required even though its pinned members are optional.
+Status `1` retains those optional fields: `{}`, omitted uploads and empty uploads
+are valid; null, absent or malformed data still mismatches. With status `0`, absent
+data, `{}` or missing uploads, null/non-list uploads and malformed known fields or
+rows raise `PayloadMismatchException` with the snapshot, unvalidated payload and
+`outcomeConfirmed=false`. Validate the entire nonnull object before classifying an
+empty list, so malformed counts or diskinfo cannot be hidden by this policy. Only
+the explicit-null and valid-empty-list cases above become API errors. These are
+client policy boundaries, not claims that every unobserved shape occurs upstream.
+A future legitimate omitted-rows failure may still mismatch until reviewed.
+
+The validated spec grammar accepts a nonempty row-field string only for unchecked
+UAPI operations returning a nonnullable object with a declared nonnullable list of
+nonnullable object items, without optional/unwrap result modes. Unknown or non-list
+fields and incompatible combinations fail before dispatch. Generation requires
+operation-scoped source hash/pointer evidence for the row field. No other endpoint
+adopts this policy here, including Features/has_feature or massModifyAccount.
+Valid data is not weakened to opaque or optional output. Any failure can follow
+stored files; never retry automatically, roll back, infer atomicity, ownership or
+cleanup from a flag or exception.
 
 Generic `callMultipart()` still defaults to `OutcomePolicy::Flag`; callers may
 explicitly choose Unchecked to retain raw `CallResult` data. Under the unchanged
@@ -459,7 +485,7 @@ implementation acceptance fixtures, not newly executed tests or a RED claim.
 | Case and omission | Permit token-valid case/lookalikes and bare `api`; allow a nonreserved null query value alongside the same part name because no query field is emitted. |
 | Expansion and repetition | Reject emitted query/part collisions after list-marker expansion; preserve repeated explicit part names and file/text order; reject accidental generated fixed/family collisions. |
 | Fileman returns | All-success, partial status 1, and single-existing-file/all-failed status 0 preserve valid counts, rows, reasons and warnings under generated Unchecked. |
-| Fileman failures | Missing/null/malformed required data and malformed members preserve payload-mismatch metadata with outcomeConfirmed=false; missing/invalid/noninteger status, HTTP and envelope failures retain their distinct exceptions and never retry. |
+| Fileman failures | Status 0 plus explicit null or validated empty uploads raises exact ApiErrorException with envelope errors/snapshot. Missing data or status-0 missing rows and malformed fields/rows stay payload mismatches; status 1 stays strict with pinned optional fields. Status validation precedes result rules; HTTP/envelope failures remain distinct; no retry. |
 | Compatibility | Generic default Flag and explicit Unchecked remain distinct; legacy form/GET/SSL bytes, metadata lifecycle, ownership and supported envelopes remain intact. |
 
 A separate opted-in live fixture may use only fresh owned files/directories on
