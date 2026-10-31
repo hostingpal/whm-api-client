@@ -236,6 +236,9 @@ var qualifiedFunction = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*/[A-Za-z_][A-
 // ValidateCollection checks explicit facts even for callers constructing overlays
 // directly. JSON loading additionally rejects unknown keys and wrong JSON types.
 func ValidateCollection(c *Collection) error {
+	if c != nil && c.RejectPrefixedKeys != nil && (!*c.RejectPrefixedKeys || c.Kind != "map" || c.Prefix == nil || *c.Prefix == "") {
+		return fmt.Errorf("reject_prefixed_keys requires true and a nonempty map prefix")
+	}
 	if c == nil || (c.Kind != "indexed" && c.Kind != "repeat" && c.Kind != "map") ||
 		(c.ItemType != "string" && c.ItemType != "int" && c.ItemType != "bool" && c.ItemType != "string|int") ||
 		c.AllowScalar == nil || (c.Empty != "reject" && (c.Kind != "map" || c.Empty != "allow")) {
