@@ -19,7 +19,8 @@ use LogicException;
  * - module: the UAPI module (UAPI operations only).
  * - method: 'GET' or 'POST'.
  * - outcome: 'flag' or 'unchecked'.
- * - body: optional 'form' (default), 'multipart' (UAPI POST only) or 'json' (POST).
+ * - body: optional 'form' (default), 'multipart' (POST: reviewed UAPI string/list bodies
+ *   or the reviewed WHM scalar text/file descriptor) or 'json' (POST).
  * - multipart_upload: reviewed WHM required module text and scalar Upload only;
  * - multipart_uploads: only for reviewed UAPI multipart POST binary lists;
  *   {php: required sensitive Upload-list argument, prefix: literal indexed name
