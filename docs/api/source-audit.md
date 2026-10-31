@@ -4346,6 +4346,89 @@ remains under `8x0.1.23` before release. No new live call or capture ran for the
 corrections. Both historical captures remain immutable, and their two masked
 unknown-field observations stay strict failures without acknowledgment or waiver.
 
+## WHM authentication
+
+`whm()->authentication()` exposes 30 of the 32 pinned Authentication operations
+for SSH keys, authentication providers, external-account links and two-factor
+configuration/policy. Seven use GET and 23 use form POST. Deprecated `accesshash`
+remains excluded; JSON `twofactorauth_set_tfa_config_for_user` remains under
+`8x0.1.18`. The login-URL method uses POST as a conservative client privacy
+policy, despite the pinned GET-only declaration. The pinned redirect example has
+a `state` value; it does not establish that redirects always contain tokens.
+Live POST compatibility remains unverified. Reviewed upstream `Market.pm` code
+routes through a provider and may make an outbound call; the reviewer did not
+execute it. Generated notes distinguish client policy from documented facts and
+observed behavior.
+
+Key material, passphrases, provider configurations, redirect URLs and TFA secrets
+and tokens remain sensitive. Returned keys, provider URLs/configuration and TFA
+configuration are private payload data. The client does not follow returned URLs;
+upstream provider calls may have their own outbound behavior as described above.
+Remote SSH connection checking is explicit and performs no automatic follow-up.
+Key generation/import/authorization/deletion, provider/link changes and TFA changes
+can alter access immediately. Preserve abort/overwrite, keep-file and authorization
+defaults and inspect per-item results separately from API metadata. No retry or
+rollback is added. Source versions and conditional input caveats remain in PHPDoc.
+
+`authorizeSshKey()` accepts file-only authorization by omitting `text`; if both
+are supplied, the pinned contract gives text precedence. The file argument remains
+required and names a public key under `/root/.ssh`. Successful remote SSH checks
+permit null `comment`, `protocol_versions` and `server_software` as documented.
+These POST paths are source-backed and offline-tested. External-account link and
+unlink methods take the local username first. Unset provider values retain null;
+client ID/secret nulls and absent/null TFA `primary_account` are source-family
+compatibility, not observations from executing those POST methods.
+
+Provider display configurations accept caller-serialized JSON containing the
+pinned `color`, `display_name`, `icon`, `icon_type`, `label` and `textcolor` keys,
+as a form field encoded once. The native `string|int` boundary has no documented
+integer semantics or automatic object encoding. Before release, `8x0.1.23` must
+also cover this content-based query schema, separately from JSON-body transport.
+TFA removal currently
+supports scalar `user`; the separately documented `user-1`/`user-2` family remains
+under `8x0.1.21`, without assuming equivalence to another numbered encoding.
+A user listed as modified may have had no TFA settings; it does not prove removal
+changed a configured account.
+
+All 30 methods have independent offline contracts. The fixed three-GET catalog
+reads WHM version, issuer names and policy status only. It retrieves no keys, TFA
+secrets, provider configuration or login URLs, opens no remote SSH connection,
+and changes no account, authentication policy or provider. Follow-up `8x0.2.40`
+retains remaining source/live coverage.
+
+The [WHM authentication metadata capture](evidence/2026-10-31-whm-authentication.json)
+at `e88583ed1e3a5d2e255f11389a90afad6ba740b2` on `11.138.0.19` passes all three
+HTTP/API/payload/probe checks and strict assessment with zero discrepancies. It
+observes only WHM version, issuer-name strings and the integer TFA policy flag.
+No provider, credential, key, login-URL, TFA-secret or linked-account data was read.
+No authentication state changed and no remote connection or URL request occurred.
+
+This establishes no successful login, SSH access, TFA challenge, provider/link
+operation or mutation compatibility, including the effective POST login-URL method.
+All remaining operations and variants stay under `8x0.2.40`. Immutable SHA-256:
+`79245a336ed4daacbc6ac02c1bc48a3c72f64dee68f42987b5ab1dafb6366c81`.
+
+### PR52 reviewed corrections and evidence limits
+
+[Claude review 5720627530](https://github.com/hostingpal/whm-api-client/pull/52#pullrequestreview-5720627530)
+reports seven WHM GET methods on `11.138.0.19`, including an unset provider field
+with null value and an explicit `npr` user filter. Those observations remain
+separate from the committed three-GET capture. Provider field values were already
+optional/nullable in the generated contract; the correction records provenance.
+Client ID/secret nulls and TFA primary-account nullability remain source-family
+compatibility; primary-account omission was already supported. SSH success nulls,
+file-only authorization and username-first link inputs follow the pinned text and
+offline regressions. No POST operation was exercised for these corrections.
+
+The generator's additional Policy note label identifies client transport,
+sensitivity and encoding decisions without presenting them as upstream facts or
+live observations. Existing observed-note live-evidence requirements remain.
+The login-URL POST is still unverified; the reviewed provider call is source-only.
+All 23 POST methods and remaining successful-access variants remain unobserved
+under `8x0.2.40`. No credential, key, private URL or TFA secret was read, no state
+changed and no new live capture ran. The original three-GET artifact is complete
+and immutable.
+
 ## UAPI GPG and two-factor authentication
 
 `uapi()->gpg()` covers all seven pinned functions and `uapi()->twoFactorAuth()`
