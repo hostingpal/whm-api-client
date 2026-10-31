@@ -122,7 +122,7 @@
           "date": "2026-10-31",
           "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
           "pointer": "/paths/~1Mailboxes~1get_mailbox_status_list/get",
-          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1Mailboxes~1get_mailbox_status_list/get x-readonly=true selects GET. Formal parameters, requiredness, order and response data schema at responses/200/content/application~1json/schema/properties/result/properties/data are preserved without replacement or normalization. Account anyOf email/username remains string. Source GET variant selection is independent from runtime form POST. Query sensitivity protects arbitrary private mail-search text."
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1Mailboxes~1get_mailbox_status_list/get x-readonly=true selects GET. Formal parameters, requiredness, order and response data schema at responses/200/content/application~1json/schema/properties/result/properties/data are preserved without replacement or normalization. The sole parameter account is a required plain string and is sent in the GET query. There is no account anyOf schema or search-query parameter for this operation."
         }
       ]
     },
@@ -149,7 +149,7 @@
           "date": "2026-10-31",
           "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
           "pointer": "/paths/~1Mailboxes~1has_utf8_mailbox_names/get",
-          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1Mailboxes~1has_utf8_mailbox_names/get x-readonly=true selects GET. Formal parameters, requiredness, order and response data schema at responses/200/content/application~1json/schema/properties/result/properties/data are preserved without replacement or normalization. Account anyOf email/username remains string. Source GET variant selection is independent from runtime form POST. Query sensitivity protects arbitrary private mail-search text."
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1Mailboxes~1has_utf8_mailbox_names/get x-readonly=true selects GET. Formal parameters, requiredness, order and response data schema at responses/200/content/application~1json/schema/properties/result/properties/data are preserved without replacement or normalization. The sole parameter user is an optional string with username format, defaulting to the currently logged-in user. Runtime GET omits null user and preserves an explicitly supplied empty string in the query. There is no account or search-query parameter for this operation."
         }
       ]
     },
@@ -180,7 +180,7 @@
           "date": "2026-10-31",
           "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
           "pointer": "/paths/~1Mailboxes~1set_utf8_mailbox_names/get",
-          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1Mailboxes~1set_utf8_mailbox_names/get x-readonly=false selects POST. Formal parameters, requiredness, order and response data schema at responses/200/content/application~1json/schema/properties/result/properties/data are preserved without replacement or normalization. Account anyOf email/username remains string. Source GET variant selection is independent from runtime form POST. Query sensitivity protects arbitrary private mail-search text."
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1Mailboxes~1set_utf8_mailbox_names/get x-readonly=false selects POST. Formal parameters, requiredness, order and response data schema at responses/200/content/application~1json/schema/properties/result/properties/data are preserved without replacement or normalization. The sole parameter enabled is a required integer enum [0, 1], lowered to native bool and encoded as integer 0/1 in the form POST body. The selected source GET variant has x-readonly=false, so runtime uses form POST. There is no account or search-query parameter for this operation."
         }
       ]
     }
