@@ -41,7 +41,7 @@ final class OperationRunner
      *
      * @param array<mixed> $spec Generated operation spec.
      * @param array<string, mixed> $arguments Named arguments of the generated method.
-     * @param Closure(array<mixed>, OrderedFields, ?JsonBody=): ApiResponse $dispatch
+     * @param Closure(array<mixed>, OrderedFields, JsonBody|MultipartInput|null=): ApiResponse $dispatch
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the envelope and outcome were accepted but the payload differs from the
      *     spec; under the flag policy the operation took effect.
@@ -77,7 +77,16 @@ final class OperationRunner
                 ? JsonBody::absent()
                 : JsonBody::present(StructuredJsonEncoder::encode($value, $descriptor['schema']));
         }
+        $uploads = null;
+        if (isset($spec['multipart_uploads'])) {
+            $descriptor = UploadList::descriptor($spec);
+            $uploads = UploadList::parts($arguments[$descriptor['php']] ?? null, $descriptor['prefix']);
+            unset($arguments[$descriptor['php']]);
+        }
         $parameters = ArgumentEncoder::encode($params, $arguments);
+        if ($uploads !== null) {
+            $body = MultipartInput::generated($uploads, $parameters);
+        }
         return self::result($spec, $dispatch($spec, $parameters, $body));
     }
 

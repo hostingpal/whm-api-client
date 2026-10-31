@@ -6241,3 +6241,68 @@ JSON-looking strings, punctuation/Unicode, form header, void/metadata success,
 pre-I/O rejection/reset, sensitive traces and one-attempt API failure. Existing
 serializer depth/float/cycle/UTF-8 suites remain the exhaustive serializer coverage.
 No live provider configuration request ran and no new live compatibility is claimed.
+
+
+## Typed Fileman binary upload adoption (2026-10-31)
+
+`uapi:Fileman/upload_files#POST` is now generated as
+`uploadFiles(array $files, ?string $dir=null, ?bool $getDiskInfo=null,
+?bool $overwrite=null, ?string $permissions=null): array`. This adds one canonical
+operation to the existing Fileman group: 1,107 total (521 UAPI, 586 WHM), 91 groups,
+185 outputs. The prior Fileman GET/form audits and artifacts above remain historical
+and immutable; no additional live call was made for this implementation.
+
+The pinned cPanel source decompressed SHA-256 is
+`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`.
+The selected `/paths/~1Fileman~1upload_files/post` operation binds the binary source
+at `/requestBody/content/multipart~1form-data/schema/properties/file-0`, numbering
+at `/requestBody/description`, and direct-only routing at `/description`.
+The explicit reviewed `multipart_uploads` descriptor selects a required nonempty
+sequential Upload list, literal `file-` prefix, zero start, direct route and the
+Fileman `< > ;` filename restriction. All declarations are validated before any
+file opens/reads. Query parameters retain their original source location and
+normal omission/false/string spelling; all five public arguments are sensitive
+in enabled argument traces, including query flags. No multipart text-field or path inference
+is introduced. Existing SSL string multipart generation remains unchanged.
+
+The source requires the File Storage role and cPanel 11.44+. It names stored files
+from filenames, describes later-duplicate renaming, account-home-relative/default
+directories, creation of missing destinations, antivirus rejection and per-file
+permission warnings. These remain attributed source statements, not client live
+verification or an exact stored-name guarantee. One invocation streams one request
+with exact Content-Length, with no retry, rollback or inferred remote ownership.
+
+The return shape remains the exact nonnullable object with optional counts,
+upload records (nullable integer size, strict integer 0/1 flags and string
+reasons/warnings), and optional diskinfo. The latter's explicit fixed-property
+plus additional-string schema is an unsupported *default lowering* shape. This
+adoption uses the existing evidence-bound object fields+values overlay replacement
+at diskinfo, retaining known int|string inode fields, exact decimal/infinity byte
+strings and string display extras, including numeric-looking keys. No unrelated
+source lowering is expanded. A separate object-only `accept_empty_array:false`
+correction at the result root preserves this operation's actual-object contract;
+all older specs and nested/default empty-container behavior remain unchanged.
+Runtime SpecChecker and structural Fingerprint enforce the same opt-in recursively.
+
+[PR74 review5722763413](https://github.com/hostingpal/whm-api-client/pull/74#pullrequestreview-5722763413)
+reports raw direct-UAPI `11.138.0.19` uploads and reviewer Perl inspection, performed
+outside this client. Those attributed observations motivate explicit typed
+Unchecked: partial status 1 and all-files-failed status 0 both return and validate
+counts/rows/reasons/warnings. The existing typed integer envelope check is retained;
+missing/null/malformed data raises PayloadMismatchException with the snapshot,
+unvalidated payload and outcomeConfirmed=false. No new exception or metadata
+payload is introduced. Generic callMultipart remains Flag by default; explicit
+generic Unchecked retains raw CallResult data. Reviewer observations are not a
+new owned client capture; `8x0.30.5` retains that separate work.
+
+Offline checks cover independently authored exact multipart bytes with NUL/non-UTF-8
+and an empty file, deterministic internal-boundary encoding, singleton/duplicate
+names, query/auth/routing, borrowed cursor/nonseekable exact sizes, list/filename
+and route failures before I/O with metadata reset, privacy, size preflight, and
+source release on payload/HTTP/transport/stream failures. Response fixtures cover
+both flags, partial/all failures and reasons/warnings, optional fields, empty
+objects, typed extras and strict invalid roots/members. Existing source/stream and
+generic/SSL suites retain their broader lifecycle coverage. Five binary operations
+remain unadopted under `8x0.30.7`/`.30.8`/`.30.9`; the nine-operation multipart
+inventory does not establish complete typed or live coverage. Inherited source
+acceptance and POSIX/reliable-metadata gates remain external-owned.

@@ -3,6 +3,7 @@
 package phpgen
 
 import (
+	"fmt"
 	"regexp"
 	"slices"
 	"strings"
@@ -260,6 +261,9 @@ func specLiteralAt(spec effective.TypeSpec, indent string, prefix int) string {
 	pairs := []pair{{"type", phpString(spec.Type)}}
 	if spec.Literal != nil {
 		pairs = append(pairs, pair{"literal", phpString(*spec.Literal)})
+	}
+	if spec.AcceptEmptyArray != nil {
+		pairs = append(pairs, pair{"accept_empty_array", fmt.Sprintf("%t", *spec.AcceptEmptyArray)})
 	}
 	if spec.Nullable {
 		pairs = append(pairs, pair{"nullable", "true"})

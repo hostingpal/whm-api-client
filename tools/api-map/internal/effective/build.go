@@ -200,6 +200,9 @@ func (b *builder) operation(op model.Operation, v model.Variant, ov overlay.Oper
 	result.Constant = b.constant(op, result.PHPName)
 	result.Alias = Pascal(result.PHPName) + "Result"
 	result.Params = b.params(op, v, ov, body)
+	if ov.MultipartUploads != nil {
+		result.MultipartUploads = b.multipartUploads(op, v, ov, node, &result.Params)
+	}
 	if ov.Body == "json" {
 		result.JSONBody = b.jsonBody(op, v, ov, node, &result.Params)
 	} else if ov.JSONBody != nil {
@@ -300,6 +303,9 @@ func (b *builder) formBody(op model.Operation, v model.Variant, ov overlay.Opera
 		return nil, true
 	}
 	if ov.Body == "multipart" {
+		if ov.MultipartUploads != nil {
+			return nil, true
+		}
 		return b.multipartBody(op, v, ov, node)
 	}
 	raw, documented := node["requestBody"]
@@ -499,7 +505,7 @@ func (b *builder) params(op model.Operation, v model.Variant, ov overlay.Operati
 		if used[param.PHP] {
 			b.problem(op.ID + ": duplicate argument name " + param.PHP)
 		}
-		if ov.Body == "multipart" && (param.Encoding != "scalar" || param.PHPType != "string") {
+		if ov.Body == "multipart" && ov.MultipartUploads == nil && (param.Encoding != "scalar" || param.PHPType != "string") {
 			b.problem(op.ID + ": multipart fields require scalar string parameters")
 		}
 		used[param.PHP] = true

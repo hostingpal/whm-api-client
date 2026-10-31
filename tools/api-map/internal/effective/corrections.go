@@ -153,13 +153,17 @@ func fieldIndex(spec *TypeSpec, name string) int {
 // nothing from the documented node. The node's final accept and preserve
 // settings must suit its type.
 func applyCorrection(root *TypeSpec, path string, c overlay.Correction) error {
+	if path == "" && c.AcceptEmptyArray != nil && c.Replace == nil && c.Type == "" && c.Add == nil && len(c.Accept) == 0 && c.Nullable == nil && !c.Preserve && c.Required == nil {
+		root.AcceptEmptyArray = c.AcceptEmptyArray
+		return checkAccept(path, *root)
+	}
 	if c.Replace != nil && (c.Type != "" || c.Add != nil) {
 		return fmt.Errorf("path %q: replace cannot be combined with type or add", path)
 	}
 	if c.Type != "" && !scalarTypes[c.Type] {
 		return fmt.Errorf("path %q: type %q is not a scalar type; use replace", path, c.Type)
 	}
-	if path == "" && c.Replace != nil && len(c.Accept) == 0 && c.Nullable == nil && !c.Preserve && c.Required == nil {
+	if path == "" && c.Replace != nil && len(c.Accept) == 0 && c.Nullable == nil && !c.Preserve && c.Required == nil && c.AcceptEmptyArray == nil {
 		// Only a replace may address the payload root, for a documented root
 		// the engine cannot represent.
 		replacement, err := fromOverlay(path, *c.Replace)
@@ -232,6 +236,9 @@ func applyCorrection(root *TypeSpec, path string, c overlay.Correction) error {
 			current.Accept = append(append([]string(nil), current.Accept...), token)
 		}
 	}
+	if c.AcceptEmptyArray != nil {
+		current.AcceptEmptyArray = c.AcceptEmptyArray
+	}
 	if c.Nullable != nil {
 		current.Nullable = *c.Nullable
 	}
@@ -278,6 +285,9 @@ var acceptable = map[string]map[string]bool{
 // checkAccept rejects accept tokens the spec's type does not admit and
 // preserve on anything but number.
 func checkAccept(path string, spec TypeSpec) error {
+	if spec.AcceptEmptyArray != nil && spec.Type != "object" {
+		return fmt.Errorf("path %q: accept_empty_array requires object", path)
+	}
 	if spec.Literal != nil && spec.Type != "string" {
 		return fmt.Errorf("path %q: literal does not apply to type %q", path, spec.Type)
 	}
@@ -310,7 +320,7 @@ func fromOverlay(path string, s overlay.Spec) (TypeSpec, error) {
 	case s.Type == "object" && s.Fields == nil:
 		return TypeSpec{}, fmt.Errorf("path %q: object needs fields", path)
 	}
-	spec := TypeSpec{Type: s.Type, Literal: s.Literal, Nullable: s.Nullable, Accept: s.Accept, Preserve: s.Preserve, Required: s.Required}
+	spec := TypeSpec{AcceptEmptyArray: s.AcceptEmptyArray, Type: s.Type, Literal: s.Literal, Nullable: s.Nullable, Accept: s.Accept, Preserve: s.Preserve, Required: s.Required}
 	if err := checkAccept(path, spec); err != nil {
 		return TypeSpec{}, err
 	}

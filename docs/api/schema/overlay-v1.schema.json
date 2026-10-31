@@ -43,6 +43,41 @@
       "required": ["kind", "text"],
       "additionalProperties": false
     },
+    "multipartUploads": {
+      "type": "object",
+      "properties": {
+        "php": {
+          "type": "string",
+          "pattern": "^[a-z][A-Za-z0-9]*$"
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "prefix": {
+          "type": "string",
+          "pattern": "^[A-Za-z_][A-Za-z0-9_-]*$"
+        },
+        "start": {
+          "const": 0
+        },
+        "routes": {
+          "const": "direct"
+        },
+        "filename_forbidden": {
+          "const": "<>;"
+        }
+      },
+      "required": [
+        "php",
+        "source",
+        "prefix",
+        "start",
+        "routes",
+        "filename_forbidden"
+      ],
+      "additionalProperties": false
+    },
     "collection": {
       "type": "object",
       "properties": {
@@ -212,6 +247,7 @@
         "type": {"enum": ["string", "int", "number", "bool", "flag", "mixed", "list", "map", "object", "union"]},
         "literal": {"type": "string"},
         "nullable": {"type": "boolean"},
+        "accept_empty_array": {"type": "boolean"},
         "accept": {"type": "array", "items": {"enum": ["numeric-string", "integral-fixed-point-string", "string-flag", "int-flag", "bool", "empty-string"]}, "uniqueItems": true},
         "preserve": {"type": "boolean"},
         "items": {"$ref": "#/$defs/typeSpec"},
@@ -223,6 +259,7 @@
       "required": ["type"],
       "additionalProperties": false,
       "allOf": [
+        {"if": {"required": ["accept_empty_array"]}, "then": {"properties": {"type": {"const": "object"}}}},
         {"if": {"required": ["literal"]}, "then": {"properties": {"type": {"const": "string"}}}},
         {"if": {"properties": {"type": {"const": "list"}}}, "then": {"required": ["items"]}},
         {"if": {"properties": {"type": {"const": "map"}}}, "then": {"required": ["values"]}},
@@ -236,6 +273,7 @@
         "type": {"enum": ["string", "int", "number", "bool", "flag", "mixed"]},
         "accept": {"type": "array", "items": {"enum": ["numeric-string", "integral-fixed-point-string", "string-flag", "int-flag", "bool", "empty-string"]}, "uniqueItems": true},
         "nullable": {"type": "boolean"},
+        "accept_empty_array": {"type": "boolean"},
         "preserve": {"type": "boolean"},
         "required": {"type": "boolean"},
         "add": {"$ref": "#/$defs/typeSpec"},
@@ -316,6 +354,7 @@
     "operation": {
       "type": "object",
       "properties": {
+        "multipart_uploads": {"$ref": "#/$defs/multipartUploads"},
         "name": {"type": "string", "pattern": "^[a-z][A-Za-z0-9]*$"},
         "function": {"type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*/[A-Za-z_][A-Za-z0-9_]*$"},
         "variant": {"enum": ["GET", "POST"]},

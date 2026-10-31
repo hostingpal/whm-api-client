@@ -20,6 +20,13 @@ use LogicException;
  * - method: 'GET' or 'POST'.
  * - outcome: 'flag' or 'unchecked'.
  * - body: optional 'form' (default), 'multipart' (UAPI POST only) or 'json' (POST).
+ * - multipart_uploads: only for reviewed UAPI multipart POST binary lists;
+ *   {php: required sensitive Upload-list argument, prefix: literal indexed name
+ *   prefix, start: 0, routes: 'direct', filename_forbidden: '<>;'}. Fixed params
+ *   remain in the query and their declarations cannot overlap the upload family
+ *   or reserved routing fields, even when omitted. The complete list is validated
+ *   without source I/O before the existing streaming execution lifecycle; bridge
+ *   handles reject before preparation. SSL inline string multipart is unchanged.
  * - json_body: only for body=json; {php: argument name, required: bool,
  *   routes: 'direct', schema: strict StructuredJsonSchema descriptor}. The body
  *   argument is separate from params, is always sensitive, and is serialized once.

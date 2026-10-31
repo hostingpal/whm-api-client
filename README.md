@@ -3,12 +3,12 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 91 generated typed groups cover 1,106 documented operations (see
+The 91 generated typed groups cover 1,107 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, DNS zone and DNSSEC
 management, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
 features, domain management, directory access, the complete Email and SSL modules,
-disk quotas, 13 Fileman operations and the complete pinned MySQL, FTP, PostgreSQL
+disk quotas, 14 Fileman operations and the complete pinned MySQL, FTP, PostgreSQL
 and Mime sections, plus mail protection through BoxTrapper, EmailAuth, SpamAssassin
 and cPGreyList.
 Generic `call()` methods provide GET and form-encoded POST access without a typed
@@ -610,12 +610,64 @@ feature and the server has no Passenger packages. No server-wide installation wa
 made. All seven Passenger methods remain unobserved, including dependency-result
 and mutation flag/environment variants. The failed capture remains unwaived.
 
-The Fileman group implements 13 of 14 pinned functions: directory autocomplete,
+The Fileman group implements all 14 pinned functions. Directory autocomplete,
 file information, file content and directory listings use GET; content saving,
 in-memory transcoding, copy, move, rename, delete, trash, restore and trash purging
-use form POST. `upload_files` requires multipart and cannot use the WHM UAPI
-bridge; it remains excluded under `8x0.1.19`. Generic form calls do not supply
-multipart support.
+use form POST. `uploadFiles()` uses streamed binary multipart with direct cPanel
+credentials only. A WHM-bridged handle rejects it locally before source I/O.
+The existing typed SSL string multipart methods retain support for both routes.
+
+`uploadFiles()` requires a sensitive `non-empty-list<Upload>` and emits `file-0`,
+`file-1`, and so on in one request. Empty/sparse lists, non-Upload items and
+filenames containing `<`, `>` or `;` fail before any source opens or reads.
+General Upload filename rules also reject double quotes and header injection.
+Duplicate filenames stay in order; the source describes server renaming without
+promising a particular stored name. Files start at the borrowed stream's current
+cursor and require a known exact remaining length; all sources stay stable during
+the call. The shared transport sends exact Content-Length without chunking.
+
+The optional `dir`, `getDiskInfo`, `overwrite` and `permissions` arguments are
+query fields, encoded once. Every argument is sensitive in library trace frames,
+including the query flags. Null omits; false sends `0`; `0644` and `644` remain
+strings. Omission preserves server defaults, including overwrite=false. Source
+prose resolves relative directories against the account home, defaults omission
+to that home, creates a missing directory, and describes antivirus scanning and
+permission warnings. These are source statements, not a client live guarantee.
+
+Typed upload explicitly uses `OutcomePolicy::Unchecked`: both integer UAPI flags
+`0` and `1` return the validated required data object, including optional counts,
+per-file status/reason/warnings and nullable stored size. Inspect
+`responseMeta()->uapiStatus()` and every row; either flag can include failed files.
+Missing/invalid status remains an envelope error. Missing, null, list or malformed
+data fails with `PayloadMismatchException`, retaining the snapshot and unvalidated
+payload with `outcomeConfirmed=false`. Decimal byte/infinity strings, int|string
+inode counts and additional string display values remain exact. The data root
+explicitly rejects empty JSON arrays; existing nested empty-object compatibility
+is unchanged. Absent diskinfo is not zero usage. Any failure may follow stored
+files; there is no retry, rollback or inferred ownership/cleanup.
+
+```php
+use HostingPal\WhmApiClient\Upload;
+
+// $directClient is configured with the target account's cPanel token.
+$result = $directClient->uapi()->fileman()->uploadFiles(
+    [Upload::fromPath('/local/report.bin'), Upload::fromString('empty.txt', '')],
+    dir: 'public_html/incoming',
+    overwrite: false,
+    permissions: '0644',
+);
+foreach ($result['uploads'] ?? [] as $upload) {
+    // Inspect status, reason and warnings, including when envelope status is 0.
+}
+```
+
+This is offline typed coverage of one additional canonical UAPI operation, with
+no new live upload claim. PR74's attributed raw server observations on
+`11.138.0.19` informed the reviewed outcome/size/filename decisions and are
+separate from this client. Five binary operations remain for later adoption:
+four Backup restores and the WHM restore (`8x0.30.7`/`.30.8`/`.30.9`). The nine
+multipart inventory entries are not nine verified typed endpoints.
+
 
 `copyFile(source, destination)`, `moveFile(source, destination)` and
 `renameFile(source, destination)` keep source first. Content arguments are
@@ -647,7 +699,7 @@ lists when present. An empty array contains no rows under either interpretation.
 Flat rows have the reviewed permission/size representation corrections; the
 documented object alternative retains its original row types.
 
-All 13 methods have offline contract tests. The bounded live catalog selects
+All 14 methods have offline contract tests. The bounded live catalog selects
 three directory inventory reads through both routes, plus WHM version. It reads
 no existing file content and sends no mutations. Content, filesystem lifecycle
 and transcoding verification remain under `8x0.2.24`; exclusive fixture creation
@@ -656,9 +708,11 @@ must precede overwrite-capable saves.
 The [final Fileman inventory capture](docs/api/evidence/2026-10-30-fileman-inventory-final.json)
 at `ec442bd` on `11.138.0.19` passes all seven GET observations
 and strict assessment with zero discrepancies. It covers three inventory
-operations through both routes; the other ten methods remain offline-tested.
+operations through both routes; the other ten original methods remain offline-tested.
+Typed binary upload has separate offline coverage.
 No existing file content was read and no mutation ran. Follow-up `8x0.2.24`
-owns their live verification; multipart upload remains under `8x0.1.19`.
+owns their live verification; typed binary upload has offline verification only.
+A separate owned client capture remains under `8x0.30.5`.
 
 The [PR37 review capture](docs/api/evidence/2026-10-30-fileman-review-final.json)
 at `06001e0cab782c7bd46d7d0d1f659b0c3f7ebc7d` on `11.138.0.19` passes all seven
@@ -858,8 +912,8 @@ excluded upstream. Private keys and PEM inputs are sensitive, and writes use POS
 `fetchKeyAndCabundleForCertificate(certificate: $pem)` send inline string fields as
 multipart bodies. Routing and authentication remain unchanged on both routes;
 these methods do not accept filesystem paths or file handles. Generic `call()`
-continues to support form bodies only. Binary multipart file fields are rejected
-during generation while typed filename uploads remain deferred. Separate generic
+continues to support form bodies only. Binary multipart requires an explicit,
+source-bound list descriptor; Fileman is its first typed adopter. Separate generic
 `callMultipart()` supports explicit Upload descriptors on WHM/direct UAPI without
 changing these SSL contracts.
 
@@ -1380,8 +1434,8 @@ $client->whm()->modSecurity()->updateSettings(settings: [
 
 This emits `setting_id1=1&state1=On&setting_id2=2&state2=Off&remove2=0`;
 there is no `remove1`. Empty state strings, integer zero and string `'0'` remain
-values. The alias adds one public method, while canonical coverage remains 1,106
-operations (520 UAPI and 586 WHM), 91 groups and 185 generated files (184 PHP files plus the coverage document).
+values. The alias adds one public method, while canonical coverage remains 1,107
+operations (521 UAPI and 586 WHM), 91 groups and 185 generated files (184 PHP files plus the coverage document).
 
 The twelve source-backed empty-result mutations accept an omitted or null payload
 while retaining any returned mixed data; they are not weakened to void. Omitted
@@ -2378,8 +2432,9 @@ JSON-body machinery is available; remaining selection/source/route audit is
 tracked under `whm-api-client-8x0.29.6`.
 Raw `callJson()` provides JSON transport without a typed contract or endpoint
 compatibility claim; `call()` remains GET/form-only. Selected typed
-operation support is tracked under `whm-api-client-8x0.1.18` (JSON) and
-`whm-api-client-8x0.1.19` (multipart); complete execution-contract coverage remains
+operation support is tracked under `whm-api-client-8x0.1.18` (JSON). Fileman is
+now the first typed binary multipart adopter; the remaining five binary methods
+stay under `8x0.30.7`/`.30.8`/`.30.9`. Complete execution-contract coverage remains
 open under `whm-api-client-8x0.1`.
 
 ```php
@@ -2529,8 +2584,8 @@ that payload too. Explicit `OutcomePolicy::Unchecked` retains raw data for calle
 inspection while preserving HTTP and unusable-envelope errors. Library value-bearing
 trace frames and local error messages omit query/part data; caller/vendor request
 logging remains outside that boundary. Generic multipart adds no typed-operation
-coverage or live endpoint acceptance guarantee. Fileman adoption and endpoint
-verification remain separate work.
+coverage or live endpoint acceptance guarantee. Typed Fileman adoption is described
+above; its owned client capture remains separate under `8x0.30.5`.
 
 ### WHM API tokens, sessions and introspection
 

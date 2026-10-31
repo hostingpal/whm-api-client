@@ -439,4 +439,80 @@ final class FilemanSpec
             ],
         ],
     ];
+
+    public const UPLOAD_FILES = [
+        'function' => 'upload_files',
+        'module' => 'Fileman',
+        'method' => 'POST',
+        'body' => 'multipart',
+        'outcome' => 'unchecked',
+        'multipart_uploads' => [
+            'php' => 'files',
+            'prefix' => 'file-',
+            'start' => 0,
+            'routes' => 'direct',
+            'filename_forbidden' => '<>;',
+        ],
+        'params' => [
+            'dir' => ['name' => 'dir', 'encoding' => 'scalar'],
+            'getDiskInfo' => ['name' => 'get_disk_info', 'encoding' => 'bool'],
+            'overwrite' => ['name' => 'overwrite', 'encoding' => 'bool'],
+            'permissions' => ['name' => 'permissions', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'accept_empty_array' => false,
+            'fields' => [
+                'diskinfo' => [
+                    'type' => 'object',
+                    'values' => ['type' => 'string'],
+                    'fields' => [
+                        'file_upload_max_bytes' => ['type' => 'string'],
+                        'file_upload_must_leave_bytes' => ['type' => 'string'],
+                        'file_upload_remain' => ['type' => 'string'],
+                        'fileslimit' => [
+                            'type' => 'union',
+                            'anyOf' => [
+                                ['type' => 'int'],
+                                ['type' => 'string'],
+                            ],
+                        ],
+                        'filesremain' => [
+                            'type' => 'union',
+                            'anyOf' => [
+                                ['type' => 'int'],
+                                ['type' => 'string'],
+                            ],
+                        ],
+                        'filesused' => [
+                            'type' => 'union',
+                            'anyOf' => [
+                                ['type' => 'int'],
+                                ['type' => 'string'],
+                            ],
+                        ],
+                        'spacelimit' => ['type' => 'string'],
+                        'spaceremain' => ['type' => 'string'],
+                        'spaceused' => ['type' => 'string'],
+                    ],
+                ],
+                'failed' => ['type' => 'int'],
+                'succeeded' => ['type' => 'int'],
+                'uploads' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'file' => ['type' => 'string'],
+                            'reason' => ['type' => 'string'],
+                            'size' => ['type' => 'int', 'nullable' => true],
+                            'status' => ['type' => 'flag'],
+                            'warnings' => ['type' => 'list', 'items' => ['type' => 'string']],
+                        ],
+                    ],
+                ],
+                'warned' => ['type' => 'int'],
+            ],
+        ],
+    ];
 }

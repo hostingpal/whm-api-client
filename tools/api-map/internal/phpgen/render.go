@@ -192,6 +192,11 @@ func groupClass(g effective.Group) string {
 			}
 		}
 	}
+	for _, op := range g.Operations {
+		if op.MultipartUploads != nil {
+			uses = append(uses, "HostingPal\\WhmApiClient\\Upload", "InvalidArgumentException")
+		}
+	}
 	for _, use := range uniqueSorted(uses) {
 		w.line("use " + use + ";")
 	}
@@ -358,6 +363,8 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 	} else if op.JSONBody != nil {
 		w.line(indent + " * @throws InvalidArgumentException If the whole JSON body is invalid, query/root routing names are reserved,")
 		w.line(indent + " *     or this account handle uses the unsupported WHM bridge.")
+	} else if op.MultipartUploads != nil {
+		w.line(indent + " * @throws InvalidArgumentException If uploads are empty, keyed, invalid, or this handle uses the WHM bridge.")
 	} else if rejectEmpty {
 		w.line(indent + " * @throws InvalidArgumentException If an explicit target is absent, blank, zero, or an invalid string list.")
 	} else if multi {
@@ -485,6 +492,15 @@ func specClass(g effective.Group) string {
 			}
 			w.line("        'outcome' => " + phpString(op.Outcome) + ",")
 		}
+		if d := op.MultipartUploads; d != nil {
+			w.line("        'multipart_uploads' => [")
+			w.line("            'php' => " + phpString(d.PHP) + ",")
+			w.line("            'prefix' => " + phpString(d.Prefix) + ",")
+			w.line(fmt.Sprintf("            'start' => %d,", *d.Start))
+			w.line("            'routes' => " + phpString(d.Routes) + ",")
+			w.line("            'filename_forbidden' => " + phpString(d.FilenameForbidden) + ",")
+			w.line("        ],")
+		}
 		if d := op.JSONBody; d != nil {
 			w.line("        'json_body' => [")
 			w.line("            'php' => " + phpString(d.PHP) + ",")
@@ -498,7 +514,7 @@ func specClass(g effective.Group) string {
 		} else {
 			w.line("        'params' => [")
 			for _, p := range op.Params {
-				if p.Input != nil && p.Encoding != "json" {
+				if (p.Input != nil && p.Encoding != "json") || (op.MultipartUploads != nil && p.PHP == op.MultipartUploads.PHP) {
 					continue
 				}
 				setting := ""

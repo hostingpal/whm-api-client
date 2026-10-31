@@ -48,7 +48,8 @@ use LogicException;
  *   returned under their names (numeric names become integer keys); fields
  *   named in "required" must be present. An optional "values" type spec validates
  *   and preserves undeclared fields; without it, unknown payload fields are dropped.
- *   An empty JSON array [] is an empty object when nothing is required.
+ *   An empty JSON array [] is an empty object when nothing is required, unless
+ *   the explicit object-only accept_empty_array boolean is false. Defaults remain unchanged.
  * - union: "anyOf" (nonempty list of type specs); the first branch that
  *   validates wins and partial branch results are discarded.
  *
@@ -183,7 +184,7 @@ final class ShapeValidator
         }
 
         $valueType = array_key_exists('values', $type) ? self::child($type, 'values') : null;
-        if ($value === [] && $required === []) {
+        if ($value === [] && $required === [] && ($type['accept_empty_array'] ?? true)) {
             return [];
         }
 

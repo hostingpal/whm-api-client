@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 91 typed groups cover 1,106 documented operations:
+and cPanel UAPI surface. The 91 typed groups cover 1,107 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -571,12 +571,42 @@ reviewer lifecycle observations and their limits are recorded in the source audi
 Committed lifecycle evidence remains under `8x0.2.27`. This capture changed no
 repository or application state.
 
-The Fileman group implements 13 of 14 pinned functions: directory autocomplete,
+The Fileman group implements all 14 pinned functions. Directory autocomplete,
 file information, file content and directory listings use GET; content saving,
 in-memory transcoding, copy, move, rename, delete, trash, restore and trash purging
-use form POST. `upload_files` requires multipart and cannot use the WHM UAPI
-bridge; it remains excluded under `8x0.1.19`. Generic form calls do not supply
-multipart support.
+use form POST. `uploadFiles()` uses streamed binary multipart with direct cPanel
+credentials only. A WHM-bridged handle rejects it locally before source I/O.
+The existing typed SSL string multipart methods retain support for both routes.
+
+`uploadFiles()` requires a sensitive `non-empty-list<Upload>` and emits `file-0`,
+`file-1`, and so on in one request. Empty/sparse lists, non-Upload items and
+filenames containing `<`, `>` or `;` fail before any source opens or reads.
+General Upload filename rules also reject double quotes and header injection.
+Duplicate filenames stay in order; the source describes server renaming without
+promising a particular stored name. Files start at the borrowed stream's current
+cursor and require a known exact remaining length; all sources stay stable during
+the call. The shared transport sends exact Content-Length without chunking.
+
+The optional `dir`, `getDiskInfo`, `overwrite` and `permissions` arguments are
+query fields, encoded once. Every argument is sensitive in library trace frames,
+including the query flags. Null omits; false sends `0`; `0644` and `644` remain
+strings. Omission preserves server defaults, including overwrite=false. Source
+prose resolves relative directories against the account home, defaults omission
+to that home, creates a missing directory, and describes antivirus scanning and
+permission warnings. These are source statements, not a client live guarantee.
+
+Typed upload explicitly uses `OutcomePolicy::Unchecked`: both integer UAPI flags
+`0` and `1` return the validated required data object, including optional counts,
+per-file status/reason/warnings and nullable stored size. Inspect
+`responseMeta()->uapiStatus()` and every row; either flag can include failed files.
+Missing/invalid status remains an envelope error. Missing, null, list or malformed
+data fails with `PayloadMismatchException`, retaining the snapshot and unvalidated
+payload with `outcomeConfirmed=false`. Decimal byte/infinity strings, int|string
+inode counts and additional string display values remain exact. The data root
+explicitly rejects empty JSON arrays; existing nested empty-object compatibility
+is unchanged. Absent diskinfo is not zero usage. Any failure may follow stored
+files; there is no retry, rollback or inferred ownership/cleanup.
+
 
 `copyFile(source, destination)`, `moveFile(source, destination)` and
 `renameFile(source, destination)` keep source first. Content arguments are
@@ -608,7 +638,7 @@ lists when present. An empty array contains no rows under either interpretation.
 Flat rows have the reviewed permission/size representation corrections; the
 documented object alternative retains its original row types.
 
-All 13 methods have offline contract tests. The bounded live catalog selects
+All 14 methods have offline contract tests. The bounded live catalog selects
 three directory inventory reads through both routes, plus WHM version. It reads
 no existing file content and sends no mutations. Content, filesystem lifecycle
 and transcoding verification remain under `8x0.2.24`; exclusive fixture creation
@@ -617,9 +647,11 @@ must precede overwrite-capable saves.
 The [final Fileman inventory capture](docs/api/evidence/2026-10-30-fileman-inventory-final.json)
 at `ec442bd` on `11.138.0.19` passes all seven GET observations
 and strict assessment with zero discrepancies. It covers three inventory
-operations through both routes; the other ten methods remain offline-tested.
+operations through both routes; the other ten original methods remain offline-tested.
+Typed binary upload has separate offline coverage.
 No existing file content was read and no mutation ran. Follow-up `8x0.2.24`
-owns their live verification; multipart upload remains under `8x0.1.19`.
+owns their live verification; typed binary upload has offline verification only.
+A separate owned client capture remains under `8x0.30.5`.
 
 The [PR37 review capture](docs/api/evidence/2026-10-30-fileman-review-final.json)
 at `06001e0cab782c7bd46d7d0d1f659b0c3f7ebc7d` on `11.138.0.19` passes all seven
@@ -2486,7 +2518,8 @@ remaining compatibility stay under `8x0.2.46`; no repeat is needed for integrati
   One invocation is one attempt; never retry, roll back or infer remote ownership.
   Generic Flag can discard data/per-file reasons on status 0; explicit Unchecked
   retains raw CallResult data without endpoint schema guarantees. This adds no
-  typed or live coverage; generated Fileman adoption stays separate. Existing
+  typed or live coverage. Fileman now has separate generated typed adoption with
+  Unchecked and its exact pinned result; owned client capture stays 8x0.30.5. Existing
   operation-specific SSL multipart string bridge calls keep their reviewed path.
 - `whm()->call()` and `uapi()->call()` are generic escape hatches: POST by default
   (GET only when passed explicitly), metadata cleared before name and parameter
@@ -2937,7 +2970,7 @@ the depth-limit audit `8x0.10.5` stays open.
 The seven named-map WHM adopters add source-backed typed form POST support for
 create/update_featurelist, cpgreylist_save_common_mail_providers_config,
 reset/set_autossl_provider, convert_addon_initiate_conversion and massmodifyacct.
-Canonical coverage is now 1,106 operations (520 UAPI, 586 WHM), 91 groups and 185
+Canonical coverage is now 1,107 operations (521 UAPI, 586 WHM), 91 groups and 185
 generated files (184 PHP files plus the coverage document). See README's Named-map WHM inputs and source-audit's matching
 entry for evidence and exact contract boundaries. Maps preserve literal keys and
 prefixes, strict bool/string/int values and omission/empty-map distinctions.
@@ -2957,5 +2990,20 @@ pointer evidence. Types and requiredness come from canonical source parameters;
 record fields cannot declare a separate result, route, variant, outcome or method.
 Record expansion appends directly to OrderedFields with original argument origin
 and no repeat-family exception. Keep scalar/index/map/SSL/generic paths unchanged.
-Coverage remains 1,106 operations, 91 groups, 185 generated files (184 PHP files plus the coverage document). No live batch
+Coverage remains 1,107 operations, 91 groups, 185 generated files (184 PHP files plus the coverage document). No live batch
 write or report submission was performed; comma-delimited report IDs remain in .1.24.
+
+
+The typed Fileman upload adoption adds one canonical UAPI operation: current
+coverage is 1,107 operations (521 UAPI, 586 WHM), 91 groups and 185 generated
+outputs. Only uploadFiles uses the new evidence-bound multipart_uploads required
+list descriptor. Its fixed params stay query fields, its route is direct, and its
+explicit Unchecked outcome preserves all-failed payload reasons. The object-only
+accept_empty_array:false return opt-in applies solely to its required data root;
+default source lowering, nested/default shapes and earlier generated constants
+are unchanged. Diskinfo uses the existing object fields+values grammar.
+No owned client upload capture ran in this implementation. Attributed PR74 raw
+server observations remain separate, and 8x0.30.5 owns client live evidence. The
+five remaining binary operations remain 8x0.30.7/.30.8/.30.9. Inherited PR84/source,
+8x0.30.10 POSIX path and 8x0.30.11 metadata truthfulness gates stay external-owned;
+this adoption changes no Upload or source/stream contract.

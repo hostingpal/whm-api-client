@@ -85,6 +85,10 @@ final class SpecChecker
         }
 
         self::flag($type, 'nullable');
+        self::flag($type, 'accept_empty_array');
+        if (array_key_exists('accept_empty_array', $type) && $kind !== 'object') {
+            throw new LogicException('Empty-array compatibility applies only to object specs.');
+        }
         $accept = $type['accept'] ?? [];
         if (!is_array($accept) || !array_is_list($accept)) {
             throw new LogicException('Invalid "accept" type spec.');
@@ -129,7 +133,10 @@ final class SpecChecker
         } elseif (array_key_exists('json_body', $spec)) {
             throw new LogicException('JSON body metadata requires JSON encoding.');
         }
-        if (OperationSpec::body($spec) === RequestBodyFormat::Multipart) {
+        if (array_key_exists('multipart_uploads', $spec)) {
+            UploadList::descriptor($spec);
+        }
+        if (OperationSpec::body($spec) === RequestBodyFormat::Multipart && !isset($spec['multipart_uploads'])) {
             if (($spec['method'] ?? null) !== 'POST' || !isset($spec['module'])) {
                 throw new LogicException('Multipart requires a UAPI POST operation.');
             }

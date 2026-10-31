@@ -64,7 +64,19 @@ type RecordField struct {
 }
 
 // Operation holds per-operation decisions; zero values keep generator defaults.
+// MultipartUploads selects one required, source-bound binary list family.
+// Fixed documented parameters retain their query location.
+type MultipartUploads struct {
+	PHP               string `json:"php"`
+	Source            string `json:"source"`
+	Prefix            string `json:"prefix"`
+	Start             *int   `json:"start"`
+	Routes            string `json:"routes"`
+	FilenameForbidden string `json:"filename_forbidden"`
+}
+
 type Operation struct {
+	MultipartUploads  *MultipartUploads  `json:"multipart_uploads,omitempty"`
 	AdditionalMethods []AdditionalMethod `json:"additional_methods,omitempty"`
 	Name              string             `json:"name,omitempty"`
 	// Function qualifies a bare WHM function with one source-evidenced namespace.
@@ -170,28 +182,30 @@ type Param struct {
 
 // Correction changes the documented response type at one payload path.
 type Correction struct {
-	Type     string     `json:"type,omitempty"`
-	Accept   []string   `json:"accept,omitempty"`
-	Nullable *bool      `json:"nullable,omitempty"`
-	Preserve bool       `json:"preserve,omitempty"`
-	Required *bool      `json:"required,omitempty"`
-	Add      *Spec      `json:"add,omitempty"`
-	Replace  *Spec      `json:"replace,omitempty"`
-	Evidence []Evidence `json:"evidence"`
+	AcceptEmptyArray *bool      `json:"accept_empty_array,omitempty"`
+	Type             string     `json:"type,omitempty"`
+	Accept           []string   `json:"accept,omitempty"`
+	Nullable         *bool      `json:"nullable,omitempty"`
+	Preserve         bool       `json:"preserve,omitempty"`
+	Required         *bool      `json:"required,omitempty"`
+	Add              *Spec      `json:"add,omitempty"`
+	Replace          *Spec      `json:"replace,omitempty"`
+	Evidence         []Evidence `json:"evidence"`
 }
 
 // Spec is the JSON form of a type spec, used to declare undocumented fields.
 type Spec struct {
-	Literal  *string         `json:"literal,omitempty"`
-	Type     string          `json:"type"`
-	Nullable bool            `json:"nullable,omitempty"`
-	Accept   []string        `json:"accept,omitempty"`
-	Preserve bool            `json:"preserve,omitempty"`
-	Items    *Spec           `json:"items,omitempty"`
-	Values   *Spec           `json:"values,omitempty"`
-	Fields   map[string]Spec `json:"fields,omitempty"`
-	Required []string        `json:"required,omitempty"`
-	AnyOf    []Spec          `json:"anyOf,omitempty"`
+	AcceptEmptyArray *bool           `json:"accept_empty_array,omitempty"`
+	Literal          *string         `json:"literal,omitempty"`
+	Type             string          `json:"type"`
+	Nullable         bool            `json:"nullable,omitempty"`
+	Accept           []string        `json:"accept,omitempty"`
+	Preserve         bool            `json:"preserve,omitempty"`
+	Items            *Spec           `json:"items,omitempty"`
+	Values           *Spec           `json:"values,omitempty"`
+	Fields           map[string]Spec `json:"fields,omitempty"`
+	Required         []string        `json:"required,omitempty"`
+	AnyOf            []Spec          `json:"anyOf,omitempty"`
 }
 
 // Exclusion removes an operation from generation for a documented reason.

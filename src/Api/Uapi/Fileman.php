@@ -8,6 +8,8 @@ use Closure;
 use HostingPal\WhmApiClient\Api\Uapi\Spec\FilemanSpec;
 use HostingPal\WhmApiClient\Exception\ApiException;
 use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
+use HostingPal\WhmApiClient\Upload;
+use InvalidArgumentException;
 use SensitiveParameter;
 
 /**
@@ -160,6 +162,30 @@ use SensitiveParameter;
  * @phpstan-type TrashFileResult array{
  *     path?: string,
  *     trash_leaf?: string,
+ * }
+ * @phpstan-type UploadFilesResult array{
+ *     diskinfo?: array{
+ *         file_upload_max_bytes?: string,
+ *         file_upload_must_leave_bytes?: string,
+ *         file_upload_remain?: string,
+ *         fileslimit?: int|string,
+ *         filesremain?: int|string,
+ *         filesused?: int|string,
+ *         spacelimit?: string,
+ *         spaceremain?: string,
+ *         spaceused?: string,
+ *         ...<array-key, string>
+ *     },
+ *     failed?: int,
+ *     succeeded?: int,
+ *     uploads?: list<array{
+ *         file?: string,
+ *         reason?: string,
+ *         size?: int|null,
+ *         status?: 0|1,
+ *         warnings?: list<string>,
+ *     }>,
+ *     warned?: int,
  * }
  */
 final readonly class Fileman
@@ -720,6 +746,68 @@ final readonly class Fileman
     {
         /** @var TrashFileResult $result Validated against FilemanSpec::TRASH_FILE. */
         $result = ($this->run)(FilemanSpec::TRASH_FILE, ['path' => $path]);
+
+        return $result;
+    }
+
+    /**
+     * Upload files.
+     *
+     * This function uploads one or more files to a directory.
+     *
+     * Documented: Available in cPanel 11.44 and later. Requires the File Storage role. Direct cPanel UAPI only; the WHM
+     * bridge, LiveAPI and command line cannot send these files.
+     *
+     * Documented: Filenames determine stored names. The server renames later duplicate names, scans files for viruses,
+     * creates a missing destination, and resolves relative dir against the account home directory; omission defaults to
+     * that home. Permissions are octal strings (0644 or 644); a permission failure can produce a per-file warning.
+     * These source statements are not locally live verified.
+     *
+     * Policy: Files must be a nonempty sequential list of Upload values; no path-string coercion, sparse renumbering or
+     * per-file requests. Omitted query options preserve server defaults, including overwrite=false. Inspect
+     * responseMeta()->uapiStatus() and all per-file results: either accepted status can include files that were not
+     * stored. The required result object is validated under Unchecked; payload mismatches have outcomeConfirmed=false.
+     * Any error can follow stored files; the client provides no retry, rollback, cleanup or ownership inference.
+     *
+     * Documented: Optional diskinfo byte limits and usage stay decimal strings, including infinity; inode counts stay
+     * int|string. Additional human-readable display strings are retained. Absent fields do not mean zero.
+     *
+     * API-map identity: uapi:Fileman/upload_files#POST (wire name upload_files).
+     *
+     * @param non-empty-list<Upload> $files Files to upload, in order. Each filename determines the stored name;
+     *     duplicate names remain separate parts.
+     * @param string|null $dir The directory in which to store the uploaded files. Null omits it.
+     * @param bool|null $getDiskInfo Whether to include the account's disk usage in the response. Null omits it.
+     * @param bool|null $overwrite Whether to replace a file that already exists in the target directory. Null omits it.
+     * @param string|null $permissions The permissions to apply to every file in the request, in octal notation. Null
+     *     omits it.
+     * @return UploadFilesResult
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the envelope was accepted but the payload differs from the contract;
+     *     the outcome is not checked.
+     * @throws InvalidArgumentException If uploads are empty, keyed, invalid, or this handle uses the WHM bridge.
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/manage-files/fileman-upload_files
+     */
+    public function uploadFiles(
+        #[SensitiveParameter]
+        array $files,
+        #[SensitiveParameter]
+        ?string $dir = null,
+        #[SensitiveParameter]
+        ?bool $getDiskInfo = null,
+        #[SensitiveParameter]
+        ?bool $overwrite = null,
+        #[SensitiveParameter]
+        ?string $permissions = null,
+    ): array {
+        /** @var UploadFilesResult $result Validated against FilemanSpec::UPLOAD_FILES. */
+        $result = ($this->run)(FilemanSpec::UPLOAD_FILES, [
+            'files' => $files,
+            'dir' => $dir,
+            'getDiskInfo' => $getDiskInfo,
+            'overwrite' => $overwrite,
+            'permissions' => $permissions,
+        ]);
 
         return $result;
     }
