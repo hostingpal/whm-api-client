@@ -35,7 +35,7 @@ func (b *builder) additionalMethods(op model.Operation, v model.Variant, ov over
 			sourceParam := locators[source]
 			bound := false
 			for _, e := range ov.Evidence {
-				bound = bound || (e.Kind == "doc" && sourceParam.Locator.Pointer != nil && e.SourceSHA256 != "" && e.SourceSHA256 == sourceParam.Locator.SourceSHA256 && (e.Pointer == *sourceParam.Locator.Pointer || e.Pointer == *sourceParam.Locator.Pointer+"/description"))
+				bound = bound || (e.Kind == "doc" && sourceParam.Locator.Pointer != nil && e.SourceSHA256 != "" && e.Note != "" && e.SourceSHA256 == sourceParam.Locator.SourceSHA256 && (e.Pointer == *sourceParam.Locator.Pointer || e.Pointer == *sourceParam.Locator.Pointer+"/description"))
 			}
 			if !bound {
 				fail("input needs doc evidence matching source_sha256 and parameter/prose pointer")
@@ -43,7 +43,7 @@ func (b *builder) additionalMethods(op model.Operation, v model.Variant, ov over
 			return p, true
 		}
 		for _, input := range m.Inputs {
-			if !IsMethodName(input.PHP) || input.PHP == "this" || names[input.PHP] {
+			if !IsMethodName(input.PHP) || reservedArguments[input.PHP] || names[input.PHP] {
 				fail("invalid or duplicated input name")
 			}
 			names[input.PHP] = true
@@ -54,8 +54,36 @@ func (b *builder) additionalMethods(op model.Operation, v model.Variant, ov over
 			if input.Records == nil {
 				if p, ok := bind(input.Source); ok {
 					p.PHP = input.PHP
+					if input.JSON != nil {
+						sourceParam := locators[input.Source]
+						content, ok := asObject(sourceParam.Definition["content"])
+						media, found := asObject(content["application/json"])
+						_, sibling := sourceParam.Definition["schema"]
+						if canonical.Body != "" && canonical.Body != "form" || sourceParam.In != "query" || sibling || !ok || !found || len(content) != 1 || sourceParam.Locator.Pointer == nil || !IsClassName(input.JSON.Alias) || !strings.HasSuffix(input.JSON.Alias, "Input") {
+							fail("JSON field requires a canonical form body, selected JSON-content query parameter and Input alias")
+							continue
+						}
+						schema, err := b.schemas.inputFor(sourceParam.Locator.SourceID, media["schema"], 0, 0, "", nil, nil, sourceParam.Locator, *sourceParam.Locator.Pointer+"/content/application~1json/schema")
+						if err != nil {
+							fail("JSON field " + err.Error())
+							continue
+						}
+						if !p.Required && inputHasNull(schema) {
+							fail("JSON field optional nullable roots are unsupported")
+							continue
+						}
+						p.Input, p.Encoding, p.PHPType, p.DocType, p.Sensitive = &schema, "json", InputNative(schema), input.JSON.Alias, true
+						p.Description = "Structured PHP value from the selected source schema. String contents are preserved without fetching URLs or opening files; source defaults remain upstream."
+						if schema.Type == "object" {
+							p.Description += " Omitted members stay absent. Empty object input [] serializes to {}."
+						}
+					}
 					method.Params = append(method.Params, p)
 				}
+				continue
+			}
+			if input.JSON != nil {
+				fail("JSON selection requires a source mapping")
 				continue
 			}
 			c := input.Records

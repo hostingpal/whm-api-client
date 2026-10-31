@@ -35,6 +35,7 @@ final class SpecChecker
 {
     private const ENCODINGS = [
         'scalar', 'bool', 'repeat', 'numbered', 'suffix-numbered', 'suffix-numbered-scalar', 'collection', 'records',
+        'json',
     ];
 
     /** Accepted wire variants per type; types not listed accept none. */
@@ -122,7 +123,7 @@ final class SpecChecker
             OperationSpec::text($spec, 'module');
         }
 
-        self::params($spec['params'] ?? null);
+        self::params($spec['params'] ?? null, OperationSpec::body($spec));
         if (OperationSpec::body($spec) === RequestBodyFormat::Json) {
             self::jsonBody($spec);
         } elseif (array_key_exists('json_body', $spec)) {
@@ -206,7 +207,7 @@ final class SpecChecker
     }
 
     /** Check every parameter spec, whether or not a call supplies its argument. */
-    private static function params(mixed $params): void
+    private static function params(mixed $params, RequestBodyFormat $body): void
     {
         if (!is_array($params)) {
             throw new LogicException('Operation spec is missing "params".');
@@ -225,6 +226,14 @@ final class SpecChecker
                 throw new LogicException('Invalid parameter spec for ' . $name . '.');
             }
 
+            if ($param['encoding'] === 'json') {
+                if ($body !== RequestBodyFormat::Form) {
+                    throw new LogicException('JSON fields require ordinary form encoding.');
+                }
+                JsonFieldEncoder::check($param['json'] ?? null);
+            } elseif (array_key_exists('json', $param)) {
+                throw new LogicException('JSON field metadata requires JSON field encoding.');
+            }
             if ($param['encoding'] === 'records') {
                 RecordEncoder::check($param['records'] ?? null);
             } elseif (array_key_exists('records', $param)) {

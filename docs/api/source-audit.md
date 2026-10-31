@@ -6181,3 +6181,63 @@ and 586 WHM, still 91 groups and 185 generated files (184 PHP files plus
 exclusion is removed. The remaining 12 JSON-body operations are not adopted or
 claimed live-compatible. This source/offline implementation child does not close
 parent `whm-api-client-8x0.1.18` or waive its successful-live-write gate.
+
+
+## Structured provider-display form-field companion (2026-10-31)
+
+`whm()->authentication()->configureProviderDisplay(string $providerId,
+string $serviceName, #[SensitiveParameter] array $configurations): void` is an
+input-only companion of `whm1:set_provider_display_configurations#GET`.
+The legacy `setProviderDisplayConfigurations()` retains its required sensitive
+`string` text input, configurations-first order, form POST/flag/void spec and
+unparsed bytes, including malformed and empty text. No other serialized-text
+method is converted. Canonical coverage stays 1,106 operations (520 UAPI, 586 WHM),
+91 groups and 185 outputs (184 PHP plus coverage); only a public companion symbol
+and spec constant are added.
+
+Pinned WHM decompressed SHA-256:
+`6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594`.
+Exact operation pointer `/paths/~1set_provider_display_configurations/get`;
+source parameters `/parameters/0` (`configurations`), `/parameters/1`
+(`provider_id`) and `/parameters/2` (`service_name`) beneath it each have independent
+matching source-SHA/parameter-pointer evidence. The first is a required query
+parameter with `content/application~1json/schema`: an explicit object with six
+optional nonnullable strings, `color`, `display_name`, `icon`, `icon_type`, `label`
+and `textcolor`. The selected source schema defines no required members; the
+strict request boundary rejects unknown keys. Provider/service remain required
+strings, retaining the daemon enum documentation. Source GET/query location,
+version 54+, `x-readonly=false`, metadata-only success and effective form POST
+remain distinct and unchanged. No source or historical evidence is rewritten.
+
+`additional_methods[].inputs[]` can select `source` plus `json: {alias: ...Input}`.
+It binds the source JSON-content schema through the existing strict request
+lowering; the alias shares the canonical route, function, method, outcome and
+response. It cannot override them. Runtime `encoding: json` stays in ordinary
+`params` with `json: {required: bool, schema: ...}` and serializes a complete
+validated value exactly once before existing scalar field expansion and form
+encoding. This is separate from whole `body: json`/`json_body` handling, so there
+is no JSON content-type or whole-body routing guard inside the field. Source
+schema rules still govern permitted keys. Required allowed JSON null is distinct
+from omission; optional nullable roots fail closed rather than introduce a marker.
+
+The new method has no caller-serialized-text advice in its input documentation.
+Missing members remain absent, unknown/integer keys and wrong/null values fail
+locally after metadata reset. `[]` serializes as `{}` in exactly one field:
+`configurations=%7B%7D`. Caller key order and string values (including JSON-looking
+text, empty strings, Unicode and form punctuation) are preserved. No color/MIME/
+base64 validation, source-default insertion, URL fetch or file access occurs.
+`icon_type`'s documented `image/svg+xml` default remains upstream. The empty object
+has no promised reset or no-op semantics. Inputs and encoded values retain
+sensitive trace protection; API failure preserves outcome metadata with one
+attempt and no retry or rollback.
+
+The [PR73 reviewer](https://github.com/hostingpal/whm-api-client/pull/73#pullrequestreview-5722705880)
+reports upstream `Cpanel::JSON::Load($config_str)` on the single configurations
+parameter on 11.138.0.19. This is attributed reviewer source inspection, not local
+source inspection or a new provider mutation. It supports one serialization in
+one form field; the production signature and schema remain pinned to the original
+source. Independent offline literals cover six fields, empty object, order,
+JSON-looking strings, punctuation/Unicode, form header, void/metadata success,
+pre-I/O rejection/reset, sensitive traces and one-attempt API failure. Existing
+serializer depth/float/cycle/UTF-8 suites remain the exhaustive serializer coverage.
+No live provider configuration request ran and no new live compatibility is claimed.

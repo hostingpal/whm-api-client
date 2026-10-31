@@ -224,6 +224,10 @@ func groupClass(g effective.Group) string {
 	}
 	for _, op := range publicMethods(g) {
 		for _, p := range op.Params {
+			if p.Encoding == "json" && p.Input != nil {
+				w.line(" *")
+				w.docTag("", "@phpstan-type "+p.DocType+" "+inputShape(*p.Input, ""))
+			}
 			if p.Records == nil {
 				continue
 			}
@@ -319,7 +323,9 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 		if !p.Required {
 			description = strings.TrimSpace(description + " Null omits it.")
 		}
-		if p.Input != nil {
+		if p.Input != nil && p.Encoding == "json" {
+			description = strings.TrimSpace(description + " Validated JSON value in one form field; serialized once before form encoding.")
+		} else if p.Input != nil {
 			description = strings.TrimSpace(description + " Validated whole JSON body. Secrets belong in the body, not URL query fields. Direct routes only.")
 			multi = true
 		}
@@ -343,7 +349,13 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 		w.line(indent + " * @throws PayloadMismatchException If the envelope was accepted but the payload differs from the contract;")
 		w.line(indent + " *     the outcome is not checked.")
 	}
-	if op.JSONBody != nil {
+	jsonField := false
+	for _, p := range op.Params {
+		jsonField = jsonField || p.Encoding == "json"
+	}
+	if jsonField {
+		w.line(indent + " * @throws InvalidArgumentException If a structured JSON field is invalid; no request is sent.")
+	} else if op.JSONBody != nil {
 		w.line(indent + " * @throws InvalidArgumentException If the whole JSON body is invalid, query/root routing names are reserved,")
 		w.line(indent + " *     or this account handle uses the unsupported WHM bridge.")
 	} else if rejectEmpty {
@@ -486,7 +498,7 @@ func specClass(g effective.Group) string {
 		} else {
 			w.line("        'params' => [")
 			for _, p := range op.Params {
-				if p.Input != nil {
+				if p.Input != nil && p.Encoding != "json" {
 					continue
 				}
 				setting := ""
@@ -498,13 +510,19 @@ func specClass(g effective.Group) string {
 				}
 				entry := "            " + phpString(p.PHP) + " => ['name' => " + phpString(p.Wire) +
 					", 'encoding' => " + phpString(p.Encoding) + setting + "],"
-				if p.Collection == nil && p.Records == nil && len(entry) <= lineWidth {
+				if p.Collection == nil && p.Records == nil && p.Encoding != "json" && len(entry) <= lineWidth {
 					w.line(entry)
 					continue
 				}
 				w.line("            " + phpString(p.PHP) + " => [")
 				w.line("                'name' => " + phpString(p.Wire) + ",")
 				w.line("                'encoding' => " + phpString(p.Encoding) + ",")
+				if p.Encoding == "json" && p.Input != nil {
+					w.line("                'json' => [")
+					w.line(fmt.Sprintf("                    'required' => %t,", p.Required))
+					w.line("                    'schema' => " + inputLiteral(*p.Input, "                    ") + ",")
+					w.line("                ],")
+				}
 				if c := p.Records; c != nil {
 					w.line("                'records' => [")
 					w.line(fmt.Sprintf("                    'start' => %d,", c.Start))

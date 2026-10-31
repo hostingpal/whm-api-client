@@ -407,6 +407,32 @@ final class AuthenticationSpec
         'returns' => null,
     ];
 
+    public const CONFIGURE_PROVIDER_DISPLAY = [
+        ...self::SET_PROVIDER_DISPLAY_CONFIGURATIONS,
+        'params' => [
+            'providerId' => ['name' => 'provider_id', 'encoding' => 'scalar'],
+            'serviceName' => ['name' => 'service_name', 'encoding' => 'scalar'],
+            'configurations' => [
+                'name' => 'configurations',
+                'encoding' => 'json',
+                'json' => [
+                    'required' => true,
+                    'schema' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'color' => ['type' => 'string'],
+                            'display_name' => ['type' => 'string'],
+                            'icon' => ['type' => 'string'],
+                            'icon_type' => ['type' => 'string'],
+                            'label' => ['type' => 'string'],
+                            'textcolor' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
     public const TWOFACTORAUTH_DISABLE_POLICY = [
         'function' => 'twofactorauth_disable_policy',
         'method' => 'POST',

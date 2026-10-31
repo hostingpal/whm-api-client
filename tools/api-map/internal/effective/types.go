@@ -54,12 +54,13 @@ type RecordField struct {
 
 // Param is one generated method argument.
 type Param struct {
+	// Input is strict request data; Encoding=json selects one field, otherwise JSONBody owns the whole body.
 	Input       *InputSpec          `json:",omitempty"`
 	Records     *RecordSpec         `json:",omitempty"`
 	Collection  *overlay.Collection `json:",omitempty"`
 	Wire        string
 	PHP         string
-	Encoding    string // scalar, bool, legacy list encodings or explicit collection
+	Encoding    string // scalar, bool, json field, legacy list encodings or explicit collection
 	PHPType     string // native type without nullability; list encodings include array
 	DocType     string // PHPStan type without nullability
 	Description string

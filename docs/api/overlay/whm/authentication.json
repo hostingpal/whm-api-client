@@ -670,11 +670,11 @@
         },
         {
           "kind": "documented",
-          "text": "The pinned configurations query parameter requires JSON-encoded key-value text with the documented keys color, display_name, icon, icon_type, label and textcolor."
+          "text": "The pinned configurations query parameter carries JSON-encoded key-value text for color, display_name, icon, icon_type, label and textcolor. The effective request uses form POST."
         },
         {
           "kind": "policy",
-          "text": "Supply caller-serialized JSON, form-encoded once; do not pass a PHP object. The native argument is a string representing the content-based query parameter; JSON syntax is not validated. Configuration JSON is sensitive. Client policy: send one request without automatic retry or rollback."
+          "text": "setProviderDisplayConfigurations() accepts caller-serialized string text without parsing or reencoding. configureProviderDisplay() validates structured PHP input, serializes it once into the configurations form field and then form-encodes once. Configuration inputs are sensitive. Omitted members remain absent and source defaults stay upstream; [] sends {} without a reset or no-op guarantee. Client policy: send one request without automatic retry or rollback."
         }
       ],
       "evidence": [
@@ -689,6 +689,30 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /set_provider_display_configurations configurations.content.application/json.schema declares color, display_name, icon, icon_type, label and textcolor string properties. Restore those keys and their meanings in the parameter description; retain its scalar encoding and sensitive-input policy. The content-based query parameter retains caller-serialized string typing. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/52#pullrequestreview-5720627530."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1set_provider_display_configurations/get/parameters/0",
+          "note": "Bind companion input to pinned configurations parameter exactly once. The configurations application/json object schema selects strict structured PHP input in one form field; source query location and effective form POST remain distinct."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1set_provider_display_configurations/get/parameters/1",
+          "note": "Bind companion input to pinned provider_id parameter exactly once. The configurations application/json object schema selects strict structured PHP input in one form field; source query location and effective form POST remain distinct."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1set_provider_display_configurations/get/parameters/2",
+          "note": "Bind companion input to pinned service_name parameter exactly once. The configurations application/json object schema selects strict structured PHP input in one form field; source query location and effective form POST remain distinct."
         }
       ],
       "void": true,
@@ -698,7 +722,29 @@
           "encoding": "scalar",
           "description": "Caller-serialized JSON-encoded key-value text for the display configuration. Documented string keys: color (button background RGB color), display_name (identity provider display name), icon (button icon data), icon_type (icon MIME type, default image/svg+xml), label (button text label), textcolor (label RGB color). Pass a JSON string; the client does not encode PHP objects or validate JSON syntax. Form-encoded exactly once."
         }
-      }
+      },
+      "additional_methods": [
+        {
+          "name": "configureProviderDisplay",
+          "inputs": [
+            {
+              "php": "providerId",
+              "source": "provider_id"
+            },
+            {
+              "php": "serviceName",
+              "source": "service_name"
+            },
+            {
+              "php": "configurations",
+              "source": "configurations",
+              "json": {
+                "alias": "ProviderDisplayInput"
+              }
+            }
+          ]
+        }
+      ]
     },
     "whm1:twofactorauth_disable_policy": {
       "name": "twoFactorAuthDisablePolicy",

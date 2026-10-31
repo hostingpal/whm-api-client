@@ -1707,11 +1707,32 @@ unlink methods take the local username first. Unset provider values retain null;
 client ID/secret nulls and absent/null TFA `primary_account` are source-family
 compatibility, not observations from executing those POST methods.
 
-Provider display configurations accept caller-serialized JSON containing the
-pinned `color`, `display_name`, `icon`, `icon_type`, `label` and `textcolor` keys,
-as a form field encoded once. The native `string|int` boundary has no documented
-integer semantics or automatic object encoding. Before release, `8x0.1.23` must
-also cover this content-based query schema, separately from JSON-body transport.
+Provider display offers two input forms for the same operation. The existing
+`setProviderDisplayConfigurations(string $configurations, string $providerId,
+string $serviceName)` accepts caller-serialized text unchanged, including malformed
+or empty JSON text. The companion accepts a required structured PHP array:
+
+```php
+$client->whm()->authentication()->configureProviderDisplay(
+    providerId: 'cpanelid',
+    serviceName: 'cpaneld',
+    configurations: ['display_name' => 'Hosting login', 'label' => 'Sign in'],
+);
+```
+
+The six keys `color`, `display_name`, `icon`, `icon_type`, `label` and `textcolor`
+are optional nonnullable strings; unknown keys and other value types fail before
+I/O. Missing members stay absent. The client adds no color, MIME or base64 checks,
+fetches no icon URL and opens no icon file. The source `icon_type` default
+`image/svg+xml` remains upstream. Each string stays a string, including JSON-looking
+contents. Input order is preserved. The complete value is serialized once into
+one `configurations` form field, then form-encoded once; `[]` sends
+`configurations=%7B%7D` (`{}`). This is a form POST, with no JSON request header.
+An empty object has no promised reset or no-op meaning. Configuration input is
+sensitive; one attempt has no automatic retry or rollback. This source/offline
+companion adds no canonical operation and establishes no new live provider-write
+compatibility.
+
 TFA removal currently
 supports scalar `user`; the separately documented `user-1`/`user-2` family remains
 under `8x0.1.21`, without assuming equivalence to another numbered encoding.
