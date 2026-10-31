@@ -89,6 +89,8 @@ trait UapiGroups
 
     private ?Locale $localeGroup = null;
 
+    private ?Market $marketGroup = null;
+
     private ?Mime $mimeGroup = null;
 
     private ?ModSecurity $modSecurityGroup = null;
@@ -535,6 +537,16 @@ trait UapiGroups
     public function locale(): Locale
     {
         return $this->localeGroup ??= new Locale($this->run(...));
+    }
+
+    /**
+     * Select the Market operations without making a request.
+     *
+     * Read-only cPanel Market catalog, provider information and certificate request status.
+     */
+    public function market(): Market
+    {
+        return $this->marketGroup ??= new Market($this->run(...));
     }
 
     /**

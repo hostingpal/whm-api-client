@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 95 typed groups cover 1,128 documented operations:
+and cPanel UAPI surface. The 96 typed groups cover 1,137 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -3232,3 +3232,59 @@ Coverage adds exactly six canonical UAPI operations and two groups over `259c8d6
 files plus coverage). Existing runtime/generator/source/evidence contracts and
 historical totals remain unchanged. Required PHP 8.3 CI and inherited acceptance
 work remain external-owned and unwaived.
+
+
+### UAPI Market reads (2026-10-31)
+
+`uapi()->market()` exposes nine of the nineteen pinned Market functions, all GET:
+`getAllProducts()`, `getCertificateStatusDetails(orderItemId, provider)`,
+`getCompletionUrl(productName)`, `getLoginUrl(provider, urlAfterLogin)`,
+`getPendingSslCertificates(provider)`, `getProductInfo(productName)`,
+`getProviderSpecificDcvConstraints(provider)`, `getProvidersList()` and
+`getSslCertificateIfAvailable(orderItemId, provider)`. The ten checkout, order,
+queue and token mutations remain separate. These UAPI contracts are independently
+sourced; WHM Market types and observations do not establish their behavior.
+
+Catalog, login URL, pending certificates, providers and certificate availability
+are documented from cPanel 56; completion URL, product information and DCV
+constraints from cPanel 62. Status-details literally specifies **cPStore 76**,
+which establishes no universal cPanel server version floor. Provider enablement,
+network availability and order state can affect reads. Status-details takes an
+integer orderItemId while certificate availability takes a string; queue,
+certificate and product-info IDs remain strings, and catalog product_id remains
+an integer. Inputs retain exact bytes and are encoded once without new URL
+validation, normalization or sensitivity policy.
+
+All known object fields remain optional. Catalog rows retain the formal merged
+base/SSL fields, strict integer 0/1 flags, integer counts/durations, nullable
+base_name/max_users/server prices/price and distinct units. Identity verification
+preserves the formal object plus same-operation documented list records and null;
+both record branches keep optional string label/name and opaque additional values.
+Only x_price_per_wildcard_domain and its maximum/minimum fields additionally
+accept and preserve documented numeric strings, alongside native integers/floats;
+no rounding, float conversion or widening of other prices/IDs is added.
+
+getLoginUrl returns a required string. Provider/pending lists may be empty;
+pending identity_verification remains an opaque map, domains/vhost_names string
+lists and timestamps integers. Status labels remain strings without a closed
+enum. Certificate availability preserves null certificate_pem versus omission;
+encrypted_action_urls retains optional nullable string evClickThroughStatus and
+ovCallbackStatus alongside documented opaque extra entries. Known fields remain
+strict. Missing/null/wrong roots mismatch unless explicitly nullable; existing
+legacy empty-array object/map compatibility remains.
+
+Returned completion/login/redirect/action URLs, security tokens, certificates,
+CSRs and provider identity data are sensitive payloads; do not log them. They are
+returned as data without secondary requests, provider login, redirects, checkout,
+order creation/cancellation, certificate requests/installation or queue processing.
+A successful read does not establish purchase, payment, issuance, installation,
+trust or served TLS. No live call or returned-URL fetch ran. Provider/catalog/price,
+response and actual certificate availability behavior remain open under
+`whm-api-client-8x0.2.63`; delivery is `whm-api-client-8x0.4.21`.
+
+This adds exactly nine canonical UAPI operations and one group over `31ed8cf`:
+1,137 operations (549 UAPI, 588 WHM), 96 groups and 195 generated outputs (194 PHP
+files plus coverage). Existing runtime/generator, earlier overlays/generated
+contracts, pinned sources, map checksum, historical evidence and audit prefix are
+unchanged. Required PHP 8.3 CI and inherited acceptance work remain external-owned
+and unwaived.

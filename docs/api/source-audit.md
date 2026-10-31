@@ -6764,3 +6764,71 @@ ea-nginx availability, cache effects, browser refetching, observed result fields
 or reset defaults. Separate live follow-up `whm-api-client-8x0.2.62` remains open;
 delivery is `whm-api-client-8x0.4.20`. Required PHP 8.3 CI and inherited acceptance
 work remain external-owned and unwaived.
+
+
+## UAPI Market read-only catalog, provider and certificate status slice (2026-10-31)
+
+Pinned `docs/api/sources/2026-10-13/cpanel.openapi.json.gz`, decompressed SHA-256
+`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`, is authoritative.
+Exactly nine x-readonly=true GET operations are selected at `/paths/~1Market~1`
+plus get_all_products, get_certificate_status_details, get_completion_url,
+get_login_url, get_pending_ssl_certificates, get_product_info,
+get_provider_specific_dcv_constraints, get_providers_list or
+get_ssl_certificate_if_available, then `/get`. Every overlay operation cites its
+exact immutable-source pointer/hash. Ten mutation operations and their input
+families remain outside this slice. No WHM Market schema or evidence is copied.
+
+Source order and scalar types are preserved: status-details order_item_id is an
+integer, availability order_item_id is a string. Catalog product_id is integer;
+product-info, pending order/product/certificate IDs are strings. No global ID or
+numeric-string conversion is added. Availability versions retain cPanel 56/62
+and literal provider-specific cPStore 76; there is no inferred cPanel 76 floor.
+All formal fields remain optional and strict, including integer flags/timestamps,
+nullable catalog prices/base_name/max_users, nullable certificate_pem and known
+nullable encrypted-action URL fields. Pending identity_verification remains an
+opaque map; status labels remain open strings. Successful GETs do not prove
+provider availability or purchase/payment/issuance/installation/trust/served TLS.
+
+Three operation-scoped correction areas use existing machinery only:
+
+- Catalog x_identity_verification: formal component pointer
+  `/components/schemas/SSLMarketProviderProductMetaData/allOf/1/properties/x_identity_verification`
+  declares an object with optional string label/name and untyped additionalProperties.
+  Same-operation pointer prefix
+  `/paths/~1Market~1get_all_products/get/responses/200/content/application~1json/examples/ssl_certificate/value/result/data/`
+  has lists at 0/1/3/5 (18/12/12/18 records) and explicit null at 2/4. Preserve
+  object/list/null with optional strict label/name and mixed extra values in both
+  record branches. Do not infer strict option-pair arity or example-only schemas.
+- Only catalog x_price_per_wildcard_domain, x_price_per_wildcard_domain_maximum
+  and x_price_per_wildcard_domain_minimum gain accept:numeric-string,preserve:true.
+  Each formal number component pointer and each same-operation example field at
+  rows 1/2/3/4 is cited separately in the overlay. Native number values and exact
+  quoted prices survive without rounding; other price/ID fields stay unchanged.
+- Certificate availability encrypted_action_urls: pointer
+  `/paths/~1Market~1get_ssl_certificate_if_available/get/responses/200/content/application~1json/schema/properties/result/properties/data/properties/encrypted_action_urls`
+  expressly permits additional keys. An object-with-values:mixed preserves extras
+  alongside strict optional nullable string evClickThroughStatus/ovCallbackStatus.
+  No other object gains extra-field preservation. The status-details statement
+  that returns vary establishes optionality, not a global opaque-object correction.
+
+Independent real-client/mock-HTTP tests cover all nine methods through direct and
+bridged UAPI with exact query/auth/path/method/order, one dispatch and encode-once
+provider/product/URL/ID bytes. Populated fixtures cover every declared field
+family; empty and malformed data cover strict flags, numbers, IDs, lists/maps,
+known nullable fields, opaque extras, identity object/list/null and root presence.
+API/outer-WHM failures precede payload validation, confirmed payload mismatches
+retain fresh metadata, native signature errors precede reset/I/O, and HTTP and
+transport failures clear metadata without retry. URLs, synthetic PEM/CSR and
+identity values remain payload data without secondary requests. No generated-spec
+expectation mirrors, broad assertion-swallowing catches or source/runtime changes
+were needed.
+
+Baseline `31ed8cff3294ffcea2f8993c47da567cc0e4b2b7` has 1,128 canonical operations
+(540 UAPI, 588 WHM), 95 groups and 193 generated outputs. This adds exactly nine
+UAPI operations and one group: 1,137 operations (549 UAPI, 588 WHM), 96 groups,
+195 outputs (194 PHP files plus coverage). Prior audit text, source/evidence/map
+checksum files and all previous generated contracts/accessors remain preserved.
+No live API/provider login/checkout/order/certificate/queue call or returned URL
+fetch ran. Live provider/catalog/price/response and actual certificate availability
+remain under OPEN `whm-api-client-8x0.2.63`; delivery is `whm-api-client-8x0.4.21`.
+PHP 8.3 CI and inherited acceptance work remain external-owned and unwaived.
