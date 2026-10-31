@@ -6319,3 +6319,90 @@ coverage.md (201 generated outputs). The readable
 mass method is one canonical operation, with no alias. Generic access stays
 separate from typed coverage. No polling, provider registration, conversion
 completion, server cleanup or enforced SQL behavior is established.
+
+
+## Related-field record inputs and canonical method aliases (2026-10-31)
+
+`whm()->modSecurity()->updateSettings()` is an additional public symbol for
+`whm1:modsec_batch_settings`. The existing scalar `batchSettings()` remains intact.
+The selected source variant, form POST policy, outcome, route and response shape
+are canonical; the generated alias spec inherits them and replaces only params.
+The response PHPDoc remains `BatchSettingsResult`. Counts stay 1,142 canonical
+operations (548 UAPI, 594 WHM), 99 groups and 200 generated PHP files.
+
+The immutable pinned WHM OpenAPI decompressed SHA256 is
+`6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594`.
+Operation-scoped evidence binds the shared one-based index decision separately to:
+
+| Source pointer | Row field | Source contract and wire family |
+| --- | --- | --- |
+| `/paths/~1modsec_batch_settings/get/parameters/0` | `settingId` | Required integer; `setting_id1`, `setting_id2`, `setting_id3` |
+| `/paths/~1modsec_batch_settings/get/parameters/1` | `state` | Required string or integer; `state1`, `state2`, `state3` |
+| `/paths/~1modsec_batch_settings/get/parameters/2` | `remove` | Optional integer 0/1 exposed as boolean; `remove1`, `remove2`, `remove3` |
+
+Ignored-if-remove prose does not waive required state. Record rows are associative
+arrays with strict known keys, within a nonempty sequential outer list. A missing
+optional remove emits nothing for that row, without shifting later indexes.
+Explicit null is invalid for every field. Declaration order governs fields;
+caller row order and duplicate IDs are preserved. No state enum, ID constraints,
+coercion, deduplication or conditional requiredness is invented. The whole input
+is sensitive because states may contain configuration secrets; this semantic
+classification requires canonical POST independently of trace annotations.
+
+Offline fixtures verify literal singleton/multi-row POST bytes, optional gaps,
+empty/zero states, duplicate IDs, key ordering, strict malformed inputs/specs,
+concrete collisions, stale metadata reset, enabled-trace privacy and one attempt
+on API or payload failure. Generator fixtures reject public/spec/type symbol
+collisions, inconsistent contract declarations and unbound mappings. Pinned
+sources and historical evidence are unchanged. No ModSecurity write, rule report,
+vendor contact or live compatibility assertion is part of this work. A batch
+failure can be partial; the corrected caller contract below supersedes the original
+atomicity note. `.1.24` retains separate
+comma-delimited report row-ID requirements.
+
+
+## PR78 record-contract correction and approved-master integration (2026-10-31)
+
+Integrated approved master `897e6b82716d8d03b6a1ef4b33117f712bc95a41`
+(PR75/76/77 included) by a normal merge into the record-alias branch. All 1,142
+canonical operation specs, signatures and method bodies remain unchanged; only
+`updateSettings()` adds a public method, sharing its canonical Flag outcome and
+`BatchSettingsResult`. No `Unchecked` override, unpinned failure shape or `commit`
+parameter is introduced.
+
+[PR78 review 5723408145](https://github.com/hostingpal/whm-api-client/pull/78#pullrequestreview-5723408145)
+inspected `Whostmgr/API/1/ModSecurity.pm` on `11.138.0.19`; it ran no batch write.
+The handler sets failure if any row fails and can return `data.failures` after
+other rows succeeded. It stages changes unless commit is supplied, and traverses
+argument hash keys. The input-only alias retains canonical error handling:
+`ApiErrorException` records the envelope snapshot but does not expose that data.
+After any failure callers must explicitly re-read `getSettings()` to establish
+current staged state. Both batch methods require an explicit
+`deploySettingsChanges()` to activate changes. Source-level success means every
+row was accepted, not deployment. Emitted duplicate IDs remain in caller order,
+without a server ordering/last-wins guarantee; avoid conflicting duplicates.
+No automatic read, retry, rollback or new server call accompanies this correction.
+
+Complete record-field prose now comes from the selected pinned parameter,
+including ID numbering, On/Off plus additional state values, ignored-state and
+0/1 removal behavior. Existing prose conversion and PHPDoc terminator escaping
+apply; native types, exact input shape, optional gaps and source requiredness are
+unchanged, with no new enum enforcement. Pinned sources and historical evidence
+remain immutable. Source identity now binds mapping/evidence separately from any
+corrected wire name. Record families join the approved static overlap lint; known
+malformed combinations fail as exact `LogicException` with zero dispatch, cleared
+metadata and private weak-caller arguments. Runtime actual expansion retains the
+existing origin checks and no repeat-family exception.
+
+[PR77 final review 5724345977](https://github.com/hostingpal/whm-api-client/pull/77#pullrequestreview-5724345977)
+adds two caller notes from its disposable fixtures on `11.138.0.19`: bulk account
+rows can return out of request order and must be matched by `user`;
+`createFeaturelist(overwrite: true)` replaces selections and disables omitted
+features. These are version-scoped reviewer runtime observations, carried through
+existing overlays, not new local calls/captures or broader live coverage.
+
+The new fixtures establish offline encoding, exception/snapshot behavior, explicit
+separate rereading, source-description generation and malformed-spec rejection.
+They do not establish live ModSecurity effects, SQL enforcement, PHP 8.3 execution,
+CI results or external approval. ModSecurity writes, report submission and other
+unobserved server operations remain outside this correction.

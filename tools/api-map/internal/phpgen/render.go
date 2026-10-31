@@ -36,7 +36,7 @@ func (w *writer) paramDoc(indent string, p effective.Param, description string) 
 	// Enum literals come from the pinned documents and could contain "*/".
 	docType := escapeDoc(paramDocType(p))
 	head := func(t string) string { return indent + " * @param " + t + " $" + p.PHP }
-	if p.Collection == nil && len(head(docType)) > lineWidth {
+	if p.Collection == nil && p.Records == nil && len(head(docType)) > lineWidth {
 		docType = p.PHPType
 		if isMultiple(p.Encoding) {
 			docType = "string|list<string>"
@@ -180,7 +180,7 @@ func groupClass(g effective.Group) string {
 	w := &writer{}
 	header(w, namespace)
 	uses := []string{"Closure", namespace + `\Spec\` + g.Class + "Spec", rootNamespace + `\Exception\ApiException`}
-	for _, op := range g.Operations {
+	for _, op := range publicMethods(g) {
 		if op.Returns != nil {
 			uses = append(uses, rootNamespace+`\Exception\PayloadMismatchException`)
 		}
@@ -217,6 +217,23 @@ func groupClass(g effective.Group) string {
 		}
 		w.typeAlias(op.Alias, *spec)
 	}
+	for _, op := range publicMethods(g) {
+		for _, p := range op.Params {
+			if p.Records == nil {
+				continue
+			}
+			w.line(" *")
+			w.line(" * @phpstan-type " + p.Records.Alias + " array{")
+			for _, f := range p.Records.Fields {
+				optional := ""
+				if !f.Required {
+					optional = "?"
+				}
+				w.line(" *     " + f.PHP + optional + ": " + f.Type + ",")
+			}
+			w.line(" * }")
+		}
+	}
 	w.line(" */")
 	w.line("final readonly class " + g.Class)
 	w.line("{")
@@ -229,7 +246,7 @@ func groupClass(g effective.Group) string {
 	w.line("    public function __construct(private Closure $run)")
 	w.line("    {")
 	w.line("    }")
-	for _, op := range g.Operations {
+	for _, op := range publicMethods(g) {
 		w.line("")
 		method(w, g, op)
 	}
@@ -281,6 +298,7 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 	multi := false
 	scalarMulti := false
 	namedMap := false
+	records := false
 	omitEmpty := false
 	rejectEmpty := false
 	for _, p := range op.Params {
@@ -291,12 +309,18 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 		if p.OmitEmpty {
 			description = strings.TrimSpace(description + " Empty list omits it.")
 		}
+		if p.Records != nil {
+			for _, f := range p.Records.Fields {
+				description += " " + f.PHP + ": " + f.Description
+			}
+		}
 		w.paramDoc(indent, p, description)
+		records = records || p.Records != nil
 		omitEmpty = omitEmpty || p.OmitEmpty
 		rejectEmpty = rejectEmpty || p.RejectEmpty
 		multi = multi || isMultiple(p.Encoding)
 		namedMap = namedMap || (p.Collection != nil && p.Collection.Kind == "map")
-		scalarMulti = scalarMulti || p.Encoding == "suffix-numbered-scalar" || p.Collection != nil
+		scalarMulti = scalarMulti || p.Encoding == "suffix-numbered-scalar" || p.Collection != nil || p.Records != nil
 	}
 	if ret != nil {
 		w.docTag(indent, "@return "+docReturn(op, *ret))
@@ -312,7 +336,10 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 	if rejectEmpty {
 		w.line(indent + " * @throws InvalidArgumentException If an explicit target is absent, blank, zero, or an invalid string list.")
 	} else if multi {
-		if namedMap {
+		if records {
+			w.line(indent + " * @throws InvalidArgumentException If records are empty, nonsequential, contain unknown or missing fields,")
+			w.line(indent + " *     invalid field types or expanded names; other list/map inputs retain their declared validation rules.")
+		} else if namedMap {
 			w.line(indent + " * @throws InvalidArgumentException If map keys, values, empty policy, or expanded names are invalid;")
 			w.line(indent + " *     list inputs must be nonempty, sequential, and contain supported values.")
 		} else if omitEmpty {
@@ -333,7 +360,7 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 
 // Collection contents are always trace-protected, independently of transport secrecy.
 func redactArgument(p effective.Param) bool {
-	return p.Sensitive || p.Collection != nil
+	return p.Sensitive || p.Collection != nil || p.Records != nil
 }
 
 func signature(w *writer, op effective.Operation, ret *effective.TypeSpec) {
@@ -414,20 +441,31 @@ func specClass(g effective.Group) string {
 	w.line(" */")
 	w.line("final class " + g.Class + "Spec")
 	w.line("{")
-	for i, op := range g.Operations {
+	for i, op := range publicMethods(g) {
+		canonical := ""
+		for _, c := range g.Operations {
+			if c.ID == op.ID && c.Constant != op.Constant {
+				canonical = c.Constant
+				break
+			}
+		}
 		if i > 0 {
 			w.line("")
 		}
 		w.line("    public const " + op.Constant + " = [")
-		w.line("        'function' => " + phpString(op.Function) + ",")
-		if op.Module != "" {
-			w.line("        'module' => " + phpString(op.Module) + ",")
+		if canonical != "" {
+			w.line("        ...self::" + canonical + ",")
+		} else {
+			w.line("        'function' => " + phpString(op.Function) + ",")
+			if op.Module != "" {
+				w.line("        'module' => " + phpString(op.Module) + ",")
+			}
+			w.line("        'method' => " + phpString(op.Method) + ",")
+			if op.Body != "" {
+				w.line("        'body' => " + phpString(op.Body) + ",")
+			}
+			w.line("        'outcome' => " + phpString(op.Outcome) + ",")
 		}
-		w.line("        'method' => " + phpString(op.Method) + ",")
-		if op.Body != "" {
-			w.line("        'body' => " + phpString(op.Body) + ",")
-		}
-		w.line("        'outcome' => " + phpString(op.Outcome) + ",")
 		if len(op.Params) == 0 {
 			w.line("        'params' => [],")
 		} else {
@@ -442,13 +480,28 @@ func specClass(g effective.Group) string {
 				}
 				entry := "            " + phpString(p.PHP) + " => ['name' => " + phpString(p.Wire) +
 					", 'encoding' => " + phpString(p.Encoding) + setting + "],"
-				if p.Collection == nil && len(entry) <= lineWidth {
+				if p.Collection == nil && p.Records == nil && len(entry) <= lineWidth {
 					w.line(entry)
 					continue
 				}
 				w.line("            " + phpString(p.PHP) + " => [")
 				w.line("                'name' => " + phpString(p.Wire) + ",")
 				w.line("                'encoding' => " + phpString(p.Encoding) + ",")
+				if c := p.Records; c != nil {
+					w.line("                'records' => [")
+					w.line(fmt.Sprintf("                    'start' => %d,", c.Start))
+					w.line("                    'separator' => " + phpString(c.Separator) + ",")
+					w.line("                    'fields' => [")
+					for _, f := range c.Fields {
+						w.line("                        " + phpString(f.PHP) + " => [")
+						w.line("                            'prefix' => " + phpString(f.Prefix) + ",")
+						w.line("                            'type' => " + phpString(f.Type) + ",")
+						w.line(fmt.Sprintf("                            'required' => %t,", f.Required))
+						w.line("                        ],")
+					}
+					w.line("                    ],")
+					w.line("                ],")
+				}
 				if c := p.Collection; c != nil {
 					w.line("                'collection' => [")
 					w.line("                    'kind' => " + phpString(c.Kind) + ",")
@@ -477,16 +530,18 @@ func specClass(g effective.Group) string {
 			}
 			w.line("        ],")
 		}
-		if op.Returns == nil {
-			w.line("        'returns' => null,")
-		} else {
-			w.line("        'returns' => " + specLiteralAt(*op.Returns, "        ", len("        'returns' => ")) + ",")
-		}
-		if op.Unwrap != "" {
-			w.line("        'unwrap' => " + phpString(op.Unwrap) + ",")
-		}
-		if op.OptionalPayload && op.Returns != nil {
-			w.line("        'optional' => true,")
+		if canonical == "" {
+			if op.Returns == nil {
+				w.line("        'returns' => null,")
+			} else {
+				w.line("        'returns' => " + specLiteralAt(*op.Returns, "        ", len("        'returns' => ")) + ",")
+			}
+			if op.Unwrap != "" {
+				w.line("        'unwrap' => " + phpString(op.Unwrap) + ",")
+			}
+			if op.OptionalPayload && op.Returns != nil {
+				w.line("        'optional' => true,")
+			}
 		}
 		w.line("    ];")
 	}
@@ -565,6 +620,29 @@ func coverage(result effective.Result) string {
 		handle := map[string]string{"uapi": "uapi()", "whm1": "whm()"}[g.Family]
 		w.line(fmt.Sprintf("| %s | %s | `%s->%s()` | %d |", label[g.Family], g.Name, handle, g.Accessor, len(g.Operations)))
 	}
+	aliases := false
+	for _, g := range result.Groups {
+		for _, op := range g.Operations {
+			if len(op.AdditionalMethods) == 0 {
+				continue
+			}
+			if !aliases {
+				w.line("")
+				w.line("## Alternate public methods")
+				w.line("")
+				w.line("These symbols share one canonical operation, route and response contract; counts above do not count aliases.")
+				w.line("")
+				w.line("| Canonical operation | Public methods |")
+				w.line("| --- | --- |")
+				aliases = true
+			}
+			symbols := []string{}
+			for _, m := range op.Methods() {
+				symbols = append(symbols, "`"+g.Accessor+"()->"+m.PHPName+"()`")
+			}
+			w.line("| `" + op.ID + "` | " + strings.Join(symbols, ", ") + " |")
+		}
+	}
 	if len(result.Excluded) > 0 {
 		w.line("")
 		w.line("## Excluded operations")
@@ -593,5 +671,14 @@ func uniqueSorted(values []string) []string {
 
 // isMultiple identifies encodings whose array inputs require element PHPDoc.
 func isMultiple(encoding string) bool {
-	return encoding == "collection" || encoding == "repeat" || encoding == "numbered" || encoding == "suffix-numbered" || encoding == "suffix-numbered-scalar"
+	return encoding == "records" || encoding == "collection" || encoding == "repeat" || encoding == "numbered" || encoding == "suffix-numbered" || encoding == "suffix-numbered-scalar"
+}
+
+// publicMethods expands input-only aliases without adding canonical operations.
+func publicMethods(g effective.Group) []effective.Operation {
+	var methods []effective.Operation
+	for _, op := range g.Operations {
+		methods = append(methods, op.Methods()...)
+	}
+	return methods
 }

@@ -68,6 +68,9 @@ final class ArgumentEncoder
                 if (!is_string($name)) {
                     throw new LogicException('Invalid parameter argument name.');
                 }
+                if (($param['encoding'] ?? null) === 'records') {
+                    RecordEncoder::check($param['records'] ?? null);
+                }
                 $exact = in_array($param['encoding'] ?? null, ['scalar', 'bool', 'repeat', 'numbered'], true);
                 if (($param['encoding'] ?? null) === 'collection') {
                     $collection = CollectionEncoder::check($param['collection'] ?? null);
@@ -82,6 +85,11 @@ final class ArgumentEncoder
             $value = $arguments[$name] ?? null;
             if (is_array($param) && ($param['reject_empty'] ?? false) === true) {
                 self::requireTarget($value);
+            }
+            if (is_array($param) && ($param['encoding'] ?? null) === 'records') {
+                RecordEncoder::append($encoded, $name, $param['records'] ?? null, $value);
+
+                continue;
             }
             if ($value === null) {
                 continue;

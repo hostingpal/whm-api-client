@@ -253,7 +253,17 @@ name collisions and inconsistent duplicated return contracts. Record both symbol
 in coverage mapping while counting the canonical operation only once. The
 additional method does not call the scalar method repeatedly or aggregate results.
 One failed response cannot trigger a retry of either the whole batch or individual
-rows, and one successful envelope does not imply atomic per-setting success.
+rows. The reviewed `11.138.0.19` ModSecurity handler sets failure if any row fails;
+success means every submitted row was accepted, not that staged changes were
+deployed. Both methods prepare staged settings for an explicit
+`deploySettingsChanges()` call. A failure can leave some staged settings changed.
+The shared canonical Flag contract raises `ApiErrorException` without exposing
+`data.failures`; callers must explicitly re-read `getSettings()` after **any**
+failure to establish current staged state. No automatic read, retry or rollback
+is added. Duplicate IDs retain emitted order, but the server traverses a hash:
+there is no deterministic ordering or last-wins guarantee. Avoid conflicting
+repeated IDs. These handler facts are source inspection on `11.138.0.19`, not a
+live batch-write observation; no unpinned `commit` parameter is added.
 
 ## Shared expansion and request lifecycle
 

@@ -1642,6 +1642,9 @@ final readonly class Accounts
      * Integer 0/1 envelope results and the required payload are still validated. A payload mismatch has
      * outcomeConfirmed=false; do not retry or roll back automatically. PUSHBULLET_ACCESS_TOKEN remains sensitive.
      *
+     * Observed: On reviewed 11.138.0.19, response rows can differ from request order. Match each row by its user field,
+     * not its position.
+     *
      * API-map identity: whm1:massmodifyacct#GET (wire name massmodifyacct; Account Management).
      *
      * @param string|non-empty-list<string> $user The account's current username.

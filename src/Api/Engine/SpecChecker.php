@@ -31,12 +31,13 @@ use LogicException;
  * every call.
  *
  * @phpstan-import-type CollectionSpec from CollectionEncoder
+ * @phpstan-import-type RecordSpec from RecordEncoder
  * @internal
  */
 final class SpecChecker
 {
     private const ENCODINGS = [
-        'scalar', 'bool', 'repeat', 'numbered', 'suffix-numbered', 'suffix-numbered-scalar', 'collection',
+        'scalar', 'bool', 'repeat', 'numbered', 'suffix-numbered', 'suffix-numbered-scalar', 'collection', 'records',
     ];
 
     /** Accepted wire variants per type; types not listed accept none. */
@@ -191,8 +192,17 @@ final class SpecChecker
                 throw new LogicException('Invalid parameter spec for ' . $name . '.');
             }
 
+            $records = null;
+            if ($param['encoding'] === 'records') {
+                $records = RecordEncoder::check($param['records'] ?? null);
+            } elseif (array_key_exists('records', $param)) {
+                throw new LogicException('Record metadata requires records encoding.');
+            }
             $map = false;
             $declared = ['name' => $wire, 'encoding' => $param['encoding']];
+            if ($records !== null) {
+                $declared['records'] = $records;
+            }
             if ($param['encoding'] === 'collection') {
                 $declared['collection'] = CollectionEncoder::check($param['collection'] ?? null);
                 $map = $declared['collection']['kind'] === 'map';
@@ -253,52 +263,63 @@ final class SpecChecker
     /**
      * Extend declared-family lint to collection descriptors without changing legacy rules.
      *
-     * @param array{name: string, encoding: string, collection?: CollectionSpec} $param
-     * @param array{name: string, encoding: string, collection?: CollectionSpec} $other
+     * @param array{name: string, encoding: string, collection?: CollectionSpec, records?: RecordSpec} $param
+     * @param array{name: string, encoding: string, collection?: CollectionSpec, records?: RecordSpec} $other
      */
     private static function collectionOverlaps(array $param, array $other): bool
     {
-        if ($param['encoding'] !== 'collection' && $other['encoding'] !== 'collection') {
+        if (
+            !in_array($param['encoding'], ['collection', 'records'], true)
+            && !in_array($other['encoding'], ['collection', 'records'], true)
+        ) {
             return false;
         }
-        $family = self::indexedFamily($param);
-        if ($family === null) {
-            return false;
+        foreach (self::indexedFamilies($param) as [$base, $start]) {
+            if ($other['encoding'] !== 'records' && self::indexContains($base, $start, $other['name'])) {
+                return true;
+            }
+            foreach (self::indexedFamilies($other) as [$otherBase]) {
+                if (
+                    $base === $otherBase || self::indexContains($base, 0, $otherBase . '1')
+                    || self::indexContains($otherBase, 0, $base . '1')
+                ) {
+                    return true;
+                }
+            }
         }
-        [$base, $start] = $family;
-        if (self::indexContains($base, $start, $other['name'])) {
-            return true;
-        }
-        $otherFamily = self::indexedFamily($other);
-        if ($otherFamily === null) {
-            return false;
-        }
-        [$otherBase] = $otherFamily;
 
-        return $base === $otherBase || self::indexContains($base, 0, $otherBase . '1')
-            || self::indexContains($otherBase, 0, $base . '1');
+        return false;
     }
 
-    /** @param array{name: string, encoding: string, collection?: CollectionSpec} $param
-     * @return array{string, int}|null
+    /** @param array{name: string, encoding: string, collection?: CollectionSpec, records?: RecordSpec} $param
+     * @return list<array{string, int}>
      */
-    private static function indexedFamily(array $param): ?array
+    private static function indexedFamilies(array $param): array
     {
+        if ($param['encoding'] === 'records' && isset($param['records'])) {
+            $families = [];
+            foreach ($param['records']['fields'] as $field) {
+                $families[] = [$field['prefix'] . $param['records']['separator'], $param['records']['start']];
+            }
+            return $families;
+        }
         if (
             $param['encoding'] === 'collection'
             && isset($param['collection'])
             && $param['collection']['kind'] === 'indexed'
         ) {
-            return [$param['collection']['prefix'] . $param['collection']['separator'], $param['collection']['start']];
+            return [[
+                $param['collection']['prefix'] . $param['collection']['separator'], $param['collection']['start'],
+            ]];
         }
         if ($param['encoding'] === 'numbered') {
-            return [$param['name'] . '-', 1];
+            return [[$param['name'] . '-', 1]];
         }
         if (in_array($param['encoding'], ['suffix-numbered', 'suffix-numbered-scalar'], true)) {
-            return [substr($param['name'], 0, -1), 1];
+            return [[substr($param['name'], 0, -1), 1]];
         }
 
-        return null;
+        return [];
     }
 
     private static function indexContains(string $base, int $start, string $name): bool

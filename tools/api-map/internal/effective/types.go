@@ -36,8 +36,27 @@ type Note struct {
 	Text  string
 }
 
+// RecordSpec is an ordered set of source-bound fields sharing one row index.
+type RecordSpec struct {
+	Alias     string
+	Start     int
+	Separator string
+	Fields    []RecordField
+}
+
+// RecordField preserves source scalar type, requiredness and complete prose under its reviewed prefix.
+type RecordField struct {
+	Description string
+	PHP         string
+	Prefix      string
+	Type        string
+	Required    bool
+}
+
 // Param is one generated method argument.
 type Param struct {
+	Source      string              // Pinned parameter identity, independent of corrected wire names.
+	Records     *RecordSpec         `json:",omitempty"`
 	Collection  *overlay.Collection `json:",omitempty"`
 	Wire        string
 	PHP         string
@@ -51,8 +70,10 @@ type Param struct {
 	OmitEmpty   bool `json:",omitempty"` // explicit omission of [] for optional repeat string-list inputs
 }
 
-// Operation is one generated method and its spec constant.
+// Operation owns one canonical response/route contract and its public input mappings.
 type Operation struct {
+	AdditionalMethods []Method `json:",omitempty"`
+
 	ID          string
 	VariantID   string
 	Family      string
@@ -74,6 +95,25 @@ type Operation struct {
 	Unwrap      string
 	// OptionalPayload makes an omitted or null data member a null result.
 	OptionalPayload bool
+}
+
+// Method owns only input mapping and public symbols, never a second response contract.
+type Method struct {
+	PHPName  string
+	Constant string
+	Params   []Param
+}
+
+// Methods exposes canonical and alternate public methods for rendering and symbol checks.
+func (op Operation) Methods() []Operation {
+	result := []Operation{op}
+	for _, m := range op.AdditionalMethods {
+		alias := op
+		alias.AdditionalMethods = nil
+		alias.PHPName, alias.Constant, alias.Params = m.PHPName, m.Constant, m.Params
+		result = append(result, alias)
+	}
+	return result
 }
 
 // Group is one generated group class.

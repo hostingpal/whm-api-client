@@ -1358,10 +1358,40 @@ Vendor preview/add/update may fetch remote content, and `reportRule(send: true)`
 can transmit log information and contact details to a third party. The client adds
 no retries, rollback, URL fetching or automatic deployment.
 
-`batchSettings()` currently supports the pinned single-setting arguments. Its
-indexed multi-setting families remain under `8x0.1.24`. `reportRule()` retains the
-formal integer row-ID input; the contradictory prose's comma-separated multi-ID
-form is also deferred there. The source restricts batch setting IDs to 0 through 9.
+`batchSettings(int $settingId, string|int $state, ?bool $remove = null)` retains
+its single-setting contract. `updateSettings(array $settings)` adds a nonempty
+sequential list of `ModSecuritySettingInput` associative records: required integer
+`settingId`, required `string|int` `state`, and optional boolean `remove`. State
+remains required even with `remove: true`; explicit null and unknown row keys fail
+locally. Missing optional fields retain the original one-based row index, and
+input order and duplicate setting IDs are preserved. The entire collection is
+sensitive. Both methods share one canonical response contract and issue one form
+POST. Both prepare staged settings; explicitly call `deploySettingsChanges()` to
+activate them. On failure, some staged settings may already have changed.
+`ApiErrorException` does not expose `data.failures`; after **any** failure,
+explicitly re-read `getSettings()` to establish the current staged state before
+deciding what to do next. No automatic re-read, retry or rollback occurs.
+In the `11.138.0.19` handler source, success means every submitted row was accepted;
+it does not establish deployment. Duplicates retain emitted order, but server
+hash traversal provides no deterministic ordering or last-wins guarantee. Avoid
+conflicting repeated IDs.
+`reportRule()` retains the formal integer row-ID input; the contradictory prose's
+comma-separated multi-ID form remains under `8x0.1.24`. The source restricts batch
+setting IDs to 0 through 9; this change adds no client-side ID/range or state enum
+validation. Record input support is source-backed and tested offline only.
+
+```php
+$client->whm()->modSecurity()->updateSettings(settings: [
+    ['settingId' => 1, 'state' => 'On'],
+    ['settingId' => 2, 'state' => 'Off', 'remove' => false],
+]);
+```
+
+This emits `setting_id1=1&state1=On&setting_id2=2&state2=Off&remove2=0`;
+there is no `remove1`. Empty state strings, integer zero and string `'0'` remain
+values. The alias adds one public method, while canonical coverage remains 1,142
+operations (548 UAPI and 594 WHM), 99 groups and 200 generated PHP files.
+
 The twelve source-backed empty-result mutations accept an omitted or null payload
 while retaining any returned mixed data; they are not weakened to void. Omitted
 wire payloads on those writes remain unobserved.

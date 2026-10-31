@@ -440,6 +440,9 @@ final readonly class HostingPlans
      * features: [] created an all-disabled list (120 of 120 features disabled). This is version-scoped evidence;
      * overwrite=true may replace an existing list.
      *
+     * Observed: On reviewed 11.138.0.19, overwrite=true replaces feature selections and disables omitted features;
+     * supply every feature selection you intend to retain.
+     *
      * API-map identity: whm1:create_featurelist#GET (wire name create_featurelist; Feature Lists).
      *
      * @param string $featurelist The feature list's name.

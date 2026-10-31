@@ -1583,6 +1583,12 @@
           "version": "11.138.0.19",
           "date": "2026-10-31",
           "note": "createFeaturelist typed payload and empty-create all-disabled behavior passed; reviewer reports creating and deleting disposable feature lists. Reviewer report, not a local capture: https://github.com/hostingpal/whm-api-client/pull/77#pullrequestreview-5723287220"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Version-scoped reviewer observation, not a local run or capture: On reviewed 11.138.0.19, overwrite=true replaces feature selections and disables omitted features; supply every feature selection you intend to retain. https://github.com/hostingpal/whm-api-client/pull/77#pullrequestreview-5724345977"
         }
       ],
       "notes": [
@@ -1597,6 +1603,10 @@
         {
           "kind": "observed",
           "text": "A reseller must possess Add/Remove Package permission. In the reviewer fixture on 11.138.0.19, features: [] created an all-disabled list (120 of 120 features disabled). This is version-scoped evidence; overwrite=true may replace an existing list."
+        },
+        {
+          "kind": "observed",
+          "text": "On reviewed 11.138.0.19, overwrite=true replaces feature selections and disables omitted features; supply every feature selection you intend to retain."
         }
       ]
     },

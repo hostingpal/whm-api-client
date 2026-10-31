@@ -288,6 +288,76 @@ call are problems here too: every `required` name must be a declared field (also
 after `replace` or `add`), `unwrap` needs a non-nullable object payload, and a
 wire name may appear only once.
 
+Additional public input mappings use operation-level `additional_methods`:
+
+```json
+"additional_methods": [{
+  "name": "updateSettings",
+  "inputs": [{
+    "php": "settings",
+    "records": {
+      "alias": "ModSecuritySettingInput",
+      "start": 1,
+      "separator": "",
+      "sensitive": true,
+      "fields": [
+        {"source": "setting_id", "php": "settingId", "prefix": "setting_id"},
+        {"source": "state", "php": "state", "prefix": "state"},
+        {"source": "remove", "php": "remove", "prefix": "remove"}
+      ]
+    }
+  }]
+}]
+```
+
+Each additional method declares a valid, unique PHP `name` and nonempty `inputs`.
+Each input has `php` and exactly one of `source` or `records`. A scalar `source`
+retains its canonical encoding/type/requiredness/sensitivity under a new PHP name;
+it is the pinned parameter name, even when `params[source].wire` corrects its
+transmitted name. Every canonical source parameter must be mapped exactly once
+across scalar inputs and record fields; unknown, duplicate and missing mappings
+fail generation. Required inputs must precede optional inputs. Public method,
+spec constant and PHPStan alias collisions fail generation.
+
+A `records` descriptor requires every shown member: a unique PHPStan class-style
+`alias`, integer `start` from 0 through 2147483647, `separator` (`""` or `"-"`),
+explicit boolean `sensitive`, and nonempty ordered `fields`. Every field requires
+a unique valid PHP `php` name, a pinned `source` name and literal ASCII identifier
+`prefix` (`[A-Za-z_][A-Za-z0-9_]*`). Field types and requiredness derive from the
+canonical strict scalar source (`string`, `int`, `bool`, `string|int`); no field
+type, result, route or outcome can be declared independently. Guarded/omitted or
+collection source fields cannot become records. Complete selected-source field
+prose is preserved with the established Markdown conversion and PHPDoc escaping,
+including text beyond the first sentence; literal PHPStan shapes stay precise.
+
+Every scalar/record source mapping needs operation-level `kind: "doc"` evidence
+with `source_sha256` matching the selected parameter locator and `pointer` equal
+to its parameter JSON pointer or that pointer plus `/description`. Inspect all
+formal fields and prose before choosing prefixes/indexes; source-name lookup and
+evidence binding stay separate from corrected wire names. Evidence for a sibling
+operation, a schema pointer, or a different source hash cannot bind the mapping.
+
+The required record argument is `non-empty-list<Alias>`: each row is an associative
+array with only known fields, required keys present and strict values. Explicit
+null is rejected even for optional fields; omission skips only that field and
+never shifts later indexes. Expansion uses original row order and declared field
+order, preserving duplicates, empty strings, zero and false within the declared
+type. Server processing order or duplicate resolution is operation-specific.
+Static record/index/legacy overlaps fail whole-spec lint as `LogicException` before
+arguments or I/O; actual collisions with maps/routing fields remain invalid
+arguments. All record arguments are trace protected. `sensitive: true` is a
+separate secret classification requiring canonical POST; a false descriptor
+cannot downgrade a sensitive source field. Records require canonical form bodies.
+
+An additional method changes only inputs. Generated alias specs inherit the
+canonical route, method, selected variant, response shape/result alias,
+optional/unwrap rules and outcome, replacing only `params`. No separate response,
+`Unchecked` override or failure schema belongs in `additional_methods`. Both
+symbols appear in coverage while the canonical operation counts once. The
+ModSecurity alias is one extra public method across the existing 1,142 canonical
+operations, 99 groups and 200 generated PHP files (201 outputs with coverage.md).
+It issues one request, without batching loops, automatic reads, retries or rollback.
+
 The fields of a documented `application/x-www-form-urlencoded` request body
 become parameters after the query parameters (required only when the body and
 its schema require them) and force POST, which form-encodes every operation

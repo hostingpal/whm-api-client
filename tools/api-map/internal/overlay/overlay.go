@@ -35,9 +35,34 @@ type File struct {
 	Path          string               `json:"-"`
 }
 
+// AdditionalMethod changes only the input mapping of a canonical operation.
+// Source mappings reuse canonical parameters; record mappings combine source fields.
+type AdditionalMethod struct {
+	Name   string        `json:"name"`
+	Inputs []MethodInput `json:"inputs"`
+}
+type MethodInput struct {
+	PHP     string   `json:"php"`
+	Source  string   `json:"source,omitempty"`
+	Records *Records `json:"records,omitempty"`
+}
+type Records struct {
+	Alias     string        `json:"alias"`
+	Start     *int          `json:"start"`
+	Separator *string       `json:"separator"`
+	Sensitive *bool         `json:"sensitive"`
+	Fields    []RecordField `json:"fields"`
+}
+type RecordField struct {
+	Source string `json:"source"`
+	PHP    string `json:"php"`
+	Prefix string `json:"prefix"`
+}
+
 // Operation holds per-operation decisions; zero values keep generator defaults.
 type Operation struct {
-	Name string `json:"name,omitempty"`
+	AdditionalMethods []AdditionalMethod `json:"additional_methods,omitempty"`
+	Name              string             `json:"name,omitempty"`
 	// Function qualifies a bare WHM function with one source-evidenced namespace.
 	// It preserves the canonical identity and leaf; UAPI corrections are forbidden.
 	Function string `json:"function,omitempty"`

@@ -240,6 +240,7 @@ func (b *builder) operation(op model.Operation, v model.Variant, ov overlay.Oper
 		b.problem(op.ID + ": optional_payload needs a documented payload")
 	}
 	result.Returns = returns
+	result.AdditionalMethods = b.additionalMethods(op, v, ov, result)
 	return result, b.groupOf(op, v, node), true
 }
 
@@ -389,6 +390,7 @@ func (b *builder) params(op model.Operation, v model.Variant, ov overlay.Operati
 		decl := p.Definition
 		spec := b.schemas.specFor(p.Locator.SourceID, decl["schema"], 0, nil)
 		param := Param{
+			Source:      p.Name,
 			Wire:        p.Name,
 			PHP:         Camel(p.Name),
 			Required:    decl["required"] == true,
@@ -673,19 +675,39 @@ func (b *builder) finish(groups map[string]*Group) {
 		accessors[accessorKey] = group.Name
 		names := map[string]bool{}
 		constants := map[string]bool{}
+		typeAliases := map[string]bool{}
 		for _, op := range group.Operations {
-			lower := strings.ToLower(op.PHPName)
-			if names[lower] {
-				b.problem(fmt.Sprintf("group %q: duplicate method %s", group.Name, op.PHPName))
+			typeAliases[strings.ToLower(op.Alias)] = true
+		}
+		for _, op := range group.Operations {
+			for _, method := range op.Methods() {
+				for _, p := range method.Params {
+					if p.Records == nil {
+						continue
+					}
+					key := strings.ToLower(p.Records.Alias)
+					if typeAliases[key] {
+						b.problem("group " + group.Name + ": duplicate type alias " + p.Records.Alias)
+					}
+					typeAliases[key] = true
+				}
 			}
-			if constants[op.Constant] {
-				b.problem(fmt.Sprintf("group %q: duplicate spec constant %s", group.Name, op.Constant))
+		}
+		for _, canonical := range group.Operations {
+			for _, op := range canonical.Methods() {
+				lower := strings.ToLower(op.PHPName)
+				if names[lower] {
+					b.problem(fmt.Sprintf("group %q: duplicate method %s", group.Name, op.PHPName))
+				}
+				if constants[op.Constant] {
+					b.problem(fmt.Sprintf("group %q: duplicate spec constant %s", group.Name, op.Constant))
+				}
+				if !IsMethodName(op.PHPName) {
+					b.problem(op.ID + ": method name " + op.PHPName + " is invalid")
+				}
+				names[lower] = true
+				constants[op.Constant] = true
 			}
-			if !IsMethodName(op.PHPName) {
-				b.problem(op.ID + ": method name " + op.PHPName + " is invalid")
-			}
-			names[lower] = true
-			constants[op.Constant] = true
 		}
 		b.result.Groups = append(b.result.Groups, *group)
 	}
