@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "TeamRoles",
+  "operations": {
+    "uapi:TeamRoles/list_feature_descriptions": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 108 and later; operates on the selected cPanel account. Omitted optional arguments, including null, remain omitted; explicit empty strings, false and zero are sent according to their parameter types. No client-side defaults are substituted."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns the pinned FeatureDescriptions object with optional features string list, id string and title string. The formal source is an object, not a list of role objects; no example-driven widening is inferred."
+        }
+      ]
+    }
+  }
+}

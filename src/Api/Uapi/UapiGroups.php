@@ -53,6 +53,8 @@ trait UapiGroups
 
     private ?Park $parkGroup = null;
 
+    private ?PasswdStrength $passwdStrengthGroup = null;
+
     private ?Postgresql $postgresqlGroup = null;
 
     private ?Quota $quotaGroup = null;
@@ -70,6 +72,16 @@ trait UapiGroups
     private ?StatsManager $statsManagerGroup = null;
 
     private ?SubDomain $subDomainGroup = null;
+
+    private ?Team $teamGroup = null;
+
+    private ?TeamRoles $teamRolesGroup = null;
+
+    private ?UserManager $userManagerGroup = null;
+
+    private ?Users $usersGroup = null;
+
+    private ?WebDisk $webDiskGroup = null;
 
     private ?WebVhosts $webVhostsGroup = null;
 
@@ -274,6 +286,16 @@ trait UapiGroups
     }
 
     /**
+     * Select the PasswdStrength operations without making a request.
+     *
+     * The PasswdStrength module for UAPI.
+     */
+    public function passwdStrength(): PasswdStrength
+    {
+        return $this->passwdStrengthGroup ??= new PasswdStrength($this->run(...));
+    }
+
+    /**
      * Select the Postgresql operations without making a request.
      *
      * The Postgresql module for UAPI.
@@ -361,6 +383,56 @@ trait UapiGroups
     public function subDomain(): SubDomain
     {
         return $this->subDomainGroup ??= new SubDomain($this->run(...));
+    }
+
+    /**
+     * Select the Team operations without making a request.
+     *
+     * UAPI Team module functions.
+     */
+    public function team(): Team
+    {
+        return $this->teamGroup ??= new Team($this->run(...));
+    }
+
+    /**
+     * Select the TeamRoles operations without making a request.
+     *
+     * UAPI TeamRoles module functions.
+     */
+    public function teamRoles(): TeamRoles
+    {
+        return $this->teamRolesGroup ??= new TeamRoles($this->run(...));
+    }
+
+    /**
+     * Select the UserManager operations without making a request.
+     *
+     * The UserManager module for UAPI.
+     */
+    public function userManager(): UserManager
+    {
+        return $this->userManagerGroup ??= new UserManager($this->run(...));
+    }
+
+    /**
+     * Select the Users operations without making a request.
+     *
+     * The Users module for UAPI.
+     */
+    public function users(): Users
+    {
+        return $this->usersGroup ??= new Users($this->run(...));
+    }
+
+    /**
+     * Select the WebDisk operations without making a request.
+     *
+     * The WebDisk module for UAPI.
+     */
+    public function webDisk(): WebDisk
+    {
+        return $this->webDiskGroup ??= new WebDisk($this->run(...));
     }
 
     /**

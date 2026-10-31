@@ -1,0 +1,577 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "UserManager",
+  "accessor": "userManager",
+  "operations": {
+    "uapi:UserManager/change_password": {
+      "order": [
+        "newpass",
+        "oldpass",
+        "enablemysql"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 116 and later; operates on the selected cPanel account. Omitted optional inputs, including null, retain server behavior; explicit false, zero and empty strings remain distinct. Literal dotted services.* wire names are form or query keys, not nested request objects."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes the main cPanel account password and applies to the account owner only, from cPanel 116. enablemysql defaults to 0 upstream. Both the current and new passwords are sensitive form inputs. The source declares no rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a nullable object without pinned fields. Preserve opaque object fields and explicit null; an absent data member is a payload mismatch."
+        }
+      ],
+      "params": {
+        "newpass": {
+          "sensitive": true
+        },
+        "oldpass": {
+          "sensitive": true
+        }
+      },
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /UserManager/change_password declares x-readonly=false. Use form POST for the selected-account mutation; password fields stay sensitive. Preserve pinned parameter requiredness, scalar types and literal dotted field names."
+        }
+      ]
+    },
+    "uapi:UserManager/check_account_conflicts": {
+      "order": [
+        "full_username"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 56 and later; operates on the selected cPanel account. Omitted optional inputs, including null, retain server behavior; explicit false, zero and empty strings remain distinct. Literal dotted services.* wire names are form or query keys, not nested request objects."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns account conflict information; more than one matching account can repeat values in the arrays. accounts is a documented object, not an inferred list. Nullable contact/invitation fields, optional service fields and integer status flags remain distinct from omission. No identifiers are inferred or looked up automatically."
+        }
+      ]
+    },
+    "uapi:UserManager/create_user": {
+      "order": [
+        "domain",
+        "password",
+        "username",
+        "alternate_email",
+        "avatar_url",
+        "phone_number",
+        "real_name",
+        "send_invite",
+        "services.email.enabled",
+        "services.email.quota",
+        "services.email.send_welcome_email",
+        "services.ftp.enabled",
+        "services.ftp.homedir",
+        "services.webdisk.enabled",
+        "services.webdisk.enabledigest",
+        "services.webdisk.homedir",
+        "services.webdisk.perms",
+        "services.webdisk.private",
+        "type"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later; operates on the selected cPanel account. Omitted optional inputs, including null, retain server behavior; explicit false, zero and empty strings remain distinct. Literal dotted services.* wire names are form or query keys, not nested request objects."
+        },
+        {
+          "kind": "documented",
+          "text": "Creates a Subaccount; password is required and shared by email, FTP and Web Disk services. send_invite=1 sends a reset-password email and requires alternate_email; services.email.send_welcome_email=1 sends client configuration instructions. Both default to 0. Service enablement and Digest/private flags default to 0, Web Disk permissions to rw and type to sub. Email quota is a string in this creation contract: 0 or unlimited means unlimited, omission retains the system default and the system maximum applies. Do not use the reserved avatar_url or phone_number inputs. FTP and Web Disk home directories are relative to the cPanel account home; the FTP directory must exist. The FTP parameter prose contains a self-referential requiredness statement; no client-side condition is inferred. Web Disk home is required when Web Disk is enabled. Digest Authentication is discouraged except for the documented Windows/self-signed compatibility case. The source declares no rollback."
+        }
+      ],
+      "params": {
+        "password": {
+          "sensitive": true
+        }
+      },
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /UserManager/create_user declares x-readonly=false. Use form POST for the selected-account mutation; password fields stay sensitive. Preserve pinned parameter requiredness, scalar types and literal dotted field names."
+        }
+      ]
+    },
+    "uapi:UserManager/delete_user": {
+      "order": [
+        "domain",
+        "username"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later; operates on the selected cPanel account. Omitted optional inputs, including null, retain server behavior; explicit false, zero and empty strings remain distinct. Literal dotted services.* wire names are form or query keys, not nested request objects."
+        },
+        {
+          "kind": "documented",
+          "text": "Deletes the Subaccount with no rollback. The documented result depends on remaining services: one matching service returns that service account, multiple matching services return a hypothetical Subaccount, and no matches return only metadata. An omitted or null payload therefore returns null; present objects retain their pinned fields. username excludes the domain and domain must be owned by the selected cPanel account."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /UserManager/delete_user declares x-readonly=false. Use form POST for the selected-account mutation; password fields stay sensitive. Preserve pinned parameter requiredness, scalar types and literal dotted field names."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /UserManager/delete_user description explicitly says the function returns only metadata when no other matching service accounts exist, and when the username/domain match no service or hypothetical Subaccount. Allow absent/null data while validating present data against the pinned object schema; do not weaken the result to void."
+        }
+      ],
+      "optional_payload": true
+    },
+    "uapi:UserManager/dismiss_merge": {
+      "order": [
+        "domain",
+        "username",
+        "services.email.dismiss",
+        "services.ftp.dismiss",
+        "services.webdisk.dismiss"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later; operates on the selected cPanel account. Omitted optional inputs, including null, retain server behavior; explicit false, zero and empty strings remain distinct. Literal dotted services.* wire names are form or query keys, not nested request objects."
+        },
+        {
+          "kind": "documented",
+          "text": "Removes the Link option for the selected service merge candidates. Supply at least one of services.email.dismiss, services.ftp.dismiss or services.webdisk.dismiss. These optional flags default to 0 upstream; the client does not invent a cross-parameter validator. The data schema is unspecified, so the result remains mixed, including explicit null. An absent data member remains a payload mismatch. The source declares no rollback."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /UserManager/dismiss_merge declares x-readonly=false. Use form POST for the selected-account mutation; password fields stay sensitive. Preserve pinned parameter requiredness, scalar types and literal dotted field names."
+        }
+      ]
+    },
+    "uapi:UserManager/edit_user": {
+      "order": [
+        "domain",
+        "username",
+        "alternate_email",
+        "avatar_url",
+        "password",
+        "phone_number",
+        "real_name",
+        "services.email.enabled",
+        "services.email.quota",
+        "services.ftp.enabled",
+        "services.ftp.homedir",
+        "services.webdisk.enabled",
+        "services.webdisk.enabledigest",
+        "services.webdisk.homedir",
+        "services.webdisk.perms",
+        "services.webdisk.private",
+        "type"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later; operates on the selected cPanel account. Omitted optional inputs, including null, retain server behavior; explicit false, zero and empty strings remain distinct. Literal dotted services.* wire names are form or query keys, not nested request objects."
+        },
+        {
+          "kind": "documented",
+          "text": "Updates a Subaccount with no rollback. The optional password changes the password shared by email, FTP and Web Disk and is sensitive. Reserved avatar_url and phone_number inputs must not be used. Omitted email quota retains the system default; its pinned edit parameter is an integer even though the prose also mentions unlimited. Zero represents unlimited, and the system maximum applies. Do not infer a string parameter from that prose. FTP and Web Disk home paths are relative to the cPanel account home and are required when their services are enabled; the FTP directory must exist. Service/Digest/private flags default to 0, permissions to rw and type to sub upstream. Digest Authentication is discouraged except for the documented compatibility case. Explicit empty real_name is supported; null optional inputs are omitted by the client."
+        }
+      ],
+      "params": {
+        "password": {
+          "sensitive": true
+        }
+      },
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /UserManager/edit_user declares x-readonly=false. Use form POST for the selected-account mutation; password fields stay sensitive. Preserve pinned parameter requiredness, scalar types and literal dotted field names."
+        }
+      ],
+      "response": {
+        "parent_type": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /UserManager/edit_user references #/components/schemas/EditUserSubaccountBase; its parent_type description explicitly permits null, although the formal scalar schema omits nullable. The same referenced base is used at the payload root. Preserve the existing string or integer 0/1 type and optional presence, adding only the documented null alternative at parent_type. Do not extend this correction to schemas without that prose."
+            }
+          ]
+        },
+        "sub_account_exists": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /UserManager/edit_user references #/components/schemas/EditUserSubaccountBase; its sub_account_exists description explicitly permits null, although the formal scalar schema omits nullable. The same referenced base is used at the payload root. Preserve the existing string or integer 0/1 type and optional presence, adding only the documented null alternative at sub_account_exists. Do not extend this correction to schemas without that prose."
+            }
+          ]
+        },
+        "synced_password": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /UserManager/edit_user references #/components/schemas/EditUserSubaccountBase; its synced_password description explicitly permits null, although the formal scalar schema omits nullable. The same referenced base is used at the payload root. Preserve the existing string or integer 0/1 type and optional presence, adding only the documented null alternative at synced_password. Do not extend this correction to schemas without that prose."
+            }
+          ]
+        },
+        "merge_candidates[].parent_type": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /UserManager/edit_user references #/components/schemas/EditUserSubaccountBase; its parent_type description explicitly permits null, although the formal scalar schema omits nullable. The same referenced base is used at merge_candidates[].. Preserve the existing string or integer 0/1 type and optional presence, adding only the documented null alternative at merge_candidates[].parent_type. Do not extend this correction to schemas without that prose."
+            }
+          ]
+        },
+        "merge_candidates[].sub_account_exists": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /UserManager/edit_user references #/components/schemas/EditUserSubaccountBase; its sub_account_exists description explicitly permits null, although the formal scalar schema omits nullable. The same referenced base is used at merge_candidates[].. Preserve the existing string or integer 0/1 type and optional presence, adding only the documented null alternative at merge_candidates[].sub_account_exists. Do not extend this correction to schemas without that prose."
+            }
+          ]
+        },
+        "merge_candidates[].synced_password": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /UserManager/edit_user references #/components/schemas/EditUserSubaccountBase; its synced_password description explicitly permits null, although the formal scalar schema omits nullable. The same referenced base is used at merge_candidates[].. Preserve the existing string or integer 0/1 type and optional presence, adding only the documented null alternative at merge_candidates[].synced_password. Do not extend this correction to schemas without that prose."
+            }
+          ]
+        },
+        "dismissed_merge_candidates[].merge_candidates[].parent_type": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /UserManager/edit_user references #/components/schemas/EditUserSubaccountBase; its parent_type description explicitly permits null, although the formal scalar schema omits nullable. The same referenced base is used at dismissed_merge_candidates[].merge_candidates[].. Preserve the existing string or integer 0/1 type and optional presence, adding only the documented null alternative at dismissed_merge_candidates[].merge_candidates[].parent_type. Do not extend this correction to schemas without that prose."
+            }
+          ]
+        },
+        "dismissed_merge_candidates[].merge_candidates[].sub_account_exists": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /UserManager/edit_user references #/components/schemas/EditUserSubaccountBase; its sub_account_exists description explicitly permits null, although the formal scalar schema omits nullable. The same referenced base is used at dismissed_merge_candidates[].merge_candidates[].. Preserve the existing string or integer 0/1 type and optional presence, adding only the documented null alternative at dismissed_merge_candidates[].merge_candidates[].sub_account_exists. Do not extend this correction to schemas without that prose."
+            }
+          ]
+        },
+        "dismissed_merge_candidates[].merge_candidates[].synced_password": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /UserManager/edit_user references #/components/schemas/EditUserSubaccountBase; its synced_password description explicitly permits null, although the formal scalar schema omits nullable. The same referenced base is used at dismissed_merge_candidates[].merge_candidates[].. Preserve the existing string or integer 0/1 type and optional presence, adding only the documented null alternative at dismissed_merge_candidates[].merge_candidates[].synced_password. Do not extend this correction to schemas without that prose."
+            }
+          ]
+        }
+      }
+    },
+    "uapi:UserManager/list_users": {
+      "order": [
+        "flat"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later; operates on the selected cPanel account. Omitted optional inputs, including null, retain server behavior; explicit false, zero and empty strings remain distinct. Literal dotted services.* wire names are form or query keys, not nested request objects."
+        },
+        {
+          "kind": "documented",
+          "text": "flat defaults to 0, which includes same-name Subaccounts under merge_candidates; flat=1 suppresses those nested candidates. Returns a list with optional fields, not an account keyed map. synced_password is a nullable integer 0/1 synchronization flag, not a password. Keep optional contact fields, service flags, quotas and empty candidate lists as documented; no recursive candidate records are inferred from the string-list schema. Quotas are in MB and FTP quota 0 means unlimited. The pinned special flag prose differs between operations; retain each operation's description rather than inferring a shared permission meaning."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {
+          "flat": true
+        },
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      }
+    },
+    "uapi:UserManager/lookup_service_account": {
+      "order": [
+        "full_username",
+        "type"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later; operates on the selected cPanel account. Omitted optional inputs, including null, retain server behavior; explicit false, zero and empty strings remain distinct. Literal dotted services.* wire names are form or query keys, not nested request objects."
+        },
+        {
+          "kind": "documented",
+          "text": "Looks up an explicitly supplied full username and email, ftp or webdisk service type. No identifier is inferred. Optional candidate and service fields retain their pinned types, and synchronization/existence flags remain integer 0/1 with the documented null alternatives. FTP quota 0 means unlimited and quota units are MB."
+        }
+      ],
+      "response": {
+        "parent_type": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /UserManager/lookup_service_account references #/components/schemas/LookupServiceAccountSubaccountBase; its parent_type description explicitly permits null, although the formal scalar schema omits nullable. The same referenced base is used at the payload root. Preserve the existing string or integer 0/1 type and optional presence, adding only the documented null alternative at parent_type. Do not extend this correction to schemas without that prose."
+            }
+          ]
+        },
+        "sub_account_exists": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /UserManager/lookup_service_account references #/components/schemas/LookupServiceAccountSubaccountBase; its sub_account_exists description explicitly permits null, although the formal scalar schema omits nullable. The same referenced base is used at the payload root. Preserve the existing string or integer 0/1 type and optional presence, adding only the documented null alternative at sub_account_exists. Do not extend this correction to schemas without that prose."
+            }
+          ]
+        },
+        "synced_password": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /UserManager/lookup_service_account references #/components/schemas/LookupServiceAccountSubaccountBase; its synced_password description explicitly permits null, although the formal scalar schema omits nullable. The same referenced base is used at the payload root. Preserve the existing string or integer 0/1 type and optional presence, adding only the documented null alternative at synced_password. Do not extend this correction to schemas without that prose."
+            }
+          ]
+        },
+        "merge_candidates[].parent_type": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /UserManager/lookup_service_account references #/components/schemas/LookupServiceAccountSubaccountBase; its parent_type description explicitly permits null, although the formal scalar schema omits nullable. The same referenced base is used at merge_candidates[].. Preserve the existing string or integer 0/1 type and optional presence, adding only the documented null alternative at merge_candidates[].parent_type. Do not extend this correction to schemas without that prose."
+            }
+          ]
+        },
+        "merge_candidates[].sub_account_exists": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /UserManager/lookup_service_account references #/components/schemas/LookupServiceAccountSubaccountBase; its sub_account_exists description explicitly permits null, although the formal scalar schema omits nullable. The same referenced base is used at merge_candidates[].. Preserve the existing string or integer 0/1 type and optional presence, adding only the documented null alternative at merge_candidates[].sub_account_exists. Do not extend this correction to schemas without that prose."
+            }
+          ]
+        },
+        "merge_candidates[].synced_password": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /UserManager/lookup_service_account references #/components/schemas/LookupServiceAccountSubaccountBase; its synced_password description explicitly permits null, although the formal scalar schema omits nullable. The same referenced base is used at merge_candidates[].. Preserve the existing string or integer 0/1 type and optional presence, adding only the documented null alternative at merge_candidates[].synced_password. Do not extend this correction to schemas without that prose."
+            }
+          ]
+        },
+        "dismissed_merge_candidates[].merge_candidates[].parent_type": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /UserManager/lookup_service_account references #/components/schemas/LookupServiceAccountSubaccountBase; its parent_type description explicitly permits null, although the formal scalar schema omits nullable. The same referenced base is used at dismissed_merge_candidates[].merge_candidates[].. Preserve the existing string or integer 0/1 type and optional presence, adding only the documented null alternative at dismissed_merge_candidates[].merge_candidates[].parent_type. Do not extend this correction to schemas without that prose."
+            }
+          ]
+        },
+        "dismissed_merge_candidates[].merge_candidates[].sub_account_exists": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /UserManager/lookup_service_account references #/components/schemas/LookupServiceAccountSubaccountBase; its sub_account_exists description explicitly permits null, although the formal scalar schema omits nullable. The same referenced base is used at dismissed_merge_candidates[].merge_candidates[].. Preserve the existing string or integer 0/1 type and optional presence, adding only the documented null alternative at dismissed_merge_candidates[].merge_candidates[].sub_account_exists. Do not extend this correction to schemas without that prose."
+            }
+          ]
+        },
+        "dismissed_merge_candidates[].merge_candidates[].synced_password": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /UserManager/lookup_service_account references #/components/schemas/LookupServiceAccountSubaccountBase; its synced_password description explicitly permits null, although the formal scalar schema omits nullable. The same referenced base is used at dismissed_merge_candidates[].merge_candidates[].. Preserve the existing string or integer 0/1 type and optional presence, adding only the documented null alternative at dismissed_merge_candidates[].merge_candidates[].synced_password. Do not extend this correction to schemas without that prose."
+            }
+          ]
+        }
+      }
+    },
+    "uapi:UserManager/lookup_user": {
+      "order": [
+        "guid"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later; operates on the selected cPanel account. Omitted optional inputs, including null, retain server behavior; explicit false, zero and empty strings remain distinct. Literal dotted services.* wire names are form or query keys, not nested request objects."
+        },
+        {
+          "kind": "documented",
+          "text": "Looks up the explicitly supplied Subaccount GUID; the client does not infer it from a username. Optional contact fields and invitation expiration preserve documented nulls. Service quotas are in MB and FTP quota 0 means unlimited. The pinned ServiceAccount schema references itself for merge candidates; recursive expansion beyond the generator's documented schema boundary is not evidence of live response behavior."
+        }
+      ],
+      "response": {
+        "sub_account_exists": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /UserManager/lookup_user references #/components/schemas/ServiceAccount. Its sub_account_exists description explicitly says the function returns a null value when the account is not the corresponding service/subaccount; the formal integer flag schema omits nullable. Add only null at sub_account_exists, retaining optional presence and strict integer 0/1. Recursive merge_candidates items remain at the existing mixed cycle boundary and receive no inferred schema."
+            }
+          ]
+        },
+        "synced_password": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /UserManager/lookup_user references #/components/schemas/ServiceAccount. Its synced_password description explicitly says the function returns a null value when the account is not the corresponding service/subaccount; the formal integer flag schema omits nullable. Add only null at synced_password, retaining optional presence and strict integer 0/1. Recursive merge_candidates items remain at the existing mixed cycle boundary and receive no inferred schema."
+            }
+          ]
+        },
+        "dismissed_merge_candidates[].sub_account_exists": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /UserManager/lookup_user references #/components/schemas/ServiceAccount. Its sub_account_exists description explicitly says the function returns a null value when the account is not the corresponding service/subaccount; the formal integer flag schema omits nullable. Add only null at dismissed_merge_candidates[].sub_account_exists, retaining optional presence and strict integer 0/1. Recursive merge_candidates items remain at the existing mixed cycle boundary and receive no inferred schema."
+            }
+          ]
+        },
+        "dismissed_merge_candidates[].synced_password": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /UserManager/lookup_user references #/components/schemas/ServiceAccount. Its synced_password description explicitly says the function returns a null value when the account is not the corresponding service/subaccount; the formal integer flag schema omits nullable. Add only null at dismissed_merge_candidates[].synced_password, retaining optional presence and strict integer 0/1. Recursive merge_candidates items remain at the existing mixed cycle boundary and receive no inferred schema."
+            }
+          ]
+        }
+      }
+    },
+    "uapi:UserManager/merge_service_account": {
+      "order": [
+        "domain",
+        "username",
+        "services.email.merge",
+        "services.ftp.merge",
+        "services.webdisk.merge"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later; operates on the selected cPanel account. Omitted optional inputs, including null, retain server behavior; explicit false, zero and empty strings remain distinct. Literal dotted services.* wire names are form or query keys, not nested request objects."
+        },
+        {
+          "kind": "documented",
+          "text": "Links email, FTP or Web Disk services to a Subaccount, creating the Subaccount if none exists. Supply at least one services.*.merge flag; defaults are 0 and the client does not enforce the cross-parameter requirement. Multiple services must share username and domain. The source declares no rollback. Quotas are in MB, FTP quota 0 means unlimited, and optional/nullable integer synchronization flags remain distinct from omitted fields."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /UserManager/merge_service_account declares x-readonly=false. Use form POST for the selected-account mutation; password fields stay sensitive. Preserve pinned parameter requiredness, scalar types and literal dotted field names."
+        }
+      ]
+    },
+    "uapi:UserManager/unlink_service_account": {
+      "order": [
+        "domain",
+        "service",
+        "username",
+        "dismiss"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 56 and later; operates on the selected cPanel account. Omitted optional inputs, including null, retain server behavior; explicit false, zero and empty strings remain distinct. Literal dotted services.* wire names are form or query keys, not nested request objects."
+        },
+        {
+          "kind": "documented",
+          "text": "Unlinks the named email, FTP or Web Disk service from the Subaccount. dismiss defaults to 0, allowing it to remain a merge candidate; 1 dismisses it. Other same-name service accounts may still be offered for merging in User Manager. The source declares no rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a nullable object without pinned fields. Preserve opaque object fields and explicit null; an absent data member is a payload mismatch."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /UserManager/unlink_service_account declares x-readonly=false. Use form POST for the selected-account mutation; password fields stay sensitive. Preserve pinned parameter requiredness, scalar types and literal dotted field names."
+        }
+      ]
+    }
+  }
+}

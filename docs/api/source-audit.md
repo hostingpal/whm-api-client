@@ -2895,3 +2895,44 @@ unwaived under `8x0.2.25`; the earlier artifact retains its original failures.
 Daily/report/analyzer collections remain empty. The capture covers the fixed
 catalog, not every possible argument or display combination. SHA-256:
 `9f3548970abc522615faa8822cac7aa8bd28a576cfd1047b4849be056ebba736`.
+
+## Team and user management (2026-10-31)
+
+The team and user-management section exposes 35 methods across `team()`,
+`teamRoles()`, `userManager()`, `webDisk()`, `users()` and `passwdStrength()`.
+Eight reads use GET; 27 state-changing or password operations use form POST.
+Passwords remain sensitive parameters. Dotted service-field names are forwarded
+literally, content is form-encoded once, and omitted options retain server defaults.
+Explicit false, zero and empty values remain distinct from omission.
+
+Team role operations can grant owner privileges. `setRoles()` replaces the whole
+role set; omitting its role value removes all roles. Creation's `roles` field is
+comma-separated, while role updates use singular `role`. Activation and password
+reset requests can send email. Service changes can create, associate or remove
+service subaccounts. Team creation and expiry setting return integer expiration
+timestamps; other Team mutations preserve nullable opaque objects and reject
+missing payloads. Each method retains its source version floor.
+
+`listTeam()` preserves the source array/hash alternatives, including password
+payload fields. The hash schema has literal `users.username` and `users.info`
+fields; it is not inferred as a dynamic username map. The array's `suspend_date`
+is integer while the hash version is string. Team role descriptions retain their
+pinned object shape. Team counts and nullable subaccount flags are payload values,
+separate from the UAPI status.
+
+User-manager operations preserve source service settings, merge candidates and
+optional fields. Explicit-null prose corrects only the applicable parent-type,
+subaccount-existence and synchronized-password fields in referenced schemas.
+Recursive candidate tails retain the generator's existing opaque boundary.
+`deleteUser()` permits missing data only where the pinned prose expressly specifies
+metadata-only completion; ordinary nullable-object mutations still reject missing
+data. Required create-user passwords remain required. Web Disk deletion with
+`destroy: true` can remove its home directory. The client does not retry or roll
+back user changes, role grants, removals or password changes.
+
+The fixed nine-GET live catalog reads WHM version, team role counts, role feature
+descriptions, flat subaccount inventory and the `webdisk` password-strength policy;
+each account read uses both routes. Team listings are excluded because their source
+includes password fields. No GUID/service lookup identifiers are guessed, no account
+is modified and no invitation, activation or reset email is sent. All remaining
+methods and variants remain offline-tested under live follow-up `8x0.2.30`.
