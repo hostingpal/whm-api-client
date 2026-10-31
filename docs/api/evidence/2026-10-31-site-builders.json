@@ -1,0 +1,309 @@
+{
+    "schema_version": 1,
+    "read_only_section": {
+        "recipe": "site-builders-v1",
+        "status": "failed",
+        "probes": [
+            {
+                "operation": "whm1:version",
+                "variant": "whm1:version#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T04:12:30Z",
+                "revision": "fcd979dfce9657c69ac92cb47ef17f3301fa03cb",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "faa47dbf7c11fef7c97bc45a82d17ba86e8bf13f",
+                "overlay_sha256": "55d52b4d9be76e473513fa6bcbf309f895416420ab8b91454e599106ba5758f4",
+                "effective_contract_sha256": "a3b55069b379516f20fcf82f959226d68b68ac515a7e55c0bde8842d39effd60",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.version": [
+                        "string"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.version": [
+                        "string"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "uapi:Nova/can_create_domains",
+                "variant": "uapi:Nova/can_create_domains#GET",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T04:12:30Z",
+                "revision": "fcd979dfce9657c69ac92cb47ef17f3301fa03cb",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "faa47dbf7c11fef7c97bc45a82d17ba86e8bf13f",
+                "overlay_sha256": "55d52b4d9be76e473513fa6bcbf309f895416420ab8b91454e599106ba5758f4",
+                "effective_contract_sha256": "48e86de4249a692edf1ab28f46b11f07111024b500c412b5dd3391322dc1607b",
+                "http_status": 200,
+                "api_outcome": "failure",
+                "payload_validation": "not_checked",
+                "probe_outcome": "failed",
+                "failure_kind": "api_failure",
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "null"
+                    ],
+                    "$.errors": [
+                        "list"
+                    ],
+                    "$.errors[]": [
+                        "string"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "null"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "uapi:Nova/can_create_domains",
+                "variant": "uapi:Nova/can_create_domains#GET",
+                "route": "bridged-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T04:12:31Z",
+                "revision": "fcd979dfce9657c69ac92cb47ef17f3301fa03cb",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "faa47dbf7c11fef7c97bc45a82d17ba86e8bf13f",
+                "overlay_sha256": "55d52b4d9be76e473513fa6bcbf309f895416420ab8b91454e599106ba5758f4",
+                "effective_contract_sha256": "48e86de4249a692edf1ab28f46b11f07111024b500c412b5dd3391322dc1607b",
+                "http_status": 200,
+                "api_outcome": "failure",
+                "payload_validation": "not_checked",
+                "probe_outcome": "failed",
+                "failure_kind": "api_failure",
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "null"
+                    ],
+                    "$.data.uapi.errors": [
+                        "list"
+                    ],
+                    "$.data.uapi.errors[]": [
+                        "string"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "empty-object"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "null"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "uapi:Sitejet/can_create_domains",
+                "variant": "uapi:Sitejet/can_create_domains#GET",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T04:12:31Z",
+                "revision": "fcd979dfce9657c69ac92cb47ef17f3301fa03cb",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "faa47dbf7c11fef7c97bc45a82d17ba86e8bf13f",
+                "overlay_sha256": "55d52b4d9be76e473513fa6bcbf309f895416420ab8b91454e599106ba5758f4",
+                "effective_contract_sha256": "f4436b92bd265bfd4fa1c3ee1953b9f80d5f400c74c8b3c6fcdd911379cc0dd0",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "int"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "int"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "uapi:Sitejet/can_create_domains",
+                "variant": "uapi:Sitejet/can_create_domains#GET",
+                "route": "bridged-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T04:12:32Z",
+                "revision": "fcd979dfce9657c69ac92cb47ef17f3301fa03cb",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "faa47dbf7c11fef7c97bc45a82d17ba86e8bf13f",
+                "overlay_sha256": "55d52b4d9be76e473513fa6bcbf309f895416420ab8b91454e599106ba5758f4",
+                "effective_contract_sha256": "f4436b92bd265bfd4fa1c3ee1953b9f80d5f400c74c8b3c6fcdd911379cc0dd0",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "int"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "empty-object"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "int"
+                    ]
+                },
+                "discrepancies": []
+            }
+        ]
+    }
+}

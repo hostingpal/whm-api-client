@@ -65,7 +65,6 @@ final class OperationRunner
         $body = null;
         if (OperationSpec::body($spec) === RequestBodyFormat::Json) {
             $descriptor = OperationSpec::jsonBody($spec);
-            self::jsonQueryNames($params, $arguments, isset($spec['module']));
             $name = $descriptor['php'];
             $present = array_key_exists($name, $arguments);
             if (!$present && $descriptor['required']) {
@@ -82,28 +81,6 @@ final class OperationRunner
     }
 
     /**
-     * Reject reserved names before optional null arguments disappear during encoding.
-     *
-     * @param array<mixed> $params
-     * @param array<string, mixed> $arguments
-     */
-    private static function jsonQueryNames(
-        array $params,
-        #[SensitiveParameter] array $arguments,
-        bool $uapi,
-    ): void {
-        $reserved = $uapi ? ['cpanel.user', 'cpanel.module', 'cpanel.function'] : [];
-        foreach ($params as $argument => $param) {
-            if (!is_string($argument) || !is_array($param) || !is_string($param['name'] ?? null)) {
-                throw new LogicException('Invalid JSON query parameter spec.');
-            }
-            if (array_key_exists($argument, $arguments)) {
-                JsonRouting::assertAllowed($param['name'], $reserved);
-            }
-        }
-    }
-
-    /**
      * Validate the payload against the spec, then apply void, optional or unwrap rules.
      *
      * A spec must declare "returns": an explicit null means a void operation,
@@ -111,7 +88,7 @@ final class OperationRunner
      * defect. When a payload is declared, an omitted data member is invalid; a
      * nullable spec accepts only an explicit null. An "optional" spec instead
      * returns null for an omitted or null data member without validating it. Typed
-     * unchecked UAPI operations still require integer 0/1 status before these
+     * unchecked operations still require integer 0/1 status/result before these
      * result rules; an invalid status raises InvalidResponseException with the
      * captured metadata, outside payload mismatch classification. An
      * unwrapped field must be present in the validated object.
@@ -124,17 +101,21 @@ final class OperationRunner
      * retaining the explicit unvalidated payload on PayloadMismatchException.
      *
      * @param array<mixed> $spec
-     * @throws InvalidResponseException If a typed unchecked UAPI status is not integer 0 or 1.
+     * @throws InvalidResponseException If a typed unchecked status/result is not integer 0 or 1.
      * @throws PayloadMismatchException If the payload does not satisfy the spec.
      * @throws LogicException If the spec is malformed.
      */
     public static function result(array $spec, #[SensitiveParameter] ApiResponse $response): mixed
     {
         $returns = self::returns($spec);
-        if (OperationSpec::outcome($spec) === OutcomePolicy::Unchecked && isset($spec['module'])) {
-            $status = $response->metadata->uapiStatus();
+        if (OperationSpec::outcome($spec) === OutcomePolicy::Unchecked) {
+            $uapi = isset($spec['module']);
+            $status = $uapi ? $response->metadata->uapiStatus() : $response->metadata->whmResult();
             if ($status !== 0 && $status !== 1) {
-                throw new InvalidResponseException('Missing or invalid UAPI outcome.', $response->metadata);
+                throw new InvalidResponseException(
+                    $uapi ? 'Missing or invalid UAPI outcome.' : 'Missing or invalid WHM outcome.',
+                    $response->metadata,
+                );
             }
         }
         if ($returns === null) {

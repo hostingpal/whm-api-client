@@ -125,13 +125,14 @@ var NoteKinds = map[string]string{"documented": "Documented", "observed": "Obser
 // Empty lists always reject; maps explicitly allow/reject empty input.
 // Optional top-level null still omits the parameter.
 type Collection struct {
-	Kind        string  `json:"kind"`
-	ItemType    string  `json:"item_type"`
-	AllowScalar *bool   `json:"allow_scalar"`
-	Empty       string  `json:"empty"`
-	Prefix      *string `json:"prefix,omitempty"`
-	Separator   *string `json:"separator,omitempty"`
-	Start       *int    `json:"start,omitempty"`
+	RejectPrefixedKeys *bool   `json:"reject_prefixed_keys,omitempty"`
+	Kind               string  `json:"kind"`
+	ItemType           string  `json:"item_type"`
+	AllowScalar        *bool   `json:"allow_scalar"`
+	Empty              string  `json:"empty"`
+	Prefix             *string `json:"prefix,omitempty"`
+	Separator          *string `json:"separator,omitempty"`
+	Start              *int    `json:"start,omitempty"`
 }
 
 // Param renames, re-encodes or omits one documented parameter, keyed by wire

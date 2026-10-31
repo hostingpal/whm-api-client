@@ -12,7 +12,7 @@ func (b *builder) additionalMethods(op model.Operation, v model.Variant, ov over
 	var methods []Method
 	sources := map[string]Param{}
 	for _, p := range canonical.Params {
-		sources[p.Wire] = p
+		sources[p.Source] = p
 	}
 	locators := map[string]model.Parameter{}
 	for _, p := range v.Parameters {
@@ -83,7 +83,7 @@ func (b *builder) additionalMethods(op model.Operation, v model.Variant, ov over
 				if p.Sensitive && !*c.Sensitive {
 					fail("record sensitivity cannot discard source secrecy")
 				}
-				records.Fields = append(records.Fields, RecordField{PHP: f.PHP, Prefix: f.Prefix, Type: p.PHPType, Required: p.Required})
+				records.Fields = append(records.Fields, RecordField{PHP: f.PHP, Prefix: f.Prefix, Type: p.PHPType, Required: p.Required, Description: clean(text(locators[f.Source].Definition["description"]))})
 			}
 			p := Param{PHP: input.PHP, Wire: input.PHP, Encoding: "records", PHPType: "array", DocType: "non-empty-list<" + c.Alias + ">", Required: true, Sensitive: *c.Sensitive, Records: records, Description: "Records in input order; optional fields retain their original row index."}
 			method.Params = append(method.Params, p)
