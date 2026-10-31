@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 53 generated typed groups cover 519 documented operations (see
+The 75 generated typed groups cover 674 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, read-only DNS zones
 and resolvers, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -1049,6 +1049,321 @@ the underlying name nor field count. Backup and queue inventories are empty,
 module rows populated, and no mutation ran. Later reviewer observations and
 contract corrections are separate from that historical capture.
 
+### Team and user management
+
+The team and user-management section exposes 35 methods across `team()`,
+`teamRoles()`, `userManager()`, `webDisk()`, `users()` and `passwdStrength()`.
+Eight reads use GET; 27 state-changing or password operations use form POST.
+Passwords remain sensitive parameters. Dotted service-field names are forwarded
+literally, content is form-encoded once, and omitted options retain server defaults.
+Explicit false, zero and empty values remain distinct from omission.
+
+Team role operations can grant owner privileges. `setRoles()` replaces the whole
+role set; omitting its role value removes all roles. Creation's `roles` field is
+comma-separated, while role updates use singular `role`. Activation and password
+reset requests can send email. Service changes can create, associate or remove
+service subaccounts. Team creation without an expiry can return null; supplied
+expiry results preserve integer timestamps with canonical numeric-string
+compatibility. Other Team mutations preserve nullable opaque objects and reject
+missing payloads. Each method retains its source version floor.
+
+`listTeam()` preserves array and hash alternatives, including sensitive password
+payload fields. The hash result uses dynamic username keys under `users`; source
+inspection corrects the pinned literal `username`/`info` reading. Optional unset
+date and last-login empty strings stay distinct from omitted fields. Team role
+descriptions are a list of role records. These corrections are source-backed and
+offline-tested; Team is unavailable on the reviewed server. Team counts and
+nullable subaccount flags are payload values, separate from UAPI status.
+
+User-manager operations preserve source service settings, merge candidates and
+optional fields. The reviewed shared record family preserves null for unset
+contact/profile fields and FTP quota, alongside pinned nullable parent-type,
+subaccount-existence and synchronized-password fields. Operation-specific non-null
+FTP quota types remain unchanged. Password-change success may return opaque text;
+callers must not assume its content. Candidates preserve the known record shape,
+with their own nested candidate lists kept as opaque lists. This finite boundary
+retains deeper data without inventing recursive structure.
+`deleteUser()` permits missing data only where the pinned prose expressly specifies
+metadata-only completion; ordinary nullable-object mutations still reject missing
+data. Required create-user passwords remain required. Web Disk deletion with
+`destroy: true` can remove its home directory. The client does not retry or roll
+back user changes, role grants, removals or password changes.
+
+The fixed nine-GET live catalog reads WHM version, team role counts, role feature
+descriptions, flat subaccount inventory and the `webdisk` password-strength policy;
+each account read uses both routes. Team listings are excluded because their source
+includes password fields. No GUID/service lookup identifiers are guessed, no account
+is modified and no invitation, activation or reset email is sent. All remaining
+methods and variants remain offline-tested under live follow-up `8x0.2.30`.
+
+The corrected team/user-management capture at `9922081` on `11.138.0.19` passes
+four of nine API/payload/probe checks: version, direct subaccount inventory and
+password-strength through both routes. Seven direct inventory null corrections
+pass; five API failures and one masked unknown-field observation with null values
+keep strict status failed and unwaived under `8x0.2.30`. No team listing, password
+retrieval, user/role/service mutation or message sending ran.
+
+### Security and access controls
+
+The security and access section exposes 24 compatible methods across `blockIp()`,
+`modSecurity()`, `clamScanner()`, `knownHosts()`, `externalAuthentication()`, `ssh()`
+and `lastLogin()`. Thirteen reads use GET and eleven mutations use form POST.
+ClamScanner JSON disinfection remains excluded under `8x0.1.18`; generic form
+calls cannot provide that body contract.
+
+IP block inputs retain documented address, hostname and range spellings. ModSecurity
+domain filters are caller-supplied comma-separated strings, encoded once; dependency
+lists identify other affected domains. Per-domain exception fields preserve both
+explicit null and omission. A failed call can still change some domains: re-read
+`listDomains()` before deciding how to proceed. API status remains checked and no
+mutation is retried or rolled back automatically.
+
+ClamScanner preserves source scan types, administrator availability, byte/megabyte
+units, integer counters and lossless integer-or-string start timestamps. `getScanPaths()` preserves its pinned object and observed list-of-records
+alternatives; `getScanStatus()` also accepts the observed explicit null. Disinfection log alternatives use the established generator
+merge, preserving common required `type` and all optional branch fields; no
+per-discriminator validation is inferred. Scanning is a POST operation and does
+not establish successful disinfection. The JSON disinfection operation is absent.
+
+KnownHosts mutations change the selected account's SSH trust file. The reviewer
+observed `create()` obtaining key material without a supplied key; this observation
+does not establish network contact by `verify()`, which remains outside the fixed
+capture. Its payload status is separate from the API status. Provider URLs/icons and public
+key/fingerprint strings remain payload data, without fetching or rendering.
+External account unlinking is a mutation. Subject identifiers preserve integers or
+strings end to end, including strings larger than PHP integers. `removeAuthnLink()`
+sends the provider argument as `provider_id`; successful unlinking is unobserved. SSH access is a
+boolean capability, not proof of login. SSH ports normalize only canonical integer
+strings, and last-login addresses preserve scalar-string and string-list alternatives.
+
+All 24 methods have offline contract coverage. The fixed live catalog performs
+25 GET observations: WHM version plus twelve parameterless scanner, ModSecurity,
+external-authentication, SSH and last-login reads through both account routes.
+No scan, disinfection, security-setting change, block change, external unlink,
+host-key verification, login or remote URL fetch occurs. Empty inventories do not
+prove populated row contracts, and API success does not prove security enforcement.
+Remaining behavior is tracked under `8x0.2.31`.
+
+On reviewed cPanel `11.138.0.19`, missing account ModSecurity access explains its
+read failures; enabled-account reads passed. ExternalAuthentication failed over
+the bridge because its module file was absent, while direct calls worked. These
+are installation-specific observations, not client route restrictions. ClamAV
+was absent, so completed scans remain unobserved. Reviewer lifecycle reports are
+separate from immutable capture evidence; see the source audit. Format-only
+`scan_type` input correction remains tracked in `8x0.1.26` before release.
+
+### Account backup and restoration
+
+The account-backup section exposes 32 compatible methods across `backup()`,
+`restore()`, `wordPressBackup()`, `wordPressRestore()`, `backupInfo()`,
+`extractInfo()` and `websiteBackup()`. Eight explicit reads use GET; 24 operations
+use form POST. Four binary multipart Backup restore endpoints remain excluded
+under `8x0.1.19`, including their alternative server-path modes; generic form access
+does not establish typed upload coverage.
+
+Full backups preserve sensitive remote passwords and SSH key passphrases; `keyName`
+is an existing key identifier, not private-key content. The pinned prerequisite
+text names `SSL::generate_key` and API2 `SSH::importkey`; this UAPI slice does not
+implement API2 key import. Omitting the completion-email
+argument sends no notification. A PID, backup ID or restore ID does not establish
+completion. Restore paths retain required slash conventions and are passed unchanged;
+`overwrite` is required and can replace original content. Source role/version and
+WordPress Manager plugin requirements remain in each generated method.
+
+WordPress results preserve optional fields, null and opaque-object alternatives.
+`WordPressRestore/any_running` preserves both the flat pinned examples and the
+formal optional `items` wrapper, including `any_running`, `sites` and `last_outcome`.
+The `sites` list keeps its known row shape; its formal object alternative is
+unstructured and only documented as empty. No populated keyed-record shape is
+inferred. Both `any_running` placements preserve the documented integer 0/1 values.
+Cancellation and cleanup have their documented result meanings and do not imply
+successful restoration or archive deletion. Returned SSE URLs are never fetched.
+
+BackupInfo, ExtractInfo and WebsiteBackup omit `x-readonly`. Ten methods use the
+conservative form POST fallback; WebsiteBackup creation, deletion, extraction and
+restoration have explicit pinned POST/form contracts and known mutation effects.
+Their POST responses are outside the committed read-only capture; separate reviewer
+lifecycle observations are recorded in the source audit.
+BackupInfo reset clears completion tracking without canceling a run or deleting
+archives. ExtractInfo start records a baseline/marker and extracts no files;
+finish clears that marker after either success or failure. Paths refer to server-side
+account files. The documented estimate limitations remain visible.
+
+WebsiteBackup uses repeated `database` and `ids` fields, preserving order and
+values. Creation with omitted databases backs up files only; omitted email sends
+no notification. Restore defaults differ: databases restore unless
+`restoreDatabases: false` is supplied. Restore merges and overwrites matching files
+by default; `clean: true` can remove later additions. These optional boolean
+switches preserve omission and encode explicit false/true as 0/1. Archive deletion is destructive,
+per-ID failures stay separate from API status, and source ID/domain association
+limits remain explicit. Background operation IDs mean submitted work; inspect
+operation status and errors/warnings for completion. Server database snapshots do
+not imply an atomic site rollback. No client retry or rollback is introduced.
+
+All 32 methods have offline contracts. The fixed nine-GET catalog selects WHM
+version plus account backup inventory, restore-user inventory and both WordPress
+`anyRunning()` reads through both routes. It guesses no site or path and excludes
+all unknown-risk calls, writes, extraction, restoration, deletion and notifications.
+Remaining source/live behavior stays under `8x0.2.32`.
+
+`BackupInfo::reset()` and `ExtractInfo::finish()` accept boolean and integer 0/1
+cleared flags. Quota checks normalize canonical, bounded integer strings only at
+`estimatedBytes` and `availableBytes`. On reviewed cPanel `11.138.0.19`, WordPress
+backup/restore modules were unavailable on both routes. Disabled server backups
+prevented `queryFileInfo()` and `restoreFile()` while `getUsers()` still returned
+an empty list. Missing-archive `ExtractInfo::start()` raises `ApiErrorException`.
+These installation-specific observations preserve normal error handling.
+
+WordPressBackup `cancel()` and `start()` return an optional string `site`,
+preserving the pinned outer type across format-only alternatives. Their generated
+input currently accepts `string|int`; supply a string site as documented. Integer
+site semantics are not established. The generator limitation is tracked under
+`8x0.1.23`; it does not weaken the response contract.
+
+### WHM database administration
+
+`whm()->databases()` exposes 26 compatible database-administration methods: nine
+explicit reads use GET and seventeen operations use form POST. The JSON
+`update_sql_config` endpoint remains excluded under `8x0.1.18`. Remote profile reads
+marked non-readonly in the pinned source also use POST, and their returned password
+fields remain sensitive payload data.
+
+The profile-list source misplaces `additionalProperties`. Its dynamic-name prose
+and multi-profile example establish a root profile map containing exactly the eight
+documented optional fields. Profile-read ports accept bounded canonical integer
+strings observed on the stock localhost profile. The two list flags accept exact
+quoted 0/1 from the pinned example; live values were native integers. Typed
+`cpcloud` create-result flags use source-family compatibility only; no profile
+write was observed. Database/profile keys remain unchanged and wildcarded in
+evidence. Unknown-user `mysql_databases: null` remains distinct from an existing
+account's empty list; it is not a universal account-existence test. Missing and
+null root object payloads remain invalid. Six explicitly metadata-only
+rename/password operations return void. Both profile reads can expose plaintext
+`mysql_pass` in `PayloadMismatchException::$payload`; do not log that raw payload.
+
+Database passwords, SSH/root passwords and key passphrases remain sensitive.
+Stored SSH key names are identifiers. Optional credentials retain documented
+alternatives and conditional requirements without invented validation. Explicit
+false/zero/empty values remain distinct from omission. Root-password updates retain
+the pinned `update_config` and root client-configuration caveats.
+
+Renames can copy data/grants and delete original resources. The pinned rename
+warning describes possible partial failure, but its response location has not
+been observed; no WHM warnings accessor or text-based detector is implied.
+Check the API outcome and explicitly read affected inventory after a rename.
+Profile activation can change credentials, network access and server configuration.
+Password setters take user before password; rename methods take old name before
+new name, with optional `cpuser` last. Passwords retain sensitive-parameter marking.
+
+Pass discovered upgrade versions as exact strings, such as `version: '10.10'`.
+The evidence-gated input union also preserves existing integer/float callers;
+casting a string to float can change the requested version to `10.1`. Upgrades
+have no rollback, and selecting the same version reinstalls the engine. Upgrade
+checks/starters return initiation information and require separate status
+inspection. Available versions do not establish upgrade compatibility or
+completion. The client does not poll, retry or roll back these operations;
+method-specific role/version/prefix caveats remain in generated documentation.
+
+All 26 methods have offline contracts. The fixed nine-GET catalog reads WHM
+version, current/latest/installable database versions, optimization information,
+database/user inventory, `npr` database details and profile-activation status.
+It retrieves no profile passwords and guesses no upgrade ID or remote host.
+No upgrade/checker run, profile validation/activation, password change, rename or
+configuration write occurs. Source/live gaps remain under `8x0.2.33`.
+
+### WHM ModSecurity administration
+
+`whm()->modSecurity()` exposes all 38 pinned functions: eight reads use GET and
+thirty mutations or validation helpers use form POST. Rule and configuration text,
+report messages and setting states remain sensitive inputs. As safety guidance,
+treat returned settings and audit log fragments as private payload data; this is
+reviewer judgment, not a statement from the pinned operation text or a claim that
+secret values were observed. Configuration paths are forwarded without rewriting.
+
+Rule staging, deployment and discard are separate operations. Config activation,
+vendor enablement and automatic vendor updates also have distinct effects. API
+success does not establish that a policy has been deployed or blocks HTTP traffic.
+Vendor preview/add/update may fetch remote content, and `reportRule(send: true)`
+can transmit log information and contact details to a third party. The client adds
+no retries, rollback, URL fetching or automatic deployment.
+
+`batchSettings()` currently supports the pinned single-setting arguments. Its
+indexed multi-setting families remain under `8x0.1.24`. `reportRule()` retains the
+formal integer row-ID input; the contradictory prose's comma-separated multi-ID
+form is also deferred there. The source restricts batch setting IDs to 0 through 9.
+The twelve source-backed empty-result mutations accept an omitted or null payload
+while retaining any returned mixed data; they are not weakened to void. Omitted
+wire payloads on those writes remain unobserved.
+
+`getLog()` preserves the inner `data` list wrapper, including an empty log.
+Log/report `meta_offset` and `meta_msg` accept source-family nullability; populated
+null rows remain unobserved. Get/set settings share the reviewed row shape,
+including exact `string|int` state/default values. Batch defaults keep that same
+union. The report result's array-of-objects prose repairs its omitted container
+type while preserving every declared hit field. Integer rule IDs from getters
+can be passed directly to `disableRule()` and `undisableRule()`.
+
+Omitting `enabled` in `addVendor()` installs and enables the remote rule set by
+default. `getRules()` defaults to excluding bare comments and other directives;
+with neither config nor vendor selector it raises `ApiErrorException` on the
+reviewed server. These defaults are retained without implicit client actions.
+
+All 38 methods have independent offline contract tests. The bounded live recipe
+selects only WHM version, configuration inventory, pending configuration names,
+vendor inventory and installation status. It reads no raw rule/configuration text,
+audit logs or secret-bearing setting states; no protection, vendor, report or
+configuration action runs. Follow-up `8x0.2.34` retains the remaining live behavior
+and source gaps.
+
+### WHM login and mail protection
+
+`whm()->cpHulk()` implements sixteen pinned cPHulk functions, and
+`whm()->mail()` implements fourteen Greylisting functions. Fifteen reads use GET;
+fifteen mutations use form POST. The JSON batch-record operation remains under
+`8x0.1.18`. The provider-configuration setter is excluded under `8x0.1.25` because
+its `PROVIDERKEY` placeholder represents a dynamic parameter name, not a literal
+wire field. The pre-existing Mail SNI exclusion stays intact.
+
+cPHulk configuration can change login protection, firewall blocking and commands
+run after attacks. Command and generic configuration-value inputs remain sensitive.
+Enabling or disabling protection, editing trusted or blocked addresses, and flushing
+login history take effect on the selected server; the client does not retry or
+roll them back. Per-item results and service flags remain separate from API success.
+Greylisting time settings retain their documented units and defaults, and trusted
+provider changes affect future mail handling without proving delivery behavior.
+
+Documented IP/provider lists use the reviewed base-name then `-1`, `-2` encoding.
+Alternative prose using a `-0` first index remains unverified. In `saveConfig()`,
+omitted cPHulk options preserve their current values, as established by the
+reviewed partial-update source; explicit false and zero remain distinct. Other
+operations retain their method-specific omission rules. Response maps preserve
+dynamic keys and optional fields. The source-backed untrust correction retains
+provider error strings in `providers_failed` and `ips_untrusted` records in
+`providers_untrusted`; provider IP entries are lists of the four known fields.
+Trusted-host creation preserves per-IP error strings instead of silently dropping
+those dynamic failures. Save-config enabled flags use the same exact quoted 0/1
+compatibility as load, based on the shared source result; no save was observed.
+
+All four history reads accept bounded canonical integer-string `timeleft` values.
+The excessive-history result also retains its original native integer/float form;
+fractional strings, noncanonical strings and overflow are not newly accepted.
+Only the failed-login string values were observed; the other histories use shared
+source inference. Native fractional values and stored-row null comments remain
+unobserved under `8x0.2.35`.
+
+On the reviewed server Greylisting is disabled. Its reads raise `ApiErrorException`
+while disabled, except status and numeric configuration, which still work. This
+is a version-specific reviewer observation, separate from the committed capture.
+The client does not enable the service or waive API outcomes to populate evidence.
+
+All thirty methods have independent offline contract coverage. The fixed eight-GET
+catalog selects WHM version, cPHulk status and country inventory, and Greylisting
+status, server netblock trust, common-provider configuration, numeric configuration
+and trusted-host inventory. It reads no authentication logs, deferred-message
+records or configured command text. It changes no protection, trust, history or
+mail state and sends no messages. Follow-up `8x0.2.35` retains all unobserved
+variants and enforcement behavior.
+
 ### Generic calls
 
 Use `call()` for functions whose parameters fit the supported GET query or
@@ -1430,35 +1745,3 @@ Project-authored code and documentation are licensed under the
 The bundled cPanel documentation snapshots retain their upstream terms and are
 not covered by the project's MIT license. See the
 [third-party documentation notice](docs/api/README.md#licensing).
-
-## WHM login and mail protection
-
-`whm()->cpHulk()` implements sixteen pinned cPHulk functions, and
-`whm()->mail()` implements fourteen Greylisting functions. Fifteen reads use GET;
-fifteen mutations use form POST. The JSON batch-record operation remains under
-`8x0.1.18`. The provider-configuration setter is excluded under `8x0.1.25` because
-its `PROVIDERKEY` placeholder represents a dynamic parameter name, not a literal
-wire field. The pre-existing Mail SNI exclusion stays intact.
-
-cPHulk configuration can change login protection, firewall blocking and commands
-run after attacks. Command and generic configuration-value inputs remain sensitive.
-Enabling or disabling protection, editing trusted or blocked addresses, and flushing
-login history take effect on the selected server; the client does not retry or
-roll them back. Per-item results and service flags remain separate from API success.
-Greylisting time settings retain their documented units and defaults, and trusted
-provider changes affect future mail handling without proving delivery behavior.
-
-Documented IP/provider lists use the reviewed base-name then `-1`, `-2` encoding.
-Alternative prose using a `-0` first index remains unverified. Omitted values keep
-server defaults, while explicit false and zero are sent. Response maps preserve
-dynamic keys and optional fields; source ambiguities remain explicit rather than
-being silently renamed or broadened. The provider-untrust response keeps its
-counterintuitive documented result-field shapes.
-
-All thirty methods have independent offline contract coverage. The fixed eight-GET
-catalog selects WHM version, cPHulk status and country inventory, and Greylisting
-status, server netblock trust, common-provider configuration, numeric configuration
-and trusted-host inventory. It reads no authentication logs, deferred-message
-records or configured command text. It changes no protection, trust, history or
-mail state and sends no messages. Follow-up `8x0.2.35` retains all unobserved
-variants and enforcement behavior.

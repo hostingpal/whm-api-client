@@ -15,7 +15,8 @@ use InvalidArgumentException;
  *
  * Server-wide mail operations, including Greylisting policy, trusted hosts, common providers and deferred triplets.
  * Trust and configuration changes alter mail deferral policy. Returned triplets contain sender and recipient addresses;
- * the client does not deliver mail or fetch returned addresses.
+ * the client does not deliver mail or fetch returned addresses. The cPanel 11.138.0.19 review used GET reads with
+ * Greylisting disabled; all fifteen writes across the reviewed cPHulk and Greylisting slice remain unobserved.
  *
  * Each method executes one WHM API 1 request immediately with a single attempt and no retries. The handle clears
  * responseMeta() before every attempt and records the envelope snapshot before API or payload errors.
@@ -25,12 +26,12 @@ use InvalidArgumentException;
  * }
  * @phpstan-type CpgreylistListEntriesForCommonMailProviderResult array{
  *     providers?: array<array-key, array{
- *         ips?: array{
+ *         ips?: list<array{
  *             create_time?: string,
  *             host_ip?: string,
  *             is_trusted?: 0|1,
  *             provider_id?: int,
- *         },
+ *         }>,
  *     }>,
  *     providers_failed?: array<array-key, string>,
  * }
@@ -54,10 +55,10 @@ use InvalidArgumentException;
  *     }>,
  * }
  * @phpstan-type CpgreylistUntrustEntriesForCommonMailProviderResult array{
- *     providers_failed?: array<array-key, array{
+ *     providers_failed?: array<array-key, string>,
+ *     providers_untrusted?: array<array-key, array{
  *         ips_untrusted?: int,
  *     }>,
- *     providers_untrusted?: array<array-key, string>,
  * }
  * @phpstan-type CreateCpgreylistTrustedHostResult array{
  *     comment?: string,
@@ -67,9 +68,7 @@ use InvalidArgumentException;
  *         host_ip?: string,
  *         id?: int,
  *     }>,
- *     ips_failed?: array{
- *         comment?: string,
- *     },
+ *     ips_failed?: array<array-key, string>,
  * }
  * @phpstan-type DeleteCpgreylistTrustedHostResult array{
  *     ips_failed?: array<array-key, string>,
@@ -148,6 +147,15 @@ final readonly class Mail
      *
      * Documented: Available in cPanel & WHM 11.50 and later.
      *
+     * Observed: Greylisting was disabled on the reviewed cPanel 11.138.0.19 server. Service-dependent reads raised
+     * ApiErrorException with cPGreyList is disabled on the server, while cpgreylistStatus() and loadCpgreylistConfig()
+     * still worked. No successful enabled-service payload for this operation was observed, and Greylisting was not
+     * enabled for verification.
+     *
+     * Observed: The three disabled-service API errors in the immutable capture are expected for that server state. Both
+     * captures remain strictly failed and unwaived under whm-api-client-8x0.2.35; this explanation does not turn a
+     * failed probe into a pass.
+     *
      * API-map identity: whm1:cpgreylist_is_server_netblock_trusted#GET (wire name
      * cpgreylist_is_server_netblock_trusted; Spam Protection (Greylisting)).
      *
@@ -178,8 +186,14 @@ final readonly class Mail
      * Documented: A string sends the documented single provider parameter. A list emits provider, provider-1,
      * provider-2 through the existing numbered encoding; alternative starting indices have no live verification.
      *
-     * Documented: The pinned providers map contains an ips object with optional fields, not an inferred list of address
-     * rows.
+     * Documented: The pinned example and reviewed cPGreyList.pm source return providers entries with an ips list. Each
+     * row retains optional create_time, host_ip, integer is_trusted flag and integer provider_id. Empty lists remain
+     * empty. This correction is source-backed and tested offline; no populated provider response was observed.
+     *
+     * Observed: Greylisting was disabled on the reviewed cPanel 11.138.0.19 server. Service-dependent reads raised
+     * ApiErrorException with cPGreyList is disabled on the server, while cpgreylistStatus() and loadCpgreylistConfig()
+     * still worked. No successful enabled-service payload for this operation was observed, and Greylisting was not
+     * enabled for verification.
      *
      * API-map identity: whm1:cpgreylist_list_entries_for_common_mail_provider#GET (wire name
      * cpgreylist_list_entries_for_common_mail_provider; Spam Protection (Greylisting)).
@@ -210,6 +224,15 @@ final readonly class Mail
      *
      * Documented: Available in cPanel & WHM 11.52 and later.
      *
+     * Observed: Greylisting was disabled on the reviewed cPanel 11.138.0.19 server. Service-dependent reads raised
+     * ApiErrorException with cPGreyList is disabled on the server, while cpgreylistStatus() and loadCpgreylistConfig()
+     * still worked. No successful enabled-service payload for this operation was observed, and Greylisting was not
+     * enabled for verification.
+     *
+     * Observed: The three disabled-service API errors in the immutable capture are expected for that server state. Both
+     * captures remain strictly failed and unwaived under whm-api-client-8x0.2.35; this explanation does not turn a
+     * failed probe into a pass.
+     *
      * API-map identity: whm1:cpgreylist_load_common_mail_providers_config#GET (wire name
      * cpgreylist_load_common_mail_providers_config; Spam Protection (Greylisting)).
      *
@@ -236,6 +259,9 @@ final readonly class Mail
      * This function returns the status of Greylisting.
      *
      * Documented: Available in cPanel & WHM 11.50 and later.
+     *
+     * Observed: The cPanel 11.138.0.19 review confirmed that this WHM GET works while Greylisting is disabled. This
+     * does not establish service-dependent inventory or write behavior.
      *
      * API-map identity: whm1:cpgreylist_status#GET (wire name cpgreylist_status; Spam Protection (Greylisting)).
      *
@@ -302,8 +328,9 @@ final readonly class Mail
      * Documented: A string sends the documented single provider parameter. A list emits provider, provider-1,
      * provider-2 through the existing numbered encoding; alternative starting indices have no live verification.
      *
-     * Documented: The pinned formal schema places ips_untrusted records under providers_failed and strings under
-     * providers_untrusted. These counterintuitive names and shapes are preserved; no field swap is inferred.
+     * Documented: Reviewed cPGreyList.pm source corrects the reversed pinned shapes: providers_untrusted maps provider
+     * keys to records with optional integer ips_untrusted, and providers_failed maps keys to error strings. Inspect
+     * both maps separately from API status. This is source-backed and tested offline; no untrust write was observed.
      *
      * Documented: Changes server-wide mail deferral policy. Trusted IP addresses bypass Greylisting; untrusted
      * addresses can be deferred. No client retry or rollback is provided.
@@ -342,8 +369,10 @@ final readonly class Mail
      * Documented: A string sends the documented single ip parameter. A list emits ip, ip-1, ip-2 through the existing
      * numbered encoding; alternative starting indices have no live verification.
      *
-     * Documented: The pinned ips_failed schema declares only an optional comment string. Dynamic IP keys are not
-     * invented from the field name.
+     * Documented: Reviewed cPGreyList.pm source makes ips_failed a map from address to error string. Inspect these
+     * per-IP failures separately from API status and ips_added; dynamic keys remain intact. The top-level and row
+     * comment fields stay strings, including an empty string. This is source-backed and tested offline; no create write
+     * or stored-row null comment was observed.
      *
      * Documented: Changes server-wide mail deferral policy. Trusted IP addresses bypass Greylisting; untrusted
      * addresses can be deferred. No client retry or rollback is provided.
@@ -458,6 +487,9 @@ final readonly class Mail
      * leaf; other values and sibling fields remain strict. The original artifact remains failed and does not establish
      * the original scalar value.
      *
+     * Observed: The cPanel 11.138.0.19 review confirmed that this WHM GET works while Greylisting is disabled. This
+     * does not establish service-dependent inventory or write behavior.
+     *
      * API-map identity: whm1:load_cpgreylist_config#GET (wire name load_cpgreylist_config; Spam Protection
      * (Greylisting)).
      *
@@ -481,6 +513,11 @@ final readonly class Mail
      * This function lists Greylisting's deferred triplets. Greylisting identifies incoming email by triplets.
      *
      * Documented: Available in cPanel & WHM 11.50 and later.
+     *
+     * Observed: Greylisting was disabled on the reviewed cPanel 11.138.0.19 server. Service-dependent reads raised
+     * ApiErrorException with cPGreyList is disabled on the server, while cpgreylistStatus() and loadCpgreylistConfig()
+     * still worked. No successful enabled-service payload for this operation was observed, and Greylisting was not
+     * enabled for verification.
      *
      * API-map identity: whm1:read_cpgreylist_deferred_entries#GET (wire name read_cpgreylist_deferred_entries; Spam
      * Protection (Greylisting)).
@@ -508,6 +545,15 @@ final readonly class Mail
      * This function retrieves the entries on the Greylisting Trusted Hosts list.
      *
      * Documented: Available in cPanel & WHM 11.50 and later.
+     *
+     * Observed: Greylisting was disabled on the reviewed cPanel 11.138.0.19 server. Service-dependent reads raised
+     * ApiErrorException with cPGreyList is disabled on the server, while cpgreylistStatus() and loadCpgreylistConfig()
+     * still worked. No successful enabled-service payload for this operation was observed, and Greylisting was not
+     * enabled for verification.
+     *
+     * Observed: The three disabled-service API errors in the immutable capture are expected for that server state. Both
+     * captures remain strictly failed and unwaived under whm-api-client-8x0.2.35; this explanation does not turn a
+     * failed probe into a pass.
      *
      * API-map identity: whm1:read_cpgreylist_trusted_hosts#GET (wire name read_cpgreylist_trusted_hosts; Spam
      * Protection (Greylisting)).
@@ -540,6 +586,10 @@ final readonly class Mail
      *
      * Documented: Changes server-wide mail deferral policy. Trusted IP addresses bypass Greylisting; untrusted
      * addresses can be deferred. No client retry or rollback is provided.
+     *
+     * Documented: Reviewed cPGreyList.pm source returns the same configuration as loadCpgreylistConfig(). Only exact
+     * quoted 0/1 at cpgreylist_config.is_enabled normalize to integer flags, matching the observed getter; sibling
+     * fields remain strict. This save-response correction is source-backed and tested offline. No save was observed.
      *
      * API-map identity: whm1:save_cpgreylist_config#GET (wire name save_cpgreylist_config; Spam Protection
      * (Greylisting)).

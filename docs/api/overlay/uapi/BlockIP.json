@@ -1,0 +1,66 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "BlockIP",
+  "accessor": "blockIp",
+  "operations": {
+    "uapi:BlockIP/add_ip": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later. Disabled when the Web Server role is disabled. Operates on domains owned by the selected cPanel account; ip is required and no default is documented."
+        },
+        {
+          "kind": "documented",
+          "text": "ip is forwarded unchanged. The pinned examples include single IPv4/IPv6 addresses, full and implied IP ranges, IPv4/IPv6 CIDR notation, hostnames resolved by the server and an octet prefix such as 10. The client performs no address expansion or resolution."
+        },
+        {
+          "kind": "documented",
+          "text": "Blocks access to the account domains immediately. The source declares no rollback; the client performs no automatic retry or rollback. Removing a block allows access from the affected address or range."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns the server-translated IP address string list or explicit null. Empty lists remain empty; an absent data member is a payload mismatch."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /BlockIP/add_ip GET declares x-readonly=false and x-rollback=none. Use form POST for this access-control mutation. Preserve required string ip, its documented examples, cPanel 82 floor and nullable string-list data schema without inventing boolean success data."
+        }
+      ]
+    },
+    "uapi:BlockIP/remove_ip": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later. Disabled when the Web Server role is disabled. Operates on domains owned by the selected cPanel account; ip is required and no default is documented."
+        },
+        {
+          "kind": "documented",
+          "text": "ip is forwarded unchanged. The pinned examples include single IPv4/IPv6 addresses, full and implied IP ranges, IPv4/IPv6 CIDR notation, hostnames resolved by the server and an octet prefix such as 10. The client performs no address expansion or resolution."
+        },
+        {
+          "kind": "documented",
+          "text": "Unblocks access to the account domains immediately. The source declares no rollback; the client performs no automatic retry or rollback. Removing a block allows access from the affected address or range."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns the server-translated IP address string list or explicit null. Empty lists remain empty; an absent data member is a payload mismatch."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /BlockIP/remove_ip GET declares x-readonly=false and x-rollback=none. Use form POST for this access-control mutation. Preserve required string ip, its documented examples, cPanel 82 floor and nullable string-list data schema without inventing boolean success data."
+        }
+      ]
+    }
+  }
+}

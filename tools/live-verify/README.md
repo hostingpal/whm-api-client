@@ -1127,6 +1127,136 @@ the underlying name nor field count. Backup and queue inventories are empty,
 module rows populated, and no mutation ran. Later reviewer observations and
 contract corrections are separate from that historical capture.
 
+## Team and user management
+
+`team-user-management.php` binds `team-user-management-v1` to nine exact GETs:
+WHM version plus Team role counts, TeamRoles feature descriptions,
+`UserManager/list_users?flat=1` and `PasswdStrength/get_required_strength?app=webdisk`
+through direct UAPI and the WHM bridge for `npr`. The password-policy application
+comes from the pinned enum/example; no user, GUID or service identifier is guessed.
+
+```bash
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+  php tools/live-verify/team-user-management.php \
+  --output=docs/api/evidence/team-user-management-new.json
+```
+
+Team/list_team is excluded because both pinned alternatives include password
+fields. Subaccount inventory has only password-capability/synchronization flags,
+not password material; it stays structural-only in evidence. Existing exact
+URI/method/body guards, committed-input checks, TLS verification, no retries and
+new-only protected publication remain unchanged. Both tokens are required.
+No user/service/role/password changes, invitation, activation or reset messages
+occur. Strict assessment accepts no discrepancies or historical acknowledgments.
+Follow-up `8x0.2.30` retains other operations and unobserved variants.
+
+The corrected team/user-management capture at `9922081` on `11.138.0.19` passes
+four of nine API/payload/probe checks: version, direct subaccount inventory and
+password-strength through both routes. Seven direct inventory null corrections
+pass; five API failures and one masked unknown-field observation with null values
+keep strict status failed and unwaived under `8x0.2.30`. No team listing, password
+retrieval, user/role/service mutation or message sending ran.
+
+## Security and access controls
+
+`security-access.php` binds `security-access-v1` to 25 exact GET observations:
+WHM version and twelve parameterless account reads, each direct and bridged for
+`npr`. It covers four ClamScanner status/path/infection reads, two ModSecurity reads,
+three ExternalAuthentication reads, both SSH reads and LastLogin. No host, identity,
+file or network target is guessed. KnownHosts/verify is excluded from this fixed
+parameterless catalog; the recipe binds no verification target.
+
+```bash
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+  php tools/live-verify/security-access.php \
+  --output=docs/api/evidence/security-access-new.json
+```
+
+Both tokens, committed inputs, verified TLS, exact URI/method/body guard, no retries
+and new-only output publication are required. Evidence stores structural paths and
+types only, wildcarding dynamic keys; file paths, identities, IPs, icons and URLs
+are not persisted as values. No scan, disinfection, blocking, protection changes,
+external-authentication unlink, host-key mutation/verification, login or URL fetch
+runs. Strict assessment accepts no discrepancies or acknowledgments. Follow-up
+`8x0.2.31` retains all unobserved methods, variants and enforcement behavior.
+
+## Account backup and restoration
+
+`account-backup-restoration.php` binds `account-backup-restoration-v1` to nine
+exact GET observations: WHM version plus Backup/list_backups, Restore/get_users,
+WordPressBackup/any_running and WordPressRestore/any_running through direct UAPI
+and the WHM bridge for `npr`. All are explicitly source-readonly and parameterless;
+no site, backup ID, archive or path is guessed.
+
+```bash
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+  php tools/live-verify/account-backup-restoration.php \
+  --output=docs/api/evidence/account-backup-restoration-new.json
+```
+
+The existing exact URI/method/body guard, committed inputs, both tokens, TLS,
+no retries and new-only output rules apply. Captures preserve structural paths
+and types only, masking dynamic keys and never fetching returned SSE URLs or files.
+No creation, remote transfer, extraction, restoration, cancel/cleanup, deletion,
+tracking reset or email notification runs. Fourteen newer operations remain
+outside this catalog: ten use conservative POST selection, while four WebsiteBackup
+mutations have explicit pinned POST/form contracts. Strict assessment
+accepts no discrepancies or acknowledgments; `8x0.2.32` retains all source/live gaps.
+
+## WHM database administration
+
+`whm-databases.php` binds `whm-databases-v1` to nine exact WHM GETs: version,
+current/latest/installable MySQL versions, database optimization information,
+database users, databases, MySQL database/user details for `npr`, and remote profile
+activation status. Only the account-detail read supplies `user=npr`; all others
+have only `api.version=1`. The source-declared status fields include no credentials.
+
+```bash
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+  php tools/live-verify/whm-databases.php \
+  --output=docs/api/evidence/whm-databases-new.json
+```
+
+The shared command requires both tokens and committed inputs even though this
+catalog uses only WHM. Exact URI/method/body guards, verified TLS, no retries and
+new-only output publication remain unchanged. Structural-only evidence wildcards
+database/profile keys and never persists values. Profile credential reads and
+background-upgrade status requiring an ID are excluded; no ID or network target
+is guessed. No upgrade, checker run, profile creation/validation/activation,
+password, rename or configuration mutation occurs. Strict assessment accepts no
+discrepancies or acknowledgments; `8x0.2.33` retains remaining live behavior.
+
+
+The corrected nine-GET artifact at `00ba48d` is already complete and strictly
+passing; retain it and the initial failed artifact. Separate reviewer profile-read
+and disposable-account lifecycle observations in review 5720420360 do not expand
+this catalog. Profile responses and unvalidated exception payloads may contain
+plaintext passwords; the catalog still excludes those credential reads.
+
+## WHM ModSecurity inventory
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/whm-modsecurity.php \
+  --output=docs/api/evidence/YYYY-MM-DD-whm-modsecurity.json
+```
+
+The fixed five-GET catalog reads WHM version, `modsec_get_configs`,
+`modsec_get_configs_with_changes_pending`, `modsec_get_vendors` and
+`modsec_is_installed` on the designated test server. It uses the existing exact
+request guard, opt-in, committed-input checks, verified TLS and structural evidence
+capture. It does not read raw configuration/rule text, audit logs or settings that
+may contain an access key. It sends no report, mutation, vendor download or URL
+fetch. Empty inventories establish no populated-row or enforcement behavior.
+Keep failures immutable and remaining coverage under `8x0.2.34`.
+
+
+On the reviewed `11.138.0.19` server, the pending-config read returns API result 0
+when there are no pending changes. `Flag` therefore raises `ApiErrorException`
+for this normal idle state as well as other failures; do not match error text or
+waive the immutable capture. Separate reviewer log/settings reads do not expand
+this catalog, and all thirty server-wide write/helper operations remain unobserved.
+
 ## WHM login and mail protection inventory
 
 ```sh
@@ -1142,3 +1272,11 @@ committed-input checks, verified TLS and structural evidence capture apply.
 Authentication logs, deferred mail records and configured command text are
 excluded. No protection, trust, history, configuration or mail state is changed,
 and no message is sent. Source/runtime gaps remain under `8x0.2.35`.
+
+
+The three retained API failures were independently diagnosed as disabled Greylisting
+on `11.138.0.19`; status and configuration reads still work. Preserve both failed
+artifacts and strict assessments without waivers. Do not enable Greylisting or
+repeat the catalog merely to make it pass. Separate reviewer login-history reads
+and source-backed write-result corrections do not expand this eight-GET capture;
+all fifteen server-wide/lockout writes remain unobserved.

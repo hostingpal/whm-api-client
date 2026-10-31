@@ -42,12 +42,15 @@ final class MailSpec
                         'type' => 'object',
                         'fields' => [
                             'ips' => [
-                                'type' => 'object',
-                                'fields' => [
-                                    'create_time' => ['type' => 'string'],
-                                    'host_ip' => ['type' => 'string'],
-                                    'is_trusted' => ['type' => 'flag'],
-                                    'provider_id' => ['type' => 'int'],
+                                'type' => 'list',
+                                'items' => [
+                                    'type' => 'object',
+                                    'fields' => [
+                                        'create_time' => ['type' => 'string'],
+                                        'host_ip' => ['type' => 'string'],
+                                        'is_trusted' => ['type' => 'flag'],
+                                        'provider_id' => ['type' => 'int'],
+                                    ],
                                 ],
                             ],
                         ],
@@ -131,7 +134,8 @@ final class MailSpec
         'returns' => [
             'type' => 'object',
             'fields' => [
-                'providers_failed' => [
+                'providers_failed' => ['type' => 'map', 'values' => ['type' => 'string']],
+                'providers_untrusted' => [
                     'type' => 'map',
                     'values' => [
                         'type' => 'object',
@@ -140,7 +144,6 @@ final class MailSpec
                         ],
                     ],
                 ],
-                'providers_untrusted' => ['type' => 'map', 'values' => ['type' => 'string']],
             ],
         ],
     ];
@@ -169,12 +172,7 @@ final class MailSpec
                         ],
                     ],
                 ],
-                'ips_failed' => [
-                    'type' => 'object',
-                    'fields' => [
-                        'comment' => ['type' => 'string'],
-                    ],
-                ],
+                'ips_failed' => ['type' => 'map', 'values' => ['type' => 'string']],
             ],
         ],
     ];
@@ -317,7 +315,7 @@ final class MailSpec
                     'fields' => [
                         'child_timeout_secs' => ['type' => 'int'],
                         'initial_block_time_mins' => ['type' => 'int'],
-                        'is_enabled' => ['type' => 'flag'],
+                        'is_enabled' => ['type' => 'flag', 'accept' => ['string-flag']],
                         'is_exim_enabled' => ['type' => 'flag'],
                         'max_child_procs' => ['type' => 'int'],
                         'must_try_time_mins' => ['type' => 'int'],

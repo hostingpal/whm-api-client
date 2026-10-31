@@ -4,7 +4,7 @@
   "group": "Login Security (cPHulk)",
   "accessor": "cpHulk",
   "class": "CpHulk",
-  "description": "Server-wide cPHulk login security, configuration, address lists and history. Configuration and list changes affect login policy immediately; history removals are destructive. Returned commands and login records are payload data and may contain sensitive information.",
+  "description": "Server-wide cPHulk login security, configuration, address lists and history. Configuration and list changes affect login policy immediately; history removals are destructive. Returned commands and login records are payload data and may contain sensitive information. The cPanel 11.138.0.19 review used GET reads only; all fifteen writes across the reviewed cPHulk and Greylisting slice remain unobserved.",
   "operations": {
     "whm1:batch_create_cphulk_records": {
       "exclude": {
@@ -302,8 +302,27 @@
         {
           "kind": "documented",
           "text": "Available in cPanel & WHM 11.48 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Canonical integer-string timeleft compatibility is inferred from the shared _get_cphulk_login_history source and the observed failed-login rows. This history was empty in the cPanel 11.138.0.19 review, so no populated result for this operation was observed. Only canonical strings within PHP integer bounds are normalized; other fields remain strict."
         }
-      ]
+      ],
+      "response": {
+        "brutes[].timeleft": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Review https://github.com/hostingpal/whm-api-client/pull/48#pullrequestreview-5720507218: Whostmgr/API/1/cPHulk.pm on cPanel 11.138.0.19 routes get_cphulk_brutes and get_cphulk_failed_logins through the same _get_cphulk_login_history backend. Only the 110 failed-login rows supplied observed whole digit-string timeleft values; get_cphulk_brutes was empty. Canonical bounded integer-string compatibility here is inferred from that shared source and verified offline, not from populated results of this operation. Preserve the pinned timeleft type and all sibling fields. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        }
+      }
     },
     "whm1:get_cphulk_excessive_brutes": {
       "name": "getExcessiveBrutes",
@@ -326,8 +345,42 @@
         {
           "kind": "documented",
           "text": "Available in cPanel & WHM 11.48 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Canonical integer-string timeleft compatibility is inferred from the shared _get_cphulk_login_history source and the observed failed-login rows. This history was empty in the cPanel 11.138.0.19 review, so no populated result for this operation was observed. Only canonical strings within PHP integer bounds are normalized; other fields remain strict."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned number contract retains native integer and float timeleft values. The separate string branch accepts only canonical bounded integer strings, not decimal, exponent, leading-zero or overflow strings. Fractional timeleft remains supported by the pinned schema but was not observed."
         }
-      ]
+      ],
+      "response": {
+        "excessive_brutes[].timeleft": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "int",
+                "accept": [
+                  "numeric-string"
+                ]
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Review https://github.com/hostingpal/whm-api-client/pull/48#pullrequestreview-5720507218: Whostmgr/API/1/cPHulk.pm on cPanel 11.138.0.19 routes get_cphulk_excessive_brutes and get_cphulk_failed_logins through the same _get_cphulk_login_history backend. Only the 110 failed-login rows supplied observed whole digit-string timeleft values; get_cphulk_excessive_brutes was empty. Canonical bounded integer-string compatibility here is inferred from that shared source and verified offline, not from populated results of this operation. Preserve the pinned timeleft type and all sibling fields. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        }
+      }
     },
     "whm1:get_cphulk_failed_logins": {
       "name": "getFailedLogins",
@@ -344,14 +397,39 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "The pinned get_cphulk_failed_logins x-cpanel-available-version is 11.48; preserve this exact availability floor in the generated method documentation. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/48#pullrequestreview-5720507218 of 0ab1b3511b360ea3b4b6c8a5d1fdab46d6b9f829: WHM GET get_cphulk_failed_logins on cPanel 11.138.0.19 returned 110 rows, all with whole digit-string timeleft values, causing the original integer contract to fail. Accept canonical integer strings within PHP integer bounds only and normalize to int. Fractional values were not observed; no other row fields are widened. The review printed types and field names only, not login values."
         }
       ],
       "notes": [
         {
           "kind": "documented",
           "text": "Available in cPanel & WHM 11.48 and later."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, the reviewed WHM GET returned 110 failed-login rows with whole digit-string timeleft values. Canonical integer strings within PHP integer bounds normalize to int; other fields remain strict. Decimal, leading-zero, exponent and out-of-range strings are not accepted. No fractional timeleft was observed."
         }
-      ]
+      ],
+      "response": {
+        "failed_logins[].timeleft": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Review https://github.com/hostingpal/whm-api-client/pull/48#pullrequestreview-5720507218 of 0ab1b3511b360ea3b4b6c8a5d1fdab46d6b9f829: WHM GET get_cphulk_failed_logins on cPanel 11.138.0.19 returned 110 rows, all with whole digit-string timeleft values, causing the original integer contract to fail. Accept canonical integer strings within PHP integer bounds only and normalize to int. Fractional values were not observed; no other row fields are widened. The review printed types and field names only, not login values."
+            }
+          ]
+        }
+      }
     },
     "whm1:get_cphulk_user_brutes": {
       "name": "getUserBrutes",
@@ -374,8 +452,27 @@
         {
           "kind": "documented",
           "text": "Available in cPanel & WHM 11.48 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Canonical integer-string timeleft compatibility is inferred from the shared _get_cphulk_login_history source and the observed failed-login rows. This history was empty in the cPanel 11.138.0.19 review, so no populated result for this operation was observed. Only canonical strings within PHP integer bounds are normalized; other fields remain strict."
         }
-      ]
+      ],
+      "response": {
+        "user_brutes[].timeleft": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Review https://github.com/hostingpal/whm-api-client/pull/48#pullrequestreview-5720507218: Whostmgr/API/1/cPHulk.pm on cPanel 11.138.0.19 routes get_cphulk_user_brutes and get_cphulk_failed_logins through the same _get_cphulk_login_history backend. Only the 110 failed-login rows supplied observed whole digit-string timeleft values; get_cphulk_user_brutes was empty. Canonical bounded integer-string compatibility here is inferred from that shared source and verified offline, not from populated results of this operation. Preserve the pinned timeleft type and all sibling fields. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        }
+      }
     },
     "whm1:load_cphulk_config": {
       "name": "loadConfig",
@@ -448,6 +545,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "The pinned save_cphulk_config x-cpanel-available-version is 11.48; preserve this exact availability floor in the generated method documentation. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/48#pullrequestreview-5720507218: savecphulkconf in the reviewed cPHulk source copies old_conf_ref[key] for omitted configuration keys. saveConfig therefore preserves current values for omitted settings, separately from skip_enabled_check request behavior. This is source-only evidence from cPanel 11.138.0.19; no configuration write was performed."
         }
       ],
       "order": [
@@ -489,7 +592,7 @@
         },
         {
           "kind": "documented",
-          "text": "Changes server-wide security policy. Command inputs may execute when protection is triggered and may contain secrets; they are sensitive arguments and are sent once as form data. Omitted options retain server defaults; explicit zero and false remain supplied values."
+          "text": "Changes server-wide security policy. Command inputs may execute when protection is triggered and may contain secrets; they are sensitive arguments and are sent once as form data. Reviewed savecphulkconf source retains each omitted configuration key from its current value, making this a partial update; it does not reset omitted settings to defaults. Explicit zero and false remain supplied values."
         },
         {
           "kind": "documented",
@@ -537,7 +640,7 @@
         },
         {
           "kind": "documented",
-          "text": "Changes server-wide security policy. Command inputs may execute when protection is triggered and may contain secrets; they are sensitive arguments and are sent once as form data. Omitted options retain server defaults; explicit zero and false remain supplied values."
+          "text": "Changes server-wide security policy. Command inputs may execute when protection is triggered and may contain secrets; they are sensitive arguments and are sent once as form data."
         },
         {
           "kind": "documented",

@@ -32,12 +32,26 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "The pinned cpgreylist_is_server_netblock_trusted x-cpanel-available-version is 11.50; preserve this exact availability floor in the generated method documentation. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/48#pullrequestreview-5720507218 establishes that Cpanel::GreyList::Config::is_enabled() was false on cPanel 11.138.0.19 and identifies the disabled service as the cause of service-dependent read failures. This operation is one of the three API failures in the immutable initial and corrected captures. The observed captures failed for cpgreylist_is_server_netblock_trusted, cpgreylist_load_common_mail_providers_config and read_cpgreylist_trusted_hosts. Status and load config still worked. No enabled-service response or service enablement is established."
         }
       ],
       "notes": [
         {
           "kind": "documented",
           "text": "Available in cPanel & WHM 11.50 and later."
+        },
+        {
+          "kind": "observed",
+          "text": "Greylisting was disabled on the reviewed cPanel 11.138.0.19 server. Service-dependent reads raised ApiErrorException with cPGreyList is disabled on the server, while cpgreylistStatus() and loadCpgreylistConfig() still worked. No successful enabled-service payload for this operation was observed, and Greylisting was not enabled for verification."
+        },
+        {
+          "kind": "observed",
+          "text": "The three disabled-service API errors in the immutable capture are expected for that server state. Both captures remain strictly failed and unwaived under whm-api-client-8x0.2.35; this explanation does not turn a failed probe into a pass."
         }
       ]
     },
@@ -56,6 +70,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "The pinned cpgreylist_list_entries_for_common_mail_provider x-cpanel-available-version is 11.52; preserve this exact availability floor in the generated method documentation. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/48#pullrequestreview-5720507218 establishes that Cpanel::GreyList::Config::is_enabled() was false on cPanel 11.138.0.19 and identifies the disabled service as the cause of service-dependent read failures. This operation was not part of the committed eight-GET capture; its enabled-service payload shape remains source/offline evidence only. The observed captures failed for cpgreylist_is_server_netblock_trusted, cpgreylist_load_common_mail_providers_config and read_cpgreylist_trusted_hosts. Status and load config still worked. No enabled-service response or service enablement is established."
         }
       ],
       "order": [
@@ -72,13 +92,49 @@
         },
         {
           "kind": "documented",
-          "text": "The pinned providers map contains an ips object with optional fields, not an inferred list of address rows."
+          "text": "The pinned example and reviewed cPGreyList.pm source return providers entries with an ips list. Each row retains optional create_time, host_ip, integer is_trusted flag and integer provider_id. Empty lists remain empty. This correction is source-backed and tested offline; no populated provider response was observed."
+        },
+        {
+          "kind": "observed",
+          "text": "Greylisting was disabled on the reviewed cPanel 11.138.0.19 server. Service-dependent reads raised ApiErrorException with cPGreyList is disabled on the server, while cpgreylistStatus() and loadCpgreylistConfig() still worked. No successful enabled-service payload for this operation was observed, and Greylisting was not enabled for verification."
         }
       ],
       "params": {
         "provider": {
           "php": "providers",
           "encoding": "numbered"
+        }
+      },
+      "response": {
+        "providers{}.ips": {
+          "replace": {
+            "type": "list",
+            "items": {
+              "type": "object",
+              "fields": {
+                "create_time": {
+                  "type": "string"
+                },
+                "host_ip": {
+                  "type": "string"
+                },
+                "is_trusted": {
+                  "type": "flag"
+                },
+                "provider_id": {
+                  "type": "int"
+                }
+              }
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Review https://github.com/hostingpal/whm-api-client/pull/48#pullrequestreview-5720507218: cPGreyList.pm assigns providers[provider].ips from the backend list reply, and the pinned /cpgreylist_list_entries_for_common_mail_provider data example contains two ips rows despite the formal object shape. Preserve the four optional pinned fields create_time, host_ip, is_trusted and provider_id as a list item, with unchanged scalar types. This is pinned/source evidence and offline replay only; Greylisting was disabled and no populated provider list was observed. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
         }
       }
     },
@@ -97,12 +153,26 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "The pinned cpgreylist_load_common_mail_providers_config x-cpanel-available-version is 11.52; preserve this exact availability floor in the generated method documentation. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/48#pullrequestreview-5720507218 establishes that Cpanel::GreyList::Config::is_enabled() was false on cPanel 11.138.0.19 and identifies the disabled service as the cause of service-dependent read failures. This operation is one of the three API failures in the immutable initial and corrected captures. The observed captures failed for cpgreylist_is_server_netblock_trusted, cpgreylist_load_common_mail_providers_config and read_cpgreylist_trusted_hosts. Status and load config still worked. No enabled-service response or service enablement is established."
         }
       ],
       "notes": [
         {
           "kind": "documented",
           "text": "Available in cPanel & WHM 11.52 and later."
+        },
+        {
+          "kind": "observed",
+          "text": "Greylisting was disabled on the reviewed cPanel 11.138.0.19 server. Service-dependent reads raised ApiErrorException with cPGreyList is disabled on the server, while cpgreylistStatus() and loadCpgreylistConfig() still worked. No successful enabled-service payload for this operation was observed, and Greylisting was not enabled for verification."
+        },
+        {
+          "kind": "observed",
+          "text": "The three disabled-service API errors in the immutable capture are expected for that server state. Both captures remain strictly failed and unwaived under whm-api-client-8x0.2.35; this explanation does not turn a failed probe into a pass."
         }
       ]
     },
@@ -134,12 +204,22 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "The pinned cpgreylist_status x-cpanel-available-version is 11.50; preserve this exact availability floor in the generated method documentation. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/48#pullrequestreview-5720507218: cpgreylist_status and load_cpgreylist_config succeeded through WHM GET on cPanel 11.138.0.19 while Greylisting was disabled. The three service-dependent capture errors remain failed and unwaived; no service enablement or writes were performed."
         }
       ],
       "notes": [
         {
           "kind": "documented",
           "text": "Available in cPanel & WHM 11.50 and later."
+        },
+        {
+          "kind": "observed",
+          "text": "The cPanel 11.138.0.19 review confirmed that this WHM GET works while Greylisting is disabled. This does not establish service-dependent inventory or write behavior."
         }
       ]
     },
@@ -215,7 +295,7 @@
         },
         {
           "kind": "documented",
-          "text": "The pinned formal schema places ips_untrusted records under providers_failed and strings under providers_untrusted. These counterintuitive names and shapes are preserved; no field swap is inferred."
+          "text": "Reviewed cPGreyList.pm source corrects the reversed pinned shapes: providers_untrusted maps provider keys to records with optional integer ips_untrusted, and providers_failed maps keys to error strings. Inspect both maps separately from API status. This is source-backed and tested offline; no untrust write was observed."
         },
         {
           "kind": "documented",
@@ -226,6 +306,45 @@
         "provider": {
           "php": "providers",
           "encoding": "numbered"
+        }
+      },
+      "response": {
+        "providers_failed": {
+          "replace": {
+            "type": "map",
+            "values": {
+              "type": "string"
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Review https://github.com/hostingpal/whm-api-client/pull/48#pullrequestreview-5720507218: Whostmgr/API/1/cPGreyList.pm on cPanel 11.138.0.19 assigns providers_untrusted[provider].ips_untrusted to the returned integer count and providers_failed[provider] to an error string, matching the trust-operation structure. The pinned untrust schema reverses these shapes. Preserve dynamic provider keys, optional ips_untrusted and strict integer counts. This correction is source-backed and tested offline; no untrust write or successful enabled-service response was observed. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        },
+        "providers_untrusted": {
+          "replace": {
+            "type": "map",
+            "values": {
+              "type": "object",
+              "fields": {
+                "ips_untrusted": {
+                  "type": "int"
+                }
+              }
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Review https://github.com/hostingpal/whm-api-client/pull/48#pullrequestreview-5720507218: Whostmgr/API/1/cPGreyList.pm on cPanel 11.138.0.19 assigns providers_untrusted[provider].ips_untrusted to the returned integer count and providers_failed[provider] to an error string, matching the trust-operation structure. The pinned untrust schema reverses these shapes. Preserve dynamic provider keys, optional ips_untrusted and strict integer counts. This correction is source-backed and tested offline; no untrust write or successful enabled-service response was observed. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
         }
       }
     },
@@ -261,7 +380,7 @@
         },
         {
           "kind": "documented",
-          "text": "The pinned ips_failed schema declares only an optional comment string. Dynamic IP keys are not invented from the field name."
+          "text": "Reviewed cPGreyList.pm source makes ips_failed a map from address to error string. Inspect these per-IP failures separately from API status and ips_added; dynamic keys remain intact. The top-level and row comment fields stay strings, including an empty string. This is source-backed and tested offline; no create write or stored-row null comment was observed."
         },
         {
           "kind": "documented",
@@ -272,6 +391,24 @@
         "ip": {
           "php": "ips",
           "encoding": "numbered"
+        }
+      },
+      "response": {
+        "ips_failed": {
+          "replace": {
+            "type": "map",
+            "values": {
+              "type": "string"
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Review https://github.com/hostingpal/whm-api-client/pull/48#pullrequestreview-5720507218: cPGreyList.pm builds ips_failed[ip] = error string in create_cpgreylist_trusted_host. The pinned literal comment field hides these dynamic address keys, while delete_cpgreylist_trusted_host already models the map. Preserve each failed address and its error string. No create write was observed; this is source-backed and tested offline. Keep the top-level and ips_added row comment fields as strings: source returns comment or an empty string, and stored-row null is unobserved. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
         }
       }
     },
@@ -395,6 +532,12 @@
           "version": "11.138.0.19",
           "date": "2026-10-31",
           "note": "Immutable docs/api/evidence/2026-10-31-whm-login-mail-protection.json (SHA-256 60326d0c8bc7435124aca7c178c99a3dea11a1ab06476f9afff59e9411ac6f9d), captured at revision b99dd1f35aa591deb7803dc7f298296f1338a33b through WHM GET load_cpgreylist_config, records HTTP/API success and a numeric-string type mismatch solely at $.cpgreylist_config.is_enabled. The pinned leaf is an integer 0|1 flag, so compatibility accepts only exact quoted 0/1 and normalizes them to integers. The structural artifact does not preserve the original scalar value or establish other numeric strings, sibling fields or operations. The original capture remains failed; its three API errors are unwaived."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/48#pullrequestreview-5720507218: cpgreylist_status and load_cpgreylist_config succeeded through WHM GET on cPanel 11.138.0.19 while Greylisting was disabled. The three service-dependent capture errors remain failed and unwaived; no service enablement or writes were performed."
         }
       ],
       "notes": [
@@ -405,6 +548,10 @@
         {
           "kind": "observed",
           "text": "On 11.138.0.19 the immutable initial capture at b99dd1f35aa591deb7803dc7f298296f1338a33b records a numeric-string at cpgreylist_config.is_enabled. Only exact quoted 0/1 flags are normalized to integer 0/1 at this leaf; other values and sibling fields remain strict. The original artifact remains failed and does not establish the original scalar value."
+        },
+        {
+          "kind": "observed",
+          "text": "The cPanel 11.138.0.19 review confirmed that this WHM GET works while Greylisting is disabled. This does not establish service-dependent inventory or write behavior."
         }
       ],
       "response": {
@@ -438,12 +585,22 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "The pinned read_cpgreylist_deferred_entries x-cpanel-available-version is 11.50; preserve this exact availability floor in the generated method documentation. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/48#pullrequestreview-5720507218 establishes that Cpanel::GreyList::Config::is_enabled() was false on cPanel 11.138.0.19 and identifies the disabled service as the cause of service-dependent read failures. This operation was not part of the committed eight-GET capture; its enabled-service payload shape remains source/offline evidence only. The observed captures failed for cpgreylist_is_server_netblock_trusted, cpgreylist_load_common_mail_providers_config and read_cpgreylist_trusted_hosts. Status and load config still worked. No enabled-service response or service enablement is established."
         }
       ],
       "notes": [
         {
           "kind": "documented",
           "text": "Available in cPanel & WHM 11.50 and later."
+        },
+        {
+          "kind": "observed",
+          "text": "Greylisting was disabled on the reviewed cPanel 11.138.0.19 server. Service-dependent reads raised ApiErrorException with cPGreyList is disabled on the server, while cpgreylistStatus() and loadCpgreylistConfig() still worked. No successful enabled-service payload for this operation was observed, and Greylisting was not enabled for verification."
         }
       ]
     },
@@ -462,12 +619,26 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "The pinned read_cpgreylist_trusted_hosts x-cpanel-available-version is 11.50; preserve this exact availability floor in the generated method documentation. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/48#pullrequestreview-5720507218 establishes that Cpanel::GreyList::Config::is_enabled() was false on cPanel 11.138.0.19 and identifies the disabled service as the cause of service-dependent read failures. This operation is one of the three API failures in the immutable initial and corrected captures. The observed captures failed for cpgreylist_is_server_netblock_trusted, cpgreylist_load_common_mail_providers_config and read_cpgreylist_trusted_hosts. Status and load config still worked. No enabled-service response or service enablement is established."
         }
       ],
       "notes": [
         {
           "kind": "documented",
           "text": "Available in cPanel & WHM 11.50 and later."
+        },
+        {
+          "kind": "observed",
+          "text": "Greylisting was disabled on the reviewed cPanel 11.138.0.19 server. Service-dependent reads raised ApiErrorException with cPGreyList is disabled on the server, while cpgreylistStatus() and loadCpgreylistConfig() still worked. No successful enabled-service payload for this operation was observed, and Greylisting was not enabled for verification."
+        },
+        {
+          "kind": "observed",
+          "text": "The three disabled-service API errors in the immutable capture are expected for that server state. Both captures remain strictly failed and unwaived under whm-api-client-8x0.2.35; this explanation does not turn a failed probe into a pass."
         }
       ]
     },
@@ -509,9 +680,28 @@
         {
           "kind": "documented",
           "text": "Changes server-wide mail deferral policy. Trusted IP addresses bypass Greylisting; untrusted addresses can be deferred. No client retry or rollback is provided."
+        },
+        {
+          "kind": "documented",
+          "text": "Reviewed cPGreyList.pm source returns the same configuration as loadCpgreylistConfig(). Only exact quoted 0/1 at cpgreylist_config.is_enabled normalize to integer flags, matching the observed getter; sibling fields remain strict. This save-response correction is source-backed and tested offline. No save was observed."
         }
-      ]
+      ],
+      "response": {
+        "cpgreylist_config.is_enabled": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Review https://github.com/hostingpal/whm-api-client/pull/48#pullrequestreview-5720507218: save_cpgreylist_config returns load_cpgreylist_config output in Whostmgr/API/1/cPGreyList.pm on cPanel 11.138.0.19. The load getter has an observed quoted is_enabled flag and an existing exact string-flag correction. Apply the same exact quoted 0/1 compatibility to this leaf, normalizing to integer 0/1 without widening sibling flags. No save call was performed; this write-response compatibility is shared-source inference and offline replay, not a live write result. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        }
+      }
     }
   },
-  "description": "Server-wide mail operations, including Greylisting policy, trusted hosts, common providers and deferred triplets. Trust and configuration changes alter mail deferral policy. Returned triplets contain sender and recipient addresses; the client does not deliver mail or fetch returned addresses."
+  "description": "Server-wide mail operations, including Greylisting policy, trusted hosts, common providers and deferred triplets. Trust and configuration changes alter mail deferral policy. Returned triplets contain sender and recipient addresses; the client does not deliver mail or fetch returned addresses. The cPanel 11.138.0.19 review used GET reads with Greylisting disabled; all fifteen writes across the reviewed cPHulk and Greylisting slice remain unobserved."
 }

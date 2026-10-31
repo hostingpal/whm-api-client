@@ -16,7 +16,8 @@ use SensitiveParameter;
  *
  * Server-wide cPHulk login security, configuration, address lists and history. Configuration and list changes affect
  * login policy immediately; history removals are destructive. Returned commands and login records are payload data and
- * may contain sensitive information.
+ * may contain sensitive information. The cPanel 11.138.0.19 review used GET reads only; all fifteen writes across the
+ * reviewed cPHulk and Greylisting slice remain unobserved.
  *
  * Each method executes one WHM API 1 request immediately with a single attempt and no retries. The handle clears
  * responseMeta() before every attempt and records the envelope snapshot before API or payload errors.
@@ -66,7 +67,7 @@ use SensitiveParameter;
  *         ip?: string,
  *         logintime?: string,
  *         notes?: string,
- *         timeleft?: int|float,
+ *         timeleft?: int|float|int,
  *     }>,
  * }
  * @phpstan-type GetFailedLoginsResult array{
@@ -388,6 +389,11 @@ final readonly class CpHulk
      *
      * Documented: Available in cPanel & WHM 11.48 and later.
      *
+     * Documented: Canonical integer-string timeleft compatibility is inferred from the shared _get_cphulk_login_history
+     * source and the observed failed-login rows. This history was empty in the cPanel 11.138.0.19 review, so no
+     * populated result for this operation was observed. Only canonical strings within PHP integer bounds are
+     * normalized; other fields remain strict.
+     *
      * API-map identity: whm1:get_cphulk_brutes#GET (wire name get_cphulk_brutes; Reporting).
      *
      * @return GetBrutesResult
@@ -438,6 +444,15 @@ final readonly class CpHulk
      *
      * Documented: Available in cPanel & WHM 11.48 and later.
      *
+     * Documented: Canonical integer-string timeleft compatibility is inferred from the shared _get_cphulk_login_history
+     * source and the observed failed-login rows. This history was empty in the cPanel 11.138.0.19 review, so no
+     * populated result for this operation was observed. Only canonical strings within PHP integer bounds are
+     * normalized; other fields remain strict.
+     *
+     * Documented: The pinned number contract retains native integer and float timeleft values. The separate string
+     * branch accepts only canonical bounded integer strings, not decimal, exponent, leading-zero or overflow strings.
+     * Fractional timeleft remains supported by the pinned schema but was not observed.
+     *
      * API-map identity: whm1:get_cphulk_excessive_brutes#GET (wire name get_cphulk_excessive_brutes; Reporting).
      *
      * @return GetExcessiveBrutesResult
@@ -461,6 +476,11 @@ final readonly class CpHulk
      *
      * Documented: Available in cPanel & WHM 11.48 and later.
      *
+     * Observed: On cPanel 11.138.0.19, the reviewed WHM GET returned 110 failed-login rows with whole digit-string
+     * timeleft values. Canonical integer strings within PHP integer bounds normalize to int; other fields remain
+     * strict. Decimal, leading-zero, exponent and out-of-range strings are not accepted. No fractional timeleft was
+     * observed.
+     *
      * API-map identity: whm1:get_cphulk_failed_logins#GET (wire name get_cphulk_failed_logins; Reporting).
      *
      * @return GetFailedLoginsResult
@@ -483,6 +503,11 @@ final readonly class CpHulk
      * This function lists brute force attack entries from the cPHulk database, ordered by user accounts.
      *
      * Documented: Available in cPanel & WHM 11.48 and later.
+     *
+     * Documented: Canonical integer-string timeleft compatibility is inferred from the shared _get_cphulk_login_history
+     * source and the observed failed-login rows. This history was empty in the cPanel 11.138.0.19 review, so no
+     * populated result for this operation was observed. Only canonical strings within PHP integer bounds are
+     * normalized; other fields remain strict.
      *
      * API-map identity: whm1:get_cphulk_user_brutes#GET (wire name get_cphulk_user_brutes; Reporting).
      *
@@ -565,8 +590,9 @@ final readonly class CpHulk
      * disabled, a checked request can fail with cPHulk is disabled on the server.
      *
      * Documented: Changes server-wide security policy. Command inputs may execute when protection is triggered and may
-     * contain secrets; they are sensitive arguments and are sent once as form data. Omitted options retain server
-     * defaults; explicit zero and false remain supplied values.
+     * contain secrets; they are sensitive arguments and are sent once as form data. Reviewed savecphulkconf source
+     * retains each omitted configuration key from its current value, making this a partial update; it does not reset
+     * omitted settings to defaults. Explicit zero and false remain supplied values.
      *
      * Documented: Preserve minutes versus seconds: lookback_time is seconds, lookback_period_min is minutes, and
      * brute-force periods have explicit minute/second names. mark_as_brute describes a two-week block while the
@@ -674,8 +700,7 @@ final readonly class CpHulk
      * Documented: Available in cPanel & WHM 70 and later.
      *
      * Documented: Changes server-wide security policy. Command inputs may execute when protection is triggered and may
-     * contain secrets; they are sensitive arguments and are sent once as form data. Omitted options retain server
-     * defaults; explicit zero and false remain supplied values.
+     * contain secrets; they are sensitive arguments and are sent once as form data.
      *
      * Documented: Preserve minutes versus seconds: lookback_time is seconds, lookback_period_min is minutes, and
      * brute-force periods have explicit minute/second names. mark_as_brute describes a two-week block while the

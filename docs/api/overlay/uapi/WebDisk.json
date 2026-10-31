@@ -1,0 +1,131 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "WebDisk",
+  "accessor": "webDisk",
+  "operations": {
+    "uapi:WebDisk/delete_user": {
+      "order": [
+        "destroy",
+        "user"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later; operates on the selected cPanel account. Omitted optional inputs, including null, retain server behavior; explicit false, zero and empty strings remain distinct. Literal dotted services.* wire names are form or query keys, not nested request objects."
+        },
+        {
+          "kind": "documented",
+          "text": "Disabled when the Web Disk role is disabled. destroy is required: true recursively deletes the account folder and every file in it, while false retains that folder. This account deletion has no rollback; the client neither retries nor reverses it."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a nullable object without pinned fields. Preserve opaque object fields and explicit null; an absent data member is a payload mismatch."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /WebDisk/delete_user declares x-readonly=false. Use form POST for the selected-account mutation; password fields stay sensitive. Preserve pinned parameter requiredness, scalar types and literal dotted field names."
+        }
+      ]
+    },
+    "uapi:WebDisk/set_homedir": {
+      "order": [
+        "homedir",
+        "user",
+        "private"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later; operates on the selected cPanel account. Omitted optional inputs, including null, retain server behavior; explicit false, zero and empty strings remain distinct. Literal dotted services.* wire names are form or query keys, not nested request objects."
+        },
+        {
+          "kind": "documented",
+          "text": "Disabled when the Web Disk role is disabled. Changes the account home directory, forwarding the path unchanged. private defaults to 0 (0755 public); 1 selects 0700 private permissions. The source declares no rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a nullable object without pinned fields. Preserve opaque object fields and explicit null; an absent data member is a payload mismatch."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /WebDisk/set_homedir declares x-readonly=false. Use form POST for the selected-account mutation; password fields stay sensitive. Preserve pinned parameter requiredness, scalar types and literal dotted field names."
+        }
+      ]
+    },
+    "uapi:WebDisk/set_password": {
+      "order": [
+        "password",
+        "user",
+        "enabledigest"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later; operates on the selected cPanel account. Omitted optional inputs, including null, retain server behavior; explicit false, zero and empty strings remain distinct. Literal dotted services.* wire names are form or query keys, not nested request objects."
+        },
+        {
+          "kind": "documented",
+          "text": "Disabled when the Web Disk role is disabled. Changes the Web Disk password, which is a sensitive form input. enabledigest defaults to 0; an explicit false is sent as 0. The source labels rollback clean; the client performs no rollback or retry."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a nullable object without pinned fields. Preserve opaque object fields and explicit null; an absent data member is a payload mismatch."
+        }
+      ],
+      "params": {
+        "password": {
+          "sensitive": true
+        }
+      },
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /WebDisk/set_password declares x-readonly=false. Use form POST for the selected-account mutation; password fields stay sensitive. Preserve pinned parameter requiredness, scalar types and literal dotted field names."
+        }
+      ]
+    },
+    "uapi:WebDisk/set_permissions": {
+      "order": [
+        "perms",
+        "user"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later; operates on the selected cPanel account. Omitted optional inputs, including null, retain server behavior; explicit false, zero and empty strings remain distinct. Literal dotted services.* wire names are form or query keys, not nested request objects."
+        },
+        {
+          "kind": "documented",
+          "text": "Disabled when the Web Disk role is disabled. perms selects ro (read-only) or rw (read and write) on the home directory; no request default is declared. The source labels rollback clean; the client performs no rollback or retry."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a nullable object without pinned fields. Preserve opaque object fields and explicit null; an absent data member is a payload mismatch."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /WebDisk/set_permissions declares x-readonly=false. Use form POST for the selected-account mutation; password fields stay sensitive. Preserve pinned parameter requiredness, scalar types and literal dotted field names."
+        }
+      ]
+    }
+  }
+}
