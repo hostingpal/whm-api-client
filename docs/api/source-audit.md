@@ -2896,6 +2896,223 @@ Daily/report/analyzer collections remain empty. The capture covers the fixed
 catalog, not every possible argument or display combination. SHA-256:
 `9f3548970abc522615faa8822cac7aa8bd28a576cfd1047b4849be056ebba736`.
 
+## DNSSEC and Dynamic DNS (2026-10-31)
+
+The DNSSEC and Dynamic DNS groups cover all seventeen pinned functions.
+`dnssec()` exposes key lifecycle, DNSKEY/private-key export, DS records and NSEC
+settings; `dynamicDns()` exposes creation, inventory, ID replacement, description
+updates and deletion. DNSKEY/DS reads and Dynamic DNS inventory use GET; the other
+fourteen methods use form POST, including private-key export.
+
+DNSSEC requires the DNS role and retains each method's version and registrar
+requirements. Disabling DNSSEC destroys its keys and requires registrar record
+removal; the client provides no retry or rollback. Dynamic domain/key maps retain
+their returned keys, optional fields and per-domain results separately from the
+API envelope. Single-domain calls use the documented `domain` argument; the
+`domain-0`/`domain-1` family remains tracked under `8x0.1.21`.
+Omitting `keySetup` retains `classic` even with `algoNum: 13`; choose `simple`
+explicitly for the documented combined-key setup above algorithm 8. Key removal
+is irreversible and can break validation while registrar DS records reference it.
+Reviewed key identifiers normalize canonical in-range integer strings to integers
+for direct use in subsequent typed key methods. Digest algorithm identifiers also
+accept that narrow conversion; other flags and numeric fields remain strict.
+Export payloads expose an optional `success` flag, with no promised `error` field.
+
+Imported key material and Dynamic DNS input IDs are sensitive parameters.
+`exportZoneKey()` results and `PayloadMismatchException::$payload` can contain
+private keys; do not log either. `fetchDsRecords()` may also return private-key
+material, and Dynamic DNS IDs form part
+of update URLs; treat those result values as sensitive and do not fetch update
+URLs while inspecting inventory. `recreate()` replaces the DDNS identifier and
+invalidates its previous update URL; deletion also invalidates its update URL.
+`setDescription()` returns no payload. Deletion's source `number` enum `[0, 1]` becomes an integer `0|1` flag under
+the existing generator; zero means the identifier did not exist for deletion.
+Omitted timestamps and explicit null `last_update_time` remain distinct.
+
+The live catalog reads only DS records for `npr.rs`, Dynamic DNS inventory for
+`npr`, and WHM version. It makes no key, registrar, DNS-record or DDNS changes.
+Unobserved live variants remain tracked under `8x0.2.26`; API responses alone do
+not establish DNS propagation or DNSSEC validation by resolvers.
+
+The original pinned OpenAPI schemas misplace `additionalProperties` inside
+`properties` for several dynamic domain/key maps. Explicit return-name prose and
+response examples establish those maps; operation-specific overlay replacements
+repair the malformed nodes without changing the pinned source or inferring a
+literal field named `additionalProperties`. The fetch-DS example also places
+`nsec_details` under keys while the formal schema declares it beside keys; the
+formal sibling location remains the contract. Reviewed quoted-number examples
+support only the individually annotated fields. All other field types retain
+the source boundary.
+
+### DNS inventory capture
+
+The immutable [DNS security capture](evidence/2026-10-31-dns-security.json) at
+`372df7834484b8ff696d677e764f3b114a1ed2ac` on `11.138.0.19` passes all five GET
+observations: WHM version and both `DNSSEC/fetch_ds_records` and `DynamicDNS/list`
+through direct UAPI and the WHM bridge. HTTP/API/payload/probe checks and strict
+assessment pass with zero discrepancies. The DS result contains an empty object
+for the selected domain, with `keys` and `nsec_details` absent; DDNS inventory is
+an empty list. This establishes neither populated key/DDNS row schemas nor the
+example-based quoted-number variants. No key, record, registrar or application
+state changed, and no update URL was fetched. The other fifteen methods have no committed lifecycle capture; follow-up
+`8x0.2.26` retains that evidence work. SHA-256:
+`70811e4a21e6be51745f22738020410062ad98cc756539265ea8003c576c73e6`.
+
+
+### DNSSEC and Dynamic DNS external review corrections
+
+[Claude's review of `476d418`](https://github.com/hostingpal/whm-api-client/pull/39#pullrequestreview-5720009405)
+independently exercised the full lifecycle on `npr.rs` through both routes. The
+report establishes populated numeric-string variants for NSEC details, key
+creation times and digest algorithms, export key IDs, and add/import key IDs.
+The existing example-backed conversions for NSEC and creation times remain;
+the correction adds digest/export conversions and returns integer add/import
+IDs for strict typed chaining. Malformed, overflow, null and omission handling
+has independent regression coverage. `nsec_details` remains beside `keys`, and
+`nsec3_narrow` and DDNS deletion flags remain integers.
+
+The reviewer reports restoring the zone to unsecured/no keys, verifying its
+file hash against baseline and removing every DDNS test entry. These are
+attributed reviewer observations, with no server version supplied in the review,
+and are separate from the immutable five-GET artifact. They do not turn that
+empty-zone capture into populated or mutation evidence. The final integration
+capture retains the bounded five-GET recipe; DNSSEC enablement remains outside
+that recipe, as permitted by the review. No lifecycle is replayed for evidence.
+
+
+### Final integrated DNS inventory capture
+
+The immutable [reviewed DNS capture](evidence/2026-10-31-dns-security-reviewed.json)
+at `71e31f15379fd63a7ee19015421405cd2a93d1cc` follows normal integration of PR38.
+On cPanel `11.138.0.19`, all five GET observations pass HTTP/API/payload/probe and
+strict checks with zero discrepancies. DS results again contain an empty object
+for the selected domain, with `keys` and `nsec_details` absent; both DDNS lists
+are empty. This verifies the integrated read path, not the populated numeric
+fields, private-key exports or lifecycle mutations. Those remain covered by
+independent offline tests and the separately attributed reviewer report.
+
+The bounded recipe intentionally performs no DNSSEC enablement, registrar, key,
+record or DDNS change, as permitted by review 5720009405. No update URL was fetched.
+The initial artifact and every earlier evidence file remain unchanged. Remaining
+committed populated/mutation evidence stays under `8x0.2.26`; no further read-only
+capture is outstanding from this review request. SHA-256:
+`8be0fe648505873d0f36221e0ef750954b5268469399ac2de804ef8c1e5d3b56`.
+
+## Repository deployment and Passenger applications (2026-10-31)
+
+The repository, deployment and Passenger groups cover fourteen pinned functions.
+`versionControl()` manages cPanel Git repositories, `versionControlDeployment()`
+starts and inspects deployment tasks, and `passengerApps()` manages Application
+Manager registrations. Passenger inventory uses GET; the other thirteen methods
+use form POST, including repository and deployment retrievals whose source marks
+them `x-readonly=false`.
+
+Repository `sourceRepository` is caller-supplied JSON text, sent once as a form
+parameter. The client does not JSON-encode a PHP object or decode/re-encode the
+string. The existing scalar parameter boundary is `string|int|null`; supply the
+documented serialized JSON string, or omit it. Clone URLs may contain credentials,
+so this argument stays sensitive. The pinned source warns that repository deletion
+permanently removes directory contents. The PR40 reviewer instead observed
+registration deletion leaving the directory on the test server; retain the
+source's destructive-operation warning rather than relying on that discrepancy.
+Updating a branch can pull remote changes;
+source URLs cannot be changed by the update method.
+
+Deployment requires a clean working tree, branches and a checked-in `.cpanel.yml`.
+Returned task IDs and event/log URLs do not prove completion and are not fetched
+by the client. Reviewed integer deployment IDs are preserved, and `delete()`
+accepts the returned integer or documented string identifier. A status-success
+`create()` response with explicit null was observed for a non-deployable repository
+with no deployment queued; absent data remains a mismatch. A payload error after
+queueing does not undo the deployment and must not trigger a retry. Creation's
+unspecified `last_update` schema includes a null-only
+enum but remains mixed under the current effective validator; no stronger field
+contract is invented.
+
+Passenger registration requires an existing application; unregistering it does
+not delete its files. Environment names and values use matching repeated fields;
+supply one value per name. Editing environment variables replaces the current
+set. Omitting `enabled` when editing uses the documented default of 1 and can
+re-enable a disabled application; pass false explicitly to retain disabled state.
+Values remain sensitive, and opaque returned environment objects preserve
+their fields. Inventory `enabled` has an unspecified schema and remains mixed;
+mutation flags retain their declared types. `ensureDeps()` starts asynchronous
+installation. These methods manage Application Manager; the pinned source
+recommends WebApp for applications deployed with that newer feature.
+
+The bounded live catalog reads only WHM version and Passenger inventory on both
+routes. Repository/deployment POST reads, mutations and populated/secret-bearing
+variants remain tracked under `8x0.2.27`. No deployment, dependency installation,
+repository deletion or application configuration change is part of that catalog.
+The reviewer diagnosed its Passenger API failures: `npr` lacks the `passengerapps`
+feature and the server has no Passenger packages. No server-wide installation was
+made. All seven Passenger methods remain unobserved, including dependency-result
+and mutation flag/environment variants. The failed capture remains unwaived.
+
+Request encodings start from the pinned source; reviewed response corrections
+are recorded separately below.
+`source_repository` declares parameter-level JSON content, not a JSON body;
+explicit scalar encoding preserves pre-serialized text. Passenger form/explode
+array declarations establish repeated environment fields. The edit value field
+omits `explode`, whose form-style default is true; registration states it
+explicitly. Transport and evidence policies are unchanged. Optional opaque mutation objects preserve null/object/missing
+distinctions; source-specific differences in nullable branches and deployment
+fields are covered by independent literal fixtures.
+
+### Application inventory capture
+
+The immutable [application-management capture](evidence/2026-10-31-application-deployment.json)
+at `344fffc64824bd35098d232dd92226cb222d2a15` on `11.138.0.19` records three GET
+observations, all HTTP 200. WHM version passes. Both `PassengerApps/list_applications`
+requests fail at the API layer with null payloads, so payload validation is not
+performed and strict assessment remains failed. The sanitized evidence does not
+diagnose the capability/configuration cause; neither failure is waived or treated
+as a successful empty inventory. All fourteen new methods lack successful payload observations in this committed
+capture; later reviewer lifecycle observations are recorded separately below.
+
+No repository, deployment, application configuration or dependency installation
+changed, and no returned URL was fetched. No contract was broadened from an API
+failure, and no repeated capture was run merely to seek a passing status. SHA-256:
+`48b5b71e8feb9107310383e50f311f39d99301a3fb57c4179a00d12c97e44a64`.
+
+
+### Repository/deployment external review corrections
+
+[Claude's review of `9aa3a6c`](https://github.com/hostingpal/whm-api-client/pull/40#pullrequestreview-5720064601)
+used throwaway repositories with a committed `.cpanel.yml` containing only
+`/bin/true`. The reviewer observed repository creation/update/deletion through
+both routes and reports complete cleanup to zero repositories and deployments.
+Full repository retrieval failed for nullable `last_deployment`, digit-string
+`deployable` and numeric `last_update.date`. Queued deployment creation/retrieval
+failed on integer identifiers/dates and fractional timestamp fields. A separate
+non-deployable create returned status success and explicit null without queueing.
+[The reviewer subsequently clarified](https://github.com/hostingpal/whm-api-client/pull/40#issuecomment-6536614693)
+that every result in the original review and the corrected lifecycle at
+`7b9f1f93ead92504052a31bffd452ade64f9a208` used cPanel `11.138.0.19` through both
+direct UAPI and the WHM bridge. Corrected default and all-field repository reads,
+updates, explicit-null no-queue creation, populated deployments, post-deployment
+repository state and integer-ID deletion passed. All test repositories and
+deployments were cleaned. These attributed reviewer observations do not expand
+the initial GET-only artifact's coverage.
+
+Corrections preserve nullable last-deployment state, narrow flag/integer-string
+conversions, integer deployment identifiers and observed numeric timestamps while
+retaining documented strings. Only the named queued/active/succeeded timestamps
+receive numeric alternatives; canceled/failed variants remain unobserved. The
+source's update-branches prose establishes a nullable list with non-null members,
+repairing its misplaced item-level nullable flag. Repository creation's opaque
+`last_update` schema remains mixed rather than inventing fields.
+
+The generator supports an evidence-gated scalar string-to-`string|int` parameter
+correction for deployment deletion and a parameter description replacement for
+its identifier reference and Passenger's enabled default. Other parameter types,
+wire encodings, optional omission and source snapshots remain unchanged. Literal
+regressions cover response shapes, strict typed identifier chaining and malformed
+inputs. The GET-only capture is not repeated: none of the corrected repository
+or deployment contracts were exercised by it, and the reviewer explicitly requires
+no new read-only capture. A future guarded POST-read recipe, remaining timestamp
+variants and the directory-deletion discrepancy stay under `8x0.2.27`.
+
 ## Account environment and preferences (2026-10-31)
 
 The account environment and preference slice exposes twenty compatible methods

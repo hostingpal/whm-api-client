@@ -35,11 +35,15 @@ trait UapiGroups
 
     private ?Dns $dnsGroup = null;
 
+    private ?Dnssec $dnssecGroup = null;
+
     private ?Domain $domainGroup = null;
 
     private ?DomainInfo $domainInfoGroup = null;
 
     private ?DomainLookup $domainLookupGroup = null;
+
+    private ?DynamicDns $dynamicDnsGroup = null;
 
     private ?Ea4 $ea4Group = null;
 
@@ -65,6 +69,8 @@ trait UapiGroups
 
     private ?Park $parkGroup = null;
 
+    private ?PassengerApps $passengerAppsGroup = null;
+
     private ?Postgresql $postgresqlGroup = null;
 
     private ?Quota $quotaGroup = null;
@@ -88,6 +94,10 @@ trait UapiGroups
     private ?Themes $themesGroup = null;
 
     private ?Variables $variablesGroup = null;
+
+    private ?VersionControl $versionControlGroup = null;
+
+    private ?VersionControlDeployment $versionControlDeploymentGroup = null;
 
     private ?WebVhosts $webVhostsGroup = null;
 
@@ -202,6 +212,16 @@ trait UapiGroups
     }
 
     /**
+     * Select the DNSSEC operations without making a request.
+     *
+     * The DNSSEC module for UAPI.
+     */
+    public function dnssec(): Dnssec
+    {
+        return $this->dnssecGroup ??= new Dnssec($this->run(...));
+    }
+
+    /**
      * Select the Domain operations without making a request.
      *
      * The Domain module for UAPI.
@@ -229,6 +249,16 @@ trait UapiGroups
     public function domainLookup(): DomainLookup
     {
         return $this->domainLookupGroup ??= new DomainLookup($this->run(...));
+    }
+
+    /**
+     * Select the DynamicDNS operations without making a request.
+     *
+     * The DynamicDNS module for UAPI.
+     */
+    public function dynamicDns(): DynamicDns
+    {
+        return $this->dynamicDnsGroup ??= new DynamicDns($this->run(...));
     }
 
     /**
@@ -352,6 +382,16 @@ trait UapiGroups
     }
 
     /**
+     * Select the PassengerApps operations without making a request.
+     *
+     * The PassengerApps module for UAPI.
+     */
+    public function passengerApps(): PassengerApps
+    {
+        return $this->passengerAppsGroup ??= new PassengerApps($this->run(...));
+    }
+
+    /**
      * Select the Postgresql operations without making a request.
      *
      * The Postgresql module for UAPI.
@@ -469,6 +509,26 @@ trait UapiGroups
     public function variables(): Variables
     {
         return $this->variablesGroup ??= new Variables($this->run(...));
+    }
+
+    /**
+     * Select the VersionControl operations without making a request.
+     *
+     * The VersionControl module for UAPI.
+     */
+    public function versionControl(): VersionControl
+    {
+        return $this->versionControlGroup ??= new VersionControl($this->run(...));
+    }
+
+    /**
+     * Select the VersionControlDeployment operations without making a request.
+     *
+     * The VersionControlDeployment module for UAPI.
+     */
+    public function versionControlDeployment(): VersionControlDeployment
+    {
+        return $this->versionControlDeploymentGroup ??= new VersionControlDeployment($this->run(...));
     }
 
     /**

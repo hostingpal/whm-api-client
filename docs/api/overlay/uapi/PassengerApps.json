@@ -1,0 +1,301 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "PassengerApps",
+  "accessor": "passengerApps",
+  "operations": {
+    "uapi:PassengerApps/disable_application": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 66 and later. Operates on the selected account; disabling the Web Server role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "WebApp is the newer recommended feature for container-based applications and supersedes Application Manager. Use PassengerApps for Application Manager applications; the two application systems are distinct."
+        },
+        {
+          "kind": "documented",
+          "text": "The source declares no rollback. The client performs one request without retries or automatic rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "The result is a nullable object with no pinned field schema: preserve opaque object fields and explicit null, while an absent data member is a payload mismatch. The shared empty-object compatibility also accepts an empty JSON list."
+        },
+        {
+          "kind": "documented",
+          "text": "Disables the named Passenger application. For a WebApp application use WebApp::stop."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned /PassengerApps/disable_application operation declares x-readonly=false and x-rollback=none; use form POST for mutations and keep supplied environment values out of query strings."
+        }
+      ]
+    },
+    "uapi:PassengerApps/edit_application": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 66 and later. Operates on the selected account; disabling the Web Server role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "WebApp is the newer recommended feature for container-based applications and supersedes Application Manager. Use PassengerApps for Application Manager applications; the two application systems are distinct."
+        },
+        {
+          "kind": "documented",
+          "text": "The source declares no rollback. The client performs one request without retries or automatic rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Environment names and values use repeated form fields, preserving list order. Supply one value for every name, with equal counts and matching positions; this cross-parameter condition is documented but is not enforced by a new client validator. Lists use the shared nonempty sequential string-list boundary; values are sensitive. Omitted options retain server defaults, while explicit false is sent as 0 and strings such as \"0\" remain strings."
+        },
+        {
+          "kind": "documented",
+          "text": "The response is keyed by application name. Each application retains its optional declared fields; envvars is an opaque object whose values have no pinned type. Its unknown variable names and nested values are preserved. enabled in these mutation responses remains an integer 0/1 flag."
+        },
+        {
+          "kind": "documented",
+          "text": "Supplying environment variables replaces all existing variables. clear_envvars defaults to 0 and asks whether to clear variables; the source does not define precedence when combined with replacement variables. Omitted deployment_mode, domain, new_name and path keep their current values; enabled has the documented default 1. Paths are sent unchanged. For a WebApp application use WebApp::configure."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned /PassengerApps/edit_application operation declares x-readonly=false and x-rollback=none; use form POST for mutations and keep supplied environment values out of query strings."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned envvar_name and envvar_value are arrays of strings with paired multi-value examples. Registration declares style=form and explode=true for both. Edit declares style=form and explode=true for names; values use style=form with explode omitted, whose OpenAPI default is true. These declarations support repeated envvar_name and envvar_value fields, not comma serialization or indexed parameter names."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json.gz SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /PassengerApps/edit_application GET enabled parameter, declares default 1 and describes enabling the application and generating its web-server configuration. The parameter description retains the pinned text and explains the consequence of omission: editing a disabled application can enable it, including an edit that only renames it; explicit false sends 0. This is documentation only; no argument default, requiredness, encoding or runtime behavior changes."
+        }
+      ],
+      "params": {
+        "envvar_name": {
+          "php": "envvarNames",
+          "encoding": "repeat"
+        },
+        "envvar_value": {
+          "php": "envvarValues",
+          "encoding": "repeat",
+          "sensitive": true
+        },
+        "enabled": {
+          "description": "Whether to enable the application and generate the web server configuration for it.\n\n  * `1` \u2014 Enable the application and generate the web server configuration.\n  * `0` \u2014 Don\u2019t enable the application and generate the web server configuration.\n\nOmitting enabled uses the documented default of 1 and can re-enable a disabled application, even when only renaming it. Pass false explicitly to keep the application disabled."
+        }
+      }
+    },
+    "uapi:PassengerApps/enable_application": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 66 and later. Operates on the selected account; disabling the Web Server role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "WebApp is the newer recommended feature for container-based applications and supersedes Application Manager. Use PassengerApps for Application Manager applications; the two application systems are distinct."
+        },
+        {
+          "kind": "documented",
+          "text": "The source declares no rollback. The client performs one request without retries or automatic rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "The result is a nullable object with no pinned field schema: preserve opaque object fields and explicit null, while an absent data member is a payload mismatch. The shared empty-object compatibility also accepts an empty JSON list."
+        },
+        {
+          "kind": "documented",
+          "text": "Enables the named Passenger application and generates its Apache configuration. For a WebApp application use WebApp::start."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned /PassengerApps/enable_application operation declares x-readonly=false and x-rollback=none; use form POST for mutations and keep supplied environment values out of query strings."
+        }
+      ]
+    },
+    "uapi:PassengerApps/ensure_deps": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 80 and later. Operates on the selected account; disabling the Web Server role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "WebApp is the newer recommended feature for container-based applications and supersedes Application Manager. Use PassengerApps for Application Manager applications; the two application systems are distinct."
+        },
+        {
+          "kind": "documented",
+          "text": "The source declares no rollback. The client performs one request without retries or automatic rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Starts asynchronous dependency installation for gem (Gemfile), npm (package.json) or pip (requirements.txt). API success confirms the start request, not completion. Optional task_id and sse_url remain response payload; the client does not follow the SSE URL or poll. WebApp::deploy installs dependencies as part of deployment."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned /PassengerApps/ensure_deps operation declares x-readonly=false and x-rollback=none; use form POST for mutations and keep supplied environment values out of query strings."
+        }
+      ],
+      "params": {
+        "app_path": {
+          "php": "appPath"
+        }
+      }
+    },
+    "uapi:PassengerApps/list_applications": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 66 and later. Operates on the selected account; disabling the Web Server role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "WebApp is the newer recommended feature for container-based applications and supersedes Application Manager. Use PassengerApps for Application Manager applications; the two application systems are distinct."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a map keyed by application name. Declared row fields remain optional. enabled has no pinned schema, so it remains mixed rather than inheriting an integer flag constraint from mutation responses. envvars is an optional nullable opaque object; unknown environment names and values remain intact."
+        },
+        {
+          "kind": "documented",
+          "text": "deps contains optional gem, npm and pip command strings; the documented no-dependency value is the string \"0\", not integer zero. nodejs, python and ruby appear only for the configured runtimes. Returned commands and paths are data and are not executed or followed. For a WebApp application use WebApp::list."
+        },
+        {
+          "kind": "observed",
+          "text": "PR40 review 5720064601 of revision 9aa3a6c9fdeaf670b0de742c36ed7895d1a560a9 attributes the test-server inventory failure to account npr lacking the passengerapps feature and no Passenger packages being installed. All seven PassengerApps methods remain without successful live observations there. This capability failure establishes neither an empty application inventory nor a successful response shape. The reviewer did not install Passenger. The subsequent clarification in PR40 comment 6536614693 confirms cPanel 11.138.0.19 and both direct and bridged routes for the original review."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned /PassengerApps/list_applications operation declares x-readonly=true; retain read-only GET."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Claude review 5720064601 explicitly reviews commit 9aa3a6c9fdeaf670b0de742c36ed7895d1a560a9 and reports that npr lacks the passengerapps feature and the test server has no Passenger packages installed. It attributes the inventory API failure to this capability state and keeps all seven PassengerApps methods unobservable there. This is attributed reviewer evidence, not a successful payload observation or a new capture; no package installation or other server change is implied. The subsequent clarification https://github.com/hostingpal/whm-api-client/pull/40#issuecomment-6536614693 confirms that every result in the original review used cPanel 11.138.0.19 through both direct UAPI and the WHM bridge. https://github.com/hostingpal/whm-api-client/pull/40#pullrequestreview-5720064601"
+        }
+      ]
+    },
+    "uapi:PassengerApps/register_application": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 66 and later. Operates on the selected account; disabling the Web Server role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "WebApp is the newer recommended feature for container-based applications and supersedes Application Manager. Use PassengerApps for Application Manager applications; the two application systems are distinct."
+        },
+        {
+          "kind": "documented",
+          "text": "The source declares no rollback. The client performs one request without retries or automatic rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Environment names and values use repeated form fields, preserving list order. Supply one value for every name, with equal counts and matching positions; this cross-parameter condition is documented but is not enforced by a new client validator. Lists use the shared nonempty sequential string-list boundary; values are sensitive. Omitted options retain server defaults, while explicit false is sent as 0 and strings such as \"0\" remain strings."
+        },
+        {
+          "kind": "documented",
+          "text": "The response is keyed by application name. Each application retains its optional declared fields; envvars is an opaque object whose values have no pinned type. Its unknown variable names and nested values are preserved. enabled in these mutation responses remains an integer 0/1 flag."
+        },
+        {
+          "kind": "documented",
+          "text": "Only registers an already-created application; it does not create application files. The path prose says relative to the account home, while its example begins with a slash; the client forwards the supplied path unchanged. base_uri defaults to /, deployment_mode to production, and enabled to 1 when omitted. For new WebApp applications use WebApp::stage and WebApp::deploy."
+        },
+        {
+          "kind": "documented",
+          "text": "Environment names may contain letters, numbers, underscores and dashes, may not begin with a number and must not exceed 256 characters. Values must contain at most 1024 ASCII-printable characters. These source restrictions are documented; the shared repeated-field encoder does not invent additional per-character validation."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned /PassengerApps/register_application operation declares x-readonly=false and x-rollback=none; use form POST for mutations and keep supplied environment values out of query strings."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned envvar_name and envvar_value are arrays of strings with paired multi-value examples. Registration declares style=form and explode=true for both. Edit declares style=form and explode=true for names; values use style=form with explode omitted, whose OpenAPI default is true. These declarations support repeated envvar_name and envvar_value fields, not comma serialization or indexed parameter names."
+        }
+      ],
+      "params": {
+        "envvar_name": {
+          "php": "envvarNames",
+          "encoding": "repeat"
+        },
+        "envvar_value": {
+          "php": "envvarValues",
+          "encoding": "repeat",
+          "sensitive": true
+        }
+      }
+    },
+    "uapi:PassengerApps/unregister_application": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 66 and later. Operates on the selected account; disabling the Web Server role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "WebApp is the newer recommended feature for container-based applications and supersedes Application Manager. Use PassengerApps for Application Manager applications; the two application systems are distinct."
+        },
+        {
+          "kind": "documented",
+          "text": "The source declares no rollback. The client performs one request without retries or automatic rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "The result is a nullable object with no pinned field schema: preserve opaque object fields and explicit null, while an absent data member is a payload mismatch. The shared empty-object compatibility also accepts an empty JSON list."
+        },
+        {
+          "kind": "documented",
+          "text": "Only unregisters the application; it does not delete the application files. Deleting files is a separate action. For a WebApp application use WebApp::delete."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned /PassengerApps/unregister_application operation declares x-readonly=false and x-rollback=none; use form POST for mutations and keep supplied environment values out of query strings."
+        }
+      ]
+    }
+  }
+}
