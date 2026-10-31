@@ -91,9 +91,9 @@ final readonly class ClamScanner
      *
      * @param int|null $lastId The unique `id` of the message you last received from this same log. Null omits it.
      * @return CheckDisinfectionStatusResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/antivirus-protection-(clamav)/clamscanner-check_disinfection_status
      */
     public function checkDisinfectionStatus(?int $lastId = null): array
@@ -127,9 +127,9 @@ final readonly class ClamScanner
      * API-map identity: uapi:ClamScanner/get_scan_paths#GET (wire name get_scan_paths).
      *
      * @return GetScanPathsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/antivirus-protection-(clamav)/clamscanner-get_scan_paths
      */
     public function getScanPaths(): array
@@ -167,9 +167,9 @@ final readonly class ClamScanner
      * API-map identity: uapi:ClamScanner/get_scan_status#GET (wire name get_scan_status).
      *
      * @return GetScanStatusResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/antivirus-protection-(clamav)/clamscanner-get_scan_status
      */
     public function getScanStatus(): ?array
@@ -197,9 +197,9 @@ final readonly class ClamScanner
      * API-map identity: uapi:ClamScanner/list_infected_files#GET (wire name list_infected_files).
      *
      * @return ListInfectedFilesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/antivirus-protection-(clamav)/clamscanner-list_infected_files
      */
     public function listInfectedFiles(): array
@@ -235,9 +235,9 @@ final readonly class ClamScanner
      *
      * @param string|int $scanType The type of directory to scan.
      * @return StartScanResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/antivirus-protection-(clamav)/clamscanner-start_scan
      */
     public function startScan(string|int $scanType): ?array

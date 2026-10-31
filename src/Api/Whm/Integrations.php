@@ -112,7 +112,7 @@ final readonly class Integrations
      * @param string $label The label for the group to display in the cPanel interface.
      * @param int $order The order in which to display the group in the cPanel interface.
      * @param string $user The cPanel account name.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/links/integration-create_integration_group
      */
     public function createIntegrationGroup(string $groupId, string $label, int $order, string $user): void
@@ -137,8 +137,8 @@ final readonly class Integrations
      * client-side file access occurs.
      *
      * Documented: implements is the caller-supplied service string from get_users_links. The listed billing,
-     * customer_service, support and upgrade services are typical examples, not a closed enum. group_id keeps the
-     * documented built-in group choices. order is a string; it is not converted to an integer.
+     * customer_service, support and upgrade services are typical examples, not a closed enum. order is a string; it is
+     * not converted to an integer.
      *
      * Documented: Supply autologin_token_url, url, or both. If the autologin endpoint is absent or unavailable, the
      * server redirects the user to url. The server may POST app, token, user and subscriber_unique_id to the autologin
@@ -153,6 +153,9 @@ final readonly class Integrations
      * Replacement and later link use can affect authentication behavior; the client does not retry or roll back the
      * request.
      *
+     * Policy: group_id is an open string in the client, including caller-created group IDs; the pinned create-link
+     * schema lists built-in groups. Subscriber ID, tokens and URL arguments are sensitive.
+     *
      * API-map identity: whm1:create_integration_link#GET (wire name create_integration_link; Links).
      *
      * @param string $app The application to link.
@@ -165,20 +168,20 @@ final readonly class Integrations
      * @param string|null $autologinTokenUrl The URL to which the server will send the `app`, `token`, `user`, and
      *     `subscriber_unique_id` values through an `HTTP POST` request. Null omits it.
      * @param string|null $base64PngImage The icon image. Null omits it.
-     * @param 'files'|'databases'|'domains'|'email'|'metrics'|'security'|'software'|'advanced'|'pref'|null $groupId The
-     *     group ID in which to add the icon of the linked service. Null omits it.
+     * @param string|null $groupId The group ID in which to add the icon of the linked service. Null omits it.
      * @param bool|null $hide Whether the cPanel interface will display the integration link. Null omits it.
      * @param string|null $order The order in which to display the icon in the cPanel interface inside the `group_id`
      *     group. Null omits it.
      * @param string|null $url The URL to which to send the user if the `autologin_token_url` location does not respond
      *     or is not present. Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/links/integration-create_integration_link
      */
     public function createIntegrationLink(
         string $app,
         string $implements,
         string $label,
+        #[SensitiveParameter]
         string $subscriberUniqueId,
         #[SensitiveParameter]
         string $token,
@@ -221,7 +224,7 @@ final readonly class Integrations
      * API-map identity: whm1:delete_hook#GET (wire name delete_hook; Scripts Hooks).
      *
      * @param string $id The script hook's ID.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/scripts-hooks/hooks-delete_hook
      */
     public function deleteHook(string $id): void
@@ -248,9 +251,11 @@ final readonly class Integrations
      * check and rollback strings may contain private command information and remain sensitive. Editing may cause
      * commands to run when later events trigger the hook; this client does not invoke them automatically.
      *
-     * Documented: Omitted options retain server behavior. The rollback parameter names an upstream hook script, not a
-     * client transaction guarantee. No data payload is documented; the client performs one request with no retry or
-     * automatic rollback.
+     * Policy: Partial-update semantics for omitted edit options are unspecified by the pinned source. Read the current
+     * hook and provide the intended values for options that matter, including escalation; the documented escalateprivs
+     * default of 0 is a separate source fact, not a preservation guarantee. The rollback parameter names an upstream
+     * hook script, not a client transaction guarantee. No data payload is documented; the client performs one request
+     * with no retry or automatic rollback.
      *
      * API-map identity: whm1:edit_hook#GET (wire name edit_hook; Scripts Hooks).
      *
@@ -267,7 +272,7 @@ final readonly class Integrations
      * @param 'pre'|'post'|null $stage The condition when the hook script executes. Null omits it.
      * @param int|null $weight The script hook's priority in the hook's stage, where a lower value runs before a higher
      *     value. Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/scripts-hooks/hooks-edit_hook
      */
     public function editHook(
@@ -307,24 +312,25 @@ final readonly class Integrations
      *
      * Documented: Available in cPanel & WHM 54 and later.
      *
-     * Documented: The specified app and explicit cPanel account select the user configuration. The pinned source marks
-     * this retrieval x-readonly=false, so it uses form POST.
+     * Policy: The specified app and explicit cPanel account select the user configuration. The source declares
+     * x-readonly=false; the client conservatively uses form POST for this read. That declaration alone does not
+     * establish mutation.
      *
      * Documented: Returned userconfig URL, image, subscriber and account values are payload data and may be private.
      * URLs are returned without fetching them, and image strings are not decoded or rendered. Optional fields remain
      * omitted; null is not inferred for documented strings.
      *
-     * Documented: The app parameter repeats a create-link replacement warning in the pinned text. This retrieval does
-     * not create a link; the source inconsistency is retained here without inferring a write or an extra request.
+     * Documented: The app parameter repeats a create-link replacement warning in the pinned text. This function is
+     * described as retrieval; the inconsistent parameter warning does not establish link creation or replacement.
      *
      * API-map identity: whm1:get_integration_link_user_config#GET (wire name get_integration_link_user_config; Links).
      *
      * @param string $app The integration link's app name.
      * @param string $user The cPanel account name.
      * @return GetIntegrationLinkUserConfigResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/links/integration-get_integration_link_user_config
      */
     public function getIntegrationLinkUserConfig(string $app, string $user): array
@@ -346,22 +352,28 @@ final readonly class Integrations
      * Documented: Available in cPanel & WHM 11.32 and later.
      *
      * Documented: This lists server-wide hook categories, events, stage order, stages, attributes and actions. Action
-     * check, description and rollback fields explicitly allow null; other omitted fields remain omitted. Flags retain
-     * native integer 0/1 values and weights retain integers.
+     * check, description and rollback fields explicitly allow null; other omitted fields remain omitted.
      *
      * Documented: Hook paths, command/module text and descriptions are private payload data. No hook script, check
      * script, rollback script or returned URL is executed or fetched by the client.
      *
-     * Documented: The thirteen action leaf types are restored from the original pinned schema because the effective
-     * schema expansion depth limit otherwise yields mixed at that depth. Only the explicitly nullable check,
-     * description and rollback fields permit null; this is source coverage, not live normalization.
+     * Documented: All thirteen optional action fields are restored from the pinned schema as one actions-list
+     * correction because the depth limit otherwise yields mixed leaves. Only check, description and rollback permit
+     * null; neighboring fields retain their pinned types.
+     *
+     * Observed: Independent WHM GET review on 11.138.0.19 found digit-string action weight and escalateprivs values
+     * that failed the earlier payload spec. This reviewer result is separate from the two-GET group-inventory capture.
+     *
+     * Policy: The reviewed hook family normalizes canonical in-range integer-string weights and exact string flags 0
+     * and 1 to integers. Applying this to blocking, enabled and reorderHooks() weight is source-family compatibility
+     * with offline tests, not an independent live observation of those variants.
      *
      * API-map identity: whm1:list_hooks#GET (wire name list_hooks; Scripts Hooks).
      *
      * @return ListHooksResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/scripts-hooks/hooks-list_hooks
      */
     public function listHooks(): array
@@ -387,9 +399,9 @@ final readonly class Integrations
      *
      * @param string $user The cPanel account name.
      * @return ListIntegrationGroupsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/links/integration-list_integration_groups
      */
     public function listIntegrationGroups(string $user): array
@@ -415,9 +427,9 @@ final readonly class Integrations
      *
      * @param string $user The cPanel account name.
      * @return ListIntegrationLinksResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/links/integration-list_integration_links
      */
     public function listIntegrationLinks(string $user): array
@@ -438,18 +450,20 @@ final readonly class Integrations
      * Documented: This removes the integration-link group identified by group_id from the explicitly supplied cPanel
      * account. The source does not specify the effect on links within the group.
      *
-     * Documented: The pinned data schema is unconstrained. Preserve decoded JSON fields, scalar values and explicit
-     * null without inventing a field schema; absent data remains a payload mismatch. The client does not retry or roll
-     * back removal.
+     * Policy: The pinned data schema is unconstrained. Preserve decoded JSON fields, scalar values and explicit null
+     * without inventing a field schema; absent data after a successful envelope returns null. The client does not retry
+     * or roll back removal.
+     *
+     * Returns null when the server sends no data.
      *
      * API-map identity: whm1:remove_integration_group#GET (wire name remove_integration_group; Links).
      *
      * @param string $groupId The group's ID.
      * @param string $user The cPanel account name.
      * @return mixed
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/links/integration-remove_integration_group
      */
     public function removeIntegrationGroup(string $groupId, string $user): mixed
@@ -470,18 +484,20 @@ final readonly class Integrations
      * Documented: This removes the application link identified by app from the explicitly supplied cPanel account. The
      * client does not contact the linked application.
      *
-     * Documented: The pinned data schema is unconstrained. Preserve decoded JSON fields, scalar values and explicit
-     * null without inventing a field schema; absent data remains a payload mismatch. The client does not retry or roll
-     * back removal.
+     * Policy: The pinned data schema is unconstrained. Preserve decoded JSON fields, scalar values and explicit null
+     * without inventing a field schema; absent data after a successful envelope returns null. The client does not retry
+     * or roll back removal.
+     *
+     * Returns null when the server sends no data.
      *
      * API-map identity: whm1:remove_integration_link#GET (wire name remove_integration_link; Links).
      *
      * @param string $app The name of the integration link to remove.
      * @param string $user The cPanel account name.
      * @return mixed
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/links/integration-remove_integration_link
      */
     public function removeIntegrationLink(string $app, string $user): mixed
@@ -505,18 +521,21 @@ final readonly class Integrations
      *
      * Documented: The pinned hook_order node omits type but documents a list, declares object items and shows an array
      * example. The reviewed correction makes it a list with optional string id and integer weight fields. Lower weight
-     * has greater priority; no numeric-string normalization is inferred.
+     * has greater priority.
      *
      * Documented: This changes the server-wide hook order and does not invoke hooks. The client does not retry or
      * automatically restore the previous order.
+     *
+     * Policy: Weight uses the same reviewed canonical, in-range integer-string normalization as listHooks(). This is
+     * source-family compatibility verified offline; reorderHooks() has no live observation.
      *
      * API-map identity: whm1:reorder_hooks#GET (wire name reorder_hooks; Scripts Hooks).
      *
      * @param string $ids A comma-seprated list of script hook IDs, in order of priority.
      * @return ReorderHooksResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/scripts-hooks/hooks-reorder_hooks
      */
     public function reorderHooks(string $ids): array
@@ -538,9 +557,11 @@ final readonly class Integrations
      * application name instead requires deleting and recreating the link. The token input is sensitive; no linked URL
      * is fetched.
      *
-     * Documented: The pinned data schema is unconstrained. Preserve decoded JSON fields, scalar values and explicit
-     * null without inventing a field schema; absent data remains a payload mismatch. The client does not retry or roll
-     * back token replacement.
+     * Policy: The pinned data schema is unconstrained. Preserve decoded JSON fields, scalar values and explicit null
+     * without inventing a field schema; absent data after a successful envelope returns null. The client does not retry
+     * or roll back token replacement.
+     *
+     * Returns null when the server sends no data.
      *
      * API-map identity: whm1:update_integration_link_token#GET (wire name update_integration_link_token; Links).
      *
@@ -548,9 +569,9 @@ final readonly class Integrations
      * @param string $token The new access token to use for the application.
      * @param string $user The cPanel account name.
      * @return mixed
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/links/integration-update_integration_link_token
      */
     public function updateIntegrationLinkToken(

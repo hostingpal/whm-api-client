@@ -214,7 +214,7 @@ final readonly class EvidenceRunner
         }
         $present = $envelope instanceof stdClass && property_exists($envelope, 'data');
         $payload = $envelope instanceof stdClass ? ($envelope->data ?? null) : null;
-        $analysis = Fingerprint::analyze($payload, $present, $type);
+        $analysis = Fingerprint::analyze($payload, $present, $type, ($probe->spec['optional'] ?? false) === true);
         $record['payload_paths'] = $analysis['paths'];
         $record['discrepancies'] = $record['api_outcome'] === 'success' ? $analysis['discrepancies'] : [];
         // The primary union analysis stays opaque when no alternative validates. Candidate diagnostics

@@ -409,9 +409,9 @@ final readonly class Email
      * @param string|null $display Include this parameter to cause the function to return `All Mail On The Account` if
      *     the account parameter is blank or does not exist. Null omits it.
      * @return string
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-accounts/email-account_name
      */
     public function accountName(?string $account = null, ?string $display = null): string
@@ -462,9 +462,9 @@ final readonly class Email
      * @param string $subject The contents of the autoresponder message's `Subject:` field.
      * @param string|null $charset The character set. Null omits it.
      * @return AddAutoResponderResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-accounts/email-add_auto_responder
      */
     public function addAutoResponder(
@@ -515,9 +515,9 @@ final readonly class Email
      * @param string $destinationDomain The domain to receive forwarded mail.
      * @param string $domain The domain on the cPanel account from which to forward mail.
      * @return string
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-forwarding/email-add_domain_forwarder
      */
     public function addDomainForwarder(string $destinationDomain, string $domain): string
@@ -570,9 +570,9 @@ final readonly class Email
      * @param string|null $forwardSystem The system user to whom the system forwards messages. Null omits it.
      * @param string|null $pipeForward The application to which the system pipes messages. Null omits it.
      * @return AddForwarderResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-forwarding/email-add_forwarder
      */
     public function addForwarder(
@@ -629,9 +629,9 @@ final readonly class Email
      * @param bool|null $private Whether the mailing list is private. Null omits it.
      * @param bool|null $rebuildOnly Whether to rebuild the mailing list. Null omits it.
      * @return AddListResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/mailing-lists/email-add_list
      */
     public function addList(
@@ -674,9 +674,9 @@ final readonly class Email
      * @param string $delegates A list of the administrators to add.
      * @param string $list The mailing list.
      * @return AddMailmanDelegatesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/mailing-lists/email-add_mailman_delegates
      */
     public function addMailmanDelegates(string $delegates, string $list): array
@@ -713,9 +713,9 @@ final readonly class Email
      * @param int $priority The new mail exchanger's priority value.
      * @param bool|null $alwaysAccept Whether the mail exchanger accepts all mail for the domain. Null omits it.
      * @return AddMxResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-dns-settings/email-add_mx
      */
     public function addMx(string $domain, string $exchanger, int $priority, ?bool $alwaysAccept = null): array
@@ -779,9 +779,9 @@ final readonly class Email
      *     it.
      * @param bool|null $skipUpdateDb Whether to skip the update of the email accounts database's cache. Null omits it.
      * @return string
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-accounts/email-add_pop
      */
     public function addPop(
@@ -843,9 +843,9 @@ final readonly class Email
      * @param string|null $account The email account to apply a spam score threshold value. Null omits it.
      * @param string|null $requiredScore Set a spam score threshold value. Null omits it.
      * @return AddSpamFilterResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/spam-management/email-add_spam_filter
      */
     public function addSpamFilter(?string $account = null, ?string $requiredScore = null): ?array
@@ -879,9 +879,9 @@ final readonly class Email
      * @param string|null $dir A mail directory name, to limit results to specific directories. Null omits it.
      * @param bool|null $showDotFiles Whether to include hidden files and directories. Null omits it.
      * @return BrowseMailboxResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-accounts/email-browse_mailbox
      */
     public function browseMailbox(?string $account = null, ?string $dir = null, ?bool $showDotFiles = null): array
@@ -924,9 +924,9 @@ final readonly class Email
      * @param bool|null $alwaysAccept Whether the mail exchanger accepts all mail for the domain. Null omits it.
      * @param int|null $oldPriority The mail exchanger's current priority value. Null omits it.
      * @return ChangeMxResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-dns-settings/email-change_mx
      */
     public function changeMx(
@@ -963,9 +963,9 @@ final readonly class Email
      * API-map identity: uapi:Email/check_fastmail#GET (wire name check_fastmail).
      *
      * @return string
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-server-information/email-check_fastmail
      */
     public function checkFastmail(): string
@@ -989,9 +989,9 @@ final readonly class Email
      * API-map identity: uapi:Email/count_auto_responders#GET (wire name count_auto_responders).
      *
      * @return int
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-accounts/email-count_auto_responders
      */
     public function countAutoResponders(): int
@@ -1017,9 +1017,9 @@ final readonly class Email
      * API-map identity: uapi:Email/count_filters#GET (wire name count_filters).
      *
      * @return int
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-filtering/email-count_filters
      */
     public function countFilters(): int
@@ -1043,9 +1043,9 @@ final readonly class Email
      * API-map identity: uapi:Email/count_forwarders#GET (wire name count_forwarders).
      *
      * @return int
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-forwarding/email-count_forwarders
      */
     public function countForwarders(): int
@@ -1069,9 +1069,9 @@ final readonly class Email
      * API-map identity: uapi:Email/count_lists#GET (wire name count_lists).
      *
      * @return int
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/mailing-lists/email-count_lists
      */
     public function countLists(): int
@@ -1103,9 +1103,9 @@ final readonly class Email
      * API-map identity: uapi:Email/count_pops#GET (wire name count_pops).
      *
      * @return int
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-accounts/email-count_pops
      */
     public function countPops(): int
@@ -1136,9 +1136,9 @@ final readonly class Email
      *
      * @param string $email The email account.
      * @return DeleteAutoResponderResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-accounts/email-delete_auto_responder
      */
     public function deleteAutoResponder(string $email): ?array
@@ -1169,9 +1169,9 @@ final readonly class Email
      *
      * @param string $domain The domain name.
      * @return DeleteDomainForwarderResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-forwarding/email-delete_domain_forwarder
      */
     public function deleteDomainForwarder(string $domain): ?array
@@ -1203,9 +1203,9 @@ final readonly class Email
      * @param string $account The email address that owns the filter.
      * @param string $filterName The filter's name.
      * @return DeleteFilterResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-filtering/email-delete_filter
      */
     public function deleteFilter(string $account, string $filterName): ?array
@@ -1240,9 +1240,9 @@ final readonly class Email
      * @param string $address The forwarder's email address.
      * @param string $forwarder The forwarder's destination.
      * @return DeleteForwarderResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-forwarding/email-delete_forwarder
      */
     public function deleteForwarder(string $address, string $forwarder): ?array
@@ -1269,9 +1269,9 @@ final readonly class Email
      *
      * @param string $email The email address to query.
      * @return int
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-accounts/email-delete_held_messages
      */
     public function deleteHeldMessages(string $email): int
@@ -1302,9 +1302,9 @@ final readonly class Email
      *
      * @param string $list The mailing list.
      * @return DeleteListResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/mailing-lists/email-delete_list
      */
     public function deleteList(string $list): ?array
@@ -1334,9 +1334,9 @@ final readonly class Email
      * @param string $exchanger The mail exchanger's name.
      * @param int $priority The mail exchanger's priority value.
      * @return DeleteMxResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-dns-settings/email-delete_mx
      */
     public function deleteMx(string $domain, string $exchanger, int $priority): array
@@ -1385,9 +1385,9 @@ final readonly class Email
      * @param string|null $flags Whether to remove the mail account's home mail directory. Null omits it.
      * @param bool|null $skipQuota Whether to modify the mail account's quota file. Null omits it.
      * @return DeletePopResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-accounts/email-delete_pop
      */
     public function deletePop(
@@ -1424,9 +1424,9 @@ final readonly class Email
      * @param string $account The email address that owns the filter.
      * @param string $filterName The filter's name.
      * @return DisableFilterResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-filtering/email-disable_filter
      */
     public function disableFilter(string $account, string $filterName): array
@@ -1456,9 +1456,9 @@ final readonly class Email
      *
      * @param string $email The email account address for which to disable mailbox autocreation.
      * @return 0|1
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-server-information/email-disable_mailbox_autocreate
      */
     public function disableMailboxAutocreate(string $email): int
@@ -1488,9 +1488,9 @@ final readonly class Email
      * API-map identity: uapi:Email/disable_spam_assassin#GET (wire name disable_spam_assassin).
      *
      * @return DisableSpamAssassinResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/spam-management/email-disable_spam_assassin
      */
     public function disableSpamAssassin(): ?array
@@ -1516,9 +1516,9 @@ final readonly class Email
      * API-map identity: uapi:Email/disable_spam_autodelete#GET (wire name disable_spam_autodelete).
      *
      * @return DisableSpamAutodeleteResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/spam-management/email-disable_spam_autodelete
      */
     public function disableSpamAutodelete(): array
@@ -1552,9 +1552,9 @@ final readonly class Email
      * API-map identity: uapi:Email/disable_spam_box#GET (wire name disable_spam_box).
      *
      * @return DisableSpamBoxResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/spam-management/email-disable_spam_box
      */
     public function disableSpamBox(): ?array
@@ -1583,7 +1583,7 @@ final readonly class Email
      *
      * @param string $account The email account username or address for which to send client settings.
      * @param string $to The email address to send client settings.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-accounts/email-dispatch_client_settings
      */
     public function dispatchClientSettings(string $account, string $to): void
@@ -1617,9 +1617,9 @@ final readonly class Email
      * @param string $email The email account username.
      * @param string|null $quota The maximum amount of disk space that the new email account may use. Null omits it.
      * @return EditPopQuotaResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-accounts/email-edit_pop_quota
      */
     public function editPopQuota(string $domain, string $email, ?string $quota = null): ?array
@@ -1647,9 +1647,9 @@ final readonly class Email
      * @param string $account The email address that owns the filter.
      * @param string $filterName The filter's name.
      * @return EnableFilterResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-filtering/email-enable_filter
      */
     public function enableFilter(string $account, string $filterName): array
@@ -1678,9 +1678,9 @@ final readonly class Email
      *
      * @param string $email The email account for which to enable mailbox autocreation.
      * @return 0|1
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-server-information/email-enable_mailbox_autocreate
      */
     public function enableMailboxAutocreate(string $email): int
@@ -1710,9 +1710,9 @@ final readonly class Email
      * API-map identity: uapi:Email/enable_spam_assassin#GET (wire name enable_spam_assassin).
      *
      * @return EnableSpamAssassinResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/spam-management/email-enable_spam_assassin
      */
     public function enableSpamAssassin(): ?array
@@ -1746,9 +1746,9 @@ final readonly class Email
      * API-map identity: uapi:Email/enable_spam_box#GET (wire name enable_spam_box).
      *
      * @return EnableSpamBoxResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/spam-management/email-enable_spam_box
      */
     public function enableSpamBox(): ?array
@@ -1776,9 +1776,9 @@ final readonly class Email
      * API-map identity: uapi:Email/export_lists#GET (wire name export_lists).
      *
      * @return ExportListsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/mailing-lists/email-export_lists
      */
     public function exportLists(): ?array
@@ -1802,9 +1802,9 @@ final readonly class Email
      * API-map identity: uapi:Email/fetch_charmaps#GET (wire name fetch_charmaps).
      *
      * @return FetchCharmapsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-server-information/email-fetch_charmaps
      */
     public function fetchCharmaps(): array
@@ -1838,9 +1838,9 @@ final readonly class Email
      *
      * @param string $account The email user's account name.
      * @return 0|1
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-server-information/email-fts_rescan_mailbox
      */
     public function ftsRescanMailbox(string $account): int
@@ -1867,9 +1867,9 @@ final readonly class Email
      *
      * @param string $list The mailing list.
      * @return string
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/mailing-lists/email-generate_mailman_otp
      */
     public function generateMailmanOtp(string $list): string
@@ -1895,9 +1895,9 @@ final readonly class Email
      * @param string $email The email account name.
      * @param string|null $tempCharset The autoresponder's character set. Null omits it.
      * @return GetAutoResponderResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-accounts/email-get_auto_responder
      */
     public function getAutoResponder(string $email, ?string $tempCharset = null): array
@@ -1921,9 +1921,9 @@ final readonly class Email
      * API-map identity: uapi:Email/get_charsets#GET (wire name get_charsets).
      *
      * @return GetCharsetsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-server-information/email-get_charsets
      */
     public function getCharsets(): array
@@ -1951,9 +1951,9 @@ final readonly class Email
      *
      * @param string|null $account The email address for which to send client settings. Null omits it.
      * @return GetClientSettingsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-accounts/email-get_client_settings
      */
     public function getClientSettings(?string $account = null): array
@@ -1980,9 +1980,9 @@ final readonly class Email
      * API-map identity: uapi:Email/get_default_email_quota#GET (wire name get_default_email_quota).
      *
      * @return int
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-accounts/email-get_default_email_quota
      */
     public function getDefaultEmailQuota(): int
@@ -2010,9 +2010,9 @@ final readonly class Email
      * API-map identity: uapi:Email/get_default_email_quota_mib#GET (wire name get_default_email_quota_mib).
      *
      * @return int
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-accounts/email-get_default_email_quota_mib
      */
     public function getDefaultEmailQuotaMib(): int
@@ -2041,9 +2041,9 @@ final readonly class Email
      * @param string $domain The email account's domain.
      * @param string $user The email account username.
      * @return GetDiskUsageResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-accounts/email-get_disk_usage
      */
     public function getDiskUsage(string $domain, string $user): array
@@ -2069,9 +2069,9 @@ final readonly class Email
      * @param string $account The email address that owns the filter.
      * @param string $filterName The filter's name.
      * @return GetFilterResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-filtering/email-get_filter
      */
     public function getFilter(string $account, string $filterName): array
@@ -2097,9 +2097,9 @@ final readonly class Email
      *
      * @param string|null $email The email address to query. Null omits it.
      * @return int
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-accounts/email-get_held_message_count
      */
     public function getHeldMessageCount(?string $email = null): int
@@ -2126,9 +2126,9 @@ final readonly class Email
      * API-map identity: uapi:Email/get_lists_total_disk_usage#GET (wire name get_lists_total_disk_usage).
      *
      * @return int
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/mailing-lists/email-get_lists_total_disk_usage
      */
     public function getListsTotalDiskUsage(): int
@@ -2154,9 +2154,9 @@ final readonly class Email
      *
      * @param string $email The email account address to query.
      * @return 0|1
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-server-information/email-get_mailbox_autocreate
      */
     public function getMailboxAutocreate(string $email): int
@@ -2181,9 +2181,9 @@ final readonly class Email
      *
      * @param string $list The name of a Mailman mailing list on the cPanel account.
      * @return GetMailmanDelegatesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/mailing-lists/email-get_mailman_delegates
      */
     public function getMailmanDelegates(string $list): array
@@ -2207,9 +2207,9 @@ final readonly class Email
      * API-map identity: uapi:Email/get_main_account_disk_usage#GET (wire name get_main_account_disk_usage).
      *
      * @return string
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-accounts/email-get_main_account_disk_usage
      */
     public function getMainAccountDiskUsage(): string
@@ -2235,9 +2235,9 @@ final readonly class Email
      * API-map identity: uapi:Email/get_main_account_disk_usage_bytes#GET (wire name get_main_account_disk_usage_bytes).
      *
      * @return int
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-accounts/email-get_main_account_disk_usage_bytes
      */
     public function getMainAccountDiskUsageBytes(): int
@@ -2265,9 +2265,9 @@ final readonly class Email
      * API-map identity: uapi:Email/get_max_email_quota#GET (wire name get_max_email_quota).
      *
      * @return int
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-accounts/email-get_max_email_quota
      */
     public function getMaxEmailQuota(): int
@@ -2293,9 +2293,9 @@ final readonly class Email
      * API-map identity: uapi:Email/get_max_email_quota_mib#GET (wire name get_max_email_quota_mib).
      *
      * @return int
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-accounts/email-get_max_email_quota_mib
      */
     public function getMaxEmailQuotaMib(): int
@@ -2341,9 +2341,9 @@ final readonly class Email
      * @param bool|null $asBytes Whether to return the quota as bytes. Null omits it.
      * @param string|null $domain The email account's domain. Null omits it.
      * @return int|'unlimited'
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-accounts/email-get_pop_quota
      */
     public function getPopQuota(string $email, ?bool $asBytes = null, ?string $domain = null): int|string
@@ -2376,9 +2376,9 @@ final readonly class Email
      *
      * @param string|null $account Retrieve a specific user account's SpamAssassin settings. Null omits it.
      * @return GetSpamSettingsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/spam-management/email-get_spam_settings
      */
     public function getSpamSettings(?string $account = null): array
@@ -2406,9 +2406,9 @@ final readonly class Email
      *
      * @param string|null $account The email account. Null omits it.
      * @return GetWebmailSettingsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-accounts/email-get_webmail_settings
      */
     public function getWebmailSettings(?string $account = null): array
@@ -2433,9 +2433,9 @@ final readonly class Email
      *
      * @param string $delegate The email address.
      * @return 0|1
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/mailing-lists/email-has_delegated_mailman_lists
      */
     public function hasDelegatedMailmanLists(string $delegate): int
@@ -2459,9 +2459,9 @@ final readonly class Email
      * API-map identity: uapi:Email/has_plaintext_authentication#GET (wire name has_plaintext_authentication).
      *
      * @return 0|1
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-server-information/email-has_plaintext_authentication
      */
     public function hasPlaintextAuthentication(): int
@@ -2493,9 +2493,9 @@ final readonly class Email
      *
      * @param string $email The email account's username.
      * @return HoldOutgoingResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-accounts/email-hold_outgoing
      */
     public function holdOutgoing(string $email): ?array
@@ -2521,9 +2521,9 @@ final readonly class Email
      * @param string $domain The domain name.
      * @param string|null $regex A Perl Compatible Regular Expression (PCRE) that filters the results. Null omits it.
      * @return ListAutoRespondersResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-accounts/email-list_auto_responders
      */
     public function listAutoResponders(string $domain, ?string $regex = null): array
@@ -2549,9 +2549,9 @@ final readonly class Email
      * @param string $user The user whose default addresses to list.
      * @param string|null $domain The domain. Null omits it.
      * @return ListDefaultAddressResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-accounts/email-list_default_address
      */
     public function listDefaultAddress(string $user, ?string $domain = null): array
@@ -2582,9 +2582,9 @@ final readonly class Email
      *
      * @param string|null $domain The domain name to query. Null omits it.
      * @return ListDomainForwardersResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-forwarding/email-list_domain_forwarders
      */
     public function listDomainForwarders(?string $domain = null): array
@@ -2611,9 +2611,9 @@ final readonly class Email
      * @param string|null $account The email address or cPanel account username for which to return a list of filters.
      *     Null omits it.
      * @return ListFiltersResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-filtering/email-list_filters
      */
     public function listFilters(?string $account = null): array
@@ -2637,9 +2637,9 @@ final readonly class Email
      * API-map identity: uapi:Email/list_filters_backups#GET (wire name list_filters_backups).
      *
      * @return ListFiltersBackupsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-filtering/email-list_filters_backups
      */
     public function listFiltersBackups(): array
@@ -2666,9 +2666,9 @@ final readonly class Email
      * @param string|null $regex A Perl Compatible Regular Expression (PCRE) that filters the forwarded address or
      *     destination. Null omits it.
      * @return ListForwardersResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-forwarding/email-list_forwarders
      */
     public function listForwarders(string $domain, ?string $regex = null): array
@@ -2692,9 +2692,9 @@ final readonly class Email
      * API-map identity: uapi:Email/list_forwarders_backups#GET (wire name list_forwarders_backups).
      *
      * @return ListForwardersBackupsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-forwarding/email-list_forwarders_backups
      */
     public function listForwardersBackups(): array
@@ -2719,9 +2719,9 @@ final readonly class Email
      * @param string|null $domain The domain to query. Null omits it.
      * @param string|null $regex A Perl Compatible Regular Expression (PCRE) that filters the results. Null omits it.
      * @return ListListsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/mailing-lists/email-list_lists
      */
     public function listLists(?string $domain = null, ?string $regex = null): array
@@ -2772,9 +2772,9 @@ final readonly class Email
      * @param string|null $select The name of the domain that the function returns with the `select `output parameter.
      *     Null omits it.
      * @return ListMailDomainsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-accounts/email-list_mail_domains
      */
     public function listMailDomains(
@@ -2812,9 +2812,9 @@ final readonly class Email
      *
      * @param string|null $domain The domain to query. Null omits it.
      * @return ListMxsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-dns-settings/email-list_mxs
      */
     public function listMxs(?string $domain = null): array
@@ -2859,9 +2859,9 @@ final readonly class Email
      * @param string|null $regex A Perl Compatible Regular Expression (PCRE) that filters the results. Null omits it.
      * @param bool|null $skipMain Whether to exclude the cPanel account's main account from the results. Null omits it.
      * @return ListPopsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-accounts/email-list_pops
      */
     public function listPops(?bool $noValidate = null, ?string $regex = null, ?bool $skipMain = null): array
@@ -2953,9 +2953,9 @@ final readonly class Email
      * @param bool|null $noValidate Whether to skip email database validation. Null omits it.
      * @param string|null $regex A Perl Compatible Regular Expression (PCRE) that filters the results. Null omits it.
      * @return ListPopsWithDiskResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-accounts/email-list_pops_with_disk
      */
     public function listPopsWithDisk(
@@ -2998,9 +2998,9 @@ final readonly class Email
      * API-map identity: uapi:Email/list_system_filter_info#GET (wire name list_system_filter_info).
      *
      * @return ListSystemFilterInfoResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-filtering/email-list_system_filter_info
      */
     public function listSystemFilterInfo(): array
@@ -3032,9 +3032,9 @@ final readonly class Email
      * @param string $list The full name (including the domain) of a Mailman mailing list on the cPanel account.
      * @param string $password The new password.
      * @return PasswdListResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/mailing-lists/email-passwd_list
      */
     public function passwdList(
@@ -3070,9 +3070,9 @@ final readonly class Email
      * @param string $password The email account password.
      * @param string|null $domain The email account's domain. Null omits it.
      * @return PasswdPopResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-accounts/email-passwd_pop
      */
     public function passwdPop(
@@ -3113,9 +3113,9 @@ final readonly class Email
      *
      * @param string $email The email account's username.
      * @return ReleaseOutgoingResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-accounts/email-release_outgoing
      */
     public function releaseOutgoing(string $email): ?array
@@ -3140,9 +3140,9 @@ final readonly class Email
      * @param string $delegates list of the administrators to remove.
      * @param string $list The mailing list.
      * @return RemoveMailmanDelegatesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/mailing-lists/email-remove_mailman_delegates
      */
     public function removeMailmanDelegates(string $delegates, string $list): array
@@ -3180,9 +3180,9 @@ final readonly class Email
      * @param string|list<string> $filters A mail filter name.
      * @param string $mailbox The email address.
      * @return ReorderFiltersResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-filtering/email-reorder_filters
      */
@@ -3225,9 +3225,9 @@ final readonly class Email
      * @param 'auto'|'local'|'secondary'|'remote'|null $alwaysAccept The mail exchanger type. Null omits it.
      * @param 'auto'|'local'|'secondary'|'remote'|null $mxcheck The mail exchanger type. Null omits it.
      * @return SetAlwaysAcceptResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-server-information/email-set_always_accept
      */
     public function setAlwaysAccept(string $domain, ?string $alwaysAccept = null, ?string $mxcheck = null): array
@@ -3284,9 +3284,9 @@ final readonly class Email
      * @param string|null $forwardEmail The email address to which the system forwards messages. Null omits it.
      * @param string|null $pipeForward The application to which the system pipes messages. Null omits it.
      * @return SetDefaultAddressResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-accounts/email-set_default_address
      */
     public function setDefaultAddress(
@@ -3343,9 +3343,9 @@ final readonly class Email
      * @param string $list The mailing list name.
      * @param 1|2|3 $subscribePolicy The level of control that the mailing list administrator has over new subscribers.
      * @return SetListPrivacyOptionsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/mailing-lists/email-set_list_privacy_options
      */
     public function setListPrivacyOptions(
@@ -3392,9 +3392,9 @@ final readonly class Email
      * @param string $domain The domain for which to add a manual MX redirect entry.
      * @param string $mxHost The domain, IPv4, or IPv6 address to redirect the domain value's emails to.
      * @return SetManualMxRedirectsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-accounts/email-set_manual_mx_redirects
      */
     public function setManualMxRedirects(string $domain, string $mxHost): array
@@ -3418,9 +3418,9 @@ final readonly class Email
      * API-map identity: uapi:Email/stats_db_status#GET (wire name stats_db_status).
      *
      * @return string
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-server-information/email-stats_db_status
      */
     public function statsDbStatus(): string
@@ -3501,9 +3501,9 @@ final readonly class Email
      * @param string|null $oldFilterName The name of an existing filter, to rename it. Null omits it.
      * @param string|list<string>|null $operators The connection between multiple conditions. Null omits it.
      * @return StoreFilterResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-filtering/email-store_filter
      */
@@ -3559,9 +3559,9 @@ final readonly class Email
      *
      * @param string|null $email The email user's account name. Null omits it.
      * @return SuspendIncomingResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-suspensions/email-suspend_incoming
      */
     public function suspendIncoming(?string $email = null): ?array
@@ -3601,9 +3601,9 @@ final readonly class Email
      *
      * @param string $email The email user's account name.
      * @return SuspendLoginResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-suspensions/email-suspend_login
      */
     public function suspendLogin(string $email): ?array
@@ -3634,9 +3634,9 @@ final readonly class Email
      *
      * @param string $email The email account's username.
      * @return 0|1
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-suspensions/email-suspend_outgoing
      */
     public function suspendOutgoing(string $email): int
@@ -3668,7 +3668,7 @@ final readonly class Email
      *
      * API-map identity: uapi:Email/terminate_mailbox_sessions#GET (wire name terminate_mailbox_sessions).
      *
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-accounts/email-terminate_mailbox_sessions
      */
     public function terminateMailboxSessions(): void
@@ -3691,9 +3691,9 @@ final readonly class Email
      *
      * @param string $recipient The email address to which to trace a message delivery path.
      * @return TraceDeliveryResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-accounts/email-trace_delivery
      */
     public function traceDelivery(string $recipient): array
@@ -3722,9 +3722,9 @@ final readonly class Email
      * @param string|null $account The email address, to test legacy cPanel filters in the filters directory. Null omits
      *     it.
      * @return TraceFilterResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-filtering/email-trace_filter
      */
     public function traceFilter(
@@ -3760,9 +3760,9 @@ final readonly class Email
      *
      * @param string $domain The domain for which to add a manual MX redirect entry.
      * @return UnsetManualMxRedirectsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-accounts/email-unset_manual_mx_redirects
      */
     public function unsetManualMxRedirects(string $domain): array
@@ -3789,9 +3789,9 @@ final readonly class Email
      *
      * @param string|null $email The email user's account name. Null omits it.
      * @return 0|1
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-suspensions/email-unsuspend_incoming
      */
     public function unsuspendIncoming(?string $email = null): int
@@ -3829,9 +3829,9 @@ final readonly class Email
      *
      * @param string|null $email The email user's account name. Null omits it.
      * @return UnsuspendLoginResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-suspensions/email-unsuspend_login
      */
     public function unsuspendLogin(?string $email = null): ?array
@@ -3865,9 +3865,9 @@ final readonly class Email
      *
      * @param string $email The email account's username.
      * @return UnsuspendOutgoingResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-suspensions/email-unsuspend_outgoing
      */
     public function unsuspendOutgoing(string $email): ?array
@@ -3895,9 +3895,9 @@ final readonly class Email
      * @param string $email The email account address.
      * @param string $password The email account password.
      * @return 0|1
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-accounts/email-verify_password
      */
     public function verifyPassword(

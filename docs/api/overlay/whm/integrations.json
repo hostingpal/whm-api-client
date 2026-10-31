@@ -40,6 +40,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned WHM /create_integration_link has x-readonly=false, x-cpanel-available-version 54; reviewed reads use GET and mutations/unknown-risk retrievals use form POST. Parameter names, requiredness and scalar encodings follow the pinned schema and prose. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. The response schema contains metadata without a data property; no payload is documented."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "subscriber_unique_id is presented to the autologin endpoint with the token; treat it as sensitive. group_id lists built-in groups while create_integration_group supports caller-supplied group IDs; retain the runtime string input and use open string PHPDoc for custom groups. Pinned WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
         }
       ],
       "notes": [
@@ -53,7 +59,7 @@
         },
         {
           "kind": "documented",
-          "text": "implements is the caller-supplied service string from get_users_links. The listed billing, customer_service, support and upgrade services are typical examples, not a closed enum. group_id keeps the documented built-in group choices. order is a string; it is not converted to an integer."
+          "text": "implements is the caller-supplied service string from get_users_links. The listed billing, customer_service, support and upgrade services are typical examples, not a closed enum. order is a string; it is not converted to an integer."
         },
         {
           "kind": "documented",
@@ -66,6 +72,10 @@
         {
           "kind": "documented",
           "text": "Token and URL arguments may contain credentials and are sensitive. No data payload is documented. Replacement and later link use can affect authentication behavior; the client does not retry or roll back the request."
+        },
+        {
+          "kind": "policy",
+          "text": "group_id is an open string in the client, including caller-created group IDs; the pinned create-link schema lists built-in groups. Subscriber ID, tokens and URL arguments are sensitive."
         }
       ],
       "void": true,
@@ -78,6 +88,12 @@
         },
         "url": {
           "sensitive": true
+        },
+        "subscriber_unique_id": {
+          "sensitive": true
+        },
+        "group_id": {
+          "enum_doc": false
         }
       }
     },
@@ -131,8 +147,8 @@
           "text": "check runs after the hook to check its results; rollback identifies the rollback script. The hook, check and rollback strings may contain private command information and remain sensitive. Editing may cause commands to run when later events trigger the hook; this client does not invoke them automatically."
         },
         {
-          "kind": "documented",
-          "text": "Omitted options retain server behavior. The rollback parameter names an upstream hook script, not a client transaction guarantee. No data payload is documented; the client performs one request with no retry or automatic rollback."
+          "kind": "policy",
+          "text": "Partial-update semantics for omitted edit options are unspecified by the pinned source. Read the current hook and provide the intended values for options that matter, including escalation; the documented escalateprivs default of 0 is a separate source fact, not a preservation guarantee. The rollback parameter names an upstream hook script, not a client transaction guarantee. No data payload is documented; the client performs one request with no retry or automatic rollback."
         }
       ],
       "void": true,
@@ -164,8 +180,8 @@
           "text": "Available in cPanel & WHM 54 and later."
         },
         {
-          "kind": "documented",
-          "text": "The specified app and explicit cPanel account select the user configuration. The pinned source marks this retrieval x-readonly=false, so it uses form POST."
+          "kind": "policy",
+          "text": "The specified app and explicit cPanel account select the user configuration. The source declares x-readonly=false; the client conservatively uses form POST for this read. That declaration alone does not establish mutation."
         },
         {
           "kind": "documented",
@@ -173,7 +189,7 @@
         },
         {
           "kind": "documented",
-          "text": "The app parameter repeats a create-link replacement warning in the pinned text. This retrieval does not create a link; the source inconsistency is retained here without inferring a write or an extra request."
+          "text": "The app parameter repeats a create-link replacement warning in the pinned text. This function is described as retrieval; the inconsistent parameter warning does not establish link creation or replacement."
         }
       ]
     },
@@ -185,6 +201,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned WHM /list_hooks has x-readonly=true, x-cpanel-available-version 11.32; reviewed reads use GET and mutations/unknown-risk retrievals use form POST. Parameter names, requiredness and scalar encodings follow the pinned schema and prose. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Independent WHM GET review of bfe02e7744d48785340813fa1860d1c9ff28caba reported list_hooks payload mismatches for action weight and escalateprivs digit strings. Only those two fields were independently observed; no write or capture rerun occurred. Other action flags and reorder_hooks weight use reviewed source-family compatibility, not operation-specific live evidence. Review: https://github.com/hostingpal/whm-api-client/pull/62#pullrequestreview-5721050295."
         }
       ],
       "notes": [
@@ -194,7 +216,7 @@
         },
         {
           "kind": "documented",
-          "text": "This lists server-wide hook categories, events, stage order, stages, attributes and actions. Action check, description and rollback fields explicitly allow null; other omitted fields remain omitted. Flags retain native integer 0/1 values and weights retain integers."
+          "text": "This lists server-wide hook categories, events, stage order, stages, attributes and actions. Action check, description and rollback fields explicitly allow null; other omitted fields remain omitted."
         },
         {
           "kind": "documented",
@@ -202,179 +224,93 @@
         },
         {
           "kind": "documented",
-          "text": "The thirteen action leaf types are restored from the original pinned schema because the effective schema expansion depth limit otherwise yields mixed at that depth. Only the explicitly nullable check, description and rollback fields permit null; this is source coverage, not live normalization."
+          "text": "All thirteen optional action fields are restored from the pinned schema as one actions-list correction because the depth limit otherwise yields mixed leaves. Only check, description and rollback permit null; neighboring fields retain their pinned types."
+        },
+        {
+          "kind": "observed",
+          "text": "Independent WHM GET review on 11.138.0.19 found digit-string action weight and escalateprivs values that failed the earlier payload spec. This reviewer result is separate from the two-GET group-inventory capture."
+        },
+        {
+          "kind": "policy",
+          "text": "The reviewed hook family normalizes canonical in-range integer-string weights and exact string flags 0 and 1 to integers. Applying this to blocking, enabled and reorderHooks() weight is source-family compatibility with offline tests, not an independent live observation of those variants."
         }
       ],
       "response": {
-        "categories[].events[].stages[].actions[].blocking": {
+        "categories[].events[].stages[].actions": {
           "replace": {
-            "type": "flag"
-          },
-          "evidence": [
-            {
-              "kind": "doc",
-              "version": "pinned 2026-10-13",
-              "date": "2026-10-31",
-              "note": "Pinned /list_hooks data.categories[].events[].stages[].actions[].blocking declares integer with integer 0/1 enum. Effective schema expansion depth 8 otherwise emits mixed here; restore only this explicit pinned leaf type, leaving presence optional. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            "type": "list",
+            "items": {
+              "type": "object",
+              "fields": {
+                "blocking": {
+                  "type": "flag",
+                  "accept": [
+                    "string-flag"
+                  ]
+                },
+                "category": {
+                  "type": "string"
+                },
+                "check": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "description": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "enabled": {
+                  "type": "flag",
+                  "accept": [
+                    "string-flag"
+                  ]
+                },
+                "escalateprivs": {
+                  "type": "flag",
+                  "accept": [
+                    "string-flag"
+                  ]
+                },
+                "event": {
+                  "type": "string"
+                },
+                "exectype": {
+                  "type": "string"
+                },
+                "hook": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": "string"
+                },
+                "rollback": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "stage": {
+                  "type": "string"
+                },
+                "weight": {
+                  "type": "int",
+                  "accept": [
+                    "numeric-string"
+                  ]
+                }
+              }
             }
-          ]
-        },
-        "categories[].events[].stages[].actions[].category": {
-          "replace": {
-            "type": "string"
           },
           "evidence": [
             {
               "kind": "doc",
               "version": "pinned 2026-10-13",
               "date": "2026-10-31",
-              "note": "Pinned /list_hooks data.categories[].events[].stages[].actions[].category declares string. Effective schema expansion depth 8 otherwise emits mixed here; restore only this explicit pinned leaf type, leaving presence optional. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
-            }
-          ]
-        },
-        "categories[].events[].stages[].actions[].check": {
-          "replace": {
-            "type": "string",
-            "nullable": true
-          },
-          "evidence": [
+              "note": "Restore all thirteen pinned optional action fields as one list/object correction because effective schema expansion depth 8 otherwise emits mixed leaves. Only check, description and rollback are nullable. Weight accepts lossless canonical bounded integer strings, and the three action flags accept exact strings 0 and 1 alongside native flags, as reviewed compatibility for this source family. The native-only stage attributes and neighboring fields remain strict. Pinned WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            },
             {
-              "kind": "doc",
-              "version": "pinned 2026-10-13",
+              "kind": "live",
+              "version": "11.138.0.19",
               "date": "2026-10-31",
-              "note": "Pinned /list_hooks data.categories[].events[].stages[].actions[].check declares string and nullable:true. Effective schema expansion depth 8 otherwise emits mixed here; restore only this explicit pinned leaf type, leaving presence optional. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
-            }
-          ]
-        },
-        "categories[].events[].stages[].actions[].description": {
-          "replace": {
-            "type": "string",
-            "nullable": true
-          },
-          "evidence": [
-            {
-              "kind": "doc",
-              "version": "pinned 2026-10-13",
-              "date": "2026-10-31",
-              "note": "Pinned /list_hooks data.categories[].events[].stages[].actions[].description declares string and nullable:true. Effective schema expansion depth 8 otherwise emits mixed here; restore only this explicit pinned leaf type, leaving presence optional. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
-            }
-          ]
-        },
-        "categories[].events[].stages[].actions[].enabled": {
-          "replace": {
-            "type": "flag"
-          },
-          "evidence": [
-            {
-              "kind": "doc",
-              "version": "pinned 2026-10-13",
-              "date": "2026-10-31",
-              "note": "Pinned /list_hooks data.categories[].events[].stages[].actions[].enabled declares integer with integer 0/1 enum. Effective schema expansion depth 8 otherwise emits mixed here; restore only this explicit pinned leaf type, leaving presence optional. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
-            }
-          ]
-        },
-        "categories[].events[].stages[].actions[].escalateprivs": {
-          "replace": {
-            "type": "flag"
-          },
-          "evidence": [
-            {
-              "kind": "doc",
-              "version": "pinned 2026-10-13",
-              "date": "2026-10-31",
-              "note": "Pinned /list_hooks data.categories[].events[].stages[].actions[].escalateprivs declares integer with integer 0/1 enum. Effective schema expansion depth 8 otherwise emits mixed here; restore only this explicit pinned leaf type, leaving presence optional. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
-            }
-          ]
-        },
-        "categories[].events[].stages[].actions[].event": {
-          "replace": {
-            "type": "string"
-          },
-          "evidence": [
-            {
-              "kind": "doc",
-              "version": "pinned 2026-10-13",
-              "date": "2026-10-31",
-              "note": "Pinned /list_hooks data.categories[].events[].stages[].actions[].event declares string. Effective schema expansion depth 8 otherwise emits mixed here; restore only this explicit pinned leaf type, leaving presence optional. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
-            }
-          ]
-        },
-        "categories[].events[].stages[].actions[].exectype": {
-          "replace": {
-            "type": "string"
-          },
-          "evidence": [
-            {
-              "kind": "doc",
-              "version": "pinned 2026-10-13",
-              "date": "2026-10-31",
-              "note": "Pinned /list_hooks data.categories[].events[].stages[].actions[].exectype declares string. Effective schema expansion depth 8 otherwise emits mixed here; restore only this explicit pinned leaf type, leaving presence optional. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
-            }
-          ]
-        },
-        "categories[].events[].stages[].actions[].hook": {
-          "replace": {
-            "type": "string"
-          },
-          "evidence": [
-            {
-              "kind": "doc",
-              "version": "pinned 2026-10-13",
-              "date": "2026-10-31",
-              "note": "Pinned /list_hooks data.categories[].events[].stages[].actions[].hook declares string. Effective schema expansion depth 8 otherwise emits mixed here; restore only this explicit pinned leaf type, leaving presence optional. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
-            }
-          ]
-        },
-        "categories[].events[].stages[].actions[].id": {
-          "replace": {
-            "type": "string"
-          },
-          "evidence": [
-            {
-              "kind": "doc",
-              "version": "pinned 2026-10-13",
-              "date": "2026-10-31",
-              "note": "Pinned /list_hooks data.categories[].events[].stages[].actions[].id declares string. Effective schema expansion depth 8 otherwise emits mixed here; restore only this explicit pinned leaf type, leaving presence optional. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
-            }
-          ]
-        },
-        "categories[].events[].stages[].actions[].rollback": {
-          "replace": {
-            "type": "string",
-            "nullable": true
-          },
-          "evidence": [
-            {
-              "kind": "doc",
-              "version": "pinned 2026-10-13",
-              "date": "2026-10-31",
-              "note": "Pinned /list_hooks data.categories[].events[].stages[].actions[].rollback declares string and nullable:true. Effective schema expansion depth 8 otherwise emits mixed here; restore only this explicit pinned leaf type, leaving presence optional. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
-            }
-          ]
-        },
-        "categories[].events[].stages[].actions[].stage": {
-          "replace": {
-            "type": "string"
-          },
-          "evidence": [
-            {
-              "kind": "doc",
-              "version": "pinned 2026-10-13",
-              "date": "2026-10-31",
-              "note": "Pinned /list_hooks data.categories[].events[].stages[].actions[].stage declares string. Effective schema expansion depth 8 otherwise emits mixed here; restore only this explicit pinned leaf type, leaving presence optional. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
-            }
-          ]
-        },
-        "categories[].events[].stages[].actions[].weight": {
-          "replace": {
-            "type": "int"
-          },
-          "evidence": [
-            {
-              "kind": "doc",
-              "version": "pinned 2026-10-13",
-              "date": "2026-10-31",
-              "note": "Pinned /list_hooks data.categories[].events[].stages[].actions[].weight declares integer. Effective schema expansion depth 8 otherwise emits mixed here; restore only this explicit pinned leaf type, leaving presence optional. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+              "note": "Independent WHM GET review of bfe02e7744d48785340813fa1860d1c9ff28caba reported list_hooks payload mismatches for action weight and escalateprivs digit strings. Only those two fields were independently observed; no write or capture rerun occurred. Other action flags and reorder_hooks weight use reviewed source-family compatibility, not operation-specific live evidence. Review: https://github.com/hostingpal/whm-api-client/pull/62#pullrequestreview-5721050295."
             }
           ]
         }
@@ -430,6 +366,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned WHM /remove_integration_group has x-readonly=false, x-cpanel-available-version 54; reviewed reads use GET and mutations/unknown-risk retrievals use form POST. Parameter names, requiredness and scalar encodings follow the pinned schema and prose. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "/remove_integration_group declares unconstrained data {} without requiring data. Accept absent or null after a successful envelope as null; preserve every present decoded JSON value through the existing mixed spec. This is source-only compatibility, not a live observation. Pinned WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
         }
       ],
       "notes": [
@@ -442,10 +384,11 @@
           "text": "This removes the integration-link group identified by group_id from the explicitly supplied cPanel account. The source does not specify the effect on links within the group."
         },
         {
-          "kind": "documented",
-          "text": "The pinned data schema is unconstrained. Preserve decoded JSON fields, scalar values and explicit null without inventing a field schema; absent data remains a payload mismatch. The client does not retry or roll back removal."
+          "kind": "policy",
+          "text": "The pinned data schema is unconstrained. Preserve decoded JSON fields, scalar values and explicit null without inventing a field schema; absent data after a successful envelope returns null. The client does not retry or roll back removal."
         }
-      ]
+      ],
+      "optional_payload": true
     },
     "whm1:remove_integration_link": {
       "method": "POST",
@@ -455,6 +398,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned WHM /remove_integration_link has x-readonly=false, x-cpanel-available-version 54; reviewed reads use GET and mutations/unknown-risk retrievals use form POST. Parameter names, requiredness and scalar encodings follow the pinned schema and prose. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "/remove_integration_link declares unconstrained data {} without requiring data. Accept absent or null after a successful envelope as null; preserve every present decoded JSON value through the existing mixed spec. This is source-only compatibility, not a live observation. Pinned WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
         }
       ],
       "notes": [
@@ -467,10 +416,11 @@
           "text": "This removes the application link identified by app from the explicitly supplied cPanel account. The client does not contact the linked application."
         },
         {
-          "kind": "documented",
-          "text": "The pinned data schema is unconstrained. Preserve decoded JSON fields, scalar values and explicit null without inventing a field schema; absent data remains a payload mismatch. The client does not retry or roll back removal."
+          "kind": "policy",
+          "text": "The pinned data schema is unconstrained. Preserve decoded JSON fields, scalar values and explicit null without inventing a field schema; absent data after a successful envelope returns null. The client does not retry or roll back removal."
         }
-      ]
+      ],
+      "optional_payload": true
     },
     "whm1:reorder_hooks": {
       "method": "POST",
@@ -493,11 +443,15 @@
         },
         {
           "kind": "documented",
-          "text": "The pinned hook_order node omits type but documents a list, declares object items and shows an array example. The reviewed correction makes it a list with optional string id and integer weight fields. Lower weight has greater priority; no numeric-string normalization is inferred."
+          "text": "The pinned hook_order node omits type but documents a list, declares object items and shows an array example. The reviewed correction makes it a list with optional string id and integer weight fields. Lower weight has greater priority."
         },
         {
           "kind": "documented",
           "text": "This changes the server-wide hook order and does not invoke hooks. The client does not retry or automatically restore the previous order."
+        },
+        {
+          "kind": "policy",
+          "text": "Weight uses the same reviewed canonical, in-range integer-string normalization as listHooks(). This is source-family compatibility verified offline; reorderHooks() has no live observation."
         }
       ],
       "response": {
@@ -511,7 +465,10 @@
                   "type": "string"
                 },
                 "weight": {
-                  "type": "int"
+                  "type": "int",
+                  "accept": [
+                    "numeric-string"
+                  ]
                 }
               }
             }
@@ -522,6 +479,12 @@
               "version": "pinned 2026-10-13",
               "date": "2026-10-31",
               "note": "Pinned /reorder_hooks data.hook_order lacks type, but its description states a list, items declares an object with string id and integer weight, and example is an array of those records. Correct only this missing container type and preserve optional fields. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            },
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "The pinned hook_order weight and list_hooks action weight are the same integer priority family. Apply reviewed canonical bounded integer-string normalization to both. Only list_hooks weight was independently observed as digit string in PR62 review 5721050295 on 11.138.0.19; reorder_hooks remains unobserved. Pinned WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
             }
           ]
         }
@@ -535,6 +498,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned WHM /update_integration_link_token has x-readonly=false, x-cpanel-available-version 54; reviewed reads use GET and mutations/unknown-risk retrievals use form POST. Parameter names, requiredness and scalar encodings follow the pinned schema and prose. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "/update_integration_link_token declares unconstrained data {} without requiring data. Accept absent or null after a successful envelope as null; preserve every present decoded JSON value through the existing mixed spec. This is source-only compatibility, not a live observation. Pinned WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
         }
       ],
       "notes": [
@@ -547,15 +516,16 @@
           "text": "This replaces the token for the specified application link and explicit cPanel account. Changing the application name instead requires deleting and recreating the link. The token input is sensitive; no linked URL is fetched."
         },
         {
-          "kind": "documented",
-          "text": "The pinned data schema is unconstrained. Preserve decoded JSON fields, scalar values and explicit null without inventing a field schema; absent data remains a payload mismatch. The client does not retry or roll back token replacement."
+          "kind": "policy",
+          "text": "The pinned data schema is unconstrained. Preserve decoded JSON fields, scalar values and explicit null without inventing a field schema; absent data after a successful envelope returns null. The client does not retry or roll back token replacement."
         }
       ],
       "params": {
         "token": {
           "sensitive": true
         }
-      }
+      },
+      "optional_payload": true
     },
     "whm1:get_remote_access_hash": {
       "exclude": {

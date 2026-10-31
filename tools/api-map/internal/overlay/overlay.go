@@ -65,16 +65,15 @@ type Operation struct {
 
 // Note is one line appended to the generated docblock. Kind separates facts
 // stated in the pinned documentation ("documented") from runtime behaviour
-// seen on a server ("observed", which needs live evidence), so generated PHPDoc
-// never presents a documented fact as an observation. Further kinds (such as a
-// caution channel) extend NoteKinds.
+// seen on a server ("observed", which needs live evidence) and deliberate client
+// decisions ("policy", which do not claim upstream or live evidence).
 type Note struct {
 	Kind string `json:"kind"`
 	Text string `json:"text"`
 }
 
 // NoteKinds maps each note kind to the label that starts its docblock line.
-var NoteKinds = map[string]string{"documented": "Documented", "observed": "Observed"}
+var NoteKinds = map[string]string{"documented": "Documented", "observed": "Observed", "policy": "Policy"}
 
 // Param renames, re-encodes or omits one documented parameter, keyed by wire
 // name. Omitted parameters (aliases, wildcard patterns such as MXCHECK-*) stay
@@ -83,7 +82,8 @@ var NoteKinds = map[string]string{"documented": "Documented", "observed": "Obser
 // encoding, and needs evidence. An absent or true value preserves enum PHPDoc.
 // Type permits reviewed string|int widening of scalar string/integer inputs,
 // string|int|float widening of scalar number inputs, or a true presence guard
-// for optional scalar integer inputs whose exact source enum is [1].
+// for concrete nonnullable scalar integer inputs with exact source enum [1]
+// and unchanged requiredness (optional ?true or required true).
 // Description replaces the parameter text without truncating later sentences.
 // Wire corrects a simple scalar parameter name on the wire without changing its
 // public PHP name or source-based order. All corrections require operation evidence
@@ -98,6 +98,10 @@ type Param struct {
 	Encoding    string `json:"encoding,omitempty"`
 	Sensitive   *bool  `json:"sensitive,omitempty"`
 	Omit        bool   `json:"omit,omitempty"`
+	// OmitEmpty explicitly omits [] on optional repeated string-list inputs.
+	OmitEmpty *bool `json:"omit_empty,omitempty"`
+	// RejectEmpty requires an explicit nonblank, nonzero target.
+	RejectEmpty *bool `json:"reject_empty,omitempty"`
 }
 
 // Correction changes the documented response type at one payload path.

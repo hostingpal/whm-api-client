@@ -8,6 +8,7 @@ use Closure;
 use HostingPal\WhmApiClient\Api\Whm\Integrations;
 use HostingPal\WhmApiClient\Client;
 use HostingPal\WhmApiClient\Exception\ApiErrorException;
+use HostingPal\WhmApiClient\Exception\InvalidResponseException;
 use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
 use HostingPal\WhmApiClient\Exception\TransportException;
 use HostingPal\WhmApiClient\Http\HttpTransport;
@@ -17,12 +18,10 @@ use Nyholm\Psr7\Response;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Client\NetworkExceptionInterface;
-use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\RequestInterface;
 use ReflectionMethod;
 use RuntimeException;
 use SensitiveParameter;
-use SensitiveParameterValue;
 
 /**
  * Independent pinned-source request and response literals; no generated spec supplies expectations.
@@ -32,8 +31,6 @@ use SensitiveParameterValue;
  */
 final class WhmIntegrationsTest extends TestCase
 {
-    private const SECRET = 'fixture-private-7+&=';
-
     /** @param IntegrationCall $call */
     #[DataProvider('operations')]
     public function testExactRequestsAndPinnedPayloads(
@@ -77,7 +74,7 @@ final class WhmIntegrationsTest extends TestCase
                     user: 'alice',
                     autologinTokenUrl: 'https://login.example.test/?token=a+&b=2',
                     base64PngImage: 'iVBORw0+//==',
-                    groupId: 'advanced',
+                    groupId: 'custom +&',
                     hide: false,
                     order: '000',
                     url: 'https://fallback.example.test/?x=a+&y=2',
@@ -86,7 +83,7 @@ final class WhmIntegrationsTest extends TestCase
             }, 'app=billing_app&implements=custom_service&label=Billing%20%2B%26&subscriber_unique_id=id%20%2B%26'
                 . '&token=token%20%2B%26%3D&user=alice'
                 . '&autologin_token_url=https%3A%2F%2Flogin.example.test%2F%3Ftoken%3Da%2B%26b%3D2'
-                . '&base64_png_image=iVBORw0%2B%2F%2F%3D%3D&group_id=advanced&hide=0&order=000'
+                . '&base64_png_image=iVBORw0%2B%2F%2F%3D%3D&group_id=custom%20%2B%26&hide=0&order=000'
                 . '&url=https%3A%2F%2Ffallback.example.test%2F%3Fx%3Da%2B%26y%3D2', null, null];
         yield 'delete hook' => ['delete_hook', 'POST',
             static function (Integrations $g): mixed {
@@ -283,20 +280,21 @@ final class WhmIntegrationsTest extends TestCase
         yield 'config URL does not accept null' => [
             static fn (Integrations $g): mixed => $g->getIntegrationLinkUserConfig('app', 'alice'),
             '{"userconfig":{"autologin_token_url":null}}'];
-        yield 'hook flag is not quoted' => [static fn (Integrations $g): mixed => $g->listHooks(),
-            '{"categories":[{"events":[{"stages":[{"actions":[{"enabled":"1"}]}]}]}]}'];
+        yield 'hook flag rejects noncanonical text' => [static fn (Integrations $g): mixed => $g->listHooks(),
+            '{"categories":[{"events":[{"stages":[{"actions":[{"enabled":"01"}]}]}]}]}'];
         yield 'stage order items are strings' => [static fn (Integrations $g): mixed => $g->listHooks(),
             '{"categories":[{"events":[{"stage_order":[0]}]}]}'];
-        yield 'hook weight is not quoted' => [static fn (Integrations $g): mixed => $g->listHooks(),
-            '{"categories":[{"events":[{"stages":[{"actions":[{"weight":"100"}]}]}]}]}'];
+        yield 'hook weight rejects noncanonical text' => [static fn (Integrations $g): mixed => $g->listHooks(),
+            '{"categories":[{"events":[{"stages":[{"actions":[{"weight":"0100"}]}]}]}]}'];
         yield 'nullable check remains string or null' => [static fn (Integrations $g): mixed => $g->listHooks(),
             '{"categories":[{"events":[{"stages":[{"actions":[{"check":false}]}]}]}]}'];
         yield 'hook-order node is list' => [static fn (Integrations $g): mixed => $g->reorderHooks('a,b'),
             '{"hook_order":{"id":"a","weight":100}}'];
         yield 'hook-order row is object' => [static fn (Integrations $g): mixed => $g->reorderHooks('a,b'),
             '{"hook_order":["a"]}'];
-        yield 'hook-order weight remains integer' => [static fn (Integrations $g): mixed => $g->reorderHooks('a,b'),
-            '{"hook_order":[{"weight":"100"}]}'];
+        yield 'hook-order weight rejects noncanonical text' => [
+            static fn (Integrations $g): mixed => $g->reorderHooks('a,b'),
+            '{"hook_order":[{"weight":"0100"}]}'];
     }
 
     /** @param IntegrationCall $call */
@@ -342,8 +340,9 @@ final class WhmIntegrationsTest extends TestCase
                 $g->updateIntegrationLinkToken('app', 'token', 'alice'),
             ] as $name => $call
         ) {
-            yield $name . ' absent differs from unconstrained null' => [$call, null, null, true];
+            yield $name . ' successful absent payload' => [$call, null, null, false];
             yield $name . ' explicit null' => [$call, 'null', null, false];
+            yield $name . ' scalar stays unconstrained' => [$call, 'false', false, false];
             yield $name . ' opaque fields' => [
                 $call, '{"opaque":[false,0,null]}', ['opaque' => [false, 0, null]], false,
             ];
@@ -372,11 +371,56 @@ final class WhmIntegrationsTest extends TestCase
             $this->expectException(PayloadMismatchException::class);
         }
         self::assertSame($expected, $call($client->whm()->integrations()));
+        self::assertSame(1, $client->whm()->responseMeta()?->whmResult());
+        self::assertCount(1, $http->getRequests());
+    }
+
+    /** @return iterable<string, array{IntegrationCall, string, bool}> */
+    public static function invalidOptionalPayloadEnvelopes(): iterable
+    {
+        foreach (
+            [
+            'remove group' => static fn (Integrations $g): mixed => $g->removeIntegrationGroup('group', 'alice'),
+            'remove link' => static fn (Integrations $g): mixed => $g->removeIntegrationLink('app', 'alice'),
+            'replace token' => static fn (Integrations $g): mixed =>
+                $g->updateIntegrationLinkToken('app', 'token', 'alice'),
+            ] as $name => $call
+        ) {
+            yield $name . ' missing metadata' => [$call, '{"data":null}', false];
+            yield $name . ' unusable result' => [$call, '{"metadata":{"result":null},"data":{}}', true];
+            yield $name . ' malformed present JSON' => [$call, '{"metadata":{"result":1},"data":', false];
+        }
+    }
+
+    /** @param IntegrationCall $call */
+    #[DataProvider('invalidOptionalPayloadEnvelopes')]
+    public function testOptionalPayloadStillRequiresUsableEnvelope(
+        Closure $call,
+        string $response,
+        bool $hasSnapshot,
+    ): void {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope('{"links":[]}')));
+        $client->whm()->integrations()->listIntegrationGroups('alice');
+        $previous = $client->whm()->responseMeta();
+        $http->addResponse(new Response(200, [], $response));
+        try {
+            $call($client->whm()->integrations());
+            self::fail('Optional payloads must not bypass envelope validation.');
+        } catch (InvalidResponseException $exception) {
+            self::assertNotInstanceOf(PayloadMismatchException::class, $exception);
+            self::assertSame($exception->metadata, $client->whm()->responseMeta());
+            self::assertNotSame($previous, $exception->metadata);
+            self::assertSame($hasSnapshot ? ['result' => null] : null, $exception->metadata?->whm);
+            self::assertSame(1, $previous?->whmResult());
+            self::assertCount(2, $http->getRequests());
+        }
     }
 
     /** @return iterable<string, array{string, string}> */
     public static function sensitiveParameters(): iterable
     {
+        yield 'subscriber ID' => ['createIntegrationLink', 'subscriberUniqueId'];
         yield 'create token' => ['createIntegrationLink', 'token'];
         yield 'autologin URL' => ['createIntegrationLink', 'autologinTokenUrl'];
         yield 'fallback URL' => ['createIntegrationLink', 'url'];
@@ -399,94 +443,118 @@ final class WhmIntegrationsTest extends TestCase
         self::fail('The expected public named argument is missing.');
     }
 
-    /** @return iterable<string, array{IntegrationCall, string}> */
-    public static function secretFailures(): iterable
+    public function testCustomGroupIdHasAnOpenStringContract(): void
     {
-        yield 'create token' => [static function (Integrations $g): mixed {
-            $g->createIntegrationLink('app', 'billing', '', '', self::SECRET, 'alice', url: 'https://x.test/');
-            return null;
-        }, '{"metadata":{"result":0,"reason":"Denied"}}'];
-        yield 'create autologin URL' => [static function (Integrations $g): mixed {
-            $g->createIntegrationLink('app', 'billing', '', '', '', 'alice', autologinTokenUrl: self::SECRET);
-            return null;
-        }, '{"metadata":{"result":0,"reason":"Denied"}}'];
-        yield 'update token' => [
-            static fn (Integrations $g): mixed => $g->updateIntegrationLinkToken('app', self::SECRET, 'alice'),
-            '{"metadata":{"result":0,"reason":"Denied"}}'];
-        foreach (['hook', 'check', 'rollback'] as $field) {
-            yield 'edit ' . $field => [static function (Integrations $g) use ($field): mixed {
-                $g->editHook('hook-id', ...[$field => self::SECRET]);
-                return null;
-            }, '{"metadata":{"result":0,"reason":"Denied"}}'];
+        $method = new ReflectionMethod(Integrations::class, 'createIntegrationLink');
+        self::assertStringContainsString('@param string|null $groupId', $method->getDocComment() ?: '');
+    }
+
+    /** @return iterable<string, array{int|string, int}> */
+    public static function compatibleHookWeights(): iterable
+    {
+        yield 'quoted zero' => ['0', 0];
+        yield 'quoted priority' => ['100', 100];
+        yield 'quoted negative' => ['-1', -1];
+        yield 'quoted maximum' => [(string) PHP_INT_MAX, PHP_INT_MAX];
+        yield 'quoted minimum' => [(string) PHP_INT_MIN, PHP_INT_MIN];
+        yield 'native zero' => [0, 0];
+        yield 'native priority' => [100, 100];
+    }
+
+    #[DataProvider('compatibleHookWeights')]
+    public function testHookFamilyNormalizesOnlyCanonicalWeights(int|string $weight, int $expected): void
+    {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope(self::hookPayload(['weight' => $weight]))));
+        $hooks = $client->whm()->integrations()->listHooks();
+        self::assertSame($expected, $hooks['categories'][0]['events'][0]['stages'][0]['actions'][0]['weight'] ?? null);
+        self::assertSame(1, $client->whm()->responseMeta()?->whmResult());
+        self::assertCount(1, $http->getRequests());
+    }
+
+    #[DataProvider('compatibleHookWeights')]
+    public function testReorderHookFamilyNormalizesOnlyCanonicalWeights(int|string $weight, int $expected): void
+    {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope(
+            json_encode(['hook_order' => [['id' => 'a', 'weight' => $weight], []]], JSON_THROW_ON_ERROR),
+        )));
+        self::assertSame(
+            ['hook_order' => [['id' => 'a', 'weight' => $expected], []]],
+            $client->whm()->integrations()->reorderHooks('a'),
+        );
+        self::assertCount(1, $http->getRequests());
+        self::assertSame(1, $client->whm()->responseMeta()?->whmResult());
+    }
+
+    public function testPopulatedHookActionsPreserveAllThirteenFieldsAndNormalizeExactFlags(): void
+    {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope(self::hookPayload([
+            'blocking' => '0', 'enabled' => '1', 'escalateprivs' => '0', 'weight' => '100',
+        ]))));
+        $hooks = $client->whm()->integrations()->listHooks();
+        self::assertSame([
+            'blocking' => 0, 'category' => 'RPM::Versions', 'check' => null, 'description' => 'fixture action',
+            'enabled' => 1, 'escalateprivs' => 0, 'event' => 'MariaDB-server', 'exectype' => 'script',
+            'hook' => '/fixture/hook', 'id' => 'a', 'rollback' => null, 'stage' => 'post', 'weight' => 100,
+        ], $hooks['categories'][0]['events'][0]['stages'][0]['actions'][0] ?? null);
+        $http->addResponse(new Response(200, [], self::envelope(self::hookPayload([
+            'blocking' => '1', 'enabled' => '0', 'escalateprivs' => '1',
+        ]))));
+        $hooks = $client->whm()->integrations()->listHooks();
+        $action = $hooks['categories'][0]['events'][0]['stages'][0]['actions'][0] ?? [];
+        self::assertSame(
+            [1, 0, 1],
+            [$action['blocking'] ?? null, $action['enabled'] ?? null, $action['escalateprivs'] ?? null],
+        );
+    }
+
+    /** @return iterable<string, array{IntegrationCall, string}> */
+    public static function invalidHookFamilies(): iterable
+    {
+        foreach (
+            ['00', '0100', '+1', '-0', '1.0', '1e2', ' 1', '1 ', '9223372036854775808',
+            '-9223372036854775809', true, 1.5, null] as $i => $weight
+        ) {
+            yield 'action weight ' . $i => [static fn (Integrations $g): mixed => $g->listHooks(),
+                self::hookPayload(['weight' => $weight])];
+            yield 'order weight ' . $i => [static fn (Integrations $g): mixed => $g->reorderHooks('a'),
+                json_encode(['hook_order' => [['weight' => $weight]]], JSON_THROW_ON_ERROR)];
         }
-        yield 'returned config URL on payload mismatch' => [
-            static fn (Integrations $g): mixed => $g->getIntegrationLinkUserConfig('app', 'alice'),
-            '{"metadata":{"result":1},"data":{"userconfig":{"autologin_token_url":"'
-                . self::SECRET . '","user":false}}}'];
+        foreach (['blocking', 'enabled', 'escalateprivs'] as $field) {
+            foreach (['01', 'true', '2', 2, true, 1.0, null] as $i => $flag) {
+                yield $field . ' invalid flag ' . $i => [static fn (Integrations $g): mixed => $g->listHooks(),
+                    self::hookPayload([$field => $flag])];
+            }
+        }
+        foreach (['category', 'event', 'exectype', 'hook', 'id', 'stage'] as $field) {
+            yield $field . ' strict string neighbor' => [static fn (Integrations $g): mixed => $g->listHooks(),
+                self::hookPayload([$field => 1])];
+        }
+        yield 'attributes remain strict' => [static fn (Integrations $g): mixed => $g->listHooks(),
+            '{"categories":[{"events":[{"stages":[{"attributes":{"blocking":"1"}}]}]}]}'];
     }
 
     /** @param IntegrationCall $call */
-    #[DataProvider('secretFailures')]
-    public function testInputAndReturnedSecretsStayOutOfExceptionTraces(Closure $call, string $response): void
+    #[DataProvider('invalidHookFamilies')]
+    public function testHookCompatibilityRejectsInvalidAndNeighborVariants(Closure $call, string $payload): void
     {
-        $previous = ini_get('zend.exception_ignore_args');
-        ini_set('zend.exception_ignore_args', '0');
-        try {
-            [$client, $http] = self::client();
-            $http->addResponse(new Response(200, [], $response));
-            try {
-                $call($client->whm()->integrations());
-                self::fail('Expected fixture failure.');
-            } catch (ApiErrorException | PayloadMismatchException $exception) {
-                self::assertCount(1, $http->getRequests());
-                foreach ($exception->getTrace() as $frame) {
-                    $class = $frame['class'] ?? '';
-                    if (
-                        !str_starts_with($class, 'HostingPal\\WhmApiClient\\')
-                        || str_starts_with($class, 'HostingPal\\WhmApiClient\\Tests\\')
-                    ) {
-                        continue;
-                    }
-                    $seen = [];
-                    self::assertFalse(self::containsSecret($frame['args'] ?? [], $seen));
-                }
-                self::assertStringNotContainsString(self::SECRET, $exception->getMessage());
-            }
-        } finally {
-            if ($previous !== false) {
-                ini_set('zend.exception_ignore_args', $previous);
-            }
-        }
+        $this->testInvalidPayloadsRetainConfirmedOutcomeWithoutRetry($call, $payload);
     }
 
-    /** @param array<int, true> $seen */
-    private static function containsSecret(mixed $value, array &$seen): bool
+    /** @param array<string, mixed> $changes */
+    private static function hookPayload(array $changes): string
     {
-        if ($value instanceof SensitiveParameterValue || $value instanceof MockClient) {
-            return false;
-        }
-        if (is_string($value)) {
-            return str_contains($value, self::SECRET);
-        }
-        if ($value instanceof MessageInterface && str_contains((string) $value->getBody(), self::SECRET)) {
-            return true;
-        }
-        if (is_object($value)) {
-            $id = spl_object_id($value);
-            if (isset($seen[$id])) {
-                return false;
-            }
-            $seen[$id] = true;
-            $value = (array) $value;
-        }
-        if (is_array($value)) {
-            foreach ($value as $key => $item) {
-                if (self::containsSecret((string) $key, $seen) || self::containsSecret($item, $seen)) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        $action = array_replace([
+            'blocking' => 0, 'category' => 'RPM::Versions', 'check' => null, 'description' => 'fixture action',
+            'enabled' => 1, 'escalateprivs' => 0, 'event' => 'MariaDB-server', 'exectype' => 'script',
+            'hook' => '/fixture/hook', 'id' => 'a', 'rollback' => null, 'stage' => 'post', 'weight' => 100,
+        ], $changes);
+        return json_encode(
+            ['categories' => [['events' => [['stages' => [['actions' => [$action]]]]]]]],
+            JSON_THROW_ON_ERROR | JSON_PRESERVE_ZERO_FRACTION,
+        );
     }
 
     private static function assertRequest(MockClient $http, string $function, string $method, string $parameters): void

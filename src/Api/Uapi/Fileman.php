@@ -193,9 +193,9 @@ final readonly class Fileman
      * @param bool|null $listAll Whether to return all files and directories inside the specified directory. Null omits
      *     it.
      * @return AutocompleteDirectoryResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/manage-files/fileman-autocompletedir
      */
     public function autocompleteDirectory(
@@ -233,9 +233,9 @@ final readonly class Fileman
      * @param string $source The path to the file or directory to copy.
      * @param string $destination The path to copy the source to.
      * @return CopyFileResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/manage-files/fileman-copy_file
      */
     public function copyFile(string $source, string $destination): array
@@ -261,9 +261,9 @@ final readonly class Fileman
      *
      * @param string $path The path to the file or directory to delete.
      * @return DeleteFileResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/manage-files/fileman-delete_file
      */
     public function deleteFile(string $path): array
@@ -291,9 +291,9 @@ final readonly class Fileman
      *
      * @param int|null $olderThan The maximum age in days of content that the function will not purge. Null omits it.
      * @return EmptyTrashResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/manage-files/fileman-empty_trash
      */
     public function emptyTrash(?int $olderThan = null): ?array
@@ -329,9 +329,9 @@ final readonly class Fileman
      * @param string|null $toCharset The output character encoding. Null omits it.
      * @param bool|null $updateHtmlDocumentEncoding Whether to update the file's HTML document encoding. Null omits it.
      * @return GetFileContentResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/manage-files/fileman-get_file_content
      */
     public function getFileContent(
@@ -383,9 +383,9 @@ final readonly class Fileman
      * @param bool|null $includePermissions Whether to parse the file owner's read and write permissions. Null omits it.
      * @param bool|null $showHidden Whether to include hidden files in the output. Null omits it.
      * @return GetFileInformationResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/manage-files/fileman-get_file_information
      */
     public function getFileInformation(
@@ -466,9 +466,9 @@ final readonly class Fileman
      * @param bool|null $showHidden Whether to include hidden files in the output. Null omits it.
      * @param string|int|null $types A pipe-separated list of file types to return. Null omits it.
      * @return ListFilesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/manage-files/fileman-list_files
      */
     public function listFiles(
@@ -517,9 +517,9 @@ final readonly class Fileman
      * @param string $source The path to the file or directory to move.
      * @param string $destination The path to move the source to.
      * @return MoveFileResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/manage-files/fileman-move_file
      */
     public function moveFile(string $source, string $destination): array
@@ -547,9 +547,9 @@ final readonly class Fileman
      * @param string $source The path to the file or directory to rename.
      * @param string $destination The new path, in the same directory as the source.
      * @return RenameFileResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/manage-files/fileman-rename_file
      */
     public function renameFile(string $source, string $destination): array
@@ -577,9 +577,9 @@ final readonly class Fileman
      *
      * @param string $path The original path of the trashed file or directory.
      * @return RestoreFromTrashResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/manage-files/fileman-restore_from_trash
      */
     public function restoreFromTrash(string $path): array
@@ -621,9 +621,9 @@ final readonly class Fileman
      * @param string|null $fromCharset The character set encoding of the `content` parameter's value. Null omits it.
      * @param string|null $toCharset The character set encoding in which to encode the file. Null omits it.
      * @return SaveFileContentResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/manage-files/fileman-save_file_content
      */
     public function saveFileContent(
@@ -670,9 +670,9 @@ final readonly class Fileman
      * @param bool|null $transliterate Whether to transcode invalid characters to valid characters in the new character
      *     set encoding. Null omits it.
      * @return TranscodeResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/manage-files/fileman-transcode
      */
     public function transcode(
@@ -711,9 +711,9 @@ final readonly class Fileman
      *
      * @param string $path The path to the file or directory to move to the trash.
      * @return TrashFileResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/manage-files/fileman-trash_file
      */
     public function trashFile(string $path): array

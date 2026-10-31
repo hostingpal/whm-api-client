@@ -53,9 +53,9 @@ final readonly class TeamRoles
      * API-map identity: uapi:TeamRoles/list_feature_descriptions#GET (wire name list_feature_descriptions).
      *
      * @return ListFeatureDescriptionsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/team-roles/teamroles-list_feature_descriptions
      */
     public function listFeatureDescriptions(): array

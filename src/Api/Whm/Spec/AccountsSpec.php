@@ -177,6 +177,17 @@ final class AccountsSpec
         'unwrap' => 'acct',
     ];
 
+    public const ASSIGN_ACCOUNT_ENHANCEMENT = [
+        'function' => 'assign_account_enhancement',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'account' => ['name' => 'account', 'encoding' => 'scalar'],
+            'name' => ['name' => 'name', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
     public const CHANGEPACKAGE = [
         'function' => 'changepackage',
         'method' => 'POST',
@@ -205,6 +216,134 @@ final class AccountsSpec
             ],
         ],
         'optional' => true,
+    ];
+
+    public const CONVERT_ADDON_FETCH_CONVERSION_DETAILS = [
+        'function' => 'convert_addon_fetch_conversion_details',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'jobId' => ['name' => 'job_id', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'domain' => ['type' => 'string'],
+                'job_end_time' => ['type' => 'int'],
+                'job_id' => ['type' => 'int'],
+                'job_start_time' => ['type' => 'int'],
+                'job_status' => ['type' => 'string'],
+                'source_acct' => ['type' => 'string'],
+                'steps' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'end_time' => ['type' => 'int'],
+                            'start_time' => ['type' => 'int'],
+                            'status' => ['type' => 'string'],
+                            'step_name' => ['type' => 'string'],
+                            'warnings' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
+                'target_acct' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const CONVERT_ADDON_FETCH_DOMAIN_DETAILS = [
+        'function' => 'convert_addon_fetch_domain_details',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'docroot' => ['type' => 'string'],
+                'has_dedicated_ip' => ['type' => 'flag'],
+                'has_ssl_cert_installed' => ['type' => 'flag'],
+                'ip' => ['type' => 'string'],
+                'is_sni_supported' => ['type' => 'flag'],
+                'number_of_autoresponders' => ['type' => 'int'],
+                'number_of_domain_forwarders' => ['type' => 'int'],
+                'number_of_email_accounts' => ['type' => 'int'],
+                'number_of_email_forwarders' => ['type' => 'int'],
+                'owner' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const CONVERT_ADDON_GET_CONVERSION_STATUS = [
+        'function' => 'convert_addon_get_conversion_status',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'jobId' => ['name' => 'job_id', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'map',
+            'values' => [
+                'type' => 'object',
+                'fields' => [
+                    'job_end_time' => ['type' => 'int'],
+                    'job_id' => ['type' => 'string'],
+                    'job_status' => ['type' => 'string'],
+                    'source_acct' => ['type' => 'string'],
+                ],
+            ],
+        ],
+    ];
+
+    public const CONVERT_ADDON_LIST_ADDON_DOMAINS = [
+        'function' => 'convert_addon_list_addon_domains',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'map',
+            'values' => [
+                'type' => 'object',
+                'fields' => [
+                    'docroot' => ['type' => 'string'],
+                    'domain_type' => ['type' => 'string'],
+                    'ip' => ['type' => 'string'],
+                    'ipv6' => ['type' => 'string'],
+                    'owner' => ['type' => 'string'],
+                    'reseller' => ['type' => 'string'],
+                    'subdomain' => ['type' => 'string'],
+                ],
+            ],
+        ],
+    ];
+
+    public const CONVERT_ADDON_LIST_CONVERSIONS = [
+        'function' => 'convert_addon_list_conversions',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'conversions' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'domain' => ['type' => 'string'],
+                            'end_time' => ['type' => 'int'],
+                            'job_id' => ['type' => 'int'],
+                            'source_acct' => ['type' => 'string'],
+                            'start_time' => ['type' => 'int'],
+                            'status' => ['type' => 'string'],
+                            'target_acct' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
     ];
 
     public const CREATEACCT = [
@@ -286,6 +425,152 @@ final class AccountsSpec
         'optional' => true,
     ];
 
+    public const CREATE_ACCOUNT_ENHANCEMENT = [
+        'function' => 'create_account_enhancement',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'id' => ['name' => 'id', 'encoding' => 'scalar'],
+            'name' => ['name' => 'name', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'name' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const DELETE_ACCOUNT_ENHANCEMENT = [
+        'function' => 'delete_account_enhancement',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'name' => ['name' => 'name', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
+    public const DOMAINUSERDATA = [
+        'function' => 'domainuserdata',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'userdata' => [
+                    'type' => 'object',
+                    'fields' => [
+                        'customlog' => [
+                            'type' => 'list',
+                            'items' => [
+                                'type' => 'object',
+                                'fields' => [
+                                    'format' => ['type' => 'string'],
+                                    'target' => ['type' => 'string'],
+                                ],
+                            ],
+                        ],
+                        'documentroot' => ['type' => 'string'],
+                        'group' => ['type' => 'string'],
+                        'hascgi' => ['type' => 'flag', 'accept' => ['string-flag']],
+                        'homedir' => ['type' => 'string'],
+                        'ip' => ['type' => 'string'],
+                        'owner' => ['type' => 'string'],
+                        'phpopenbasedirprotect' => ['type' => 'flag', 'accept' => ['string-flag']],
+                        'port' => ['type' => 'int', 'accept' => ['numeric-string']],
+                        'scriptalias' => [
+                            'type' => 'list',
+                            'items' => [
+                                'type' => 'object',
+                                'fields' => [
+                                    'path' => ['type' => 'string'],
+                                    'url' => ['type' => 'string'],
+                                ],
+                            ],
+                        ],
+                        'serveradmin' => ['type' => 'string'],
+                        'serveralias' => ['type' => 'string'],
+                        'servername' => ['type' => 'string'],
+                        'usecanonicalname' => ['type' => 'string'],
+                        'user' => ['type' => 'string'],
+                        'userdirprotect' => ['type' => 'string'],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const EDITQUOTA = [
+        'function' => 'editquota',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'user' => ['name' => 'user', 'encoding' => 'scalar'],
+            'quota' => ['name' => 'quota', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
+    public const FORCEPASSWORDCHANGE = [
+        'function' => 'forcepasswordchange',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'usersJson' => ['name' => 'users_json', 'encoding' => 'scalar'],
+            'stopOnFailure' => ['name' => 'stop_on_failure', 'encoding' => 'bool'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'updated' => ['type' => 'list', 'items' => ['type' => 'string']],
+            ],
+        ],
+    ];
+
+    public const GET_CURRENT_USERS_COUNT = [
+        'function' => 'get_current_users_count',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'users' => ['type' => 'int'],
+            ],
+        ],
+    ];
+
+    public const GET_DISK_USAGE = [
+        'function' => 'get_disk_usage',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'cacheMode' => ['name' => 'cache_mode', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'accounts' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'blocks_limit' => ['type' => 'int', 'nullable' => true],
+                            'blocks_used' => ['type' => 'int'],
+                            'inodes_limit' => ['type' => 'int', 'nullable' => true],
+                            'inodes_used' => ['type' => 'int'],
+                            'user' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
     public const GET_DOMAIN_INFO = [
         'function' => 'get_domain_info',
         'method' => 'GET',
@@ -313,6 +598,233 @@ final class AccountsSpec
                             'port_ssl' => ['type' => 'int', 'accept' => ['numeric-string']],
                             'user' => ['type' => 'string'],
                             'user_owner' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const GETDOMAINOWNER = [
+        'function' => 'getdomainowner',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'user' => ['type' => 'string', 'nullable' => true],
+            ],
+        ],
+    ];
+
+    public const GET_HOMEDIR_ROOTS = [
+        'function' => 'get_homedir_roots',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'payload' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'path' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const GET_MAXIMUM_USERS = [
+        'function' => 'get_maximum_users',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'maximum_users' => ['type' => 'int', 'accept' => ['numeric-string']],
+                'users' => ['type' => 'int'],
+            ],
+        ],
+    ];
+
+    public const GET_PASSWORD_STRENGTH = [
+        'function' => 'get_password_strength',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'password' => ['name' => 'password', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'strength' => ['type' => 'int'],
+            ],
+        ],
+    ];
+
+    public const GET_UPGRADE_OPPORTUNITIES = [
+        'function' => 'get_upgrade_opportunities',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'diskThresholdBlocks' => ['name' => 'disk_threshold_blocks', 'encoding' => 'scalar'],
+            'nearnessFraction' => ['name' => 'nearness_fraction', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'upgrade_opportunities' => [
+                    'type' => 'map',
+                    'values' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'bw_limit' => [
+                                'type' => 'object',
+                                'fields' => [
+                                    'last_month' => [
+                                        'type' => 'object',
+                                        'fields' => [
+                                            'fraction' => ['type' => 'number'],
+                                            'near' => ['type' => 'flag'],
+                                            'reached' => ['type' => 'flag'],
+                                        ],
+                                    ],
+                                    'messages' => ['type' => 'list', 'items' => ['type' => 'string']],
+                                    'this_month' => [
+                                        'type' => 'object',
+                                        'fields' => [
+                                            'fraction' => ['type' => 'number'],
+                                            'near' => ['type' => 'flag'],
+                                            'reached' => ['type' => 'flag'],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                            'disk_usage' => [
+                                'type' => 'object',
+                                'fields' => [
+                                    'messages' => ['type' => 'list', 'items' => ['type' => 'string']],
+                                    'relative_to_fixed_amount' => [
+                                        'type' => 'object',
+                                        'fields' => [
+                                            'fraction' => ['type' => 'number', 'nullable' => true],
+                                            'near' => ['type' => 'flag', 'nullable' => true],
+                                            'reached' => ['type' => 'flag', 'nullable' => true],
+                                            'threshold_blocks' => ['type' => 'int', 'nullable' => true],
+                                        ],
+                                    ],
+                                    'relative_to_quota' => [
+                                        'type' => 'object',
+                                        'fields' => [
+                                            'fraction' => ['type' => 'number', 'nullable' => true],
+                                            'near' => ['type' => 'flag', 'nullable' => true],
+                                            'reached' => ['type' => 'flag', 'nullable' => true],
+                                            'threshold_blocks' => ['type' => 'int', 'nullable' => true],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                            'messages' => ['type' => 'list', 'items' => ['type' => 'string']],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const GET_USERS_LINKS = [
+        'function' => 'get_users_links',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'user' => ['name' => 'user', 'encoding' => 'scalar'],
+            'service' => ['name' => 'service', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'map', 'values' => ['type' => 'string']],
+    ];
+
+    public const HAS_DIGEST_AUTH = [
+        'function' => 'has_digest_auth',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'user' => ['name' => 'user', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'digestauth' => ['type' => 'flag'],
+            ],
+        ],
+    ];
+
+    public const HAS_MYCNF_FOR_CPUSER = [
+        'function' => 'has_mycnf_for_cpuser',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'user' => ['name' => 'user', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'has_mycnf_for_cpuser' => ['type' => 'flag'],
+            ],
+        ],
+    ];
+
+    public const LIMITBW = [
+        'function' => 'limitbw',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'user' => ['name' => 'user', 'encoding' => 'scalar'],
+            'bwlimit' => ['name' => 'bwlimit', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'bwlimits' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'bwlimit' => ['type' => 'int'],
+                            'bwlimitenable' => ['type' => 'flag'],
+                            'domains' => ['type' => 'list', 'items' => ['type' => 'string']],
+                            'human_bwlimit' => ['type' => 'string'],
+                            'human_bwused' => ['type' => 'string'],
+                            'unlimited' => ['type' => 'flag'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const LIST_ACCOUNT_ENHANCEMENTS = [
+        'function' => 'list_account_enhancements',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'enhancements' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'id' => ['type' => 'string'],
+                            'name' => ['type' => 'string'],
                         ],
                     ],
                 ],
@@ -483,6 +995,58 @@ final class AccountsSpec
         'unwrap' => 'acct',
     ];
 
+    public const LISTLOCKEDACCOUNTS = [
+        'function' => 'listlockedaccounts',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'account' => ['type' => 'list', 'items' => ['type' => 'string']],
+            ],
+        ],
+    ];
+
+    public const LISTSUSPENDED = [
+        'function' => 'listsuspended',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'account' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'is_locked' => ['type' => 'flag'],
+                            'owner' => ['type' => 'string'],
+                            'reason' => ['type' => 'string'],
+                            'time' => ['type' => 'string'],
+                            'unixtime' => ['type' => 'int'],
+                            'user' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const LIST_USERS = [
+        'function' => 'list_users',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'users' => ['type' => 'list', 'items' => ['type' => 'string']],
+            ],
+        ],
+    ];
+
     public const MODIFYACCT = [
         'function' => 'modifyacct',
         'method' => 'POST',
@@ -570,6 +1134,118 @@ final class AccountsSpec
         'optional' => true,
     ];
 
+    public const MODIFY_ACCOUNT_ENHANCEMENT = [
+        'function' => 'modify_account_enhancement',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'name' => ['name' => 'name', 'encoding' => 'scalar'],
+            'id' => ['name' => 'id', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'id' => ['type' => 'string'],
+                'name' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const MYPRIVS = [
+        'function' => 'myprivs',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'privileges' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'values' => ['type' => 'mixed'],
+                        'fields' => [
+                            'acct-summary' => ['type' => 'flag'],
+                            'add-pkg' => ['type' => 'flag'],
+                            'add-pkg-ip' => ['type' => 'flag'],
+                            'add-pkg-shell' => ['type' => 'flag'],
+                            'all' => ['type' => 'flag'],
+                            'allow-addoncreate' => ['type' => 'flag'],
+                            'allow-emaillimits-pkgs' => ['type' => 'flag'],
+                            'allow-parkedcreate' => ['type' => 'flag'],
+                            'allow-shell' => ['type' => 'int'],
+                            'allow-unlimited-bw-pkgs' => ['type' => 'flag'],
+                            'allow-unlimited-disk-pkgs' => ['type' => 'flag'],
+                            'allow-unlimited-pkgs' => ['type' => 'flag'],
+                            'basic-system-info' => ['type' => 'flag'],
+                            'basic-whm-functions' => ['type' => 'flag'],
+                            'clustering' => ['type' => 'flag'],
+                            'cors-proxy-get' => ['type' => 'flag'],
+                            'cpanel-api' => ['type' => 'flag'],
+                            'cpanel-integration' => ['type' => 'flag'],
+                            'create-acct' => ['type' => 'flag'],
+                            'create-dns' => ['type' => 'flag'],
+                            'create-user-session' => ['type' => 'flag'],
+                            'demo-setup' => ['type' => 'flag'],
+                            'digest-auth' => ['type' => 'flag'],
+                            'edit-account' => ['type' => 'flag'],
+                            'edit-dns' => ['type' => 'flag'],
+                            'edit-mx' => ['type' => 'flag'],
+                            'edit-pkg' => ['type' => 'flag'],
+                            'file-restore' => ['type' => 'flag'],
+                            'generate-email-config' => ['type' => 'flag'],
+                            'kill-acct' => ['type' => 'flag'],
+                            'kill-dns' => ['type' => 'flag'],
+                            'limit-bandwidth' => ['type' => 'flag'],
+                            'list-accts' => ['type' => 'flag'],
+                            'list-pkgs' => ['type' => 'int'],
+                            'locale-edit' => ['type' => 'flag'],
+                            'mailcheck' => ['type' => 'flag'],
+                            'manage-api-tokens' => ['type' => 'flag'],
+                            'manage-dns-records' => ['type' => 'flag'],
+                            'manage-oidc' => ['type' => 'flag'],
+                            'manage-styles' => ['type' => 'flag'],
+                            'mysql-info' => ['type' => 'flag'],
+                            'news' => ['type' => 'flag'],
+                            'ns-config' => ['type' => 'flag'],
+                            'park-dns' => ['type' => 'flag'],
+                            'passwd' => ['type' => 'flag'],
+                            'quota' => ['type' => 'flag'],
+                            'rearrange-accts' => ['type' => 'flag'],
+                            'resftp' => ['type' => 'flag'],
+                            'restart' => ['type' => 'flag'],
+                            'show-bandwidth' => ['type' => 'flag'],
+                            'ssl' => ['type' => 'flag'],
+                            'ssl-buy' => ['type' => 'flag'],
+                            'ssl-gencrt' => ['type' => 'flag'],
+                            'ssl-info' => ['type' => 'flag'],
+                            'stats' => ['type' => 'flag'],
+                            'status' => ['type' => 'flag'],
+                            'suspend-acct' => ['type' => 'flag'],
+                            'thirdparty' => ['type' => 'flag'],
+                            'track-email' => ['type' => 'flag'],
+                            'upgrade-account' => ['type' => 'flag'],
+                            'viewglobalpackages' => ['type' => 'flag'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const QUOTA_ENABLED = [
+        'function' => 'quota_enabled',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'quota_enabled' => ['type' => 'flag', 'accept' => ['string-flag']],
+            ],
+        ],
+    ];
+
     public const REMOVEACCT = [
         'function' => 'removeacct',
         'method' => 'POST',
@@ -579,6 +1255,89 @@ final class AccountsSpec
             'keepdns' => ['name' => 'keepdns', 'encoding' => 'bool'],
         ],
         'returns' => null,
+    ];
+
+    public const SET_DIGEST_AUTH = [
+        'function' => 'set_digest_auth',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'user' => ['name' => 'user', 'encoding' => 'scalar'],
+            'password' => ['name' => 'password', 'encoding' => 'scalar'],
+            'enabledigest' => ['name' => 'enabledigest', 'encoding' => 'bool'],
+        ],
+        'returns' => null,
+    ];
+
+    public const SET_PRIMARY_DOMAIN_DOCROOT = [
+        'function' => 'set_primary_domain_docroot',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'username' => ['name' => 'username', 'encoding' => 'scalar'],
+            'docroot' => ['name' => 'docroot', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'documentroot' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const SHOWBW = [
+        'function' => 'showbw',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'month' => ['name' => 'month', 'encoding' => 'scalar'],
+            'search' => ['name' => 'search', 'encoding' => 'scalar'],
+            'searchtype' => ['name' => 'searchtype', 'encoding' => 'scalar'],
+            'showres' => ['name' => 'showres', 'encoding' => 'scalar'],
+            'year' => ['name' => 'year', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'acct' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'bwusage' => [
+                                'type' => 'list',
+                                'items' => [
+                                    'type' => 'object',
+                                    'fields' => [
+                                        'deleted' => ['type' => 'flag'],
+                                        'domain' => ['type' => 'string'],
+                                        'usage' => ['type' => 'int', 'accept' => ['numeric-string']],
+                                    ],
+                                ],
+                            ],
+                            'deleted' => ['type' => 'flag'],
+                            'limit' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'int', 'accept' => ['numeric-string']],
+                                    ['type' => 'string', 'literal' => 'unlimited'],
+                                    ['type' => 'string', 'literal' => 'N/A'],
+                                ],
+                            ],
+                            'maindomain' => ['type' => 'string'],
+                            'owner' => ['type' => 'string'],
+                            'reseller' => ['type' => 'flag'],
+                            'totalbytes' => ['type' => 'int'],
+                            'user' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
+                'month' => ['type' => 'int'],
+                'reseller' => ['type' => 'string'],
+                'totalused' => ['type' => 'int', 'accept' => ['numeric-string']],
+                'year' => ['type' => 'int'],
+            ],
+        ],
     ];
 
     public const SUSPENDACCT = [
@@ -594,6 +1353,17 @@ final class AccountsSpec
         'returns' => null,
     ];
 
+    public const UNASSIGN_ACCOUNT_ENHANCEMENT = [
+        'function' => 'unassign_account_enhancement',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'account' => ['name' => 'account', 'encoding' => 'scalar'],
+            'name' => ['name' => 'name', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
     public const UNSUSPENDACCT = [
         'function' => 'unsuspendacct',
         'method' => 'POST',
@@ -601,6 +1371,30 @@ final class AccountsSpec
         'params' => [
             'user' => ['name' => 'user', 'encoding' => 'scalar'],
             'retainServiceProxies' => ['name' => 'retain-service-proxies', 'encoding' => 'bool'],
+        ],
+        'returns' => null,
+    ];
+
+    public const UNTRACK_ACCT_ID = [
+        'function' => 'untrack_acct_id',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'uid' => ['name' => 'uid', 'encoding' => 'scalar'],
+            'gid' => ['name' => 'gid', 'encoding' => 'scalar'],
+            'checkExists' => ['name' => 'check_exists', 'encoding' => 'bool'],
+            'checkQuota' => ['name' => 'check_quota', 'encoding' => 'bool'],
+            'protectSystem' => ['name' => 'protect_system', 'encoding' => 'bool'],
+        ],
+        'returns' => null,
+    ];
+
+    public const VERIFY_NEW_USERNAME = [
+        'function' => 'verify_new_username',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'user' => ['name' => 'user', 'encoding' => 'scalar'],
         ],
         'returns' => null,
     ];

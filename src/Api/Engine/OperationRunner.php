@@ -47,7 +47,8 @@ final class OperationRunner
      * @throws PayloadMismatchException If the envelope and outcome were accepted but the payload differs from the
      *     spec; under the flag policy the operation took effect.
      * @throws LogicException If the spec is malformed or the arguments disagree with it.
-     * @throws InvalidArgumentException If a float argument is not finite (ArgumentEncoder), or raised by the
+     * @throws InvalidArgumentException If a float is non-finite or an explicit target policy fails (ArgumentEncoder),
+     *     or raised by the
      *     shared encoder through the dispatch closure, after the metadata reset, when multi-value contents
      *     are invalid. The handles clear metadata before calling run(), so neither leaves stale metadata.
      */

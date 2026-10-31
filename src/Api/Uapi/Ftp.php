@@ -121,9 +121,9 @@ final readonly class Ftp
      * @param int|null $quota The FTP account's maximum disk usage quota, in megabytes (MB). Null omits it.
      * @param bool|null $disallowdot Whether to strip dots (`.`) from the username. Null omits it.
      * @return AddFtpResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/ftp-accounts/ftp-add_ftp
      */
     public function addFtp(
@@ -161,9 +161,9 @@ final readonly class Ftp
      * API-map identity: uapi:Ftp/allows_anonymous_ftp#GET (wire name allows_anonymous_ftp).
      *
      * @return AllowsAnonymousFtpResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/ftp-server-settings/ftp-allows_anonymous_ftp
      */
     public function allowsAnonymousFtp(): array
@@ -184,9 +184,9 @@ final readonly class Ftp
      * API-map identity: uapi:Ftp/allows_anonymous_ftp_incoming#GET (wire name allows_anonymous_ftp_incoming).
      *
      * @return AllowsAnonymousFtpIncomingResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/ftp-server-settings/ftp-allows_anonymous_ftp_incoming
      */
     public function allowsAnonymousFtpIncoming(): array
@@ -217,9 +217,9 @@ final readonly class Ftp
      * @param string $password The FTP account's new password.
      * @param string|null $domain The user's associated domain. Null omits it.
      * @return ChangePasswordResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/ftp-accounts/ftp-passwd
      */
     public function changePassword(
@@ -254,9 +254,9 @@ final readonly class Ftp
      * @param bool|null $destroy Whether to delete the FTP account's home directory. Null omits it.
      * @param string|null $domain The user's associated domain. Null omits it.
      * @return DeleteFtpResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/ftp-accounts/ftp-delete_ftp
      */
     public function deleteFtp(string $user, ?bool $destroy = null, ?string $domain = null): ?array
@@ -287,9 +287,9 @@ final readonly class Ftp
      * @param string $user The FTP account's username.
      * @param string|null $domain The user's associated domain. Null omits it.
      * @return FtpExistsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/ftp-accounts/ftp-ftp_exists
      */
     public function ftpExists(string $user, ?string $domain = null): ?array
@@ -313,9 +313,9 @@ final readonly class Ftp
      * API-map identity: uapi:Ftp/get_ftp_daemon_info#GET (wire name get_ftp_daemon_info).
      *
      * @return GetFtpDaemonInfoResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/ftp-server-settings/ftp-get_ftp_daemon_info
      */
     public function getFtpDaemonInfo(): array
@@ -336,9 +336,9 @@ final readonly class Ftp
      * API-map identity: uapi:Ftp/get_port#GET (wire name get_port).
      *
      * @return GetPortResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/ftp-server-settings/ftp-get_port
      */
     public function getPort(): array
@@ -368,9 +368,9 @@ final readonly class Ftp
      * @param string $account The FTP account's username.
      * @param string|null $domain The user's associated domain. Null omits it.
      * @return string|int
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/ftp-accounts/ftp-get_quota
      */
     public function getQuota(string $account, ?string $domain = null): string|int
@@ -391,9 +391,9 @@ final readonly class Ftp
      * API-map identity: uapi:Ftp/get_welcome_message#GET (wire name get_welcome_message).
      *
      * @return string
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/ftp-accounts/ftp-get_welcome_message
      */
     public function getWelcomeMessage(): string
@@ -422,9 +422,9 @@ final readonly class Ftp
      *
      * @param string|null $login The username for the session's FTP account. Null omits it.
      * @return KillSessionResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/ftp-server-settings/ftp-kill_session
      */
     public function killSession(?string $login = null): ?array
@@ -452,9 +452,9 @@ final readonly class Ftp
      * @param string|null $skipAcctTypes A list of the FTP account types to exclude from the function's results. Null
      *     omits it.
      * @return ListFtpResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/ftp-accounts/ftp-list_ftp
      */
     public function listFtp(?string $includeAcctTypes = null, ?string $skipAcctTypes = null): array
@@ -486,9 +486,9 @@ final readonly class Ftp
      * @param string|null $skipAcctTypes A pipe-delimited list of the FTP account types to exclude from the function's
      *     results. Null omits it.
      * @return ListFtpWithDiskResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/ftp-accounts/ftp-list_ftp_with_disk
      */
     public function listFtpWithDisk(?string $includeAcctTypes = null, ?string $skipAcctTypes = null): array
@@ -512,9 +512,9 @@ final readonly class Ftp
      * API-map identity: uapi:Ftp/list_sessions#GET (wire name list_sessions).
      *
      * @return ListSessionsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/ftp-server-settings/ftp-list_sessions
      */
     public function listSessions(): array
@@ -535,9 +535,9 @@ final readonly class Ftp
      * API-map identity: uapi:Ftp/server_name#GET (wire name server_name).
      *
      * @return string
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/ftp-server-settings/ftp-server_name
      */
     public function serverName(): string
@@ -566,9 +566,9 @@ final readonly class Ftp
      *
      * @param bool|null $set Whether to enable or disable anonymous FTP logins. Null omits it.
      * @return SetAnonymousFtpResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/ftp-server-settings/ftp-set_anonymous_ftp
      */
     public function setAnonymousFtp(?bool $set = null): ?array
@@ -597,9 +597,9 @@ final readonly class Ftp
      *
      * @param bool|null $set Whether to enable or disable inbound anonymous FTP transfers. Null omits it.
      * @return SetAnonymousFtpIncomingResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/ftp-server-settings/ftp-set_anonymous_ftp_incoming
      */
     public function setAnonymousFtpIncoming(?bool $set = null): ?array
@@ -630,9 +630,9 @@ final readonly class Ftp
      * @param string|null $domain The user's associated domain. Null omits it.
      * @param string|null $homedir The FTP account's home directory Null omits it.
      * @return SetHomedirResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/ftp-accounts/ftp-set_homedir
      */
     public function setHomedir(string $user, ?string $domain = null, ?string $homedir = null): ?array
@@ -664,9 +664,9 @@ final readonly class Ftp
      * @param bool|null $kill Whether to disable quotas for the FTP account. Null omits it.
      * @param int|null $quota The new quota, in megabytes. Null omits it.
      * @return SetQuotaResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/ftp-accounts/ftp-set_quota
      */
     public function setQuota(string $user, ?string $domain = null, ?bool $kill = null, ?int $quota = null): ?array
@@ -699,9 +699,9 @@ final readonly class Ftp
      *
      * @param string $message The cPanel account's new FTP welcome message.
      * @return SetWelcomeMessageResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/ftp-accounts/ftp-set_welcome_message
      */
     public function setWelcomeMessage(string $message): ?array

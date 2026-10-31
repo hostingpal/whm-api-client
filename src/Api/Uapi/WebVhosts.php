@@ -52,9 +52,9 @@ final readonly class WebVhosts
      * API-map identity: uapi:WebVhosts/list_domains#GET (wire name list_domains).
      *
      * @return ListDomainsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/virtual-host-information/webvhosts-list_domains
      */
     public function listDomains(): array
@@ -83,9 +83,9 @@ final readonly class WebVhosts
      *
      * @param bool|null $hideTemporaryDomains Whether to hide temporary domains from the returned values. Null omits it.
      * @return ListSslCapableDomainsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/virtual-host-information/webvhosts-list_ssl_capable_domains
      */
     public function listSslCapableDomains(?bool $hideTemporaryDomains = null): array

@@ -13,6 +13,393 @@ namespace HostingPal\WhmApiClient\Api\Whm\Spec;
  */
 final class ServerSpec
 {
+    public const ACCEPT_EULA = [
+        'function' => 'accept_eula',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => null,
+    ];
+
+    public const ADD_CONFIGCLUSTERSERVER = [
+        'function' => 'add_configclusterserver',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'key' => ['name' => 'key', 'encoding' => 'scalar'],
+            'name' => ['name' => 'name', 'encoding' => 'scalar'],
+            'user' => ['name' => 'user', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
+    public const CONFIGUREBACKGROUNDPROCESSKILLER = [
+        'function' => 'configurebackgroundprocesskiller',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'processesToKill' => ['name' => 'processes_to_kill', 'encoding' => 'repeat'],
+            'trustedUsers' => ['name' => 'trusted_users', 'encoding' => 'repeat'],
+        ],
+        'returns' => null,
+    ];
+
+    public const CONFIGURESERVICE = [
+        'function' => 'configureservice',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'service' => ['name' => 'service', 'encoding' => 'scalar'],
+            'enabled' => ['name' => 'enabled', 'encoding' => 'bool'],
+            'eximAltportnum' => ['name' => 'exim-altportnum', 'encoding' => 'scalar'],
+            'monitored' => ['name' => 'monitored', 'encoding' => 'bool'],
+        ],
+        'returns' => null,
+    ];
+
+    public const DELETE_CONFIGCLUSTERSERVER = [
+        'function' => 'delete_configclusterserver',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'name' => ['name' => 'name', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
+    public const ECOSYSTEM_FEATURES_LOCAL_DISABLE = [
+        'function' => 'EcosystemFeatures/local_disable',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'plugin' => ['name' => 'plugin', 'encoding' => 'scalar'],
+            'namespace' => ['name' => 'namespace', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
+    public const ECOSYSTEM_FEATURES_LOCAL_ENABLE = [
+        'function' => 'EcosystemFeatures/local_enable',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'plugin' => ['name' => 'plugin', 'encoding' => 'scalar'],
+            'namespace' => ['name' => 'namespace', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
+    public const ENABLE_MONITOR_ALL_ENABLED_SERVICES = [
+        'function' => 'enable_monitor_all_enabled_services',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'services' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'monitored' => ['type' => 'flag'],
+                            'service' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const FETCH_CONNECTED_APPLICATION = [
+        'function' => 'fetch_connected_application',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'name' => ['name' => 'name', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'data' => [
+                    'type' => 'object',
+                    'values' => ['type' => 'mixed'],
+                    'fields' => [
+                        'jwt' => ['type' => 'map', 'values' => ['type' => 'mixed']],
+                        'private_key' => ['type' => 'string'],
+                        'privileges_granted' => ['type' => 'list', 'items' => ['type' => 'string']],
+                        'public_key' => ['type' => 'string'],
+                        'token_name' => ['type' => 'string'],
+                    ],
+                ],
+                'name' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const FETCH_SECURITY_ADVICE = [
+        'function' => 'fetch_security_advice',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'payload' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'advice' => [
+                                'type' => 'object',
+                                'fields' => [
+                                    'key' => ['type' => 'string'],
+                                    'suggestion' => ['type' => 'string', 'nullable' => true],
+                                    'summary' => ['type' => 'string'],
+                                    'type' => ['type' => 'string'],
+                                ],
+                            ],
+                            'message' => ['type' => 'string'],
+                            'module' => ['type' => 'string'],
+                            'type' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const FORCE_DEDISTRIBUTION_FROM_NODE = [
+        'function' => 'force_dedistribution_from_node',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'nodeAlias' => ['name' => 'node_alias', 'encoding' => 'scalar'],
+            'users' => ['name' => 'user', 'encoding' => 'repeat'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'log' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'contents' => ['type' => 'string'],
+                            'indent' => ['type' => 'int'],
+                            'type' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
+                'user_info' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'username' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const GET_ALL_CONTACT_IMPORTANCES = [
+        'function' => 'get_all_contact_importances',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'importances' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'app' => ['type' => 'string'],
+                            'event' => ['type' => 'string'],
+                            'importance' => ['type' => 'int', 'accept' => ['numeric-string']],
+                            'name' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const GET_APPLICATION_CONTACT_EVENT_IMPORTANCE = [
+        'function' => 'get_application_contact_event_importance',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'app' => ['name' => 'app', 'encoding' => 'scalar'],
+            'event' => ['name' => 'event', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'importance' => ['type' => 'int', 'accept' => ['numeric-string']],
+                'name' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const GET_APPLICATION_CONTACT_IMPORTANCE = [
+        'function' => 'get_application_contact_importance',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'app' => ['name' => 'app', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'importance' => ['type' => 'int', 'accept' => ['numeric-string']],
+                'name' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const GET_AVAILABLE_PROFILES = [
+        'function' => 'get_available_profiles',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'profiles' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'code' => ['type' => 'string'],
+                            'description' => ['type' => 'string'],
+                            'disabled_roles' => [
+                                'type' => 'list',
+                                'items' => [
+                                    'type' => 'object',
+                                    'fields' => [
+                                        'description' => ['type' => 'string'],
+                                        'module' => ['type' => 'string'],
+                                        'name' => ['type' => 'string'],
+                                    ],
+                                ],
+                            ],
+                            'enabled_roles' => [
+                                'type' => 'list',
+                                'items' => [
+                                    'type' => 'object',
+                                    'fields' => [
+                                        'description' => ['type' => 'string'],
+                                        'module' => ['type' => 'string'],
+                                        'name' => ['type' => 'string'],
+                                    ],
+                                ],
+                            ],
+                            'experimental' => ['type' => 'flag'],
+                            'name' => ['type' => 'string'],
+                            'optional_roles' => [
+                                'type' => 'list',
+                                'items' => [
+                                    'type' => 'object',
+                                    'fields' => [
+                                        'description' => ['type' => 'string'],
+                                        'module' => ['type' => 'string'],
+                                        'name' => ['type' => 'string'],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const GET_AVAILABLE_TIERS = [
+        'function' => 'get_available_tiers',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'values' => ['type' => 'string'],
+            'fields' => [
+                'current' => ['type' => 'string'],
+                'edge' => ['type' => 'string'],
+                'lts' => ['type' => 'string'],
+                'release' => ['type' => 'string'],
+                'stable' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const GET_CURRENT_LTS_EXPIRATION_STATUS = [
+        'function' => 'get_current_lts_expiration_status',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'expiration' => ['type' => 'int'],
+                'expires_in_next_three_months' => ['type' => 'flag'],
+                'full_version' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const GET_CURRENT_PROFILE = [
+        'function' => 'get_current_profile',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'code' => ['type' => 'string'],
+                'description' => ['type' => 'string'],
+                'disabled_roles' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'description' => ['type' => 'string'],
+                            'module' => ['type' => 'string'],
+                            'name' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
+                'enabled_roles' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'description' => ['type' => 'string'],
+                            'module' => ['type' => 'string'],
+                            'name' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
+                'experimental' => ['type' => 'flag'],
+                'name' => ['type' => 'string'],
+                'optional_roles' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'description' => ['type' => 'string'],
+                            'module' => ['type' => 'string'],
+                            'name' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
     public const GETDISKUSAGE = [
         'function' => 'getdiskusage',
         'method' => 'GET',
@@ -59,6 +446,31 @@ final class ServerSpec
         'unwrap' => 'hostname',
     ];
 
+    public const GET_LINKED_SERVER_NODE = [
+        'function' => 'get_linked_server_node',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'alias' => ['name' => 'alias', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'enabled_services' => ['type' => 'list', 'items' => ['type' => 'string']],
+                'hostname' => ['type' => 'string'],
+                'last_check' => ['type' => 'int'],
+                'system_settings' => ['type' => 'map', 'values' => ['type' => 'map', 'values' => ['type' => 'mixed']]],
+                'tls_verified' => ['type' => 'flag'],
+                'username' => ['type' => 'string'],
+                'version' => ['type' => 'string'],
+                'worker_capabilities' => [
+                    'type' => 'map',
+                    'values' => ['type' => 'map', 'values' => ['type' => 'mixed']],
+                ],
+            ],
+        ],
+    ];
+
     public const SYSTEMLOADAVG = [
         'function' => 'systemloadavg',
         'method' => 'GET',
@@ -70,6 +482,1240 @@ final class ServerSpec
                 'fifteen' => ['type' => 'number', 'accept' => ['numeric-string'], 'preserve' => true],
                 'five' => ['type' => 'number', 'accept' => ['numeric-string'], 'preserve' => true],
                 'one' => ['type' => 'number', 'accept' => ['numeric-string'], 'preserve' => true],
+            ],
+        ],
+    ];
+
+    public const GET_LTS_WEXPIRE = [
+        'function' => 'get_lts_wexpire',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'branch' => [
+                    'type' => 'map',
+                    'values' => [
+                        'type' => 'list',
+                        'items' => [
+                            'type' => 'object',
+                            'fields' => [
+                                'build' => ['type' => 'string'],
+                                'is_main' => ['type' => 'flag'],
+                            ],
+                        ],
+                    ],
+                ],
+                'flags' => ['type' => 'map', 'values' => ['type' => 'flag']],
+                'tiers' => [
+                    'type' => 'map',
+                    'values' => [
+                        'type' => 'list',
+                        'items' => [
+                            'type' => 'object',
+                            'fields' => [
+                                'build' => ['type' => 'string'],
+                                'expires' => ['type' => 'string'],
+                                'is_lts' => ['type' => 'int'],
+                                'is_main' => ['type' => 'flag'],
+                                'named' => ['type' => 'list', 'items' => ['type' => 'string']],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const GETMINIMUMPASSWORDSTRENGTHS = [
+        'function' => 'getminimumpasswordstrengths',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'name' => ['name' => 'name', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'createacct' => ['type' => 'int', 'accept' => ['numeric-string']],
+                'default' => ['type' => 'int', 'accept' => ['numeric-string']],
+                'ftp' => ['type' => 'int', 'accept' => ['numeric-string']],
+                'list' => ['type' => 'int', 'accept' => ['numeric-string']],
+                'mysql' => ['type' => 'int', 'accept' => ['numeric-string']],
+                'passwd' => ['type' => 'int', 'accept' => ['numeric-string']],
+                'postgres' => ['type' => 'int', 'accept' => ['numeric-string']],
+                'sshkey' => ['type' => 'int', 'accept' => ['numeric-string']],
+                'virtual' => ['type' => 'int', 'accept' => ['numeric-string']],
+            ],
+        ],
+    ];
+
+    public const GET_SERVER_NODE_STATUS = [
+        'function' => 'get_server_node_status',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'apiToken' => ['name' => 'api_token', 'encoding' => 'scalar'],
+            'hostname' => ['name' => 'hostname', 'encoding' => 'scalar'],
+            'username' => ['name' => 'username', 'encoding' => 'scalar'],
+            'skipTlsVerification' => ['name' => 'skip_tls_verification', 'encoding' => 'bool'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'enabled_services' => ['type' => 'list', 'items' => ['type' => 'string']],
+                'remote_node_linkages' => [
+                    'type' => 'union',
+                    'anyOf' => [
+                        ['type' => 'list', 'items' => ['type' => 'map', 'values' => ['type' => 'mixed']]],
+                        [
+                            'type' => 'object',
+                            'fields' => [],
+                        ],
+                    ],
+                ],
+                'system_settings' => ['type' => 'map', 'values' => ['type' => 'mixed']],
+                'tls_verified' => ['type' => 'flag'],
+                'version' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const GET_SERVICE_CONFIG = [
+        'function' => 'get_service_config',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'service' => ['name' => 'service', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'map',
+            'values' => [
+                'type' => 'union',
+                'anyOf' => [
+                    ['type' => 'string'],
+                    ['type' => 'int'],
+                    ['type' => 'map', 'values' => ['type' => 'mixed']],
+                ],
+            ],
+        ],
+    ];
+
+    public const GET_SERVICE_CONFIG_KEY = [
+        'function' => 'get_service_config_key',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'key' => ['name' => 'key', 'encoding' => 'scalar'],
+            'service' => ['name' => 'service', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'values' => [
+                'type' => 'union',
+                'anyOf' => [
+                    ['type' => 'string'],
+                    ['type' => 'int'],
+                    ['type' => 'map', 'values' => ['type' => 'mixed']],
+                ],
+            ],
+            'fields' => [
+                'mail_process_size' => ['type' => 'mixed'],
+            ],
+        ],
+    ];
+
+    public const GET_SERVICE_PROXY_BACKENDS = [
+        'function' => 'get_service_proxy_backends',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'username' => ['name' => 'username', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'payload' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'backend' => ['type' => 'string'],
+                            'service_group' => ['type' => 'string', 'nullable' => true],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const GET_TCP4_SOCKETS = [
+        'function' => 'get_tcp4_sockets',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'payload' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'dport' => ['type' => 'int'],
+                            'dst' => ['type' => 'string'],
+                            'inode' => ['type' => 'int'],
+                            'rqueue' => ['type' => 'int'],
+                            'sport' => ['type' => 'int'],
+                            'src' => ['type' => 'string'],
+                            'state' => ['type' => 'int'],
+                            'uid' => ['type' => 'int'],
+                            'wqueue' => ['type' => 'int'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const GET_TCP6_SOCKETS = [
+        'function' => 'get_tcp6_sockets',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'payload' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'dport' => ['type' => 'int'],
+                            'dst' => ['type' => 'string'],
+                            'inode' => ['type' => 'int'],
+                            'rqueue' => ['type' => 'int'],
+                            'sport' => ['type' => 'int'],
+                            'src' => ['type' => 'string'],
+                            'state' => ['type' => 'int'],
+                            'uid' => ['type' => 'int'],
+                            'wqueue' => ['type' => 'int'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const GET_TWEAKSETTING = [
+        'function' => 'get_tweaksetting',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'key' => ['name' => 'key', 'encoding' => 'scalar'],
+            'module' => ['name' => 'module', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'tweaksetting' => [
+                    'type' => 'object',
+                    'fields' => [
+                        'key' => ['type' => 'string'],
+                        'value' => ['type' => 'string'],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const GET_UDP4_SOCKETS = [
+        'function' => 'get_udp4_sockets',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'payload' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'dport' => ['type' => 'int'],
+                            'dst' => ['type' => 'string'],
+                            'inode' => ['type' => 'int'],
+                            'rqueue' => ['type' => 'int'],
+                            'sport' => ['type' => 'int'],
+                            'src' => ['type' => 'string'],
+                            'state' => ['type' => 'int'],
+                            'uid' => ['type' => 'int'],
+                            'wqueue' => ['type' => 'int'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const GET_UDP6_SOCKETS = [
+        'function' => 'get_udp6_sockets',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'payload' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'dport' => ['type' => 'int'],
+                            'dst' => ['type' => 'string'],
+                            'inode' => ['type' => 'int'],
+                            'rqueue' => ['type' => 'int'],
+                            'sport' => ['type' => 'int'],
+                            'src' => ['type' => 'string'],
+                            'state' => ['type' => 'int'],
+                            'uid' => ['type' => 'int'],
+                            'wqueue' => ['type' => 'int'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const GET_UPDATE_AVAILABILITY = [
+        'function' => 'get_update_availability',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'current_version' => ['type' => 'string'],
+                'newest_version' => ['type' => 'string'],
+                'tier' => ['type' => 'string'],
+                'update_available' => ['type' => 'flag'],
+            ],
+        ],
+    ];
+
+    public const INSTALLED_VERSIONS = [
+        'function' => 'installed_versions',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'packages' => ['name' => 'packages', 'encoding' => 'bool'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'apache' => [
+                    'type' => 'union',
+                    'anyOf' => [
+                        ['type' => 'string'],
+                        ['type' => 'int'],
+                    ],
+                ],
+                'apache_php_default_version' => [
+                    'type' => 'union',
+                    'anyOf' => [
+                        ['type' => 'string'],
+                        ['type' => 'int'],
+                    ],
+                ],
+                'apache_php_versions' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'union',
+                        'anyOf' => [
+                            ['type' => 'string'],
+                            ['type' => 'int'],
+                        ],
+                    ],
+                ],
+                'bind' => [
+                    'type' => 'union',
+                    'anyOf' => [
+                        ['type' => 'string'],
+                        ['type' => 'int'],
+                    ],
+                ],
+                'clamav' => [
+                    'type' => 'union',
+                    'anyOf' => [
+                        ['type' => 'string'],
+                        ['type' => 'int'],
+                    ],
+                ],
+                'cpanel_and_whm' => ['type' => 'string'],
+                'cpanel_packages' => ['type' => 'list', 'items' => ['type' => 'string']],
+                'cpanel_php' => [
+                    'type' => 'union',
+                    'anyOf' => [
+                        ['type' => 'string'],
+                        ['type' => 'int'],
+                    ],
+                ],
+                'cron' => [
+                    'type' => 'union',
+                    'anyOf' => [
+                        ['type' => 'string'],
+                        ['type' => 'int'],
+                    ],
+                ],
+                'cronie' => [
+                    'type' => 'union',
+                    'anyOf' => [
+                        ['type' => 'string'],
+                        ['type' => 'int'],
+                    ],
+                ],
+                'dovecot' => [
+                    'type' => 'union',
+                    'anyOf' => [
+                        ['type' => 'string'],
+                        ['type' => 'int'],
+                    ],
+                ],
+                'ea_4_packages' => ['type' => 'list', 'items' => ['type' => 'string']],
+                'easyapache' => [
+                    'type' => 'union',
+                    'anyOf' => [
+                        ['type' => 'string'],
+                        ['type' => 'int'],
+                    ],
+                ],
+                'exim' => [
+                    'type' => 'union',
+                    'anyOf' => [
+                        ['type' => 'string'],
+                        ['type' => 'int'],
+                    ],
+                ],
+                'linux_kernel' => ['type' => 'string'],
+                'mailman' => [
+                    'type' => 'union',
+                    'anyOf' => [
+                        ['type' => 'string'],
+                        ['type' => 'int'],
+                    ],
+                ],
+                'mariadb' => [
+                    'type' => 'union',
+                    'anyOf' => [
+                        ['type' => 'string'],
+                        ['type' => 'int'],
+                    ],
+                ],
+                'mariadb_build' => [
+                    'type' => 'union',
+                    'anyOf' => [
+                        ['type' => 'string'],
+                        ['type' => 'int'],
+                    ],
+                ],
+                'munin' => [
+                    'type' => 'union',
+                    'anyOf' => [
+                        ['type' => 'string'],
+                        ['type' => 'int'],
+                    ],
+                ],
+                'mysql' => [
+                    'type' => 'union',
+                    'anyOf' => [
+                        ['type' => 'string'],
+                        ['type' => 'int'],
+                    ],
+                ],
+                'mysql_build' => [
+                    'type' => 'union',
+                    'anyOf' => [
+                        ['type' => 'string'],
+                        ['type' => 'int'],
+                    ],
+                ],
+                'nscd' => [
+                    'type' => 'union',
+                    'anyOf' => [
+                        ['type' => 'string'],
+                        ['type' => 'int'],
+                    ],
+                ],
+                'openssh-server' => [
+                    'type' => 'union',
+                    'anyOf' => [
+                        ['type' => 'string'],
+                        ['type' => 'int'],
+                    ],
+                ],
+                'operating_system_name' => ['type' => 'string'],
+                'operating_system_version' => ['type' => 'string'],
+                'os_packages' => ['type' => 'list', 'items' => ['type' => 'string']],
+                'p0f' => [
+                    'type' => 'union',
+                    'anyOf' => [
+                        ['type' => 'string'],
+                        ['type' => 'int'],
+                    ],
+                ],
+                'postgresql' => [
+                    'type' => 'union',
+                    'anyOf' => [
+                        ['type' => 'string'],
+                        ['type' => 'int'],
+                    ],
+                ],
+                'postgresql_build' => [
+                    'type' => 'union',
+                    'anyOf' => [
+                        ['type' => 'string'],
+                        ['type' => 'int'],
+                    ],
+                ],
+                'powerdns' => [
+                    'type' => 'union',
+                    'anyOf' => [
+                        ['type' => 'string'],
+                        ['type' => 'int'],
+                    ],
+                ],
+                'proftpd' => [
+                    'type' => 'union',
+                    'anyOf' => [
+                        ['type' => 'string'],
+                        ['type' => 'int'],
+                    ],
+                ],
+                'pureftpd' => [
+                    'type' => 'union',
+                    'anyOf' => [
+                        ['type' => 'string'],
+                        ['type' => 'int'],
+                    ],
+                ],
+                'roundcube' => [
+                    'type' => 'union',
+                    'anyOf' => [
+                        ['type' => 'string'],
+                        ['type' => 'int'],
+                    ],
+                ],
+                'rsyslog' => [
+                    'type' => 'union',
+                    'anyOf' => [
+                        ['type' => 'string'],
+                        ['type' => 'int'],
+                    ],
+                ],
+                'spamd' => [
+                    'type' => 'union',
+                    'anyOf' => [
+                        ['type' => 'string'],
+                        ['type' => 'int'],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const ECOSYSTEM_FEATURES_IS_READY = [
+        'function' => 'EcosystemFeatures/is_ready',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'plugin' => ['name' => 'plugin', 'encoding' => 'scalar'],
+            'namespace' => ['name' => 'namespace', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'ready' => ['type' => 'flag'],
+            ],
+        ],
+    ];
+
+    public const IS_ROLE_ENABLED = [
+        'function' => 'is_role_enabled',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'role' => ['name' => 'role', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'enabled' => ['type' => 'flag', 'accept' => ['string-flag']],
+            ],
+        ],
+    ];
+
+    public const LINK_SERVER_NODE_WITH_API_TOKEN = [
+        'function' => 'link_server_node_with_api_token',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'alias' => ['name' => 'alias', 'encoding' => 'scalar'],
+            'apiToken' => ['name' => 'api_token', 'encoding' => 'scalar'],
+            'hostname' => ['name' => 'hostname', 'encoding' => 'scalar'],
+            'username' => ['name' => 'username', 'encoding' => 'scalar'],
+            'skipTlsVerification' => ['name' => 'skip_tls_verification', 'encoding' => 'bool'],
+        ],
+        'returns' => null,
+    ];
+
+    public const LIST_CONFIGCLUSTERSERVERS = [
+        'function' => 'list_configclusterservers',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'map',
+            'values' => [
+                'type' => 'object',
+                'fields' => [
+                    'signature' => ['type' => 'string'],
+                    'user' => ['type' => 'string'],
+                ],
+            ],
+        ],
+    ];
+
+    public const LIST_CONNECTED_APPLICATIONS = [
+        'function' => 'list_connected_applications',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'list' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'values' => ['type' => 'mixed'],
+                        'fields' => [
+                            'jwt' => ['type' => 'map', 'values' => ['type' => 'mixed']],
+                            'name' => ['type' => 'string'],
+                            'private_key' => ['type' => 'string'],
+                            'public_key' => ['type' => 'string'],
+                            'token_name' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const LIST_LINKED_SERVER_NODES = [
+        'function' => 'list_linked_server_nodes',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'payload' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'alias' => ['type' => 'string'],
+                            'enabled_services' => ['type' => 'list', 'items' => ['type' => 'string']],
+                            'hostname' => ['type' => 'string'],
+                            'last_check' => ['type' => 'int'],
+                            'tls_verified' => ['type' => 'flag'],
+                            'username' => ['type' => 'string'],
+                            'version' => ['type' => 'string'],
+                            'worker_capabilities' => [
+                                'type' => 'map',
+                                'values' => ['type' => 'map', 'values' => ['type' => 'mixed']],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const LIST_USER_CHILD_NODES = [
+        'function' => 'list_user_child_nodes',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'payload' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'alias' => ['type' => 'string'],
+                            'type' => ['type' => 'string'],
+                            'user' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const MANAGE_FEATURES = [
+        'function' => 'manage_features',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'action' => ['name' => 'action', 'encoding' => 'scalar'],
+            'features' => ['name' => 'features', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'action' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'feature' => ['type' => 'string'],
+                            'status' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
+                'feature' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'description' => ['type' => 'string'],
+                            'enabled' => ['type' => 'flag'],
+                            'feature_key' => ['type' => 'string'],
+                            'link' => ['type' => 'string'],
+                            'name' => ['type' => 'string'],
+                            'recommended' => ['type' => 'flag'],
+                            'vendor' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const PARTICIPATE_IN_ANALYTICS = [
+        'function' => 'participate_in_analytics',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'enabled' => ['name' => 'enabled', 'encoding' => 'bool'],
+        ],
+        'returns' => null,
+    ];
+
+    public const PURCHASE_A_LICENSE = [
+        'function' => 'purchase_a_license',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'loginToken' => ['name' => 'login_token', 'encoding' => 'scalar'],
+            'provider' => ['name' => 'provider', 'encoding' => 'scalar'],
+            'urlAfterCheckout' => ['name' => 'url_after_checkout', 'encoding' => 'scalar'],
+            'upgrade' => ['name' => 'upgrade', 'encoding' => 'bool'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'payload' => ['type' => 'list', 'items' => ['type' => 'string']],
+            ],
+        ],
+    ];
+
+    public const REBOOT = [
+        'function' => 'reboot',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'force' => ['name' => 'force', 'encoding' => 'bool'],
+        ],
+        'returns' => null,
+    ];
+
+    public const REMOVE_CONNECTED_APPLICATION = [
+        'function' => 'remove_connected_application',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'name' => ['name' => 'name', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
+    public const RESTARTSERVICE = [
+        'function' => 'restartservice',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'service' => ['name' => 'service', 'encoding' => 'scalar'],
+            'queueTask' => ['name' => 'queue_task', 'encoding' => 'bool'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'output' => ['type' => 'string'],
+                'service' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const RESTORE_CONFIG_FROM_FILE = [
+        'function' => 'restore_config_from_file',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'module' => ['name' => 'module', 'encoding' => 'scalar'],
+            'path' => ['name' => 'path', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
+    public const RUN_CPKEYCLT = [
+        'function' => 'run_cpkeyclt',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => null,
+    ];
+
+    public const SEND_TEST_POSTURL = [
+        'function' => 'send_test_posturl',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'url' => ['name' => 'url', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'message_id' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const SEND_TEST_PUSHBULLET_NOTE = [
+        'function' => 'send_test_pushbullet_note',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'accessToken' => ['name' => 'access_token', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'message_id' => ['type' => 'string'],
+                'payload' => ['type' => 'map', 'values' => ['type' => 'mixed']],
+            ],
+        ],
+    ];
+
+    public const SERVICESTATUS = [
+        'function' => 'servicestatus',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'service' => ['name' => 'service', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'service' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'display_name' => ['type' => 'string'],
+                            'enabled' => ['type' => 'flag'],
+                            'installed' => ['type' => 'flag'],
+                            'monitored' => ['type' => 'flag'],
+                            'name' => ['type' => 'string'],
+                            'running' => ['type' => 'flag'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const SET_APPLICATION_CONTACT_EVENT_IMPORTANCE = [
+        'function' => 'set_application_contact_event_importance',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'app' => ['name' => 'app', 'encoding' => 'scalar'],
+            'event' => ['name' => 'event', 'encoding' => 'scalar'],
+            'importance' => ['name' => 'importance', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
+    public const SET_APPLICATION_CONTACT_IMPORTANCE = [
+        'function' => 'set_application_contact_importance',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'app' => ['name' => 'app', 'encoding' => 'scalar'],
+            'importance' => ['name' => 'importance', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
+    public const SET_CPANEL_UPDATES = [
+        'function' => 'set_cpanel_updates',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'updates' => ['name' => 'updates', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'updates' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const SETHOSTNAME = [
+        'function' => 'sethostname',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'hostname' => ['name' => 'hostname', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
+    public const SETMINIMUMPASSWORDSTRENGTHS = [
+        'function' => 'setminimumpasswordstrengths',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'createacct' => ['name' => 'createacct', 'encoding' => 'scalar'],
+            'default' => ['name' => 'default', 'encoding' => 'scalar'],
+            'ftp' => ['name' => 'ftp', 'encoding' => 'scalar'],
+            'list' => ['name' => 'list', 'encoding' => 'scalar'],
+            'mysql' => ['name' => 'mysql', 'encoding' => 'scalar'],
+            'passwd' => ['name' => 'passwd', 'encoding' => 'scalar'],
+            'postgres' => ['name' => 'postgres', 'encoding' => 'scalar'],
+            'sshkey' => ['name' => 'sshkey', 'encoding' => 'scalar'],
+            'virtual' => ['name' => 'virtual', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
+    public const SET_PRIMARY_SERVERNAME = [
+        'function' => 'set_primary_servername',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'servername' => ['name' => 'servername', 'encoding' => 'scalar'],
+            'type' => ['name' => 'type', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
+    public const SET_SERVICE_CONFIG_KEY = [
+        'function' => 'set_service_config_key',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'key' => ['name' => 'key', 'encoding' => 'scalar'],
+            'service' => ['name' => 'service', 'encoding' => 'scalar'],
+            'value' => ['name' => 'value', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
+    public const SET_SERVICE_PROXY_BACKENDS = [
+        'function' => 'set_service_proxy_backends',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'username' => ['name' => 'username', 'encoding' => 'scalar'],
+            'general' => ['name' => 'general', 'encoding' => 'scalar'],
+            'serviceGroup' => ['name' => 'service_group', 'encoding' => 'numbered'],
+            'serviceGroupBackend' => ['name' => 'service_group_backend', 'encoding' => 'numbered'],
+        ],
+        'returns' => null,
+    ];
+
+    public const SET_TIER = [
+        'function' => 'set_tier',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'tier' => ['name' => 'tier', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'tier' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const SET_TWEAKSETTING = [
+        'function' => 'set_tweaksetting',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'key' => ['name' => 'key', 'encoding' => 'scalar'],
+            'module' => ['name' => 'module', 'encoding' => 'scalar'],
+            'value' => ['name' => 'value', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
+    public const START_CPANEL_UPDATE = [
+        'function' => 'start_cpanel_update',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'mode' => ['name' => 'mode', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'is_new' => ['type' => 'flag'],
+                'log_path' => ['type' => 'string'],
+                'pid' => ['type' => 'int'],
+            ],
+        ],
+    ];
+
+    public const START_PROFILE_ACTIVATION = [
+        'function' => 'start_profile_activation',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'code' => ['name' => 'code', 'encoding' => 'scalar'],
+            'optional' => ['name' => 'optional', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'log_id' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const UNLINK_SERVER_NODE = [
+        'function' => 'unlink_server_node',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'alias' => ['name' => 'alias', 'encoding' => 'scalar'],
+            'handleApiToken' => ['name' => 'handle_api_token', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'alias' => ['type' => 'string'],
+                'enabled_services' => ['type' => 'list', 'items' => ['type' => 'string']],
+                'hostname' => ['type' => 'string'],
+                'last_check' => ['type' => 'int'],
+                'system_settings' => ['type' => 'map', 'values' => ['type' => 'mixed']],
+                'tls_verified' => ['type' => 'flag'],
+                'username' => ['type' => 'string'],
+                'version' => ['type' => 'string'],
+                'worker_capabilities' => [
+                    'type' => 'map',
+                    'values' => ['type' => 'map', 'values' => ['type' => 'mixed']],
+                ],
+            ],
+        ],
+    ];
+
+    public const UNSET_ALL_SERVICE_PROXY_BACKENDS = [
+        'function' => 'unset_all_service_proxy_backends',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'username' => ['name' => 'username', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
+    public const UPDATE_CONFIGCLUSTERSERVER = [
+        'function' => 'update_configclusterserver',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'name' => ['name' => 'name', 'encoding' => 'scalar'],
+            'key' => ['name' => 'key', 'encoding' => 'scalar'],
+            'user' => ['name' => 'user', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
+    public const UPDATE_CONTACT_EMAIL = [
+        'function' => 'update_contact_email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'contactEmail' => ['name' => 'contact_email', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
+    public const UPDATE_LINKED_SERVER_NODE = [
+        'function' => 'update_linked_server_node',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'alias' => ['name' => 'alias', 'encoding' => 'scalar'],
+            'apiToken' => ['name' => 'api_token', 'encoding' => 'scalar'],
+            'hostname' => ['name' => 'hostname', 'encoding' => 'scalar'],
+            'skipTlsVerification' => ['name' => 'skip_tls_verification', 'encoding' => 'bool'],
+            'username' => ['name' => 'username', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
+    public const UPDATE_UPDATECONF = [
+        'function' => 'update_updateconf',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'cpanel' => ['name' => 'CPANEL', 'encoding' => 'scalar'],
+            'rpmup' => ['name' => 'RPMUP', 'encoding' => 'scalar'],
+            'sarulesup' => ['name' => 'SARULESUP', 'encoding' => 'scalar'],
+            'securityUpdates' => ['name' => 'SECURITY_UPDATES', 'encoding' => 'scalar'],
+            'stagingDir' => ['name' => 'STAGING_DIR', 'encoding' => 'scalar'],
+            'updates' => ['name' => 'UPDATES', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
+    public const VERIFY_POSTURL_ACCESS = [
+        'function' => 'verify_posturl_access',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'results' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'result' => [
+                                'type' => 'object',
+                                'fields' => [
+                                    'message_id' => ['type' => 'string'],
+                                    'payload' => [
+                                        'type' => 'object',
+                                        'fields' => [
+                                            'content' => ['type' => 'string'],
+                                            'headers' => ['type' => 'map', 'values' => ['type' => 'mixed']],
+                                            'protocol' => ['type' => 'string'],
+                                            'reason' => ['type' => 'string'],
+                                            'status' => ['type' => 'string'],
+                                            'success' => ['type' => 'flag'],
+                                            'url' => ['type' => 'string'],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                            'url' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const VERIFY_PUSHBULLET_ACCESS = [
+        'function' => 'verify_pushbullet_access',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'results' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'access_token' => ['type' => 'string'],
+                            'result' => [
+                                'type' => 'object',
+                                'fields' => [
+                                    'message_id' => ['type' => 'string'],
+                                    'payload' => ['type' => 'map', 'values' => ['type' => 'mixed']],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const VERIFY_SLACK_ACCESS = [
+        'function' => 'verify_slack_access',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'results' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'result' => [
+                                'type' => 'object',
+                                'fields' => [
+                                    'message_id' => ['type' => 'mixed'],
+                                    'payload' => [
+                                        'type' => 'object',
+                                        'fields' => [
+                                            'content' => ['type' => 'mixed'],
+                                            'headers' => [
+                                                'type' => 'object',
+                                                'fields' => [
+                                                    'access-control-allow-origin' => ['type' => 'mixed'],
+                                                    'content-type' => ['type' => 'mixed'],
+                                                    'date' => ['type' => 'mixed'],
+                                                    'referrer-policy' => ['type' => 'mixed'],
+                                                    'server' => ['type' => 'mixed'],
+                                                    'strict-transport-security' => ['type' => 'mixed'],
+                                                    'transfer-encoding' => ['type' => 'mixed'],
+                                                    'vary' => ['type' => 'mixed'],
+                                                    'x-frame-options' => ['type' => 'mixed'],
+                                                    'x-slack-backend' => ['type' => 'mixed'],
+                                                    'x-via' => ['type' => 'mixed'],
+                                                ],
+                                            ],
+                                            'protocol' => ['type' => 'mixed'],
+                                            'reason' => ['type' => 'mixed'],
+                                            'status' => ['type' => 'mixed'],
+                                            'success' => ['type' => 'mixed'],
+                                            'url' => ['type' => 'mixed'],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                            'url' => ['type' => 'mixed'],
+                        ],
+                    ],
+                ],
             ],
         ],
     ];
@@ -86,5 +1732,18 @@ final class ServerSpec
             ],
         ],
         'unwrap' => 'version',
+    ];
+
+    public const WP_DASHBOARD_GET_HOSTNAME = [
+        'function' => 'wp_dashboard_get_hostname',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'hostname' => ['type' => 'string'],
+            ],
+        ],
     ];
 }

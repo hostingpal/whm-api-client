@@ -135,22 +135,34 @@ final class IntegrationsSpec
                                                         'items' => [
                                                             'type' => 'object',
                                                             'fields' => [
-                                                                'blocking' => ['type' => 'flag'],
+                                                                'blocking' => [
+                                                                    'type' => 'flag',
+                                                                    'accept' => ['string-flag'],
+                                                                ],
                                                                 'category' => ['type' => 'string'],
                                                                 'check' => ['type' => 'string', 'nullable' => true],
                                                                 'description' => [
                                                                     'type' => 'string',
                                                                     'nullable' => true,
                                                                 ],
-                                                                'enabled' => ['type' => 'flag'],
-                                                                'escalateprivs' => ['type' => 'flag'],
+                                                                'enabled' => [
+                                                                    'type' => 'flag',
+                                                                    'accept' => ['string-flag'],
+                                                                ],
+                                                                'escalateprivs' => [
+                                                                    'type' => 'flag',
+                                                                    'accept' => ['string-flag'],
+                                                                ],
                                                                 'event' => ['type' => 'string'],
                                                                 'exectype' => ['type' => 'string'],
                                                                 'hook' => ['type' => 'string'],
                                                                 'id' => ['type' => 'string'],
                                                                 'rollback' => ['type' => 'string', 'nullable' => true],
                                                                 'stage' => ['type' => 'string'],
-                                                                'weight' => ['type' => 'int'],
+                                                                'weight' => [
+                                                                    'type' => 'int',
+                                                                    'accept' => ['numeric-string'],
+                                                                ],
                                                             ],
                                                         ],
                                                     ],
@@ -231,6 +243,7 @@ final class IntegrationsSpec
             'user' => ['name' => 'user', 'encoding' => 'scalar'],
         ],
         'returns' => ['type' => 'mixed'],
+        'optional' => true,
     ];
 
     public const REMOVE_INTEGRATION_LINK = [
@@ -242,6 +255,7 @@ final class IntegrationsSpec
             'user' => ['name' => 'user', 'encoding' => 'scalar'],
         ],
         'returns' => ['type' => 'mixed'],
+        'optional' => true,
     ];
 
     public const REORDER_HOOKS = [
@@ -260,7 +274,7 @@ final class IntegrationsSpec
                         'type' => 'object',
                         'fields' => [
                             'id' => ['type' => 'string'],
-                            'weight' => ['type' => 'int'],
+                            'weight' => ['type' => 'int', 'accept' => ['numeric-string']],
                         ],
                     ],
                 ],
@@ -278,5 +292,6 @@ final class IntegrationsSpec
             'user' => ['name' => 'user', 'encoding' => 'scalar'],
         ],
         'returns' => ['type' => 'mixed'],
+        'optional' => true,
     ];
 }
