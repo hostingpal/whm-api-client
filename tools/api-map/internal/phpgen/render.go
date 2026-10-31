@@ -27,10 +27,11 @@ func (w *writer) doc(indent, text string) {
 }
 
 // paramDoc writes one "@param <type> $name" tag. The tag head always stays on a
-// single line: when it would exceed lineWidth the literal doc type is replaced
-// by the parameter's plain type (string|list<string> for list encodings). Only
-// the description wraps, with continuation lines indented four spaces after
-// the asterisk.
+// single line. Legacy heads exceeding lineWidth use the parameter's plain type
+// (string|list<string> for list encodings). Collection heads retain precise literal
+// types even when overlong: preserving their enum contract takes precedence over
+// the plain-type fallback. Only the description wraps, with continuation lines
+// indented four spaces after the asterisk.
 func (w *writer) paramDoc(indent string, p effective.Param, description string) {
 	// Enum literals come from the pinned documents and could contain "*/".
 	docType := escapeDoc(paramDocType(p))
@@ -184,7 +185,7 @@ func groupClass(g effective.Group) string {
 			uses = append(uses, rootNamespace+`\Exception\PayloadMismatchException`)
 		}
 		for _, p := range op.Params {
-			if isMultiple(p.Encoding) {
+			if isMultiple(p.Encoding) || p.RejectEmpty {
 				uses = append(uses, "InvalidArgumentException")
 			}
 			if redactArgument(p) {

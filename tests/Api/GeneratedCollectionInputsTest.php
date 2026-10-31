@@ -12,6 +12,7 @@ use HostingPal\WhmApiClient\UapiClient;
 use HostingPal\WhmApiClient\WhmClient;
 use Http\Mock\Client as MockClient;
 use InvalidArgumentException;
+use LogicException;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7\Response;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -113,7 +114,8 @@ final class GeneratedCollectionInputsTest extends TestCase
                     ['domain' => ['a', 'collision-secret'], 'fixed' => 'collision-secret'],
                 );
                 self::fail('Expanded fields cannot collide.');
-            } catch (InvalidArgumentException $error) {
+            } catch (LogicException $error) {
+                self::assertSame(LogicException::class, $error::class);
                 self::assertStringNotContainsString('domain-1', $error->getMessage());
                 self::assertStringNotContainsString('collision-secret', $error->getMessage());
                 self::assertNull($handle->responseMeta());
@@ -131,7 +133,8 @@ final class GeneratedCollectionInputsTest extends TestCase
                     'collection' => ['kind' => 'repeat', 'item_type' => 'int', 'allow_scalar' => false,
                         'empty' => 'reject']]], ['items' => [3, 8]]);
                 self::fail('Routing is reserved.');
-            } catch (InvalidArgumentException) {
+            } catch (LogicException $error) {
+                self::assertSame(LogicException::class, $error::class);
                 self::assertNull($handle->responseMeta());
                 self::assertCount(0, $http->getRequests());
             }
