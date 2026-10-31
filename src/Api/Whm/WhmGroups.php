@@ -53,6 +53,8 @@ trait WhmGroups
 
     private ?Resellers $resellersGroup = null;
 
+    private ?Security $securityGroup = null;
+
     private ?Server $serverGroup = null;
 
     private ?Ssl $sslGroup = null;
@@ -289,6 +291,17 @@ trait WhmGroups
     public function resellers(): Resellers
     {
         return $this->resellersGroup ??= new Resellers($this->run(...));
+    }
+
+    /**
+     * Select the Security operations without making a request.
+     *
+     * WHM root login IP restrictions. Changes can remove root password access to the control panel; no automatic retry
+     * or rollback is provided.
+     */
+    public function security(): Security
+    {
+        return $this->securityGroup ??= new Security($this->run(...));
     }
 
     /**

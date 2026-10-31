@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 98 typed groups cover 1,133 documented operations:
+and cPanel UAPI surface. The 99 typed groups cover 1,135 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -1670,6 +1670,7 @@ refresh them explicitly; routine checks must remain offline. The tool design
 is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
 
 
+
 ## Nova and Sitejet site builders
 
 `uapi()->nova()` covers eleven pinned functions and `uapi()->sitejet()` twelve
@@ -2425,6 +2426,41 @@ remaining compatibility stay under `8x0.2.46`; no repeat is needed for integrati
 
 
 
+
+## WHM root-access restrictions
+
+`whm()->security()` exposes both pinned Security functions from cPanel 108.
+`restrictWhmRootAccess()` replaces the root password login allowlist: only listed
+sources may log in as root with a password. Include your own source and every
+existing pattern that must remain. Existing root sessions are not terminated and
+root resellers are not restricted. The API manages
+`/var/cpanel/authorized_whm_root_ips`; upstream warns that direct file modification
+with improper formatting can remove all cPanel and WHM root password access.
+
+Client policy accepts one CIDR string or a nonempty sequential string list and
+sends repeated `cidr` fields in a form POST body, encoded once without changing
+values or locally validating CIDRs. The pinned CLI/URL examples establish repeated
+keys only; the external reviewer reports repeated-form support in
+`Cpanel::Form::Param`.
+
+Source-based findings from the reviewer's inspection of
+`Whostmgr/API/1/RootIPAccess.pm` and `Utils.pm` on `11.138.0.19`: missing input
+raises `MissingParameter`; blank values, including list members, raise `Empty`.
+Each CIDR passes `Net::CIDR::cidrvalidate` before the file is written, so one invalid
+value leaves existing restrictions unchanged. Successful responses contain a
+reduced CIDR list; `Net::CIDR::cidradd` can merge ranges. These findings are
+reviewer-inspected implementation evidence, not locally pinned Perl or live
+verification. They do not specify exact serialized server error messages.
+
+The pinned/effective restriction payload remains an object with an optional
+`cidr` string list; absent/null data fails. Offline schema-compatibility fixtures
+for omitted fields and empty containers do not represent source-success examples.
+`allowAllWhmRootAccess()` removes the restrictions and returns void. Both methods
+send one request, with no automatic retry or rollback; a payload error after API
+success does not undo the change. No SSH/firewall behavior is inferred.
+
+No live root-access, allowlist, connectivity or session change ran. Both methods
+remain unobserved under `8x0.2.59`.
 
 ## Architecture and Conventions
 
