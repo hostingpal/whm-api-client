@@ -3274,6 +3274,253 @@ The correction passed 31,127 offline tests / 233,646 assertions plus formatting,
 maximum PHPStan, strict Composer, source/map/generation and full Go tests/vet.
 No settings or resources were changed, so no mutation cleanup was needed.
 
+## WHM backup and account restoration (2026-10-31)
+
+The WHM backup and restoration groups expose 42 methods: 26 in `backups()` and
+all sixteen in `accountRestoration()`. Fourteen explicit source reads use GET;
+28 operations use form POST, including inventory-like backup methods whose pinned
+`x-readonly` value is false. `backup_destination_set` remains excluded under
+`8x0.1.22`: its composed provider-specific form schema is not supported by the
+current generator, and its JSON examples conflict with the formal form content.
+Generic compatible form access does not establish typed destination-update coverage.
+
+Destination creation requires name, type and disabled; provider-specific inputs
+are optional in the PHP signature only where pinned prose makes their requirement
+conditional. Supply the fields required by the selected provider. Credentials,
+private keys, passwords and OAuth secrets remain sensitive. Returned secrets and
+OAuth URLs are payload data; the client does not fetch them. Archive and staging
+paths refer to server-side files, not local uploads.
+
+Omitted settings retain server defaults; false and zero are sent explicitly.
+The backup setter's `keeplocal` prose contradicts the getter's retention meaning;
+the client forwards the flag without inversion. `backupMonthlyDates` accepts
+an integer or a comma-separated string, following the pinned prose and reviewed
+upstream validator; the weekly day remains a single integer. Migration's
+`no_convert` name conflicts with its positive conversion prose; the flag is
+forwarded unchanged. `backup_set_list.backup_set` preserves a list of user/date
+rows. A combined listing can have a null destination legend, and remote `where`
+values may be transport IDs rather than the pinned `remote` label.
+
+The two pkgacct session GETs were observed to create an empty server directory
+before failing for an unknown session ID. Use only IDs returned by
+`startBackgroundPkgacct()`; other input forms were not tested. These observations
+come from [Claude review 5720277974](https://github.com/hostingpal/whm-api-client/pull/42#pullrequestreview-5720277974),
+not the committed GET capture. Remaining coverage stays in `8x0.2.29`.
+
+Backup configuration and strict retention can affect stored archives. Packaging
+and restoration can overwrite account content; restoration may delete its source
+archive when requested. Queue activation acts on queued accounts, while each
+clear method documents the tasks it removes. Restricted restoration carries the
+source's experimental limitations. Session identifiers do not establish completion.
+The client does not retry or roll back these operations. Metadata-only operations,
+including username conflict verification, return void and use API errors for
+failure. Completed queue records preserve nullable counts/warnings, integer result
+codes and string timestamps; omitted fields remain absent.
+
+All 42 methods have offline contract coverage. The fixed live catalog selects WHM
+version, four parameterless backup reads and six restoration status/module reads
+(11 GETs). It excludes destination credentials, OAuth requests, session logs,
+backup creation, account restoration, queue changes, migration and configuration
+writes. Populated variants and all remaining live behavior stay in `8x0.2.29`.
+
+The initial [backup/restoration capture](evidence/2026-10-31-backup-restoration.json)
+at `88e01bd54f1939e4937fd3673f2b174a6353e7ab` on `11.138.0.19` records eleven
+HTTP-200 and successful WHM API observations. Ten payload/probe checks pass;
+`backup_config_get` has three known-field type mismatches and one masked unknown-field observation with integer values. The getter's `backup_weekly_day` is an integer; its original string
+contract is retained alongside that observed variant. Only `check_min_free_space`
+and `prebackup` gain exact quoted-flag acceptance. No other configuration field
+is widened and the unknown field remains untyped and unwaived.
+
+Backup metadata users/domains, archive inventory and every queue collection are
+empty. Restoration module rows are populated. These reads establish no populated
+backup/queue rows, destination behavior, backup creation, restoration, migration,
+queue mutation or configuration-write semantics. All original findings remain in
+`8x0.2.29`; source contradictions are unresolved. Initial SHA-256:
+`4b788b00b69944d305473bd89004e6199914cf2b366ed90676b3313aac32daca`.
+
+The [corrected backup/restoration capture](evidence/2026-10-31-backup-restoration-corrected.json)
+at `a5b6e3a959185702d9e2146dc6323e0c69ec3cdf` on `11.138.0.19` records eleven
+HTTP/API successes and ten payload/probe passes. The weekday integer and
+`check_min_free_space` quoted flag now pass. `prebackup` still fails its strict
+0/1 contract: the artifact classifies it only as numeric-string, which does not
+establish its spelling or a valid flag value. The optional exact quoted-flag
+acceptance does not make this response compatible. No broader numeric coercion,
+new enum value or guessed sentinel is added. That capture also retains one masked unknown-field observation with integer
+values; wildcard masking establishes neither its name nor field count. Strict status stays failed with no acknowledgments.
+
+Both artifacts remain immutable. Empty inventories/queues establish no populated
+row schemas; the module summary is populated. No mutation, backup creation,
+restoration or configuration behavior is established. Follow-up `8x0.2.29` retains
+the historical `prebackup` mismatch, masked unknown-field observation and
+remaining source/live gaps. Corrected SHA-256:
+`f910fcd3377c881e07d496fd727bec622016bd8df33552cfe381552752acde47`.
+
+
+### Backup/restoration review corrections (2026-10-31)
+
+[Claude review 5720277974](https://github.com/hostingpal/whm-api-client/pull/42#pullrequestreview-5720277974)
+of `712e4b611d79ee065b96010acef56f262cd388fe` supplies new observations on
+`11.138.0.19` and separately identified upstream source evidence. The getter
+preserves the live exact `prebackup` string `-1` and the source-backed empty
+string alongside documented flags; other strings and integer -1 remain invalid.
+The actual optional integer flag `backupsuspendedaccts` is added while preserving
+the documented `backupsuspendedaccounts` spelling independently. Neither correction
+identifies a historical masked wildcard or changes an old artifact's assessment.
+
+Source inspection and pinned row items establish the `backup_set_list` row list;
+the two-row regression is offline evidence, not populated live coverage. Combined
+listings preserve null destination legends. The monthly-date setter accepts
+comma-delimited strings through a narrow evidence-gated scalar parameter override;
+weekly day remains integer. Pinned examples supply optional `upload_system_backup`
+and completed-task `status_info.status`/`statusmsg` fields. No server-wide setting
+write establishes these corrections.
+
+The reviewer observed pkgacct unknown-ID GETs creating empty directories before
+API errors and removed those directories. Both methods now warn to use only IDs
+returned by `startBackgroundPkgacct()`, and no such unknown-ID probes were added.
+Unknown-user toggle success and idle skip-status API failure are documented as
+bounded observations. Remote combined-list `where` values can be transport IDs.
+
+The reviewer separately exercised disposable-account packaging and local restore,
+then removed the account, archive and pkgacct directories and confirmed an empty
+queue. Upstream transfer-session history under `/var/cpanel/transfer_sessions/`
+and its `whmxfer.sqlite` row remain; this is not a claim of complete server cleanup.
+No new live call ran during these corrections. Server-wide writes, populated
+real-backup queue operations and unchecked transport/OAuth operations remain
+unobserved. The original two GET artifacts stay failed, immutable and unwaived;
+follow-up `8x0.2.29` retains remaining committed evidence and source/live gaps.
+
+## Team and user management (2026-10-31)
+
+The team and user-management section exposes 35 methods across `team()`,
+`teamRoles()`, `userManager()`, `webDisk()`, `users()` and `passwdStrength()`.
+Eight reads use GET; 27 state-changing or password operations use form POST.
+Passwords remain sensitive parameters. Dotted service-field names are forwarded
+literally, content is form-encoded once, and omitted options retain server defaults.
+Explicit false, zero and empty values remain distinct from omission.
+
+Team role operations can grant owner privileges. `setRoles()` replaces the whole
+role set; omitting its role value removes all roles. Creation's `roles` field is
+comma-separated, while role updates use singular `role`. Activation and password
+reset requests can send email. Service changes can create, associate or remove
+service subaccounts. Team creation without an expiry can return null; supplied
+expiry results preserve integer timestamps with canonical numeric-string
+compatibility. Other Team mutations preserve nullable opaque objects and reject
+missing payloads. Each method retains its source version floor.
+
+`listTeam()` preserves array and hash alternatives, including sensitive password
+payload fields. The hash result uses dynamic username keys under `users`; source
+inspection corrects the pinned literal `username`/`info` reading. Optional unset
+date and last-login empty strings stay distinct from omitted fields. Team role
+descriptions are a list of role records. These corrections are source-backed and
+offline-tested; Team is unavailable on the reviewed server. Team counts and
+nullable subaccount flags are payload values, separate from UAPI status.
+
+User-manager operations preserve source service settings, merge candidates and
+optional fields. The reviewed shared record family preserves null for unset
+contact/profile fields and FTP quota, alongside pinned nullable parent-type,
+subaccount-existence and synchronized-password fields. Operation-specific non-null
+FTP quota types remain unchanged. Password-change success may return opaque text;
+callers must not assume its content. Candidates preserve the known record shape,
+with their own nested candidate lists kept as opaque lists. This finite boundary
+retains deeper data without inventing recursive structure.
+`deleteUser()` permits missing data only where the pinned prose expressly specifies
+metadata-only completion; ordinary nullable-object mutations still reject missing
+data. Required create-user passwords remain required. Web Disk deletion with
+`destroy: true` can remove its home directory. The client does not retry or roll
+back user changes, role grants, removals or password changes.
+
+The fixed nine-GET live catalog reads WHM version, team role counts, role feature
+descriptions, flat subaccount inventory and the `webdisk` password-strength policy;
+each account read uses both routes. Team listings are excluded because their source
+includes password fields. No GUID/service lookup identifiers are guessed, no account
+is modified and no invitation, activation or reset email is sent. All remaining
+methods and variants remain offline-tested under live follow-up `8x0.2.30`.
+
+The initial [team/user-management capture](evidence/2026-10-31-team-user-management.json)
+at `5cae92f5ef3dfdb4ff9e83b8ab06be6d17867677` on `11.138.0.19` records nine HTTP
+200 observations. Version and both password-strength reads pass. Team counts and
+role descriptions fail at the API on both routes, as does the bridged user list;
+no cause is established. The direct user inventory succeeds at the API but has
+seven known null mismatches: `alternate_email`, `avatar_url`, `domain`,
+`invite_expiration`, `phone_number`, `real_name` and `services.ftp.quota`.
+These observations support nullability only at those list-row paths. One masked
+unknown-field observation with a null value remains untyped and unwaived. Strict assessment is failed.
+
+The direct inventory is populated; it establishes no successful bridge payload or
+team schema, and the team listing that includes password fields was not called.
+No user, service, role or password changed and no message was sent. Follow-up
+`8x0.2.30` retains API failures, the unknown field and unobserved operations/variants.
+Initial immutable SHA-256:
+`b0bbf85e9054d68f8a06eb984a63cdac76c81d9b9a2cf6cebb3e81c0d0c04116`.
+
+The [corrected team/user-management capture](evidence/2026-10-31-team-user-management-corrected.json)
+at `9922081314c6343fe65f9a6d978f354d0fde3c3c` on `11.138.0.19` records nine HTTP
+200 observations. Four API/payload/probe checks pass: version, direct subaccount
+inventory and both password-strength reads. The seven nullable field corrections
+pass directly with no remaining known-field mismatches. Team counts and role
+descriptions still fail on both routes, and the bridged user inventory still fails
+at the API. One masked unknown-field observation with null values remains in the
+direct inventory; masking establishes neither key identities nor counts.
+Strict status remains failed, without waivers or acknowledgments.
+
+This establishes populated direct inventory and password-policy reads only;
+no team listing, password retrieval, user mutation or message sending occurs.
+The original failed capture is unchanged. Follow-up `8x0.2.30` retains all API
+failures, unknown-field findings and unobserved variants. Corrected SHA-256:
+`3d16299d29f632b4874dd99c0e400f0301dd4a89d60a7a5ff60d49ab68d0a435`.
+
+
+### Team/user review evidence boundaries (2026-10-31)
+
+[Claude review 5720337990](https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990)
+reports direct reads on designated `npr` and disposable-account mutations on
+`wrvenv`, with account removal confirmed after each pass on `11.138.0.19`.
+These separate reviewer observations do not expand either committed GET artifact.
+Successful create/edit/merge/password changes can take effect before payload
+validation fails; callers must not retry them. The existing outcome-confirmed
+exception and no-retry policy remain essential.
+
+UserManager's bridge API error was attributed to absent `Cpanel/API/UserManager.pm`
+while direct execution uses the compiled server. This is observed server/version
+capability, not a universal direct-only API rule or a new client route restriction.
+Unknown service-account lookup can raise an upstream Perl exception surfaced as
+`ApiErrorException`; it is not a client payload-validation failure.
+
+Team is unavailable on this server: `team_manager` is disabled and could not be
+enabled as an account feature, while TeamRoles also checks the server `teams`
+capability. Team list/hash, expiry and role-description corrections therefore
+rest on attributed upstream source inspection and offline replay, not live success.
+No Team feature installation or enablement is part of these corrections.
+
+The reviewer separately identified `team_owner` null and, with WebDisk enabled,
+`services.webdisk.enabledigest` integer as untyped fields. Those names do not
+identify any historical masked wildcard; findings remain unwaived in `8x0.2.30`.
+Populated conflict-account shapes and non-null FTP quota representation remain
+unobserved/unresolved. The create-user string quota and other operation integer
+quota contracts retain their separate documented non-null boundaries.
+No further live capture has been performed or inferred by these corrections.
+
+
+[Clarification 6537241960](https://github.com/hostingpal/whm-api-client/pull/43#issuecomment-6537241960)
+provides a bounded candidate structure and attributes both serializers to
+`Cpanel/UserManager/Record.pm:357-364`. One populated direct candidate was observed;
+the printer capped objects at 24 keys, so that inventory is not exhaustive.
+Dismissed candidates share the Record serializer by source inspection and were
+not observed populated. Assignment call sites suggest empty deeper candidate
+lists in practice but give no guarantee. The reviewed finite boundary therefore
+types each candidate's known record fields and preserves its nested candidate
+lists as `list<mixed>`, without claiming a recursive schema or discarding deeper
+payload data. Optional service properties stay optional; `team_owner` remains
+outside the typed contract and in the existing follow-up.
+
+The same clarification supplies source-only Team types: version and subaccount
+GUID are strings including empty strings; creation, last-login, expiry and
+suspend timestamps allow canonical integer strings or integers and exact empty
+strings. The reviewer did not trace AdminBin numeric serialization, so both
+representations are compatibility, not live Team observations. No closed date
+range or ten-digit runtime constraint is inferred from one source validator.
+
 ## Expanded WHM server administration
 
 `whm()->server()` now exposes 76 of the 79 pinned Server Administration functions,

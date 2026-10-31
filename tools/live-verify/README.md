@@ -1096,6 +1096,67 @@ form is established for those seven. No mutation or token retrieval ran. Earlier
 EA4 failures and masked findings remain immutable and unwaived under `8x0.2.28`.
 Reviewer mutation/lifecycle reports remain separate from this committed read capture.
 
+## WHM backup and restoration inventory
+
+`backup-restoration.php` binds `backup-restoration-v1` to eleven WHM GETs: version,
+backup configuration, users/domains with backup metadata, users with backup metadata,
+archive inventory, restoration module summary, queue-active status, active/completed/
+pending queue lists and combined queue state. Every request is parameterless apart
+from `api.version=1`, and uses the existing exact URI/method/body guard.
+
+```bash
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+  php tools/live-verify/backup-restoration.php \
+  --output=docs/api/evidence/backup-restoration-new.json
+```
+
+The shared command requires committed inputs and both test tokens, although this
+catalog sends only WHM requests. Structural-only captures never persist account,
+domain, archive path, log or configuration values. Dynamic keys are wildcarded.
+No destination/OAuth credential read, backup creation, restoration, queue mutation,
+migration, archive deletion or configuration write occurs. Other readonly functions
+requiring identifiers are excluded without guessing identifiers. Strict assessment
+accepts no discrepancies or historical acknowledgments; failures remain failures.
+Follow-up `8x0.2.29` retains all unobserved operations and variants.
+
+The immutable WHM backup/restoration capture at `a5b6e3a` on `11.138.0.19`
+records 11 HTTP/API successes and ten payload/probe passes. Its `prebackup`
+validation failure and one masked unknown-field observation with integer values
+remain strict failures, unwaived under `8x0.2.29`. A wildcard identifies neither
+the underlying name nor field count. Backup and queue inventories are empty,
+module rows populated, and no mutation ran. Later reviewer observations and
+contract corrections are separate from that historical capture.
+
+## Team and user management
+
+`team-user-management.php` binds `team-user-management-v1` to nine exact GETs:
+WHM version plus Team role counts, TeamRoles feature descriptions,
+`UserManager/list_users?flat=1` and `PasswdStrength/get_required_strength?app=webdisk`
+through direct UAPI and the WHM bridge for `npr`. The password-policy application
+comes from the pinned enum/example; no user, GUID or service identifier is guessed.
+
+```bash
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+  php tools/live-verify/team-user-management.php \
+  --output=docs/api/evidence/team-user-management-new.json
+```
+
+Team/list_team is excluded because both pinned alternatives include password
+fields. Subaccount inventory has only password-capability/synchronization flags,
+not password material; it stays structural-only in evidence. Existing exact
+URI/method/body guards, committed-input checks, TLS verification, no retries and
+new-only protected publication remain unchanged. Both tokens are required.
+No user/service/role/password changes, invitation, activation or reset messages
+occur. Strict assessment accepts no discrepancies or historical acknowledgments.
+Follow-up `8x0.2.30` retains other operations and unobserved variants.
+
+The corrected team/user-management capture at `9922081` on `11.138.0.19` passes
+four of nine API/payload/probe checks: version, direct subaccount inventory and
+password-strength through both routes. Seven direct inventory null corrections
+pass; five API failures and one masked unknown-field observation with null values
+keep strict status failed and unwaived under `8x0.2.30`. No team listing, password
+retrieval, user/role/service mutation or message sending ran.
+
 ## Expanded WHM server inventory
 
 ```sh

@@ -1,0 +1,86 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "Users",
+  "accessor": "users",
+  "operations": {
+    "uapi:Users/change_password": {
+      "order": [
+        "newpass",
+        "oldpass",
+        "enabledigest",
+        "enablemysql"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 116 and later; operates on the selected cPanel account. Omitted optional inputs, including null, retain server behavior; explicit false, zero and empty strings remain distinct. Literal dotted services.* wire names are form or query keys, not nested request objects."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes the selected cPanel account's password from cPanel 116. The current and new passwords are sensitive form inputs. enablemysql defaults to 0; enabledigest has no pinned default. Digest Authentication is documented for the listed Windows clients accessing Web Disk over an unencrypted connection. The source declares no rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned response schema permits a nullable object without fields. Preserve opaque object fields and explicit null; an absent data member remains a payload mismatch."
+        },
+        {
+          "kind": "observed",
+          "text": "On 11.138.0.19, successful password changes can return an opaque string, preserved without assumptions about its content. The reviewer observed successful Users password changes returning a string from the upstream change result. Existing nullable-object results remain supported. Password arguments stay sensitive and the client never retries the mutation."
+        }
+      ],
+      "params": {
+        "newpass": {
+          "sensitive": true
+        },
+        "oldpass": {
+          "sensitive": true
+        }
+      },
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Users/change_password declares x-readonly=false. Use form POST for the selected-account mutation; password fields stay sensitive. Preserve pinned parameter requiredness, scalar types and literal dotted field names."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer 5720337990 against b40a9e3158c7e6dd2ff139c5e76a03536fa9ce87 observed Users/change_password returning a string after the password changed; the previous nullable-map contract raised outcome-confirmed PayloadMismatchException. The reviewer observed successful Users password changes returning a string from the upstream change result. Add string alongside the existing nullable opaque map, keeping missing-data rejection, status handling, sensitive parameters and POST/no-retry behavior.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
+        }
+      ],
+      "response": {
+        "": {
+          "replace": {
+            "type": "union",
+            "nullable": true,
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "map",
+                "values": {
+                  "type": "mixed"
+                }
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer 5720337990 against b40a9e3158c7e6dd2ff139c5e76a03536fa9ce87 observed Users/change_password returning a string after the password changed; the previous nullable-map contract raised outcome-confirmed PayloadMismatchException. The reviewer observed successful Users password changes returning a string from the upstream change result. Add string alongside the existing nullable opaque map, keeping missing-data rejection, status handling, sensitive parameters and POST/no-retry behavior.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
