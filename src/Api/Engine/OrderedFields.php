@@ -76,15 +76,15 @@ final class OrderedFields
     }
 
     /**
-     * Reject generated fields reserved by the owning route, before filtering.
+     * Reject the case-sensitive api. prefix and exact route reservations before filtering.
      *
      * @param list<string> $reserved
      * @throws InvalidArgumentException If a generated name is reserved.
      */
     public function assertNoReserved(#[SensitiveParameter] array $reserved): void
     {
-        foreach ($reserved as $name) {
-            if (isset($this->seen[$name])) {
+        foreach ($this->fields as $field) {
+            if (str_starts_with($field['name'], 'api.') || in_array($field['name'], $reserved, true)) {
                 throw new InvalidArgumentException('Generated parameters overlap a reserved routing field.');
             }
         }

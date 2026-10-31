@@ -10,8 +10,9 @@ use SensitiveParameter;
  * Mark a terminal-wildcard parameter for one-based suffix encoding.
  *
  * A wire name such as filter* expands to filter1, filter2, ... in list order.
- * One scalar is the first value. AbstractApiClient validates names and contents
- * after clearing response metadata. String-only parameters reject integers;
+ * One scalar is the first value. ParameterExpander validates names and contents
+ * before dispatch for generated and generic calls, after the owning handle
+ * clears response metadata. String-only parameters reject integers;
  * reviewed scalar parameters may additionally accept integer values.
  *
  * @internal Built by the engine for reviewed suffix-numbered parameters.

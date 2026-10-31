@@ -38,7 +38,7 @@ final class ArgumentEncoder
      * Each declared parameter with a non-null argument is emitted under its wire
      * name using its declared encoding; explicit omit_empty on repeat skips [].
      * Explicit reject_empty policies check targets before null omission.
-     * Undeclared arguments and duplicate declared names are generator defects.
+     * Undeclared arguments are generator defects; SpecChecker owns declared-name lint.
      * Expanded collisions are invalid arguments; no partial field set is sent.
      *
      * @param array<mixed> $params Parameter specs keyed by PHP argument name.
@@ -54,16 +54,6 @@ final class ArgumentEncoder
             }
         }
 
-        $wires = [];
-        foreach ($params as $param) {
-            $wire = is_array($param) ? ($param['name'] ?? null) : null;
-            if (is_string($wire)) {
-                if (isset($wires[$wire])) {
-                    throw new LogicException('Duplicate wire name in the parameter specs.');
-                }
-                $wires[$wire] = true;
-            }
-        }
         $encoded = new OrderedFields();
         foreach ($params as $name => $param) {
             $value = $arguments[$name] ?? null;

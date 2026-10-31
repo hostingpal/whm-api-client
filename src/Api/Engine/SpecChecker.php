@@ -17,7 +17,8 @@ use LogicException;
  * call omits), and the complete ShapeValidator type grammar recursively: every list
  * item, map value, object field, optional object extra value and union branch, and the type of nullable specs,
  * which the validator never inspects for a null payload. It also rejects duplicate
- * wire names across parameters (the second would silently overwrite the first),
+ * wire names and statically overlapping numbered families across parameters,
+ * declared api. controls and bridge controls on shared UAPI specs,
  * "unwrap" on a nullable object result (a null payload could never be unwrapped),
  * and "required" entries that are not strings naming declared fields (the validator
  * compares required names as strings). Keys this runtime does not read are ignored,
@@ -120,7 +121,7 @@ final class SpecChecker
             OperationSpec::text($spec, 'module');
         }
 
-        self::params($spec['params'] ?? null);
+        self::params($spec['params'] ?? null, isset($spec['module']));
         if (OperationSpec::body($spec) === RequestBodyFormat::Multipart) {
             if (($spec['method'] ?? null) !== 'POST' || !isset($spec['module'])) {
                 throw new LogicException('Multipart requires a UAPI POST operation.');
@@ -170,7 +171,7 @@ final class SpecChecker
     }
 
     /** Check every parameter spec, whether or not a call supplies its argument. */
-    private static function params(mixed $params): void
+    private static function params(mixed $params, bool $uapi): void
     {
         if (!is_array($params)) {
             throw new LogicException('Operation spec is missing "params".');
@@ -211,30 +212,44 @@ final class SpecChecker
             ) {
                 throw new LogicException('Invalid suffix-numbered parameter pattern.');
             }
-            foreach ($wires as $other => $otherSuffix) {
+            if (
+                str_starts_with($wire, 'api.')
+                || ($uapi && in_array($wire, ['cpanel.user', 'cpanel.module', 'cpanel.function'], true))
+            ) {
+                throw new LogicException('Reserved wire name in the parameter specs.');
+            }
+            foreach ($wires as $other => $encoding) {
                 if (
-                    ($suffix && self::overlaps($wire, (string) $other, $otherSuffix))
-                    || ($otherSuffix && self::overlaps((string) $other, $wire, $suffix))
+                    self::overlaps($wire, $param['encoding'], (string) $other, $encoding)
+                    || self::overlaps((string) $other, $encoding, $wire, $param['encoding'])
                 ) {
                     throw new LogicException('Overlapping wire names in the parameter specs.');
                 }
             }
 
-            if (isset($wires[$wire])) {
-                throw new LogicException('Duplicate wire name in the parameter specs: ' . $wire);
-            }
-
-            $wires[$wire] = $suffix;
+            $wires[$wire] = $param['encoding'];
         }
     }
 
-    /** Check whether another declared wire name can expand into this pattern. */
-    private static function overlaps(string $pattern, string $other, bool $otherSuffix): bool
+    /** Check whether a declared family can emit another parameter's name or family prefix. */
+    private static function overlaps(string $wire, string $encoding, string $other, string $otherEncoding): bool
     {
-        $base = substr($pattern, 0, -1);
+        if ($wire === $other) {
+            return true;
+        }
+        $suffix = in_array($encoding, ['suffix-numbered', 'suffix-numbered-scalar'], true);
+        $otherSuffix = in_array($otherEncoding, ['suffix-numbered', 'suffix-numbered-scalar'], true);
         $other = $otherSuffix ? substr($other, 0, -1) : $other;
+        if ($suffix) {
+            $base = substr($wire, 0, -1);
 
-        return preg_match('/^' . preg_quote($base, '/') . '[1-9][0-9]*$/D', $other) === 1;
+            return preg_match('/^' . preg_quote($base, '/') . '[1-9][0-9]*$/D', $other) === 1;
+        }
+        if ($encoding === 'numbered') {
+            return preg_match('/^' . preg_quote($wire, '/') . '-[1-9][0-9]*$/D', $other) === 1;
+        }
+
+        return false;
     }
 
     /**

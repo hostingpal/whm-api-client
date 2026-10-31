@@ -137,7 +137,7 @@ final class WhmClient extends AbstractApiClient
     /**
      * Execute an operation declared by an internal operation group or call().
      *
-     * Generated fields reject routing collisions before encoding. Generic caller
+     * Generated fields reject the entire case-sensitive api. prefix before encoding. Generic caller
      * arrays retain reserved-field filtering. Metadata is already cleared before
      * argument validation; execution resets it again before I/O. Post keeps
      * api.version in the query string and form-encodes operation parameters.
