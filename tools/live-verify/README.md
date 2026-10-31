@@ -1355,3 +1355,12 @@ still fails for two masked unknown-field observations in installed versions and
 service rows. They remain untyped and unwaived; no key identity/count is inferred.
 No mutation or private configuration read ran. Historical artifacts remain
 immutable and `8x0.2.38` retains remaining live coverage and unknown findings.
+
+## DAV service and shared-addressbook status
+
+Run `WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs php tools/live-verify/dav-calendar.php --output=docs/api/evidence/YYYY-MM-DD-dav-calendar.json`.
+
+Seven fixed GETs read version and shared-addressbook/DAV/Horde status on both UAPI
+routes. Existing opt-in, committed-input, exact request guard, TLS and immutable
+structural-output rules apply. No private configuration, contacts, calendars or
+delegations are read and no settings/collections are changed. Keep gaps under `8x0.2.56`.

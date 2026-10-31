@@ -4345,3 +4345,30 @@ variants also remain unobserved under `8x0.2.38`. Profile-activation input typin
 remains under `8x0.1.23` before release. No new live call or capture ran for these
 corrections. Both historical captures remain immutable, and their two masked
 unknown-field observations stay strict failures without acknowledgment or waiver.
+
+## DAV calendars, contacts and delegation
+
+`uapi()->dav()` covers all six pinned DAV functions and `uapi()->cpDavd()` all six
+CPDAVD functions. Six reads use GET and six mutations use form POST. Collection
+management preserves the literal calendar-color wire field and the source's
+conditional name/path/action requirements. Account, mailbox, calendar and path
+selectors are forwarded unchanged. Optional readonly preserves false as zero;
+omission retains the server default.
+
+Source optional fields and collection maps retain their declared types. The DAV
+configuration user alternatives are both strings. Source 0|1 flags stay strict;
+Horde's singleton enabled=0 schema remains a native integer under the existing
+validator, with its documented always-zero behavior explicit in PHPDoc. No new
+closed-enum validation or runtime/schema repair is introduced.
+
+Shared-addressbook, delegation and collection changes can change access or data.
+Calls add no retry, rollback, DAV-client authentication, synchronization or URL
+fetch. Returned configuration, paths and contact/calendar-related text are payload
+data. API outcomes do not establish client access or enforcement. Per-method
+availability/default/effect caveats remain in generated documentation.
+
+All twelve methods have independent direct and bridged UAPI contracts. The fixed
+seven-GET catalog reads version and three DAV service/shared-addressbook status
+functions through both routes. It reads no private configuration, contacts,
+calendars or delegations and makes no setting/collection changes. Remaining
+operations, populated variants and controlled lifecycle stay under `8x0.2.56`.

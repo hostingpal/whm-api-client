@@ -1,0 +1,180 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "CPDAVD",
+  "accessor": "cpDavd",
+  "class": "CpDavd",
+  "operations": {
+    "uapi:CPDAVD/add_delegate": {
+      "method": "POST",
+      "order": [
+        "calendar",
+        "delegatee",
+        "delegator",
+        "readonly"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 120 and later; operates on the selected account. Calendar identifiers and delegator/delegatee account addresses are forwarded unchanged."
+        },
+        {
+          "kind": "documented",
+          "text": "Adds a share for the specified calendar; the delegator is its owner and the delegatee is the person receiving access. This changes calendar access, declares no rollback, and is never retried or rolled back by the client. An API result does not establish DAV client authentication or access enforcement."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns an object with optional integer shared: 1 means the requested sharing action succeeded, while 0 means it did not. Inspect it separately from UAPI status; status 0 remains an API failure. Omission, explicit null, booleans and quoted flags are not interchangeable."
+        },
+        {
+          "kind": "documented",
+          "text": "readonly is optional. Supply true for read-only access (sent as 1) or false (sent as 0); omission remains omission because the pinned source declares no default. No client-side account ownership or permission check is inferred."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /CPDAVD/add_delegate. Declares x-readonly=false and x-rollback=none; use form POST for calendar sharing changes. All three calendar/delegatee/delegator arguments retain their required source status."
+        }
+      ]
+    },
+    "uapi:CPDAVD/update_delegate": {
+      "method": "POST",
+      "order": [
+        "calendar",
+        "delegatee",
+        "delegator",
+        "readonly"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 120 and later; operates on the selected account. Calendar identifiers and delegator/delegatee account addresses are forwarded unchanged."
+        },
+        {
+          "kind": "documented",
+          "text": "Updates the specified calendar share; the delegator is its owner and the delegatee is the person receiving access. This changes calendar access, declares no rollback, and is never retried or rolled back by the client. An API result does not establish DAV client authentication or access enforcement."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns an object with optional integer shared: 1 means the requested sharing action succeeded, while 0 means it did not. Inspect it separately from UAPI status; status 0 remains an API failure. Omission, explicit null, booleans and quoted flags are not interchangeable."
+        },
+        {
+          "kind": "documented",
+          "text": "readonly is optional. Supply true for read-only access (sent as 1) or false (sent as 0); omission remains omission because the pinned source declares no default. No client-side account ownership or permission check is inferred."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /CPDAVD/update_delegate. Declares x-readonly=false and x-rollback=none; use form POST for calendar sharing changes. All three calendar/delegatee/delegator arguments retain their required source status."
+        }
+      ]
+    },
+    "uapi:CPDAVD/remove_delegate": {
+      "method": "POST",
+      "order": [
+        "calendar",
+        "delegatee",
+        "delegator"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 120 and later; operates on the selected account. Calendar identifiers and delegator/delegatee account addresses are forwarded unchanged."
+        },
+        {
+          "kind": "documented",
+          "text": "Removes the specified calendar share; the delegator is its owner and the delegatee is the person whose access is removed. This changes calendar access, declares no rollback, and is never retried or rolled back by the client. An API result does not establish DAV client authentication or access enforcement."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns an object with optional integer shared: 1 means the requested sharing action succeeded, while 0 means it did not. Inspect it separately from UAPI status; status 0 remains an API failure. Omission, explicit null, booleans and quoted flags are not interchangeable."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /CPDAVD/remove_delegate. Declares x-readonly=false and x-rollback=none; use form POST for calendar sharing changes. All three calendar/delegatee/delegator arguments retain their required source status."
+        }
+      ]
+    },
+    "uapi:CPDAVD/manage_collection": {
+      "method": "POST",
+      "order": [
+        "account",
+        "action",
+        "collection_type",
+        "calendar-color",
+        "description",
+        "name",
+        "path"
+      ],
+      "params": {
+        "calendar-color": {
+          "php": "calendarColor"
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 120 and later. account identifies the collection owner. account, action and collection_type are required. The documented actions are create, update and delete; collection types are calendar, tasks and addressbook. No client-side closed-enum validation is added."
+        },
+        {
+          "kind": "documented",
+          "text": "name is required when creating a collection. path is required for update and delete to identify an existing collection; for create, omitting path autogenerates <collection_type>-<uuid>. These conditional requirements remain documented rather than new cross-parameter validation. Optional calendar-color, description, name and path preserve omission; supplied empty strings are sent. The public calendarColor argument uses the exact calendar-color wire name."
+        },
+        {
+          "kind": "documented",
+          "text": "Account identifiers and collection paths are forwarded unchanged. This creates, changes or deletes calendars, task lists and address books. The source declares no rollback; the client does not retry, undo deletion or contact any returned DAV URL."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns an object with optional integer shared: 1 means the operation succeeded and 0 means it did not. The shared field is distinct from UAPI status. Optional presence remains distinct from null, and boolean or quoted flags are not inferred."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /CPDAVD/manage_collection. Declares x-readonly=false and x-rollback=none. account, action and collection_type are required; calendar-color is explicitly optional, name has conditional create-only requiredness in prose, and path is explicitly optional with update/delete conditional requirements. Preserve source requiredness without new cross-field validation and send the hyphenated calendar-color field unchanged as form POST."
+        }
+      ]
+    },
+    "uapi:CPDAVD/list_delegates": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 120 and later. Lists sharing configuration in calendars for the selected account; no request arguments or defaults are declared."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a list of sharing records with optional calendar, calname, delegatee, delegator and integer readonly fields. readonly=1 denotes read access only, while 0 remains the native flag. Empty lists and omitted fields remain distinct; no null or quoted-flag variants are inferred. These private ownership/access records are payload data, and inventory does not establish actual DAV client enforcement."
+        }
+      ]
+    },
+    "uapi:CPDAVD/list_users": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 120 and later. Lists users available for CalDAV and CardDAV in the selected account; no request arguments or defaults are declared."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a list of maps keyed by principal name, then by collection ID. Both dynamic key levels follow the source additionalProperties schemas and retain their exact keys. Collection records have optional calendar-color, description, displayname, protected and type fields. Empty maps and omitted fields remain distinct; explicit null is not inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "protected is an integer 0/1 flag; 1 means the collection cannot be deleted through the API. The documented type values are VADDRESSBOOK, VCALENDAR and VTODO; the existing string contract does not impose a new closed enum. Private calendar/contact names, descriptions and principal IDs remain payload data. This read makes no DAV connection and proves no client authentication or access enforcement."
+        }
+      ]
+    }
+  }
+}

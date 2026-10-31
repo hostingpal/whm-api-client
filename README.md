@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 77 generated typed groups cover 783 documented operations (see
+The 79 generated typed groups cover 795 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, read-only DNS zones
 and resolvers, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -1889,3 +1889,30 @@ Project-authored code and documentation are licensed under the
 The bundled cPanel documentation snapshots retain their upstream terms and are
 not covered by the project's MIT license. See the
 [third-party documentation notice](docs/api/README.md#licensing).
+
+## DAV calendars, contacts and delegation
+
+`uapi()->dav()` covers all six pinned DAV functions and `uapi()->cpDavd()` all six
+CPDAVD functions. Six reads use GET and six mutations use form POST. Collection
+management preserves the literal calendar-color wire field and the source's
+conditional name/path/action requirements. Account, mailbox, calendar and path
+selectors are forwarded unchanged. Optional readonly preserves false as zero;
+omission retains the server default.
+
+Source optional fields and collection maps retain their declared types. The DAV
+configuration user alternatives are both strings. Source 0|1 flags stay strict;
+Horde's singleton enabled=0 schema remains a native integer under the existing
+validator, with its documented always-zero behavior explicit in PHPDoc. No new
+closed-enum validation or runtime/schema repair is introduced.
+
+Shared-addressbook, delegation and collection changes can change access or data.
+Calls add no retry, rollback, DAV-client authentication, synchronization or URL
+fetch. Returned configuration, paths and contact/calendar-related text are payload
+data. API outcomes do not establish client access or enforcement. Per-method
+availability/default/effect caveats remain in generated documentation.
+
+All twelve methods have independent direct and bridged UAPI contracts. The fixed
+seven-GET catalog reads version and three DAV service/shared-addressbook status
+functions through both routes. It reads no private configuration, contacts,
+calendars or delegations and makes no setting/collection changes. Remaining
+operations, populated variants and controlled lifecycle stay under `8x0.2.56`.

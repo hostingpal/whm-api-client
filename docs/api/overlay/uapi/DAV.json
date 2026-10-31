@@ -1,0 +1,146 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "DAV",
+  "accessor": "dav",
+  "class": "Dav",
+  "operations": {
+    "uapi:DAV/disable_shared_global_addressbook": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later. Operates on the current cPanel account's webmail accounts. name accepts a cPanel account username or a Webmail email address; omission selects the currently authenticated user. Supplied names are forwarded unchanged, and an empty string is sent rather than omitted."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns an object with an optional integer shared flag: 1 means shared/enabled and 0 means not shared/enabled. This flag is separate from UAPI status; status 0 remains an API failure. Omitted shared stays omitted; explicit null and quoted or boolean flags are not inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes shared global address book availability for the account's webmail accounts and can expose or withdraw shared contact access. The source declares no rollback. The client does not retry or roll back this change; API success and its shared flag do not establish DAV client authentication or access enforcement."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /DAV/disable_shared_global_addressbook. Declares x-readonly=false and x-rollback=none; use form POST for the account sharing change. The optional name retains its documented authenticated-user default by omission."
+        }
+      ]
+    },
+    "uapi:DAV/enable_shared_global_addressbook": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later. Operates on the current cPanel account's webmail accounts. name accepts a cPanel account username or a Webmail email address; omission selects the currently authenticated user. Supplied names are forwarded unchanged, and an empty string is sent rather than omitted."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns an object with an optional integer shared flag: 1 means shared/enabled and 0 means not shared/enabled. This flag is separate from UAPI status; status 0 remains an API failure. Omitted shared stays omitted; explicit null and quoted or boolean flags are not inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes shared global address book availability for the account's webmail accounts and can expose or withdraw shared contact access. The source declares no rollback. The client does not retry or roll back this change; API success and its shared flag do not establish DAV client authentication or access enforcement."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /DAV/enable_shared_global_addressbook. Declares x-readonly=false and x-rollback=none; use form POST for the account sharing change. The optional name retains its documented authenticated-user default by omission."
+        }
+      ]
+    },
+    "uapi:DAV/has_shared_global_addressbook": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later. Operates on the current cPanel account's webmail accounts. name accepts a cPanel account username or a Webmail email address; omission selects the currently authenticated user. Supplied names are forwarded unchanged, and an empty string is sent rather than omitted."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns an object with an optional integer shared flag: 1 means shared/enabled and 0 means not shared/enabled. This flag is separate from UAPI status; status 0 remains an API failure. Omitted shared stays omitted; explicit null and quoted or boolean flags are not inferred."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {},
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      }
+    },
+    "uapi:DAV/get_calendar_contacts_config": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.50 and later. user accepts a cPanel account or valid email account user; omission selects the currently authenticated user. The pinned user schema has two oneOf alternatives, both explicitly string, for account usernames and email addresses. Supplied identifiers are forwarded unchanged."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns optional ActiveSync, non-SSL and SSL connection settings, optional calendar/address-book lists and the selected user. Optional fields remain omitted, empty lists remain empty, and integer port and 0/1 fields retain their source types. No nullable fields are inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "Connection configuration, account identifiers, calendar/contact descriptions, names, paths and URLs may be private payload data. Returned URLs are not fetched and no CalDAV, CardDAV or ActiveSync connection is made. This read does not establish certificate trust, successful client authentication or access enforcement."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /DAV/get_calendar_contacts_config. The optional user parameter has no outer schema type, but schema.oneOf/0 and /1 both explicitly declare type:string and provide username/email examples. The nested configuration payload declares all fields optional and supplies no nullable fields; preserve the two connection sections independently."
+        }
+      ]
+    },
+    "uapi:DAV/is_dav_service_enabled": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.50 and later. No request parameters or defaults are declared in the pinned operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns an optional integer enabled flag, where 1 means enabled and 0 means disabled. This flag is distinct from UAPI status. Explicit null, booleans and quoted flags remain invalid. This service-state read does not connect to DAV or establish client authentication or enforcement."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {},
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      }
+    },
+    "uapi:DAV/is_horde_enabled": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.50 and later. No request parameters or defaults are declared in the pinned operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Horde is no longer installed with the product; the pinned enabled field is the integer literal 0. Omission remains distinct from the documented disabled value, and integer 1 is not inferred as a valid result. Explicit null, booleans and quoted flags remain invalid. This service-state read does not connect to DAV or establish client authentication or enforcement."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {},
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      }
+    }
+  }
+}
