@@ -342,12 +342,12 @@ final class WhmSslTest extends TestCase
         yield 'list rows not object' => [static fn (Ssl $s): mixed => $s->listCertificates(), '{"crt":[1]}'];
         yield 'flag quoted remains strict' => [static fn (Ssl $s): mixed => $s->listCertificates(),
             '{"crt":[{"is_self_signed":"1"}]}'];
-        yield 'timestamp quoted remains strict' => [static fn (Ssl $s): mixed => $s->listCertificates(),
-            '{"crt":[{"not_after":"1"}]}'];
+        yield 'timestamp leading zero remains strict' => [static fn (Ssl $s): mixed => $s->listCertificates(),
+            '{"crt":[{"not_after":"01"}]}'];
         yield 'integer fractional remains strict' => [static fn (Ssl $s): mixed => $s->listCertificates(),
             '{"crt":[{"modulus_length":2048.5}]}'];
-        yield 'issuer nullable not extrapolated' => [static fn (Ssl $s): mixed => $s->listCertificates(),
-            '{"crt":[{"issuer.organizationName":null}]}'];
+        yield 'issuer boolean remains strict' => [static fn (Ssl $s): mixed => $s->listCertificates(),
+            '{"crt":[{"issuer.organizationName":false}]}'];
         yield 'FQDN row properties preserve typed object' => [
             static fn (Ssl $s): mixed => $s->fetchSslCertificatesForFqdns('one.test'),
             '{"payload":[true]}'];
@@ -431,6 +431,142 @@ final class WhmSslTest extends TestCase
             self::assertCount(1, $http->getRequests());
             self::assertSame(1, $client->whm()->responseMeta()?->whmResult());
         }
+    }
+
+    /** @return iterable<string, array{SslCall, string, mixed}> */
+    public static function observedCertificatePayloads(): iterable
+    {
+        yield 'best-domain expiry null' => [
+            static fn (Ssl $s): mixed => $s->getBestSslDomainForService('cpanel'),
+            '{"cert_valid_not_after":null}', ['cert_valid_not_after' => null]];
+        yield 'best-domain expiry integer retained' => [
+            static fn (Ssl $s): mixed => $s->getBestSslDomainForService('cpanel'),
+            '{"cert_valid_not_after":1601467200}', ['cert_valid_not_after' => 1601467200]];
+        yield 'best-domain expiry omitted' => [
+            static fn (Ssl $s): mixed => $s->getBestSslDomainForService('cpanel'), '{}', []];
+        yield 'nullable owner list items' => [static fn (Ssl $s): mixed => $s->listCertificates(user: 'alice'),
+            '{"crt":[{"domain_owners":[null,"alice",null]}]}',
+            ['crt' => [['domain_owners' => [null, 'alice', null]]]]];
+        yield 'owner list empty' => [static fn (Ssl $s): mixed => $s->listCertificates(user: 'alice'),
+            '{"crt":[{"domain_owners":[]}]}', ['crt' => [['domain_owners' => []]]]];
+        yield 'nullable literal issuer organization' => [
+            static fn (Ssl $s): mixed => $s->listCertificates(user: 'alice'),
+            '{"crt":[{"issuer.organizationName":null}]}', ['crt' => [['issuer.organizationName' => null]]]];
+        yield 'nullable modulus remains nullable' => [static fn (Ssl $s): mixed => $s->listCertificates(user: 'alice'),
+            '{"crt":[{"modulus_length":null}]}', ['crt' => [['modulus_length' => null]]]];
+        yield 'all reviewed variants together' => [static fn (Ssl $s): mixed => $s->listCertificates(user: 'alice'),
+            '{"crt":[{"domain_owners":[null,"alice"],"issuer.organizationName":null,'
+                . '"modulus_length":"2048","not_after":"1601467200","is_self_signed":0,"registered":1},{}]}',
+            ['crt' => [['domain_owners' => [null, 'alice'], 'is_self_signed' => 0, 'issuer.organizationName' => null,
+                'modulus_length' => 2048, 'not_after' => 1601467200, 'registered' => 1], []]]];
+        yield 'reviewed fields omitted' => [static fn (Ssl $s): mixed => $s->listCertificates(user: 'alice'),
+            '{"crt":[{}]}', ['crt' => [[]]]];
+        yield 'empty certificate list' => [static fn (Ssl $s): mixed => $s->listCertificates(user: 'alice'),
+            '{"crt":[]}', ['crt' => []]];
+    }
+
+    /** @param SslCall $call */
+    #[DataProvider('observedCertificatePayloads')]
+    public function testObservedCertificateVariantsPreserveValuesAndOmission(
+        Closure $call,
+        string $payload,
+        mixed $expected,
+    ): void {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope($payload)));
+        self::assertSame($expected, $call($client->whm()->ssl()));
+        self::assertCount(1, $http->getRequests());
+        self::assertSame(1, $client->whm()->responseMeta()?->whmResult());
+    }
+
+    /** @return iterable<string, array{string, int|string, int}> */
+    public static function canonicalCertificateIntegers(): iterable
+    {
+        foreach (['modulus_length', 'not_after'] as $field) {
+            yield $field . ' native zero' => [$field, 0, 0];
+            yield $field . ' native value' => [$field, 2048, 2048];
+            yield $field . ' string zero' => [$field, '0', 0];
+            yield $field . ' string value' => [$field, '2048', 2048];
+            yield $field . ' string negative' => [$field, '-1', -1];
+            yield $field . ' string maximum' => [$field, '9223372036854775807', PHP_INT_MAX];
+            yield $field . ' string minimum' => [$field, '-9223372036854775808', PHP_INT_MIN];
+        }
+    }
+
+    #[DataProvider('canonicalCertificateIntegers')]
+    public function testOnlyReviewedCertificateFieldsNormalizeCanonicalIntegers(
+        string $field,
+        int|string $wire,
+        int $expected,
+    ): void {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope(json_encode(
+            ['crt' => [[$field => $wire]]],
+            JSON_THROW_ON_ERROR,
+        ))));
+        self::assertSame(['crt' => [[$field => $expected]]], $client->whm()->ssl()->listCertificates(user: 'alice'));
+        self::assertCount(1, $http->getRequests());
+    }
+
+    /** @return iterable<string, array{SslCall, ?string}> */
+    public static function rejectedCertificateCompatibilityVariants(): iterable
+    {
+        foreach (['modulus_length', 'not_after'] as $field) {
+            foreach (
+                [
+                '', '00', '01', '-0', '-01', '+1', '1.0', '1.00', '1.5', '1e3', ' 1', '1 ',
+                '9223372036854775808', '-9223372036854775809', true, false, 1.0, 1.5, [], new stdClass(),
+                ] as $index => $value
+            ) {
+                yield $field . ' invalid ' . $index => [static fn (Ssl $s): mixed => $s->listCertificates(),
+                    json_encode(['crt' => [[$field => $value]]], JSON_THROW_ON_ERROR | JSON_PRESERVE_ZERO_FRACTION)];
+            }
+        }
+        foreach ([0, 1, true, false, [], new stdClass()] as $index => $value) {
+            yield 'owner item remains string or null ' . $index => [static fn (Ssl $s): mixed => $s->listCertificates(),
+                json_encode(['crt' => [['domain_owners' => [$value]]]], JSON_THROW_ON_ERROR)];
+            yield 'issuer remains string or null ' . $index => [static fn (Ssl $s): mixed => $s->listCertificates(),
+                json_encode(['crt' => [['issuer.organizationName' => $value]]], JSON_THROW_ON_ERROR)];
+        }
+        yield 'owner list itself not nullable' => [static fn (Ssl $s): mixed => $s->listCertificates(),
+            '{"crt":[{"domain_owners":null}]}'];
+        yield 'owner list itself not scalar' => [static fn (Ssl $s): mixed => $s->listCertificates(),
+            '{"crt":[{"domain_owners":"alice"}]}'];
+        yield 'expiration itself not nullable' => [static fn (Ssl $s): mixed => $s->listCertificates(),
+            '{"crt":[{"not_after":null}]}'];
+        foreach (['0', '1601467200', true, false, 1.0, [], new stdClass()] as $index => $value) {
+            yield 'best-domain expiry remains integer or null ' . $index => [
+                static fn (Ssl $s): mixed => $s->getBestSslDomainForService('cpanel'),
+                json_encode(['cert_valid_not_after' => $value], JSON_THROW_ON_ERROR | JSON_PRESERVE_ZERO_FRACTION)];
+        }
+        yield 'unrelated certificate self-signed flag stays strict' => [
+            static fn (Ssl $s): mixed => $s->listCertificates(),
+            '{"crt":[{"is_self_signed":"0"}]}'];
+        yield 'unrelated certificate registered flag stays strict' => [
+            static fn (Ssl $s): mixed => $s->listCertificates(),
+            '{"crt":[{"registered":"1"}]}'];
+        yield 'unrelated certificate domains remain nonnullable strings' => [
+            static fn (Ssl $s): mixed => $s->listCertificates(), '{"crt":[{"domains":[null]}]}'];
+        yield 'unrelated best-domain flag stays strict' => [
+            static fn (Ssl $s): mixed => $s->getBestSslDomainForService('cpanel'), '{"is_currently_valid":"0"}'];
+        yield 'sibling FQDN expiration stays strict' => [
+            static fn (Ssl $s): mixed => $s->fetchSslCertificatesForFqdns('one.test'),
+            '{"payload":[{"not_after":"1601467200"}]}'];
+        yield 'sibling FQDN modulus stays strict' => [
+            static fn (Ssl $s): mixed => $s->fetchSslCertificatesForFqdns('one.test'),
+            '{"payload":[{"modulus_length":"2048"}]}'];
+        yield 'sibling FQDN issuer null stays strict' => [
+            static fn (Ssl $s): mixed => $s->fetchSslCertificatesForFqdns('one.test'),
+            '{"payload":[{"issuer.organizationName":null}]}'];
+        yield 'sibling vhost expiration stays strict' => [static fn (Ssl $s): mixed => $s->fetchSslVhosts(),
+            '{"vhosts":[{"crt":{"not_after":"1601467200"}}]}'];
+    }
+
+    /** @param SslCall $call */
+    #[DataProvider('rejectedCertificateCompatibilityVariants')]
+    public function testCertificateCompatibilityCorrectionsStayNarrow(Closure $call, ?string $payload): void
+    {
+        $this->testInvalidPayloadPreservesConfirmedOutcomeWithoutRetry($call, $payload);
     }
 
     /** @return iterable<string, array{string, list<string>}> */

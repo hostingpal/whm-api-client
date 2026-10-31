@@ -1,0 +1,815 @@
+{
+    "schema_version": 1,
+    "read_only_section": {
+        "recipe": "whm-ssl-v1",
+        "status": "failed",
+        "probes": [
+            {
+                "operation": "whm1:version",
+                "variant": "whm1:version#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T02:17:41Z",
+                "revision": "df3a6341a08d85eb9c011e617db7edbcc2c967cc",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "321bdabf336df25c2fc07e2b30d3df224462cd2c",
+                "overlay_sha256": "465d2f042c60e4ff0cac8b7a6e3443d871d4f6c120ad4e7664e7866aafa142be",
+                "effective_contract_sha256": "a3b55069b379516f20fcf82f959226d68b68ac515a7e55c0bde8842d39effd60",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.version": [
+                        "string"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.version": [
+                        "string"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "whm1:get_autossl_check_schedule",
+                "variant": "whm1:get_autossl_check_schedule#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T02:17:41Z",
+                "revision": "df3a6341a08d85eb9c011e617db7edbcc2c967cc",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "321bdabf336df25c2fc07e2b30d3df224462cd2c",
+                "overlay_sha256": "465d2f042c60e4ff0cac8b7a6e3443d871d4f6c120ad4e7664e7866aafa142be",
+                "effective_contract_sha256": "acc30dfd2ddb2ebc0ae30dd6dd9b681e48f7a12c1aebd4723cccc10161c98e60",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.cron": [
+                        "list"
+                    ],
+                    "$.data.cron[]": [
+                        "numeric-string",
+                        "string"
+                    ],
+                    "$.data.next_time": [
+                        "string"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.cron": [
+                        "list"
+                    ],
+                    "$.cron[]": [
+                        "numeric-string",
+                        "string"
+                    ],
+                    "$.next_time": [
+                        "string"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "whm1:get_autossl_logs_catalog",
+                "variant": "whm1:get_autossl_logs_catalog#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T02:17:41Z",
+                "revision": "df3a6341a08d85eb9c011e617db7edbcc2c967cc",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "321bdabf336df25c2fc07e2b30d3df224462cd2c",
+                "overlay_sha256": "465d2f042c60e4ff0cac8b7a6e3443d871d4f6c120ad4e7664e7866aafa142be",
+                "effective_contract_sha256": "88eb06df8d985da18be2d0565bb0c93fb55f72bd274815d5ea28743baefafec8",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.payload": [
+                        "list"
+                    ],
+                    "$.data.payload[]": [
+                        "object"
+                    ],
+                    "$.data.payload[].in_progress": [
+                        "int"
+                    ],
+                    "$.data.payload[].provider": [
+                        "string"
+                    ],
+                    "$.data.payload[].start_time": [
+                        "string"
+                    ],
+                    "$.data.payload[].username": [
+                        "string"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.payload": [
+                        "list"
+                    ],
+                    "$.payload[]": [
+                        "object"
+                    ],
+                    "$.payload[].in_progress": [
+                        "int"
+                    ],
+                    "$.payload[].provider": [
+                        "string"
+                    ],
+                    "$.payload[].start_time": [
+                        "string"
+                    ],
+                    "$.payload[].username": [
+                        "string"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "whm1:get_autossl_metadata",
+                "variant": "whm1:get_autossl_metadata#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T02:17:42Z",
+                "revision": "df3a6341a08d85eb9c011e617db7edbcc2c967cc",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "321bdabf336df25c2fc07e2b30d3df224462cd2c",
+                "overlay_sha256": "465d2f042c60e4ff0cac8b7a6e3443d871d4f6c120ad4e7664e7866aafa142be",
+                "effective_contract_sha256": "fbdad61dab360275e7d9880654f5bd2d08ded6f7d6d908810d171f39004370db",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.payload": [
+                        "object"
+                    ],
+                    "$.data.payload.clobber_externally_signed": [
+                        "int"
+                    ],
+                    "$.data.payload.notify_autossl_expiry": [
+                        "int"
+                    ],
+                    "$.data.payload.notify_autossl_expiry_coverage": [
+                        "int"
+                    ],
+                    "$.data.payload.notify_autossl_expiry_coverage_user": [
+                        "int"
+                    ],
+                    "$.data.payload.notify_autossl_expiry_user": [
+                        "int"
+                    ],
+                    "$.data.payload.notify_autossl_renewal": [
+                        "int"
+                    ],
+                    "$.data.payload.notify_autossl_renewal_coverage": [
+                        "int"
+                    ],
+                    "$.data.payload.notify_autossl_renewal_coverage_reduced": [
+                        "int"
+                    ],
+                    "$.data.payload.notify_autossl_renewal_coverage_reduced_user": [
+                        "int"
+                    ],
+                    "$.data.payload.notify_autossl_renewal_coverage_user": [
+                        "int"
+                    ],
+                    "$.data.payload.notify_autossl_renewal_uncovered_domains": [
+                        "int"
+                    ],
+                    "$.data.payload.notify_autossl_renewal_uncovered_domains_user": [
+                        "int"
+                    ],
+                    "$.data.payload.notify_autossl_renewal_user": [
+                        "int"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.payload": [
+                        "object"
+                    ],
+                    "$.payload.clobber_externally_signed": [
+                        "int"
+                    ],
+                    "$.payload.notify_autossl_expiry": [
+                        "int"
+                    ],
+                    "$.payload.notify_autossl_expiry_coverage": [
+                        "int"
+                    ],
+                    "$.payload.notify_autossl_expiry_coverage_user": [
+                        "int"
+                    ],
+                    "$.payload.notify_autossl_expiry_user": [
+                        "int"
+                    ],
+                    "$.payload.notify_autossl_renewal": [
+                        "int"
+                    ],
+                    "$.payload.notify_autossl_renewal_coverage": [
+                        "int"
+                    ],
+                    "$.payload.notify_autossl_renewal_coverage_reduced": [
+                        "int"
+                    ],
+                    "$.payload.notify_autossl_renewal_coverage_reduced_user": [
+                        "int"
+                    ],
+                    "$.payload.notify_autossl_renewal_coverage_user": [
+                        "int"
+                    ],
+                    "$.payload.notify_autossl_renewal_uncovered_domains": [
+                        "int"
+                    ],
+                    "$.payload.notify_autossl_renewal_uncovered_domains_user": [
+                        "int"
+                    ],
+                    "$.payload.notify_autossl_renewal_user": [
+                        "int"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "whm1:get_autossl_problems_for_domain",
+                "variant": "whm1:get_autossl_problems_for_domain#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T02:17:42Z",
+                "revision": "df3a6341a08d85eb9c011e617db7edbcc2c967cc",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "321bdabf336df25c2fc07e2b30d3df224462cd2c",
+                "overlay_sha256": "465d2f042c60e4ff0cac8b7a6e3443d871d4f6c120ad4e7664e7866aafa142be",
+                "effective_contract_sha256": "52e3826cb33cfdf0313af6cd8c65556f2eae22fc5fa268773e1011f62d7cd1f5",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.problems_by_domain": [
+                        "empty-list"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.problems_by_domain": [
+                        "empty-list"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "whm1:get_autossl_problems_for_user",
+                "variant": "whm1:get_autossl_problems_for_user#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T02:17:42Z",
+                "revision": "df3a6341a08d85eb9c011e617db7edbcc2c967cc",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "321bdabf336df25c2fc07e2b30d3df224462cd2c",
+                "overlay_sha256": "465d2f042c60e4ff0cac8b7a6e3443d871d4f6c120ad4e7664e7866aafa142be",
+                "effective_contract_sha256": "00f488ddbda0279fbbe874f9caf0900727e60c30500388138312a1efba24fb90",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.problems_by_domain": [
+                        "list"
+                    ],
+                    "$.data.problems_by_domain[]": [
+                        "object"
+                    ],
+                    "$.data.problems_by_domain[].domain": [
+                        "string"
+                    ],
+                    "$.data.problems_by_domain[].log": [
+                        "string"
+                    ],
+                    "$.data.problems_by_domain[].problem": [
+                        "string"
+                    ],
+                    "$.data.problems_by_domain[].time": [
+                        "string"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.problems_by_domain": [
+                        "list"
+                    ],
+                    "$.problems_by_domain[]": [
+                        "object"
+                    ],
+                    "$.problems_by_domain[].domain": [
+                        "string"
+                    ],
+                    "$.problems_by_domain[].log": [
+                        "string"
+                    ],
+                    "$.problems_by_domain[].problem": [
+                        "string"
+                    ],
+                    "$.problems_by_domain[].time": [
+                        "string"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "whm1:get_autossl_user_excluded_domains",
+                "variant": "whm1:get_autossl_user_excluded_domains#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T02:17:43Z",
+                "revision": "df3a6341a08d85eb9c011e617db7edbcc2c967cc",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "321bdabf336df25c2fc07e2b30d3df224462cd2c",
+                "overlay_sha256": "465d2f042c60e4ff0cac8b7a6e3443d871d4f6c120ad4e7664e7866aafa142be",
+                "effective_contract_sha256": "6025dd81f822ee217dbc304c62e36ed520aff2afc42d36884277675ae08e7fd2",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.payload": [
+                        "empty-list"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.payload": [
+                        "empty-list"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "whm1:get_best_ssldomain_for_service",
+                "variant": "whm1:get_best_ssldomain_for_service#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T02:17:43Z",
+                "revision": "df3a6341a08d85eb9c011e617db7edbcc2c967cc",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "321bdabf336df25c2fc07e2b30d3df224462cd2c",
+                "overlay_sha256": "465d2f042c60e4ff0cac8b7a6e3443d871d4f6c120ad4e7664e7866aafa142be",
+                "effective_contract_sha256": "4789022be214710dae170a7aca1b0d52123e1e6e3f4d60bcfee35bbcae9208e6",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "failed",
+                "probe_outcome": "failed",
+                "failure_kind": "payload_mismatch",
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.cert_match_method": [
+                        "string"
+                    ],
+                    "$.data.cert_valid_not_after": [
+                        "null"
+                    ],
+                    "$.data.is_currently_valid": [
+                        "int"
+                    ],
+                    "$.data.is_self_signed": [
+                        "int"
+                    ],
+                    "$.data.is_wild_card": [
+                        "int"
+                    ],
+                    "$.data.ssldomain": [
+                        "string"
+                    ],
+                    "$.data.ssldomain_matches_cert": [
+                        "int"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.cert_match_method": [
+                        "string"
+                    ],
+                    "$.cert_valid_not_after": [
+                        "null"
+                    ],
+                    "$.is_currently_valid": [
+                        "int"
+                    ],
+                    "$.is_self_signed": [
+                        "int"
+                    ],
+                    "$.is_wild_card": [
+                        "int"
+                    ],
+                    "$.ssldomain": [
+                        "string"
+                    ],
+                    "$.ssldomain_matches_cert": [
+                        "int"
+                    ]
+                },
+                "discrepancies": [
+                    {
+                        "path": "$.cert_valid_not_after",
+                        "kind": "type_mismatch"
+                    }
+                ]
+            },
+            {
+                "operation": "whm1:listcrts",
+                "variant": "whm1:listcrts#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T02:17:43Z",
+                "revision": "df3a6341a08d85eb9c011e617db7edbcc2c967cc",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "321bdabf336df25c2fc07e2b30d3df224462cd2c",
+                "overlay_sha256": "465d2f042c60e4ff0cac8b7a6e3443d871d4f6c120ad4e7664e7866aafa142be",
+                "effective_contract_sha256": "ce0706a7e3ba817b78c504ce1b0257e7a0d2953d219e7dfad93d9ed59b9fb154",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "failed",
+                "probe_outcome": "failed",
+                "failure_kind": "payload_mismatch",
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.crt": [
+                        "list"
+                    ],
+                    "$.data.crt[]": [
+                        "object"
+                    ],
+                    "$.data.crt[].domain": [
+                        "string"
+                    ],
+                    "$.data.crt[].domain_owners": [
+                        "list"
+                    ],
+                    "$.data.crt[].domain_owners[]": [
+                        "null",
+                        "string"
+                    ],
+                    "$.data.crt[].domains": [
+                        "list"
+                    ],
+                    "$.data.crt[].domains[]": [
+                        "string"
+                    ],
+                    "$.data.crt[].ecdsa_curve_name": [
+                        "null",
+                        "string"
+                    ],
+                    "$.data.crt[].friendly_name": [
+                        "string"
+                    ],
+                    "$.data.crt[].id": [
+                        "string"
+                    ],
+                    "$.data.crt[].is_self_signed": [
+                        "int"
+                    ],
+                    "$.data.crt[].issuer.organizationName": [
+                        "null",
+                        "string"
+                    ],
+                    "$.data.crt[].key_algorithm": [
+                        "string"
+                    ],
+                    "$.data.crt[].modulus_length": [
+                        "null",
+                        "numeric-string"
+                    ],
+                    "$.data.crt[].not_after": [
+                        "numeric-string"
+                    ],
+                    "$.data.crt[].registered": [
+                        "int"
+                    ],
+                    "$.data.crt[].signature_algorithm": [
+                        "missing"
+                    ],
+                    "$.data.crt[].validation_type": [
+                        "missing"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.crt": [
+                        "list"
+                    ],
+                    "$.crt[]": [
+                        "object"
+                    ],
+                    "$.crt[].domain": [
+                        "string"
+                    ],
+                    "$.crt[].domain_owners": [
+                        "list"
+                    ],
+                    "$.crt[].domain_owners[]": [
+                        "null",
+                        "string"
+                    ],
+                    "$.crt[].domains": [
+                        "list"
+                    ],
+                    "$.crt[].domains[]": [
+                        "string"
+                    ],
+                    "$.crt[].ecdsa_curve_name": [
+                        "null",
+                        "string"
+                    ],
+                    "$.crt[].friendly_name": [
+                        "string"
+                    ],
+                    "$.crt[].id": [
+                        "string"
+                    ],
+                    "$.crt[].is_self_signed": [
+                        "int"
+                    ],
+                    "$.crt[].issuer.organizationName": [
+                        "null",
+                        "string"
+                    ],
+                    "$.crt[].key_algorithm": [
+                        "string"
+                    ],
+                    "$.crt[].modulus_length": [
+                        "null",
+                        "numeric-string"
+                    ],
+                    "$.crt[].not_after": [
+                        "numeric-string"
+                    ],
+                    "$.crt[].registered": [
+                        "int"
+                    ],
+                    "$.crt[].signature_algorithm": [
+                        "missing"
+                    ],
+                    "$.crt[].validation_type": [
+                        "missing"
+                    ]
+                },
+                "discrepancies": [
+                    {
+                        "path": "$.crt[].domain_owners[]",
+                        "kind": "type_mismatch"
+                    },
+                    {
+                        "path": "$.crt[].issuer.organizationName",
+                        "kind": "type_mismatch"
+                    },
+                    {
+                        "path": "$.crt[].modulus_length",
+                        "kind": "type_mismatch"
+                    },
+                    {
+                        "path": "$.crt[].not_after",
+                        "kind": "type_mismatch"
+                    }
+                ]
+            }
+        ]
+    }
+}

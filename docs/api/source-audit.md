@@ -3664,3 +3664,20 @@ for designated `npr`/`npr.rs`, the best domain for the pinned `whostmgr` service
 example, and the account's certificate inventory. It reads no log contents,
 private-key/component PEM or unspecified provider values and makes no changes.
 Follow-up `8x0.2.39` retains remaining live behavior.
+
+The initial [WHM SSL capture](evidence/2026-10-31-whm-ssl.json) at
+`df3a6341a08d85eb9c011e617db7edbcc2c967cc` on `11.138.0.19` records nine
+HTTP/API successes and seven payload/probe passes. The best-service-domain
+expiration is null. Certificate inventory has null owner-list items and literal
+`issuer.organizationName` values, plus numeric-string modulus lengths and expiry
+timestamps. Five operation-specific field rules preserve these observed variants;
+other fields and WHM/UAPI operations remain unchanged. Owner-list null items do
+not make the list itself nullable, and no meaning is assigned to null values.
+
+Integer-string compatibility stays canonical and lossless, rejecting noncanonical
+strings, fractional values and overflow. Structural evidence does not establish
+every accepted canonical spelling. No provider data, private key, component PEM
+or log contents were read and no mutation or URL request ran. The original strict
+assessment stays failed and immutable; `8x0.2.39` retains remaining live behavior.
+Initial SHA-256:
+`f1bded7e795124bb9d053a568a002b17db6b03766a4ec19cd9a416363142ea29`.

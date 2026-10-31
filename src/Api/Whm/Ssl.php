@@ -242,7 +242,7 @@ use SensitiveParameter;
  * }
  * @phpstan-type GetBestSslDomainForServiceResult array{
  *     cert_match_method?: string,
- *     cert_valid_not_after?: int,
+ *     cert_valid_not_after?: int|null,
  *     is_currently_valid?: 0|1,
  *     is_self_signed?: 0|1,
  *     is_wild_card?: 0|1,
@@ -288,13 +288,13 @@ use SensitiveParameter;
  * @phpstan-type ListCertificatesResult array{
  *     crt?: list<array{
  *         domain?: string,
- *         domain_owners?: list<string>,
+ *         domain_owners?: list<string|null>,
  *         domains?: list<string>,
  *         ecdsa_curve_name?: string|null,
  *         friendly_name?: string,
  *         id?: string,
  *         is_self_signed?: 0|1,
- *         'issuer.organizationName'?: string,
+ *         'issuer.organizationName'?: string|null,
  *         key_algorithm?: string,
  *         modulus_length?: int|null,
  *         not_after?: int,
@@ -948,6 +948,10 @@ final readonly class Ssl
      * Documented: Returns the suggested service domain and certificate matching/validity metadata; this does not
      * establish a successful TLS connection.
      *
+     * Observed: On cPanel & WHM 11.138.0.19 through the WHM GET route, cert_valid_not_after was explicitly null. The
+     * result preserves integer|null and omitted expiry separately; this observation does not establish a successful TLS
+     * connection.
+     *
      * API-map identity: whm1:get_best_ssldomain_for_service#GET (wire name get_best_ssldomain_for_service; cPanel
      * Account Settings).
      *
@@ -1074,6 +1078,12 @@ final readonly class Ssl
      * This function lists the server's domains with installed SSL certificates.
      *
      * Documented: Available from cPanel & WHM version 11.
+     *
+     * Observed: On cPanel & WHM 11.138.0.19 through the WHM GET route, domain_owners items and literal
+     * issuer.organizationName included null, modulus_length included null or numeric strings, and not_after used
+     * numeric strings. Only modulus_length and not_after accept lossless canonical in-range integer strings and
+     * normalize them to integers. Omission, null and empty lists remain distinct; flags and sibling operations retain
+     * their existing contracts.
      *
      * API-map identity: whm1:listcrts#GET (wire name listcrts; SSL Server Settings).
      *

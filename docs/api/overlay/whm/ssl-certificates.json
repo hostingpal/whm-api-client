@@ -407,6 +407,31 @@
         {
           "kind": "documented",
           "text": "Returns the suggested service domain and certificate matching/validity metadata; this does not establish a successful TLS connection."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel & WHM 11.138.0.19 through the WHM GET route, cert_valid_not_after was explicitly null. The result preserves integer|null and omitted expiry separately; this observation does not establish a successful TLS connection."
+        }
+      ],
+      "response": {
+        "cert_valid_not_after": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "docs/api/evidence/2026-10-31-whm-ssl.json SHA-256 f1bded7e795124bb9d053a568a002b17db6b03766a4ec19cd9a416363142ea29, revision df3a6341a08d85eb9c011e617db7edbcc2c967cc, WHM GET on 11.138.0.19, pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. The original response fingerprint reports $.cert_valid_not_after as null after HTTP/API success. Accept integer|null only on this field; omission stays omitted and numeric strings, booleans and floats remain invalid. The initial artifact remains failed and immutable."
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "docs/api/evidence/2026-10-31-whm-ssl.json SHA-256 f1bded7e795124bb9d053a568a002b17db6b03766a4ec19cd9a416363142ea29, revision df3a6341a08d85eb9c011e617db7edbcc2c967cc, WHM GET on 11.138.0.19, pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. The successful get_best_ssldomain_for_service API response had an explicit null certificate expiry. This operation-specific correction does not infer other nullable fields or numeric conversions."
         }
       ]
     },
@@ -493,6 +518,68 @@
         {
           "kind": "documented",
           "text": "Available from cPanel & WHM version 11."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel & WHM 11.138.0.19 through the WHM GET route, domain_owners items and literal issuer.organizationName included null, modulus_length included null or numeric strings, and not_after used numeric strings. Only modulus_length and not_after accept lossless canonical in-range integer strings and normalize them to integers. Omission, null and empty lists remain distinct; flags and sibling operations retain their existing contracts."
+        }
+      ],
+      "response": {
+        "crt[].domain_owners[]": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "docs/api/evidence/2026-10-31-whm-ssl.json SHA-256 f1bded7e795124bb9d053a568a002b17db6b03766a4ec19cd9a416363142ea29, revision df3a6341a08d85eb9c011e617db7edbcc2c967cc, WHM GET on 11.138.0.19, pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. listcrts fingerprint: $.crt[].domain_owners[] was null|string; accept nullable string items while keeping the domain_owners list itself nonnullable. No sibling field or operation is widened; the initial artifact remains failed and immutable."
+            }
+          ]
+        },
+        "crt[].issuer\\.organizationName": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "docs/api/evidence/2026-10-31-whm-ssl.json SHA-256 f1bded7e795124bb9d053a568a002b17db6b03766a4ec19cd9a416363142ea29, revision df3a6341a08d85eb9c011e617db7edbcc2c967cc, WHM GET on 11.138.0.19, pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. listcrts fingerprint: The literal $.crt[].issuer.organizationName field was null|string; retain the literal dotted key and optional string|null value. No sibling field or operation is widened; the initial artifact remains failed and immutable."
+            }
+          ]
+        },
+        "crt[].modulus_length": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "docs/api/evidence/2026-10-31-whm-ssl.json SHA-256 f1bded7e795124bb9d053a568a002b17db6b03766a4ec19cd9a416363142ea29, revision df3a6341a08d85eb9c011e617db7edbcc2c967cc, WHM GET on 11.138.0.19, pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. listcrts fingerprint reports $.crt[].modulus_length as null|numeric-string; its existing nullability is preserved. Use only the existing lossless canonical in-range decimal integer-string conversion to int. Reject leading zeros, plus signs, negative zero, fractions, exponent forms, whitespace, overflow, booleans and floats. No sibling operation or flag conversion is inferred; the initial artifact remains failed and immutable."
+            }
+          ]
+        },
+        "crt[].not_after": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "docs/api/evidence/2026-10-31-whm-ssl.json SHA-256 f1bded7e795124bb9d053a568a002b17db6b03766a4ec19cd9a416363142ea29, revision df3a6341a08d85eb9c011e617db7edbcc2c967cc, WHM GET on 11.138.0.19, pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. listcrts fingerprint reports $.crt[].not_after as numeric-string; it remains nonnullable. Use only the existing lossless canonical in-range decimal integer-string conversion to int. Reject leading zeros, plus signs, negative zero, fractions, exponent forms, whitespace, overflow, booleans and floats. No sibling operation or flag conversion is inferred; the initial artifact remains failed and immutable."
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "docs/api/evidence/2026-10-31-whm-ssl.json SHA-256 f1bded7e795124bb9d053a568a002b17db6b03766a4ec19cd9a416363142ea29, revision df3a6341a08d85eb9c011e617db7edbcc2c967cc, WHM GET on 11.138.0.19, pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. The original listcrts response fingerprint establishes nullable domain_owners items, nullable literal issuer.organizationName, and numeric-string modulus_length/not_after. Corrections apply only to these four fields on this operation; nullable modulus_length already belongs to the pinned schema."
         }
       ]
     },
