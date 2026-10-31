@@ -65,16 +65,15 @@ type Operation struct {
 
 // Note is one line appended to the generated docblock. Kind separates facts
 // stated in the pinned documentation ("documented") from runtime behaviour
-// seen on a server ("observed", which needs live evidence), so generated PHPDoc
-// never presents a documented fact as an observation. Further kinds (such as a
-// caution channel) extend NoteKinds.
+// seen on a server ("observed", which needs live evidence) and deliberate client
+// decisions ("policy", which do not claim upstream or live evidence).
 type Note struct {
 	Kind string `json:"kind"`
 	Text string `json:"text"`
 }
 
 // NoteKinds maps each note kind to the label that starts its docblock line.
-var NoteKinds = map[string]string{"documented": "Documented", "observed": "Observed"}
+var NoteKinds = map[string]string{"documented": "Documented", "observed": "Observed", "policy": "Policy"}
 
 // Param renames, re-encodes or omits one documented parameter, keyed by wire
 // name. Omitted parameters (aliases, wildcard patterns such as MXCHECK-*) stay
