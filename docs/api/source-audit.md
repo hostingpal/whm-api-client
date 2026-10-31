@@ -4383,16 +4383,27 @@ and empty `listIntegrationGroups()`/`listIntegrationLinks()` for `npr`.
 `listIntegrationLinks()` also returned empty for an unknown user, so an empty
 list does not prove account existence. Other action flags and `reorderHooks()`
 compatibility are reviewed source-family policy tested offline, not additional
-live observations. All nine POST methods remain unobserved; `8x0.2.49` stays open.
-No capture rerun, mutation, hook execution or URL fetch accompanied these fixes.
+live observations. No capture rerun, hook execution or URL fetch accompanied
+these corrections.
+
+Separately, [PR62 review 5722110065](https://github.com/hostingpal/whm-api-client/pull/62#pullrequestreview-5722110065)
+at `160fc83` on WHM `11.138.0.19` reports a disposable `wrvint` lifecycle using
+fake tokens: create group/link, get link user config, remove group/link and update
+the link token (six POST methods). Removing a nonexistent group or link also
+succeeded with null, so success does not prove an item was removed. Account and
+home cleanup were verified; no URL was fetched. These reviewer observations do
+not expand or replace the immutable two-GET capture. Server-hook writes
+`editHook`, `deleteHook` and `reorderHooks` remain unobserved under `8x0.2.49`;
+the depth-limit audit `8x0.10.5` stays open.
 
 | Generated methods | Wire method | Result contract | Evidence boundary |
 | --- | --- | --- | --- |
-| `createIntegrationGroup`, `createIntegrationLink`, `deleteHook`, `editHook` | POST | void | Pinned source/offline only |
-| `getIntegrationLinkUserConfig` | POST | optional-field configuration object | Conservative POST read; unobserved |
+| `createIntegrationGroup`, `createIntegrationLink` | POST | void | Separate disposable-account reviewer lifecycle; not in committed capture |
+| `deleteHook`, `editHook` | POST | void | Pinned source/offline only; unobserved |
+| `getIntegrationLinkUserConfig` | POST | optional-field configuration object | Separate reviewer lifecycle; not in committed capture |
 | `listHooks` | GET | optional-field nested hook inventory | Reviewer found quoted weight/escalation mismatches; corrected offline |
 | `listIntegrationGroups`, `listIntegrationLinks` | GET | optional `links` list | Empty results only; no populated row shapes |
-| `removeIntegrationGroup`, `removeIntegrationLink`, `updateIntegrationLinkToken` | POST | mixed present JSON; absent/null returns null | Source-only optional payload; unobserved |
+| `removeIntegrationGroup`, `removeIntegrationLink`, `updateIntegrationLinkToken` | POST | mixed present JSON; absent/null returns null | Separate reviewer lifecycle; null observed, absent remains source contract; not in committed capture |
 | `reorderHooks` | POST | optional `hook_order` list with optional string ID/integer weight | Source-family weight compatibility; unobserved |
 
 ## WHM integration-group read evidence
@@ -4402,15 +4413,25 @@ The [WHM integrations capture](evidence/2026-10-31-whm-integrations.json) at
 GET observations and strict assessment with zero discrepancies. Integration-group
 inventory for npr is an empty links list, so populated group fields remain
 unobserved. No hook commands, credential links or user configuration were read;
-no hook/link/token change or URL fetch ran. Eleven other methods and populated
-variants remain under `8x0.2.49`. SHA-256:
+no hook/link/token change or URL fetch ran in that capture. Its eleven other
+methods and populated variants remain outside the capture, tracked under `8x0.2.49`. SHA-256:
 `b106dfebd59a1380bfa1cba65182501e49ab13f90f5b0bd4e208b3b4968b9c4c`.
 
 The later PR62 reviewer GET results are separate from this immutable capture.
 They report empty link lists for both `npr` and an unknown user; empty lists
 prove neither account existence nor populated field shapes. Only hook action
-weight and escalation digit strings were independently observed. All nine POSTs
-remain unobserved; no new capture was made for the corrections.
+weight and escalation digit strings were independently observed in that earlier
+review. No new capture was made for the corrections.
+
+Separately, [PR62 review 5722110065](https://github.com/hostingpal/whm-api-client/pull/62#pullrequestreview-5722110065)
+at `160fc83` on WHM `11.138.0.19` reports a disposable `wrvint` lifecycle using
+fake tokens: create group/link, get link user config, remove group/link and update
+the link token (six POST methods). Removing a nonexistent group or link also
+succeeded with null, so success does not prove an item was removed. Account and
+home cleanup were verified; no URL was fetched. These reviewer observations do
+not expand or replace the immutable two-GET capture. Server-hook writes
+`editHook`, `deleteHook` and `reorderHooks` remain unobserved under `8x0.2.49`;
+the depth-limit audit `8x0.10.5` stays open.
 
 ## Expanded WHM server administration
 
@@ -4519,6 +4540,85 @@ variants also remain unobserved under `8x0.2.38`. Profile-activation input typin
 remains under `8x0.1.23` before release. No new live call or capture ran for these
 corrections. Both historical captures remain immutable, and their two masked
 unknown-field observations stay strict failures without acknowledgment or waiver.
+
+## WHM NGINX cache management
+
+`whm()->nginxManager()` covers all six pinned functions: two configuration GETs
+and four form POST writes. Typed writes require explicit nonnullable `users`, as
+one string or a nonempty sequential string list. They reject trimmed blanks,
+trimmed zero, empty/malformed lists and nonstring entries before dispatch. This
+trimmed-zero rule is conservative client policy, not an observed NGINX behavior
+or a username validator. Valid strings retain their original bytes.
+
+The pinned upstream omission behavior affects every user on all four writes.
+Use narrow typed targets for normal operations; deliberately omitting `user` in a
+generic POST is the explicit server-wide form. Generic calls intentionally bypass
+typed target validation. `setCacheConfig()` keeps `enabled` first; false sends 0
+and true sends 1. The user-configuration read retains optional filtering,
+including null for all-user inventory. `getUsersCacheConfig(users, merge)` accepts users first.
+Both reads accept only `merge: true` (sends 1) or null/omission (omits merge);
+false, integers and strings reject even in weak callers. Native argument errors
+retain prior metadata; runner target validation clears it before rejection.
+
+`default.enabled` remains an integer 0|1 flag; `system.enabled` and
+`users[].config.enabled` remain strict booleans. Configuration objects preserve
+dynamic opaque values. A merged integer enabled variant is an **unobserved risk**
+under `8x0.2.51`, not evidence for widening those response contracts.
+All four writes return void. The pinned version floor is 11; requests add no
+automatic restart, retry or rollback beyond the selected API operation.
+
+```php
+$nginx = $client->whm()->nginxManager();
+$nginx->getUsersCacheConfig('npr', merge: true);
+$nginx->clearCache(users: 'npr');
+$nginx->rebuildCacheConfig(users: ['npr']);
+$nginx->resetUsersCacheConfig(users: 'npr');
+$nginx->setCacheConfig(enabled: false, users: ['npr']);
+```
+
+Deliberate **server-wide** operations, each using generic POST with `user`
+omitted (choose only the intended operation):
+
+```php
+$client->whm()->call('nginxmanager_clear_cache', []);
+$client->whm()->call('nginxmanager_rebuild_cache_config', []);
+$client->whm()->call('nginxmanager_reset_users_cache_config', []);
+$client->whm()->call('nginxmanager_set_cache_config', ['enabled' => 0]); // 1 enables caching
+```
+
+The immutable three-GET capture at `2b36d29` on WHM `11.138.0.19` has a passing
+version check and two API failures; its strict assessment remains failed and
+unwaived. Separately, [PR63 review 5721097412](https://github.com/hostingpal/whm-api-client/pull/63#pullrequestreview-5721097412)
+reports both reads failing because the required EA4 `ea-nginx` package is absent.
+This reviewer diagnostic does not change the historical artifact or establish a
+successful payload. No NGINX method has a successful live payload observation;
+all four POSTs remain unobserved. No installation, replay, cache/service change or
+new capture accompanied these corrections. Gaps remain under `8x0.2.51`.
+
+| Generated methods | Wire method | Result contract | Evidence boundary |
+| --- | --- | --- | --- |
+| `getSystemCacheConfig`, `getUsersCacheConfig` | GET | Optional-field configuration objects with opaque dynamic values | Immutable capture API failures; separate missing-package reviewer diagnostic; no successful payload |
+| `clearCache`, `rebuildCacheConfig`, `resetUsersCacheConfig`, `setCacheConfig` | POST | void | Offline contracts only; all writes unobserved |
+
+## WHM NGINX configuration evidence
+
+The [NGINX configuration capture](evidence/2026-10-31-whm-nginx.json) at
+`2b36d29b8c535b3199b9cf505b22a3b741921f93` on `11.138.0.19` records three
+HTTP-200 observations. Version passes; both configuration calls return API failure,
+so their payloads are not validated and the strict assessment remains failed.
+The sanitized artifact establishes neither the failure cause nor any successful
+NGINX configuration compatibility. No contract is widened or finding waived.
+
+No cache clearing, rebuild, reset, toggle or service change ran. The client does
+not enable NGINX or retry these calls to obtain passing evidence. All six methods
+remain offline-tested, with live coverage and populated variants open under
+`8x0.2.51`. SHA-256:
+`7678649795f70b7ffeba17a0775715370d3bcd220182557427c897edbbdbd591`.
+
+Separately, PR63 reviewer diagnostic 5721097412 on WHM `11.138.0.19` reports
+both reads failing because required EA4 `ea-nginx` is not installed. It provides
+no successful NGINX payload and no POST observation. This diagnostic is not part
+of the immutable capture; the strict failure remains unwaived under `8x0.2.51`.
 
 ## WHM system package management
 

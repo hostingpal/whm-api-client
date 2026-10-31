@@ -39,6 +39,8 @@ trait WhmGroups
 
     private ?ModSecurity $modSecurityGroup = null;
 
+    private ?NginxManager $nginxManagerGroup = null;
+
     private ?Resellers $resellersGroup = null;
 
     private ?Server $serverGroup = null;
@@ -197,6 +199,18 @@ trait WhmGroups
     public function modSecurity(): ModSecurity
     {
         return $this->modSecurityGroup ??= new ModSecurity($this->run(...));
+    }
+
+    /**
+     * Select the NGINX Manager operations without making a request.
+     *
+     * Server-wide NGINX cache configuration reads and explicitly targeted cache writes. Typed writes require users;
+     * deliberate all-user writes use generic POST with user omitted. Configuration maps preserve opaque dynamic values.
+     * Requests execute once without retry, restart or rollback beyond the selected operation.
+     */
+    public function nginxManager(): NginxManager
+    {
+        return $this->nginxManagerGroup ??= new NginxManager($this->run(...));
     }
 
     /**

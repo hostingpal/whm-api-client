@@ -791,15 +791,25 @@ The [WHM integrations capture](2026-10-31-whm-integrations.json) at
 GET observations and strict assessment with zero discrepancies. Integration-group
 inventory for npr is an empty links list, so populated group fields remain
 unobserved. No hook commands, credential links or user configuration were read;
-no hook/link/token change or URL fetch ran. Eleven other methods and populated
-variants remain under `8x0.2.49`. SHA-256:
+no hook/link/token change or URL fetch ran in that capture. Its eleven other
+methods and populated variants remain outside the capture, tracked under `8x0.2.49`. SHA-256:
 `b106dfebd59a1380bfa1cba65182501e49ab13f90f5b0bd4e208b3b4968b9c4c`.
 
 The later PR62 reviewer GET results are separate from this immutable capture.
 They report empty link lists for both `npr` and an unknown user; empty lists
 prove neither account existence nor populated field shapes. Only hook action
-weight and escalation digit strings were independently observed. All nine POSTs
-remain unobserved; no new capture was made for the corrections.
+weight and escalation digit strings were independently observed in that earlier
+review. No new capture was made for the corrections.
+
+Separately, [PR62 review 5722110065](https://github.com/hostingpal/whm-api-client/pull/62#pullrequestreview-5722110065)
+at `160fc83` on WHM `11.138.0.19` reports a disposable `wrvint` lifecycle using
+fake tokens: create group/link, get link user config, remove group/link and update
+the link token (six POST methods). Removing a nonexistent group or link also
+succeeded with null, so success does not prove an item was removed. Account and
+home cleanup were verified; no URL was fetched. These reviewer observations do
+not expand or replace the immutable two-GET capture. Server-hook writes
+`editHook`, `deleteHook` and `reorderHooks` remain unobserved under `8x0.2.49`;
+the depth-limit audit `8x0.10.5` stays open.
 
 ## Expanded WHM server inventory capture
 
@@ -834,6 +844,26 @@ updates, profile activation, licensing, node connectivity or notification delive
 No mutation, credential read or URL request ran. Follow-up `8x0.2.38` retains the
 unknown findings and unobserved variants. Corrected SHA-256:
 `db24e53879fff4754369b984969640b51ea483713ad71c735d6d1bb1be88f6b8`.
+
+## WHM NGINX configuration evidence
+
+The [NGINX configuration capture](2026-10-31-whm-nginx.json) at
+`2b36d29b8c535b3199b9cf505b22a3b741921f93` on `11.138.0.19` records three
+HTTP-200 observations. Version passes; both configuration calls return API failure,
+so their payloads are not validated and the strict assessment remains failed.
+The sanitized artifact establishes neither the failure cause nor any successful
+NGINX configuration compatibility. No contract is widened or finding waived.
+
+No cache clearing, rebuild, reset, toggle or service change ran. The client does
+not enable NGINX or retry these calls to obtain passing evidence. All six methods
+remain offline-tested, with live coverage and populated variants open under
+`8x0.2.51`. SHA-256:
+`7678649795f70b7ffeba17a0775715370d3bcd220182557427c897edbbdbd591`.
+
+Separately, PR63 reviewer diagnostic 5721097412 on WHM `11.138.0.19` reports
+both reads failing because required EA4 `ea-nginx` is not installed. It provides
+no successful NGINX payload and no POST observation. This diagnostic is not part
+of the immutable capture; the strict failure remains unwaived under `8x0.2.51`.
 
 ## WHM authentication metadata capture
 

@@ -395,6 +395,9 @@ final readonly class Integrations
      * is links and each optional row field is group; an empty links list remains empty. This read does not create,
      * reorder or remove groups.
      *
+     * Policy: An empty links list is not proof of account existence. The independently reported unknown-user empty
+     * result concerns listIntegrationLinks(); no unknown-user group call is claimed.
+     *
      * API-map identity: whm1:list_integration_groups#GET (wire name list_integration_groups; Links).
      *
      * @param string $user The cPanel account name.
@@ -422,6 +425,10 @@ final readonly class Integrations
      * Documented: This lists integration links only for the explicitly supplied cPanel account. The payload field is
      * links and each optional row field is app. Returned application identifiers are payload data; the client does not
      * follow or activate links.
+     *
+     * Observed: Separate PR62 reviewer report 5721050295 on WHM 11.138.0.19 returned an empty links list for an unknown
+     * user as well as npr. An empty result does not prove account existence; this report is separate from the immutable
+     * two-GET capture.
      *
      * API-map identity: whm1:list_integration_links#GET (wire name list_integration_links; Links).
      *
@@ -453,6 +460,11 @@ final readonly class Integrations
      * Policy: The pinned data schema is unconstrained. Preserve decoded JSON fields, scalar values and explicit null
      * without inventing a field schema; absent data after a successful envelope returns null. The client does not retry
      * or roll back removal.
+     *
+     * Observed: Separate PR62 reviewer lifecycle 5722110065 at 160fc83 on WHM 11.138.0.19, using disposable wrvint and
+     * fake tokens, observed removal of a nonexistent target succeed with null. Success therefore does not prove an item
+     * was removed. Account and home cleanup were verified; no URL was fetched. This report does not expand the
+     * committed two-GET capture.
      *
      * Returns null when the server sends no data.
      *
@@ -487,6 +499,11 @@ final readonly class Integrations
      * Policy: The pinned data schema is unconstrained. Preserve decoded JSON fields, scalar values and explicit null
      * without inventing a field schema; absent data after a successful envelope returns null. The client does not retry
      * or roll back removal.
+     *
+     * Observed: Separate PR62 reviewer lifecycle 5722110065 at 160fc83 on WHM 11.138.0.19, using disposable wrvint and
+     * fake tokens, observed removal of a nonexistent target succeed with null. Success therefore does not prove an item
+     * was removed. Account and home cleanup were verified; no URL was fetched. This report does not expand the
+     * committed two-GET capture.
      *
      * Returns null when the server sends no data.
      *

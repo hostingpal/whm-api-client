@@ -334,6 +334,10 @@
         {
           "kind": "documented",
           "text": "This lists integration-link groups only for the explicitly supplied cPanel account. The payload field is links and each optional row field is group; an empty links list remains empty. This read does not create, reorder or remove groups."
+        },
+        {
+          "kind": "policy",
+          "text": "An empty links list is not proof of account existence. The independently reported unknown-user empty result concerns listIntegrationLinks(); no unknown-user group call is claimed."
         }
       ]
     },
@@ -345,6 +349,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned WHM /list_integration_links has x-readonly=true, x-cpanel-available-version 54; reviewed reads use GET and mutations/unknown-risk retrievals use form POST. Parameter names, requiredness and scalar encodings follow the pinned schema and prose. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Separate PR62 reviewer report 5721050295 on WHM 11.138.0.19 returned an empty links list for an unknown user as well as npr. An empty result does not prove account existence; this report is separate from the immutable two-GET capture. Reviewer provenance: https://github.com/hostingpal/whm-api-client/pull/62#pullrequestreview-5721050295. No new capture or replay was performed for this correction."
         }
       ],
       "notes": [
@@ -355,6 +365,10 @@
         {
           "kind": "documented",
           "text": "This lists integration links only for the explicitly supplied cPanel account. The payload field is links and each optional row field is app. Returned application identifiers are payload data; the client does not follow or activate links."
+        },
+        {
+          "kind": "observed",
+          "text": "Separate PR62 reviewer report 5721050295 on WHM 11.138.0.19 returned an empty links list for an unknown user as well as npr. An empty result does not prove account existence; this report is separate from the immutable two-GET capture."
         }
       ]
     },
@@ -372,6 +386,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "/remove_integration_group declares unconstrained data {} without requiring data. Accept absent or null after a successful envelope as null; preserve every present decoded JSON value through the existing mixed spec. This is source-only compatibility, not a live observation. Pinned WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Separate PR62 reviewer lifecycle 5722110065 at 160fc83 on WHM 11.138.0.19, using disposable wrvint and fake tokens, observed removal of a nonexistent target succeed with null. Success therefore does not prove an item was removed. Account and home cleanup were verified; no URL was fetched. This report does not expand the committed two-GET capture. Reviewer provenance: https://github.com/hostingpal/whm-api-client/pull/62#pullrequestreview-5722110065. No new capture or replay was performed for this correction."
         }
       ],
       "notes": [
@@ -386,6 +406,10 @@
         {
           "kind": "policy",
           "text": "The pinned data schema is unconstrained. Preserve decoded JSON fields, scalar values and explicit null without inventing a field schema; absent data after a successful envelope returns null. The client does not retry or roll back removal."
+        },
+        {
+          "kind": "observed",
+          "text": "Separate PR62 reviewer lifecycle 5722110065 at 160fc83 on WHM 11.138.0.19, using disposable wrvint and fake tokens, observed removal of a nonexistent target succeed with null. Success therefore does not prove an item was removed. Account and home cleanup were verified; no URL was fetched. This report does not expand the committed two-GET capture."
         }
       ],
       "optional_payload": true
@@ -404,6 +428,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "/remove_integration_link declares unconstrained data {} without requiring data. Accept absent or null after a successful envelope as null; preserve every present decoded JSON value through the existing mixed spec. This is source-only compatibility, not a live observation. Pinned WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Separate PR62 reviewer lifecycle 5722110065 at 160fc83 on WHM 11.138.0.19, using disposable wrvint and fake tokens, observed removal of a nonexistent target succeed with null. Success therefore does not prove an item was removed. Account and home cleanup were verified; no URL was fetched. This report does not expand the committed two-GET capture. Reviewer provenance: https://github.com/hostingpal/whm-api-client/pull/62#pullrequestreview-5722110065. No new capture or replay was performed for this correction."
         }
       ],
       "notes": [
@@ -418,6 +448,10 @@
         {
           "kind": "policy",
           "text": "The pinned data schema is unconstrained. Preserve decoded JSON fields, scalar values and explicit null without inventing a field schema; absent data after a successful envelope returns null. The client does not retry or roll back removal."
+        },
+        {
+          "kind": "observed",
+          "text": "Separate PR62 reviewer lifecycle 5722110065 at 160fc83 on WHM 11.138.0.19, using disposable wrvint and fake tokens, observed removal of a nonexistent target succeed with null. Success therefore does not prove an item was removed. Account and home cleanup were verified; no URL was fetched. This report does not expand the committed two-GET capture."
         }
       ],
       "optional_payload": true

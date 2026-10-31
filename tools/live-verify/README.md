@@ -1341,8 +1341,12 @@ read; no hook/link/token mutation or URL fetch runs. `8x0.2.49` retains gaps.
 
 The WHM integrations capture at `7b6f5ce` on `11.138.0.19` passes two GET checks and
 strict assessment with zero discrepancies. Integration groups are empty; no
-populated rows, hooks, credentials, user configurations or mutations are observed.
-Follow-up `8x0.2.49` retains gaps; `8x0.10.5` tracks the depth-limit generator audit.
+populated rows, hooks, credentials, user configurations or mutations are observed
+in that capture. Separate PR62 reviewer lifecycle 5722110065 at `160fc83` on
+`11.138.0.19` observes six POST methods using disposable `wrvint` and fake tokens,
+with account/home cleanup verified and no URL fetch. Removing nonexistent links
+and groups succeeds with null. Hook edit/delete/reorder remain unobserved under
+`8x0.2.49`; `8x0.10.5` retains the depth-limit generator audit.
 
 ## Expanded WHM server inventory
 
@@ -1369,6 +1373,27 @@ still fails for two masked unknown-field observations in installed versions and
 service rows. They remain untyped and unwaived; no key identity/count is inferred.
 No mutation or private configuration read ran. Historical artifacts remain
 immutable and `8x0.2.38` retains remaining live coverage and unknown findings.
+
+## WHM NGINX configuration
+
+Run `WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs php tools/live-verify/whm-nginx.php --output=docs/api/evidence/YYYY-MM-DD-whm-nginx.json`.
+
+Three fixed GETs read version and merged system/npr cache configurations. Existing
+opt-in, committed-input, exact request guard, TLS and immutable structural-output
+rules apply. No all-user inventory, cache clearing/rebuild/reset/toggle, service
+restart or HTTP enforcement test runs. Keep gaps under `8x0.2.51`.
+
+The NGINX capture at 2b36d29 on 11.138.0.19 records three HTTP-200 observations:
+version passes, but both configuration reads fail at the API layer, with payloads
+not checked. Strict status stays failed and no failure cause is inferred. No
+cache or service change ran; all six methods remain offline-tested and live gaps
+stay under 8x0.2.51. Preserve the artifact without retries or schema loosening.
+
+Separate PR63 reviewer diagnostic 5721097412 on WHM `11.138.0.19` identifies
+the missing required EA4 `ea-nginx` package. No successful NGINX payload or POST
+was observed; the historical capture remains failed and unwaived. This correction
+does not install the package or run another capture. The current catalog uses
+`merge: true` and users-first typed arguments, retaining the same three GETs.
 
 ## WHM authentication metadata
 
