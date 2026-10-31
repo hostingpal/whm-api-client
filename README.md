@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 79 generated typed groups cover 871 documented operations (see
+The 79 generated typed groups cover 906 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, DNS zone and DNSSEC
 management, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -306,7 +306,7 @@ An empty live list does not verify the types of records it never returned.
 | Handle and accessor | Methods |
 | --- | --- |
 | `whm()->server()` | `version()`, `getHostname()`, `getLoadAverage()`, `getDiskUsage()` |
-| `whm()->accounts()` | `listAccounts()`, `accountSummary()`, `getDomainInfo()`, `createAccount()`, `suspendAccount()`, `unsuspendAccount()`, `removeAccount()`, `changePassword()`, `changePackage()`, `modifyAccount()` |
+| `whm()->accounts()` | Account lifecycle, inventory, enhancements, conversion status and account settings (45); see [generated methods](src/Api/Whm/Accounts.php). |
 | `whm()->webServer()` | `phpGetInstalledVersions()`, `phpGetSystemDefaultVersion()`, `phpGetHandlers()`, `phpGetDefaultAccountsToFpm()`, `phpGetOldFpmFlag()`, `isConversionInProgress()`, `phpGetVhostsByVersion()` |
 | `whm()->hostingPlans()` | `listPackages()`, `getFeatureMetadata()`, `getFeatureNames()`, `getFeaturelistData()`, `getFeaturelists()`, `getFeaturelistsByPackageTypes()`, `getUsersFeaturesSettings()`, `verifyUserHasFeature()` |
 | `whm()->dns()` | DNS zone inventory, DNSSEC keys, domains and server DNS administration (40); see [generated methods](src/Api/Whm/Dns.php). |
@@ -1661,6 +1661,73 @@ remove-record pass was rejected before execution with `[Modify Shared Resources]
 and was not retried. Those corrections remain source/offline evidence. Server-wide
 writes and other remaining variants stay under `8x0.2.42`; existing artifacts are
 unchanged.
+
+### Expanded WHM account management
+
+`whm()->accounts()` covers 45 of the 49 pinned functions. The expanded surface
+preserves the ten existing methods and adds 23 GET and twelve form POST methods
+for inventories, enhancements, conversion status, quota/bandwidth controls,
+password policy, Digest Authentication and document roots. Password-strength
+calculation uses POST because its password input is sensitive.
+
+JSON personalization calls remain under `8x0.1.18`. Conversion initiation and
+bulk modification remain excluded under `8x0.1.29`: their keyed database-copy and
+MX fields need explicit support. Omitting conversion copy fields copies no MySQL
+databases; the client does not silently drop them. Conversion status supports
+one integer job ID; contradictory indexed examples remain in `8x0.1.21`.
+
+`getMaximumUsers()` preserves the pinned optional `users` integer and the
+separately observed optional `maximum_users`, normalizing bounded canonical
+integer strings in the latter. Missing fields are not evidence of a zero or
+unlimited license limit. `showBandwidth()` normalizes bounded canonical integer
+strings for `totalused`, nested `bwusage[].usage` and per-account `limit`. The
+source-backed limit literals `unlimited` and `N/A` stay strings, distinct from
+numeric zero; their spellings were not established by a live capture. `N/A`
+deleted-account rows remain unobserved. `domainUserData()`
+normalizes its observed port strings and exact quoted `hascgi` and
+`phpopenbasedirprotect` flags. Other numeric fields stay strict. Reported extras
+`bwlimited` and `phpversion` remain untyped pending field-contract evidence.
+
+`listAccountEnhancements()` returns an `enhancements` list of records with the
+pinned optional `id` and `name` fields. This repairs the source's missing
+container type; a populated list remains source/offline evidence. An observed
+empty list cannot establish item contracts. Privilege results preserve all 61
+named fields and opaque third-party ACL values. Omission and explicit null stay
+distinct, with each method's units, versions and defaults in generated PHPDoc.
+
+Key arguments come first in quota, document-root and Digest Authentication
+setters. Digest configuration exposes only `enabledigest`; its password remains
+sensitive. `untrackAcctId()` requires callers to supply `uid`, `gid` or both;
+the signature preserves optional selectors and does not add a combination guard.
+`forcePasswordChange()` takes serialized JSON object-map text such as
+`{"user1":1,"user2":1}`, not a JSON list. The client form-encodes it once and
+does not parse or validate the JSON structure.
+
+Enhancement, quota, password/digest and document-root writes can affect accounts
+immediately. API success and conversion status do not establish completed
+migration or hosting behavior. The client adds no retry, rollback, polling,
+purchase or notification. A separate reviewer lifecycle on `11.138.0.19`
+exercised six account-scoped POST methods and removed its disposable account and
+home directory. Enhancement writes, `untrackAcctId()` and the login-link read
+remain unobserved; these reports do not expand the committed GET captures.
+
+`setPrimaryDomainDocroot()` requires an existing target directory according to
+the pinned contract, but the reviewed server accepted a missing directory and
+returned success. Ensure the target exists before changing the root; API success
+is not an existence check and does not establish that the site can serve files.
+
+The immutable nine-GET catalog reads version, user counts, disk usage, home roots,
+enhancement/user inventories, privileges and quota availability. The corrected
+capture at `af701b1` on `11.138.0.19` passes HTTP/API/payload/probe checks but stays
+strictly failed for a masked numeric-string unknown-field observation in
+`get_maximum_users`, with pinned `users` absent. The wildcard identifies neither
+a key name nor a field count. The separate reviewer observation of
+`maximum_users` supports its current contract; it does not identify or rewrite
+the historical masked finding. Both original artifacts remain unchanged and
+unwaived. No new live call or capture was run by the correction agent; the
+separate reviewer lifecycle is described in the source audit. Remaining live
+behavior is tracked in `8x0.2.41`; empty-container evidence ambiguity remains
+`8x0.2.50`.
 
 ### Generic calls
 

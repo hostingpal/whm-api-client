@@ -888,3 +888,28 @@ upstream source inspection. A focused raw-export/import/remove-record pass was
 denied before execution with `[Modify Shared Resources]` and was not retried.
 No raw export or private key value was captured by these corrections. The denied
 operations, server-wide writes and remaining variants stay under `8x0.2.42`.
+
+## WHM account management, 2026-10-31
+
+- [Initial capture](2026-10-31-whm-account-management.json), revision `1149479`: nine HTTP/API successes, eight payload/probe passes; quota-flag mismatch and a masked maximum-users unknown-field observation. SHA-256 `ad4f89f9606d05366cba3078dbe8ac5c2c9f471a10c6dfdc44b1281f5e29def9`.
+- [Corrected capture](2026-10-31-whm-account-management-corrected.json), revision `af701b1`: nine HTTP/API/payload/probe passes; strict failure retains the masked numeric-string unknown-field observation, with no waiver. SHA-256 `f0fa73efb33994ec4c20e9250d0aec5e94ee99041c7940742c8810ef7f7ceb64`.
+
+Both use fixed GET-only inventory on `11.138.0.19` and retain structural types
+only. No account/configuration mutation or private credential/link read ran;
+`8x0.2.41` tracks remaining live behavior. Empty enhancement/privilege inventories
+do not establish populated row coverage. Wildcards identify neither unknown key
+names nor counts.
+
+[Claude review 5720788777](https://github.com/hostingpal/whm-api-client/pull/55#pullrequestreview-5720788777)
+separately names the observed `maximum_users` string and reports the bandwidth
+and userdata wire variants. These observations support current contract fixes;
+they do not identify or rewrite the old masked finding. No new capture ran for
+those corrections. The populated enhancement list is source/offline evidence,
+and the shared empty-container ambiguity remains open under `8x0.2.50`.
+
+The later [review 5721383444](https://github.com/hostingpal/whm-api-client/pull/55#pullrequestreview-5721383444)
+of `2e52204` separately exercised six account-scoped POST methods on disposable
+`wrvacct` and confirmed account/home cleanup. Its bandwidth-limit and missing
+docroot observations are recorded in the source audit. They do not expand either
+committed nine-GET capture, identify historical masked keys or waive a strict
+finding. No new capture accompanied the corrections.

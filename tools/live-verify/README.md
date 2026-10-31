@@ -1403,3 +1403,14 @@ preserve best-domain null expiry, nullable certificate owner items and issuer
 organization, and canonical integer-string modulus/expiry values. No sibling or
 UAPI contract changed. Certificate inventory is populated; no mutation or private
 material read ran. The initial artifact is immutable and `8x0.2.39` remains open.
+
+## Expanded WHM account inventory
+
+Run `WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs php tools/live-verify/whm-account-management.php --output=docs/api/evidence/YYYY-MM-DD-whm-account-management.json`.
+
+Nine fixed GETs read version, user counts, disk usage, home roots, enhancement/user
+inventories, privileges and quota availability. Optional selectors are omitted.
+Existing exact request guards, committed inputs, opt-in, verified TLS and structural
+capture apply. No passwords, private links or account/configuration mutations are
+selected. No conversion, purchase or message runs. Strict discrepancies remain
+failures; remaining behavior and variants stay under `8x0.2.41`.

@@ -4617,3 +4617,127 @@ separate from committed evidence; all historical artifacts are preserved.
 Server-wide resolver/nameserver/maintenance writes, the denied operations and
 remaining variants stay open under `8x0.2.42`. No DNS propagation, trust or
 registrar integration is established by API success.
+
+## Expanded WHM account management
+
+`whm()->accounts()` covers 45 of the 49 pinned functions. The expanded surface
+preserves the ten existing methods and adds 23 GET and twelve form POST methods
+for inventories, enhancements, conversion status, quota/bandwidth controls,
+password policy, Digest Authentication and document roots. Password-strength
+calculation uses POST because its password input is sensitive.
+
+JSON personalization calls remain under `8x0.1.18`. Conversion initiation and
+bulk modification remain excluded under `8x0.1.29`: their keyed database-copy and
+MX fields need explicit support. Omitting conversion copy fields copies no MySQL
+databases; the client does not silently drop them. Conversion status supports
+one integer job ID; contradictory indexed examples remain in `8x0.1.21`.
+
+`getMaximumUsers()` preserves the pinned optional `users` integer and the
+separately observed optional `maximum_users`, normalizing bounded canonical
+integer strings in the latter. Missing fields are not evidence of a zero or
+unlimited license limit. `showBandwidth()` normalizes bounded canonical integer
+strings for `totalused`, nested `bwusage[].usage` and per-account `limit`. The
+source-backed limit literals `unlimited` and `N/A` stay strings, distinct from
+numeric zero; their spellings were not established by a live capture. `N/A`
+deleted-account rows remain unobserved. `domainUserData()`
+normalizes its observed port strings and exact quoted `hascgi` and
+`phpopenbasedirprotect` flags. Other numeric fields stay strict. Reported extras
+`bwlimited` and `phpversion` remain untyped pending field-contract evidence.
+
+`listAccountEnhancements()` returns an `enhancements` list of records with the
+pinned optional `id` and `name` fields. This repairs the source's missing
+container type; a populated list remains source/offline evidence. An observed
+empty list cannot establish item contracts. Privilege results preserve all 61
+named fields and opaque third-party ACL values. Omission and explicit null stay
+distinct, with each method's units, versions and defaults in generated PHPDoc.
+
+Key arguments come first in quota, document-root and Digest Authentication
+setters. Digest configuration exposes only `enabledigest`; its password remains
+sensitive. `untrackAcctId()` requires callers to supply `uid`, `gid` or both;
+the signature preserves optional selectors and does not add a combination guard.
+`forcePasswordChange()` takes serialized JSON object-map text such as
+`{"user1":1,"user2":1}`, not a JSON list. The client form-encodes it once and
+does not parse or validate the JSON structure.
+
+Enhancement, quota, password/digest and document-root writes can affect accounts
+immediately. API success and conversion status do not establish completed
+migration or hosting behavior. The client adds no retry, rollback, polling,
+purchase or notification. A separate reviewer lifecycle on `11.138.0.19`
+exercised six account-scoped POST methods and removed its disposable account and
+home directory. Enhancement writes, `untrackAcctId()` and the login-link read
+remain unobserved; these reports do not expand the committed GET captures.
+
+`setPrimaryDomainDocroot()` requires an existing target directory according to
+the pinned contract, but the reviewed server accepted a missing directory and
+returned success. Ensure the target exists before changing the root; API success
+is not an existence check and does not establish that the site can serve files.
+
+The immutable nine-GET catalog reads version, user counts, disk usage, home roots,
+enhancement/user inventories, privileges and quota availability. The corrected
+capture at `af701b1` on `11.138.0.19` passes HTTP/API/payload/probe checks but stays
+strictly failed for a masked numeric-string unknown-field observation in
+`get_maximum_users`, with pinned `users` absent. The wildcard identifies neither
+a key name nor a field count. The separate reviewer observation of
+`maximum_users` supports its current contract; it does not identify or rewrite
+the historical masked finding. Both original artifacts remain unchanged and
+unwaived. No new live call or capture was run by the correction agent; the
+separate reviewer lifecycle is described in the source audit. Remaining live
+behavior is tracked in `8x0.2.41`; empty-container evidence ambiguity remains
+`8x0.2.50`.
+
+### Separate PR55 review evidence
+
+[Claude review 5720788777](https://github.com/hostingpal/whm-api-client/pull/55#pullrequestreview-5720788777)
+reports WHM GET observations on cPanel `11.138.0.19` with type-only output.
+The independently named `maximum_users` string, bandwidth total/nested usage
+strings and domain userdata port/quoted flags support the narrow compatibility
+corrections. This report is separate from the masked committed capture and does
+not establish historical wildcard identity or count. No new capture accompanied
+those initial corrections.
+
+The pinned WHM OpenAPI snapshot (decompressed SHA-256
+`6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594`)
+contains the enhancement item fields beneath a node with omitted type; its
+list-oriented description and the review support a list of those records.
+Populated enhancements remain unobserved. Pinned Digest Authentication alias,
+UID/GID requirements and the JSON object-map example support the request/docs
+corrections. The ten existing account contracts and source snapshots are retained.
+
+That first review skipped all twelve added POST methods and `getUsersLinks()`.
+The subsequent [review 5721383444](https://github.com/hostingpal/whm-api-client/pull/55#pullrequestreview-5721383444)
+of integrated `2e52204e68b02974b9afc03a976fb2ea1e6297e6` reports a separate WHM
+lifecycle on `11.138.0.19` using disposable account `wrvacct`. Quota changes,
+bandwidth limits, Digest Authentication toggles/readback, primary docroot changes,
+forced password changes with a JSON object map, and password-strength calls
+passed. A wrong Digest password and a JSON list instead of the password-change
+object map raised API errors. The reviewer confirmed account and home cleanup.
+These are reviewer reports, not records in the historical GET-only artifacts.
+
+The lifecycle exposed digit-string and nonnumeric-string `acct[].limit` values
+in `showBandwidth()`; one row with either form failed the previous strict integer
+contract. Canonical integer strings normalize within PHP integer bounds without
+changing sibling contracts. Nonnumeric values must not be mapped to numeric zero.
+The original report retained only the nonnumeric value's type; it did not itself
+confirm a literal spelling. [Clarification 6539473950](https://github.com/hostingpal/whm-api-client/pull/55#issuecomment-6539473950)
+then cites upstream source on `11.138.0.19`: `Whostmgr/Bandwidth.pm` stores
+`unlimited` for a zero limit and assigns `N/A` in its deleted-users branch;
+`Whostmgr/Math.pm` preserves those strings and returns native zero for a falsy
+stored limit. The contract accepts these exact two strings alongside bounded
+canonical integer strings, preserving all forms distinctly. The literal spellings
+are source-based, not inferred from the type-only lifecycle report. The reviewer
+found no deleted-account rows in a later read, so `N/A` remains source/offline
+compatibility. No deletion-state constraint is invented for the limit field, and
+untyped `bwlimited` is unchanged. No new mutation was requested or run for the
+clarification.
+
+The same reviewer observed `setPrimaryDomainDocroot()` returning success and
+`documentroot` for `public_html/nope` even though the directory did not exist.
+The pinned existing-directory requirement is a caller prerequisite; this server
+did not enforce it. No local filesystem check, automatic creation, retry or
+rollback is added by the client.
+
+The five enhancement writes and `untrackAcctId()` remain unobserved, as does the
+login-link read. Untyped `bwlimited` and `phpversion` require independent contract
+evidence. Remaining operations/variants stay under `8x0.2.41`; the shared
+empty-list/object evidence ambiguity remains `8x0.2.50`. No live call or capture
+was run by the correction agent, and every earlier artifact is unchanged.
