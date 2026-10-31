@@ -11,6 +11,7 @@ use HostingPal\WhmApiClient\Tools\LiveVerify\EvidenceRunner;
 use HostingPal\WhmApiClient\Tools\LiveVerify\Probe;
 use HostingPal\WhmApiClient\Tools\LiveVerify\ReadOnlySectionRunner;
 use Http\Mock\Client;
+use LogicException;
 use Nyholm\Psr7\Response;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -83,6 +84,8 @@ final class ReadOnlySectionRunnerTest extends TestCase
             yield $field => [$field, 'incorrect'];
         }
         yield 'http status' => ['http_status', 500];
+        yield 'unexpected argument label' => ['argument_variant', 'injected'];
+        yield 'unexpected null argument label' => ['argument_variant', null];
         yield 'failure' => ['failure_kind', 'request_failure'];
         yield 'unknown field' => ['discrepancies', [['path' => '$.*', 'kind' => 'unknown_field']]];
     }
@@ -152,6 +155,96 @@ final class ReadOnlySectionRunnerTest extends TestCase
             [$report['probes'][0], $report['probes'][0]],
             self::context(),
         ));
+    }
+
+    public function testArgumentVariantsCaptureDistinctRequestsAndRejectMisattribution(): void
+    {
+        $probes = [self::probes()[0]];
+        foreach ([false, true] as $hidden) {
+            $probes[] = new Probe(
+                'uapi:DomainInfo/list_domains',
+                'direct-uapi',
+                DomainInfoSpec::LIST_DOMAINS,
+                'https://test.oblak.host:2083/execute/DomainInfo/list_domains?hide_temporary_domains='
+                    . ($hidden ? '1' : '0'),
+                static fn (ApiClient $api): mixed => $api->uapi()->domainInfo()->listDomains($hidden),
+                argumentVariant: $hidden ? 'hide-temporary' : 'include-temporary',
+            );
+        }
+        $http = new Client();
+        $http->addResponse(new Response(200, [], '{"metadata":{"result":1},"data":{"version":"11.138.0.19"}}'));
+        $http->addResponse(new Response(200, [], '{"status":1,"data":{"main_domain":"example.com"}}'));
+        $http->addResponse(new Response(200, [], '{"status":1,"data":{"main_domain":"example.com"}}'));
+        $report = (new ReadOnlySectionRunner($http, self::context()))->run(
+            $probes,
+            'argument-variants-v1',
+            '1',
+            ['whm' => 'synthetic-whm', 'cpanel' => 'synthetic-cpanel'],
+        );
+        self::assertSame('passed', $report['status']);
+        self::assertCount(3, $http->getRequests());
+        self::assertSame('hide_temporary_domains=0', $http->getRequests()[1]->getUri()->getQuery());
+        self::assertSame('hide_temporary_domains=1', $http->getRequests()[2]->getUri()->getQuery());
+        self::assertSame('include-temporary', $report['probes'][1]['argument_variant'] ?? null);
+        self::assertSame('hide-temporary', $report['probes'][2]['argument_variant'] ?? null);
+        self::assertSame('uapi:DomainInfo/list_domains#GET', $report['probes'][1]['variant']);
+        self::assertArrayNotHasKey('argument_variant', $report['probes'][0]);
+        foreach ([null, 'wrong-label', 'hide-temporary'] as $replacement) {
+            $records = $report['probes'];
+            if ($replacement === null) {
+                unset($records[1]['argument_variant']);
+            } else {
+                $records[1]['argument_variant'] = $replacement;
+            }
+            self::assertFalse(ReadOnlySectionRunner::passes($probes, $records, self::context()));
+        }
+        self::assertFalse(ReadOnlySectionRunner::passes(
+            $probes,
+            [$report['probes'][0], $report['probes'][2], $report['probes'][1]],
+            self::context(),
+        ));
+        self::assertFalse(ReadOnlySectionRunner::passes(
+            [$probes[0], $probes[1], $probes[1]],
+            [$report['probes'][0], $report['probes'][1], $report['probes'][1]],
+            self::context(),
+        ));
+        foreach ([1, 2] as $unlabeledIndex) {
+            $mixed = $probes;
+            $original = $mixed[$unlabeledIndex];
+            $mixed[$unlabeledIndex] = new Probe(
+                $original->operation,
+                $original->route,
+                $original->spec,
+                $original->uri,
+                $original->invoke,
+            );
+            $records = $report['probes'];
+            unset($records[$unlabeledIndex]['argument_variant']);
+            self::assertFalse(ReadOnlySectionRunner::passes($mixed, $records, self::context()));
+        }
+    }
+
+    #[DataProvider('invalidArgumentVariants')]
+    public function testArgumentVariantLabelsRejectUnsafeSyntax(string $label): void
+    {
+        $original = self::probes()[1];
+        $this->expectException(LogicException::class);
+        new Probe(
+            $original->operation,
+            $original->route,
+            $original->spec,
+            $original->uri,
+            $original->invoke,
+            argumentVariant: $label,
+        );
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function invalidArgumentVariants(): iterable
+    {
+        foreach (['', 'Upper', 'has space', 'domain=npr.rs', 'a|b', 'path/name', str_repeat('a', 65)] as $label) {
+            yield $label => [$label];
+        }
     }
 
     /** @return list<Probe> */

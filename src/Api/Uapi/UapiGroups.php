@@ -15,6 +15,8 @@ trait UapiGroups
 {
     private ?AddonDomain $addonDomainGroup = null;
 
+    private ?Bandwidth $bandwidthGroup = null;
+
     private ?BoxTrapper $boxTrapperGroup = null;
 
     private ?CpGreyList $cpGreyListGroup = null;
@@ -59,9 +61,17 @@ trait UapiGroups
 
     private ?Quota $quotaGroup = null;
 
+    private ?ResourceUsage $resourceUsageGroup = null;
+
     private ?SpamAssassin $spamAssassinGroup = null;
 
     private ?Ssl $sslGroup = null;
+
+    private ?Stats $statsGroup = null;
+
+    private ?StatsBar $statsBarGroup = null;
+
+    private ?StatsManager $statsManagerGroup = null;
 
     private ?SubDomain $subDomainGroup = null;
 
@@ -75,6 +85,16 @@ trait UapiGroups
     public function addonDomain(): AddonDomain
     {
         return $this->addonDomainGroup ??= new AddonDomain($this->run(...));
+    }
+
+    /**
+     * Select the Bandwidth operations without making a request.
+     *
+     * The Bandwidth module for UAPI.
+     */
+    public function bandwidth(): Bandwidth
+    {
+        return $this->bandwidthGroup ??= new Bandwidth($this->run(...));
     }
 
     /**
@@ -298,6 +318,16 @@ trait UapiGroups
     }
 
     /**
+     * Select the ResourceUsage operations without making a request.
+     *
+     * The ResourceUsage module for UAPI.
+     */
+    public function resourceUsage(): ResourceUsage
+    {
+        return $this->resourceUsageGroup ??= new ResourceUsage($this->run(...));
+    }
+
+    /**
      * Select the SpamAssassin operations without making a request.
      *
      * The SpamAssassin module for UAPI.
@@ -315,6 +345,36 @@ trait UapiGroups
     public function ssl(): Ssl
     {
         return $this->sslGroup ??= new Ssl($this->run(...));
+    }
+
+    /**
+     * Select the Stats operations without making a request.
+     *
+     * The Stats module for UAPI.
+     */
+    public function stats(): Stats
+    {
+        return $this->statsGroup ??= new Stats($this->run(...));
+    }
+
+    /**
+     * Select the StatsBar operations without making a request.
+     *
+     * The StatsBar module for UAPI.
+     */
+    public function statsBar(): StatsBar
+    {
+        return $this->statsBarGroup ??= new StatsBar($this->run(...));
+    }
+
+    /**
+     * Select the StatsManager operations without making a request.
+     *
+     * The StatsManager module for UAPI.
+     */
+    public function statsManager(): StatsManager
+    {
+        return $this->statsManagerGroup ??= new StatsManager($this->run(...));
     }
 
     /**

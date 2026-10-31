@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 32 typed groups cover 402 documented operations:
+and cPanel UAPI surface. The 37 typed groups cover 413 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -392,6 +392,69 @@ was an empty string, and the privacy-user list was empty. This capture made no
 indexing, password-protection or leech-protection changes and establishes no
 mutation or HTTP-enforcement coverage. Separate reviewer mutation observations
 are recorded in the source audit; they are not part of this artifact. Follow-up `8x0.2.22` remains open.
+
+The resource and web statistics slice exposes eleven GET operations across
+`bandwidth()`, `resourceUsage()`, `statsBar()`, `stats()` and `statsManager()`.
+Bandwidth protocols, retention and grouped queries complement resource limits,
+statistics-bar values, domain bandwidth, daily AwStats counters, error logs,
+report-file inventory and analyzer configuration. `StatsManager/save_configuration`
+requires a JSON request body and remains excluded under `8x0.1.18`; generic form
+calls do not provide that transport.
+
+Pipe-separated grouping, domain, protocol and display arguments are supplied as
+strings and encoded once. Omitted options preserve server defaults; explicit
+false flags are sent as zero. Keep bytes, timestamps, per-resource units and
+formatted display strings distinct. Resource `maximum: null` means unlimited;
+zero and omission remain separate. Dynamic domain/date/grouping keys remain keys
+in returned arrays and are wildcarded in structural evidence. The pinned
+Bandwidth grouping prose and response examples establish one to three dynamic
+key levels ending in integer or fractional byte values. The overlay repairs the
+formal schema's object-only leaves while retaining nullable second/third values
+and empty maps; numeric strings and opaque fourth-level leaves are not inferred.
+The result shape does not enforce correspondence with the supplied grouping.
+Resource maximum/usage, StatsBar percent and bandwidth month-start values accept
+lossless canonical integer strings only in their reviewed fields. A null
+resource URL remains distinct from omission; fractional strings are not rounded
+or silently coerced. StatsBar preserves observed null `count` values and string
+or object `role` values whose dynamic values are strings or string lists. The
+role map follows the final structural capture; it does not identify the map keys
+or their meaning. Other percentage and flag rules stay unchanged.
+`listSites()` normalizes only exact quoted `ssl` flags to integer 0/1, preserving
+omission and the native flags. These field corrections follow the
+[PR38 reviewer observations](https://github.com/hostingpal/whm-api-client/pull/38#pullrequestreview-5719939412)
+on cPanel `11.138.0.19`; they do not establish every display or analyzer variant.
+The live/error-log follow-up remains `8x0.2.25`.
+
+Statistics require the documented features, roles and analyzer availability.
+`getSiteErrors()` returns log text as payload data; report URLs are returned
+without being fetched. Analyzer configuration metadata stays in `responseMeta()`.
+The fixed live catalog targets only `npr`/`npr.rs`, bounds the bandwidth query to
+October 2026 UTC, and limits the error-log read to one entry. No configuration,
+statistics generation or log contents are changed by these reads.
+
+On `test.oblak.host` with cPanel `11.138.0.19`, the reviewer found that
+`getSiteErrors(log: 'error')` and the default failed because `npr` could not read
+the root-owned mode-0600 `/var/cpanel/cpanel.config`. The same operation with
+`log: 'suexec'` returned populated typed rows on both routes. This is an attributed
+environment observation, not a general API restriction. The server file was left
+unchanged and the earlier failed artifacts remain failed and unwaived.
+The subsequent 27-GET review capture passes every HTTP/API outcome and 25 payload
+checks, including all three query depths, Analog sites and populated `suexec`
+rows. Its two StatsBar role mismatches establish the bounded-map correction;
+two additional masked unknown-field findings remain strict and unwaived. The
+artifact stays failed. After Claude verified the corrected code, a separate
+27-GET capture at `023d2dd` passed all HTTP/API/payload/probe checks on that
+contract. It remains strictly failed only for the same two masked unknown-field
+findings, which are unwaived. See `docs/api/source-audit.md` for both immutable
+artifacts, exact revisions, hashes and coverage limits.
+
+The corrected [statistics capture](docs/api/evidence/2026-10-31-resource-statistics-corrected.json)
+at `a439c3c` on `11.138.0.19` records 23 HTTP-200 GETs. Twenty-one API/payload/probe
+checks pass with zero discrepancies; both `Stats/get_site_errors` API calls fail,
+so strict status remains failed. Ten new functions pass on both routes. Daily
+statistics, site/report lists and analyzer lists are empty; populated variants
+remain offline coverage. No settings or log content changed. Follow-up `8x0.2.25`
+retains the unresolved log errors and other unobserved variants.
 
 The Fileman group implements 13 of 14 pinned functions: directory autocomplete,
 file information, file content and directory listings use GET; content saving,

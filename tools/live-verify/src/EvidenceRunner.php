@@ -29,7 +29,8 @@ use Throwable;
  *     discrepancies: list<array{path: string, kind: string}>
  * }
  * @phpstan-type Record array{
- *     operation: string, variant: string, route: string, method: string|null, server_version: string|null,
+ *     operation: string, variant: string, argument_variant?: string, route: string,
+ *     method: string|null, server_version: string|null,
  *     observed_at: string, revision: string, source_sha256: string, map_sha256: string, generator_tree: string,
  *     overlay_sha256: string, effective_contract_sha256: string, http_status: int|null,
  *     api_outcome: string, payload_validation: string, probe_outcome: string, failure_kind: string|null,
@@ -165,6 +166,7 @@ final readonly class EvidenceRunner
         return [
             'operation' => $probe->operation,
             'variant' => $probe->sourceVariant ?? $probe->operation . '#GET',
+            ...($probe->argumentVariant === null ? [] : ['argument_variant' => $probe->argumentVariant]),
             'route' => $probe->route,
             'method' => null,
             'server_version' => null,
