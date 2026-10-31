@@ -1466,3 +1466,10 @@ reads WHM version, issuer names and policy status only. It retrieves no keys, TF
 secrets, provider configuration or login URLs, opens no remote SSH connection,
 and changes no account, authentication policy or provider. Follow-up `8x0.2.40`
 retains remaining source/live coverage.
+
+The WHM authentication capture at `e88583e` on `11.138.0.19` passes all three
+GET observations and strict assessment with zero discrepancies. Only version,
+issuer names and the integer policy flag were read. No secret, private URL, key,
+configuration or link data was requested, and no state changed. It establishes
+no login, TFA challenge, SSH access or mutation compatibility. `8x0.2.40` remains
+open for all unobserved functions and variants.

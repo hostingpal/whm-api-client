@@ -1218,3 +1218,10 @@ TFA secrets and linked-account data are omitted. No remote connection, URL reque
 key operation, provider/link/policy change or notification runs. This establishes
 no successful login, TFA challenge or SSH authorization; `8x0.2.40` retains other
 operations and variants, and strict findings remain failed without waivers.
+
+The WHM authentication capture at `e88583e` on `11.138.0.19` passes all three
+GET observations and strict assessment with zero discrepancies. Only version,
+issuer names and the integer policy flag were read. No secret, private URL, key,
+configuration or link data was requested, and no state changed. It establishes
+no login, TFA challenge, SSH access or mutation compatibility. `8x0.2.40` remains
+open for all unobserved functions and variants.
