@@ -33,6 +33,8 @@ trait WhmGroups
 
     private ?Server $serverGroup = null;
 
+    private ?SystemPackages $systemPackagesGroup = null;
+
     private ?WebServer $webServerGroup = null;
 
     /**
@@ -144,6 +146,16 @@ trait WhmGroups
     public function server(): Server
     {
         return $this->serverGroup ??= new Server($this->run(...));
+    }
+
+    /**
+     * Select the System Package Management operations without making a request.
+     *
+     * Server RPM metadata, package inventory, plugin processes and queued package actions.
+     */
+    public function systemPackages(): SystemPackages
+    {
+        return $this->systemPackagesGroup ??= new SystemPackages($this->run(...));
     }
 
     /**

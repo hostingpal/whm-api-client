@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 75 generated typed groups cover 674 documented operations (see
+The 76 generated typed groups cover 688 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, read-only DNS zones
 and resolvers, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -1745,3 +1745,37 @@ Project-authored code and documentation are licensed under the
 The bundled cPanel documentation snapshots retain their upstream terms and are
 not covered by the project's MIT license. See the
 [third-party documentation notice](docs/api/README.md#licensing).
+
+
+## WHM system package management
+
+`whm()->systemPackages()` implements all fourteen pinned functions for RPM
+metadata, plugin installation/removal, package inventory, action planning,
+background status/logs, cache repair and upgrades. Seven reads use GET and seven
+mutations use form POST. All per-method versions and defaults remain documented.
+
+Package information accepts either namespaces or packages, never both; each
+selector is individually optional according to explicit source prose. Repeated
+namespace, package and install/uninstall/upgrade fields use repeated wire keys.
+The formal namespace enum names ea, while prose also permits configured additional
+prefixes; no broader server capability is inferred. Omitted options retain defaults,
+and explicit false remains distinct from omission.
+
+RPM metadata preserves the source's flat and nested maps of string lists.
+Other payloads retain optional fields, strict flags and missing/null distinctions.
+The cache-repair success field documents literal 1, while the existing integer
+validator accepts native integers rather than enforcing a one-value enum.
+Background action or plugin-start success does not establish completion.
+The client adds no polling, retries, rollback or automatic package-check script.
+
+Log offsets are bytes; build IDs come from submitted actions and are not guessed.
+Log text is private payload data. Package installation, removal, cache repair and
+upgrade methods can change the server immediately. RPM-data edits/deletions are
+separate from installing or uninstalling packages; the source recommends a later
+package-check script, which the client does not execute.
+
+All fourteen methods have independent offline contracts. The fixed three-GET
+catalog reads version, missing required RPMs with target omitted, and packages
+filtered to installed. It runs no action planning, installation, removal, upgrade,
+cache repair or build-log read. Inventory results do not prove package lifecycle
+behavior. Remaining live work stays under `8x0.2.46`.

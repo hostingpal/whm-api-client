@@ -1,0 +1,453 @@
+{
+  "schema_version": "1.0",
+  "family": "whm1",
+  "group": "System Package Management",
+  "class": "SystemPackages",
+  "accessor": "systemPackages",
+  "description": "Server RPM metadata, package inventory, plugin processes and queued package actions.",
+  "operations": {
+    "whm1:delete_rpm_version": {
+      "name": "deleteRpmVersion",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.32 and later; operates on server package management."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes rpm.versions data rather than installing or removing packages. Upstream strongly recommends running /usr/local/cpanel/scripts/check_cpanel_pkgs afterward; the client does not execute scripts, retry or roll back the change. Inspect the returned status flag independently of the API envelope."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /delete_rpm_version GET declares x-readonly=false. Use form POST for this mutation, keeping routing in the URL."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /delete_rpm_version parameters/key is an RPM metadata key or target, such as 3rdparty; it is not authentication or private key material. Preserve the ordinary string boundary."
+        }
+      ],
+      "params": {
+        "key": {
+          "sensitive": false
+        }
+      }
+    },
+    "whm1:edit_rpm_version": {
+      "name": "editRpmVersion",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.32 and later; operates on server package management."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes rpm.versions data rather than installing or removing packages. Upstream strongly recommends running /usr/local/cpanel/scripts/check_cpanel_pkgs afterward; the client does not execute scripts, retry or roll back the change. Inspect the returned status flag independently of the API envelope."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /edit_rpm_version GET declares x-readonly=false. Use form POST for this mutation, keeping routing in the URL."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /edit_rpm_version parameters/key is an RPM metadata key or target, such as 3rdparty; it is not authentication or private key material. Preserve the ordinary string boundary."
+        }
+      ],
+      "params": {
+        "key": {
+          "sensitive": false
+        }
+      }
+    },
+    "whm1:get_rpm_version_data": {
+      "name": "getRpmVersionData",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.32 and later; operates on server package management."
+        },
+        {
+          "kind": "documented",
+          "text": "Omit key to request all RPM keys in the section; a supplied key requests that key. The pinned alternatives preserve dynamic key names as a map of string lists, or a section map containing key maps of string lists. Empty maps and lists remain empty; no recursive or scalar values are inferred."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /get_rpm_version_data GET declares x-readonly=true. Use GET for this read."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /get_rpm_version_data parameters/key is an RPM metadata key or target, such as 3rdparty; it is not authentication or private key material. Preserve the ordinary string boundary."
+        }
+      ],
+      "params": {
+        "key": {
+          "sensitive": false
+        }
+      },
+      "response": {
+        "": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "object",
+                "fields": {},
+                "values": {
+                  "type": "list",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "fields": {},
+                "values": {
+                  "type": "object",
+                  "fields": {},
+                  "values": {
+                    "type": "list",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /get_rpm_version_data responses/200/content/application~1json/schema/properties/data/oneOf explicitly describes two additionalProperties alternatives: RPM key to string list, and section to RPM key to string list. Their examples show 3rdparty:[cpanel-pcre,...] and rpm_groups:{3rdparty:[cpanel-pcre,...]}. Preserve each complete object alternative with constrained dynamic values rather than merging map values across alternatives. No deeper tree, opaque leaf or null is documented."
+            }
+          ]
+        }
+      }
+    },
+    "whm1:install_rpm_plugin": {
+      "name": "installRpmPlugin",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 64 and later; operates on server package management."
+        },
+        {
+          "kind": "documented",
+          "text": "Starts a background plugin installation. The returned pid and log_entry identify the process; successful submission does not establish completion. The client does not poll, fetch logs, retry or roll back."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /install_rpm_plugin GET declares x-readonly=false. Use form POST for this mutation, keeping routing in the URL."
+        }
+      ]
+    },
+    "whm1:list_rpms": {
+      "name": "listRpms",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.32 and later; operates on server package management."
+        },
+        {
+          "kind": "documented",
+          "text": "Lists required but uninstalled RPM dependencies; it does not list every installed RPM. Omitting target requests all targets, and no packages are installed."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /list_rpms GET declares x-readonly=true. Use GET for this read."
+        }
+      ]
+    },
+    "whm1:package_manager_fixcache": {
+      "name": "fixCache",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 64 and later; operates on server package management."
+        },
+        {
+          "kind": "documented",
+          "text": "Attempts to repair yum cache issues. The source documents cache_seems_ok_now as literal 1, returned only on success; the current generated validator accepts native integers and does not enforce that single-value enum. Failure returns metadata only and remains an API failure. A repair changes server cache state, with no client retry or rollback."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /package_manager_fixcache GET declares x-readonly=false. Use form POST for this mutation, keeping routing in the URL."
+        }
+      ]
+    },
+    "whm1:package_manager_get_build_log": {
+      "name": "getBuildLog",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.52 and later; operates on server package management."
+        },
+        {
+          "kind": "documented",
+          "text": "build is the process ID returned by submitActions(); offset is a byte position, and the returned offset is the last byte position read. still_running is an integer 0/1 flag. Log content is private payload data, never executed or automatically followed; the client does not poll."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /package_manager_get_build_log GET declares x-readonly=true. Use GET for this read."
+        }
+      ]
+    },
+    "whm1:package_manager_get_package_info": {
+      "name": "getPackageInfo",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.52 and later; operates on server package management."
+        },
+        {
+          "kind": "documented",
+          "text": "Supply exactly one selector family: namespaces or packages, each as one string or a nonempty sequential string list encoded with repeated ns or package keys. The source marks both required but explicitly makes them alternatives; the client does not infer cross-field validation. Namespace prose permits ea and values returned by ea4_get_additional_pkg_prefixes, including the altea example, while the formal enum lists only ea. This discrepancy remains unresolved. Omitted disableExcludes preserves the default 0; explicit false sends 0. more_info_url may be null; omitted fields remain omitted."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /package_manager_get_package_info GET declares x-readonly=true. Use GET for this read."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /package_manager_get_package_info description requires either ns or package, and each parameter forbids the other. Despite both formal required:true flags, make each individually optional so either documented selector family is callable; callers must provide exactly one family. Both parameter descriptions explicitly repeat the same wire key for multiple values. ns formal enum [ea] contradicts prose permitting prefixes returned by ea4_get_additional_pkg_prefixes, with altea as the repeated example. Suppress only the closed enum PHPDoc, preserving string input and the documented discrepancy."
+        }
+      ],
+      "params": {
+        "ns": {
+          "php": "namespaces",
+          "encoding": "repeat",
+          "required": false,
+          "enum_doc": false
+        },
+        "package": {
+          "php": "packages",
+          "encoding": "repeat",
+          "required": false
+        },
+        "disable-excludes": {
+          "php": "disableExcludes"
+        }
+      },
+      "order": [
+        "ns",
+        "package",
+        "disable-excludes"
+      ]
+    },
+    "whm1:package_manager_is_performing_actions": {
+      "name": "isPerformingActions",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.52 and later; operates on server package management."
+        },
+        {
+          "kind": "documented",
+          "text": "build identifies the process returned by submitActions(). active 0 means the process is inactive, independently of API success; it does not establish that package installation succeeded. The client does not poll or retry."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /package_manager_is_performing_actions GET declares x-readonly=true. Use GET for this read."
+        }
+      ]
+    },
+    "whm1:package_manager_list_packages": {
+      "name": "listPackages",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.52 and later; operates on server package management."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitting state preserves the server default any; installed, not_installed and updatable select the documented inventory states. RPM package names remain payload data. This read changes no packages."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /package_manager_list_packages GET declares x-readonly=true. Use GET for this read."
+        }
+      ]
+    },
+    "whm1:package_manager_resolve_actions": {
+      "name": "resolveActions",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.52 and later; operates on server package management."
+        },
+        {
+          "kind": "documented",
+          "text": "Determines prospective install, uninstall, upgrade and unaffected package lists without submitting them. packages is required; namespaces is optional. Both accept a string or nonempty sequential string list and repeat their exact wire keys. Namespace prose permits additional discovered prefixes such as altea despite the formal ea-only enum. Inspect all returned lists; planning is not installation or completion."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /package_manager_resolve_actions GET declares x-readonly=true. Use GET for this read."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /package_manager_resolve_actions package is required and ns optional. Both descriptions explicitly allow repeated identical keys for multiple values. Namespace prose permits ea and additional prefixes from ea4_get_additional_pkg_prefixes and gives ns=altea, while its formal enum contains only ea. Suppress only the closed enum PHPDoc; retain string input and required package selection."
+        }
+      ],
+      "params": {
+        "package": {
+          "php": "packages",
+          "encoding": "repeat"
+        },
+        "ns": {
+          "php": "namespaces",
+          "encoding": "repeat",
+          "enum_doc": false
+        }
+      }
+    },
+    "whm1:package_manager_submit_actions": {
+      "name": "submitActions",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.52 and later; operates on server package management."
+        },
+        {
+          "kind": "documented",
+          "text": "Queues package installation, removal and upgrades as background tasks. Each action family is optional; omit it for no action of that kind, or pass one string or a nonempty sequential string list with repeated identical keys. The returned build is a process ID; API success does not establish completion. The client does not poll, retry or roll back package changes."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /package_manager_submit_actions GET declares x-readonly=false. Use form POST for this mutation, keeping routing in the URL."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /package_manager_submit_actions install, uninstall and upgrade are optional strings whose descriptions explicitly permit repeating each identical parameter key. Omission means no action of that kind. Use the reviewed repeated-key string/string-list encoding."
+        }
+      ],
+      "params": {
+        "install": {
+          "encoding": "repeat"
+        },
+        "uninstall": {
+          "encoding": "repeat"
+        },
+        "upgrade": {
+          "encoding": "repeat"
+        }
+      }
+    },
+    "whm1:package_manager_upgrade": {
+      "name": "upgrade",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 54 and later; operates on server package management."
+        },
+        {
+          "kind": "documented",
+          "text": "Downloads and installs server package updates. The returned build is a process ID and does not establish update completion; the client does not poll, retry or roll back."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /package_manager_upgrade GET declares x-readonly=false. Use form POST for this mutation, keeping routing in the URL."
+        }
+      ]
+    },
+    "whm1:uninstall_rpm_plugin": {
+      "name": "uninstallRpmPlugin",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 64 and later; operates on server package management."
+        },
+        {
+          "kind": "documented",
+          "text": "Starts a background plugin uninstall. The returned pid and log_entry identify the process; successful submission does not establish completion. The client does not poll, fetch logs, retry or roll back."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /uninstall_rpm_plugin GET declares x-readonly=false. Use form POST for this mutation, keeping routing in the URL."
+        }
+      ]
+    }
+  }
+}

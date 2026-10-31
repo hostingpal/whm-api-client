@@ -1280,3 +1280,12 @@ artifacts and strict assessments without waivers. Do not enable Greylisting or
 repeat the catalog merely to make it pass. Separate reviewer login-history reads
 and source-backed write-result corrections do not expand this eight-GET capture;
 all fifteen server-wide/lockout writes remain unobserved.
+
+## WHM system-package inventory
+
+Run `WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs php tools/live-verify/whm-system-packages.php --output=docs/api/evidence/YYYY-MM-DD-whm-system-packages.json`.
+
+Three fixed GETs read version, list_rpms with target omitted and
+package_manager_list_packages with state=installed. Existing committed-input,
+exact request guard, opt-in, verified TLS and new-only structural output rules
+apply. No package action, cache repair or log read runs. `8x0.2.46` retains gaps.
