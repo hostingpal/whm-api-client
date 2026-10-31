@@ -1,0 +1,111 @@
+{
+  "schema_version": "1.0",
+  "family": "whm1",
+  "group": "UserData",
+  "accessor": "userData",
+  "class": "UserData",
+  "description": "WHM scoped private configuration. Never log input or returned configuration values, including raw mismatch payloads.",
+  "operations": {
+    "whm1:get_scoped_userdata": {
+      "name": "getScopedUserdata",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 86 and later. Scope names and returned string-valued configuration maps are private data. The source marks this retrieval x-readonly=false, so use form POST."
+        },
+        {
+          "kind": "policy",
+          "text": "Client policy: send one request without automatic retry or rollback. Optional null arguments are omitted; accepted explicit zero and empty strings retain their supplied values."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /get_scoped_userdata parameters, x-readonly classification and response schema. Source declares x-readonly=false; use form POST. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "params": {
+        "scope": {
+          "sensitive": true
+        }
+      },
+      "response": {
+        "": {
+          "replace": {
+            "type": "object",
+            "values": {
+              "type": "string"
+            },
+            "fields": {}
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /get_scoped_userdata data is an object with additionalProperties:{type:string}; examples map theme to dark and items_per_page to quoted 50. Preserve dynamic keys with strict string values, including empty strings; no nullable or absent data contract is declared. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        }
+      }
+    },
+    "whm1:set_scoped_userdata": {
+      "name": "setScopedUserdata",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 86 and later. Creates or updates scoped configuration and returns the full string-valued map. Supply either pre-serialized json text or key/value arguments: upstream says json cannot be combined with key or value. The client forwards supplied arguments without inventing mutual-exclusion validation and form-encodes JSON text exactly once; it does not accept a PHP object or send a JSON request body. Omitted optional arguments have no documented default. Scope, key, value, JSON text and returned private configuration are sensitive."
+        },
+        {
+          "kind": "policy",
+          "text": "Client policy: send one request without automatic retry or rollback. Optional null arguments are omitted; accepted explicit zero and empty strings retain their supplied values."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /set_scoped_userdata parameters, x-readonly classification and response schema. Source declares x-readonly=false; use form POST. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "params": {
+        "scope": {
+          "sensitive": true
+        },
+        "json": {
+          "sensitive": true
+        },
+        "key": {
+          "sensitive": true
+        },
+        "value": {
+          "sensitive": true
+        }
+      },
+      "response": {
+        "": {
+          "replace": {
+            "type": "object",
+            "values": {
+              "type": "string"
+            },
+            "fields": {}
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /set_scoped_userdata data is an object with additionalProperties:{type:string}; examples map theme to dark and items_per_page to quoted 50. Preserve dynamic keys with strict string values, including empty strings; no nullable or absent data contract is declared. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        }
+      }
+    }
+  }
+}

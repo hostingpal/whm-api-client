@@ -4428,3 +4428,30 @@ All 23 POST methods and remaining successful-access variants remain unobserved
 under `8x0.2.40`. No credential, key, private URL or TFA secret was read, no state
 changed and no new live capture ran. The original three-GET artifact is complete
 and immutable.
+
+## WHM interface customization and scoped data
+
+The Customizations, UserData and InProductSurvey groups add five source-backed
+methods. Only retrieveCustomizations() uses GET; deletion, scoped-data read/write
+and survey retrieval use source-declared form POST. Customizations requires
+cPanel 100 and Jupiter; scoped data/survey functions require 86. Application,
+theme and selective dot-path arguments are forwarded unchanged.
+
+Both customization responses document metadata only, so their typed methods
+return void, including retrieval. No branding payload schema is invented.
+update_customizations remains excluded: its data is composed application/json
+query content, not a JSON request body; follow-up `8x0.1.22` owns that serialization.
+
+Scoped-data responses preserve dynamic keys with strict string values. Scope,
+key, value and pre-serialized JSON arguments remain sensitive strict strings;
+JSON is form-encoded once. Source says not to combine JSON with key/value, which
+remains documented without a new mutual-exclusion validator. Null/absent results
+fail; omitted parameters retain server behavior and explicit empty/quoted-zero
+strings remain values.
+
+Survey display/new_user use the existing exact quoted/native 0|1 flag normalization;
+other source strings retain their spelling. Returned URLs are payload data and
+never fetched. Calls add no retry, rollback or interface-rendering guarantee.
+All five methods have offline contracts. No application/theme/scope selector was
+guessed and no private configuration, deletion, setting or survey call ran live.
+Every live variant remains under `8x0.2.58`.

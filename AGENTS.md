@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 78 typed groups cover 813 documented operations:
+and cPanel UAPI surface. The 81 typed groups cover 818 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -1409,6 +1409,34 @@ further commands are tracked under `gwi`. Go is a
 development-tool choice, not a runtime dependency of the PHP package. Preserve pinned documentation snapshots and
 refresh them explicitly; routine checks must remain offline. The tool design
 is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
+
+
+## WHM interface customization and scoped data
+
+The Customizations, UserData and InProductSurvey groups add five source-backed
+methods. Only retrieveCustomizations() uses GET; deletion, scoped-data read/write
+and survey retrieval use source-declared form POST. Customizations requires
+cPanel 100 and Jupiter; scoped data/survey functions require 86. Application,
+theme and selective dot-path arguments are forwarded unchanged.
+
+Both customization responses document metadata only, so their typed methods
+return void, including retrieval. No branding payload schema is invented.
+update_customizations remains excluded: its data is composed application/json
+query content, not a JSON request body; follow-up `8x0.1.22` owns that serialization.
+
+Scoped-data responses preserve dynamic keys with strict string values. Scope,
+key, value and pre-serialized JSON arguments remain sensitive strict strings;
+JSON is form-encoded once. Source says not to combine JSON with key/value, which
+remains documented without a new mutual-exclusion validator. Null/absent results
+fail; omitted parameters retain server behavior and explicit empty/quoted-zero
+strings remain values.
+
+Survey display/new_user use the existing exact quoted/native 0|1 flag normalization;
+other source strings retain their spelling. Returned URLs are payload data and
+never fetched. Calls add no retry, rollback or interface-rendering guarantee.
+All five methods have offline contracts. No application/theme/scope selector was
+guessed and no private configuration, deletion, setting or survey call ran live.
+Every live variant remains under `8x0.2.58`.
 
 ## Architecture and Conventions
 

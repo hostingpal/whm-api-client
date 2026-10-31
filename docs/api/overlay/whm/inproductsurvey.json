@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0",
+  "family": "whm1",
+  "group": "InProductSurvey",
+  "accessor": "inProductSurvey",
+  "class": "InProductSurvey",
+  "description": "WHM in-product survey metadata. Returned URLs may contain private tokens and are never fetched by the client.",
+  "operations": {
+    "whm1:get_in_product_survey_url": {
+      "name": "getInProductSurveyUrl",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 86 and later. Returns whether to display the survey banner and its link. The source declares x-readonly=false. display and new_user use the existing public integer 0|1 flag convention: exact quoted 0/1 source values normalize to integers and native 0/1 flags are accepted. max_dismiss remains a string, and user_type is the documented whm string. Other strings, integers, booleans and fractions are not accepted for the two flags. Response fields retain optional presence. Returned links can contain private tokens; treat them as payload data and never fetch them automatically."
+        },
+        {
+          "kind": "policy",
+          "text": "Client policy: send one request without automatic retry or rollback. Optional null arguments are omitted; accepted explicit zero and empty strings retain their supplied values."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /get_in_product_survey_url parameters, x-readonly classification and response schema. Source declares x-readonly=false; use form POST. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    }
+  }
+}

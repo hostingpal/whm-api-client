@@ -23,11 +23,15 @@ trait WhmGroups
 
     private ?CpHulk $cpHulkGroup = null;
 
+    private ?Customizations $customizationsGroup = null;
+
     private ?Databases $databasesGroup = null;
 
     private ?Dns $dnsGroup = null;
 
     private ?HostingPlans $hostingPlansGroup = null;
+
+    private ?InProductSurvey $inProductSurveyGroup = null;
 
     private ?IpAddresses $ipAddressesGroup = null;
 
@@ -38,6 +42,8 @@ trait WhmGroups
     private ?Resellers $resellersGroup = null;
 
     private ?Server $serverGroup = null;
+
+    private ?UserData $userDataGroup = null;
 
     private ?WebServer $webServerGroup = null;
 
@@ -96,6 +102,17 @@ trait WhmGroups
     }
 
     /**
+     * Select the Customizations operations without making a request.
+     *
+     * WHM Jupiter interface customization selection and deletion. The pinned retrieval response contains no declared
+     * data contract; update serialization remains excluded.
+     */
+    public function customizations(): Customizations
+    {
+        return $this->customizationsGroup ??= new Customizations($this->run(...));
+    }
+
+    /**
      * Select the Databases operations without making a request.
      *
      * WHM API 1 functions in the documented Databases group.
@@ -123,6 +140,16 @@ trait WhmGroups
     public function hostingPlans(): HostingPlans
     {
         return $this->hostingPlansGroup ??= new HostingPlans($this->run(...));
+    }
+
+    /**
+     * Select the InProductSurvey operations without making a request.
+     *
+     * WHM in-product survey metadata. Returned URLs may contain private tokens and are never fetched by the client.
+     */
+    public function inProductSurvey(): InProductSurvey
+    {
+        return $this->inProductSurveyGroup ??= new InProductSurvey($this->run(...));
     }
 
     /**
@@ -184,6 +211,17 @@ trait WhmGroups
     public function server(): Server
     {
         return $this->serverGroup ??= new Server($this->run(...));
+    }
+
+    /**
+     * Select the UserData operations without making a request.
+     *
+     * WHM scoped private configuration. Never log input or returned configuration values, including raw mismatch
+     * payloads.
+     */
+    public function userData(): UserData
+    {
+        return $this->userDataGroup ??= new UserData($this->run(...));
     }
 
     /**

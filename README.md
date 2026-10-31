@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 78 generated typed groups cover 813 documented operations (see
+The 81 generated typed groups cover 818 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, read-only DNS zones
 and resolvers, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -1940,3 +1940,30 @@ Project-authored code and documentation are licensed under the
 The bundled cPanel documentation snapshots retain their upstream terms and are
 not covered by the project's MIT license. See the
 [third-party documentation notice](docs/api/README.md#licensing).
+
+## WHM interface customization and scoped data
+
+The Customizations, UserData and InProductSurvey groups add five source-backed
+methods. Only retrieveCustomizations() uses GET; deletion, scoped-data read/write
+and survey retrieval use source-declared form POST. Customizations requires
+cPanel 100 and Jupiter; scoped data/survey functions require 86. Application,
+theme and selective dot-path arguments are forwarded unchanged.
+
+Both customization responses document metadata only, so their typed methods
+return void, including retrieval. No branding payload schema is invented.
+update_customizations remains excluded: its data is composed application/json
+query content, not a JSON request body; follow-up `8x0.1.22` owns that serialization.
+
+Scoped-data responses preserve dynamic keys with strict string values. Scope,
+key, value and pre-serialized JSON arguments remain sensitive strict strings;
+JSON is form-encoded once. Source says not to combine JSON with key/value, which
+remains documented without a new mutual-exclusion validator. Null/absent results
+fail; omitted parameters retain server behavior and explicit empty/quoted-zero
+strings remain values.
+
+Survey display/new_user use the existing exact quoted/native 0|1 flag normalization;
+other source strings retain their spelling. Returned URLs are payload data and
+never fetched. Calls add no retry, rollback or interface-rendering guarantee.
+All five methods have offline contracts. No application/theme/scope selector was
+guessed and no private configuration, deletion, setting or survey call ran live.
+Every live variant remains under `8x0.2.58`.
