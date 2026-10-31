@@ -17,7 +17,8 @@ use LogicException;
  * call omits), and the complete ShapeValidator type grammar recursively: every list
  * item, map value, object field, optional object extra value and union branch, and the type of nullable specs,
  * which the validator never inspects for a null payload. It also rejects duplicate
- * wire names across parameters (the second would silently overwrite the first),
+ * wire names and statically overlapping numbered families across parameters,
+ * declared api. controls and bridge controls on shared UAPI specs,
  * "unwrap" on a nullable object result (a null payload could never be unwrapped),
  * and "required" entries that are not strings naming declared fields (the validator
  * compares required names as strings). Keys this runtime does not read are ignored,
@@ -29,6 +30,8 @@ use LogicException;
  * (one per generated operation), and a defective spec is rechecked and rejected on
  * every call.
  *
+ * @phpstan-import-type CollectionSpec from CollectionEncoder
+ * @phpstan-import-type RecordSpec from RecordEncoder
  * @internal
  */
 final class SpecChecker
@@ -123,7 +126,7 @@ final class SpecChecker
             OperationSpec::text($spec, 'module');
         }
 
-        self::params($spec['params'] ?? null, OperationSpec::body($spec));
+        self::params($spec['params'] ?? null, OperationSpec::body($spec), isset($spec['module']));
         if (OperationSpec::body($spec) === RequestBodyFormat::Json) {
             self::jsonBody($spec);
         } elseif (array_key_exists('json_body', $spec)) {
@@ -143,7 +146,6 @@ final class SpecChecker
                 }
             }
         }
-
 
         if (!array_key_exists('returns', $spec)) {
             throw new LogicException('Operation spec is missing "returns".');
@@ -182,26 +184,31 @@ final class SpecChecker
     {
         $body = OperationSpec::jsonBody($spec);
         $schema = StructuredJsonSchema::from($body['schema']);
-        if (!$body['required'] && $schema->acceptsNull()) {
-            throw new LogicException('Optional nullable JSON bodies are unsupported.');
+        if ($spec['params'] !== []) {
+            throw new LogicException('JSON body operations cannot declare query parameters.');
+        }
+        if ($schema->type !== 'object' || $schema->nullable) {
+            throw new LogicException('JSON body operations require a nonnullable object root.');
+        }
+        if (!isset($spec['module']) && !$body['required']) {
+            throw new LogicException('WHM JSON bodies must be required to carry API version routing.');
         }
         $reserved = isset($spec['module']) ? ['cpanel.user', 'cpanel.module', 'cpanel.function'] : [];
-        foreach ($schema->required as $name) {
+        foreach (array_keys($schema->fields) as $name) {
             if (str_starts_with($name, 'api.') || in_array($name, $reserved, true)) {
-                throw new LogicException('JSON schema requires a reserved root member.');
+                throw new LogicException('JSON schema declares a reserved root member.');
             }
         }
     }
 
     /** Check every parameter spec, whether or not a call supplies its argument. */
-    private static function params(mixed $params, RequestBodyFormat $body): void
+    private static function params(mixed $params, RequestBodyFormat $body, bool $uapi): void
     {
         if (!is_array($params)) {
             throw new LogicException('Operation spec is missing "params".');
         }
 
         $wires = [];
-        $maps = [];
         foreach ($params as $name => $param) {
             $wire = is_array($param) ? ($param['name'] ?? null) : null;
             if (
@@ -221,14 +228,20 @@ final class SpecChecker
             } elseif (array_key_exists('json', $param)) {
                 throw new LogicException('JSON field metadata requires JSON field encoding.');
             }
+            $records = null;
             if ($param['encoding'] === 'records') {
-                RecordEncoder::check($param['records'] ?? null);
+                $records = RecordEncoder::check($param['records'] ?? null);
             } elseif (array_key_exists('records', $param)) {
                 throw new LogicException('Record metadata requires records encoding.');
             }
             $map = false;
+            $declared = ['name' => $wire, 'encoding' => $param['encoding']];
+            if ($records !== null) {
+                $declared['records'] = $records;
+            }
             if ($param['encoding'] === 'collection') {
-                $map = CollectionEncoder::check($param['collection'] ?? null)['kind'] === 'map';
+                $declared['collection'] = CollectionEncoder::check($param['collection'] ?? null);
+                $map = $declared['collection']['kind'] === 'map';
             } elseif (array_key_exists('collection', $param)) {
                 throw new LogicException('Collection metadata requires collection encoding.');
             }
@@ -256,36 +269,125 @@ final class SpecChecker
             ) {
                 throw new LogicException('Invalid suffix-numbered parameter pattern.');
             }
-            foreach ($wires as $other => $otherSuffix) {
-                if ($map || isset($maps[$other])) {
+            if (
+                str_starts_with($wire, 'api.')
+                || ($uapi && in_array($wire, ['cpanel.user', 'cpanel.module', 'cpanel.function'], true))
+            ) {
+                throw new LogicException('Reserved wire name in the parameter specs.');
+            }
+            foreach ($wires as $other => $otherParam) {
+                if ($wire === (string) $other) {
+                    throw new LogicException('Duplicate wire name in the parameter specs.');
+                }
+                if ($map || ($otherParam['collection']['kind'] ?? null) === 'map') {
                     continue;
                 }
                 if (
-                    ($suffix && self::overlaps($wire, (string) $other, $otherSuffix))
-                    || ($otherSuffix && self::overlaps((string) $other, $wire, $suffix))
+                    self::overlaps($wire, $param['encoding'], (string) $other, $otherParam['encoding'])
+                    || self::overlaps((string) $other, $otherParam['encoding'], $wire, $param['encoding'])
+                    || self::collectionOverlaps($declared, $otherParam)
+                    || self::collectionOverlaps($otherParam, $declared)
                 ) {
                     throw new LogicException('Overlapping wire names in the parameter specs.');
                 }
             }
 
-            if (isset($wires[$wire])) {
-                throw new LogicException('Duplicate wire name in the parameter specs: ' . $wire);
-            }
-
-            $wires[$wire] = $suffix;
-            if ($map) {
-                $maps[$wire] = true;
-            }
+            $wires[$wire] = $declared;
         }
     }
 
-    /** Check whether another declared wire name can expand into this pattern. */
-    private static function overlaps(string $pattern, string $other, bool $otherSuffix): bool
+    /**
+     * Extend declared-family lint to collection descriptors without changing legacy rules.
+     *
+     * @param array{name: string, encoding: string, collection?: CollectionSpec, records?: RecordSpec} $param
+     * @param array{name: string, encoding: string, collection?: CollectionSpec, records?: RecordSpec} $other
+     */
+    private static function collectionOverlaps(array $param, array $other): bool
     {
-        $base = substr($pattern, 0, -1);
-        $other = $otherSuffix ? substr($other, 0, -1) : $other;
+        if (
+            !in_array($param['encoding'], ['collection', 'records'], true)
+            && !in_array($other['encoding'], ['collection', 'records'], true)
+        ) {
+            return false;
+        }
+        foreach (self::indexedFamilies($param) as [$base, $start]) {
+            if ($other['encoding'] !== 'records' && self::indexContains($base, $start, $other['name'])) {
+                return true;
+            }
+            foreach (self::indexedFamilies($other) as [$otherBase]) {
+                if (
+                    $base === $otherBase || self::indexContains($base, 0, $otherBase . '1')
+                    || self::indexContains($otherBase, 0, $base . '1')
+                ) {
+                    return true;
+                }
+            }
+        }
 
-        return preg_match('/^' . preg_quote($base, '/') . '[1-9][0-9]*$/D', $other) === 1;
+        return false;
+    }
+
+    /** @param array{name: string, encoding: string, collection?: CollectionSpec, records?: RecordSpec} $param
+     * @return list<array{string, int}>
+     */
+    private static function indexedFamilies(array $param): array
+    {
+        if ($param['encoding'] === 'records' && isset($param['records'])) {
+            $families = [];
+            foreach ($param['records']['fields'] as $field) {
+                $families[] = [$field['prefix'] . $param['records']['separator'], $param['records']['start']];
+            }
+            return $families;
+        }
+        if (
+            $param['encoding'] === 'collection'
+            && isset($param['collection'])
+            && $param['collection']['kind'] === 'indexed'
+        ) {
+            return [[
+                $param['collection']['prefix'] . $param['collection']['separator'], $param['collection']['start'],
+            ]];
+        }
+        if ($param['encoding'] === 'numbered') {
+            return [[$param['name'] . '-', 1]];
+        }
+        if (in_array($param['encoding'], ['suffix-numbered', 'suffix-numbered-scalar'], true)) {
+            return [[substr($param['name'], 0, -1), 1]];
+        }
+
+        return [];
+    }
+
+    private static function indexContains(string $base, int $start, string $name): bool
+    {
+        if (!str_starts_with($name, $base)) {
+            return false;
+        }
+        $suffix = substr($name, strlen($base));
+
+        // Overflow saturates at PHP_INT_MAX, which is above every allowed start.
+        return preg_match('/^(0|[1-9][0-9]*)$/D', $suffix) === 1 && (int) $suffix >= $start;
+    }
+
+    /** Check whether a declared family can emit another parameter's name or family prefix. */
+    private static function overlaps(string $wire, string $encoding, string $other, string $otherEncoding): bool
+    {
+        if ($wire === $other) {
+            return true;
+        }
+        $suffix = in_array($encoding, ['suffix-numbered', 'suffix-numbered-scalar'], true);
+        $otherSuffix = in_array($otherEncoding, ['suffix-numbered', 'suffix-numbered-scalar'], true);
+        $other = $otherSuffix ? substr($other, 0, -1) : $other;
+        if ($suffix) {
+            $base = substr($wire, 0, -1);
+
+            return preg_match('/^' . preg_quote($base, '/') . '[1-9][0-9]*$/D', $other) === 1;
+        }
+        if ($encoding === 'numbered') {
+            return preg_match('/^' . preg_quote($wire, '/') . '-[1-9][0-9]*$/D', $other) === 1;
+        }
+
+        return false;
     }
 
     /**

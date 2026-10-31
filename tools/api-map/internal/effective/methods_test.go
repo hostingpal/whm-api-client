@@ -127,3 +127,23 @@ func TestRecordAliasCannotInheritMultipartBody(t *testing.T) {
 		t.Fatal("records accepted incompatible inherited body")
 	}
 }
+
+func TestAdditionalMethodMapsSourceNamesAfterWireCorrection(t *testing.T) {
+	set := fixtureOverlay("listed")
+	var ov overlay.Operation
+	if err := json.Unmarshal([]byte(aliasFixture), &ov); err != nil {
+		t.Fatal(err)
+	}
+	ov.Params = map[string]overlay.Param{"username": {Wire: "account_name"}}
+	ov.AdditionalMethods[0].Inputs[0].Records.Fields = ov.AdditionalMethods[0].Inputs[0].Records.Fields[1:]
+	ov.AdditionalMethods[0].Inputs = append([]overlay.MethodInput{{Source: "username", PHP: "account"}}, ov.AdditionalMethods[0].Inputs...)
+	set.Files[1].Operations["whm1:createacct"] = ov
+	result, problems := buildProblems(t, fixtureMap(t), set)
+	if problems != "" {
+		t.Fatal(problems)
+	}
+	method := groupByClass(t, result, "Accounts").Operations[0].AdditionalMethods[0]
+	if method.Params[0].Wire != "account_name" || method.Params[0].PHP != "account" {
+		t.Fatal("source and wire names confused")
+	}
+}

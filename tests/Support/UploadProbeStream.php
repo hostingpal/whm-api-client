@@ -21,6 +21,7 @@ final class UploadProbeStream implements StreamInterface
     public bool $throwSize = false;
     public bool $throwTell = false;
     public bool $throwRead = false;
+    public bool $overRead = false;
     public ?int $reportedSize;
     public ?int $reportedPosition = null;
     private StreamInterface $inner;
@@ -114,7 +115,7 @@ final class UploadProbeStream implements StreamInterface
         if ($this->throwRead) {
             throw new RuntimeException('private-stream-content-secret');
         }
-        return $this->inner->read($length);
+        return $this->inner->read($this->overRead ? $length + 1 : $length);
     }
 
     public function getContents(): string
