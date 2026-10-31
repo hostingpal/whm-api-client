@@ -13,8 +13,9 @@ and Mime sections, plus mail protection through BoxTrapper, EmailAuth, SpamAssas
 and cPGreyList.
 Generic `call()` methods provide GET and form-encoded POST access without a typed
 group, subject to the operation's parameter, route and envelope requirements.
-Generic calls do not support JSON or multipart bodies. Three typed SSL methods
-support reviewed multipart string fields. The library provides token
+The separate `callJson()` entrypoints send validated raw JSON bytes through WHM
+or direct cPanel UAPI; WHM-bridged UAPI JSON is rejected locally. `call()` remains
+GET/form-only. Three typed SSL methods support reviewed multipart string fields. The library provides token
 authentication, direct and WHM-routed UAPI, typed array payloads, API exceptions,
 and per-client response metadata over a PSR HTTP transport.
 
@@ -508,7 +509,7 @@ The resource and web statistics slice exposes eleven GET operations across
 Bandwidth protocols, retention and grouped queries complement resource limits,
 statistics-bar values, domain bandwidth, daily AwStats counters, error logs,
 report-file inventory and analyzer configuration. `StatsManager/save_configuration`
-requires a JSON request body and remains excluded under `8x0.1.18`; generic form
+requires a JSON request body and remains excluded from typed coverage under `8x0.1.18`; generic form
 calls do not provide that transport.
 
 Pipe-separated grouping, domain, protocol and display arguments are supplied as
@@ -1185,7 +1186,7 @@ retrieval, user/role/service mutation or message sending ran.
 The security and access section exposes 24 compatible methods across `blockIp()`,
 `modSecurity()`, `clamScanner()`, `knownHosts()`, `externalAuthentication()`, `ssh()`
 and `lastLogin()`. Thirteen reads use GET and eleven mutations use form POST.
-ClamScanner JSON disinfection remains excluded under `8x0.1.18`; generic form
+Typed ClamScanner JSON disinfection remains excluded under `8x0.1.18`; generic form
 calls cannot provide that body contract.
 
 IP block inputs retain documented address, hostname and range spellings. ModSecurity
@@ -1698,7 +1699,7 @@ unobserved variants and operational behavior.
 `whm()->authentication()` exposes 30 of the 32 pinned Authentication operations
 for SSH keys, authentication providers, external-account links and two-factor
 configuration/policy. Seven use GET and 23 use form POST. Deprecated `accesshash`
-remains excluded; JSON `twofactorauth_set_tfa_config_for_user` remains under
+remains excluded; typed JSON `twofactorauth_set_tfa_config_for_user` remains under
 `8x0.1.18`. The login-URL method uses POST as a conservative client privacy
 policy, despite the pinned GET-only declaration. The pinned redirect example has
 a `state` value; it does not establish that redirects always contain tokens.
@@ -1855,7 +1856,7 @@ for inventories, enhancements, conversion status, quota/bandwidth controls,
 password policy, Digest Authentication and document roots. Password-strength
 calculation uses POST because its password input is sensitive.
 
-JSON personalization calls remain under `8x0.1.18`. Conversion initiation accepts
+Typed JSON personalization calls remain under `8x0.1.18`. Conversion initiation accepts
 `copyMysqlDatabases` as an old-to-new string map with literal `copymysqldb-` prefix;
 null or [] copies no databases. Purely numeric keys reject after PHP integer-key
 coercion. `moveMysqlDatabases`/`moveMysqlUsers` preserve unsuffixed scalars and use
@@ -2568,7 +2569,9 @@ not establish typed coverage or verification of that operation.
 
 The [pinned request-body inventory](docs/api/source-inventory.json) includes 13
 JSON operations (8 WHM, 5 UAPI) and 9 multipart operations (1 WHM, 8 UAPI).
-These body formats remain unsupported by both typed and generic calls. Selected
+Typed JSON-body adoption and the remaining multipart operations are excluded.
+Raw `callJson()` provides JSON transport without a typed contract or endpoint
+compatibility claim; `call()` remains GET/form-only. Selected typed
 operation support is tracked under `whm-api-client-8x0.1.18` (JSON) and
 `whm-api-client-8x0.1.19` (multipart); complete execution-contract coverage remains
 open under `whm-api-client-8x0.1`.
@@ -2609,6 +2612,47 @@ outcome. On the WHM bridge it waives only the UAPI `status`: the outer WHM
 `ApiErrorException` under both policies. Both still require a usable envelope and
 report HTTP failures. POST, the default method, was verified live on all three
 routes on 2026-10-14 with read-only functions.
+
+### Raw JSON calls
+
+Use `whm()->callJson($operation, $json, $outcome = OutcomePolicy::Flag)`
+or direct cPanel `uapi()->callJson($module, $operation, $json, $outcome = OutcomePolicy::Flag)`
+for an already serialized JSON document. Both always POST with
+`Content-Type: application/json`. Authentication, base URI and account come from the handle;
+WHM-bridged UAPI rejects JSON locally after clearing metadata, before I/O.
+
+```php
+// Choose an operation documented to accept JSON and a standard API envelope.
+$result = $client->whm()->callJson($operation, $json);
+// $directClient has cPanel credentials for its selected account.
+$result = $directClient->uapi()->callJson($module, $operation, $json);
+```
+
+The body must be a JSON object with strict UTF-8 and native
+`json_validate(..., 512)` depth limits (at most 511 nested containers). Non-object,
+empty, malformed, BOM-prefixed and over-depth documents fail locally. Direct UAPI
+retains every caller byte. WHM inserts `"api.version":1` as the first root member,
+adding a comma only for a populated object, and preserves every caller byte
+otherwise: padding, key order, ordinary duplicates, escapes and numeric literals.
+WHM sends no version in the URL. No endpoint request/response schema is applied.
+Callers must choose compatible operation, route and envelope contracts; raw syntax
+acceptance does not establish typed coverage or live support. WHM execution-wrapper
+names do not establish account-bound UAPI JSON compatibility.
+
+There is no separate query argument: cPanel 11.138.0.19 reads JSON arguments only
+from the body. Its parser removes root members beginning with `file-`. Flat direct
+UAPI arguments generally work; nested data requires the function's `requires_json`
+declaration. Flat bridge forms already suffice and the bridge rejects nested data,
+so this client deliberately refuses bridged JSON locally. The entrypoints reject
+reserved routing names by presence in decoded root JSON members,
+even when the value is null or the member name is escaped. Both routes reserve
+the entire case-sensitive `api.` prefix, including bare `api.` and future controls;
+direct UAPI also reserves exactly `cpanel.user`, `cpanel.module` and
+`cpanel.function`. Nested member names remain endpoint data. Legacy `call()`
+filtering is unchanged. `CallResult`, `OutcomePolicy`, metadata snapshots and the
+standard transport/HTTP/envelope/API exceptions work as above; failures never retry
+or change body encoding. Library value-bearing trace frames are sensitive; a
+third-party HTTP client's own frames can still contain the authenticated request.
 
 ### WHM API tokens, sessions and introspection
 
@@ -2682,7 +2726,7 @@ Artifact SHA-256:
 
 `whm()->webServer()` exposes 28 of 30 pinned functions: eighteen GET reads and
 ten form POST operations for EasyApache profiles, PHP/FPM configuration, INI
-content/directives and PHP versions. The two FPM JSON-body operations remain
+content/directives and PHP versions. The two typed FPM JSON-body operations remain
 excluded under `8x0.1.18`.
 
 Package, tag and directive lists use repeated wire fields; virtual hosts use the

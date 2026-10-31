@@ -6557,3 +6557,32 @@ configuration verification. Existing generated contracts, source snapshots,
 overlays and live evidence are unchanged. Routing, transport and endpoint work
 remain with their separately reviewed adopters; schema caching is deferred until
 wiring establishes stable generated-schema ownership and lifetime.
+
+
+## PR81 raw JSON execution-contract correction (2026-10-31)
+
+The full approved-master audit above remains verbatim. The PR81 raw entrypoints
+are corrected after [review 5723716149 of 69871030d0ff9001ebb389064c364ee17464bfda](https://github.com/hostingpal/whm-api-client/pull/81#pullrequestreview-5723716149)
+and the [superseding PR73 correction 6545903345](https://github.com/hostingpal/whm-api-client/pull/73#issuecomment-6545903345).
+WHM inserts library-owned api.version:1 as the first JSON root member without
+re-encoding caller bytes; direct UAPI retains the exact caller object. JSON
+execution rejects non-object roots locally, exposes no separate query, and sends
+no URL version. Caller api. root reservations and direct routing-name reservations
+remain strict, including decoded escapes, duplicates and null presence. Generic
+schema root kinds, ordinary form/GET/multipart paths and typed contracts stay intact.
+
+The reviewer attributed source and read-only runtime observations to cPanel
+11.138.0.19 at the original PR81 head. URL version routing selected API 0 and caused
+the old HTTP 400, including the previously misattributed bridge failure. Root-routed
+flat DomainInfo bridge calls succeeded; nested Personalization/get returned outer
+result 0 for unsupported nested structures. Flat forms suffice, so initial local
+bridge refusal remains deliberate. Upstream removes root file- keys. Public API
+docs state these practical limits without review-process prose. The amended JSON
+design records exact attribution and the future typed WHM object/version policy.
+
+Offline inspection of the immutable 11.138.0.10 samples found all thirteen body
+operations have no query parameters. Six WHM samples put api.version in the body;
+update_sql_config uses a URL sample and TFA user configuration supplies neither.
+No source refresh, live request, write, evidence capture or upstream replay was
+performed for this correction. Local wire fixtures and regression/generation gates
+are offline evidence only; PHP 8.4.26 results do not claim PHP 8.3 CI execution.

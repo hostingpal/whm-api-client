@@ -2359,7 +2359,7 @@
     },
     "whm1:save_connected_application": {
       "exclude": {
-        "reason": "Requires an application/json request body containing name and arbitrary connected-application data; current typed scalar/form transport does not implement JSON request bodies. Tracked under whm-api-client-8x0.1.18.",
+        "reason": "Requires an application/json request body containing name and arbitrary connected-application data; typed JSON-body support remains tracked under whm-api-client-8x0.1.18. Raw callJson() supplies no typed contract and establishes no endpoint compatibility.",
         "evidence": [
           {
             "kind": "doc",

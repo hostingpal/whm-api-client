@@ -3,8 +3,9 @@
 Date: 2026-10-31 (Europe/Belgrade). Status: the user approved structured PHP inputs
 for typed methods and an explicit low-level `callJson()` escape hatch for raw JSON.
 This document records that decision and the engineering rules needed to implement
-it. Delivery epic: `whm-api-client-8x0.29`. This design PR changes no runtime code and
-establishes no live endpoint or route compatibility.
+it. Delivery epic: `whm-api-client-8x0.29`. The original PR73 design changed no runtime code. The PR81 amendment below
+corrects the execution contract; attributed reviewer observations establish only
+the operations, routes and server version recorded under source and review evidence.
 
 ## Intent and approaches
 
@@ -37,7 +38,7 @@ encoder's prefixes or numbered fields.
 | Representation | Public input | What goes on the wire |
 | --- | --- | --- |
 | Typed JSON body | Schema-described PHP data | One JSON document with exactly `Content-Type: application/json`, no parameters |
-| Raw JSON body | `string $json` through `callJson()` | The same validated JSON bytes, unchanged |
+| Raw JSON body | `string $json` through `callJson()` | Validated object bytes; WHM inserts its owned root version, direct UAPI preserves bytes |
 | JSON-valued parameter | Schema-described PHP value in a typed companion method | One JSON string within an ordinary query/form field |
 
 JSON-valued parameters do not turn the whole request into JSON. A string which
@@ -54,7 +55,6 @@ The new signatures are:
 public function callJson(
     string $operation,
     #[SensitiveParameter] string $json,
-    #[SensitiveParameter] array $query = [],
     OutcomePolicy $outcome = OutcomePolicy::Flag,
 ): CallResult;
 
@@ -63,15 +63,13 @@ public function callJson(
     string $module,
     string $operation,
     #[SensitiveParameter] string $json,
-    #[SensitiveParameter] array $query = [],
     OutcomePolicy $outcome = OutcomePolicy::Flag,
 ): CallResult;
 ```
 
 `operation` is the documented wire function name, not a URL. Existing `call()`
-argument names and behavior do not change. `$query` uses the existing documented
-`Parameters` representation, including current list markers; it is explicit query
-data, not extra JSON body fields. There is no method, arbitrary URL, header,
+argument names and behavior do not change. There is no query argument: upstream
+reads JSON arguments only from the body. There is no method, arbitrary URL, header,
 authentication or account override argument. The HTTP method is POST.
 
 The raw method returns the same untyped `CallResult` contract as `call()` and uses
@@ -94,51 +92,58 @@ exactly equivalent strict syntax check. Reject invalid UTF-8, invalid JSON, empt
 or whitespace-only documents, trailing non-whitespace text and documents rejected
 by that depth argument. The accepted boundary is **511 nested JSON containers**:
 count every object or list, including the root and an empty deepest container;
-scalar leaves add no container level. A root scalar has zero containers. This is a
+scalar leaves add no container level. Raw execution requires an object root. This is a
 client resource constraint, not a claim that deeper JSON is syntactically invalid.
 Do not strip a BOM or repair malformed input.
 
-A valid root object, list, string, number, boolean or null is accepted by the raw
-syntax layer; endpoint acceptance is a separate concern. Preserve leading/trailing
-JSON whitespace, object-key order, duplicate ordinary keys, escaped spelling,
-large numeric literals and the exact bytes supplied. Never decode and re-encode
+Reject every non-object root locally, even when it is valid JSON: upstream
+parsejson requires a hash and otherwise dies before the function is reached.
+Direct UAPI preserves leading/trailing and inner JSON whitespace, object-key order,
+duplicate ordinary keys, escaped spelling and numeric lexemes exactly. WHM inserts
+`"api.version":1` immediately after the root opening brace as its first member,
+plus a comma only when caller members are present; every original byte stays in
+order. Empty or whitespace-only objects receive no comma. Never decode/re-encode
 to form the outgoing body, wrap it, pretty-print it or add a trailing newline.
-Valid duplicate keys are not an endorsement of any server's duplicate-key behavior.
+Valid duplicates do not endorse any server's duplicate-key behavior. Upstream
+parsejson removes root keys beginning with `file-`; document that silent-drop
+behavior without introducing an unsupported local rejection.
 
 Routing checks may inspect decoded root member names, with the same depth bound;
 that inspection must not supply the serialized body or coerce numeric literals.
 No endpoint-specific shape validation is added as a side effect of inspection.
 
-### Query and routing protections
+### Body routing protections
 
 WHM names use the current allowed function-path grammar; UAPI module/function
-names use the current segment grammar. WHM always controls `api.version=1` in the
-query. Account selection, base URL and credentials come only from the handle.
+names use the current segment grammar. WHM always controls root `"api.version":1`;
+no JSON version or operation fields are sent in the URL. Share that insertion path
+with future typed WHM dispatch: all eight pinned WHM JSON operations require an
+object root, including any effective typed body contract. The generic structured
+serializer still supports all schema-declared root kinds; this execution policy
+does not narrow its grammar. Account selection, base URL and credentials come
+only from the handle.
 
 For all new raw and typed JSON-body entry points on WHM and direct UAPI, reserve
-the entire case-sensitive `api.` prefix in explicit query fields, expanded query
-fields and root JSON object members. This includes `api.version`, `api.filter_*`,
+the entire case-sensitive `api.` prefix in caller root JSON object members. This includes `api.version`, `api.filter_*`,
 `api.sort_*`, `api.paginate_*`, `api.columns_*` and any other name beginning `api.`;
 it is not a closed list of known controls. Test every root member occurrence after
 JSON escape decoding, including duplicate members and reserved keys whose values
 are null; presence is what matters. Nested JSON member names remain ordinary
 endpoint data. Reject collisions before legacy handle filtering could discard
 them. UAPI JSON entry points additionally protect the exact names `cpanel.user`,
-`cpanel.module` and `cpanel.function`, even for a direct handle, so body/query values
+`cpanel.module` and `cpanel.function`, even for a direct handle, so body values
 cannot become an alternate routing interface later.
 
 This boundary follows the [reviewer-inspected source](#source-and-review-evidence):
 WHM `extract_api_args` consumes `api.*`, and UAPI `Cpanel::Args` handles the filter,
 sort, pagination and column controls. Root members reach
 `Cpanel::API::_safety_check_args` through `get_raw_args_hr`. The reviewer's root
-`api.columns_*` attempt stopped at the StatsManager permission error, so the
-reservation is source-based rather than a successful live control-injection test.
-
-Apply normal percent encoding to the separate query exactly once; do not infer or
-move caller query fields into JSON. Query values can be logged by the server even
-when library exception frames are protected. PHPDoc must say to keep secrets in
-the body unless a reviewed operation explicitly requires otherwise. This new
-rejection policy does not silently change legacy `call()` filtering behavior.
+`api.columns` probes in the PR81 review on 11.138.0.19 reduced WHM listaccts
+from 43 fields to one and direct Email/list_pops from four fields to one. This
+supersedes the earlier source-only caveat; it does not establish universal
+operation compatibility. No pinned JSON-body operation declares a query parameter.
+Legacy GET/form routing, percent encoding, OrderedFields collision guards and
+`call()` filtering stay unchanged.
 
 ## Supported routes and transport limits
 
@@ -161,10 +166,15 @@ typed JSON-body execution on that handle fail locally after metadata reset with
 spec. There is no form fallback, direct-account fallback, extra login, alternative
 credential lookup or account-selector change. This is a deliberate initial support
 boundary, not a statement that the server can never support bridged JSON. The
-reviewer's raw JSON POSTs to `uapi_cpanel`, both with and without body `cpanel.user`,
-returned HTTP 400 on `11.138.0.19`. The cause is unknown; these observations support
-the current local refusal only. They are separate from the reviewer's malformed
-direct-UAPI JSON observation of HTTP 500, which local syntax validation prevents.
+reviewer's earlier HTTP 400 bridge observations were caused by putting
+`api.version` in the URL, which JSON parsing ignores; they never reached the bridge.
+With root routing, flat DomainInfo/list_domains and single_domain_data requests
+succeeded with outer result 1 and UAPI status 1 on 11.138.0.19. Nested
+Personalization/get returned outer result 0 with “uapi_cpanel does not support
+nested data structures”. Flat arguments already work as form data, while nested
+structures motivate JSON, so deliberate local bridge refusal remains. These are
+attributed reviewer observations, not a new local live run. Non-object direct
+roots returned HTTP 500 and are now rejected locally alongside malformed JSON.
 
 Generic WHM access still requires the caller to choose a compatible WHM operation;
 using an execution-wrapper name through that low-level handle does not establish
@@ -422,12 +432,12 @@ does not resolve those contradictions.
 
 ## Errors, metadata and secrets
 
-Clear the owning handle's metadata before name/route/query/JSON/schema checks, as
+Clear the owning handle's metadata before name/route/JSON/schema checks, as
 with existing calls. PHP signature TypeErrors remain outside the method lifecycle.
 Invalid caller JSON or structured content raises `InvalidArgumentException`;
 malformed generated specs raise `LogicException`. No request is sent for either.
-The implementation may chain a JsonException only if its message/trace does not
-expose payload content; never include supplied JSON fragments or dynamic keys.
+Raw validation errors are static and unchained; never include supplied JSON
+fragments or dynamic keys in diagnostics.
 
 Protect all library frames holding raw/structured/serialized data with
 `SensitiveParameter`. Error text may identify the public argument or a static
@@ -461,8 +471,9 @@ cleanup confirmed by the reviewer. These are server-only observations, not typed
 client, runtime implementation or evidence-capture coverage. In particular, direct
 UAPI rejected an absent body or `{}` for missing `changes`, `{"changes":[]}` for
 having no changes, and `{"changes":{}}` for not being an array. The permission-blocked
-well-formed StatsManager cases, bridge HTTP 400 and malformed-direct HTTP 500
-observations retain their separate limits above. No successful StatsManager write
+well-formed StatsManager cases retain their limits above. The original bridge
+HTTP 400 attribution and non-object acceptance were corrected by the later
+PR81 review described below. No successful StatsManager write
 was observed. The effective required-input contract, full `api.` reservation,
 exact header, shared nesting budget and initial bridge refusal are client policy
 rulings informed by those sources, rather than newly observed live successes.
@@ -503,7 +514,7 @@ Required cases include omitted/null/empty body differences where the effective
 operation permits them; nested missing/null; false/zero/empty strings; known
 object/list empty arrays; sparse lists; unknown fields; malformed UTF-8; NAN/INF;
 precision/locale independence; cyclic/deep arrays; raw whitespace, duplicate keys,
-large numbers and root scalars; invalid/empty raw JSON; and failures in the last
+large numbers and local rejection of every non-object root; invalid/empty raw JSON; and failures in the last
 input entry causing no I/O.
 
 Depth fixtures cover list, object and mixed nesting with scalar leaves and empty
@@ -523,13 +534,12 @@ These are future offline acceptance obligations, not a claim that new tests or a
 RED/green cycle were run for this prose-only correction.
 
 Reserved-name fixtures cover the entire case-sensitive `api.` prefix on WHM and
-direct UAPI, in raw and typed paths, for explicit and expanded query fields and
-root members: version, filter, sort, paginate, columns, bare `api.` and arbitrary
+direct UAPI, in raw and future typed paths, for caller root members: version, filter, sort, paginate, columns, bare `api.` and arbitrary
 future control names. Include JSON-escaped member names, null-valued presence and
 a reserved occurrence hidden by a later duplicate. Compare `Api.version`,
 `API.version`, `api_version` and `xapi.version` lookalikes: this reservation alone
 does not reject them. Nested `api.*` members remain endpoint data, subject to the
-typed schema. UAPI also rejects exact root/query `cpanel.user`, `cpanel.module`,
+typed schema. UAPI also rejects exact root `cpanel.user`, `cpanel.module`,
 `cpanel.function` even direct, while bridge bodies remain locally refused. Legacy
 generic `call()` filtering stays unchanged.
 
@@ -561,5 +571,32 @@ retain prior descriptions and findings; link related work without closing it.
 Concrete helper class layout, test file organization and exact overlay descriptor
 member names are left to the builder. Any change to the public contracts above
 requires a reviewed amendment. The owner has resumed Astra's implementation work
-in PR80 onward. This PR remains documentation-only; implementation and external
-review/integration retain their separate processes and scoped live gates.
+in PR80 onward. PR81 amends this design alongside raw runtime corrections; downstream typed
+adoption and its external review retain their separate processes and scoped live gates.
+
+
+## PR81 execution-contract amendment provenance (2026-10-31)
+
+[Review 5723716149 of PR81 head 69871030d0ff9001ebb389064c364ee17464bfda](https://github.com/hostingpal/whm-api-client/pull/81#pullrequestreview-5723716149)
+and the [superseding PR73 correction 6545903345](https://github.com/hostingpal/whm-api-client/pull/73#issuecomment-6545903345)
+replace the original URL-version, separate-query, all-root and old bridge-400
+rationale. Historical PR73 approval and audit remain recorded; those portions
+are superseded by this amendment.
+
+The reviewer inspected cPanel 11.138.0.19 Cpanel::Form::Timed / parsejson source
+and ran read-only calls through real callJson at that original PR81 head, plus raw
+variants the client refused. WHM version and accountsummary succeeded with the
+version in the JSON root and no query; URL-only versions returned HTTP 400 because
+API 0 was selected. Query-only required arguments were ignored on WHM and direct
+UAPI. Direct valid array, scalar and null roots and sampled WHM array/null roots
+returned HTTP 500 before dispatch. Direct flat JSON, Personalization/get nested
+JSON, padded whitespace, escaped names and duplicate ordinary members worked;
+the server used the last duplicate. All JSON writes remained untested. These are
+reviewer source/runtime observations scoped to that version/head, not local root
+live verification or new committed capture coverage.
+
+Local pinned-snapshot inspection at 11.138.0.10 confirms thirteen JSON-body POSTs
+have no query parameters. Six of eight WHM code samples put api.version in the
+body; update_sql_config instead uses a URL sample, and the TFA user-config sample
+has neither. Those immutable source discrepancies remain visible. The shared
+WHM insertion policy applies to all eight, including future typed dispatch.

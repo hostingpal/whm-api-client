@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace HostingPal\WhmApiClient;
 
 use HostingPal\WhmApiClient\Api\AbstractApiClient;
+use HostingPal\WhmApiClient\Api\Engine\JsonBody;
 use HostingPal\WhmApiClient\Api\Engine\OperationRunner;
 use HostingPal\WhmApiClient\Api\Engine\OperationSpec;
 use HostingPal\WhmApiClient\Api\Engine\OrderedFields;
@@ -31,7 +32,8 @@ use SensitiveParameter;
  * Typed groups are generated from the pinned API map and overlay (see docs/api/coverage.md);
  * call() provides GET and form-encoded POST access without a typed group through
  * the same routing, authentication, and envelope handling. Reviewed generated
- * operations can select multipart string fields; generic calls remain form-only.
+ * operations can select multipart string fields; call() remains form-only.
+ * callJson() provides explicit raw JSON POST access on direct cPanel handles only.
  *
  * @phpstan-import-type Parameters from AbstractApiClient
  */
@@ -130,6 +132,54 @@ final class UapiClient extends AbstractApiClient
         }
 
         return CallResult::fromApiResponse($this->request($module, $function, $parameters, $method, $outcome));
+    }
+
+    /**
+     * POST an already serialized JSON document for this direct cPanel account.
+     *
+     * WHM-bridged handles reject this route locally after metadata reset. Direct
+     * access uses only this handle's host, credentials and account. The body must
+     * be a valid JSON object; its exact bytes are retained without endpoint schema
+     * validation. The case-sensitive api. prefix and exact cpanel.user/module/function
+     * names are reserved in caller root members, including escaped names and nulls.
+     * Nested names remain data. On cPanel 11.138.0.19 JSON arguments are read only
+     * from the body; there is no separate query. Upstream removes root members
+     * beginning with file-. Flat JSON arguments are generally accepted there;
+     * nested structures require the function's requires_json declaration. Flat
+     * bridge arguments can use form calls; the bridge rejects nested structures.
+     * The untyped result, outcome policy, envelope errors and metadata follow
+     * call(); no retries occur. Choose a compatible operation and standard envelope;
+     * raw access establishes neither typed coverage nor live endpoint compatibility.
+     *
+     * @throws InvalidArgumentException If bridged, or a name or JSON object is invalid; metadata clears first.
+     * @throws ApiException If transport, HTTP, or the API envelope fails.
+     * @see https://api.docs.cpanel.net/cpanel/introduction
+     */
+    public function callJson(
+        string $module,
+        string $operation,
+        #[SensitiveParameter] string $json,
+        OutcomePolicy $outcome = OutcomePolicy::Flag,
+    ): CallResult {
+        $this->beginRequest();
+        if ($this->isBridged()) {
+            throw new InvalidArgumentException('JSON bodies require a direct cPanel UAPI handle.');
+        }
+        foreach ([$module, $operation] as $segment) {
+            if (preg_match('/\A[A-Za-z0-9_]+\z/', $segment) !== 1) {
+                throw new InvalidArgumentException(
+                    'UAPI module and function names contain only letters, digits, and underscores.',
+                );
+            }
+        }
+        $body = JsonBody::present($json);
+
+        return CallResult::fromApiResponse($this->executeJsonPost(
+            '/execute/' . $module . '/' . $operation,
+            $body,
+            ResponseRoute::DirectUapi,
+            $outcome,
+        ));
     }
 
     /**

@@ -9,7 +9,7 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available in cPanel 94 and later. Operates on the selected account. The documented workflow starts a scan, polls getScanStatus until complete, lists infected files, lets the user choose each action, queues JSON disinfection and polls checkDisinfectionStatus. This client does not start or poll automatically. disinfectFiles is excluded pending JSON transport under whm-api-client-8x0.1.18."
+          "text": "Available in cPanel 94 and later. Operates on the selected account. The documented workflow starts a scan, polls getScanStatus until complete, lists infected files, lets the user choose each action, queues JSON disinfection and polls checkDisinfectionStatus. This client does not start or poll automatically. Typed disinfectFiles support is excluded pending typed JSON-body support under whm-api-client-8x0.1.18."
         },
         {
           "kind": "documented",
@@ -38,7 +38,7 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available in cPanel 94 and later. Operates on the selected account. The documented workflow starts a scan, polls getScanStatus until complete, lists infected files, lets the user choose each action, queues JSON disinfection and polls checkDisinfectionStatus. This client does not start or poll automatically. disinfectFiles is excluded pending JSON transport under whm-api-client-8x0.1.18."
+          "text": "Available in cPanel 94 and later. Operates on the selected account. The documented workflow starts a scan, polls getScanStatus until complete, lists infected files, lets the user choose each action, queues JSON disinfection and polls checkDisinfectionStatus. This client does not start or poll automatically. Typed disinfectFiles support is excluded pending typed JSON-body support under whm-api-client-8x0.1.18."
         },
         {
           "kind": "documented",
@@ -139,7 +139,7 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available in cPanel 94 and later. Operates on the selected account. The documented workflow starts a scan, polls getScanStatus until complete, lists infected files, lets the user choose each action, queues JSON disinfection and polls checkDisinfectionStatus. This client does not start or poll automatically. disinfectFiles is excluded pending JSON transport under whm-api-client-8x0.1.18."
+          "text": "Available in cPanel 94 and later. Operates on the selected account. The documented workflow starts a scan, polls getScanStatus until complete, lists infected files, lets the user choose each action, queues JSON disinfection and polls checkDisinfectionStatus. This client does not start or poll automatically. Typed disinfectFiles support is excluded pending typed JSON-body support under whm-api-client-8x0.1.18."
         },
         {
           "kind": "documented",
@@ -249,7 +249,7 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available in cPanel 94 and later. Operates on the selected account. The documented workflow starts a scan, polls getScanStatus until complete, lists infected files, lets the user choose each action, queues JSON disinfection and polls checkDisinfectionStatus. This client does not start or poll automatically. disinfectFiles is excluded pending JSON transport under whm-api-client-8x0.1.18."
+          "text": "Available in cPanel 94 and later. Operates on the selected account. The documented workflow starts a scan, polls getScanStatus until complete, lists infected files, lets the user choose each action, queues JSON disinfection and polls checkDisinfectionStatus. This client does not start or poll automatically. Typed disinfectFiles support is excluded pending typed JSON-body support under whm-api-client-8x0.1.18."
         },
         {
           "kind": "documented",
@@ -270,7 +270,7 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available in cPanel 94 and later. Operates on the selected account. The documented workflow starts a scan, polls getScanStatus until complete, lists infected files, lets the user choose each action, queues JSON disinfection and polls checkDisinfectionStatus. This client does not start or poll automatically. disinfectFiles is excluded pending JSON transport under whm-api-client-8x0.1.18."
+          "text": "Available in cPanel 94 and later. Operates on the selected account. The documented workflow starts a scan, polls getScanStatus until complete, lists infected files, lets the user choose each action, queues JSON disinfection and polls checkDisinfectionStatus. This client does not start or poll automatically. Typed disinfectFiles support is excluded pending typed JSON-body support under whm-api-client-8x0.1.18."
         },
         {
           "kind": "documented",
@@ -303,7 +303,7 @@
     },
     "uapi:ClamScanner/disinfect_files": {
       "exclude": {
-        "reason": "Requires an application/json request body with a dynamic actions object mapping infected-file paths to disinfection choices. JSON transport remains under whm-api-client-8x0.1.18; generic GET/form POST calls cannot represent this body. This operation is not deprecated.",
+        "reason": "Requires an application/json request body with a dynamic actions object mapping infected-file paths to disinfection choices; typed JSON-body support remains tracked under whm-api-client-8x0.1.18. Raw callJson() supplies no typed contract and establishes no endpoint compatibility. This operation is not deprecated.",
         "evidence": [
           {
             "kind": "doc",

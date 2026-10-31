@@ -492,6 +492,46 @@ final class SensitiveTraceTest extends TestCase
         }
     }
 
+    public function testRawJsonTransportFramesStayRedactedWhenClientThrows(): void
+    {
+        $factory = new Psr17Factory();
+        $http = new class implements ClientInterface {
+            public function sendRequest(RequestInterface $request): ResponseInterface
+            {
+                throw new RuntimeException('Client failure.');
+            }
+        };
+        foreach (['whm', 'cpanel'] as $type) {
+            $client = new Client([
+                'host' => 'api.example.test', 'authType' => $type, 'username' => 'npr', 'token' => 'fixture-token',
+            ], new HttpTransport($http, $factory, $factory));
+            try {
+                if ($type === 'whm') {
+                    $client->whm()->callJson(
+                        'operation',
+                        '{"secret":"' . self::SECRET . '"}',
+                    );
+                } else {
+                    $client->uapi()->callJson(
+                        'Example',
+                        'operation',
+                        '{"secret":"' . self::SECRET . '"}',
+                    );
+                }
+                self::fail('Expected client failure.');
+            } catch (RuntimeException $exception) {
+                $frames = $exception->getTrace();
+                self::assertSame([$http::class, 'sendRequest'], [$frames[0]['class'] ?? null, $frames[0]['function']]);
+                unset($frames[0]['args']);
+                $seen = [];
+                self::assertFalse(
+                    self::contains($frames, $seen),
+                    'A library frame contains raw JSON secrets.',
+                );
+            }
+        }
+    }
+
     public function testGuardedTargetsStayOutOfLocalValidationTraceArguments(): void
     {
         try {
@@ -953,7 +993,6 @@ final class SensitiveTraceTest extends TestCase
     public function testLocalValidationFailuresKeepSecretsOutOfTraceArguments(string $route, Closure $call): void
     {
         [$client, $http] = self::client($route === 'direct');
-
         try {
             $call($client);
             self::fail('Expected a local validation failure.');
@@ -966,6 +1005,50 @@ final class SensitiveTraceTest extends TestCase
     /** @return iterable<string, array{'whm'|'direct'|'bridged', Closure(Client): mixed}> */
     public static function invalidSecretCalls(): iterable
     {
+        yield 'WHM raw JSON invalid syntax' => [
+            'whm',
+            static fn (Client $client): mixed => $client->whm()->callJson('operation', '{"secret":"' . self::SECRET),
+        ];
+        yield 'direct raw JSON reserved root' => [
+            'direct',
+            static fn (Client $client): mixed => $client->uapi()->callJson(
+                'Example',
+                'operation',
+                '{"cpanel.user":null,"secret":"' . self::SECRET . '"}',
+            ),
+        ];
+        foreach (['whm', 'direct'] as $route) {
+            yield $route . ' raw JSON reserved prefix root' => [
+                $route,
+                static fn (Client $client): mixed => $route === 'whm'
+                    ? $client->whm()->callJson('operation', '{"api\\u002e' . self::SECRET . '":null}')
+                    : $client->uapi()->callJson('Example', 'operation', '{"api\\u002e' . self::SECRET . '":null}'),
+            ];
+        }
+        foreach (['whm', 'direct'] as $route) {
+            yield $route . ' raw JSON non-object root' => [
+                $route,
+                static fn (Client $client): mixed => $route === 'whm'
+                    ? $client->whm()->callJson('operation', '"' . self::SECRET . '"')
+                    : $client->uapi()->callJson('Example', 'operation', '"' . self::SECRET . '"'),
+            ];
+        }
+        yield 'direct raw JSON invalid name' => [
+            'direct',
+            static fn (Client $client): mixed => $client->uapi()->callJson(
+                '../bad',
+                'operation',
+                '{"secret":"' . self::SECRET . '"}',
+            ),
+        ];
+        yield 'bridged raw JSON rejected route' => [
+            'bridged',
+            static fn (Client $client): mixed => $client->uapi('npr')->callJson(
+                'Example',
+                'operation',
+                '{"secret":"' . self::SECRET . '"}',
+            ),
+        ];
         foreach ([RequestMethod::Get, RequestMethod::Post] as $method) {
             $suffix = ' ' . $method->value;
             yield 'WHM call numbered list' . $suffix => [
@@ -999,6 +1082,21 @@ final class SensitiveTraceTest extends TestCase
     /** @return iterable<string, array{'whm'|'direct'|'bridged', Closure(Client): mixed}> */
     private static function secretCalls(): iterable
     {
+        yield 'WHM raw JSON body' => [
+            'whm',
+            static fn (Client $client): mixed => $client->whm()->callJson(
+                'operation',
+                '{"secret":"' . self::SECRET . '"}',
+            ),
+        ];
+        yield 'direct raw JSON body' => [
+            'direct',
+            static fn (Client $client): mixed => $client->uapi()->callJson(
+                'Example',
+                'operation',
+                '{"secret":"' . self::SECRET . '"}',
+            ),
+        ];
         yield 'WHM nonroot transfer password with required true' => [
             'whm',
             static fn (Client $client): mixed => $client->whm()->transfers()->createRemoteUserTransferSession(
