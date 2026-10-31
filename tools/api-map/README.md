@@ -119,18 +119,19 @@ Operation entries (all keys optional):
   reviewed description, preserving later sentences. Both settings require
   operation-level evidence; requiredness, sensitivity and optional null omission
   retain their existing rules.
-  `type: "true"` is a separate evidence-gated presence-only correction, used
-  where sending a key grants a privilege regardless of its value. It requires
-  an optional concrete scalar integer source with exactly `enum: [1]`; the
-  effective parameter must remain optional. Encoding must be absent or `bool`,
-  and a simultaneous wire-name correction is rejected. It generates `?true`
-  with a null default and the existing boolean encoder: true sends `1`, while
-  null omits the key. PHP rejects false, integers (including `1`) and strings
-  before dispatch, in both strict and weak callers. No singleton enum is
-  changed implicitly; ordinary zero/one flags still accept false and emit `0`.
-  Composite, nullable, required and omitted inputs cannot use this correction,
-  and it adds no response type. This guard does not make omission a partial
-  update: each operation's replacement semantics remain in its reviewed notes.
+  `type: "true"` is a separate evidence-gated correction for a concrete,
+  nonnullable scalar integer source with exactly `enum: [1]`. Source and final
+  requiredness must match: optional inputs generate `?true` with a null default;
+  required inputs generate `true` with no default. Encoding must be absent or
+  `bool`, and a simultaneous wire-name correction is rejected. The existing
+  boolean encoder sends true as `1`; null omits only optional inputs. PHP rejects
+  false, integers (including `1`) and strings before the runner, in strict and
+  weak callers. Required inputs also reject null and omission. Native parameter
+  rejection does not clear prior response metadata. No singleton enum changes
+  implicitly; ordinary zero/one flags still accept false and emit `0`.
+  Composite, nullable and omitted inputs cannot use this correction, and it
+  adds no response type. Optional presence-only privilege inputs still retain
+  each operation's reviewed replacement semantics.
   `omit_empty: true` is an explicit evidence-gated exception for optional
   `repeat` parameters whose pinned source is a concrete, nonnullable array of
   nonnullable strings. It omits exactly `[]`, alongside the existing null

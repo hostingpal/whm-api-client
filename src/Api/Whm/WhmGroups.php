@@ -43,6 +43,8 @@ trait WhmGroups
 
     private ?Ssl $sslGroup = null;
 
+    private ?Transfers $transfersGroup = null;
+
     private ?WebServer $webServerGroup = null;
 
     /**
@@ -209,6 +211,19 @@ trait WhmGroups
     public function ssl(): Ssl
     {
         return $this->sslGroup ??= new Ssl($this->run(...));
+    }
+
+    /**
+     * Select the Transfers operations without making a request.
+     *
+     * Server-scoped transfer modules, remote session creation and credentials, asynchronous session controls and
+     * status, logs and archive deletion. Remote operations can contact hosts and change accounts. Every method performs
+     * one request without retries, polling or rollback. Returned output, analysis, logs and module schemas can contain
+     * sensitive account or configuration data; never execute returned content or fetch embedded URLs.
+     */
+    public function transfers(): Transfers
+    {
+        return $this->transfersGroup ??= new Transfers($this->run(...));
     }
 
     /**

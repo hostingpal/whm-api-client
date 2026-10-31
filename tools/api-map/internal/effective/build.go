@@ -402,10 +402,10 @@ func (b *builder) params(op model.Operation, v model.Variant, ov overlay.Operati
 		// encoder, so no false or numeric value can reach the wire. This is an
 		// explicit reviewed correction, never inferred from other singleton enums.
 		if o.Type == "true" {
-			if decl["required"] == true || param.Required || spec.Type != "int" || spec.Nullable ||
+			if (decl["required"] == true) != param.Required || spec.Type != "int" || spec.Nullable ||
 				!b.schemas.presenceOnlyInteger(p.Locator.SourceID, decl["schema"]) || o.Wire != "" ||
 				(o.Encoding != "" && o.Encoding != "bool") {
-				b.problem(op.ID + ": parameter " + p.Name + ": true type correction requires an optional scalar integer source with exact enum [1], optional final requiredness, no wire correction and absent or bool encoding")
+				b.problem(op.ID + ": parameter " + p.Name + ": true type correction requires a concrete nonnullable scalar integer source with exact enum [1], unchanged requiredness, no wire correction and absent or bool encoding")
 			} else {
 				param.PHPType, param.DocType, param.Encoding = "true", "true", "bool"
 			}

@@ -5096,3 +5096,96 @@ retains its three known-field mismatches and two masked observations. Corrected
 capture `b535c57` keeps both masked strict findings. Both are complete and
 unchanged; no capture is repeated to clear them. All ten POST methods, serving
 effects and conversion behavior remain unobserved under `8x0.2.45`.
+
+## WHM account transfers
+
+`whm()->transfers()` exposes fourteen functions: six GET reads and eight form
+POST operations for transfer sessions, controls, metadata, analysis, logs and
+archive deletion. The module-dependent form operation `enqueue_transfer_item`
+remains outside the typed interface under `8x0.1.22`. After creating a root
+transfer session, enqueue the intended items with `whm()->call()` and their
+source-documented module parameters before calling `startTransferSession()`.
+A returned process ID does not prove that any items are queued or completed.
+
+`createRemoteRootTransferSession()` puts `host` and `user` first; use named
+arguments for its flags and authentication alternatives. The non-root creation
+method has no username parameter. Its required `unrestrictedRestore: true`
+argument sends the pinned literal `1`, skipping Restricted Restore; other values
+are rejected before a request. Passwords and key passphrases stay sensitive.
+The source requires unrestricted restore to be disabled in the root flow when
+using the enqueue operation's `force` option. Remote checks and session creation
+can contact another host, and transfer controls can change account state.
+
+Module names are open strings. On reviewed WHM `11.138.0.19`,
+`FeatureListRemoteRoot` works while the pinned `FeaturesListRemoteRoot` spelling
+fails. Module priority values remain strings. The analysis flag
+`skip_reseller_privs=1` means reseller privileges transfer by default, despite
+its name. `valid_for_transfer` means suitable for a transferred account but not
+a new account; it is not a general username-validity flag. Analysis
+`remote.conflicts` remains opaque because its pinned object type conflicts with
+its error-message description; populated analysis is unobserved.
+
+Logs and analysis may contain private paths or configuration. Unknown-session
+reads exposed internal paths in the separate reviewer report. Treat upstream
+errors and payloads as sensitive. The client does not retry, poll, roll back,
+execute returned text or follow URLs. Archive deletion can remove backup files.
+The original three-GET metadata capture is complete and immutable; all eight
+POST methods and populated sessions/logs/analysis remain unobserved under
+`8x0.2.47`. See the [coverage report](coverage.md)
+for evidence boundaries and input exclusion `8x0.1.22`.
+
+### Review corrections and provenance
+
+Review [5720977719](https://github.com/hostingpal/whm-api-client/pull/59#pullrequestreview-5720977719)
+compared the client with the pinned WHM OpenAPI source (decoded SHA-256
+`6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594`)
+and GET observations on `11.138.0.19`. The source's required integer enum `[1]`
+for `unrestricted_restore` is enforced through an explicitly selected native
+`true` guard and existing boolean encoding. This extends the reviewed singleton
+correction to required inputs while preserving source and final requiredness,
+nullable/composition exclusions and all existing optional ACL behavior. Other
+singleton enums do not acquire this behavior automatically. Native argument
+rejection occurs before the runner; it does not claim a runner metadata reset.
+
+The module parameter's PHPDoc is an open string, and source/observed notes retain
+the spelling contradiction. The pinned six-name list is not a closed inventory.
+Only `remote.conflicts` changes its response type to `mixed`; sibling contracts
+remain strict. Its flexibility is source-based, not a populated live observation.
+The source-defined inverted flags are documented without adding cross-field
+validation. Session ID precedes logfile, and root creation host/user precede
+flags. Secret annotations, request methods, outcomes, response unwrapping and
+the typed enqueue exclusion are preserved. Synthetic module priorities now
+satisfy the positive-integer-string source pattern.
+
+The separate reviewer report observed module-schema reads for `AccountLocal`
+and `FeatureListRemoteRoot`, an API error for the typo and unknown module,
+username validation for existing/free names, and API errors for unknown-session
+state/log/analysis reads. Those reads created nothing on disk. They establish no
+populated sessions, logs, remote analysis or remote-host contact. No POST was run.
+
+The original bounded capture at `a5badae` records exactly three WHM GETs: version,
+available modules and designated `npr` username validation. All HTTP, API,
+payload, probe and strict checks pass with zero discrepancies. It observes
+populated module priorities as strings and the four integer validation flags.
+Artifact `2026-10-31-whm-transfers.json` SHA-256:
+`8a8d004b5b765c7f79862d8a177d93855757617eada816812a6983b4116a0a1e`.
+It is unchanged. The expanded catalog adds the safe module-schema read; a separate
+reviewed recipe selects only version and `FeatureListRemoteRoot` schema for the
+new evidence request, without replaying the completed catalog. Module schema
+strings stay inert payload data. Remaining live behavior stays under `8x0.2.47`.
+
+### Reviewed transfer module schema capture
+
+The new [reviewed transfer capture](evidence/2026-10-31-whm-transfers-reviewed.json)
+at `d81e43a8456dc7a9370d5950ac196b226691ae79` on WHM `11.138.0.19`
+contains exactly two GETs: version and `transferModuleSchema(module:
+'FeatureListRemoteRoot')`. Both HTTP/API/payload/probe checks and the strict
+assessment pass, with zero discrepancies. The module schema has populated
+wildcarded key records with string `def` fields and string `primary`/`required`
+lists. Only sanitized paths and types were saved; no key names, definitions or
+list values are retained. Schema text was not executed. This completes the
+requested additional probe and does not replay or replace the original capture.
+No remote host, remote credentials, session ID, log or archive target was supplied;
+no transfer, resource mutation, cleanup operation or URL fetch occurred. All
+eight POST methods and populated session/log/analysis data remain unobserved.
+SHA-256: `ecd22c05ac50d5b2dcfc2ad3c90c0ff6c26b21f059268726b31f163de506bd7e`.

@@ -1483,3 +1483,26 @@ masked unknown observations remain strict failed and unwaived, explicitly
 nonblocking in review 5720977511. The separate reviewer INI reads and source
 corrections do not expand this fixed catalog. No repeated capture or server
 configuration write is required merely for integration or green status.
+
+## WHM transfer metadata
+
+The original `whm-transfers.php` recipe captured version, available modules and
+`npr` username validation in `2026-10-31-whm-transfers.json` at `a5badae`.
+That three-GET capture strictly passes and is complete; do not replay it just
+for integration. The catalog now also includes the source/observed module name
+`FeatureListRemoteRoot`, with exact local GET arguments and no remote contact.
+
+The separate `whm-transfers-review.php` recipe selects only version and that
+module-schema read for the requested new evidence. Use both the normal live
+opt-in and designated `npr` account/domain guards; it records sanitized structure
+from the same raw responses through committed generated code. Schema text stays
+inert and no embedded URLs are followed. This recipe supplies no remote host,
+credential, session ID, log or archive path. It performs no POST or resource
+change. All eight writes and populated session/log/analysis variants remain
+unobserved under `8x0.2.47`. Preserve every historical artifact and discrepancy.
+
+The requested two-GET recipe is complete: `2026-10-31-whm-transfers-reviewed.json`
+at `d81e43a` on `11.138.0.19` strictly passes with zero discrepancies, observing
+populated schema key records and primary/required string lists. SHA-256
+`ecd22c05ac50d5b2dcfc2ad3c90c0ff6c26b21f059268726b31f163de506bd7e`.
+Do not repeat either transfer capture merely for integration or green status.
