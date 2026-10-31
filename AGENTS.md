@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 49 typed groups cover 447 documented operations:
+and cPanel UAPI surface. The 49 typed groups cover 519 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -1181,3 +1181,43 @@ Beads block to `CLAUDE.md` (do not run `bd setup claude` to re-add one).
 Preserve the generated Beads blocks and keep project-specific additions outside
 them. If `bd setup` regenerates a Beads block with profile-neutral wording,
 re-apply the team-maintainer wording; the Git Workflow section is authoritative.
+
+## Expanded WHM server administration
+
+`whm()->server()` now exposes 76 of the 79 pinned Server Administration functions,
+including 72 additions for services, profiles, updates, configuration, linked nodes,
+notifications, licensing and inventory. The new calls use 23 GET requests and 49
+form POST requests. The four existing server methods retain their contracts.
+Missing read-only declarations remain conservative POST calls, including the
+three namespaced EcosystemFeatures functions.
+
+JSON connected-application saving remains under `8x0.1.18`, binary configuration
+upload under `8x0.1.19`, and `system_needs_reboot` under `8x0.1.27`. The latter's
+result fields are envelope siblings outside `data`; neither the typed runner nor
+the generic call currently preserves that result. No misleading void method is
+provided. Connected-application reads preserve declared typed fields and opaque
+additional properties through the existing object-values mechanism. Treat their
+results and service/configuration values as private payload data.
+
+Profile activation accepts documented serialized JSON text in its optional role
+argument, with one form-encoding pass. Its native `string|int` boundary does not
+establish integer semantics or automatic object encoding; supply a JSON string.
+The typing limitation remains under `8x0.1.23`. Dynamic service-configuration keys
+and available-tier maps retain source-backed corrections without inventing fixed
+names. Per-method availability, role requirements, omission, null and explicit
+false/zero behavior remain in generated PHPDoc.
+
+EULA acceptance, license purchase, reboot/restart, updates, profile activation,
+node linking, configuration changes and notification tests are explicit operations.
+They may have legal, financial, connectivity or service effects; the client adds
+no automatic invocation, retry, rollback or completion polling. Credential, token,
+configuration and notification inputs remain sensitive. API success or a job ID
+does not establish completion, service health or remote connectivity.
+
+Independent offline contracts cover all 72 additions and preserve the original
+four. The bounded eight-GET catalog reads version, contact-event importance,
+available/current profiles, password-strength policy, installed software versions,
+service status and dashboard hostname. Optional selectors are omitted. It reads
+no credentials, linked-node secrets, arbitrary configuration values or sockets,
+and sends no notification, URL probe or mutation. Follow-up `8x0.2.38` retains
+unobserved variants and operational behavior.

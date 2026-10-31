@@ -1095,3 +1095,21 @@ The token selector and seven pinned fields absent on `npr` are excluded; no wire
 form is established for those seven. No mutation or token retrieval ran. Earlier
 EA4 failures and masked findings remain immutable and unwaived under `8x0.2.28`.
 Reviewer mutation/lifecycle reports remain separate from this committed read capture.
+
+## Expanded WHM server inventory
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/whm-server-administration.php \
+  --output=docs/api/evidence/YYYY-MM-DD-whm-server-administration.json
+```
+
+Eight fixed GETs read version, contact-event importances, available/current
+profiles, minimum password-strength policy, installed versions, service status
+and dashboard hostname. Optional filters/selectors remain omitted. Existing
+exact request guards, opt-in, committed-input checks, verified TLS and structural
+capture apply. No credential, linked-node secret, arbitrary config or socket
+inventory is requested. No EULA, purchase, reboot/restart, update, activation,
+node-link, configuration, notification or URL-verification operation runs.
+Successful inventory does not establish service health, completion or remote
+connectivity. Remaining source/live variants stay under `8x0.2.38`.
