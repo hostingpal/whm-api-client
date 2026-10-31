@@ -26,7 +26,7 @@ use SensitiveParameter;
  * @phpstan-type ExportSecretKeyResult array{
  *     key_data?: string,
  * }
- * @phpstan-type GenerateKeyResult array<array-key, mixed>|null
+ * @phpstan-type GenerateKeyResult array<array-key, mixed>|''|null
  * @phpstan-type ImportKeyResult array{
  *     key_id?: string,
  * }
@@ -43,7 +43,7 @@ use SensitiveParameter;
  *     algorithm?: string,
  *     bits?: int,
  *     created?: int,
- *     expires?: int,
+ *     expires?: int|'',
  *     id?: string,
  *     type?: string,
  *     user_id?: string,
@@ -79,6 +79,9 @@ final readonly class Gpg
      * Policy: Preserves the pinned nullable object with no declared fields, including opaque object fields and explicit
      * null. Absent data is a payload mismatch.
      *
+     * Observed: Review 5722555389 at 9b34fd5 on 11.138.0.19 reports this typed operation passing on an owned disposable
+     * account; no route is specified. Invalid deletion input raised ApiErrorException.
+     *
      * API-map identity: uapi:GPG/delete_keypair#GET (wire name delete_keypair).
      *
      * @param string $keyId The ID of the GPG key that you wish to delete.
@@ -109,6 +112,9 @@ final readonly class Gpg
      *
      * Policy: Uses GET and forwards keyId unchanged. Omitted fields stay omitted; null or absent data is a payload
      * mismatch. The client performs no key parsing or cryptographic validation.
+     *
+     * Observed: Review 5722555389 at 9b34fd5 on 11.138.0.19 reports this typed operation passing on an owned disposable
+     * account; no route is specified.
      *
      * API-map identity: uapi:GPG/export_public_key#GET (wire name export_public_key).
      *
@@ -144,6 +150,9 @@ final readonly class Gpg
      * Policy: Omit passphrase to retain server behavior; an explicit empty string is sent unchanged. Treat the returned
      * payload and PayloadMismatchException::$payload as sensitive; do not log either. Payload content is not copied
      * into responseMeta(). Omitted key_data stays omitted; null or absent data is a mismatch.
+     *
+     * Observed: Review 5722555389 at 9b34fd5 on 11.138.0.19 reports this typed operation passing on an owned disposable
+     * account; no route is specified.
      *
      * API-map identity: uapi:GPG/export_secret_key#GET (wire name export_secret_key).
      *
@@ -187,8 +196,14 @@ final readonly class Gpg
      * Policy: Uses one form POST request without automatic retry or rollback. A confirmed API outcome followed by a
      * payload mismatch may accompany a completed change; do not retry automatically.
      *
-     * Policy: Preserves the pinned nullable object with no declared fields, including opaque object fields and explicit
-     * null. Absent data is a payload mismatch.
+     * Policy: Preserves the pinned nullable opaque object, including unknown fields and explicit null, and additionally
+     * accepts only the exact empty-string result. Missing data, nonempty strings, other scalars and nonempty lists
+     * remain payload mismatches. Do not retry automatically after a confirmed API outcome.
+     *
+     * Observed: Review 5722555389 at 9b34fd5 on 11.138.0.19 reports two generated keys, expiring and non-expiring, with
+     * exact empty-string payloads. Both calls raised PayloadMismatchException with outcomeConfirmed=true, yet both keys
+     * existed afterward. Retrying could create another key. Empty-string acceptance is an offline-tested correction;
+     * successful typed acceptance on the corrected head has not been live-observed.
      *
      * API-map identity: uapi:GPG/generate_key#GET (wire name generate_key).
      *
@@ -215,7 +230,7 @@ final readonly class Gpg
         ?string $expire = null,
         ?int $keysize = null,
         ?bool $noExpire = null,
-    ): ?array {
+    ): array|string|null {
         /** @var GenerateKeyResult $result Validated against GpgSpec::GENERATE_KEY. */
         $result = ($this->run)(GpgSpec::GENERATE_KEY, [
             'email' => $email,
@@ -243,10 +258,10 @@ final readonly class Gpg
      * Documented: Requires keyData, which may contain private key material. The pinned parameter example is already
      * percent-encoded and the URL sample double-encodes it, including %250A.
      *
-     * Policy: The form encoder encodes the supplied string once as key_data without decoding, parsing or cryptography.
-     * The source examples and instruction leave an encoding conflict: neither raw input nor pre-encoding is established
-     * as universally correct. Server decode behavior and preservation of + in key material are unobserved. Verification
-     * requires an owned fixture containing + under whm-api-client-8x0.2.54.
+     * Policy: Pass raw armored key text to the client, which form-encodes it once as key_data without local decoding,
+     * parsing or cryptography. This follows reviewer 5722555389 on 11.138.0.19; the pinned double-encoded example is
+     * misleading for that observed behavior. This does not promise exact raw-byte or header preservation or
+     * compatibility with every server version.
      *
      * Policy: Uses one form POST request without automatic retry or rollback. A confirmed API outcome followed by a
      * payload mismatch may accompany a completed change; do not retry automatically.
@@ -254,6 +269,11 @@ final readonly class Gpg
      * Documented: Returns an object with optional string key_id.
      *
      * Policy: Omitted fields stay omitted; null or absent data is a payload mismatch.
+     *
+     * Observed: Review 5722555389 at 9b34fd5 on 11.138.0.19 reports exporting an owned public key containing 34 + and
+     * 33 / characters, deleting it, then reimporting raw armored text through the typed method. The same key ID
+     * returned and re-export matched after whitespace/header normalization. The reviewer traced import_key reading
+     * key_data without an extra decode; invalid input raised ApiErrorException. No route is inferred for these calls.
      *
      * API-map identity: uapi:GPG/import_key#GET (wire name import_key).
      *
@@ -289,8 +309,16 @@ final readonly class Gpg
      * Policy: Uses GET and preserves empty lists and omitted row fields. This inventory does not export key contents,
      * prove ownership of newly generated keys, or establish signing, encryption or authentication behavior.
      *
-     * Observed: PR66 reviewer 5721152661 reports empty public-key and secret-key lists through direct and bridged GET
-     * on 11.138.0.19. Empty lists establish no populated timestamp variants.
+     * Observed: Earlier PR66 review 5721152661 reported empty key lists. Review 5722555389 at 9b34fd5 on 11.138.0.19
+     * instead observed expiring and non-expiring keys through both direct and bridged GET: bits is a digit string in
+     * both lists; secret-key created and expiring expires are digit strings, while non-expiring secret-key expires is
+     * the exact empty string. The former typed list contracts raised PayloadMismatchException.
+     *
+     * Policy: Normalize only the reviewed integer fields from bounded canonical integer strings, preserving native
+     * integers and optional omission. Public-key created and expires remain exact strings. Secret-key expires
+     * additionally preserves the exact empty string distinctly from integer zero; null and noncanonical or overflowing
+     * numeric strings are rejected. Corrected acceptance is offline-tested against the separately reviewed shapes, not
+     * live-observed on the corrected head.
      *
      * API-map identity: uapi:GPG/list_public_keys#GET (wire name list_public_keys).
      *
@@ -321,13 +349,19 @@ final readonly class Gpg
      * and expires and describes type as sec; public-key timestamps instead use strings, with empty expiry for
      * non-expiring keys.
      *
-     * Policy: Uses GET and retains the pinned integer secret-key timestamp contract. Empty or digit-string timestamps,
-     * populated rows and non-expiring secret-key variants are unobserved compatibility risks under
-     * whm-api-client-8x0.2.54; strict validation may reject them. Preserve empty lists and omitted fields. Metadata
-     * does not export key contents or establish signing, encryption or authentication behavior.
+     * Policy: Uses GET and preserves empty lists and omitted fields. Metadata does not export key contents or establish
+     * signing, encryption or authentication behavior.
      *
-     * Observed: PR66 reviewer 5721152661 reports empty public-key and secret-key lists through direct and bridged GET
-     * on 11.138.0.19. This does not establish populated or non-expiring timestamp types.
+     * Observed: Earlier PR66 review 5721152661 reported empty key lists. Review 5722555389 at 9b34fd5 on 11.138.0.19
+     * instead observed expiring and non-expiring keys through both direct and bridged GET: bits is a digit string in
+     * both lists; secret-key created and expiring expires are digit strings, while non-expiring secret-key expires is
+     * the exact empty string. The former typed list contracts raised PayloadMismatchException.
+     *
+     * Policy: Normalize only the reviewed integer fields from bounded canonical integer strings, preserving native
+     * integers and optional omission. Public-key created and expires remain exact strings. Secret-key expires
+     * additionally preserves the exact empty string distinctly from integer zero; null and noncanonical or overflowing
+     * numeric strings are rejected. Corrected acceptance is offline-tested against the separately reviewed shapes, not
+     * live-observed on the corrected head.
      *
      * API-map identity: uapi:GPG/list_secret_keys#GET (wire name list_secret_keys).
      *

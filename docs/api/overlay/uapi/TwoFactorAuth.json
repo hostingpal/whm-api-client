@@ -22,6 +22,10 @@
         {
           "kind": "policy",
           "text": "The client does not fetch the URL, render the QR code or compute a TOTP. Retain optional fields; null or absent data is a payload mismatch. Treat returned configuration and PayloadMismatchException::$payload as sensitive; do not log them. Payload content is not copied into responseMeta()."
+        },
+        {
+          "kind": "observed",
+          "text": "Review 5722555389 at 9b34fd5 on 11.138.0.19 reports generating secrets for the leading-zero TOTP fixture, but does not name generateUserConfiguration() or establish its typed response. This method remains unobserved as a separately identified typed call; no route is inferred."
         }
       ],
       "method": "POST",
@@ -31,6 +35,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /TwoFactorAuth/generate_user_configuration: x-readonly=false and x-rollback=none. Use form POST with no retry or rollback; retain the pinned parameter requiredness, defaults and data schema. Sensitive inputs stay out of query strings and library exception trace arguments."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "PR66 review 5722555389 of 9b34fd5b791857625f3c7b5085f919a0a81bf124 on cPanel 11.138.0.19, 2026-10-31 (https://github.com/hostingpal/whm-api-client/pull/66#pullrequestreview-5722555389), reports generating secrets for the fixture but does not identify generateUserConfiguration() or establish its typed result. Retain this distinction from the six explicitly reported POST methods. No method or route inference, fresh live call or capture is added."
         }
       ]
     },
@@ -92,6 +102,18 @@
         {
           "kind": "policy",
           "text": "Preserve disabled zero, empty issuer and omission separately; quoted flags, booleans and null fields are rejected. API success does not establish actual login behavior or security enforcement."
+        },
+        {
+          "kind": "observed",
+          "text": "Review 5722555389 at 9b34fd5 on 11.138.0.19: After enrollment, a GET showed two-factor authentication enabled. This establishes API enrollment/removal behavior, not actual login enforcement. No route is inferred."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "PR66 review 5722555389 of 9b34fd5b791857625f3c7b5085f919a0a81bf124 on cPanel 11.138.0.19, 2026-10-31 (https://github.com/hostingpal/whm-api-client/pull/66#pullrequestreview-5722555389). After enrollment, a GET showed two-factor authentication enabled. API enrollment/removal is observed, not actual login enforcement. No route is inferred. Reviewer execution evidence is separate from the immutable five-GET capture and corrected offline acceptance. No new live call or capture ran for this correction."
         }
       ]
     },
@@ -116,6 +138,10 @@
         {
           "kind": "policy",
           "text": "The existing validator enforces integer type without adding general single-value enum validation. UAPI status=0 remains an API failure; null or absent data is a payload mismatch. API success does not establish a subsequent login result."
+        },
+        {
+          "kind": "observed",
+          "text": "Review 5722555389 at 9b34fd5 on 11.138.0.19: After enrollment, the typed removal returned tfa_removed. This establishes API enrollment/removal behavior, not actual login enforcement. No route is inferred."
         }
       ],
       "method": "POST",
@@ -125,6 +151,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /TwoFactorAuth/remove_user_configuration: x-readonly=false and x-rollback=none. Use form POST with no retry or rollback; retain the pinned parameter requiredness, defaults and data schema. Sensitive inputs stay out of query strings and library exception trace arguments."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "PR66 review 5722555389 of 9b34fd5b791857625f3c7b5085f919a0a81bf124 on cPanel 11.138.0.19, 2026-10-31 (https://github.com/hostingpal/whm-api-client/pull/66#pullrequestreview-5722555389). After enrollment, the typed removal returned tfa_removed. API enrollment/removal is observed, not actual login enforcement. No route is inferred. Reviewer execution evidence is separate from the immutable five-GET capture and corrected offline acceptance. No new live call or capture ran for this correction."
         }
       ]
     },
@@ -153,6 +185,10 @@
         {
           "kind": "policy",
           "text": "Preserve the flag contract without inferring a corrected prose meaning. Quoted flags, booleans, null fields and absent data are rejected. API outcome and payload flags do not prove actual login or security enforcement."
+        },
+        {
+          "kind": "observed",
+          "text": "Review 5722555389 at 9b34fd5 on 11.138.0.19: The reviewer enrolled using that leading-zero string and the typed method returned tfa_configured. A wrong code raised ApiErrorException. This establishes API enrollment/removal behavior, not actual login enforcement. No route is inferred."
         }
       ],
       "method": "POST",
@@ -168,6 +204,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /TwoFactorAuth/set_user_configuration: required tfa_token has integer schema with maxLength: 6, six-digit security-code prose and quoted CLI tfa_token='528112'. Client correction uses the existing string|int scalar override to preserve literal leading-zero strings, with native int compatibility, requiredness and sensitivity unchanged. No live POST or server acceptance observation is claimed; PR66 review 5721152661 identified the loss of leading zeroes."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "PR66 review 5722555389 of 9b34fd5b791857625f3c7b5085f919a0a81bf124 on cPanel 11.138.0.19, 2026-10-31 (https://github.com/hostingpal/whm-api-client/pull/66#pullrequestreview-5722555389). The reviewer enrolled using that leading-zero string and the typed method returned tfa_configured. A wrong code raised ApiErrorException. API enrollment/removal is observed, not actual login enforcement. No route is inferred. Reviewer execution evidence is separate from the immutable five-GET capture and corrected offline acceptance. No new live call or capture ran for this correction."
         }
       ],
       "params": {

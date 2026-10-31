@@ -69,6 +69,10 @@ final readonly class TwoFactorAuth
      * absent data is a payload mismatch. Treat returned configuration and PayloadMismatchException::$payload as
      * sensitive; do not log them. Payload content is not copied into responseMeta().
      *
+     * Observed: Review 5722555389 at 9b34fd5 on 11.138.0.19 reports generating secrets for the leading-zero TOTP
+     * fixture, but does not name generateUserConfiguration() or establish its typed response. This method remains
+     * unobserved as a separately identified typed call; no route is inferred.
+     *
      * API-map identity: uapi:TwoFactorAuth/generate_user_configuration#GET (wire name generate_user_configuration).
      *
      * @return GenerateUserConfigurationResult
@@ -147,6 +151,9 @@ final readonly class TwoFactorAuth
      * Policy: Preserve disabled zero, empty issuer and omission separately; quoted flags, booleans and null fields are
      * rejected. API success does not establish actual login behavior or security enforcement.
      *
+     * Observed: Review 5722555389 at 9b34fd5 on 11.138.0.19: After enrollment, a GET showed two-factor authentication
+     * enabled. This establishes API enrollment/removal behavior, not actual login enforcement. No route is inferred.
+     *
      * API-map identity: uapi:TwoFactorAuth/get_user_configuration#GET (wire name get_user_configuration).
      *
      * @return GetUserConfigurationResult
@@ -183,6 +190,9 @@ final readonly class TwoFactorAuth
      * Policy: The existing validator enforces integer type without adding general single-value enum validation. UAPI
      * status=0 remains an API failure; null or absent data is a payload mismatch. API success does not establish a
      * subsequent login result.
+     *
+     * Observed: Review 5722555389 at 9b34fd5 on 11.138.0.19: After enrollment, the typed removal returned tfa_removed.
+     * This establishes API enrollment/removal behavior, not actual login enforcement. No route is inferred.
      *
      * API-map identity: uapi:TwoFactorAuth/remove_user_configuration#GET (wire name remove_user_configuration).
      *
@@ -229,6 +239,10 @@ final readonly class TwoFactorAuth
      * Policy: Preserve the flag contract without inferring a corrected prose meaning. Quoted flags, booleans, null
      * fields and absent data are rejected. API outcome and payload flags do not prove actual login or security
      * enforcement.
+     *
+     * Observed: Review 5722555389 at 9b34fd5 on 11.138.0.19: The reviewer enrolled using that leading-zero string and
+     * the typed method returned tfa_configured. A wrong code raised ApiErrorException. This establishes API
+     * enrollment/removal behavior, not actual login enforcement. No route is inferred.
      *
      * API-map identity: uapi:TwoFactorAuth/set_user_configuration#GET (wire name set_user_configuration).
      *

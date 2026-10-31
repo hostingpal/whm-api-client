@@ -5679,20 +5679,35 @@ Native integers and zero remain accepted. The pinned schema says integer with
 validator or TOTP computation is added. Both arguments remain sensitive.
 
 The upstream `importKey()` parameter instruction, "You must URI-encode this
-value", is retained. Its parameter example is already percent-encoded and its
-URL sample double-encodes it (`%250A`). The client form-encodes the supplied
-string once. Neither raw input nor pre-encoding is established as universally
-correct; server decoding and `+` preservation remain unobserved. An owned fixture
-containing `+` is required under `8x0.2.54`.
+value", is retained. Its percent-encoded parameter example and double-encoded
+URL sample (`%250A`) are misleading for the behavior observed by reviewer
+5722555389 on `11.138.0.19`: upstream reads `key_data` without an extra decode.
+Pass raw armored text; the client form-encodes it once. The reviewer reimported
+an owned public key containing 34 `+` and 33 `/` characters after deleting it;
+the same ID returned and re-export matched after whitespace/header normalization.
+This establishes neither exact raw-byte/header preservation nor all-version
+compatibility. No correction reran the operation.
 
-Public-key timestamps are pinned as strings, including empty non-expiry; the
-secret-key schema instead says integers. The client retains that integer
-contract and records the risk of rejecting empty or digit-string variants.
-Populated and non-expiring secret-key rows remain unobserved under `8x0.2.54`.
-Preserve source optional fields, strict 0|1 flags, opaque results and null/missing
-distinctions. The source `tfa_removed` singleton value 1 remains an integer
-without new enum enforcement. The duplicated-1 configured-state prose discrepancy
-remains explicit in generated notes.
+The separate populated-key review `5722555389` at
+`9b34fd5b791857625f3c7b5085f919a0a81bf124` on `11.138.0.19` observed digit-string
+`bits` in both inventories and digit-string `created` and expiring `expires` in
+secret-key rows, through both direct and bridged GET. Non-expiring secret-key
+`expires` was exactly `''`. The former typed contracts raised
+`PayloadMismatchException`. The correction normalizes only these four integer
+leaves from bounded canonical integer strings, retaining native integers,
+optional omission and explicit zero. Secret-key `expires` additionally preserves
+`''` distinctly from 0. Null, noncanonical and overflowing numeric strings remain
+invalid. Public-key timestamps stay exact strings, including empty non-expiry.
+
+Both reviewer key creations returned `''` and raised `PayloadMismatchException`
+with `outcomeConfirmed=true`, yet both keys existed afterward. `generateKey()`
+now accepts exactly `''` alongside the pinned nullable opaque map. Missing data,
+nonempty strings, other scalars and nonempty lists remain invalid. Retrying after
+a confirmed outcome can create another key. These corrections pass independent
+offline fixtures; successful typed acceptance on the corrected head has not been
+live-observed. Preserve source optional fields, strict 0|1 flags and null/missing
+distinctions. The `tfa_removed` singleton and duplicated-1 configured-state prose
+discrepancy remain explicit without adding general enum enforcement.
 
 Key generation depends on entropy and may time out; timeout does not establish
 whether a key was created. Key deletion and two-factor setup/removal can alter
@@ -5706,27 +5721,43 @@ both routes. It exports no key, reads no secret-key inventory or private/team
 configuration, and makes no key/authentication changes. Remaining live variants
 and controlled lifecycle verification stay under `8x0.2.54`.
 
-Separately, [PR66 review 5721152661](https://github.com/hostingpal/whm-api-client/pull/66#pullrequestreview-5721152661)
-reports six successful GETs on `11.138.0.19`: `listPublicKeys()`,
-`listSecretKeys()` and `getUserConfiguration()` through both routes. Both key
-inventories are empty, providing no populated row or timestamp evidence. This
-reviewer report is separate from the immutable five-GET capture. All eight POST
-methods and `exportPublicKey()` remain unobserved. No correction reran live calls;
-source-only output variants and strict payload failures remain explicit.
+Historical [review 5721152661](https://github.com/hostingpal/whm-api-client/pull/66#pullrequestreview-5721152661)
+reported six successful GETs on `11.138.0.19`: empty public/secret-key inventories
+and two-factor status through both routes. Those empty lists supplied no item
+fields. The later [review 5722555389](https://github.com/hostingpal/whm-api-client/pull/66#pullrequestreview-5722555389)
+used disposable `wrvgpg`, generated expiring/non-expiring keys, revoked its temporary
+token and confirmed account/home cleanup. It also confirms typed public/secret
+export, deletion and raw-armored import; bad import/deletion inputs raised
+`ApiErrorException`.
+
+The reviewer generated secrets until an independently computed TOTP had a leading
+zero, enrolled with that string (`tfa_configured`), observed enabled state by GET,
+and removed enrollment (`tfa_removed`); a wrong code raised `ApiErrorException`.
+This establishes API enrollment/removal, not actual login enforcement. Six POST
+methods have explicit reviewer execution evidence: GPG generation (with payload
+mismatch), secret export, import, deletion, TOTP enrollment and removal. Secret
+generation for the fixture is reported, but `generateUserConfiguration()` and its
+typed result are not separately established. `getTeamUserConfiguration()` also
+remains unobserved. Only the list reads are explicitly attributed to both routes;
+no route is inferred for the other reviewer operations. The committed five-GET
+capture, separate reviewer execution and corrected offline acceptance remain
+separate. Remaining routes, compatibility variants, committed mutation evidence,
+team configuration, login and cryptographic behavior stay under `8x0.2.54`.
 
 ## GPG public-key and two-factor status evidence
 
 The [GPG/two-factor capture](evidence/2026-10-31-gpg-two-factor.json) at
 `f213ab81d8e6b775c786a67cba1d518e96718d47` on `11.138.0.19` passes all five
 GET observations and strict assessment with zero discrepancies. Public-key
-inventories are empty on both routes; populated key rows and timestamp variants
-remain unobserved. Two-factor status returns an integer is_enabled with issuer
+inventories are empty on both routes; that capture establishes no populated key
+row or timestamp variants. Two-factor status returns an integer is_enabled with issuer
 omitted on both routes; no specific flag value or login enforcement is inferred
 from the structural artifact.
 
-No keys were exported, created, imported or deleted; no secret-key inventory,
-private/team configuration or authentication mutation was read or executed.
-The capture observes two API methods plus version; separate reviewer GETs are
-described above. All eight POST methods and remaining variants stay under
+That capture exported, created, imported and deleted no keys, and read no
+secret-key inventory or private/team configuration; it ran no authentication
+mutation. It observes two API methods plus version. The later separate reviewer
+lifecycle is described above and does not modify this historical artifact.
+Remaining route/compatibility variants and committed mutation evidence stay under
 `8x0.2.54`. SHA-256:
 `b88fe3ee6f8af6de0676022bb4449d997a2a5a578b2e624688db963702adb127`.

@@ -18,7 +18,7 @@ use Psr\Http\Message\RequestInterface;
 use ReflectionMethod;
 use SensitiveParameter;
 
-/** Independent literal request and payload contracts, derived from the pinned source. */
+/** Independent literal contracts from pinned sources and separately reviewed wire shapes. */
 final class UapiGpgTest extends TestCase
 {
     /** @param array<array-key, mixed>|null $expected */
@@ -154,12 +154,164 @@ final class UapiGpgTest extends TestCase
         self::assertNull($other->responseMeta());
     }
 
+    /** @param list<array<string, int|string>> $expected */
+    #[DataProvider('populatedLists')]
+    public function testPopulatedExpiringAndNonExpiringKeysNormalizeOnlyReviewedFields(
+        string $route,
+        string $function,
+        string $payload,
+        array $expected,
+    ): void {
+        [$account, $http] = self::account($route);
+        $http->addResponse(new Response(200, [], self::envelope($route, $payload)));
+        try {
+            $result = self::invoke($account, $function);
+        } catch (PayloadMismatchException $error) {
+            self::assertTrue($error->outcomeConfirmed);
+            self::fail('Reviewed populated key rows must pass their corrected contract.');
+        }
+        self::assertSame($expected, $result);
+        self::assertRequest($http, $route, $function);
+        self::assertCount(1, $http->getRequests());
+        self::assertSame(1, $account->responseMeta()?->uapiStatus());
+    }
+
+    /** @return iterable<string, array{string, string, string, list<array<string, int|string>>}> */
+    public static function populatedLists(): iterable
+    {
+        foreach (self::routes() as [$route]) {
+            yield $route . ' public keys' => [$route, 'list_public_keys',
+                '[{"algorithm":"RSA","bits":"2048","created":"1700000000","expires":"1800000000",'
+                    . '"id":"FIXTURE-EXPIRING","type":"pub","user_id":"Fixture Expiring"},'
+                    . '{"algorithm":"RSA","bits":"4096","created":"1700000001","expires":"",'
+                    . '"id":"FIXTURE-NONEXPIRING","type":"pub","user_id":"Fixture Nonexpiring"}]',
+                [
+                    ['algorithm' => 'RSA', 'bits' => 2048, 'created' => '1700000000', 'expires' => '1800000000',
+                        'id' => 'FIXTURE-EXPIRING', 'type' => 'pub', 'user_id' => 'Fixture Expiring'],
+                    ['algorithm' => 'RSA', 'bits' => 4096, 'created' => '1700000001', 'expires' => '',
+                        'id' => 'FIXTURE-NONEXPIRING', 'type' => 'pub', 'user_id' => 'Fixture Nonexpiring'],
+                ]];
+            yield $route . ' secret keys' => [$route, 'list_secret_keys',
+                '[{"algorithm":"RSA","bits":"2048","created":"1700000000","expires":"1800000000",'
+                    . '"id":"FIXTURE-EXPIRING","type":"sec","user_id":"Fixture Expiring"},'
+                    . '{"algorithm":"RSA","bits":"4096","created":"1700000001","expires":"",'
+                    . '"id":"FIXTURE-NONEXPIRING","type":"sec","user_id":"Fixture Nonexpiring"}]',
+                [
+                    ['algorithm' => 'RSA', 'bits' => 2048, 'created' => 1700000000, 'expires' => 1800000000,
+                        'id' => 'FIXTURE-EXPIRING', 'type' => 'sec', 'user_id' => 'Fixture Expiring'],
+                    ['algorithm' => 'RSA', 'bits' => 4096, 'created' => 1700000001, 'expires' => '',
+                        'id' => 'FIXTURE-NONEXPIRING', 'type' => 'sec', 'user_id' => 'Fixture Nonexpiring'],
+                ]];
+        }
+    }
+
+    #[DataProvider('routes')]
+    public function testGenerationPreservesExactEmptyStringAfterConfirmedOutcomeWithoutRetry(string $route): void
+    {
+        [$account, $http] = self::account($route);
+        $http->addResponse(new Response(200, [], self::envelope($route, '""')));
+        try {
+            $result = $account->gpg()->generateKey('fixture@example.test', 'Fixture', 'fixture-passphrase');
+        } catch (PayloadMismatchException $error) {
+            self::assertTrue($error->outcomeConfirmed);
+            self::fail('The observed empty-string generation payload must pass after API success.');
+        }
+        self::assertSame('', $result);
+        self::assertCount(1, $http->getRequests());
+        $metadata = $account->responseMeta();
+        self::assertNotNull($metadata);
+        self::assertSame(1, $metadata->uapiStatus());
+        self::assertSame($route === 'bridge' ? 1 : null, $metadata->whmResult());
+        self::assertArrayNotHasKey('data', $metadata->uapi ?? []);
+    }
+
     /** @return iterable<string, array{string}> */
     public static function routes(): iterable
     {
         yield 'direct' => ['direct'];
         yield 'bare' => ['bare'];
         yield 'bridge' => ['bridge'];
+    }
+
+    /** @return iterable<string, array{string, string, string}> */
+    public static function numericLeaves(): iterable
+    {
+        foreach (self::routes() as [$route]) {
+            foreach (
+                [
+                    'list_public_keys' => ['bits'],
+                    'list_secret_keys' => ['bits', 'created', 'expires'],
+                ] as $function => $fields
+            ) {
+                foreach ($fields as $field) {
+                    yield "$route $function $field" => [$route, $function, $field];
+                }
+            }
+        }
+    }
+
+    #[DataProvider('numericLeaves')]
+    public function testReviewedIntegerLeavesPreserveNativeValuesAndNormalizeCanonicalBounds(
+        string $route,
+        string $function,
+        string $field,
+    ): void {
+        foreach (
+            [
+                ['0', 0], ['"0"', 0], ['-1', -1], ['"-1"', -1],
+                ['9223372036854775807', PHP_INT_MAX], ['"9223372036854775807"', PHP_INT_MAX],
+                ['-9223372036854775808', PHP_INT_MIN], ['"-9223372036854775808"', PHP_INT_MIN],
+            ] as [$wire, $expected]
+        ) {
+            [$account, $http] = self::account($route);
+            $http->addResponse(new Response(200, [], self::envelope($route, '[{"' . $field . '":' . $wire . '}]')));
+            self::assertSame([[$field => $expected]], self::invoke($account, $function));
+            self::assertCount(1, $http->getRequests());
+        }
+    }
+
+    #[DataProvider('numericLeaves')]
+    public function testReviewedIntegerLeavesRejectNoncanonicalOverflowAndWrongTypes(
+        string $route,
+        string $function,
+        string $field,
+    ): void {
+        $invalid = ['"00"', '"+1"', '"-0"', '" 1"', '"1 "', '"1.0"', '"1e3"', '"text"',
+            '"9223372036854775808"', '"-9223372036854775809"', 'null', 'true', 'false', '1.5', '[]', '{}'];
+        if ($function !== 'list_secret_keys' || $field !== 'expires') {
+            $invalid[] = '""';
+        }
+        foreach ($invalid as $value) {
+            [$account, $http] = self::account($route);
+            $http->addResponse(new Response(200, [], self::envelope($route, '[{"' . $field . '":' . $value . '}]')));
+            try {
+                self::invoke($account, $function);
+                self::fail('The reviewed integer leaf must reject this noncanonical or malformed value.');
+            } catch (PayloadMismatchException $error) {
+                self::assertTrue($error->outcomeConfirmed);
+                self::assertSame($account->responseMeta(), $error->metadata);
+                self::assertSame(1, $error->metadata?->uapiStatus());
+            }
+            self::assertCount(1, $http->getRequests());
+        }
+    }
+
+    #[DataProvider('routes')]
+    public function testGenerationEmptyStringAlternativeDoesNotAdmitOtherStringOrScalarResults(string $route): void
+    {
+        foreach (['" "', '"0"', '"created"', '0', 'false', 'true', '1.5', '[{}]', '[""]', '[1]', null] as $payload) {
+            [$account, $http] = self::account($route);
+            $http->addResponse(new Response(200, [], self::envelope($route, $payload)));
+            try {
+                $account->gpg()->generateKey('fixture@example.test', 'Fixture', 'fixture-passphrase');
+                self::fail('Only the exact empty string extends the pinned nullable map result.');
+            } catch (PayloadMismatchException $error) {
+                self::assertTrue($error->outcomeConfirmed);
+                self::assertSame($account->responseMeta(), $error->metadata);
+                self::assertSame(1, $error->metadata?->uapiStatus());
+            }
+            self::assertCount(1, $http->getRequests());
+        }
     }
 
     private static function assertRequest(MockClient $http, string $route, string $function): void
@@ -263,10 +415,10 @@ final class UapiGpgTest extends TestCase
                     }
                 }
                 foreach (['created', 'expires'] as $field) {
-                    $bad[] = '[{"' . $field . '":' . ($function === 'list_public_keys' ? '0' : '"0"') . '}]';
+                    $bad[] = '[{"' . $field . '":' . ($function === 'list_public_keys' ? '0' : '"00"') . '}]';
                     $bad[] = '[{"' . $field . '":null}]';
                 }
-                array_push($bad, '[{"bits":"2048"}]', '[{"bits":false}]', '[{"bits":2048.5}]');
+                array_push($bad, '[{"bits":"02048"}]', '[{"bits":false}]', '[{"bits":2048.5}]');
             } else {
                 $bad[] = '[{}]';
                 if ($function === 'import_key' || str_starts_with($function, 'export_')) {

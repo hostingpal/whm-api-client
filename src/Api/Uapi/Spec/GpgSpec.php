@@ -71,7 +71,13 @@ final class GpgSpec
             'keysize' => ['name' => 'keysize', 'encoding' => 'scalar'],
             'noExpire' => ['name' => 'no_expire', 'encoding' => 'bool'],
         ],
-        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+        'returns' => [
+            'type' => 'union',
+            'anyOf' => [
+                ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+                ['type' => 'string', 'literal' => ''],
+            ],
+        ],
     ];
 
     public const IMPORT_KEY = [
@@ -102,7 +108,7 @@ final class GpgSpec
                 'type' => 'object',
                 'fields' => [
                     'algorithm' => ['type' => 'string'],
-                    'bits' => ['type' => 'int'],
+                    'bits' => ['type' => 'int', 'accept' => ['numeric-string']],
                     'created' => ['type' => 'string'],
                     'expires' => ['type' => 'string'],
                     'id' => ['type' => 'string'],
@@ -125,9 +131,15 @@ final class GpgSpec
                 'type' => 'object',
                 'fields' => [
                     'algorithm' => ['type' => 'string'],
-                    'bits' => ['type' => 'int'],
-                    'created' => ['type' => 'int'],
-                    'expires' => ['type' => 'int'],
+                    'bits' => ['type' => 'int', 'accept' => ['numeric-string']],
+                    'created' => ['type' => 'int', 'accept' => ['numeric-string']],
+                    'expires' => [
+                        'type' => 'union',
+                        'anyOf' => [
+                            ['type' => 'int', 'accept' => ['numeric-string']],
+                            ['type' => 'string', 'literal' => ''],
+                        ],
+                    ],
                     'id' => ['type' => 'string'],
                     'type' => ['type' => 'string'],
                     'user_id' => ['type' => 'string'],
