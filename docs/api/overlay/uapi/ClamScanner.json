@@ -1,0 +1,318 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "ClamScanner",
+  "accessor": "clamScanner",
+  "operations": {
+    "uapi:ClamScanner/check_disinfection_status": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 94 and later. Operates on the selected account. The documented workflow starts a scan, polls getScanStatus until complete, lists infected files, lets the user choose each action, queues JSON disinfection and polls checkDisinfectionStatus. This client does not start or poll automatically. disinfectFiles is excluded pending JSON transport under whm-api-client-8x0.1.18."
+        },
+        {
+          "kind": "documented",
+          "text": "Omit lastId to return the entire disinfection log; supplying the last received record ID returns only subsequent records and is recommended for polling performance. The source specifies an integer minimum of 1; values are forwarded without client-side range enforcement."
+        },
+        {
+          "kind": "documented",
+          "text": "details preserves step, issue and done record fields: optional file, numeric id, message and state, with type required in every alternative. The pinned step/issue alternatives require state, while done requires only type. Existing object-union merging preserves all fields and common requiredness; it does not enforce a discriminator-dependent state rule. Numeric IDs may be integers or fractional numbers."
+        },
+        {
+          "kind": "documented",
+          "text": "The status prose lists done, none, queued and running, while its formal enum lists done, queued and running. Keep the string contract without inventing a closed runtime enum. log is the disinfection log path; results do not initiate disinfection or fetch any file."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /ClamScanner/check_disinfection_status GET declares x-readonly=true. Preserve the read-only GET. Preserve the inline response schema, required fields, nullable data and exact scalar units/types; infer no response list from a plural operation name."
+        }
+      ]
+    },
+    "uapi:ClamScanner/get_scan_paths": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 94 and later. Operates on the selected account. The documented workflow starts a scan, polls getScanStatus until complete, lists infected files, lets the user choose each action, queues JSON disinfection and polls checkDisinfectionStatus. This client does not start or poll automatically. disinfectFiles is excluded pending JSON transport under whm-api-client-8x0.1.18."
+        },
+        {
+          "kind": "documented",
+          "text": "Available scan types depend on the administrator settings in Configure ClamAV. The pinned formal data schema is one object with optional id and message strings. id documents home, mail, public_html and public_ftp; the field descriptions describe one path/type record."
+        },
+        {
+          "kind": "observed",
+          "text": "The initial 2026-10-31 capture observed a list of objects on both routes but masked leaf names after a root mismatch. The corrected capture at aee24c1081727cd66b8ef86aced5bd27d7e83375 records named id and message string fields in list items on both routes. Preserve the pinned object alternative and the reviewed list of optional id/message records. These observations establish neither every scan type nor record counts; null and missing payloads remain invalid."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /ClamScanner/get_scan_paths GET declares x-readonly=true. Preserve the read-only GET. Preserve the inline response schema, required fields, nullable data and exact scalar units/types; infer no response list from a plural operation name."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /ClamScanner/get_scan_paths/get/responses/200/content/application~1json/schema/properties/result/properties/data is an object with optional id and message strings. Its prose says the function gets the available local paths permitted for scanning, and available scan types depend on administrator settings. id is described as the type of path and message as a short description of the path. Together these describe a per-path record; use the same documented fields for the observed list of records while preserving the formal object alternative. The initial list item contract was source-inferred; a separately recorded corrected capture later observed named id/message string fields. No extra fields, requiredness or nullable fields are inferred."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Immutable docs/api/evidence/2026-10-31-security-access.json SHA-256 4697e246b36b465efa814273d583d2c50c72d795352f3205eba0d983ac14ea77, revision 91fce03c2cc0e24893d9c269b51a2c7d02644f0b on cPanel 11.138.0.19, records API-success GET observations through direct UAPI and the WHM bridge. For get_scan_paths, payload_paths are $:list, $[]:object and $[].*:string, with a root type_mismatch against the documented object. These masked paths establish the list/object container only; they do not identify keys, named field types, record counts or values. Add the list alternative using the separately cited documented per-path record, retain the original object and reject null/missing payloads. No waiver is added and the original artifact remains failed.",
+          "fingerprint": "docs/api/evidence/2026-10-31-security-access.json"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Immutable docs/api/evidence/2026-10-31-security-access-corrected.json SHA-256 6c0d5ace2ea0795b778c68f552bd2d0852ab8848fb26bc213823ce4916bb63a0 at revision aee24c1081727cd66b8ef86aced5bd27d7e83375 on 11.138.0.19 records successful direct and bridged get_scan_paths GETs with $:list, $[]:object, $[].id:string and $[].message:string. This corrects the stale claim that no named live list fields were established. It establishes no record counts or field values. Both existing captures and their other failed outcomes remain unchanged.",
+          "fingerprint": "docs/api/evidence/2026-10-31-security-access-corrected.json"
+        }
+      ],
+      "response": {
+        "": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "object",
+                "fields": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "message": {
+                    "type": "string"
+                  }
+                }
+              },
+              {
+                "type": "list",
+                "items": {
+                  "type": "object",
+                  "fields": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /ClamScanner/get_scan_paths/get/responses/200/content/application~1json/schema/properties/result/properties/data is an object with optional id and message strings. Its prose says the function gets the available local paths permitted for scanning, and available scan types depend on administrator settings. id is described as the type of path and message as a short description of the path. Together these describe a per-path record; use the same documented fields for the observed list of records while preserving the formal object alternative. The initial list item contract was source-inferred; a separately recorded corrected capture later observed named id/message string fields. No extra fields, requiredness or nullable fields are inferred."
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Immutable docs/api/evidence/2026-10-31-security-access.json SHA-256 4697e246b36b465efa814273d583d2c50c72d795352f3205eba0d983ac14ea77, revision 91fce03c2cc0e24893d9c269b51a2c7d02644f0b on cPanel 11.138.0.19, records API-success GET observations through direct UAPI and the WHM bridge. For get_scan_paths, payload_paths are $:list, $[]:object and $[].*:string, with a root type_mismatch against the documented object. These masked paths establish the list/object container only; they do not identify keys, named field types, record counts or values. Add the list alternative using the separately cited documented per-path record, retain the original object and reject null/missing payloads. No waiver is added and the original artifact remains failed.",
+              "fingerprint": "docs/api/evidence/2026-10-31-security-access.json"
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Immutable docs/api/evidence/2026-10-31-security-access-corrected.json SHA-256 6c0d5ace2ea0795b778c68f552bd2d0852ab8848fb26bc213823ce4916bb63a0 at revision aee24c1081727cd66b8ef86aced5bd27d7e83375 on 11.138.0.19 records successful direct and bridged get_scan_paths GETs with $:list, $[]:object, $[].id:string and $[].message:string. This corrects the stale claim that no named live list fields were established. It establishes no record counts or field values. Both existing captures and their other failed outcomes remain unchanged.",
+              "fingerprint": "docs/api/evidence/2026-10-31-security-access-corrected.json"
+            }
+          ]
+        }
+      }
+    },
+    "uapi:ClamScanner/get_scan_status": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 94 and later. Operates on the selected account. The documented workflow starts a scan, polls getScanStatus until complete, lists infected files, lets the user choose each action, queues JSON disinfection and polls checkDisinfectionStatus. This client does not start or poll automatically. disinfectFiles is excluded pending JSON transport under whm-api-client-8x0.1.18."
+        },
+        {
+          "kind": "documented",
+          "text": "current_file is the current path and infected_files is a string list. scan_complete remains integer 0/1. scanned_file_count and total_file_count count files; scanned_file_size is bytes and total_file_size_MiB is the separately named total megabyte quantity. time_started is an epoch timestamp string, not an integer. Preserve omission separately from zero, empty lists and empty strings."
+        },
+        {
+          "kind": "observed",
+          "text": "The initial 2026-10-31 capture returned explicit null data with API success on both routes. Preserve null separately from the documented status object and an absent payload. The capture establishes no reason for null, scan state or completion behavior; no scan was started."
+        },
+        {
+          "kind": "observed",
+          "text": "On 11.138.0.19, time_started was an integer through both routes after a startScan() attempt, including a failed attempt while ClamAV was absent. Preserve int|string losslessly; strings are not parsed or narrowed to float. The other seven fields retain their pinned types. A status record does not establish that a scan completed."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /ClamScanner/get_scan_status GET declares x-readonly=true. Preserve the read-only GET. Preserve the inline response schema, required fields, nullable data and exact scalar units/types; infer no response list from a plural operation name."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Immutable docs/api/evidence/2026-10-31-security-access.json SHA-256 4697e246b36b465efa814273d583d2c50c72d795352f3205eba0d983ac14ea77, revision 91fce03c2cc0e24893d9c269b51a2c7d02644f0b on cPanel 11.138.0.19, records API-success GET observations through direct UAPI and the WHM bridge. For get_scan_status, both payload_paths record $:null and the successful API response failed only the root object type. Permit explicit null at this operation root while preserving the documented object fields, their exact types and optional presence. No named field becomes nullable and absent data remains invalid. The observation establishes no scan state or meaning for null; no scanner work was started.",
+          "fingerprint": "docs/api/evidence/2026-10-31-security-access.json"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer 5720388941 against 12f57c20c78c7727b73205cea028fa5cb6fe94ed observed time_started as an integer on both routes on 11.138.0.19 after a startScan attempt; the remaining seven fields passed. A failed start attempt can also leave such a status record when ClamAV is absent. Preserve the pinned string and observed integer alternatives losslessly, without converting strings to numeric values. Keep all other types, optional fields and existing root nullability unchanged; absent data remains invalid. No completed scan is established.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/44#pullrequestreview-5720388941"
+        }
+      ],
+      "response": {
+        "": {
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /ClamScanner/get_scan_status/get/responses/200/content/application~1json/schema/properties/result/properties/data declares these eight optional fields: current_file string, infected_files string list, scan_complete integer 0/1 flag, integer scanned_file_count/scanned_file_size/total_file_count/total_file_size_MiB and string time_started. No field is required or nullable. The initial correction preserved all field types and added root nullability. Later reviewer evidence separately widens only time_started to lossless int|string; no field becomes nullable."
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Immutable docs/api/evidence/2026-10-31-security-access.json SHA-256 4697e246b36b465efa814273d583d2c50c72d795352f3205eba0d983ac14ea77, revision 91fce03c2cc0e24893d9c269b51a2c7d02644f0b on cPanel 11.138.0.19, records API-success GET observations through direct UAPI and the WHM bridge. For get_scan_status, both payload_paths record $:null and the successful API response failed only the root object type. Permit explicit null at this operation root while preserving the documented object fields, their exact types and optional presence. No named field becomes nullable and absent data remains invalid. The observation establishes no scan state or meaning for null; no scanner work was started.",
+              "fingerprint": "docs/api/evidence/2026-10-31-security-access.json"
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer 5720388941 against 12f57c20c78c7727b73205cea028fa5cb6fe94ed observed time_started as an integer on both routes on 11.138.0.19 after a startScan attempt; the remaining seven fields passed. A failed start attempt can also leave such a status record when ClamAV is absent. Preserve the pinned string and observed integer alternatives losslessly, without converting strings to numeric values. Keep all other types, optional fields and existing root nullability unchanged; absent data remains invalid. No completed scan is established.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/44#pullrequestreview-5720388941"
+            }
+          ],
+          "replace": {
+            "type": "object",
+            "nullable": true,
+            "fields": {
+              "current_file": {
+                "type": "string"
+              },
+              "infected_files": {
+                "type": "list",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "scan_complete": {
+                "type": "flag"
+              },
+              "scanned_file_count": {
+                "type": "int"
+              },
+              "scanned_file_size": {
+                "type": "int"
+              },
+              "time_started": {
+                "type": "union",
+                "anyOf": [
+                  {
+                    "type": "int"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              },
+              "total_file_count": {
+                "type": "int"
+              },
+              "total_file_size_MiB": {
+                "type": "int"
+              }
+            }
+          }
+        }
+      }
+    },
+    "uapi:ClamScanner/list_infected_files": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 94 and later. Operates on the selected account. The documented workflow starts a scan, polls getScanStatus until complete, lists infected files, lets the user choose each action, queues JSON disinfection and polls checkDisinfectionStatus. This client does not start or poll automatically. disinfectFiles is excluded pending JSON transport under whm-api-client-8x0.1.18."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a list with optional absolute file path and virus_type in each row. Empty results remain an empty list. Paths and virus descriptions are payload data; the client does not open the files or take any action on them."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /ClamScanner/list_infected_files GET declares x-readonly=true. Preserve the read-only GET. Preserve the inline response schema, required fields, nullable data and exact scalar units/types; infer no response list from a plural operation name."
+        }
+      ]
+    },
+    "uapi:ClamScanner/start_scan": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 94 and later. Operates on the selected account. The documented workflow starts a scan, polls getScanStatus until complete, lists infected files, lets the user choose each action, queues JSON disinfection and polls checkDisinfectionStatus. This client does not start or poll automatically. disinfectFiles is excluded pending JSON transport under whm-api-client-8x0.1.18."
+        },
+        {
+          "kind": "documented",
+          "text": "scanType is required: home scans the entire account home, mail the email directory, public_html the web directory and public_ftp the FTP directory. Availability depends on administrator configuration. Starts scanner work immediately; the source declares no rollback and the client neither retries nor rolls back."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a nullable object without pinned fields. Preserve opaque fields and explicit null; an absent data member is a payload mismatch. No task ID or successful scan completion is inferred from this result."
+        },
+        {
+          "kind": "observed",
+          "text": "On the reviewed 11.138.0.19 server, startScan() failed because the ClamAV plugin was not installed. The attempt could still leave a getScanStatus() record. This server-state limitation establishes no completed scan and does not change API-error handling or authorize an automatic retry."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /ClamScanner/start_scan GET declares x-readonly=false. Use form POST because this starts scanner work and x-rollback=none. Preserve the inline response schema, required fields, nullable data and exact scalar units/types; infer no response list from a plural operation name."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer 5720388941 reports startScan failure due to absent ClamAV on this server, with no completed scan. Scan-status records can remain after a failed attempt; this is state evidence, not a universal version restriction.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/44#pullrequestreview-5720388941"
+        }
+      ]
+    },
+    "uapi:ClamScanner/disinfect_files": {
+      "exclude": {
+        "reason": "Requires an application/json request body with a dynamic actions object mapping infected-file paths to disinfection choices. JSON transport remains under whm-api-client-8x0.1.18; generic GET/form POST calls cannot represent this body. This operation is not deprecated.",
+        "evidence": [
+          {
+            "kind": "doc",
+            "version": "pinned 2026-10-13",
+            "date": "2026-10-31",
+            "note": "Pinned /ClamScanner/disinfect_files POST requestBody/content/application~1json/schema/properties/actions is an object whose additionalProperties enum is cleanse_mailbox, delete, quarantine or ignore. The property names are absolute or account-home-relative file paths. x-readonly=false and x-rollback=none; preserve the JSON transport exclusion rather than inventing a scalar form serialization."
+          }
+        ]
+      }
+    }
+  }
+}

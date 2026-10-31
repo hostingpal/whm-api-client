@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace HostingPal\WhmApiClient\Tests\Api;
 
+use Error;
 use HostingPal\WhmApiClient\Api\Whm\Resellers;
 use HostingPal\WhmApiClient\Client;
 use HostingPal\WhmApiClient\Exception\ApiErrorException;
 use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
 use HostingPal\WhmApiClient\Http\HttpTransport;
+use HostingPal\WhmApiClient\Tests\Fixtures\WeakResellerCaller;
 use Http\Mock\Client as MockClient;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7\Response;
@@ -16,10 +18,28 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
 use ReflectionMethod;
+use ReflectionNamedType;
 use SensitiveParameter;
+use TypeError;
 
 final class WhmResellersTest extends TestCase
 {
+    /** The 59 assignment switches independently enumerated from the pinned setacls parameters. */
+    private const ASSIGNMENT_SWITCHES = [
+        'aclAcctSummary', 'aclAddPkg', 'aclAddPkgIp', 'aclAddPkgShell', 'aclAll',
+        'aclAllowAddoncreate', 'aclAllowParkedcreate', 'aclAllowUnlimitedBwPkgs', 'aclAllowUnlimitedDiskPkgs',
+        'aclAllowUnlimitedPkgs', 'aclBasicSystemInfo', 'aclBasicWhmFunctions', 'aclClustering', 'aclCorsProxyGet',
+        'aclCpanelApi', 'aclCpanelIntegration', 'aclCreateAcct', 'aclCreateDns', 'aclCreateUserSession',
+        'aclDemoSetup',
+        'aclDigestAuth', 'aclDisallowShell', 'aclEditAccount', 'aclEditDns', 'aclEditMx', 'aclEditPkg',
+        'aclGenerateEmailConfig', 'aclKillAcct', 'aclKillDns', 'aclLimitBandwidth', 'aclListAccts', 'aclListPkgs',
+        'aclLocaleEdit', 'aclMailcheck', 'aclManageApiTokens', 'aclManageDnsRecords', 'aclManageOidc',
+        'aclManageStyles',
+        'aclMysqlInfo', 'aclNameserverConfig', 'aclNews', 'aclParkDns', 'aclPasswd', 'aclQuota', 'aclRearrangeAccts',
+        'aclResftp', 'aclRestart', 'aclShowBandwidth', 'aclSsl', 'aclSslBuy', 'aclSslGencrt', 'aclSslInfo', 'aclStats',
+        'aclStatus', 'aclSuspendAcct', 'aclThirdparty', 'aclTrackEmail', 'aclUpgradeAccount', 'aclViewglobalpackages',
+    ];
+
     /** @return iterable<string, array{string, array<array-key, mixed>, string, string, string, ?string, mixed}> */
     public static function operations(): iterable
     {
@@ -71,7 +91,7 @@ final class WhmResellersTest extends TestCase
         yield 'public contact mutation' => ['setPublicContact', ['', 'https://example.test/?a=1&b=2'],
             'set_public_contact', 'POST', 'name=&url=https%3A%2F%2Fexample.test%2F%3Fa%3D1%26b%3D2', null, null];
         yield 'inline ACL grant names differ from save' => ['setAcls',
-            ['reseller' => 'reseller', 'aclDisallowShell' => 1, 'aclNameserverConfig' => 1],
+            ['reseller' => 'reseller', 'aclDisallowShell' => true, 'aclNameserverConfig' => true],
             'setacls', 'POST', 'reseller=reseller&acl-disallow-shell=1&acl-nameserver-config=1',
             '{"acl":["disallow-shell","nameserver-config"]}', ['acl' => ['disallow-shell', 'nameserver-config']]];
         yield 'delegate all available IPs' => ['setResellerIps', ['reseller', false, '192.0.2.1,192.0.2.2'],
@@ -83,8 +103,8 @@ final class WhmResellersTest extends TestCase
             . 'count_limit=0&enable_overselling=1&enable_overselling_bandwidth=0&enable_ov'
             . 'erselling_diskspace=1&enable_package_limit_numbers=0&enable_package_limits='
             . '1&enable_resource_limits=0', null, null];
-        yield 'main shared IP' => ['setResellerMainIp', ['192.0.2.3', 'reseller'],
-            'setresellermainip', 'POST', 'ip=192.0.2.3&user=reseller', null, null];
+        yield 'main shared IP' => ['setResellerMainIp', ['reseller', '192.0.2.3'],
+            'setresellermainip', 'POST', 'user=reseller&ip=192.0.2.3', null, null];
         yield 'nameservers' => ['setResellerNameservers', ['reseller', 'ns1.example.test,ns2.example.test'],
             'setresellernameservers', 'POST',
             'user=reseller&nameservers=ns1.example.test%2Cns2.example.test', null, null];
@@ -93,11 +113,11 @@ final class WhmResellersTest extends TestCase
             'user=reseller&allowed=0&no_limit=0&number=5&package=plan%20%2B%26%3D', null, null];
         yield 'retain existing owner' => ['setupReseller', ['reseller', false], 'setupreseller', 'POST',
             'user=reseller&makeowner=0', null, null];
-        yield 'suspend owned accounts' => ['suspendReseller', ['reseller', false, 'Private reason +&=', false],
-            'suspendreseller', 'POST', 'user=reseller&disallow=0&reason=Private%20reason%20%2B%26%3D&reseller-only='
+        yield 'suspend owned accounts' => ['suspendReseller', ['reseller', 'Private reason +&=', false, false],
+            'suspendreseller', 'POST', 'user=reseller&reason=Private%20reason%20%2B%26%3D&disallow=0&reseller-only='
             . '0', null, null];
-        yield 'termination account results' => ['terminateReseller', [false, 'reseller'], 'terminatereseller',
-            'POST', 'terminatereseller=0&user=reseller',
+        yield 'termination account results' => ['terminateReseller', ['reseller', false], 'terminatereseller',
+            'POST', 'user=reseller&terminatereseller=0',
             '{"acct":[{"output":{"raw":"<p>removed</p>"},"reason":"child removed","resul'
             . 't":1,"user":"child"},{"reason":"not removed","result":0,"user":"other"}]}',
             ['acct' => [['output' => ['raw' => '<p>removed</p>'], 'reason' => 'child removed',
@@ -168,8 +188,8 @@ final class WhmResellersTest extends TestCase
         yield 'unlimited enhancement omits limit' => ['setEnhancementLimit', ['reseller', 'plugin', false],
             'set_enhancement_limit', 'POST', 'account=reseller&id=plugin&limited=0', 'null', null];
         yield 'omitted public contact' => ['setPublicContact', [], 'set_public_contact', 'POST', '', 'null', null];
-        yield 'named ACL assignment' => ['setAcls', ['reseller' => 'reseller', 'acllist' => 'basic', 'user' => 'alias'],
-            'setacls', 'POST', 'reseller=reseller&acllist=basic&user=alias', '{"acl":[]}', ['acl' => []]];
+        yield 'named ACL assignment' => ['setAcls', ['reseller' => 'reseller', 'acllist' => 'basic'],
+            'setacls', 'POST', 'reseller=reseller&acllist=basic', '{"acl":[]}', ['acl' => []]];
         yield 'IP omission clears list' => ['setResellerIps', ['reseller'], 'setresellerips', 'POST',
             'user=reseller', '{"ip":[]}', ['ip' => []]];
         yield 'empty IP list argument' => ['setResellerIps', ['reseller', true, ''], 'setresellerips', 'POST',
@@ -186,10 +206,10 @@ final class WhmResellersTest extends TestCase
             'user=reseller', 'null', null];
         yield 'default suspension includes owned' => ['suspendReseller', ['reseller'], 'suspendreseller', 'POST',
             'user=reseller', 'null', null];
-        yield 'empty reason and reseller-only suspension' => ['suspendReseller', ['reseller', true, '', true],
-            'suspendreseller', 'POST', 'user=reseller&disallow=1&reason=&reseller-only=1', null, null];
-        yield 'empty termination results' => ['terminateReseller', [true, 'reseller'], 'terminatereseller', 'POST',
-            'terminatereseller=1&user=reseller', '{"acct":[]}', ['acct' => []]];
+        yield 'empty reason and reseller-only suspension' => ['suspendReseller', ['reseller', '', true, true],
+            'suspendreseller', 'POST', 'user=reseller&reason=&disallow=1&reseller-only=1', null, null];
+        yield 'empty termination results' => ['terminateReseller', ['reseller', true], 'terminatereseller', 'POST',
+            'user=reseller&terminatereseller=1', '{"acct":[]}', ['acct' => []]];
         yield 'explicit null revoked status data' => ['unsetupReseller', ['reseller'], 'unsetupreseller', 'POST',
             'user=reseller', 'null', null];
         yield 'default unsuspension includes owned' => ['unsuspendReseller', ['reseller'], 'unsuspendreseller',
@@ -286,10 +306,10 @@ final class WhmResellersTest extends TestCase
             ['setAcls', ['reseller'], 'setacls', '{"acl":[1]}'],
             ['setResellerIps', ['reseller'], 'setresellerips', '{"all":"1"}'],
             ['setResellerIps', ['reseller'], 'setresellerips', '{"ip":[false]}'],
-            ['terminateReseller', [false, 'reseller'], 'terminatereseller', '{"acct":[{"output":{"raw":1}}]}'],
-            ['terminateReseller', [false, 'reseller'], 'terminatereseller', '{"acct":[{"reason":null}]}'],
-            ['terminateReseller', [false, 'reseller'], 'terminatereseller', '{"acct":[{"result":"1"}]}'],
-            ['terminateReseller', [false, 'reseller'], 'terminatereseller', '{"acct":[{"user":false}]}'],
+            ['terminateReseller', ['reseller', false], 'terminatereseller', '{"acct":[{"output":{"raw":1}}]}'],
+            ['terminateReseller', ['reseller', false], 'terminatereseller', '{"acct":[{"reason":null}]}'],
+            ['terminateReseller', ['reseller', false], 'terminatereseller', '{"acct":[{"result":"1"}]}'],
+            ['terminateReseller', ['reseller', false], 'terminatereseller', '{"acct":[{"user":false}]}'],
         ];
         foreach ($cases as $index => $case) {
             yield 'leaf ' . $index => $case;
@@ -521,65 +541,65 @@ final class WhmResellersTest extends TestCase
         $http->addResponse(new Response(200, [], self::envelope('setacls', '{"acl":[]}')));
         self::assertSame(['acl' => []], $client->whm()->resellers()->setAcls(
             reseller: 'reseller',
-            aclAcctSummary: 1,
-            aclAddPkg: 1,
-            aclAddPkgIp: 1,
-            aclAddPkgShell: 1,
-            aclAll: 1,
-            aclAllowAddoncreate: 1,
-            aclAllowParkedcreate: 1,
-            aclAllowUnlimitedBwPkgs: 1,
-            aclAllowUnlimitedDiskPkgs: 1,
-            aclAllowUnlimitedPkgs: 1,
-            aclBasicSystemInfo: 1,
-            aclBasicWhmFunctions: 1,
-            aclClustering: 1,
-            aclCorsProxyGet: 1,
-            aclCpanelApi: 1,
-            aclCpanelIntegration: 1,
-            aclCreateAcct: 1,
-            aclCreateDns: 1,
-            aclCreateUserSession: 1,
-            aclDemoSetup: 1,
-            aclDigestAuth: 1,
-            aclDisallowShell: 1,
-            aclEditAccount: 1,
-            aclEditDns: 1,
-            aclEditMx: 1,
-            aclEditPkg: 1,
-            aclGenerateEmailConfig: 1,
-            aclKillAcct: 1,
-            aclKillDns: 1,
-            aclLimitBandwidth: 1,
-            aclListAccts: 1,
-            aclListPkgs: 1,
-            aclLocaleEdit: 1,
-            aclMailcheck: 1,
-            aclManageApiTokens: 1,
-            aclManageDnsRecords: 1,
-            aclManageOidc: 1,
-            aclManageStyles: 1,
-            aclMysqlInfo: 1,
-            aclNameserverConfig: 1,
-            aclNews: 1,
-            aclParkDns: 1,
-            aclPasswd: 1,
-            aclQuota: 1,
-            aclRearrangeAccts: 1,
-            aclResftp: 1,
-            aclRestart: 1,
-            aclShowBandwidth: 1,
-            aclSsl: 1,
-            aclSslBuy: 1,
-            aclSslGencrt: 1,
-            aclSslInfo: 1,
-            aclStats: 1,
-            aclStatus: 1,
-            aclSuspendAcct: 1,
-            aclThirdparty: 1,
-            aclTrackEmail: 1,
-            aclUpgradeAccount: 1,
-            aclViewglobalpackages: 1,
+            aclAcctSummary: true,
+            aclAddPkg: true,
+            aclAddPkgIp: true,
+            aclAddPkgShell: true,
+            aclAll: true,
+            aclAllowAddoncreate: true,
+            aclAllowParkedcreate: true,
+            aclAllowUnlimitedBwPkgs: true,
+            aclAllowUnlimitedDiskPkgs: true,
+            aclAllowUnlimitedPkgs: true,
+            aclBasicSystemInfo: true,
+            aclBasicWhmFunctions: true,
+            aclClustering: true,
+            aclCorsProxyGet: true,
+            aclCpanelApi: true,
+            aclCpanelIntegration: true,
+            aclCreateAcct: true,
+            aclCreateDns: true,
+            aclCreateUserSession: true,
+            aclDemoSetup: true,
+            aclDigestAuth: true,
+            aclDisallowShell: true,
+            aclEditAccount: true,
+            aclEditDns: true,
+            aclEditMx: true,
+            aclEditPkg: true,
+            aclGenerateEmailConfig: true,
+            aclKillAcct: true,
+            aclKillDns: true,
+            aclLimitBandwidth: true,
+            aclListAccts: true,
+            aclListPkgs: true,
+            aclLocaleEdit: true,
+            aclMailcheck: true,
+            aclManageApiTokens: true,
+            aclManageDnsRecords: true,
+            aclManageOidc: true,
+            aclManageStyles: true,
+            aclMysqlInfo: true,
+            aclNameserverConfig: true,
+            aclNews: true,
+            aclParkDns: true,
+            aclPasswd: true,
+            aclQuota: true,
+            aclRearrangeAccts: true,
+            aclResftp: true,
+            aclRestart: true,
+            aclShowBandwidth: true,
+            aclSsl: true,
+            aclSslBuy: true,
+            aclSslGencrt: true,
+            aclSslInfo: true,
+            aclStats: true,
+            aclStatus: true,
+            aclSuspendAcct: true,
+            aclThirdparty: true,
+            aclTrackEmail: true,
+            aclUpgradeAccount: true,
+            aclViewglobalpackages: true,
         ));
         $request = $http->getLastRequest();
         self::assertInstanceOf(RequestInterface::class, $request);
@@ -602,6 +622,182 @@ final class WhmResellersTest extends TestCase
         self::assertCount(2, $http->getRequests());
     }
 
+    /** @return iterable<string, array{bool}> */
+    public static function callerModes(): iterable
+    {
+        yield 'strict caller' => [false];
+        yield 'weak caller' => [true];
+    }
+
+    public function testAssignmentSignatureHasExactly59NullableTrueSwitchesAndNoUserAlias(): void
+    {
+        self::assertCount(59, self::ASSIGNMENT_SWITCHES);
+        $parameters = (new ReflectionMethod(Resellers::class, 'setAcls'))->getParameters();
+        self::assertSame(
+            ['reseller', ...self::ASSIGNMENT_SWITCHES, 'acllist'],
+            array_map(static fn ($parameter): string => $parameter->getName(), $parameters),
+        );
+        foreach (array_slice($parameters, 1, 59) as $parameter) {
+            $type = $parameter->getType();
+            self::assertInstanceOf(ReflectionNamedType::class, $type);
+            self::assertSame('true', $type->getName(), $parameter->getName());
+            self::assertTrue($type->allowsNull(), $parameter->getName());
+            self::assertTrue($parameter->isOptional(), $parameter->getName());
+            self::assertNull($parameter->getDefaultValue(), $parameter->getName());
+        }
+    }
+
+    public function testSaveListKeepsAll60NullableBooleanSwitches(): void
+    {
+        $parameters = (new ReflectionMethod(Resellers::class, 'saveAclList'))->getParameters();
+        self::assertCount(61, $parameters);
+        self::assertSame('acllist', $parameters[0]->getName());
+        foreach (array_slice($parameters, 1) as $parameter) {
+            $type = $parameter->getType();
+            self::assertInstanceOf(ReflectionNamedType::class, $type);
+            self::assertSame('bool', $type->getName(), $parameter->getName());
+            self::assertTrue($type->allowsNull(), $parameter->getName());
+            self::assertNull($parameter->getDefaultValue(), $parameter->getName());
+        }
+    }
+
+    /** @return iterable<string, array{string, bool}> */
+    public static function nullableAssignmentSwitches(): iterable
+    {
+        foreach (self::ASSIGNMENT_SWITCHES as $parameter) {
+            foreach (self::callerModes() as $mode => [$weak]) {
+                yield $parameter . ' ' . $mode => [$parameter, $weak];
+            }
+        }
+    }
+
+    #[DataProvider('nullableAssignmentSwitches')]
+    public function testEveryNullAssignmentSwitchIsOmitted(string $parameter, bool $weak): void
+    {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope('setacls', '{"acl":[]}')));
+        self::assertSame(['acl' => []], self::call($client->whm()->resellers(), 'setAcls', [
+            'reseller' => 'alice', $parameter => null,
+        ], $weak));
+        self::assertRequest($http, 'setacls', 'reseller=alice');
+    }
+
+    /** @return iterable<string, array{string, mixed, bool}> */
+    public static function rejectedAssignmentValues(): iterable
+    {
+        foreach (self::ASSIGNMENT_SWITCHES as $parameter) {
+            foreach (self::callerModes() as $mode => [$weak]) {
+                foreach (
+                    [
+                    'false' => false, 'zero' => 0, 'one' => 1, 'negative' => -1, 'two' => 2,
+                    'floating zero' => 0.0, 'floating one' => 1.0, 'quoted zero' => '0', 'quoted one' => '1',
+                    'truthy string' => 'true', 'exponent string' => '1e0', 'empty string' => '', 'array' => [],
+                    ] as $name => $value
+                ) {
+                    yield $parameter . ' ' . $mode . ' ' . $name => [$parameter, $value, $weak];
+                }
+            }
+        }
+    }
+
+    #[DataProvider('rejectedAssignmentValues')]
+    public function testAssignmentSwitchesRejectValuesBeforeHttpEvenForWeakCallers(
+        string $parameter,
+        mixed $value,
+        bool $weak,
+    ): void {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope('setacls', '{"acl":[]}')));
+        try {
+            self::call($client->whm()->resellers(), 'setAcls', ['reseller' => 'alice', $parameter => $value], $weak);
+            self::fail('Only true or null may be passed to an assignment switch.');
+        } catch (TypeError) {
+            self::assertCount(0, $http->getRequests());
+        }
+    }
+
+    #[DataProvider('callerModes')]
+    public function testAssignmentTrueGrantsAndSaveFalseRemovalStayDistinct(bool $weak): void
+    {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope('setacls', '{"acl":["all","list-accts"]}')));
+        self::assertSame(['acl' => ['all', 'list-accts']], self::call($client->whm()->resellers(), 'setAcls', [
+            'reseller' => 'alice', 'aclAll' => true, 'aclListAccts' => true, 'aclPasswd' => null,
+        ], $weak));
+        self::assertRequest($http, 'setacls', 'reseller=alice&acl-all=1&acl-list-accts=1');
+
+        [$saveClient, $saveHttp] = self::client();
+        $saveHttp->addResponse(new Response(200, [], self::envelope('saveacllist', null)));
+        self::assertNull(self::call($saveClient->whm()->resellers(), 'saveAclList', [
+            'acllist' => 'basic', 'aclAll' => false, 'aclListAccts' => true, 'aclPasswd' => null,
+        ], $weak));
+        self::assertRequest($saveHttp, 'saveacllist', 'acllist=basic&acl-all=0&acl-list-accts=1');
+    }
+
+    #[DataProvider('callerModes')]
+    public function testUserAliasCannotOverrideRequiredReseller(bool $weak): void
+    {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope('setacls', '{"acl":[]}')));
+        try {
+            self::call($client->whm()->resellers(), 'setAcls', ['reseller' => 'alice', 'user' => 'bob'], $weak);
+            self::fail('The overriding user alias must not be a generated parameter.');
+        } catch (Error $error) {
+            self::assertSame('Unknown named parameter $user', $error->getMessage());
+            self::assertCount(0, $http->getRequests());
+        }
+    }
+
+    /** @return iterable<string, array{string, list<mixed>, string, string, ?string, bool}> */
+    public static function keyFirstCalls(): iterable
+    {
+        foreach (self::callerModes() as $mode => [$weak]) {
+            yield 'suspension reason ' . $mode => ['suspendReseller', ['alice', 'Nonpayment +&='],
+                'suspendreseller', 'user=alice&reason=Nonpayment%20%2B%26%3D', null, $weak];
+            yield 'shared IP identity ' . $mode => ['setResellerMainIp', ['alice', '192.0.2.3'],
+                'setresellermainip', 'user=alice&ip=192.0.2.3', null, $weak];
+            yield 'termination retains reseller ' . $mode => ['terminateReseller', ['alice', false],
+                'terminatereseller', 'user=alice&terminatereseller=0', '{"acct":[]}', $weak];
+            yield 'termination includes reseller ' . $mode => ['terminateReseller', ['alice', true],
+                'terminatereseller', 'user=alice&terminatereseller=1', '{"acct":[]}', $weak];
+        }
+    }
+
+    /** @param list<mixed> $arguments */
+    #[DataProvider('keyFirstCalls')]
+    public function testPositionalCallsKeepIdentityAndSensitiveReasonInTheRightWireFields(
+        string $method,
+        array $arguments,
+        string $wire,
+        string $parameters,
+        ?string $payload,
+        bool $weak,
+    ): void {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope($wire, $payload)));
+        self::assertSame(
+            $payload === null ? null : json_decode($payload, true, 512, JSON_THROW_ON_ERROR),
+            self::call($client->whm()->resellers(), $method, $arguments, $weak),
+        );
+        self::assertRequest($http, $wire, $parameters);
+    }
+
+    public function testKeyFirstPublicParameterOrder(): void
+    {
+        foreach (
+            [
+            'suspendReseller' => ['user', 'reason', 'disallow', 'resellerOnly'],
+            'setResellerMainIp' => ['user', 'ip'],
+            'terminateReseller' => ['user', 'terminatereseller'],
+            ] as $method => $expected
+        ) {
+            self::assertSame($expected, array_map(
+                static fn ($parameter): string => $parameter->getName(),
+                (new ReflectionMethod(Resellers::class, $method))->getParameters(),
+            ));
+        }
+    }
+
     public function testRequiredParametersAndSensitiveReason(): void
     {
         $counts = ['accountCounts' => 0, 'getPublicContact' => 0, 'getResellerIps' => 0,
@@ -616,9 +812,33 @@ final class WhmResellersTest extends TestCase
                 (new ReflectionMethod(Resellers::class, $method))->getNumberOfRequiredParameters(),
             );
         }
-        $reason = (new ReflectionMethod(Resellers::class, 'suspendReseller'))->getParameters()[2];
+        $reason = (new ReflectionMethod(Resellers::class, 'suspendReseller'))->getParameters()[1];
         self::assertSame('reason', $reason->getName());
         self::assertCount(1, $reason->getAttributes(SensitiveParameter::class));
+    }
+
+    /** @param array<array-key, mixed> $arguments */
+    private static function call(Resellers $group, string $method, array $arguments, bool $weak): mixed
+    {
+        if ($weak) {
+            return WeakResellerCaller::call($group, $method, $arguments);
+        }
+
+        return $group->{$method}(...$arguments);
+    }
+
+    private static function assertRequest(MockClient $http, string $wire, string $body): void
+    {
+        $request = $http->getLastRequest();
+        self::assertInstanceOf(RequestInterface::class, $request);
+        self::assertSame('POST', $request->getMethod());
+        self::assertSame(
+            'https://api.example.test:2087/json-api/' . $wire . '?api.version=1',
+            (string) $request->getUri(),
+        );
+        self::assertSame('application/x-www-form-urlencoded', $request->getHeaderLine('Content-Type'));
+        self::assertSame($body, (string) $request->getBody());
+        self::assertCount(1, $http->getRequests());
     }
 
     private static function envelope(string $wire, ?string $payload): string

@@ -40,7 +40,7 @@ func TestRenderReviewedParameterTypeAndDescriptionCorrections(t *testing.T) {
 		"operations":{"whm1:createacct":{
 			"name":"createAccount",
 			"params":{
-				"username":{"type":"string|int","description":"The deploy_id returned by creation. Keep integer identifiers."},
+				"username":{"wire":"account_name","type":"string|int","description":"The deploy_id returned by creation. Keep integer identifiers."},
 				"password":{"type":"string|int","description":"Optional identifier. Preserve omission."}
 			},
 			"evidence":[{"kind":"live","version":"11.138.0.19","date":"2026-10-31","note":"Reviewed identifier shape."}]
@@ -76,7 +76,7 @@ func TestRenderReviewedParameterTypeAndDescriptionCorrections(t *testing.T) {
 			}
 			spec := string(files["src/Api/Whm/Spec/AccountsSpec.php"])
 			for _, want := range []string{
-				"'username' => ['name' => 'username', 'encoding' => 'scalar'],",
+				"'username' => ['name' => 'account_name', 'encoding' => 'scalar'],",
 				"'password' => ['name' => 'password', 'encoding' => 'scalar'],",
 			} {
 				if !strings.Contains(spec, want) {

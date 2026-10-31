@@ -19,9 +19,13 @@ trait WhmGroups
 
     private ?Backups $backupsGroup = null;
 
+    private ?Databases $databasesGroup = null;
+
     private ?Dns $dnsGroup = null;
 
     private ?HostingPlans $hostingPlansGroup = null;
+
+    private ?ModSecurity $modSecurityGroup = null;
 
     private ?Resellers $resellersGroup = null;
 
@@ -60,6 +64,16 @@ trait WhmGroups
     }
 
     /**
+     * Select the Databases operations without making a request.
+     *
+     * WHM API 1 functions in the documented Databases group.
+     */
+    public function databases(): Databases
+    {
+        return $this->databasesGroup ??= new Databases($this->run(...));
+    }
+
+    /**
      * Select the DNS operations without making a request.
      *
      * WHM API 1 functions in the documented DNS group.
@@ -80,9 +94,26 @@ trait WhmGroups
     }
 
     /**
+     * Select the Web Server Security (ModSecurity) operations without making a request.
+     *
+     * Server-scoped ModSecurity configuration, staged rules, vendor lifecycle and diagnostics. Requires the Web Server
+     * role. Deployment may restart Apache; API outcomes and per-item results remain distinct. Safety guidance: treat
+     * returned rule text, configuration, settings and logs as sensitive. Configuration text may contain secrets; logs
+     * can include request data, IP addresses and sensitive transaction fragments. Avoid logging these payloads. The
+     * cPanel 11.138.0.19 review exercised GET reads only; all thirty form POST operations remain unobserved.
+     */
+    public function modSecurity(): ModSecurity
+    {
+        return $this->modSecurityGroup ??= new ModSecurity($this->run(...));
+    }
+
+    /**
      * Select the Resellers operations without making a request.
      *
-     * WHM API 1 functions in the documented Resellers group.
+     * Reseller account inventory, privileges, ownership and limits. Both ACL write methods replace the whole privilege
+     * set; read current privileges before constructing the desired replacement. The cPanel 11.138.0.19 review exercised
+     * GET reads only. All fourteen write contracts remain supported by pinned documentation, reviewed upstream source
+     * and offline tests, without live mutation coverage.
      */
     public function resellers(): Resellers
     {

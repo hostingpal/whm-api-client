@@ -90,7 +90,11 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available in cPanel & WHM 11 and later, according to the pinned operation. Omitting user retains the server account selection. The integer all flag describes availability; it is distinct from API success. Empty IP lists stay empty."
+          "text": "Available in cPanel & WHM 11 and later, according to the pinned operation. The pinned user description claims a root fallback when omitted, but reviewed upstream source reads user without a default. Supply the target reseller username for the reviewed root WHM route. The integer all flag describes availability and is distinct from API success; empty IP lists stay empty."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, omitting user as root raised ApiErrorException because the server received an empty username. A named non-reseller also raised ApiErrorException. The retained capture failure has this known cause and remains failed and unwaived under whm-api-client-8x0.2.36; no successful reseller IP inventory was observed."
         }
       ],
       "evidence": [
@@ -99,8 +103,25 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /getresellerips x-cpanel-available-version=11; x-readonly=true. Parameter declarations, descriptions and response data schema establish the documented caveats; preserve their exact wire names and optional presence."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/49#pullrequestreview-5720544221: WHM GET getresellerips as root without user raised the empty-username API error on cPanel 11.138.0.19; a named non-reseller raised Specified user is not a reseller. These are live read observations and explain the immutable capture failure. The function still uses normal Flag outcome checks; no error-text matching, successful populated result or write is inferred. The capture remains failed and unwaived under whm-api-client-8x0.2.36."
+        },
+        {
+          "kind": "doc",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/49#pullrequestreview-5720544221: Whostmgr/API/1/Resellers.pm reads args[user] without a default, contradicting the pinned /getresellerips description that omitted user selects root. Correct the note and parameter prose while preserving the pinned optional input type; the observed failure is scoped to the reviewed root WHM route. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
         }
-      ]
+      ],
+      "params": {
+        "user": {
+          "description": "The target reseller username. Supply it when using the reviewed root WHM route; the omitted-user fallback in the pinned description was not implemented by the reviewed source."
+        }
+      }
     },
     "whm1:list_enhancement_limits": {
       "name": "listEnhancementLimits",
@@ -255,7 +276,7 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available in cPanel & WHM 11 and later, according to the pinned operation. Creates or changes a named ACL list. Each acl-* flag uses 1 to add and 0 to remove; omitted flags retain documented zero defaults. This differs from setAcls presence-based assignment. Preserve save-only acl-allow-shell, acl-allow-emaillimits-pkgs and acl-ns-config wire names. acl-all grants root-level privileges. The source recommends managing ACLs through the WHM interface."
+          "text": "Available in cPanel & WHM 11 and later, according to the pinned operation. Creates or replaces a named ACL list as a whole set. Read the existing list first and supply the complete desired privilege set. Every omitted acl-* flag defaults to 0, so its privilege is removed from the replacement; omitting all flags saves an empty privilege set. Explicit true sends 1 to add and false sends 0 to remove, unlike the presence-only setAcls switches. Preserve all sixty save switches and the save-only acl-allow-shell, acl-allow-emaillimits-pkgs and acl-ns-config wire names. acl-all grants root-level privileges. The source recommends managing ACLs through the WHM interface. No save was observed; replacement semantics are supported by source and offline tests."
         }
       ],
       "evidence": [
@@ -264,6 +285,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /saveacllist x-cpanel-available-version=11; x-readonly=false. Parameter declarations, descriptions and response data schema establish the documented caveats; preserve their exact wire names and optional presence."
+        },
+        {
+          "kind": "doc",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/49#pullrequestreview-5720544221: saveAclList replaces the complete named privilege set rather than partially updating existing flags. All 60 pinned /saveacllist acl-* switches are optional integer enum[0,1] with default 0: false still emits 0, true emits 1, and omitted privileges are removed. Preserve the existing bool parameter contracts and encoding. Read the existing list before constructing the replacement. No write was performed; this is pinned/upstream-source evidence with offline tests. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
         }
       ]
     },
@@ -288,8 +315,19 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /set_enhancement_limit x-cpanel-available-version=11.98; x-readonly=false. Parameter declarations, descriptions and response data schema establish the documented caveats; preserve their exact wire names and optional presence."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /set_enhancement_limit limited prose introduces an unlimited question but explicitly defines 0 as unlimited and 1 as limited. Use a description consistent with that value table and the existing bool encoder; do not change types, requiredness or add cross-field validation. Review https://github.com/hostingpal/whm-api-client/pull/49#pullrequestreview-5720544221. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
         }
-      ]
+      ],
+      "params": {
+        "limited": {
+          "description": "Whether to limit account enhancement assignments. true sends limited=1 and requires limit; false sends limited=0 for unlimited assignments."
+        }
+      }
     },
     "whm1:set_public_contact": {
       "name": "setPublicContact",
@@ -377,13 +415,20 @@
         "acl-track-email",
         "acl-upgrade-account",
         "acl-viewglobalpackages",
-        "acllist",
-        "user"
+        "acllist"
       ],
       "notes": [
         {
           "kind": "documented",
-          "text": "Available in cPanel & WHM 11 and later, according to the pinned operation. Assigns privileges to a reseller. Use either a named acllist or inline acl-* values, never both. The source describes any supplied value as adding a privilege and no value as removing it; pinned inline schemas permit only integer 1, unlike saveAclList zero/one flags. Preserve assignment-only acl-disallow-shell and acl-nameserver-config; user is a backward-compatible alias, while reseller retains pinned requiredness. acl-all grants root-level privileges. The source recommends managing ACLs through WHM."
+          "text": "Available in cPanel & WHM 11 and later, according to the pinned operation. Replaces the reseller privilege set. Read current privileges first and construct the complete desired replacement. Use either a named acllist, which replaces the assigned set from that list, or inline acl-* switches, never both. In inline mode each true sends the key with value 1; null or omission excludes that privilege from the replacement. With no named list and no inline switches, all privileges are removed. false and integer values are rejected before dispatch because upstream grants any supplied acl-* key regardless of its value. acl-all grants root-level privileges. Preserve assignment-only acl-disallow-shell and acl-nameserver-config wire names. The source recommends managing ACLs through WHM."
+        },
+        {
+          "kind": "documented",
+          "text": "The backward-compatible user alias overrides reseller in reviewed upstream source, so it is omitted from this typed signature. The required reseller argument is the sole typed account selector; the alias remains reachable through generic call(). No alias-resolution rule is inferred beyond the reviewed source."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned acl-disallow-shell description says to allow shell-account creation, contradicting the wire name. Its shell-access meaning remains unresolved; the client preserves the exact assignment key without asserting either interpretation. All assignment behavior here is source-backed and tested offline; no reseller write was observed."
         }
       ],
       "evidence": [
@@ -392,8 +437,262 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /setacls x-cpanel-available-version=11; x-readonly=false. Parameter declarations, descriptions and response data schema establish the documented caveats; preserve their exact wire names and optional presence."
+        },
+        {
+          "kind": "doc",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/49#pullrequestreview-5720544221: Whostmgr/API/1/Resellers.pm on cPanel 11.138.0.19 adds every supplied acl-* key to a new ACL set with value 1, regardless of the input value, and selects user before reseller. The pinned /setacls has exactly 59 optional integer singleton enum[1] switches. Use the evidence-gated true-only parameter override with boolean encoding for every switch, so only true emits 1, and omit the overriding user alias. Inline omissions remove privileges from the replacement; a named acllist instead supplies the replacement set, and the source forbids combining named and inline forms. No write ran: these findings are upstream-source and offline encoding evidence. Clarification https://github.com/hostingpal/whm-api-client/pull/49#issuecomment-6537927871 confirms the proposed lifecycle did not execute and was not retried. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /setacls acl-disallow-shell is named as a prohibition but described as allowing shell-account creation. Review https://github.com/hostingpal/whm-api-client/pull/49#pullrequestreview-5720544221 requires retaining this unresolved source contradiction without inventing a meaning. Replace only the misleading parameter description with a neutral presence-key description. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
         }
-      ]
+      ],
+      "params": {
+        "acl-acct-summary": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-add-pkg": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-add-pkg-ip": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-add-pkg-shell": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-all": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-allow-addoncreate": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-allow-parkedcreate": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-allow-unlimited-bw-pkgs": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-allow-unlimited-disk-pkgs": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-allow-unlimited-pkgs": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-basic-system-info": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-basic-whm-functions": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-clustering": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-cors-proxy-get": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-cpanel-api": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-cpanel-integration": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-create-acct": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-create-dns": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-create-user-session": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-demo-setup": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-digest-auth": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-disallow-shell": {
+          "type": "true",
+          "encoding": "bool",
+          "description": "Presence-only assignment of the acl-disallow-shell key. The pinned description conflicts with its wire name; no shell-access meaning is inferred from that contradiction."
+        },
+        "acl-edit-account": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-edit-dns": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-edit-mx": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-edit-pkg": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-generate-email-config": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-kill-acct": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-kill-dns": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-limit-bandwidth": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-list-accts": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-list-pkgs": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-locale-edit": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-mailcheck": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-manage-api-tokens": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-manage-dns-records": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-manage-oidc": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-manage-styles": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-mysql-info": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-nameserver-config": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-news": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-park-dns": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-passwd": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-quota": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-rearrange-accts": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-resftp": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-restart": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-show-bandwidth": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-ssl": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-ssl-buy": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-ssl-gencrt": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-ssl-info": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-stats": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-status": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-suspend-acct": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-thirdparty": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-track-email": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-upgrade-account": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-viewglobalpackages": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "user": {
+          "omit": true
+        }
+      }
     },
     "whm1:setresellerips": {
       "name": "setResellerIps",
@@ -406,7 +705,7 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available in cPanel & WHM 11 and later, according to the pinned operation. Omitting ips clears the delegated IP list; a comma-separated string allocates multiple IPs. delegate defaults to 1, restricting the reseller to its dedicated IP; explicit false sends 0 and permits dedicating any available IP to owned accounts. The optional all=1 payload appears only with delegate=0. Main shared IP assignment is a separate operation."
+          "text": "Available in cPanel & WHM 11 and later, according to the pinned operation. Omitting ips clears the delegated IP list; a comma-separated string allocates multiple IPs. The pinned documentation and reviewed source default delegate to 1, restricting the reseller to its dedicated IP; explicit false sends 0 and permits dedicating any available IP to owned accounts. The pinned setter schema declares optional all=1 only with delegate=0. Reviewed source re-reads and returns getresellerips() data after applying the change; the existing setter payload contract is retained. This source-backed behavior has no observed successful write. Main shared IP assignment is a separate operation."
         }
       ],
       "evidence": [
@@ -415,6 +714,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /setresellerips x-cpanel-available-version=11; x-readonly=false. Parameter declarations, descriptions and response data schema establish the documented caveats; preserve their exact wire names and optional presence."
+        },
+        {
+          "kind": "doc",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/49#pullrequestreview-5720544221: Whostmgr/API/1/Resellers.pm defaults omitted delegate to 1 and returns getresellerips() after setting delegation. Preserve the pinned ips-omission clearing behavior and the existing optional all/ip payload rather than treating it as void or optional payload. The setter pins all as integer enum[1], whereas the getter uses enum[0,1]; no new leaf narrowing is introduced without write evidence. This returned-getter path and default are source-only findings: all fourteen reseller writes remain unobserved. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
         }
       ]
     },
@@ -453,8 +758,8 @@
       "name": "setResellerMainIp",
       "method": "POST",
       "order": [
-        "ip",
-        "user"
+        "user",
+        "ip"
       ],
       "notes": [
         {
@@ -468,6 +773,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /setresellermainip x-cpanel-available-version=11; x-readonly=false. Parameter declarations, descriptions and response data schema establish the documented caveats; preserve their exact wire names and optional presence."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/49#pullrequestreview-5720544221: keep the reseller account selector first in the public signature. The reviewed order is user, ip; preserve every pinned wire name, requiredness, encoding and sensitivity. This signature correction is verified offline; no write was performed. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
         }
       ]
     },
@@ -490,6 +801,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /setresellernameservers x-cpanel-available-version=11; x-readonly=false. Parameter declarations, descriptions and response data schema establish the documented caveats; preserve their exact wire names and optional presence."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /setresellernameservers nameservers parameter explicitly says omitting it resets nameservers to the server default. Retain this operation-specific omission caveat, without generalizing it to other reseller setters. No write was observed. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
         }
       ]
     },
@@ -545,8 +862,8 @@
       "method": "POST",
       "order": [
         "user",
-        "disallow",
         "reason",
+        "disallow",
         "reseller-only"
       ],
       "notes": [
@@ -561,6 +878,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /suspendreseller x-cpanel-available-version=11; x-readonly=false. Parameter declarations, descriptions and response data schema establish the documented caveats; preserve their exact wire names and optional presence."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/49#pullrequestreview-5720544221: keep the reseller account selector first in the public signature. The reviewed order is user, reason, disallow, reseller-only; preserve every pinned wire name, requiredness, encoding and sensitivity. This signature correction is verified offline; no write was performed. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
         }
       ],
       "params": {
@@ -573,8 +896,8 @@
       "name": "terminateReseller",
       "method": "POST",
       "order": [
-        "terminatereseller",
-        "user"
+        "user",
+        "terminatereseller"
       ],
       "notes": [
         {
@@ -588,6 +911,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /terminatereseller x-cpanel-available-version=11; x-readonly=false. Parameter declarations, descriptions and response data schema establish the documented caveats; preserve their exact wire names and optional presence."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/49#pullrequestreview-5720544221: keep the reseller account selector first in the public signature. The reviewed order is user, terminatereseller; preserve every pinned wire name, requiredness, encoding and sensitivity. This signature correction is verified offline; no write was performed. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
         }
       ]
     },
@@ -634,5 +963,6 @@
         }
       ]
     }
-  }
+  },
+  "description": "Reseller account inventory, privileges, ownership and limits. Both ACL write methods replace the whole privilege set; read current privileges before constructing the desired replacement. The cPanel 11.138.0.19 review exercised GET reads only. All fourteen write contracts remain supported by pinned documentation, reviewed upstream source and offline tests, without live mutation coverage."
 }

@@ -1,0 +1,289 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "WebsiteBackup",
+  "accessor": "websiteBackup",
+  "operations": {
+    "uapi:WebsiteBackup/create_backup": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 138 and later; requires the selected account's backup feature and is unavailable to demo/shared accounts. The account must own the domain. Pre-flight failure is synchronous; detached failures appear later in operationStatus. Returning operationId establishes a submitted background operation, never a completed backup."
+        },
+        {
+          "kind": "documented",
+          "text": "database is repeatable and omitted for a files-only archive; supplied list order and values are preserved without joining or JSON encoding. Database ownership is checked in the background, so an accepted request may later fail. A two-hour cap bounds the background work."
+        },
+        {
+          "kind": "documented",
+          "text": "Omit email to send no notification. Supplying it requests best-effort mail on success or failure to that address; a ready status does not prove delivery. The client sends no notification itself."
+        },
+        {
+          "kind": "documented",
+          "text": "All declared response fields are optional: omission stays distinct from zero, false, an empty string and explicit documented null. A missing or null data member is a payload mismatch. No general response-string enum or cross-field invariant validation is inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation explicitly uses POST with an application/x-www-form-urlencoded request body and documents a state-changing operation. The client sends the supplied arguments in that form body and performs no automatic retry. This method has no committed live evidence; follow-up whm-api-client-8x0.2.32 retains committed transport and payload verification."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /WebsiteBackup/create_backup/post: the requestBody is application/x-www-form-urlencoded. The operation description documents the mutation; missing x-readonly does not make this explicit POST a conservative fallback. Retain the pinned mutation semantics and form body."
+        }
+      ]
+    },
+    "uapi:WebsiteBackup/delete_backup": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 138 and later; requires the selected account's backup feature and is unavailable to demo/shared accounts. This synchronous deletion removes named archives and sidecar manifests permanently. System-created backups are not user-deletable; the client provides no retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "ids is repeatable and requires at least one non-empty value server-side. Empty ids produce no row; match results by id rather than position. A successful API envelope can contain mixed per-id ok=0 and ok=1 results, with error text for failures. Inspect every row. Flags remain integer 0/1."
+        },
+        {
+          "kind": "documented",
+          "text": "All declared response fields are optional: omission stays distinct from zero, false, an empty string and explicit documented null. A missing or null data member is a payload mismatch. No general response-string enum or cross-field invariant validation is inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation explicitly uses POST with an application/x-www-form-urlencoded request body and documents a state-changing operation. The client sends the supplied arguments in that form body and performs no automatic retry. This method has no committed live evidence; follow-up whm-api-client-8x0.2.32 retains committed transport and payload verification."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /WebsiteBackup/delete_backup/post: the requestBody is application/x-www-form-urlencoded. The operation description documents the mutation; missing x-readonly does not make this explicit POST a conservative fallback. Retain the pinned mutation semantics and form body."
+        }
+      ]
+    },
+    "uapi:WebsiteBackup/disk_quota_check": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 138 and later; requires the selected account's backup feature and ownership of domain. This advisory estimate runs du over the document root with a one-hour timeout; avoid polling it on a timer. createBackup rechecks quota itself."
+        },
+        {
+          "kind": "documented",
+          "text": "All byte amounts are integers. unlimited=1 makes availableBytes=0 mean not applicable; estimatedBytes=0 can mean the directory could not be measured, and then ok is also 1. The estimate excludes database dumps. ok and unlimited are payload integer 0/1 flags distinct from API success."
+        },
+        {
+          "kind": "documented",
+          "text": "All declared response fields are optional: omission stays distinct from zero, false, an empty string and explicit documented null. A missing or null data member is a payload mismatch. No general response-string enum or cross-field invariant validation is inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation omits x-readonly. Risk remains unknown and the generated client conservatively uses form POST, including inventory and progress methods; no read-only GET override or live probe is inferred. This method has no committed live evidence; follow-up whm-api-client-8x0.2.32 retains transport and payload verification."
+        },
+        {
+          "kind": "observed",
+          "text": "On 11.138.0.19, the reviewer observed estimatedBytes as a digit string through direct UAPI and an integer through the WHM bridge. Canonical decimal strings within PHP integer bounds normalize losslessly to int for estimatedBytes and availableBytes. The availableBytes compatibility is inferred from the reported source family, not a separately observed string value. Malformed and overflowing strings remain invalid; optional fields stay omitted and the two flags retain their strict integer 0/1 types."
+        }
+      ],
+      "response": {
+        "availableBytes": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer 5720426019 identifies availableBytes as coming from the same kind of server source as estimatedBytes in Cpanel/API/WebsiteBackup.pm and requests the same canonical integer-string compatibility. This field widening is a source-family inference from that report, not an observation of availableBytes as a string. Preserve the pinned integer type and optional presence, using bounded lossless normalization only.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/45#pullrequestreview-5720426019"
+            }
+          ]
+        },
+        "estimatedBytes": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer 5720426019 against e1425e688904c7751401cb5ddf58c902d571f573 observed estimatedBytes as a digit string through direct UAPI and an integer through the WHM bridge in the same run on a disposable account. Accept canonical decimal strings only within PHP integer bounds and normalize losslessly to the pinned integer. Preserve optional presence; do not widen ok, unlimited or other operations. This attributed reviewer observation is separate from committed evidence; no new capture was run.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/45#pullrequestreview-5720426019"
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer 5720426019 against e1425e688904c7751401cb5ddf58c902d571f573 observed estimatedBytes as a digit string through direct UAPI and an integer through the WHM bridge in the same run on a disposable account. Accept canonical decimal strings only within PHP integer bounds and normalize losslessly to the pinned integer. Preserve optional presence; do not widen ok, unlimited or other operations. This attributed reviewer observation is separate from committed evidence; no new capture was run.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/45#pullrequestreview-5720426019"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer 5720426019 identifies availableBytes as coming from the same kind of server source as estimatedBytes in Cpanel/API/WebsiteBackup.pm and requests the same canonical integer-string compatibility. This field widening is a source-family inference from that report, not an observation of availableBytes as a string. Preserve the pinned integer type and optional presence, using bounded lossless normalization only.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/45#pullrequestreview-5720426019"
+        }
+      ]
+    },
+    "uapi:WebsiteBackup/extract_backup": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 138 and later; requires the selected account's backup feature and is unavailable to demo/shared accounts. This detached operation copies archived website files and never overwrites existing destination files or activates the extracted site. It can run alongside another operation and has a two-hour cap. Returning operationId is submission, not completion; poll operationStatus."
+        },
+        {
+          "kind": "documented",
+          "text": "id locates an archive in the selected account's backup directory and is not checked against domain. Use an id returned for the intended domain. path is server-side and relative to the account home; the server strips a leading slash and rejects .. segments but does not resolve home-directory symlinks. The client forwards it unchanged and uploads or downloads nothing."
+        },
+        {
+          "kind": "documented",
+          "text": "All declared response fields are optional: omission stays distinct from zero, false, an empty string and explicit documented null. A missing or null data member is a payload mismatch. No general response-string enum or cross-field invariant validation is inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation explicitly uses POST with an application/x-www-form-urlencoded request body and documents a state-changing operation. The client sends the supplied arguments in that form body and performs no automatic retry. This method has no committed live evidence; follow-up whm-api-client-8x0.2.32 retains committed transport and payload verification."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /WebsiteBackup/extract_backup/post: the requestBody is application/x-www-form-urlencoded. The operation description documents the mutation; missing x-readonly does not make this explicit POST a conservative fallback. Retain the pinned mutation semantics and form body."
+        }
+      ]
+    },
+    "uapi:WebsiteBackup/list_backups": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 138 and later; requires the selected account's backup feature and ownership of domain. Reads sidecar manifests for completed/existing archives and skips unreadable manifests; use listOperations for work in flight. Returned archive paths are server-side, not local downloads."
+        },
+        {
+          "kind": "documented",
+          "text": "Rows default to newest createdMs first. createdMs is epoch milliseconds; sizeBytes is integer bytes. Empty databaseNames/sites lists remain lists and absent fields stay omitted. includesDatabases is an integer 0/1 flag. A source of system means the archive is not user-deletable."
+        },
+        {
+          "kind": "documented",
+          "text": "All declared response fields are optional: omission stays distinct from zero, false, an empty string and explicit documented null. A missing or null data member is a payload mismatch. No general response-string enum or cross-field invariant validation is inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation omits x-readonly. Risk remains unknown and the generated client conservatively uses form POST, including inventory and progress methods; no read-only GET override or live probe is inferred. This method has no committed live evidence; follow-up whm-api-client-8x0.2.32 retains transport and payload verification."
+        }
+      ]
+    },
+    "uapi:WebsiteBackup/list_operations": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 138 and later; requires the selected account's backup feature and ownership of domain. Returns only still-running create, restore and extract operations; terminal and dead-daemon operations are omitted. An empty list alone does not establish success or failure."
+        },
+        {
+          "kind": "documented",
+          "text": "Rows default to most recently updated first rather than start-time order. operationId can resume polling; extractPath is a server-side home-relative destination present for extraction only. startedAtMs is epoch milliseconds and progressPct remains numeric. Field omission is preserved and no cross-field presence constraints are inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "All declared response fields are optional: omission stays distinct from zero, false, an empty string and explicit documented null. A missing or null data member is a payload mismatch. No general response-string enum or cross-field invariant validation is inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation omits x-readonly. Risk remains unknown and the generated client conservatively uses form POST, including inventory and progress methods; no read-only GET override or live probe is inferred. This method has no committed live evidence; follow-up whm-api-client-8x0.2.32 retains transport and payload verification."
+        }
+      ]
+    },
+    "uapi:WebsiteBackup/operation_status": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 138 and later; requires the selected account's backup feature. operationId identifies selected-account detached work. Poll until status differs from inProgress; ready and failed are terminal. UAPI status=1 means the status read succeeded and does not mean the background job succeeded."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned kind/status strings are documented alternatives, not a closed runtime string enum. error, warnings, title and subStatus are returned payload text. Preserve optional warnings including an empty list; do not log returned upstream text as structural evidence. startedAtMs is epoch milliseconds and progressPct remains numeric."
+        },
+        {
+          "kind": "documented",
+          "text": "All declared response fields are optional: omission stays distinct from zero, false, an empty string and explicit documented null. A missing or null data member is a payload mismatch. No general response-string enum or cross-field invariant validation is inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation omits x-readonly. Risk remains unknown and the generated client conservatively uses form POST, including inventory and progress methods; no read-only GET override or live probe is inferred. This method has no committed live evidence; follow-up whm-api-client-8x0.2.32 retains transport and payload verification."
+        }
+      ]
+    },
+    "uapi:WebsiteBackup/restore_backup": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 138 and later; requires the selected account's backup feature and is unavailable to demo/shared accounts. This starts a destructive in-place restore, with a six-hour cap. Returning operationId is submission rather than completion; poll operationStatus and inspect errors and warnings. No automatic retry or rollback is added by the client."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitting clean uses a merge: archive files overwrite counterparts while newer files are retained. Pass true to send clean=1, select a snapshot and remove files added since backup; false sends clean=0 for merge. This switch governs website files only. The nullable boolean argument preserves omitted defaults and explicit false, and never sends the unsafe string false."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitting restoreDatabases restores archive databases by default. Pass false to send restore_databases=0 and leave every database untouched; true sends 1. The string false is unsafe upstream because Perl treats it as true, so the typed argument is a nullable boolean. Restored databases are reset to their backed-up state, dropping later objects. The server documents a rollback snapshot for a failed database restore; the client does not promise whole-site atomicity."
+        },
+        {
+          "kind": "documented",
+          "text": "database is repeatable and selects an archive subset; omit it while restoring databases to restore them all. id is not checked against domain, so use a backup listed for the intended domain. Paths and archive identities stay server-side."
+        },
+        {
+          "kind": "documented",
+          "text": "All declared response fields are optional: omission stays distinct from zero, false, an empty string and explicit documented null. A missing or null data member is a payload mismatch. No general response-string enum or cross-field invariant validation is inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation explicitly uses POST with an application/x-www-form-urlencoded request body and documents a state-changing operation. The client sends the supplied arguments in that form body and performs no automatic retry. This method has no committed live evidence; follow-up whm-api-client-8x0.2.32 retains committed transport and payload verification."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /WebsiteBackup/restore_backup/post: the requestBody is application/x-www-form-urlencoded. The operation description documents the mutation; missing x-readonly does not make this explicit POST a conservative fallback. Retain the pinned mutation semantics and form body."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /WebsiteBackup/restore_backup/post/requestBody/content/application~1x-www-form-urlencoded/schema/properties/clean and restore_databases declare optional integer switches. Their prose specifies clean 1=snapshot/0=merge, omission=merge, and restore_databases 0=leave databases/omission=1. Both warn that literal string false is truthy in Perl. Use the existing bool parameter encoding to expose nullable booleans and send only 0/1 while preserving omission. Updated parameter descriptions retain these source semantics; native strict-types callers reject integer values before any request."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer 5720426019 against e1425e688904c7751401cb5ddf58c902d571f573 reports upstream clean truthiness conversion and confirmed that clean=1 deleted a file added after backup on the disposable account; the default merge preserves it. Both routes were exercised and the account was removed. This supports the pinned destructive-switch caveat and boolean encoding; it is an attributed reviewer report, not a new committed capture.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/45#pullrequestreview-5720426019"
+        }
+      ],
+      "params": {
+        "clean": {
+          "encoding": "bool",
+          "description": "Whether to restore website files as a snapshot. Pass true to send integer 1, rebuild the document root from the archive and remove files added since the backup. Omit or pass null for the default merge, which keeps those files; false sends integer 0 for the same merge. This switch governs website files only. The pinned API warns that the string false is truthy in Perl and would select the destructive snapshot; the typed boolean argument sends only 0 or 1."
+        },
+        "restore_databases": {
+          "encoding": "bool",
+          "description": "Whether to restore the archive databases. Omit or pass null for the server default 1. Pass false to send integer 0 and restore website files only, leaving every database untouched; true sends integer 1. Database restoration resets each database to its backed-up state and drops objects created since. The pinned API warns that the string false is truthy in Perl and would restore databases; the typed boolean argument sends only 0 or 1. To leave databases untouched, set this argument to false and omit database."
+        }
+      }
+    }
+  }
+}
