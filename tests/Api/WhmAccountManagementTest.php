@@ -167,9 +167,9 @@ final class WhmAccountManagementTest extends TestCase
             'enabledigest=0&password=secret%20%26%3D%2B&user=fixture&digestauth=0',
             null];
         yield 'set_primary_domain_docroot' => ['setPrimaryDomainDocroot', 'set_primary_domain_docroot',
-            'POST', ['/home/fixture/new root', 'fixture'],
-            'docroot=%2Fhome%2Ffixture%2Fnew%20root&username=fixture',
-            '{"documentroot":"/home/fixture/new root"}'];
+            'POST', ['public_html/new root', 'fixture'],
+            'docroot=public_html%2Fnew%20root&username=fixture',
+            '{"documentroot":"/home/fixture/public_html/new root"}'];
         yield 'showbw' => ['showBandwidth', 'showbw',
             'GET', [10, '^fixture$', 'user', 'owner', 2026],
             'month=10&search=%5Efixture%24&searchtype=user&showres=owner&year=2026',
@@ -272,7 +272,8 @@ final class WhmAccountManagementTest extends TestCase
         yield 'ACL privileges root is list' => ['myPrivileges', 'myprivs', [], '{"privileges":{"all":0}}'];
         yield 'ACL list item is object' => ['myPrivileges', 'myprivs', [], '{"privileges":[1]}'];
         yield 'quota flag' => ['quotaEnabled', 'quota_enabled', [], '{"quota_enabled":true}'];
-        yield 'docroot null' => ['setPrimaryDomainDocroot', 'set_primary_domain_docroot', ['/home/new', 'fixture'],
+        yield 'docroot null' => ['setPrimaryDomainDocroot', 'set_primary_domain_docroot',
+            ['public_html/new', 'fixture'],
             '{"documentroot":null}'];
         yield 'bandwidth strict usage' => ['showBandwidth', 'showbw', [], '{"acct":[{"bwusage":[{"usage":"0"}]}]}'];
     }
@@ -363,11 +364,13 @@ final class WhmAccountManagementTest extends TestCase
         yield 'upgrade null threshold omitted' => ['getUpgradeOpportunities', 'get_upgrade_opportunities', 'GET',
             [null, 0.5], 'nearness_fraction=0.5', '{}'];
         yield 'links service default' => ['getUsersLinks', 'get_users_links', 'GET', ['fixture'], 'user=fixture', '{}'];
-        yield 'modify enhancement omitted ID' => ['modifyAccountEnhancement', 'modify_account_enhancement', 'POST',
+        yield 'enhancement ID omission is documented no-op' => [
+            'modifyAccountEnhancement', 'modify_account_enhancement', 'POST',
             ['extra'], 'name=extra', '{}'];
         yield 'digest alias omitted' => ['setDigestAuth', 'set_digest_auth', 'POST', [true, 's e+c&r', 'fixture'],
             'enabledigest=1&password=s%20e%2Bc%26r&user=fixture', null];
-        yield 'docroot explicit empty' => ['setPrimaryDomainDocroot', 'set_primary_domain_docroot', 'POST',
+        yield 'docroot empty forwarded for server validation' => [
+            'setPrimaryDomainDocroot', 'set_primary_domain_docroot', 'POST',
             ['', 'fixture'], 'docroot=&username=fixture', '{}'];
         yield 'bandwidth date filter default' => ['showBandwidth', 'showbw', 'GET', [], '', '{}'];
         yield 'bandwidth named explicit date' => ['showBandwidth', 'showbw', 'GET', ['month' => 1, 'year' => 2026],

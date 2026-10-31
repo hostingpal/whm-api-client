@@ -1749,7 +1749,9 @@ final readonly class Accounts
      *
      * Documented: Available from cPanel 11.98.
      *
-     * Documented: Changes the named enhancement immediately; omitted id retains the server-defined behavior.
+     * Documented: Modifies the named enhancement when id is supplied. Supplying only one of id or name makes no change;
+     * because this signature requires name, omitting id is the documented no-op. The new id must be an account
+     * enhancement ID defined by a third-party plugin; listAccountEnhancements() lists valid IDs.
      *
      * API-map identity: whm1:modify_account_enhancement#GET (wire name modify_account_enhancement; Account
      * Enhancements).
@@ -1884,8 +1886,12 @@ final readonly class Accounts
      *
      * Documented: Available from cPanel 11.
      *
-     * Documented: Changes the primary-domain document root immediately. docroot is forwarded unchanged; this method
-     * performs no rollback or follow-up URL fetch.
+     * Documented: docroot must be relative to the account home directory, begin with public_html/, and name a directory
+     * that already exists. This function does not create the directory or move files; ensure the files exist in the new
+     * path. Parked domains (ServerAlias entries) inherit the new root. AutoSSL HTTP-01 renewals fail if the new root is
+     * empty or missing at renewal time. The returned documentroot is an absolute path. Use UAPI
+     * SubDomain::changedocroot for addon domains or subdomains. To revert, call this function again with the original
+     * path; the client forwards input unchanged and performs no automatic rollback.
      *
      * API-map identity: whm1:set_primary_domain_docroot#GET (wire name set_primary_domain_docroot; Account Management).
      *
