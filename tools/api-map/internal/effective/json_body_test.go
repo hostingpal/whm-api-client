@@ -2,6 +2,7 @@ package effective
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/hostingpal/whm-api-client/tools/api-map/internal/model"
 	"github.com/hostingpal/whm-api-client/tools/api-map/internal/overlay"
 	"strings"
@@ -320,5 +321,58 @@ func TestJSONRequestBodyRefCrossDocumentCorrectionsRemainUnsupported(t *testing.
 	_, problems := buildProblems(t, m, set)
 	if !strings.Contains(problems, "cross-document input corrections require separate source provenance") {
 		t.Fatalf("cross-document requestBody correction did not fail closed: %s", problems)
+	}
+}
+
+func TestJSONInputObjectNamesRetainStringKeys(t *testing.T) {
+	s, err := newSchemas(fixtureMap(t))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, tc := range []struct {
+		name   string
+		reject bool
+	}{
+		{"0", true}, {"1", true}, {"-1", true},
+		{"2147483647", true}, {"2147483648", true},
+		{"-2147483648", true}, {"-2147483649", true},
+		{"9223372036854775807", true}, {"-9223372036854775808", true},
+		{"", false}, {"00", false}, {"01", false}, {"+1", false},
+		{"-0", false}, {"-01", false}, {"1.0", false}, {"1e1", false},
+		{" 1", false}, {"1 ", false},
+		{"9223372036854775808", false}, {"-9223372036854775809", false},
+	} {
+		for _, required := range []bool{false, true} {
+			for _, nested := range []bool{false, true} {
+				t.Run(fmt.Sprintf("%q/required=%t/nested=%t", tc.name, required, nested), func(t *testing.T) {
+					var raw any = map[string]any{"type": "object", "properties": map[string]any{tc.name: map[string]any{"type": "string"}}}
+					if required {
+						raw.(map[string]any)["required"] = []any{tc.name}
+					}
+					if nested {
+						raw = map[string]any{"type": "object", "properties": map[string]any{"child": raw}}
+					}
+					got, err := s.inputFor("whm-openapi", raw, 0, 0, "", nil, map[string]bool{}, model.Locator{}, "")
+					if tc.reject {
+						if err == nil || !strings.Contains(err.Error(), "string array keys") {
+							t.Fatalf("unrepresentable declared name must fail lowering: got %+v, err %v", got, err)
+						}
+						if strings.Contains(err.Error(), tc.name) && tc.name != "" {
+							t.Fatalf("diagnostic must not echo the source name: %v", err)
+						}
+						return
+					}
+					if err != nil {
+						t.Fatal(err)
+					}
+					if nested {
+						got = got.Fields[0].Spec
+					}
+					if len(got.Fields) != 1 || got.Fields[0].Name != tc.name || (len(got.Required) == 1) != required {
+						t.Fatalf("source spelling/requiredness lost: %+v", got)
+					}
+				})
+			}
+		}
 	}
 }

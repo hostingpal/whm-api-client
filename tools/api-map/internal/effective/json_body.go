@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/hostingpal/whm-api-client/tools/api-map/internal/model"
@@ -260,6 +261,12 @@ func (s schemas) inputFor(source string, raw any, containers, descriptors int, p
 			result.Type = "object"
 			props, _ := asObject(obj["properties"])
 			for _, name := range sortedKeys(props) {
+				// PHP casts canonical integer array keys within its platform range.
+				// The 64-bit range includes 32-bit PHP: reject if any supported
+				// platform loses the string key, independent of the Go host size.
+				if n, err := strconv.ParseInt(name, 10, 64); err == nil && strconv.FormatInt(n, 10) == name {
+					return fail("declared object names must remain string array keys on supported PHP platforms")
+				}
 				field, err := recur(props[name], "/properties/"+strings.ReplaceAll(strings.ReplaceAll(name, "~", "~0"), "/", "~1"))
 				if err != nil {
 					return fail(err.Error())

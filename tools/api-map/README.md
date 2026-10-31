@@ -203,6 +203,17 @@ Operation entries (all keys optional):
 - `order`: wire names moved to the front of the signature in that order;
   required arguments always precede optional ones, so an order that lists an
   optional parameter before a required one, or an omitted parameter, is a problem.
+- Typed complete JSON bodies use the source-bound `body: "json"` / `json_body`
+  grammar documented in [the input guidance](../../docs/api/README.md#typed-whole-json-body-grammar).
+  Native scalar signatures are retained: serializer strictness applies after PHP
+  argument binding. Call scalar-body methods from a file declaring
+  `strict_types=1` to prevent pre-entry scalar coercion; the generated file's
+  declaration does not control caller mode. Weak binding may convert scalars or
+  call `Stringable::__toString()` before validation/metadata reset. Signature
+  TypeErrors and conversion callbacks are outside the library's reset/redaction
+  lifecycle. Nested array fields stay strict in either mode, including StatsManager
+  bool flags. Source object names that become integer PHP array keys are refused
+  during lowering; string-preserving numeric lookalikes keep their exact spelling.
 - `body` (`multipart`) selects reviewed inline string multipart encoding; `body_fields`
   maps explicitly corrected body property names to existing query parameter names.
   Both require operation-level evidence.

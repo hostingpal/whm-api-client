@@ -181,8 +181,12 @@ scalar alternatives with disjoint PHP input domains. A formal integer enum
 containing exactly numeric `0` and `1` selects a bool input serialized as integer
 `0|1`; native JSON booleans remain booleans. Input aliases and response aliases are
 separate; response compatibility never admits numeric strings in request fields.
-Object fields keep their formal names and requiredness. Unknown members reject
-unless `additionalProperties` supplies an explicit supported value schema.
+Object fields keep their formal names and requiredness. Generation rejects declared
+names PHP would convert to integer array keys on a supported platform, including
+canonical signed decimal integers within the 64-bit range. String-preserving names
+such as `01`, `+1`, `-0`, `1.0` and integers outside that range retain their spelling.
+Unknown members reject unless `additionalProperties` supplies an explicit supported
+value schema; integer caller keys remain invalid.
 
 A required body has a required native argument. Optional nonnullable roots use
 `null` as absence; an optional object/list uses `?array $body = null`. Required
@@ -190,6 +194,18 @@ nullable roots accept explicit null as the complete JSON document `null`.
 `[]` becomes `{}` for an object schema and `[]` for a list schema. A present body
 sets exactly `Content-Type: application/json`; absence sends no bytes or JSON
 Content-Type. False, zero and empty strings remain present scalar documents.
+
+Strict request validation applies to values that reach the serializer, after PHP
+binds the generated native argument. Use `declare(strict_types=1)` in the calling
+file to prevent native scalar coercion for scalar whole-body methods; the generated
+file's strict declaration does not control its callers. A weak caller can convert
+`'false'` to bool `true` (wire flag `1`), `'7'` to int `7`, or `17` to string `"17"`;
+a Stringable object's conversion can run before method entry. Native signature
+`TypeError`s, conversions and conversion callbacks occur before the library's
+metadata reset and validation. Library validation and redaction guarantees do not
+cover original values before entry. Nested array values, including StatsManager's `enabled`,
+remain strictly validated in either caller mode: integer/string flags are rejected.
+No production scalar whole-body endpoint is selected here.
 
 Narrow input corrections live in `json_body.corrections`, keyed by JSON pointers
 relative to the source schema (`""` means the root). An object correction may set
@@ -216,7 +232,9 @@ when it is used for a JSON-valued form parameter.
 
 Generated operation constants carry `json_body: {php, required, routes, schema}`
 separately from `params`. Trusted malformed descriptors raise `LogicException`;
-invalid caller values raise `InvalidArgumentException`. Both fail before I/O after
-metadata reset. Successful dispatch uses the shared one-attempt JSON executor and
+invalid caller values reaching the serializer raise `InvalidArgumentException`.
+These runtime checks fail before I/O after metadata reset; pre-entry native
+signature errors and conversions follow the caller-mode boundary above. Successful
+dispatch uses the shared one-attempt JSON executor and
 the existing envelope, metadata and typed response validation rules. There is no
 retry, implicit read, mutation rollback or successful-live-write claim.
