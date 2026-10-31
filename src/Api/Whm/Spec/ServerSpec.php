@@ -219,7 +219,7 @@ final class ServerSpec
                         'fields' => [
                             'app' => ['type' => 'string'],
                             'event' => ['type' => 'string'],
-                            'importance' => ['type' => 'int'],
+                            'importance' => ['type' => 'int', 'accept' => ['numeric-string']],
                             'name' => ['type' => 'string'],
                         ],
                     ],
@@ -528,15 +528,15 @@ final class ServerSpec
         'returns' => [
             'type' => 'object',
             'fields' => [
-                'createacct' => ['type' => 'int'],
-                'default' => ['type' => 'int'],
-                'ftp' => ['type' => 'int'],
-                'list' => ['type' => 'int'],
-                'mysql' => ['type' => 'int'],
-                'passwd' => ['type' => 'int'],
-                'postgres' => ['type' => 'int'],
-                'sshkey' => ['type' => 'int'],
-                'virtual' => ['type' => 'int'],
+                'createacct' => ['type' => 'int', 'accept' => ['numeric-string']],
+                'default' => ['type' => 'int', 'accept' => ['numeric-string']],
+                'ftp' => ['type' => 'int', 'accept' => ['numeric-string']],
+                'list' => ['type' => 'int', 'accept' => ['numeric-string']],
+                'mysql' => ['type' => 'int', 'accept' => ['numeric-string']],
+                'passwd' => ['type' => 'int', 'accept' => ['numeric-string']],
+                'postgres' => ['type' => 'int', 'accept' => ['numeric-string']],
+                'sshkey' => ['type' => 'int', 'accept' => ['numeric-string']],
+                'virtual' => ['type' => 'int', 'accept' => ['numeric-string']],
             ],
         ],
     ];

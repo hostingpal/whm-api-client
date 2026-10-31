@@ -871,7 +871,7 @@ final class WhmServerAdministrationTest extends TestCase
             'fetchSecurityAdvice' => ['{"payload":[{"advice":{"suggestion":1}}]}',
                 '{"payload":[{"advice":{"summary":null}}]}'],
             'forceDedistributionFromNode' => ['{"log":[{"indent":"0"}]}', '{"user_info":[{"username":1}]}'],
-            'getAllContactImportances' => ['{"importances":[{"importance":"0"}]}'],
+            'getAllContactImportances' => ['{"importances":[{"importance":"0.5"}]}'],
             'getApplicationContactEventImportance' => ['{"importance":false}'],
             'getApplicationContactImportance' => ['{"importance":"0"}'],
             'getAvailableProfiles' => ['{"profiles":[{"optional_roles":[{"module":1}]}]}',
@@ -893,7 +893,7 @@ final class WhmServerAdministrationTest extends TestCase
             'getUdp6Sockets' => ['{"payload":[{"state":false}]}'],
             'getTweakSetting' => ['{"tweaksetting":{"value":0}}'],
             'getUpdateAvailability' => ['{"update_available":"0"}', '{"current_version":0}'],
-            'getMinimumPasswordStrengths' => ['{"default":"0"}', '{"mysql":null}'],
+            'getMinimumPasswordStrengths' => ['{"default":"01"}', '{"mysql":null}'],
             'installedVersions' => ['{"apache":false}', '{"apache_php_versions":[null]}',
                 '{"cpanel_packages":[1]}', '{"cpanel_and_whm":0}'],
             'isRoleEnabled' => ['{"enabled":"0"}', '{"enabled":2}'],
@@ -1118,6 +1118,142 @@ final class WhmServerAdministrationTest extends TestCase
         foreach (['saveConnectedApplication', 'restoreConfigFromUpload', 'systemNeedsReboot'] as $method) {
             self::assertFalse(method_exists(Server::class, $method));
         }
+    }
+
+    /** @return iterable<string, array{string, string, string}> */
+    private static function observedIntegerFields(): iterable
+    {
+        yield 'notification priority' => ['getAllContactImportances', 'get_all_contact_importances', 'importance'];
+        $fields = ['createacct', 'default', 'ftp', 'list', 'mysql', 'passwd', 'postgres', 'sshkey', 'virtual'];
+        foreach ($fields as $field) {
+            yield $field => ['getMinimumPasswordStrengths', 'getminimumpasswordstrengths', $field];
+        }
+    }
+
+    /** @return iterable<string, array{string, string, string, string, int}> */
+    public static function canonicalObservedIntegerStrings(): iterable
+    {
+        foreach (self::observedIntegerFields() as $label => [$method, $function, $field]) {
+            // Boundary formats are policy tests for the existing integer converter, not additional live observations.
+            foreach (['0', '1', '25', '-1', '-25', (string) PHP_INT_MAX, (string) PHP_INT_MIN] as $wire) {
+                yield $label . ' ' . $wire => [$method, $function, $field, $wire, (int) $wire];
+            }
+        }
+    }
+
+    #[DataProvider('canonicalObservedIntegerStrings')]
+    public function testObservedServerIntegerStringsNormalizeLosslessly(
+        string $method,
+        string $function,
+        string $field,
+        string $wire,
+        int $expected,
+    ): void {
+        [$client, $http] = self::client();
+        $payload = self::integerFieldPayload($method, $field, $wire);
+        $http->addResponse(new Response(200, [], self::envelope($function, $payload)));
+        try {
+            $actual = self::invoke($client->whm()->server(), $method, []);
+        } catch (PayloadMismatchException) {
+            self::fail('The reviewed field must accept a lossless canonical integer string.');
+        }
+        $expectedPayload = json_decode(
+            self::integerFieldPayload($method, $field, $expected),
+            true,
+            512,
+            JSON_THROW_ON_ERROR,
+        );
+        self::assertSame($expectedPayload, $actual);
+        self::assertSame(1, $client->whm()->responseMeta()?->whmResult());
+        self::assertCount(1, $http->getRequests());
+        $request = $http->getLastRequest();
+        self::assertInstanceOf(RequestInterface::class, $request);
+        self::assertSame('GET', $request->getMethod());
+        self::assertSame(
+            'https://api.example.test:2087/json-api/' . $function . '?api.version=1',
+            (string) $request->getUri(),
+        );
+        self::assertSame('', (string) $request->getBody());
+    }
+
+    /** @return iterable<string, array{string, ?string}> */
+    public static function invalidObservedIntegerRepresentations(): iterable
+    {
+        $invalid = [
+            '', '00', '01', '-0', '-00', '-01', '+0', '+1', ' 1', '1 ', "1\n", "\t1",
+            '1.0', '1.00', '1.5', '-1.5', '1e0', '1E1', 'NaN', 'INF', 'unlimited',
+            (string) PHP_INT_MAX . '0', (string) PHP_INT_MIN . '0',
+            true, false, null, 0.0, 1.0, 1.5, [], ['nested' => 1],
+        ];
+        foreach (self::observedIntegerFields() as $label => [$method, , $field]) {
+            foreach ($invalid as $index => $value) {
+                yield $label . ' invalid ' . $index => [$method, self::integerFieldPayload($method, $field, $value)];
+            }
+        }
+        // Root and sibling contracts stay strict; only the ten observed integer leaves opt in.
+        foreach (['"0"', '"25"', 'true', '["1"]'] as $index => $payload) {
+            yield 'priority root ' . $index => ['getAllContactImportances', $payload];
+            yield 'strength root ' . $index => ['getMinimumPasswordStrengths', $payload];
+        }
+        foreach (
+            [
+            ['getAllContactImportances', '{"importances":"1"}'],
+            ['getAllContactImportances', '{"importances":[null]}'],
+            ['getAllContactImportances', '{"importances":[{"app":1,"importance":"1"}]}'],
+            ['getAllContactImportances', '{"importances":[{"event":null,"importance":"1"}]}'],
+            ['getAllContactImportances', '{"importances":[{"name":1,"importance":"1"}]}'],
+            ['getApplicationContactImportance', '{"importance":"1"}'],
+            ['getApplicationContactEventImportance', '{"importance":"1"}'],
+            ['getCurrentLtsExpirationStatus', '{"expiration":"1"}'],
+            ['getCurrentLtsExpirationStatus', '{"expires_in_next_three_months":"1"}'],
+            ['getCurrentProfile', '{"experimental":"1"}'],
+            ['serviceStatus', '{"service":[{"running":"1"}]}'],
+            ['getUpdateAvailability', '{"update_available":"1"}'],
+            ['getServerNodeStatus', '{"tls_verified":"1"}'],
+            ] as $index => $case
+        ) {
+            yield 'unaffected sibling ' . $index => $case;
+        }
+    }
+
+    #[DataProvider('invalidObservedIntegerRepresentations')]
+    public function testObservedIntegerCompatibilityRejectsUnreviewedVariants(string $method, ?string $payload): void
+    {
+        $this->testPayloadMismatchKeepsConfirmedOutcome($method, $payload);
+    }
+
+    public function testObservedIntegerLeavesKeepOptionalFieldsAndStringSiblings(): void
+    {
+        [$client, $http] = self::client();
+        foreach (
+            [
+            ['getAllContactImportances', 'get_all_contact_importances',
+                '{"importances":[{}, {"app":"001","event":"0","importance":"0","name":"1"},'
+                    . '{"importance":1},{"importance":"3"}]}',
+                ['importances' => [
+            [], ['app' => '001', 'event' => '0', 'importance' => 0, 'name' => '1'],
+                    ['importance' => 1], ['importance' => 3]]]],
+            ['getAllContactImportances', 'get_all_contact_importances', '{"importances":[]}', ['importances' => []]],
+            ['getMinimumPasswordStrengths', 'getminimumpasswordstrengths',
+                '{"createacct":"0","default":1,"ftp":"25","list":2,"mysql":"50",'
+                    . '"passwd":3,"postgres":"75","sshkey":4,"virtual":"100"}',
+                ['createacct' => 0, 'default' => 1, 'ftp' => 25, 'list' => 2, 'mysql' => 50,
+                    'passwd' => 3, 'postgres' => 75, 'sshkey' => 4, 'virtual' => 100]],
+            ['getMinimumPasswordStrengths', 'getminimumpasswordstrengths', '{"default":"0"}', ['default' => 0]],
+            ] as [$method, $function, $payload, $expected]
+        ) {
+            $http->addResponse(new Response(200, [], self::envelope($function, $payload)));
+            self::assertSame($expected, self::invoke($client->whm()->server(), $method, []));
+        }
+        self::assertCount(4, $http->getRequests());
+    }
+
+    private static function integerFieldPayload(string $method, string $field, mixed $value): string
+    {
+        $payload = $method === 'getAllContactImportances'
+            ? ['importances' => [[$field => $value]]]
+            : [$field => $value];
+        return json_encode($payload, JSON_THROW_ON_ERROR | JSON_PRESERVE_ZERO_FRACTION);
     }
 
     /** @param array<string, mixed> $arguments */

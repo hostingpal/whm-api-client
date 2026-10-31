@@ -3560,3 +3560,21 @@ service status and dashboard hostname. Optional selectors are omitted. It reads
 no credentials, linked-node secrets, arbitrary configuration values or sockets,
 and sends no notification, URL probe or mutation. Follow-up `8x0.2.38` retains
 unobserved variants and operational behavior.
+
+The initial [expanded server capture](evidence/2026-10-31-whm-server-administration.json)
+at `4eecbe249c754341f454db573a1a475731dc8b9c` on `11.138.0.19` records eight
+HTTP/API successes and six payload/probe passes. Contact-event `importance` and
+nine minimum-password-strength fields are numeric strings rather than pinned
+integers. Only those ten leaves gain lossless canonical integer-string
+normalization; other fields and operations retain their contracts. Structural
+numeric-string evidence alone does not establish every spelling accepted by the
+normalization policy; noncanonical strings, fractions and overflow remain invalid.
+
+Installed versions retain one masked unknown-field observation with string values;
+service rows retain one masked unknown object observation with integer/string
+children. Masking identifies neither names nor counts. Both stay untyped and
+unwaived under `8x0.2.38`. Profile, contact-importance and service records are
+populated. No configuration, credential, service, profile, license, notification
+or node operation changed anything, and no secret-bearing read was selected.
+The initial capture remains failed and immutable. SHA-256:
+`69d1296be7b3170ce6c6e8468aee28b03a3c6633b4b9c0b374f3ffbd5844e296`.

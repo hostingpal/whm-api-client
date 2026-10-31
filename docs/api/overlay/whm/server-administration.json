@@ -470,6 +470,10 @@
         {
           "kind": "documented",
           "text": "Returns per-application/event notification priorities; importance is an integer and name is display text, separate from API outcome. No notification is sent."
+        },
+        {
+          "kind": "observed",
+          "text": "The initial WHM GET capture on cPanel 11.138.0.19 records numeric strings for importances[].importance. Only these observed integer leaves admit the existing canonical, in-range integer-string normalization. The structural artifact does not prove every accepted text format; optional fields, numeric-looking string siblings, integer flags and other operations retain their contracts."
         }
       ],
       "evidence": [
@@ -478,8 +482,31 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /get_all_contact_importances parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Initial WHM GET capture at revision 4eecbe249c754341f454db573a1a475731dc8b9c on cPanel 11.138.0.19 records numeric-string structural types at $.importances[].importance, conflicting with the pinned integer schema. Immutable artifact docs/api/evidence/2026-10-31-whm-server-administration.json, SHA-256 69d1296be7b3170ce6c6e8468aee28b03a3c6633b4b9c0b374f3ffbd5844e296. Structural evidence does not establish the exact text or every numeric-string format. Apply only the existing canonical in-range integer-string conversion policy: lossless normalization to int; reject noncanonical, fractional, exponent, overflowing, boolean and null alternatives. No sibling or unknown-field compatibility is inferred.",
+          "fingerprint": "docs/api/evidence/2026-10-31-whm-server-administration.json"
         }
-      ]
+      ],
+      "response": {
+        "importances[].importance": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "whm1:get_all_contact_importances WHM GET at revision 4eecbe249c754341f454db573a1a475731dc8b9c reports numeric-string at payload path $.importances[].importance; the pinned type is integer. Apply the existing canonical lossless in-range integer-string policy only at this field, without assuming that all numeric-string formats were observed. Artifact docs/api/evidence/2026-10-31-whm-server-administration.json, SHA-256 69d1296be7b3170ce6c6e8468aee28b03a3c6633b4b9c0b374f3ffbd5844e296.",
+              "fingerprint": "docs/api/evidence/2026-10-31-whm-server-administration.json"
+            }
+          ]
+        }
+      }
     },
     "whm1:get_application_contact_event_importance": {
       "name": "getApplicationContactEventImportance",
@@ -951,6 +978,10 @@
         {
           "kind": "documented",
           "text": "Omitting name retrieves all minimum strengths; name selects one service. Returned strength values are integers, including zero. No password or setting changes."
+        },
+        {
+          "kind": "observed",
+          "text": "The initial WHM GET capture on cPanel 11.138.0.19 records numeric strings for all nine documented strength fields. Only these observed integer leaves admit the existing canonical, in-range integer-string normalization. The structural artifact does not prove every accepted text format; optional fields, numeric-looking string siblings, integer flags and other operations retain their contracts."
         }
       ],
       "evidence": [
@@ -959,8 +990,143 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /getminimumpasswordstrengths parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Initial WHM GET capture at revision 4eecbe249c754341f454db573a1a475731dc8b9c on cPanel 11.138.0.19 records numeric-string structural types at $.createacct, $.default, $.ftp, $.list, $.mysql, $.passwd, $.postgres, $.sshkey, $.virtual, conflicting with the pinned integer schema. Immutable artifact docs/api/evidence/2026-10-31-whm-server-administration.json, SHA-256 69d1296be7b3170ce6c6e8468aee28b03a3c6633b4b9c0b374f3ffbd5844e296. Structural evidence does not establish the exact text or every numeric-string format. Apply only the existing canonical in-range integer-string conversion policy: lossless normalization to int; reject noncanonical, fractional, exponent, overflowing, boolean and null alternatives. No sibling or unknown-field compatibility is inferred.",
+          "fingerprint": "docs/api/evidence/2026-10-31-whm-server-administration.json"
         }
-      ]
+      ],
+      "response": {
+        "createacct": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "whm1:getminimumpasswordstrengths WHM GET at revision 4eecbe249c754341f454db573a1a475731dc8b9c reports numeric-string at payload path $.createacct; the pinned type is integer. Apply the existing canonical lossless in-range integer-string policy only at this field, without assuming that all numeric-string formats were observed. Artifact docs/api/evidence/2026-10-31-whm-server-administration.json, SHA-256 69d1296be7b3170ce6c6e8468aee28b03a3c6633b4b9c0b374f3ffbd5844e296.",
+              "fingerprint": "docs/api/evidence/2026-10-31-whm-server-administration.json"
+            }
+          ]
+        },
+        "default": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "whm1:getminimumpasswordstrengths WHM GET at revision 4eecbe249c754341f454db573a1a475731dc8b9c reports numeric-string at payload path $.default; the pinned type is integer. Apply the existing canonical lossless in-range integer-string policy only at this field, without assuming that all numeric-string formats were observed. Artifact docs/api/evidence/2026-10-31-whm-server-administration.json, SHA-256 69d1296be7b3170ce6c6e8468aee28b03a3c6633b4b9c0b374f3ffbd5844e296.",
+              "fingerprint": "docs/api/evidence/2026-10-31-whm-server-administration.json"
+            }
+          ]
+        },
+        "ftp": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "whm1:getminimumpasswordstrengths WHM GET at revision 4eecbe249c754341f454db573a1a475731dc8b9c reports numeric-string at payload path $.ftp; the pinned type is integer. Apply the existing canonical lossless in-range integer-string policy only at this field, without assuming that all numeric-string formats were observed. Artifact docs/api/evidence/2026-10-31-whm-server-administration.json, SHA-256 69d1296be7b3170ce6c6e8468aee28b03a3c6633b4b9c0b374f3ffbd5844e296.",
+              "fingerprint": "docs/api/evidence/2026-10-31-whm-server-administration.json"
+            }
+          ]
+        },
+        "list": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "whm1:getminimumpasswordstrengths WHM GET at revision 4eecbe249c754341f454db573a1a475731dc8b9c reports numeric-string at payload path $.list; the pinned type is integer. Apply the existing canonical lossless in-range integer-string policy only at this field, without assuming that all numeric-string formats were observed. Artifact docs/api/evidence/2026-10-31-whm-server-administration.json, SHA-256 69d1296be7b3170ce6c6e8468aee28b03a3c6633b4b9c0b374f3ffbd5844e296.",
+              "fingerprint": "docs/api/evidence/2026-10-31-whm-server-administration.json"
+            }
+          ]
+        },
+        "mysql": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "whm1:getminimumpasswordstrengths WHM GET at revision 4eecbe249c754341f454db573a1a475731dc8b9c reports numeric-string at payload path $.mysql; the pinned type is integer. Apply the existing canonical lossless in-range integer-string policy only at this field, without assuming that all numeric-string formats were observed. Artifact docs/api/evidence/2026-10-31-whm-server-administration.json, SHA-256 69d1296be7b3170ce6c6e8468aee28b03a3c6633b4b9c0b374f3ffbd5844e296.",
+              "fingerprint": "docs/api/evidence/2026-10-31-whm-server-administration.json"
+            }
+          ]
+        },
+        "passwd": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "whm1:getminimumpasswordstrengths WHM GET at revision 4eecbe249c754341f454db573a1a475731dc8b9c reports numeric-string at payload path $.passwd; the pinned type is integer. Apply the existing canonical lossless in-range integer-string policy only at this field, without assuming that all numeric-string formats were observed. Artifact docs/api/evidence/2026-10-31-whm-server-administration.json, SHA-256 69d1296be7b3170ce6c6e8468aee28b03a3c6633b4b9c0b374f3ffbd5844e296.",
+              "fingerprint": "docs/api/evidence/2026-10-31-whm-server-administration.json"
+            }
+          ]
+        },
+        "postgres": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "whm1:getminimumpasswordstrengths WHM GET at revision 4eecbe249c754341f454db573a1a475731dc8b9c reports numeric-string at payload path $.postgres; the pinned type is integer. Apply the existing canonical lossless in-range integer-string policy only at this field, without assuming that all numeric-string formats were observed. Artifact docs/api/evidence/2026-10-31-whm-server-administration.json, SHA-256 69d1296be7b3170ce6c6e8468aee28b03a3c6633b4b9c0b374f3ffbd5844e296.",
+              "fingerprint": "docs/api/evidence/2026-10-31-whm-server-administration.json"
+            }
+          ]
+        },
+        "sshkey": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "whm1:getminimumpasswordstrengths WHM GET at revision 4eecbe249c754341f454db573a1a475731dc8b9c reports numeric-string at payload path $.sshkey; the pinned type is integer. Apply the existing canonical lossless in-range integer-string policy only at this field, without assuming that all numeric-string formats were observed. Artifact docs/api/evidence/2026-10-31-whm-server-administration.json, SHA-256 69d1296be7b3170ce6c6e8468aee28b03a3c6633b4b9c0b374f3ffbd5844e296.",
+              "fingerprint": "docs/api/evidence/2026-10-31-whm-server-administration.json"
+            }
+          ]
+        },
+        "virtual": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "whm1:getminimumpasswordstrengths WHM GET at revision 4eecbe249c754341f454db573a1a475731dc8b9c reports numeric-string at payload path $.virtual; the pinned type is integer. Apply the existing canonical lossless in-range integer-string policy only at this field, without assuming that all numeric-string formats were observed. Artifact docs/api/evidence/2026-10-31-whm-server-administration.json, SHA-256 69d1296be7b3170ce6c6e8468aee28b03a3c6633b4b9c0b374f3ffbd5844e296.",
+              "fingerprint": "docs/api/evidence/2026-10-31-whm-server-administration.json"
+            }
+          ]
+        }
+      }
     },
     "whm1:installed_versions": {
       "name": "installedVersions",

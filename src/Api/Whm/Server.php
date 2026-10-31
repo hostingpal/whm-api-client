@@ -822,6 +822,11 @@ final readonly class Server
      * Documented: Returns per-application/event notification priorities; importance is an integer and name is display
      * text, separate from API outcome. No notification is sent.
      *
+     * Observed: The initial WHM GET capture on cPanel 11.138.0.19 records numeric strings for importances[].importance.
+     * Only these observed integer leaves admit the existing canonical, in-range integer-string normalization. The
+     * structural artifact does not prove every accepted text format; optional fields, numeric-looking string siblings,
+     * integer flags and other operations retain their contracts.
+     *
      * API-map identity: whm1:get_all_contact_importances#GET (wire name get_all_contact_importances; Notifications).
      *
      * @return GetAllContactImportancesResult
@@ -1147,6 +1152,11 @@ final readonly class Server
      *
      * Documented: Omitting name retrieves all minimum strengths; name selects one service. Returned strength values are
      * integers, including zero. No password or setting changes.
+     *
+     * Observed: The initial WHM GET capture on cPanel 11.138.0.19 records numeric strings for all nine documented
+     * strength fields. Only these observed integer leaves admit the existing canonical, in-range integer-string
+     * normalization. The structural artifact does not prove every accepted text format; optional fields,
+     * numeric-looking string siblings, integer flags and other operations retain their contracts.
      *
      * API-map identity: whm1:getminimumpasswordstrengths#GET (wire name getminimumpasswordstrengths; Security).
      *
