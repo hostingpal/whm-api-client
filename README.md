@@ -3344,8 +3344,8 @@ $resizedPath = $images->resizeImage(height: 300, imageFile: 'images/photo.jpg', 
 ```
 
 Conversion returns optional `converted_file`; resize returns the absolute resized
-image path as a string. Thumbnail rows retain optional integer `failed`, `file`,
-`reason` and `thumbnail_file` fields, including partial failures under API status 1.
+image path as a string. Thumbnail rows retain optional integer `failed` and optional string
+`file`, `reason` and `thumbnail_file` fields, including partial failures under API status 1.
 The source documents `failed=1` only on failure; the existing integer contract does
 not enforce that singleton enum. Thumbnails go in a `thumbnails` subdirectory with
 `tn_` filenames. Inspect every row; success does not prove every thumbnail exists.
