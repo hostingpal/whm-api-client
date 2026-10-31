@@ -31,6 +31,8 @@ trait WhmGroups
 
     private ?ModSecurity $modSecurityGroup = null;
 
+    private ?Resellers $resellersGroup = null;
+
     private ?Server $serverGroup = null;
 
     private ?SystemPackages $systemPackagesGroup = null;
@@ -136,6 +138,19 @@ trait WhmGroups
     public function modSecurity(): ModSecurity
     {
         return $this->modSecurityGroup ??= new ModSecurity($this->run(...));
+    }
+
+    /**
+     * Select the Resellers operations without making a request.
+     *
+     * Reseller account inventory, privileges, ownership and limits. Both ACL write methods replace the whole privilege
+     * set; read current privileges before constructing the desired replacement. The cPanel 11.138.0.19 review exercised
+     * GET reads only. All fourteen write contracts remain supported by pinned documentation, reviewed upstream source
+     * and offline tests, without live mutation coverage.
+     */
+    public function resellers(): Resellers
+    {
+        return $this->resellersGroup ??= new Resellers($this->run(...));
     }
 
     /**

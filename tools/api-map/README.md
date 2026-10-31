@@ -119,6 +119,18 @@ Operation entries (all keys optional):
   reviewed description, preserving later sentences. Both settings require
   operation-level evidence; requiredness, sensitivity and optional null omission
   retain their existing rules.
+  `type: "true"` is a separate evidence-gated presence-only correction, used
+  where sending a key grants a privilege regardless of its value. It requires
+  an optional concrete scalar integer source with exactly `enum: [1]`; the
+  effective parameter must remain optional. Encoding must be absent or `bool`,
+  and a simultaneous wire-name correction is rejected. It generates `?true`
+  with a null default and the existing boolean encoder: true sends `1`, while
+  null omits the key. PHP rejects false, integers (including `1`) and strings
+  before dispatch, in both strict and weak callers. No singleton enum is
+  changed implicitly; ordinary zero/one flags still accept false and emit `0`.
+  Composite, nullable, required and omitted inputs cannot use this correction,
+  and it adds no response type. This guard does not make omission a partial
+  update: each operation's replacement semantics remain in its reviewed notes.
 - `order`: wire names moved to the front of the signature in that order;
   required arguments always precede optional ones, so an order that lists an
   optional parameter before a required one, or an omitted parameter, is a problem.
