@@ -930,7 +930,7 @@ application fields on `11.138.0.19`. It also found an empty selector-free matchi
 result while `listPackages()` returned a plan. These reports do not expand the
 committed two-GET artifact or establish its previously unobserved item schema.
 The original empty-container assessment remains immutable; the shared tooling
-ambiguity stays under `8x0.2.50`. All package and feature writes remain unobserved.
+ambiguity stays under `8x0.2.50`. All package and feature writes were unobserved by that initial review.
 
 `2026-10-31-whm-hosting-plans-reviewed.json` is the completed, separate review
 capture at `1336c4df3c0d48d41362938af4556991d9b249bd` on `11.138.0.19`.
@@ -943,5 +943,17 @@ were null, and application groups/items/subitems were populated. No matching
 query, mutation, arbitrary file selection, template execution or URL fetch ran;
 no resources were created or changed. All 85 earlier artifacts are unchanged.
 The capture is complete and must not repeat merely to clear findings. Follow-up:
-`8x0.2.43`; numeric-limit and populated-match variants remain unobserved.
+`8x0.2.43`; this capture does not observe numeric-limit strings or populated matching.
 SHA-256 `fa47311ac73ed16812b86cd1a6367b921f2b2484dd4ffb0f3c083cc6db3497ab`.
+
+[Review 5721514363](https://github.com/hostingpal/whm-api-client/pull/56#pullrequestreview-5721514363)
+subsequently observed populated packages and numeric-string variants through a
+separate disposable package/account lifecycle. It found team-limit strings in
+list/info reads and string CGI in matching, which require corrections beyond the
+stock-package capture. Package creation/quota edit/deletion passed; an initial
+reviewer cleanup check failed, followed by successful package removal and
+confirmed account/home cleanup. The report establishes no extension, feature-list
+or override write coverage. The reviewer explicitly accepts the two masked
+application findings as nonblocking while keeping them failed and unwaived.
+These later named observations never alter either artifact or establish the
+identities/counts hidden in its wildcards. No capture was rerun for this correction.

@@ -525,7 +525,7 @@ final class HostingPlansSpec
                                 ['type' => 'string', 'literal' => 'unlimited'],
                             ],
                         ],
-                        'MAX_TEAM_USERS' => ['type' => 'int', 'nullable' => true],
+                        'MAX_TEAM_USERS' => ['type' => 'int', 'nullable' => true, 'accept' => ['numeric-string']],
                         'QUOTA' => [
                             'type' => 'union',
                             'nullable' => true,
@@ -668,7 +668,7 @@ final class HostingPlansSpec
                                     ['type' => 'string'],
                                 ],
                             ],
-                            'MAX_TEAM_USERS' => ['type' => 'int', 'nullable' => true],
+                            'MAX_TEAM_USERS' => ['type' => 'int', 'nullable' => true, 'accept' => ['numeric-string']],
                             'QUOTA' => [
                                 'type' => 'union',
                                 'anyOf' => [
@@ -728,7 +728,13 @@ final class HostingPlansSpec
                                     ['type' => 'string', 'literal' => 'unlimited'],
                                 ],
                             ],
-                            'CGI' => ['type' => 'flag'],
+                            'CGI' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'flag'],
+                                    ['type' => 'string'],
+                                ],
+                            ],
                             'CPMOD' => ['type' => 'string'],
                             'DIGESTAUTH' => ['type' => 'string'],
                             'FEATURELIST' => ['type' => 'string'],
@@ -806,6 +812,7 @@ final class HostingPlansSpec
                                     ['type' => 'string', 'literal' => 'unlimited'],
                                 ],
                             ],
+                            'MAX_TEAM_USERS' => ['type' => 'int', 'nullable' => true, 'accept' => ['numeric-string']],
                             'QUOTA' => [
                                 'type' => 'union',
                                 'anyOf' => [

@@ -200,7 +200,7 @@ use InvalidArgumentException;
  * @phpstan-type MatchPackagesResult array{
  *     pkg?: list<array{
  *         BWLIMIT?: int|'unlimited',
- *         CGI?: 0|1,
+ *         CGI?: 0|1|string,
  *         CPMOD?: string,
  *         DIGESTAUTH?: string,
  *         FEATURELIST?: string,
@@ -218,6 +218,7 @@ use InvalidArgumentException;
  *         MAX_DEFER_FAIL_PERCENTAGE?: int|'unlimited',
  *         MAX_EMAILACCT_QUOTA?: int|'unlimited',
  *         MAX_EMAIL_PER_HOUR?: int|'unlimited',
+ *         MAX_TEAM_USERS?: int|null,
  *         QUOTA?: int|'unlimited',
  *         _PACKAGE_EXTENSIONS?: string,
  *         name?: string,
@@ -533,6 +534,11 @@ final readonly class HostingPlans
      * does not read, merge or fill settings automatically. PHP null omits an argument rather than sending a null
      * sentinel or preserving its server value. Arbitrary extension variables are outside this fixed-parameter method.
      *
+     * Observed: In the independent 11.138.0.19 disposable-package review, editPackage(name, quota: 200) changed QUOTA
+     * while preserving previously set limits that were omitted from that call. The feature list was already default, so
+     * this does not test or disprove the pinned feature-list reset warning; extension reset behavior was also not
+     * established. Do not generalize the observed limit preservation to every omitted option.
+     *
      * API-map identity: whm1:editpkg#GET (wire name editpkg; Hosting Plans).
      *
      * @param string $name The hosting plan's name.
@@ -831,21 +837,26 @@ final readonly class HostingPlans
      * Documented: Only enabled settings are returned, so known fields remain optional. Extension variables are opaque
      * dynamic fields and may contain credentials; treat the result as sensitive. Pinned limit alternatives include the
      * exact unlimited literal and null only where declared; the reviewed MAXPARK exception is documented separately.
-     * Flags stay integer 0/1, DIGESTAUTH stays a source string, and MAX_TEAM_USERS remains nullable native int. Omitted
-     * and null stay distinct.
+     * Flags stay integer 0/1, DIGESTAUTH stays a source string, and MAX_TEAM_USERS preserves nullable integers with the
+     * separately observed canonical-string compatibility. Omitted and null stay distinct.
      *
      * Observed: The independent 11.138.0.19 GET review observed null MAXPARK on the stock default package, so this
      * field also admits explicit null. CGI, HASSHELL and IP remained native integers; no broader flag conversion is
      * established.
      *
-     * Documented: The reviewed package-limit family includes digit-string representations, established separately in
-     * package-derived account limits. Applying that family to this method is source-backed compatibility; this
-     * endpoint's stock package had null limits and does not establish populated numeric-string observations.
+     * Documented: The twelve resource-limit union integer arms use the established package-derived canonical-string
+     * compatibility family. The initial stock-package read had null limits. A later separate populated-package review
+     * observed numeric-string variants, including MAX_TEAM_USERS; its evidence does not relabel each unreported field
+     * as individually observed.
      *
-     * Policy: Client behavior: only the integer arms of the reviewed resource-limit unions accept canonical integer
-     * strings within PHP integer bounds and normalize them to int. The exact unlimited literal, existing nullable
-     * alternatives, omitted fields and opaque extension values remain distinct. MAX_TEAM_USERS and flag/string siblings
-     * retain their existing contracts.
+     * Policy: Client behavior: reviewed resource-limit integer arms and MAX_TEAM_USERS accept only canonical integer
+     * strings within PHP integer bounds and normalize them losslessly. Existing unlimited literals, nullable
+     * alternatives, omissions and opaque extension values remain distinct. Flags and unrelated string fields are
+     * unchanged.
+     *
+     * Observed: The separate 11.138.0.19 populated-package review found digit-string MAX_TEAM_USERS even when package
+     * creation omitted that setting. This is new reviewer evidence; the committed stock-package capture remains
+     * immutable and does not establish that variant.
      *
      * API-map identity: whm1:getpkginfo#GET (wire name getpkginfo; Hosting Plans).
      *
@@ -899,6 +910,10 @@ final readonly class HostingPlans
      *
      * This function lists the authenticated user's available hosting plans (packages).
      *
+     * Observed: The independent 11.138.0.19 populated-package review observed MAX_TEAM_USERS as a digit string.
+     * Canonical integer strings normalize losslessly to int, while existing null and omitted fields remain distinct.
+     * This correction applies to each row, so a populated package can coexist with a null-valued stock package.
+     *
      * API-map identity: whm1:listpkgs#GET (wire name listpkgs; Hosting Plans).
      *
      * @param 'all'|'creatable'|'editable'|'viewable'|null $want The permissions of packages that you wish to list. Null
@@ -927,22 +942,24 @@ final readonly class HostingPlans
      * Documented: The pinned description says omitting every selector lists all server packages, but the observed
      * contradiction below limits that claim. Selectors remain optional with exact uppercase wire names except
      * _PACKAGE_EXTENSIONS. Boolean CGI/HASSHELL inputs encode as 0/1, while DIGESTAUTH and IP take y/n strings. Result
-     * rows retain distinct source strings for HASSHELL/IP and do not inherit getPackageInfo flag types. The list-row
-     * shape and optional name are source-backed; populated match rows were not observed.
+     * rows retain source strings for HASSHELL/IP. CGI preserves the observed string form alongside the pinned integer
+     * 0/1 form, without converting n or y to a flag. Populated rows and names were separately reviewer-observed.
      *
-     * Observed: On 11.138.0.19, the independent selector-free GET returned an empty pkg list while listPackages
-     * returned one package on the same server. The cause is unknown. An empty selector-free match result does not
-     * establish that the server has no packages; the contradiction remains tracked under whm-api-client-8x0.2.43.
+     * Observed: On 11.138.0.19, the initial selector-free GET returned an empty pkg list while listPackages returned
+     * one plan. In a later disposable-package review with two plans, no selector returned one of two; MAXSQL=5 returned
+     * the matching plan, but QUOTA=100 (its actual quota) and QUOTA=99999 both returned none. The cause is unknown.
+     * Selector-free results may be partial and an empty match does not prove absence; this remains tracked under
+     * whm-api-client-8x0.2.43.
      *
-     * Documented: Canonical integer-string compatibility for the resource-limit unions follows the reviewed
-     * package-derived limit family. It is not based on populated matchPackages results from this review, which returned
-     * an empty list.
+     * Documented: The twelve resource-limit union integer arms use the established package-derived canonical-string
+     * family. A later independent populated-package review observed matching rows and numeric-string variants.
+     * MAX_TEAM_USERS is retained using the nullable integer family documented for listPackages/getPackageInfo; matching
+     * null remains source-family compatibility rather than an observed value.
      *
-     * Policy: Client behavior: pkg is a list, preserving row names, native integers, exact unlimited strings and
-     * omitted fields. Only the integer arms of its twelve reviewed resource-limit unions accept canonical integer
-     * strings within PHP bounds. Null, malformed or overflowing strings and unrelated field conversions remain invalid.
-     * The client does not enforce correspondence with requested criteria or substitute listPackages for an empty
-     * result.
+     * Policy: Client behavior: pkg is a list preserving names, literal strings, native integers and omissions. The
+     * twelve reviewed resource-limit integer arms and MAX_TEAM_USERS accept bounded canonical integer strings
+     * losslessly. MAX_TEAM_USERS permits source-family null, while existing nonnullable resource-limit unions remain
+     * nonnullable. Unrelated strings, flag alternatives and deprecated FRONTPAGE integers retain their contracts.
      *
      * API-map identity: whm1:matchpkgs#GET (wire name matchpkgs; Hosting Plans).
      *

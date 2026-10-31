@@ -4746,9 +4746,9 @@ was run by the correction agent, and every earlier artifact is unchanged.
 
 `whm()->hostingPlans()` exposes twenty of 24 pinned functions, including package
 creation, editing, deletion, extension management, matching, application inventory
-and feature overrides. The original eight typed contracts and two deprecated
-exclusions are preserved. Dynamic feature-list creation/update fields remain
-excluded under `8x0.1.31`. The twelve additions use four GET and eight form POST
+and feature overrides. The original eight methods and two deprecated exclusions
+are retained, with a narrow team-limit response correction in `listPackages()`.
+Dynamic feature-list creation/update fields remain excluded under `8x0.1.31`. The twelve additions use four GET and eight form POST
 methods.
 
 Package options preserve exact wire casing, omission, false/zero and literal
@@ -4769,14 +4769,22 @@ associated variables; the typed input does not invent arbitrary variable fields.
 
 `getPackageInfo()` retains named fields and source-documented opaque extension
 variables, which may contain private configuration. Its observed nullable
-`MAXPARK` remains distinct from omission. Package-limit integer alternatives in
-this method and `matchPackages()` accept bounded canonical integer strings using
-source-family evidence; the reviewed server had null limits, so these are not
-new observations of numeric strings. Other flags and integer fields stay strict.
-`matchPackages()` returns a list of records, including optional `name`. Populated
-matches remain source/offline evidence. A selector-free reviewer call returned
-an empty list while `listPackages()` returned a plan; the cause is unknown, and
-omitting every selector is not a guarantee of complete inventory.
+`MAXPARK` remains distinct from omission. The twelve resource-limit integer
+alternatives use the established canonical-string compatibility family. A later
+independent populated-package review observed numeric-string variants and
+`MAX_TEAM_USERS` in the three package reads. That team field accepts bounded
+canonical integer strings in `listPackages()` and `getPackageInfo()` while
+preserving their existing null and omission behavior; matching retains it using
+the same family, with null support source-inferred for that read. Other fields
+keep their existing contracts.
+
+`matchPackages()` returns a list of records with optional `name`. Its `CGI`
+result preserves strings such as the observed `n`, alongside the pinned integer
+0/1 alternative; it does not inherit `getPackageInfo()` flag conversion. With
+two packages present, a separate reviewer call without selectors returned one
+of two; `MAXSQL=5` found the matching package, while `QUOTA=100` (its real quota)
+and `QUOTA=99999` both returned none. The cause is unknown. Matching may return
+partial inventory or miss a package with the requested value.
 
 `getAvailableApplications()` supports the reviewed omissions in group and item
 records, including optional string group descriptions. Null descriptions were
@@ -4789,8 +4797,10 @@ The original two-GET capture at `a5c08af` on `11.138.0.19` strictly passes with
 zero discrepancies. Its empty `matchPackages()` result passed the former
 empty-object boundary and establishes no populated shape. That immutable
 artifact is not rewritten or repeated. Separate reviewer GET reports support the
-contract corrections; no package, extension, feature-list or override write was
-observed. Remaining behavior and the empty-match contradiction stay under
+contract corrections. A later reviewer separately observed package creation,
+quota editing and deletion with disposable account/package cleanup; extension,
+feature-list and override writes remain unobserved. Remaining behavior and the
+matching contradiction stay under
 `8x0.2.43`; shared empty-container evidence ambiguity remains `8x0.2.50`.
 
 The requested three-GET capture at `1336c4d` on `11.138.0.19` records successful
@@ -4815,7 +4825,8 @@ integer strings in the existing package-limit integer alternatives. The reviewed
 stock plan had null limits, so populated numeric-limit compatibility is tested
 offline and remains separate from that live report. The pinned matching response
 calls `pkg` a list; its optional `name` uses the independently documented package
-inventory string field. Populated matching rows remain unobserved.
+inventory string field. Populated matching rows were unobserved in that initial
+review; the later populated-package lifecycle is recorded below.
 
 The existing capture remains byte-identical, including its original effective
 contract and empty-container assessment. Artifact SHA-256:
@@ -4827,7 +4838,8 @@ artifact is `2026-10-31-whm-hosting-plans-reviewed.json`, SHA-256
 Its strict failure retains the two masked unknown-field observations at
 `$.groups[].items[].*` and `$.groups[].items[].subitems[].*`. No known-field
 mismatch or unsuccessful API call occurred. Stock package limits were null;
-canonical numeric-limit strings and populated matching rows remain unobserved.
+canonical numeric-limit strings and populated matching rows were not observed
+by this capture. The later reviewer lifecycle below separately observes them.
 Application groups/items/subitems were populated, and the optional group
 description appeared as string or absent. This structural capture does not
 establish row counts or raw values. All 85 earlier artifacts and 24 pinned
@@ -4841,3 +4853,46 @@ as optional string from this live report, not the pinned `Group` schema, which
 has no such property. The cited source's truthy rewrite does not prove that null
 can never occur; null remains an unobserved variant under `8x0.2.43`. No mutation
 ran for that clarification, and no historical capture is reinterpreted.
+
+### PR56 populated-package follow-up
+
+[Review 5721514363](https://github.com/hostingpal/whm-api-client/pull/56#pullrequestreview-5721514363)
+reports a separate WHM lifecycle on `11.138.0.19` at `1336c4df` (the same
+executable contracts as `8a3c6b1a`). `listPackages()` and `getPackageInfo()`
+failed on digit-string `MAX_TEAM_USERS`, including a created package with no
+explicit team limit. Matching returned the exact CGI string `n` and a team
+limit that the previous contract dropped. Three response specs are corrected:
+canonical bounded team strings on all three reads, a retained matching team
+field, and string CGI alongside its pinned integer 0/1 alternative. Matching
+team null remains source-family compatibility from the two documented reads,
+not an observed matching value. No other original method contract is widened.
+
+The reviewer observed populated matching and numeric-string variants separately
+from the committed stock-package captures. The type-only report does not name
+every numeric-string resource field, so the twelve existing integer-arm
+corrections retain their family attribution instead of claiming each was newly
+observed. Selector-free matching returned one of two plans; MAXSQL=5 matched,
+while QUOTA=100 (the real quota) and QUOTA=99999 did not. No cause is inferred.
+
+`addPackage()` and `editPackage()` returned string `pkg` results. A quota-only
+edit preserved previously set omitted limits. The feature list was already
+default, so the pinned feature-list reset warning remains source-based; this
+run also establishes no extension reset behavior. Deleting an in-use package
+raised `ApiErrorException` and retained the package; deletion succeeded after
+the account was gone. The first reviewer cleanup check failed on typed
+`listPackages()`, leaving the disposable package temporarily. The reviewer
+subsequently removed it through `killpkg` and verified only the original package
+remained, with disposable account and home absent. These separate reviewer runs
+are not committed mutation captures, and this correction chat made no live call.
+
+The reviewer explicitly finds the two masked application observations
+nonblocking, while requiring the strict report to remain failed and unwaived.
+Separate named observations include item `leika` (array) and `cpanel_os_check`
+(string), and subitem `role`/`description` (strings) and `multiuser_required`
+(integer). Those independently observed keys do not identify historical masked
+entries or their counts. No new fields are inferred or typed from the wildcard
+artifact. Optional subitem expansion is not required for this correction.
+Follow-up `8x0.2.43` retains the findings, matching discrepancy, remaining
+variants and unobserved extension/feature-list/override writes. Both captures
+and every earlier artifact remain immutable; no new capture is required merely
+to obtain a green strict result.

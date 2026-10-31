@@ -256,16 +256,41 @@ final class WhmHostingPlanManagementTest extends TestCase
                         '{"pkg":' . ($operation === 'matchpkgs' ? '[' . $row . ']' : $row) . '}'];
                 }
             }
-            foreach (['CGI', 'FRONTPAGE'] as $field) {
+            foreach ($operation === 'getpkginfo' ? ['CGI', 'FRONTPAGE'] : ['FRONTPAGE'] as $field) {
                 $row = '{"' . $field . '":"0"}';
                 yield "$method strict flag $field" => [$operation, $method, $arguments,
                     '{"pkg":' . ($operation === 'matchpkgs' ? '[' . $row . ']' : $row) . '}'];
             }
         }
         yield 'get package IP is not a string' => ['getpkginfo', 'getPackageInfo', ['fixture'], '{"pkg":{"IP":"n"}}'];
-        yield 'get package team count stays native integer' => [
-            'getpkginfo', 'getPackageInfo', ['fixture'], '{"pkg":{"MAX_TEAM_USERS":"7"}}',
+        yield 'get package CGI remains an integer flag' => [
+            'getpkginfo', 'getPackageInfo', ['fixture'], '{"pkg":{"CGI":"n"}}',
         ];
+        foreach (
+            [
+            'listpkgs' => 'listPackages',
+            'getpkginfo' => 'getPackageInfo',
+            'matchpkgs' => 'matchPackages',
+            ] as $op => $method
+        ) {
+            foreach (
+                [
+                'true', 'false', '1.5', '1.0', '""', '"07"', '"+7"', '"-0"', '" 7"', '"7 "',
+                '"7.0"', '"1e2"', '"unlimited"', '[]', '{}', '"' . PHP_INT_MAX . '0"',
+                ] as $value
+            ) {
+                $row = '{"MAX_TEAM_USERS":' . $value . '}';
+                yield $method . ' strict team limit ' . $value => [
+                    $op, $method, $op === 'getpkginfo' ? ['fixture'] : [],
+                    '{"pkg":' . ($op === 'getpkginfo' ? $row : '[' . $row . ']') . '}',
+                ];
+            }
+        }
+        foreach (['true', 'false', 'null', '1.0', '2', '[]', '{}'] as $value) {
+            yield 'matching CGI rejects invalid nonstrings ' . $value => [
+                'matchpkgs', 'matchPackages', [], '{"pkg":[{"CGI":' . $value . '}]}',
+            ];
+        }
         yield 'match package shell remains a string' => ['matchpkgs', 'matchPackages', [], '{"pkg":[{"HASSHELL":0}]}'];
         foreach (['null', '1', 'false', '[]', '{}'] as $value) {
             yield 'match package name remains a string ' . $value => [
@@ -482,6 +507,54 @@ final class WhmHostingPlanManagementTest extends TestCase
                     $operation, $method, $arguments, json_encode($expected, JSON_THROW_ON_ERROR), $expected,
                 ];
             }
+        }
+        foreach (
+            [
+            'listpkgs' => 'listPackages',
+            'getpkginfo' => 'getPackageInfo',
+            'matchpkgs' => 'matchPackages',
+            ] as $op => $method
+        ) {
+            foreach ([null, 0, 7, PHP_INT_MAX, PHP_INT_MIN] as $value) {
+                foreach ([false, true] as $quoted) {
+                    $wire = $quoted && $value !== null ? (string) $value : $value;
+                    $row = ['MAX_TEAM_USERS' => $wire];
+                    $expected = ['MAX_TEAM_USERS' => $value];
+                    yield $method . ' team ' . json_encode($wire, JSON_THROW_ON_ERROR) . ($quoted ? ' quoted' : '') => [
+                        $op, $method, $op === 'getpkginfo' ? ['fixture'] : [],
+                        json_encode(['pkg' => $op === 'getpkginfo' ? $row : [$row]], JSON_THROW_ON_ERROR),
+                        $op === 'listpkgs' ? [$expected] : ['pkg' => $op === 'getpkginfo' ? $expected : [$expected]],
+                    ];
+                }
+            }
+        }
+        yield 'list packages mixes null numeric string and omitted team limits' => [
+            'listpkgs', 'listPackages', [],
+            '{"pkg":[{"name":"stock","MAX_TEAM_USERS":null},'
+                . '{"name":"fixture","MAX_TEAM_USERS":"7","CGI":"n"},{"name":"omitted"}]}',
+            [
+                ['name' => 'stock', 'MAX_TEAM_USERS' => null],
+                ['name' => 'fixture', 'MAX_TEAM_USERS' => 7, 'CGI' => 'n'],
+                ['name' => 'omitted'],
+            ],
+        ];
+        yield 'matching keeps populated string CGI and team count without changing other limits' => [
+            'matchpkgs', 'matchPackages', [],
+            '{"pkg":[{"name":"fixture","CGI":"n","HASSHELL":"n","IP":"n","MAX_TEAM_USERS":"7",'
+                . '"MAXSQL":"5","QUOTA":"100","FRONTPAGE":0},{"name":"omitted"}]}',
+            ['pkg' => [
+                [
+                    'name' => 'fixture', 'CGI' => 'n', 'HASSHELL' => 'n', 'IP' => 'n',
+                    'MAX_TEAM_USERS' => 7, 'MAXSQL' => 5, 'QUOTA' => 100, 'FRONTPAGE' => 0,
+                ],
+                ['name' => 'omitted'],
+            ]],
+        ];
+        foreach (['n', 'y', '0', '', 0, 1] as $cgi) {
+            yield 'matching CGI preserves exact string or pinned flag ' . json_encode($cgi, JSON_THROW_ON_ERROR) => [
+                'matchpkgs', 'matchPackages', [], json_encode(['pkg' => [['CGI' => $cgi]]], JSON_THROW_ON_ERROR),
+                ['pkg' => [['CGI' => $cgi]]],
+            ];
         }
         yield 'matched deprecated frontpage retains native integer contract' => ['matchpkgs', 'matchPackages', [],
             '{"pkg":[{"FRONTPAGE":2}]}', ['pkg' => [['FRONTPAGE' => 2]]]];

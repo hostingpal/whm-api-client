@@ -149,7 +149,36 @@
     },
     "whm1:listpkgs": {
       "name": "listPackages",
-      "unwrap": "pkg"
+      "unwrap": "pkg",
+      "response": {
+        "pkg[].MAX_TEAM_USERS": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Independent reviewer populated disposable package/account lifecycle at 1336c4df (same specs as 8a3c6b1a) observed digit-string MAX_TEAM_USERS in listpkgs and getpkginfo, including a package created without an explicit team limit. Matching rows separately exposed MAX_TEAM_USERS. Preserve canonical bounded integer strings as integers; no blanket resource-range enforcement or sibling conversion. The reviewer reports final package/account/home cleanup after correcting an earlier cleanup check failure; these reports are separate from committed read-only captures. Review: https://github.com/hostingpal/whm-api-client/pull/56#pullrequestreview-5721514363."
+            }
+          ]
+        }
+      },
+      "notes": [
+        {
+          "kind": "observed",
+          "text": "The independent 11.138.0.19 populated-package review observed MAX_TEAM_USERS as a digit string. Canonical integer strings normalize losslessly to int, while existing null and omitted fields remain distinct. This correction applies to each row, so a populated package can coexist with a null-valued stock package."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Independent reviewer populated disposable package/account lifecycle at 1336c4df (same specs as 8a3c6b1a) observed digit-string MAX_TEAM_USERS in listpkgs and getpkginfo, including a package created without an explicit team limit. Matching rows separately exposed MAX_TEAM_USERS. Preserve canonical bounded integer strings as integers; no blanket resource-range enforcement or sibling conversion. The reviewer reports final package/account/home cleanup after correcting an earlier cleanup check failure; these reports are separate from committed read-only captures. Review: https://github.com/hostingpal/whm-api-client/pull/56#pullrequestreview-5721514363."
+        }
+      ]
     },
     "whm1:read_featurelist": {
       "exclude": {
@@ -454,6 +483,10 @@
         {
           "kind": "policy",
           "text": "Client behavior: read the current plan with getPackageInfo() before editing, then explicitly send the complete intended settings, including featurelist and packageExtensions, to avoid unintended resets. The client does not read, merge or fill settings automatically. PHP null omits an argument rather than sending a null sentinel or preserving its server value. Arbitrary extension variables are outside this fixed-parameter method."
+        },
+        {
+          "kind": "observed",
+          "text": "In the independent 11.138.0.19 disposable-package review, editPackage(name, quota: 200) changed QUOTA while preserving previously set limits that were omitted from that call. The feature list was already default, so this does not test or disprove the pinned feature-list reset warning; extension reset behavior was also not established. Do not generalize the observed limit preservation to every omitted option."
         }
       ],
       "params": {
@@ -473,6 +506,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "/editpkg parameter featurelist explicitly assigns default when omitted; _PACKAGE_EXTENSIONS explicitly means no extensions when no value is supplied. The operation description applies changes to all accounts on the plan. The read-first/full-settings guidance is client policy derived from those dangerous omission defaults; no edit ran in this review. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/56#pullrequestreview-5720810852."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Independent reviewer package/account lifecycle observed addpkg/editpkg string pkg results, quota-only edit preserving other set limits, API failure when deleting an in-use package, and successful deletion after account removal. An initial typed cleanup read failed; reviewer subsequently removed the package, and final package inventory/account/home cleanup were confirmed. Extension/feature-list/override writes were not run. Review: https://github.com/hostingpal/whm-api-client/pull/56#pullrequestreview-5721514363."
         }
       ]
     },
@@ -782,7 +821,7 @@
         },
         {
           "kind": "documented",
-          "text": "Only enabled settings are returned, so known fields remain optional. Extension variables are opaque dynamic fields and may contain credentials; treat the result as sensitive. Pinned limit alternatives include the exact unlimited literal and null only where declared; the reviewed MAXPARK exception is documented separately. Flags stay integer 0/1, DIGESTAUTH stays a source string, and MAX_TEAM_USERS remains nullable native int. Omitted and null stay distinct."
+          "text": "Only enabled settings are returned, so known fields remain optional. Extension variables are opaque dynamic fields and may contain credentials; treat the result as sensitive. Pinned limit alternatives include the exact unlimited literal and null only where declared; the reviewed MAXPARK exception is documented separately. Flags stay integer 0/1, DIGESTAUTH stays a source string, and MAX_TEAM_USERS preserves nullable integers with the separately observed canonical-string compatibility. Omitted and null stay distinct."
         },
         {
           "kind": "observed",
@@ -790,11 +829,15 @@
         },
         {
           "kind": "documented",
-          "text": "The reviewed package-limit family includes digit-string representations, established separately in package-derived account limits. Applying that family to this method is source-backed compatibility; this endpoint's stock package had null limits and does not establish populated numeric-string observations."
+          "text": "The twelve resource-limit union integer arms use the established package-derived canonical-string compatibility family. The initial stock-package read had null limits. A later separate populated-package review observed numeric-string variants, including MAX_TEAM_USERS; its evidence does not relabel each unreported field as individually observed."
         },
         {
           "kind": "policy",
-          "text": "Client behavior: only the integer arms of the reviewed resource-limit unions accept canonical integer strings within PHP integer bounds and normalize them to int. The exact unlimited literal, existing nullable alternatives, omitted fields and opaque extension values remain distinct. MAX_TEAM_USERS and flag/string siblings retain their existing contracts."
+          "text": "Client behavior: reviewed resource-limit integer arms and MAX_TEAM_USERS accept only canonical integer strings within PHP integer bounds and normalize them losslessly. Existing unlimited literals, nullable alternatives, omissions and opaque extension values remain distinct. Flags and unrelated string fields are unchanged."
+        },
+        {
+          "kind": "observed",
+          "text": "The separate 11.138.0.19 populated-package review found digit-string MAX_TEAM_USERS even when package creation omitted that setting. This is new reviewer evidence; the committed stock-package capture remains immutable and does not establish that variant."
         }
       ],
       "params": {
@@ -1006,7 +1049,10 @@
               },
               "MAX_TEAM_USERS": {
                 "type": "int",
-                "nullable": true
+                "nullable": true,
+                "accept": [
+                  "numeric-string"
+                ]
               },
               "QUOTA": {
                 "type": "union",
@@ -1050,6 +1096,12 @@
               "version": "reviewed package-limit family",
               "date": "2026-10-31",
               "note": "Reviewed package-derived limit compatibility: docs/api/source-audit.md#runtime-observations-2026-10-13 records numeric strings for accountsummary maxaddons and maxparked in the same package-setting family. The reviewer requests this established family compatibility for getpkginfo and matchpkgs limits; the stock package read had null limits, so numeric-string limits were not observed on these two endpoints in this review. Only the integer arms of BWLIMIT, MAXADDON, MAXFTP, MAXLST, MAXPARK, MAXPOP, MAXSQL, MAXSUB, MAX_DEFER_FAIL_PERCENTAGE, MAX_EMAILACCT_QUOTA, MAX_EMAIL_PER_HOUR and QUOTA gain lossless canonical integer-string normalization within PHP integer bounds. Preserve the exact unlimited literal and each field's independent nullability; retain native integers, optional presence, strict flag/string siblings and native MAX_TEAM_USERS. This is source-family compatibility and offline regression coverage, not live populated endpoint evidence. Review: https://github.com/hostingpal/whm-api-client/pull/56#pullrequestreview-5720810852."
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Independent reviewer populated disposable package/account lifecycle at 1336c4df (same specs as 8a3c6b1a) observed digit-string MAX_TEAM_USERS in listpkgs and getpkginfo, including a package created without an explicit team limit. Matching rows separately exposed MAX_TEAM_USERS. Preserve canonical bounded integer strings as integers; no blanket resource-range enforcement or sibling conversion. The reviewer reports final package/account/home cleanup after correcting an earlier cleanup check failure; these reports are separate from committed read-only captures. Review: https://github.com/hostingpal/whm-api-client/pull/56#pullrequestreview-5721514363."
             }
           ]
         }
@@ -1142,19 +1194,19 @@
         },
         {
           "kind": "documented",
-          "text": "The pinned description says omitting every selector lists all server packages, but the observed contradiction below limits that claim. Selectors remain optional with exact uppercase wire names except _PACKAGE_EXTENSIONS. Boolean CGI/HASSHELL inputs encode as 0/1, while DIGESTAUTH and IP take y/n strings. Result rows retain distinct source strings for HASSHELL/IP and do not inherit getPackageInfo flag types. The list-row shape and optional name are source-backed; populated match rows were not observed."
+          "text": "The pinned description says omitting every selector lists all server packages, but the observed contradiction below limits that claim. Selectors remain optional with exact uppercase wire names except _PACKAGE_EXTENSIONS. Boolean CGI/HASSHELL inputs encode as 0/1, while DIGESTAUTH and IP take y/n strings. Result rows retain source strings for HASSHELL/IP. CGI preserves the observed string form alongside the pinned integer 0/1 form, without converting n or y to a flag. Populated rows and names were separately reviewer-observed."
         },
         {
           "kind": "observed",
-          "text": "On 11.138.0.19, the independent selector-free GET returned an empty pkg list while listPackages returned one package on the same server. The cause is unknown. An empty selector-free match result does not establish that the server has no packages; the contradiction remains tracked under whm-api-client-8x0.2.43."
+          "text": "On 11.138.0.19, the initial selector-free GET returned an empty pkg list while listPackages returned one plan. In a later disposable-package review with two plans, no selector returned one of two; MAXSQL=5 returned the matching plan, but QUOTA=100 (its actual quota) and QUOTA=99999 both returned none. The cause is unknown. Selector-free results may be partial and an empty match does not prove absence; this remains tracked under whm-api-client-8x0.2.43."
         },
         {
           "kind": "documented",
-          "text": "Canonical integer-string compatibility for the resource-limit unions follows the reviewed package-derived limit family. It is not based on populated matchPackages results from this review, which returned an empty list."
+          "text": "The twelve resource-limit union integer arms use the established package-derived canonical-string family. A later independent populated-package review observed matching rows and numeric-string variants. MAX_TEAM_USERS is retained using the nullable integer family documented for listPackages/getPackageInfo; matching null remains source-family compatibility rather than an observed value."
         },
         {
           "kind": "policy",
-          "text": "Client behavior: pkg is a list, preserving row names, native integers, exact unlimited strings and omitted fields. Only the integer arms of its twelve reviewed resource-limit unions accept canonical integer strings within PHP bounds. Null, malformed or overflowing strings and unrelated field conversions remain invalid. The client does not enforce correspondence with requested criteria or substitute listPackages for an empty result."
+          "text": "Client behavior: pkg is a list preserving names, literal strings, native integers and omissions. The twelve reviewed resource-limit integer arms and MAX_TEAM_USERS accept bounded canonical integer strings losslessly. MAX_TEAM_USERS permits source-family null, while existing nonnullable resource-limit unions remain nonnullable. Unrelated strings, flag alternatives and deprecated FRONTPAGE integers retain their contracts."
         }
       ],
       "params": {
@@ -1185,7 +1237,15 @@
                   ]
                 },
                 "CGI": {
-                  "type": "flag"
+                  "type": "union",
+                  "anyOf": [
+                    {
+                      "type": "flag"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
                 },
                 "CPMOD": {
                   "type": "string"
@@ -1378,6 +1438,13 @@
                 },
                 "name": {
                   "type": "string"
+                },
+                "MAX_TEAM_USERS": {
+                  "type": "int",
+                  "nullable": true,
+                  "accept": [
+                    "numeric-string"
+                  ]
                 }
               }
             }
@@ -1400,6 +1467,12 @@
               "version": "reviewed package-limit family",
               "date": "2026-10-31",
               "note": "Reviewed package-derived limit compatibility: docs/api/source-audit.md#runtime-observations-2026-10-13 records numeric strings for accountsummary maxaddons and maxparked in the same package-setting family. The reviewer requests this established family compatibility for getpkginfo and matchpkgs limits; the stock package read had null limits, so numeric-string limits were not observed on these two endpoints in this review. Only the integer arms of BWLIMIT, MAXADDON, MAXFTP, MAXLST, MAXPARK, MAXPOP, MAXSQL, MAXSUB, MAX_DEFER_FAIL_PERCENTAGE, MAX_EMAILACCT_QUOTA, MAX_EMAIL_PER_HOUR and QUOTA gain lossless canonical integer-string normalization within PHP integer bounds. Preserve the exact unlimited literal and each field's independent nullability; retain native integers, optional presence, strict flag/string siblings and native MAX_TEAM_USERS. This is source-family compatibility and offline regression coverage, not live populated endpoint evidence. Review: https://github.com/hostingpal/whm-api-client/pull/56#pullrequestreview-5720810852."
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Populated matchpkgs rows returned CGI as the exact string n, unlike getpkginfo integer flags, and exposed MAX_TEAM_USERS. Retain CGI strings without mapping them to booleans or integers while preserving the pinned integer 0/1 alternative. MAX_TEAM_USERS uses the independently documented listpkgs/getpkginfo nullable integer family with bounded canonical-string compatibility; matching null is source-family compatibility, not a new null observation. Existing HASSHELL/IP string and FRONTPAGE integer contracts are unchanged. Review: https://github.com/hostingpal/whm-api-client/pull/56#pullrequestreview-5721514363."
             }
           ]
         }
@@ -1428,6 +1501,12 @@
           "version": "reviewed package-limit family",
           "date": "2026-10-31",
           "note": "Reviewed package-derived limit compatibility: docs/api/source-audit.md#runtime-observations-2026-10-13 records numeric strings for accountsummary maxaddons and maxparked in the same package-setting family. The reviewer requests this established family compatibility for getpkginfo and matchpkgs limits; the stock package read had null limits, so numeric-string limits were not observed on these two endpoints in this review. Only the integer arms of BWLIMIT, MAXADDON, MAXFTP, MAXLST, MAXPARK, MAXPOP, MAXSQL, MAXSUB, MAX_DEFER_FAIL_PERCENTAGE, MAX_EMAILACCT_QUOTA, MAX_EMAIL_PER_HOUR and QUOTA gain lossless canonical integer-string normalization within PHP integer bounds. Preserve the exact unlimited literal and each field's independent nullability; retain native integers, optional presence, strict flag/string siblings and native MAX_TEAM_USERS. This is source-family compatibility and offline regression coverage, not live populated endpoint evidence. Review: https://github.com/hostingpal/whm-api-client/pull/56#pullrequestreview-5720810852."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "With two packages present, selector-free matching returned one row; MAXSQL=5 returned the matching row; QUOTA=100 (actual quota) and QUOTA=99999 each returned zero. No cause is established. These are separate reviewer lifecycle observations and do not alter either committed capture. Review: https://github.com/hostingpal/whm-api-client/pull/56#pullrequestreview-5721514363."
         }
       ]
     },
