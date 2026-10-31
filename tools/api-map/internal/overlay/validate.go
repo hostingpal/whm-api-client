@@ -68,6 +68,9 @@ func Validate(set Set) []string {
 			}
 			problems = append(problems, missingEvidence(id, op)...)
 			for wire, param := range op.Params {
+				if param.Omit && (param.Type != "" || param.Description != "") {
+					problems = append(problems, id+": omitted parameter "+wire+" cannot have type or description corrections")
+				}
 				if IsSuffixNumbered(param.Encoding) && !suffixPattern.MatchString(wire) {
 					problems = append(problems, id+": suffix-numbered parameter "+wire+" requires an identifier followed by one terminal *")
 				}
@@ -101,9 +104,9 @@ func observedWithoutLive(op Operation) bool {
 
 // missingEvidence reports behaviour-changing settings (variant, request method, outcome
 // check, void result, optional payload, a parameter encoding, which changes
-// the wire request, parameter requiredness, suppressed enum documentation, or a
-// parameter declared not sensitive) made without
-// operation-level evidence.
+// the wire request, parameter requiredness, scalar type/description corrections,
+// suppressed enum documentation, or a parameter declared not sensitive) made
+// without operation-level evidence.
 func missingEvidence(id string, op Operation) []string {
 	if len(op.Evidence) > 0 {
 		return nil
@@ -136,6 +139,12 @@ func missingEvidence(id string, op Operation) []string {
 	}
 	sort.Strings(wires)
 	for _, wire := range wires {
+		if op.Params[wire].Type != "" {
+			settings = append(settings, "type on parameter "+wire)
+		}
+		if op.Params[wire].Description != "" {
+			settings = append(settings, "description on parameter "+wire)
+		}
 		if enumDoc := op.Params[wire].EnumDoc; enumDoc != nil && !*enumDoc {
 			settings = append(settings, "enum_doc false on parameter "+wire)
 		}

@@ -2997,3 +2997,118 @@ The initial artifact and every earlier evidence file remain unchanged. Remaining
 committed populated/mutation evidence stays under `8x0.2.26`; no further read-only
 capture is outstanding from this review request. SHA-256:
 `8be0fe648505873d0f36221e0ef750954b5268469399ac2de804ef8c1e5d3b56`.
+
+## Repository deployment and Passenger applications (2026-10-31)
+
+The repository, deployment and Passenger groups cover fourteen pinned functions.
+`versionControl()` manages cPanel Git repositories, `versionControlDeployment()`
+starts and inspects deployment tasks, and `passengerApps()` manages Application
+Manager registrations. Passenger inventory uses GET; the other thirteen methods
+use form POST, including repository and deployment retrievals whose source marks
+them `x-readonly=false`.
+
+Repository `sourceRepository` is caller-supplied JSON text, sent once as a form
+parameter. The client does not JSON-encode a PHP object or decode/re-encode the
+string. The existing scalar parameter boundary is `string|int|null`; supply the
+documented serialized JSON string, or omit it. Clone URLs may contain credentials,
+so this argument stays sensitive. The pinned source warns that repository deletion
+permanently removes directory contents. The PR40 reviewer instead observed
+registration deletion leaving the directory on the test server; retain the
+source's destructive-operation warning rather than relying on that discrepancy.
+Updating a branch can pull remote changes;
+source URLs cannot be changed by the update method.
+
+Deployment requires a clean working tree, branches and a checked-in `.cpanel.yml`.
+Returned task IDs and event/log URLs do not prove completion and are not fetched
+by the client. Reviewed integer deployment IDs are preserved, and `delete()`
+accepts the returned integer or documented string identifier. A status-success
+`create()` response with explicit null was observed for a non-deployable repository
+with no deployment queued; absent data remains a mismatch. A payload error after
+queueing does not undo the deployment and must not trigger a retry. Creation's
+unspecified `last_update` schema includes a null-only
+enum but remains mixed under the current effective validator; no stronger field
+contract is invented.
+
+Passenger registration requires an existing application; unregistering it does
+not delete its files. Environment names and values use matching repeated fields;
+supply one value per name. Editing environment variables replaces the current
+set. Omitting `enabled` when editing uses the documented default of 1 and can
+re-enable a disabled application; pass false explicitly to retain disabled state.
+Values remain sensitive, and opaque returned environment objects preserve
+their fields. Inventory `enabled` has an unspecified schema and remains mixed;
+mutation flags retain their declared types. `ensureDeps()` starts asynchronous
+installation. These methods manage Application Manager; the pinned source
+recommends WebApp for applications deployed with that newer feature.
+
+The bounded live catalog reads only WHM version and Passenger inventory on both
+routes. Repository/deployment POST reads, mutations and populated/secret-bearing
+variants remain tracked under `8x0.2.27`. No deployment, dependency installation,
+repository deletion or application configuration change is part of that catalog.
+The reviewer diagnosed its Passenger API failures: `npr` lacks the `passengerapps`
+feature and the server has no Passenger packages. No server-wide installation was
+made. All seven Passenger methods remain unobserved, including dependency-result
+and mutation flag/environment variants. The failed capture remains unwaived.
+
+Request encodings start from the pinned source; reviewed response corrections
+are recorded separately below.
+`source_repository` declares parameter-level JSON content, not a JSON body;
+explicit scalar encoding preserves pre-serialized text. Passenger form/explode
+array declarations establish repeated environment fields. The edit value field
+omits `explode`, whose form-style default is true; registration states it
+explicitly. Transport and evidence policies are unchanged. Optional opaque mutation objects preserve null/object/missing
+distinctions; source-specific differences in nullable branches and deployment
+fields are covered by independent literal fixtures.
+
+### Application inventory capture
+
+The immutable [application-management capture](evidence/2026-10-31-application-deployment.json)
+at `344fffc64824bd35098d232dd92226cb222d2a15` on `11.138.0.19` records three GET
+observations, all HTTP 200. WHM version passes. Both `PassengerApps/list_applications`
+requests fail at the API layer with null payloads, so payload validation is not
+performed and strict assessment remains failed. The sanitized evidence does not
+diagnose the capability/configuration cause; neither failure is waived or treated
+as a successful empty inventory. All fourteen new methods lack successful payload observations in this committed
+capture; later reviewer lifecycle observations are recorded separately below.
+
+No repository, deployment, application configuration or dependency installation
+changed, and no returned URL was fetched. No contract was broadened from an API
+failure, and no repeated capture was run merely to seek a passing status. SHA-256:
+`48b5b71e8feb9107310383e50f311f39d99301a3fb57c4179a00d12c97e44a64`.
+
+
+### Repository/deployment external review corrections
+
+[Claude's review of `9aa3a6c`](https://github.com/hostingpal/whm-api-client/pull/40#pullrequestreview-5720064601)
+used throwaway repositories with a committed `.cpanel.yml` containing only
+`/bin/true`. The reviewer observed repository creation/update/deletion through
+both routes and reports complete cleanup to zero repositories and deployments.
+Full repository retrieval failed for nullable `last_deployment`, digit-string
+`deployable` and numeric `last_update.date`. Queued deployment creation/retrieval
+failed on integer identifiers/dates and fractional timestamp fields. A separate
+non-deployable create returned status success and explicit null without queueing.
+[The reviewer subsequently clarified](https://github.com/hostingpal/whm-api-client/pull/40#issuecomment-6536614693)
+that every result in the original review and the corrected lifecycle at
+`7b9f1f93ead92504052a31bffd452ade64f9a208` used cPanel `11.138.0.19` through both
+direct UAPI and the WHM bridge. Corrected default and all-field repository reads,
+updates, explicit-null no-queue creation, populated deployments, post-deployment
+repository state and integer-ID deletion passed. All test repositories and
+deployments were cleaned. These attributed reviewer observations do not expand
+the initial GET-only artifact's coverage.
+
+Corrections preserve nullable last-deployment state, narrow flag/integer-string
+conversions, integer deployment identifiers and observed numeric timestamps while
+retaining documented strings. Only the named queued/active/succeeded timestamps
+receive numeric alternatives; canceled/failed variants remain unobserved. The
+source's update-branches prose establishes a nullable list with non-null members,
+repairing its misplaced item-level nullable flag. Repository creation's opaque
+`last_update` schema remains mixed rather than inventing fields.
+
+The generator supports an evidence-gated scalar string-to-`string|int` parameter
+correction for deployment deletion and a parameter description replacement for
+its identifier reference and Passenger's enabled default. Other parameter types,
+wire encodings, optional omission and source snapshots remain unchanged. Literal
+regressions cover response shapes, strict typed identifier chaining and malformed
+inputs. The GET-only capture is not repeated: none of the corrected repository
+or deployment contracts were exercised by it, and the reviewer explicitly requires
+no new read-only capture. A future guarded POST-read recipe, remaining timestamp
+variants and the directory-deletion discrepancy stay under `8x0.2.27`.

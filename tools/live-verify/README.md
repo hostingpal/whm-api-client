@@ -989,3 +989,32 @@ The [DNS security capture](../../docs/api/evidence/2026-10-31-dns-security.json)
 with zero discrepancies. DS detail objects and the DDNS inventory are empty;
 populated fields and the other fifteen methods remain offline coverage. No DNS,
 key, registrar or DDNS state changed. Follow-up `8x0.2.26` remains open.
+
+## Application-management inventory
+
+The `application-deployment-v1` catalog contains three GET observations: WHM
+version and `PassengerApps/list_applications` through direct UAPI and the WHM
+bridge for `npr`. Repository/deployment retrieval methods use form POST because their source
+declares `x-readonly=false`, and are outside this GET catalog. No registration, enablement,
+deployment, repository removal or dependency installation runs.
+
+```bash
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+  php tools/live-verify/application-deployment.php \
+  --output=docs/api/evidence/application-deployment-new.json
+```
+
+Both tokens and committed inputs are required. Exact URI/method/body guards apply;
+structural evidence retains no environment values, application-name keys, paths,
+clone URLs, commit messages or log text. Returned URLs are never fetched. Strict
+assessment requires every original observation to pass without discrepancies or
+acknowledgments. Follow-up `8x0.2.27` owns all unobserved operations and variants.
+
+The [application-management capture](../../docs/api/evidence/2026-10-31-application-deployment.json)
+at `344fffc` on `11.138.0.19` records three HTTP-200 GETs. WHM version passes;
+both Passenger inventory calls fail at the API layer before payload validation,
+so strict assessment remains failed. This is no successful empty-inventory or
+payload-schema evidence. All fourteen methods are offline-tested; separate
+reviewer lifecycle observations and their limits are recorded in the source audit.
+Committed lifecycle evidence remains under `8x0.2.27`. This capture changed no
+repository or application state.
