@@ -2976,5 +2976,24 @@ file hash against baseline and removing every DDNS test entry. These are
 attributed reviewer observations, with no server version supplied in the review,
 and are separate from the immutable five-GET artifact. They do not turn that
 empty-zone capture into populated or mutation evidence. The final integration
-capture will retain the bounded five-GET recipe; DNSSEC enablement remains outside
+capture retains the bounded five-GET recipe; DNSSEC enablement remains outside
 that recipe, as permitted by the review. No lifecycle is replayed for evidence.
+
+
+### Final integrated DNS inventory capture
+
+The immutable [reviewed DNS capture](evidence/2026-10-31-dns-security-reviewed.json)
+at `71e31f15379fd63a7ee19015421405cd2a93d1cc` follows normal integration of PR38.
+On cPanel `11.138.0.19`, all five GET observations pass HTTP/API/payload/probe and
+strict checks with zero discrepancies. DS results again contain an empty object
+for the selected domain, with `keys` and `nsec_details` absent; both DDNS lists
+are empty. This verifies the integrated read path, not the populated numeric
+fields, private-key exports or lifecycle mutations. Those remain covered by
+independent offline tests and the separately attributed reviewer report.
+
+The bounded recipe intentionally performs no DNSSEC enablement, registrar, key,
+record or DDNS change, as permitted by review 5720009405. No update URL was fetched.
+The initial artifact and every earlier evidence file remain unchanged. Remaining
+committed populated/mutation evidence stays under `8x0.2.26`; no further read-only
+capture is outstanding from this review request. SHA-256:
+`8be0fe648505873d0f36221e0ef750954b5268469399ac2de804ef8c1e5d3b56`.

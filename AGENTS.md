@@ -358,6 +358,10 @@ The live catalog reads only DS records for `npr.rs`, Dynamic DNS inventory for
 `npr`, and WHM version. It makes no key, registrar, DNS-record or DDNS changes.
 Unobserved live variants remain tracked under `8x0.2.26`; API responses alone do
 not establish DNS propagation or DNSSEC validation by resolvers.
+The final integrated capture at `71e31f1` passes all five GETs and strict checks
+with zero discrepancies. Its DS objects and DDNS lists are empty; populated
+numeric fields and mutations remain separate reviewer/offline evidence. The
+original capture is unchanged; `docs/api/source-audit.md` records both hashes.
 
 
 The [DNS security capture](docs/api/evidence/2026-10-31-dns-security.json) at
