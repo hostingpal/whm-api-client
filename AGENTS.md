@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 93 typed groups cover 1,122 documented operations:
+and cPanel UAPI surface. The 95 typed groups cover 1,128 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -3193,3 +3193,42 @@ evidence remain unchanged. No live calls, installation, calendar/contact reads o
 delegation mutations ran. CCS installed-plugin behavior and permission enforcement
 remain open under `whm-api-client-8x0.2.61`; API responses alone do not establish
 applied calendar access. The delivery bead is `whm-api-client-8x0.4.19`.
+
+
+### UAPI account cache management (2026-10-31)
+
+CacheBuster (2) and NginxCaching (4) cover their complete pinned modules through
+`uapi()->cacheBuster()` and `uapi()->nginxCaching()`. All methods are parameterless.
+CacheBuster is available from cPanel 11.46; read uses GET and update uses form
+POST. Both return optional strict integer `cache_id` fields in an array shape.
+The source describes eight-digit random IDs and read declares 10000000–99999999;
+existing validation adds no range enforcement or integer-string normalization.
+Preserve omission, not a required field or unwrapped integer. Cache versions have
+no inferred credential sensitivity, uniqueness, monotonicity or security guarantee.
+Applications explicitly call update when changing a resource and append the
+returned ID to its query string; the client fetches no resource or modifies URLs.
+
+NginxCaching requires cPanel 100 and the installed ea-nginx package. All four
+methods use form POST: clearCache deletes cache contents, disableCache and
+enableCache change caching, resetCacheConfig resets configuration with no pinned
+resulting defaults. They target the selected account without invented user or
+all-user arguments. Do not reuse WHM NginxManager inputs, outputs, defaults or
+historical observations. Browser cache versioning and NGINX cache state are
+separate mechanisms, with no promised cross-invalidation.
+
+The exact NGINX data schemas contain only properties:{} and no type. Preserve
+existing mixed lowering: every present JSON value, including null/scalars/lists
+and recursively converted opaque objects, is accepted. Missing data remains a
+PayloadMismatchException under normal Flag; do not narrow to void, null-only or
+opaque-object-only output or invent observed fields. Callers inspect values.
+All five mutations declare no rollback; no implicit read, restore, retry,
+rollback or package installation is added. No live call, server mutation, package
+installation or resource fetch ran; installed-package behavior, cache effects,
+browser behavior, returned fields and reset defaults remain open under
+`whm-api-client-8x0.2.62`. Delivery is `whm-api-client-8x0.4.20`.
+
+Coverage adds exactly six canonical UAPI operations and two groups over `259c8d6`:
+1,128 operations (540 UAPI, 588 WHM), 95 groups and 193 generated outputs (192 PHP
+files plus coverage). Existing runtime/generator/source/evidence contracts and
+historical totals remain unchanged. Required PHP 8.3 CI and inherited acceptance
+work remain external-owned and unwaived.

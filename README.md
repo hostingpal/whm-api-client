@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 93 generated typed groups cover 1,122 documented operations (see
+The 95 generated typed groups cover 1,128 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, DNS zone and DNSSEC
 management, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -337,6 +337,8 @@ An empty live list does not verify the types of records it never returned.
 | `uapi()->emailAuth()` | Complete DKIM, SPF, DMARC and PTR management/validation (12). |
 | `uapi()->spamAssassin()` | Complete preference, symbolic-test and Spam Box operations (4). |
 | `uapi()->cpGreyList()` | Complete account/domain Greylisting controls and inventory (6). |
+| `uapi()->cacheBuster()` | `read()` and `update()` browser resource version IDs (complete pinned module). |
+| `uapi()->nginxCaching()` | `clearCache()`, `disableCache()`, `enableCache()`, `resetCacheConfig()` for the selected account (complete pinned module). |
 | `uapi()->mime()` | Complete MIME types, handlers, redirects and hotlink configuration (14). |
 | `uapi()->domainInfo()` | All 5 operations: `domainsData()`, `singleDomainData()`, `listDomains()`, `primaryDomain()`, `mainDomainBuiltinSubdomainAliases()` |
 | `uapi()->langPhp()` | All 11 operations: installed/default/vhost PHP versions, domain handlers and impacted domains, INI paths/basic directives/content reads, and `phpIniSetUserBasicDirectives()`, `phpIniSetUserContent()`, `phpSetVhostVersions()` |
@@ -1450,8 +1452,8 @@ $client->whm()->modSecurity()->updateSettings(settings: [
 
 This emits `setting_id1=1&state1=On&setting_id2=2&state2=Off&remove2=0`;
 there is no `remove1`. Empty state strings, integer zero and string `'0'` remain
-values. The alias adds one public method, while canonical coverage is now 1,122
-operations (534 UAPI and 588 WHM), 93 groups and 189 generated files (188 PHP files plus the coverage document).
+values. The alias adds one public method, while canonical coverage is now 1,128
+operations (540 UAPI and 588 WHM), 95 groups and 193 generated files (192 PHP files plus the coverage document).
 
 The twelve source-backed empty-result mutations accept an omitted or null payload
 while retaining any returned mixed data; they are not weakened to void. Omitted
@@ -3411,3 +3413,56 @@ files plus coverage). Existing generator/runtime machinery is unchanged. No live
 calls, plugin installation, calendar/contact reads or delegation mutations ran.
 Installed-plugin behavior, response compatibility and permission enforcement remain
 open under `whm-api-client-8x0.2.61`.
+
+
+### UAPI account cache management (2026-10-31)
+
+`uapi()->cacheBuster()` exposes both pinned browser resource version operations,
+available from cPanel 11.46. `read()` sends GET and `update()` sends form POST.
+Both are parameterless and return `array{cache_id?: int}`. The source describes an
+eight-digit random integer (and read declares 10000000–99999999); the client
+preserves strict integers without string normalization or local range checks.
+Missing fields remain omitted. It does not promise global uniqueness,
+monotonicity or security properties for this cache version.
+
+The application that updates a resource must explicitly call `update()` when it
+changes the resource, then append the returned ID to the resource URL query
+string as the source describes. For example:
+
+```php
+$account = $client->uapi('exampleuser');
+$current = $account->cacheBuster()->read();
+// After the application updates its resource:
+$updated = $account->cacheBuster()->update();
+if (isset($updated['cache_id'])) {
+    $resourceUrl = 'https://example.test/app.css?' . $updated['cache_id'];
+}
+```
+
+The client does not fetch resources or modify URLs. This browser cache version
+mechanism is separate from account NGINX cache management.
+
+`uapi()->nginxCaching()` exposes all four pinned operations from cPanel 100,
+requiring the installed `ea-nginx` package. `clearCache()` deletes the selected
+account's cache contents; `disableCache()` and `enableCache()` change caching;
+`resetCacheConfig()` resets configuration with no documented resulting defaults.
+These parameterless calls use form POST; they accept no user or all-user target.
+
+All four NGINX data schemas are exactly `{"properties":{}}`, without a type.
+The existing `mixed` return contract accepts any present JSON value, including
+null, scalars, lists and opaque objects recursively converted to arrays. Numeric
+object keys follow existing PHP array semantics. Missing data remains a payload
+mismatch under normal status handling; callers must inspect unconstrained results.
+No result field is inferred from WHM NginxManager or prior WHM observations.
+
+These mutations have no documented rollback. The client adds no implicit read,
+restore, retry or rollback and installs no package. NGINX operations do not promise
+browser invalidation, nor does CacheBuster promise NGINX invalidation. Offline
+coverage establishes routing and payload contracts, not installed-package
+compatibility, cache effects, browser refetches, observed response fields or reset
+defaults. Separate live follow-up `whm-api-client-8x0.2.62` remains open; no live
+call or server change ran in this slice. Delivery is `whm-api-client-8x0.4.20`.
+
+This adds exactly six canonical UAPI operations and two groups over `259c8d6`:
+1,128 operations (540 UAPI, 588 WHM), 95 groups and 193 generated outputs (192 PHP
+files plus coverage). Historical slice totals above remain historical.
