@@ -84,6 +84,9 @@
           "type": "integer",
           "minimum": 0,
           "maximum": 2147483647
+        },
+        "reject_prefixed_keys": {
+          "const": true
         }
       },
       "required": [
@@ -183,6 +186,23 @@
                   ]
                 }
               ]
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "reject_prefixed_keys"
+            ]
+          },
+          "then": {
+            "properties": {
+              "kind": {
+                "const": "map"
+              },
+              "prefix": {
+                "minLength": 1
+              }
             }
           }
         }

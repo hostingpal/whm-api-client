@@ -470,9 +470,14 @@ final readonly class ModSecurity
      * strings or integers, and updated_settings[].default preserves either exactly. This default correction is
      * source-backed and tested offline; batch writes were not observed.
      *
-     * Policy: Both methods issue one form POST to the same canonical operation, with no retries or rollback. A
-     * successful envelope does not establish atomic per-setting success. Record input coverage is source-backed and
-     * offline only; no live batch write was performed.
+     * Policy: Both methods prepare staged settings; explicitly call deploySettingsChanges() to activate them. Each call
+     * issues one form POST, with no automatic re-read, retry or rollback. A failure can leave some staged settings
+     * changed. ApiErrorException does not expose data.failures; after ANY failure explicitly re-read getSettings() to
+     * establish the current staged state before deciding what to do next.
+     *
+     * Policy: In the reviewed 11.138.0.19 handler, success means every submitted row was accepted; it does not mean the
+     * staged configuration was deployed. Duplicate setting IDs are retained in emitted order, but server hash traversal
+     * provides no deterministic ordering or last-wins guarantee. Avoid conflicting repeated IDs.
      *
      * API-map identity: whm1:modsec_batch_settings#GET (wire name modsec_batch_settings; Server Settings).
      *
@@ -519,19 +524,33 @@ final readonly class ModSecurity
      * strings or integers, and updated_settings[].default preserves either exactly. This default correction is
      * source-backed and tested offline; batch writes were not observed.
      *
-     * Policy: Both methods issue one form POST to the same canonical operation, with no retries or rollback. A
-     * successful envelope does not establish atomic per-setting success. Record input coverage is source-backed and
-     * offline only; no live batch write was performed.
+     * Policy: Both methods prepare staged settings; explicitly call deploySettingsChanges() to activate them. Each call
+     * issues one form POST, with no automatic re-read, retry or rollback. A failure can leave some staged settings
+     * changed. ApiErrorException does not expose data.failures; after ANY failure explicitly re-read getSettings() to
+     * establish the current staged state before deciding what to do next.
+     *
+     * Policy: In the reviewed 11.138.0.19 handler, success means every submitted row was accepted; it does not mean the
+     * staged configuration was deployed. Duplicate setting IDs are retained in emitted order, but server hash traversal
+     * provides no deterministic ordering or last-wins guarantee. Avoid conflicting repeated IDs.
      *
      * API-map identity: whm1:modsec_batch_settings#GET (wire name modsec_batch_settings; Server Settings).
      *
      * @param non-empty-list<ModSecuritySettingInput> $settings Records in input order; optional fields retain their
-     *     original row index.
+     *     original row index. settingId: The configuration setting's ID. Note: To configure multiple IDs, increment the
+     *     parameter name. For example, `setting_id1`, `setting_id2`, and `setting_id3`. state: The configuration
+     *     setting's current state. * `On` * `Off` Some settings accept additional values for this parameter. See the
+     *     references above for more inforamation. Note: * To configure multiple settings, increment the parameter name.
+     *     For example, `state1`, `state2`, and `state3`. * `state` is ignored if `remove` is set to `1` for the
+     *     setting. remove: Whether to add or remove the configuration setting in the
+     *     `/usr/local/apache/conf/modsec2.cpanel.conf` file. * `1` — Remove the configuration setting. * `0` — Add
+     *     or update the configuration setting. * To remove multiple settings, increment the parameter name. For
+     *     example, `remove1`, `remove2`, and `remove3`.
      * @return BatchSettingsResult
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
-     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
+     * @throws InvalidArgumentException If records are empty, nonsequential, contain unknown or missing fields,
+     *     invalid field types or expanded names; other list/map inputs retain their declared validation rules.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/server-settings/modsecurity-modsec_batch_settings
      */
     public function updateSettings(
