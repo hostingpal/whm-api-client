@@ -17,6 +17,8 @@ trait WhmGroups
 
     private ?Accounts $accountsGroup = null;
 
+    private ?ApiTools $apiToolsGroup = null;
+
     private ?Backups $backupsGroup = null;
 
     private ?Databases $databasesGroup = null;
@@ -49,6 +51,17 @@ trait WhmGroups
     public function accounts(): Accounts
     {
         return $this->accountsGroup ??= new Accounts($this->run(...));
+    }
+
+    /**
+     * Select the API Development Tools operations without making a request.
+     *
+     * WHM token and session management, application inventory and legacy API usage reads. Returned credentials,
+     * identifiers and URLs are private payload data.
+     */
+    public function apiTools(): ApiTools
+    {
+        return $this->apiToolsGroup ??= new ApiTools($this->run(...));
     }
 
     /**

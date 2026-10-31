@@ -1,0 +1,347 @@
+{
+  "schema_version": "1.0",
+  "family": "whm1",
+  "group": "API Development Tools",
+  "accessor": "apiTools",
+  "class": "ApiTools",
+  "description": "WHM token and session management, application inventory and legacy API usage reads. Returned credentials, identifiers and URLs are private payload data.",
+  "operations": {
+    "whm1:api_token_create": {
+      "name": "createToken",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 64."
+        },
+        {
+          "kind": "documented",
+          "text": "Requires HTTPS. Names are unique, at most 50 alphanumeric/dash/underscore characters; root cannot use WebPros_Dashboard or WP-Dashboard."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitted acl assigns all caller privileges; only caller-held privileges may be assigned. Omitted expiration or zero means no expiration; expired tokens require manual revocation. Omitted whitelist permits any IP."
+        },
+        {
+          "kind": "documented",
+          "text": "The returned token is a secret shown only once: store it securely and never log the result."
+        },
+        {
+          "kind": "documented",
+          "text": "Typed acl and whitelistIp accept one scalar. Source documents acl-0/acl-1 and whitelist_ip-0/whitelist_ip-1; repeated families await 8x0.1.21. The example also spells later whitelist-ip keys differently; no inferred encoding is generated."
+        }
+      ],
+      "params": {
+        "token_name": {
+          "php": "tokenName"
+        },
+        "expires_at": {
+          "php": "expiresAt"
+        },
+        "whitelist_ip": {
+          "php": "whitelistIp"
+        }
+      },
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned operation is x-readonly=false and creates, changes or revokes authentication state; use form POST per the reviewed mutation transport convention."
+        }
+      ]
+    },
+    "whm1:api_token_get_details": {
+      "name": "getTokenDetails",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 98."
+        },
+        {
+          "kind": "documented",
+          "text": "The token input is the raw secret, not its name. It is sensitive and sent in a form POST as a conservative access-log protection; pinned GET-to-POST compatibility remains live-unverified."
+        },
+        {
+          "kind": "documented",
+          "text": "Recognized tokens return TokenDetails; unrecognized tokens omit data and return null. Optional nullable fields remain distinct from omission. Treat returned token settings as private payload data."
+        }
+      ],
+      "optional_payload": true,
+      "params": {
+        "token": {
+          "sensitive": true
+        }
+      },
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The documented token parameter is the raw API secret. Existing sensitive-input transport policy uses a conservative form POST to keep secrets out of URLs; POST compatibility remains live-unverified. Top-level anyOf documents Token Recognized data as allOf(description, TokenDetails reference) and Token Unrecognized without data; optional_payload preserves both alternatives."
+        }
+      ]
+    },
+    "whm1:api_token_list": {
+      "name": "listTokens",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 64."
+        },
+        {
+          "kind": "documented",
+          "text": "Dynamic token names and ACL names remain returned map keys; ACL values are integer 0 or 1. Null expiry means no expiration and null whitelist remains distinct from omission. Treat inventory as private payload data."
+        }
+      ],
+      "unwrap": "tokens"
+    },
+    "whm1:api_token_revoke": {
+      "name": "revokeToken",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 64."
+        },
+        {
+          "kind": "documented",
+          "text": "Revocation invalidates the named token. The source documents no data payload."
+        },
+        {
+          "kind": "documented",
+          "text": "Typed tokenName accepts one scalar. Source documents token_name-1, token_name-2 and token_name-3 for multiple revocations; that family awaits 8x0.1.21."
+        }
+      ],
+      "params": {
+        "token_name": {
+          "php": "tokenName"
+        }
+      },
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned operation is x-readonly=false and creates, changes or revokes authentication state; use form POST per the reviewed mutation transport convention."
+        }
+      ]
+    },
+    "whm1:api_token_update": {
+      "name": "updateToken",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 68."
+        },
+        {
+          "kind": "documented",
+          "text": "ACL and whitelist inputs replace all current settings; omitted acl assigns all caller privileges and omitted whitelist permits any IP. Only caller-held privileges may be assigned. whitelistIp=any explicitly clears IP restrictions."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitted expiresAt or zero means no expiration; expired tokens require manual revocation. Omitted newName preserves the name; replacements must be unique and at most 50 alphanumeric/dash/underscore characters. Root cannot rename to WebPros_Dashboard, WP-Dashboard or Platform360."
+        },
+        {
+          "kind": "documented",
+          "text": "Typed acl and whitelistIp accept one scalar. ACL prose uses acl-1/acl-2 but its example uses acl-0/acl-1; whitelist prose uses whitelist_ip-0 while later example keys use whitelist-ip. Repeated families await 8x0.1.21 without guessing an encoding. Treat returned settings as private payload data."
+        }
+      ],
+      "params": {
+        "token_name": {
+          "php": "tokenName"
+        },
+        "expires_at": {
+          "php": "expiresAt"
+        },
+        "new_name": {
+          "php": "newName"
+        },
+        "whitelist_ip": {
+          "php": "whitelistIp"
+        }
+      },
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned operation is x-readonly=false and creates, changes or revokes authentication state; use form POST per the reviewed mutation transport convention."
+        }
+      ]
+    },
+    "whm1:wp_dashboard_create_api_token": {
+      "name": "createDashboardToken",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 64."
+        },
+        {
+          "kind": "documented",
+          "text": "Creates a WHM API token for WebPros Dashboard. ACL is required; privileges do not default to all and only caller-held privileges may be assigned."
+        },
+        {
+          "kind": "documented",
+          "text": "Names are at most 50 alphanumeric/dash/underscore characters; root cannot use WebPros_Dashboard or WP-Dashboard. Omitted expiresAt or zero means no expiration; expired tokens require manual deletion. Omitted whitelist permits any IP."
+        },
+        {
+          "kind": "documented",
+          "text": "The token is returned only once and is secret; store it securely and never log the result. Typed acl and whitelistIp accept one scalar; documented acl-0/acl-1 and whitelist_ip-0/whitelist_ip-1 families await 8x0.1.21."
+        }
+      ],
+      "params": {
+        "token_name": {
+          "php": "tokenName"
+        },
+        "expires_at": {
+          "php": "expiresAt"
+        },
+        "whitelist_ip": {
+          "php": "whitelistIp"
+        }
+      },
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned operation is x-readonly=false and creates, changes or revokes authentication state; use form POST per the reviewed mutation transport convention."
+        }
+      ]
+    },
+    "whm1:create_user_session": {
+      "name": "createUserSession",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 11.40."
+        },
+        {
+          "kind": "documented",
+          "text": "Creates a temporary session for cpaneld, whostmgrd or webmaild and the supplied account username or valid email address. The system destroys temporary sessions after 15 minutes of inactivity."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitted app is blank and targets cPanel Home; an invalid application still creates a session without linking the application. Omitted locale uses Server Locale; an explicit locale sends a one-year browser cookie. preferredDomain defaults to the server hostname."
+        },
+        {
+          "kind": "documented",
+          "text": "cpSecurityToken is a session secret. promptToken contains base64 website-generation goals with maximum decoded length 5000; both inputs are sensitive. Session identifiers, security tokens and URLs are private opaque payload strings; never log them or retrieve the returned URL."
+        }
+      ],
+      "params": {
+        "cp_security_token": {
+          "php": "cpSecurityToken",
+          "sensitive": true
+        },
+        "preferred_domain": {
+          "php": "preferredDomain"
+        },
+        "promptToken": {
+          "sensitive": true
+        }
+      },
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned operation is x-readonly=false and creates, changes or revokes authentication state; use form POST per the reviewed mutation transport convention."
+        }
+      ]
+    },
+    "whm1:wp_dashboard_create_login_link": {
+      "name": "createDashboardLoginLink",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 11.40."
+        },
+        {
+          "kind": "documented",
+          "text": "Creates a single-use WHM session for re-entry from WebPros Dashboard. Optional service permits cpaneld, whostmgrd or webmaild; optional user is an account username or valid email address."
+        },
+        {
+          "kind": "documented",
+          "text": "Session identifiers, security tokens and URLs are private opaque payload strings; never log them or retrieve the returned URL."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned operation is x-readonly=false and creates, changes or revokes authentication state; use form POST per the reviewed mutation transport convention."
+        }
+      ]
+    },
+    "whm1:applist": {
+      "name": "listApplications",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 11."
+        },
+        {
+          "kind": "documented",
+          "text": "Lists available WHM API 1 function names; availability is not typed or live-verified endpoint coverage."
+        }
+      ],
+      "unwrap": "app"
+    },
+    "whm1:get_api_calls": {
+      "name": "getApiCalls",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 86."
+        },
+        {
+          "kind": "documented",
+          "text": "Reports only deprecated cPanel API 1 usage by date. Omitted type defaults to cpapi1 and prose identifies cpapi1 as the only value, but its formal schema is an unrestricted string. Each result row contains optional integer count/timestamp and string entry."
+        }
+      ],
+      "unwrap": "result"
+    },
+    "whm1:get_api_pages": {
+      "name": "getApiPages",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 86."
+        },
+        {
+          "kind": "documented",
+          "text": "Reports only deprecated cPanel API 1 daily interface usage. Omitted type defaults to the documented cpapi1 enum. The pinned response is one object with count, entry and timestamp; no list alternative is inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "Only the date of timestamp is meaningful; its time portion is arbitrary. File paths are payload data."
+        }
+      ]
+    },
+    "whm1:get_appconfig_application_list": {
+      "name": "getAppconfigApplicationList",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 11.38.1."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns registered cPanel, Webmail and WHM application lists, preserving optional AppConfig fields. displayname, entryurl, icon, origin, target and upgradecall are documented only for AppConfig-registered plugins."
+        },
+        {
+          "kind": "documented",
+          "text": "Application paths and URLs are opaque payload strings and are never retrieved. upgradecall receives prior and current cPanel versions when invoked by the system; this read does not execute it."
+        }
+      ]
+    }
+  }
+}

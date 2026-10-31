@@ -1256,3 +1256,14 @@ when there are no pending changes. `Flag` therefore raises `ApiErrorException`
 for this normal idle state as well as other failures; do not match error text or
 waive the immutable capture. Separate reviewer log/settings reads do not expand
 this catalog, and all thirty server-wide write/helper operations remain unobserved.
+
+## WHM API tools
+
+Run `WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs php tools/live-verify/whm-api-tools.php --output=docs/api/evidence/YYYY-MM-DD-whm-api-tools.json`.
+
+Five parameterless GETs select version, applist, api_token_list, get_api_calls and
+get_api_pages. Token-list schema contains metadata, not raw credentials. Usage
+entries are function names or file paths. Only masked structural evidence is
+persisted. Existing committed-input, exact request guard, opt-in, verified TLS
+and new-only output requirements apply. No token/session change, secret lookup,
+login-link creation or URL fetch runs. Follow-up2.44 retains unobserved behavior.

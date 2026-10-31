@@ -3952,3 +3952,38 @@ text or any of the thirty write/helper operations ran. These reports remain
 separate from the immutable five-GET capture, whose failed idle observation stays
 unwaived under `8x0.2.34`. All existing artifacts are preserved; no new capture was
 run to clear the failure.
+
+
+## WHM API tokens, sessions and introspection
+
+`whm()->apiTools()` exposes twelve functions from the seventeen-function API
+Development Tools group: token lifecycle, session/login-link creation, application
+inventory and legacy API usage. Five reads use GET and seven calls use form POST.
+The remaining five execution wrappers are separate work under `8x0.4.17`.
+
+Raw token lookup uses sensitive form POST despite the pinned GET declaration;
+POST compatibility remains live-unverified. Token, security-token and private
+prompt-token inputs stay sensitive. Returned tokens, sessions and login URLs are
+private payloads. The client neither follows URLs nor stores, refreshes, retries
+or revokes credentials automatically. Preserve per-method ACL replacement/defaults,
+expiration/manual-cleanup and session-inactivity caveats in generated PHPDoc.
+
+ACL, whitelist and revoke-name inputs currently represent one scalar field.
+Source zero-/one-based hyphen families and contradictory examples remain under
+`8x0.1.21`; no indexed encoding is guessed. Token inventories preserve dynamic
+token names and strict ACL flags. Recognized token details remain typed; the
+source's metadata-only unrecognized response returns null. Malformed present
+payloads still fail.
+
+Legacy API statistics cover cPanel API 1 only. The formal unrestricted string
+type for call statistics differs from the explicit cpapi1 enum for page statistics.
+Page timestamp time-of-day is arbitrary; only the date is meaningful. Application
+configuration URLs and fields stay payload data. Five execution-wrapper methods
+remain unselected rather than being labeled unsupported.
+
+All twelve methods have independent offline contracts. The fixed five-GET catalog
+reads version, available API functions, token metadata and legacy call/page usage
+with selectors omitted. Token metadata's pinned schema has no raw token field;
+dynamic names and ACL keys are masked in structural evidence. It reads no raw-token
+details or private login links and performs no token/session changes or URL fetch.
+Remaining behavior stays under `8x0.2.44`.
