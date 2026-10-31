@@ -3128,8 +3128,8 @@ remain separate from API status. Blocking/removing access and changing protectio
 have no client retry or rollback.
 
 ClamScanner preserves source scan types, administrator availability, byte/megabyte
-units, integer counters and string start timestamps. `getScanPaths()` retains its
-pinned object shape. Disinfection log alternatives use the established generator
+units, integer counters and string start timestamps. `getScanPaths()` preserves its pinned object and observed list-of-records
+alternatives; `getScanStatus()` also accepts the observed explicit null. Disinfection log alternatives use the established generator
 merge, preserving common required `type` and all optional branch fields; no
 per-discriminator validation is inferred. Scanning is a POST operation and does
 not establish successful disinfection. The JSON disinfection operation is absent.
@@ -3140,7 +3140,8 @@ Its payload status is separate from the API status. Provider URLs/icons and publ
 key/fingerprint strings remain payload data, without fetching or rendering.
 External account unlinking is a mutation; the pinned response's integer subject
 identifier and removal input's string remain distinct contracts. SSH access is a
-boolean capability, not proof of login, and last-login addresses remain a list.
+boolean capability, not proof of login. SSH ports normalize only canonical integer
+strings, and last-login addresses preserve scalar-string and string-list alternatives.
 
 All 24 methods have offline contract coverage. The fixed live catalog performs
 25 GET observations: WHM version plus twelve parameterless scanner, ModSecurity,
@@ -3167,3 +3168,15 @@ disinfection, security-setting change, unlink, host-key action or login occurs.
 Follow-up `8x0.2.31` retains these errors and every unobserved variant. The original
 capture remains failed and immutable. SHA-256:
 `4697e246b36b465efa814273d583d2c50c72d795352f3205eba0d983ac14ea77`.
+
+The corrected [security/access capture](evidence/2026-10-31-security-access-corrected.json)
+at `aee24c1081727cd66b8ef86aced5bd27d7e83375` on `11.138.0.19` records 25 HTTP
+200 observations: eighteen API/payload/probe passes and the same seven API
+failures. There are zero payload discrepancies. Scan-path lists now establish
+string `id` and `message` leaves on both routes; scan status remains null, SSH
+ports normalize canonical integer strings and last-login results remain scalar
+strings. No populated infected-file rows or enforcement behavior is established.
+Strict assessment remains failed for the API errors, without a waiver or an
+inferred cause. No mutation ran. Both artifacts remain immutable and follow-up
+`8x0.2.31` retains the unobserved methods and variants. SHA-256:
+`6c0d5ace2ea0795b778c68f552bd2d0852ab8848fb26bc213823ce4916bb63a0`.

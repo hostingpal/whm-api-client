@@ -922,8 +922,8 @@ remain separate from API status. Blocking/removing access and changing protectio
 have no client retry or rollback.
 
 ClamScanner preserves source scan types, administrator availability, byte/megabyte
-units, integer counters and string start timestamps. `getScanPaths()` retains its
-pinned object shape. Disinfection log alternatives use the established generator
+units, integer counters and string start timestamps. `getScanPaths()` preserves its pinned object and observed list-of-records
+alternatives; `getScanStatus()` also accepts the observed explicit null. Disinfection log alternatives use the established generator
 merge, preserving common required `type` and all optional branch fields; no
 per-discriminator validation is inferred. Scanning is a POST operation and does
 not establish successful disinfection. The JSON disinfection operation is absent.
@@ -934,7 +934,8 @@ Its payload status is separate from the API status. Provider URLs/icons and publ
 key/fingerprint strings remain payload data, without fetching or rendering.
 External account unlinking is a mutation; the pinned response's integer subject
 identifier and removal input's string remain distinct contracts. SSH access is a
-boolean capability, not proof of login, and last-login addresses remain a list.
+boolean capability, not proof of login. SSH ports normalize only canonical integer
+strings, and last-login addresses preserve scalar-string and string-list alternatives.
 
 All 24 methods have offline contract coverage. The fixed live catalog performs
 25 GET observations: WHM version plus twelve parameterless scanner, ModSecurity,
