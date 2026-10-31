@@ -104,6 +104,7 @@ use SensitiveParameter;
  *     job_status?: string,
  *     source_acct?: string,
  * }>
+ * @phpstan-type ConvertAddonInitiateConversionResult array<array-key, mixed>
  * @phpstan-type ConvertAddonListAddonDomainsResult array<array-key, array{
  *     docroot?: string,
  *     domain_type?: string,
@@ -336,6 +337,22 @@ use SensitiveParameter;
  * }
  * @phpstan-type ListUsersResult array{
  *     users?: list<string>,
+ * }
+ * @phpstan-type MassmodifyacctResult array{
+ *     payload?: list<array{
+ *         extended?: array{
+ *             cpuser?: array<array-key, mixed>,
+ *             domain?: string,
+ *             setshell?: string,
+ *             user?: string,
+ *         },
+ *         messages?: list<string>,
+ *         proxied_from?: list<string>,
+ *         reason?: string,
+ *         result?: 0|1,
+ *         user?: string,
+ *         warnings?: list<string>,
+ *     }>,
  * }
  * @phpstan-type ModifyAccountResult array{
  *     cpuser?: array<array-key, mixed>,
@@ -663,6 +680,67 @@ final readonly class Accounts
          * Validated against AccountsSpec::CONVERT_ADDON_GET_CONVERSION_STATUS.
          */
         $result = ($this->run)(AccountsSpec::CONVERT_ADDON_GET_CONVERSION_STATUS, ['jobId' => $jobId]);
+
+        return $result;
+    }
+
+    /**
+     * Start additional domain conversion.
+     *
+     * This function initiates the conversion process for an addon domain into a cPanel account.
+     *
+     * Documented: Uses form POST. Each call makes one attempt, with no automatic retry or rollback. Typed input support
+     * is source-backed and has no live mutation verification in this slice.
+     *
+     * Documented: Requires the Web Server role. Initiates conversion only: no automatic polling, completion, cleanup or
+     * rollback is inferred. The result is an opaque nonnullable object; absent and null payloads fail validation.
+     *
+     * Documented: copyMysqlDatabases maps old database suffixes to new names with literal copymysqldb- prefix; null or
+     * [] copies none. moveMysqlDatabases/moveMysqlUsers accept strings or nonempty sequential lists starting at suffix
+     * -1. Scalars retain unsuffixed fields. Omission moves none; pkgname omission retains the server package default.
+     *
+     * API-map identity: whm1:convert_addon_initiate_conversion#GET (wire name convert_addon_initiate_conversion; Domain
+     * Information).
+     *
+     * @param string $domain The addon domain to convert into an account's main domain.
+     * @param string $username The username for a specified account.
+     * @param array<string, string>|null $copyMysqlDatabases Copy a MySQL® database from the source account to the new
+     *     account with a new database name. Null omits it.
+     * @param string|non-empty-list<string>|null $moveMysqlDatabases Move the specified MySQL database from the source
+     *     account to the new account. Null omits it.
+     * @param string|non-empty-list<string>|null $moveMysqlUsers Move the specified MySQL database user from the source
+     *     account into the new MySQL database account. Null omits it.
+     * @param string|null $pkgname The hosting package that you want to assign to the new account. Null omits it.
+     * @return ConvertAddonInitiateConversionResult
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/domain-information/convertaddon-convert_addon_initiate_conversion
+     */
+    public function convertAddonInitiateConversion(
+        string $domain,
+        string $username,
+        #[SensitiveParameter]
+        ?array $copyMysqlDatabases = null,
+        #[SensitiveParameter]
+        string|array|null $moveMysqlDatabases = null,
+        #[SensitiveParameter]
+        string|array|null $moveMysqlUsers = null,
+        ?string $pkgname = null,
+    ): array {
+        /**
+         * @var ConvertAddonInitiateConversionResult $result
+         * Validated against AccountsSpec::CONVERT_ADDON_INITIATE_CONVERSION.
+         */
+        $result = ($this->run)(AccountsSpec::CONVERT_ADDON_INITIATE_CONVERSION, [
+            'domain' => $domain,
+            'username' => $username,
+            'copyMysqlDatabases' => $copyMysqlDatabases,
+            'moveMysqlDatabases' => $moveMysqlDatabases,
+            'moveMysqlUsers' => $moveMysqlUsers,
+            'pkgname' => $pkgname,
+        ]);
 
         return $result;
     }
@@ -1536,6 +1614,223 @@ final readonly class Accounts
     {
         /** @var ListUsersResult $result Validated against AccountsSpec::LIST_USERS. */
         $result = ($this->run)(AccountsSpec::LIST_USERS, []);
+
+        return $result;
+    }
+
+    /**
+     * Update multiple cPanel accounts.
+     *
+     * This function modifies multiple cPanel accounts.
+     *
+     * Documented: Uses form POST. Each call makes one attempt, with no automatic retry or rollback. Typed input support
+     * is source-backed and has no live mutation verification in this slice.
+     *
+     * Documented: All 51 case-sensitive source fields are retained. user accepts a scalar or nonempty sequential list
+     * with user-1/user-2 suffixes. mxPriorities adds literal MXCHECK- to domain suffix keys and preserves integer zero;
+     * null or [] sends no priorities.
+     *
+     * Documented: Hosting-plan changes can overwrite custom account settings. Renaming database objects can move data
+     * and require application changes; restoration can fail, and successful renames can still warn about original
+     * database/grant deletion failures. Preserve root-only BACKUP and cross-reseller OWNER permissions and the Web
+     * Server role restriction on enabling CGI.
+     *
+     * Documented: Inspect every per-user payload result, reason, warnings and messages. Outer success does not
+     * establish every account succeeded. PUSHBULLET_ACCESS_TOKEN remains sensitive. Existing omission, unlimited and
+     * flag semantics are unchanged.
+     *
+     * API-map identity: whm1:massmodifyacct#GET (wire name massmodifyacct; Account Management).
+     *
+     * @param string|non-empty-list<string> $user The account's current username.
+     * @param bool|null $backup Whether backups are enabled for the account. Null omits it.
+     * @param string|int|null $bwlimit The account's maximum bandwidth use, in bytes. Null omits it.
+     * @param string|null $contactemail The account's contact email address. Null omits it.
+     * @param string|null $dbowner The owner of the account's MySQL® databases. Null omits it.
+     * @param int|null $diskBlockLimit The number of disk blocks for the account, in kilobytes (KB). Null omits it.
+     * @param bool|null $hascgi Whether CGI access is enabled for the account. Null omits it.
+     * @param bool|null $hasdkim Whether DomainKeys Identified Mail (DKIM) is enabled for the account. Null omits it.
+     * @param bool|null $hasdmarc Whether Domain-based Message Authentication, Reporting, and Conformance (DMARC) is
+     *     enabled for the account. Null omits it.
+     * @param bool|null $hasshell Whether shell (SSH) access is enabled for the account. Null omits it.
+     * @param bool|null $hasspf Whether Sender Policy Framework (SPF) is enabled for the account. Null omits it.
+     * @param string|null $lang The account's display language. Null omits it.
+     * @param string|null $locale The account's default locale. Null omits it.
+     * @param string|int|null $mailboxFormat The storage format that the account's mailboxes use. Null omits it.
+     * @param string|int|null $maxaddon The account's maximum number of addon domains. Null omits it.
+     * @param string|int|null $maxftp The account's maximum number of FTP accounts. Null omits it.
+     * @param string|int|null $maxlst The account's maximum number of mailing lists. Null omits it.
+     * @param string|int|null $maxpark The account's maximum number of parked domains (aliases). Null omits it.
+     * @param string|int|null $maxpassengerapps The account's maximum number of Ruby applications. Null omits it.
+     * @param string|int|null $maxpop The maximum number of email accounts for the account. Null omits it.
+     * @param string|int|null $maxsql The maximum number of each available type of SQL database for the account. Null
+     *     omits it.
+     * @param string|int|null $maxsub The maximum number of subdomains for the account. Null omits it.
+     * @param string|int|null $maxDeferFailPercentage The percentage of failed or deferred email messages that the
+     *     account can send per hour before outgoing mail is rate-limited. Null omits it.
+     * @param string|int|null $maxEmailacctQuota The maximum size, in megabytes (MB), that the account can define when
+     *     it creates an email account. Null omits it.
+     * @param string|int|null $maxEmailPerHour The maximum number of emails that the account can send in one hour. Null
+     *     omits it.
+     * @param array<string, int>|null $mxPriorities The priority of the account's primary mail exchanger. Null omits it.
+     * @param bool|null $outgoingEmailSuspended Whether to suspend outgoing email on the account. Null omits it.
+     * @param string|null $owner A new owner's username or the `root` user, to change the account's owner. Null omits
+     *     it.
+     * @param string|null $pushbulletAccessToken An access token for the account's Pushbullet™ notifications. Null
+     *     omits it.
+     * @param string|int|null $quota The account's disk space quota, in multiples of 1,048,576 bytes. Null omits it.
+     * @param string|null $rs The account's cPanel interface theme. Null omits it.
+     * @param int|null $startdate A timestamp for which to use as the account's creation date. Null omits it.
+     * @param string|null $style The account's cPanel interface style. Null omits it.
+     * @param bool|null $modifyFirewall Whether to modify the firewall rules as part of the account modification. Null
+     *     omits it.
+     * @param bool|null $notifyAccountAuthnLink Whether to send a notification when someone links the account to an
+     *     external authentication account. Null omits it.
+     * @param bool|null $notifyAccountAuthnLinkNotificationDisabled Whether to send a notification when someone disables
+     *     notifications for external authentication account links. Null omits it.
+     * @param bool|null $notifyAutosslExpiry Whether to send a notification when an AutoSSL certificate expires. Null
+     *     omits it.
+     * @param bool|null $notifyAutosslExpiryCoverage Whether to send a notification AutoSSL cannot renew a certificate
+     *     because domains that fail Domain Control Validation (DCV) exist on the current certificate. Null omits it.
+     * @param bool|null $notifyAutosslRenewal Whether to send a notification when AutoSSL renews a certificate. Null
+     *     omits it.
+     * @param bool|null $notifyAutosslRenewalCoverage Whether to send a notification when AutoSSL renews a certificate
+     *     but the new certificate lacks at least one domain that the previous certificate secured. Null omits it.
+     * @param bool|null $notifyContactAddressChange Whether to send a notification when someone changes the contact
+     *     address for the account. Null omits it.
+     * @param bool|null $notifyContactAddressChangeNotificationDisabled Whether to send a notification when disables the
+     *     notification for contact address changes. Null omits it.
+     * @param bool|null $notifyDiskLimit Whether to send a notification when the account reaches its disk usage limit.
+     *     Null omits it.
+     * @param bool|null $notifyPasswordChange Whether to send a notification when someone changes the account's
+     *     password. Null omits it.
+     * @param bool|null $notifyPasswordChangeNotificationDisabled Whether to send a notification when someone disables
+     *     notifications for password changes. Null omits it.
+     * @param bool|null $notifySslExpiry Whether to send a notification when an SSL certificate on the account expires.
+     *     Null omits it.
+     * @param string|null $removeMissingExtensions A space-separated list of removed, missing, or uninstalled
+     *     extensions. Null omits it.
+     * @param bool|null $renameDatabaseObjects Whether to rename the cPanel account's database objects to use a new
+     *     username's database prefix. Null omits it.
+     * @param bool|null $reseller Whether to grant reseller privileges to the account. Null omits it.
+     * @param string|null $shell The absolute file path to the shell's location. Null omits it.
+     * @param bool|null $spamassassin Whether Apache SpamAssassin™ is enabled for the account. Null omits it.
+     * @return MassmodifyacctResult
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-management/accounts-massmodifyacct
+     */
+    public function massmodifyacct(
+        #[SensitiveParameter]
+        string|array $user,
+        ?bool $backup = null,
+        string|int|null $bwlimit = null,
+        ?string $contactemail = null,
+        ?string $dbowner = null,
+        ?int $diskBlockLimit = null,
+        ?bool $hascgi = null,
+        ?bool $hasdkim = null,
+        ?bool $hasdmarc = null,
+        ?bool $hasshell = null,
+        ?bool $hasspf = null,
+        ?string $lang = null,
+        ?string $locale = null,
+        string|int|null $mailboxFormat = null,
+        string|int|null $maxaddon = null,
+        string|int|null $maxftp = null,
+        string|int|null $maxlst = null,
+        string|int|null $maxpark = null,
+        string|int|null $maxpassengerapps = null,
+        string|int|null $maxpop = null,
+        string|int|null $maxsql = null,
+        string|int|null $maxsub = null,
+        string|int|null $maxDeferFailPercentage = null,
+        string|int|null $maxEmailacctQuota = null,
+        string|int|null $maxEmailPerHour = null,
+        #[SensitiveParameter]
+        ?array $mxPriorities = null,
+        ?bool $outgoingEmailSuspended = null,
+        ?string $owner = null,
+        #[SensitiveParameter]
+        ?string $pushbulletAccessToken = null,
+        string|int|null $quota = null,
+        ?string $rs = null,
+        ?int $startdate = null,
+        ?string $style = null,
+        ?bool $modifyFirewall = null,
+        ?bool $notifyAccountAuthnLink = null,
+        ?bool $notifyAccountAuthnLinkNotificationDisabled = null,
+        ?bool $notifyAutosslExpiry = null,
+        ?bool $notifyAutosslExpiryCoverage = null,
+        ?bool $notifyAutosslRenewal = null,
+        ?bool $notifyAutosslRenewalCoverage = null,
+        ?bool $notifyContactAddressChange = null,
+        ?bool $notifyContactAddressChangeNotificationDisabled = null,
+        ?bool $notifyDiskLimit = null,
+        ?bool $notifyPasswordChange = null,
+        ?bool $notifyPasswordChangeNotificationDisabled = null,
+        ?bool $notifySslExpiry = null,
+        ?string $removeMissingExtensions = null,
+        ?bool $renameDatabaseObjects = null,
+        ?bool $reseller = null,
+        ?string $shell = null,
+        ?bool $spamassassin = null,
+    ): array {
+        /** @var MassmodifyacctResult $result Validated against AccountsSpec::MASSMODIFYACCT. */
+        $result = ($this->run)(AccountsSpec::MASSMODIFYACCT, [
+            'user' => $user,
+            'backup' => $backup,
+            'bwlimit' => $bwlimit,
+            'contactemail' => $contactemail,
+            'dbowner' => $dbowner,
+            'diskBlockLimit' => $diskBlockLimit,
+            'hascgi' => $hascgi,
+            'hasdkim' => $hasdkim,
+            'hasdmarc' => $hasdmarc,
+            'hasshell' => $hasshell,
+            'hasspf' => $hasspf,
+            'lang' => $lang,
+            'locale' => $locale,
+            'mailboxFormat' => $mailboxFormat,
+            'maxaddon' => $maxaddon,
+            'maxftp' => $maxftp,
+            'maxlst' => $maxlst,
+            'maxpark' => $maxpark,
+            'maxpassengerapps' => $maxpassengerapps,
+            'maxpop' => $maxpop,
+            'maxsql' => $maxsql,
+            'maxsub' => $maxsub,
+            'maxDeferFailPercentage' => $maxDeferFailPercentage,
+            'maxEmailacctQuota' => $maxEmailacctQuota,
+            'maxEmailPerHour' => $maxEmailPerHour,
+            'mxPriorities' => $mxPriorities,
+            'outgoingEmailSuspended' => $outgoingEmailSuspended,
+            'owner' => $owner,
+            'pushbulletAccessToken' => $pushbulletAccessToken,
+            'quota' => $quota,
+            'rs' => $rs,
+            'startdate' => $startdate,
+            'style' => $style,
+            'modifyFirewall' => $modifyFirewall,
+            'notifyAccountAuthnLink' => $notifyAccountAuthnLink,
+            'notifyAccountAuthnLinkNotificationDisabled' => $notifyAccountAuthnLinkNotificationDisabled,
+            'notifyAutosslExpiry' => $notifyAutosslExpiry,
+            'notifyAutosslExpiryCoverage' => $notifyAutosslExpiryCoverage,
+            'notifyAutosslRenewal' => $notifyAutosslRenewal,
+            'notifyAutosslRenewalCoverage' => $notifyAutosslRenewalCoverage,
+            'notifyContactAddressChange' => $notifyContactAddressChange,
+            'notifyContactAddressChangeNotificationDisabled' => $notifyContactAddressChangeNotificationDisabled,
+            'notifyDiskLimit' => $notifyDiskLimit,
+            'notifyPasswordChange' => $notifyPasswordChange,
+            'notifyPasswordChangeNotificationDisabled' => $notifyPasswordChangeNotificationDisabled,
+            'notifySslExpiry' => $notifySslExpiry,
+            'removeMissingExtensions' => $removeMissingExtensions,
+            'renameDatabaseObjects' => $renameDatabaseObjects,
+            'reseller' => $reseller,
+            'shell' => $shell,
+            'spamassassin' => $spamassassin,
+        ]);
 
         return $result;
     }

@@ -671,12 +671,16 @@ final class WhmHostingPlanManagementTest extends TestCase
         return $value;
     }
 
-    public function testNamesAreNotMarkedAsSecretsAndFeatureMapPlaceholdersAreExcluded(): void
+    public function testNamesRemainVisibleAndNewFeatureMapsAreTraceRedacted(): void
     {
         [$client] = self::client();
         $group = $client->whm()->hostingPlans();
-        self::assertNotContains('createFeaturelist', get_class_methods($group));
-        self::assertNotContains('updateFeaturelist', get_class_methods($group));
+        foreach (['createFeaturelist', 'updateFeaturelist'] as $method) {
+            $parameters = (new ReflectionMethod($group, $method))->getParameters();
+            self::assertSame([], $parameters[0]->getAttributes(SensitiveParameter::class));
+            self::assertCount(1, $parameters[1]->getAttributes(SensitiveParameter::class));
+            self::assertFalse($parameters[1]->isOptional());
+        }
         foreach (self::operations() as [, $method]) {
             foreach ((new ReflectionMethod($group, $method))->getParameters() as $parameter) {
                 self::assertSame([], $parameter->getAttributes(SensitiveParameter::class));

@@ -704,6 +704,27 @@ final class SslSpec
         'returns' => null,
     ];
 
+    public const RESET_AUTOSSL_PROVIDER = [
+        'function' => 'reset_autossl_provider',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'provider' => ['name' => 'provider', 'encoding' => 'scalar'],
+            'parameters' => [
+                'name' => 'x_*',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'map',
+                    'item_type' => 'string',
+                    'allow_scalar' => false,
+                    'empty' => 'allow',
+                    'prefix' => 'x_',
+                ],
+            ],
+        ],
+        'returns' => null,
+    ];
+
     public const RESET_SERVICE_SSL_CERTIFICATE = [
         'function' => 'reset_service_ssl_certificate',
         'method' => 'POST',
@@ -754,6 +775,27 @@ final class SslSpec
         'params' => [
             'key' => ['name' => 'key', 'encoding' => 'scalar'],
             'value' => ['name' => 'value', 'encoding' => 'bool'],
+        ],
+        'returns' => null,
+    ];
+
+    public const SET_AUTOSSL_PROVIDER = [
+        'function' => 'set_autossl_provider',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'provider' => ['name' => 'provider', 'encoding' => 'scalar'],
+            'parameters' => [
+                'name' => 'x_*',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'map',
+                    'item_type' => 'string',
+                    'allow_scalar' => false,
+                    'empty' => 'allow',
+                    'prefix' => 'x_',
+                ],
+            ],
         ],
         'returns' => null,
     ];

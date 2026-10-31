@@ -1247,6 +1247,38 @@ final readonly class Ssl
     }
 
     /**
+     * Restore AutoSSL registration.
+     *
+     * This function resets the AutoSSL registration with a remote AutoSSL provider.
+     *
+     * Documented: Uses form POST. Each call makes one attempt, with no automatic retry or rollback. Typed input support
+     * is source-backed and has no live mutation verification in this slice.
+     *
+     * Documented: parameters is an optional sensitive suffix-key string map. The client adds literal x_ once without
+     * stripping a supplied x_; null or [] sends no provider-specific fields. Terms acceptance is deliberate caller
+     * input; the client never fetches URLs or automatically consents.
+     *
+     * Documented: Resets registration with the remote AutoSSL provider.
+     *
+     * API-map identity: whm1:reset_autossl_provider#GET (wire name reset_autossl_provider; Auto-Generated
+     * Certificates).
+     *
+     * @param string $provider The AutoSSL provider's name.
+     * @param array<string, string>|null $parameters Additional parameters which you wish to pass to the AutoSSL
+     *     provider. Null omits it.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/auto-generated-certificates/ssl-reset_autossl_provider
+     */
+    public function resetAutoSslProvider(
+        string $provider,
+        #[SensitiveParameter]
+        ?array $parameters = null,
+    ): void {
+        ($this->run)(SslSpec::RESET_AUTOSSL_PROVIDER, ['provider' => $provider, 'parameters' => $parameters]);
+    }
+
+    /**
      * Create self-signed SSL certificate for service.
      *
      * This function regenerates a self-signed SSL certificate and assigns it to a service.
@@ -1338,6 +1370,37 @@ final readonly class Ssl
     public function setAutoSslMetadataKey(string $key, bool $value): void
     {
         ($this->run)(SslSpec::SET_AUTOSSL_METADATA_KEY, ['key' => $key, 'value' => $value]);
+    }
+
+    /**
+     * Update the AutoSSL provider.
+     *
+     * This function sets the provider that the AutoSSL feature uses.
+     *
+     * Documented: Uses form POST. Each call makes one attempt, with no automatic retry or rollback. Typed input support
+     * is source-backed and has no live mutation verification in this slice.
+     *
+     * Documented: parameters is an optional sensitive suffix-key string map. The client adds literal x_ once without
+     * stripping a supplied x_; null or [] sends no provider-specific fields. Terms acceptance is deliberate caller
+     * input; the client never fetches URLs or automatically consents.
+     *
+     * Documented: Changes the AutoSSL provider. Use disableAutoSsl() to disable AutoSSL.
+     *
+     * API-map identity: whm1:set_autossl_provider#GET (wire name set_autossl_provider; Auto-Generated Certificates).
+     *
+     * @param string $provider The AutoSSL provider's name.
+     * @param array<string, string>|null $parameters Additional parameters which you wish to pass to the AutoSSL
+     *     provider. Null omits it.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/auto-generated-certificates/ssl-set_autossl_provider
+     */
+    public function setAutoSslProvider(
+        string $provider,
+        #[SensitiveParameter]
+        ?array $parameters = null,
+    ): void {
+        ($this->run)(SslSpec::SET_AUTOSSL_PROVIDER, ['provider' => $provider, 'parameters' => $parameters]);
     }
 
     /**

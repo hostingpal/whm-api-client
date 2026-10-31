@@ -141,6 +141,46 @@ final class MailSpec
         ],
     ];
 
+    public const CPGREYLIST_SAVE_COMMON_MAIL_PROVIDERS_CONFIG = [
+        'function' => 'cpgreylist_save_common_mail_providers_config',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'autotrustNewCommonMailProviders' => [
+                'name' => 'autotrust_new_common_mail_providers',
+                'encoding' => 'bool',
+            ],
+            'providers' => [
+                'name' => 'PROVIDERKEY',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'map',
+                    'item_type' => 'bool',
+                    'allow_scalar' => false,
+                    'empty' => 'allow',
+                    'prefix' => '',
+                ],
+            ],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'autotrust_new_common_mail_providers' => ['type' => 'flag'],
+                'common_mail_providers' => [
+                    'type' => 'map',
+                    'values' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'autoupdate' => ['type' => 'flag'],
+                            'display_name' => ['type' => 'string'],
+                            'is_trusted' => ['type' => 'flag'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
     public const CPGREYLIST_STATUS = [
         'function' => 'cpgreylist_status',
         'method' => 'GET',

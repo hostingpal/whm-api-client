@@ -156,17 +156,97 @@
       ]
     },
     "whm1:convert_addon_initiate_conversion": {
-      "exclude": {
-        "reason": "Requires the documented dynamic keyed parameter family copymysqldb-*, unsupported by the typed encoders. Whole-operation exclusion retains the documented feature set under whm-api-client-8x0.1.29; generic scalar form calls can pass explicit evidenced keys.",
-        "evidence": [
-          {
-            "kind": "doc",
-            "version": "pinned 2026-10-13",
-            "date": "2026-10-31",
-            "note": "The pinned copymysqldb-* parameter encodes caller-chosen database/domain names in the key. No current typed encoding represents that keyed mapping. Dropping this parameter would hide a documented operation feature."
+      "method": "POST",
+      "order": [
+        "domain",
+        "username",
+        "copymysqldb-*",
+        "movemysqldb",
+        "movemysqluser",
+        "pkgname"
+      ],
+      "params": {
+        "copymysqldb-*": {
+          "php": "copyMysqlDatabases",
+          "collection": {
+            "kind": "map",
+            "item_type": "string",
+            "allow_scalar": false,
+            "empty": "allow",
+            "prefix": "copymysqldb-"
           }
-        ]
-      }
+        },
+        "movemysqldb": {
+          "php": "moveMysqlDatabases",
+          "collection": {
+            "kind": "indexed",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "prefix": "movemysqldb",
+            "separator": "-",
+            "start": 1
+          }
+        },
+        "movemysqluser": {
+          "php": "moveMysqlUsers",
+          "collection": {
+            "kind": "indexed",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "prefix": "movemysqluser",
+            "separator": "-",
+            "start": 1
+          }
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned copymysqldb-* parameter encodes caller-chosen database/domain names in the key. No current typed encoding represents that keyed mapping. Dropping this parameter would hide a documented operation feature."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1convert_addon_initiate_conversion/get/parameters/2",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594; #/paths/~1convert_addon_initiate_conversion/get/parameters/2. Copy fields use copymysqldb- followed by the old database name; values are new database names. Omission copies no databases."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1convert_addon_initiate_conversion/get/parameters/3",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594; #/paths/~1convert_addon_initiate_conversion/get/parameters/3. A scalar uses movemysqldb; multiple values use movemysqldb-1, movemysqldb-2."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1convert_addon_initiate_conversion/get/parameters/4",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594; #/paths/~1convert_addon_initiate_conversion/get/parameters/4. A scalar uses movemysqluser; multiple values use movemysqluser-1, movemysqluser-2."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Uses form POST. Each call makes one attempt, with no automatic retry or rollback. Typed input support is source-backed and has no live mutation verification in this slice."
+        },
+        {
+          "kind": "documented",
+          "text": "Requires the Web Server role. Initiates conversion only: no automatic polling, completion, cleanup or rollback is inferred. The result is an opaque nonnullable object; absent and null payloads fail validation."
+        },
+        {
+          "kind": "documented",
+          "text": "copyMysqlDatabases maps old database suffixes to new names with literal copymysqldb- prefix; null or [] copies none. moveMysqlDatabases/moveMysqlUsers accept strings or nonempty sequential lists starting at suffix -1. Scalars retain unsuffixed fields. Omission moves none; pkgname omission retains the server package default."
+        }
+      ]
     },
     "whm1:convert_addon_list_addon_domains": {
       "name": "convertAddonListAddonDomains",
@@ -802,17 +882,80 @@
       ]
     },
     "whm1:massmodifyacct": {
-      "exclude": {
-        "reason": "Requires the documented dynamic keyed parameter family MXCHECK-*, unsupported by the typed encoders. Whole-operation exclusion retains the documented feature set under whm-api-client-8x0.1.29; generic scalar form calls can pass explicit evidenced keys.",
-        "evidence": [
-          {
-            "kind": "doc",
-            "version": "pinned 2026-10-13",
-            "date": "2026-10-31",
-            "note": "The pinned MXCHECK-* parameter encodes caller-chosen database/domain names in the key. No current typed encoding represents that keyed mapping. Dropping this parameter would hide a documented operation feature."
+      "name": "massmodifyacct",
+      "method": "POST",
+      "order": [
+        "user"
+      ],
+      "params": {
+        "user": {
+          "php": "user",
+          "collection": {
+            "kind": "indexed",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "prefix": "user",
+            "separator": "-",
+            "start": 1
           }
-        ]
-      }
+        },
+        "MXCHECK-*": {
+          "php": "mxPriorities",
+          "collection": {
+            "kind": "map",
+            "item_type": "int",
+            "allow_scalar": false,
+            "empty": "allow",
+            "prefix": "MXCHECK-"
+          }
+        },
+        "PUSHBULLET_ACCESS_TOKEN": {
+          "sensitive": true
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned MXCHECK-* parameter encodes caller-chosen database/domain names in the key. No current typed encoding represents that keyed mapping. Dropping this parameter would hide a documented operation feature."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1massmodifyacct/get/parameters/0",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594; #/paths/~1massmodifyacct/get/parameters/0. Source permits repeated or incremented user fields and explicitly documents user-1/user-2/user-3. Use deterministic one-based suffixes for nonempty lists; scalar retains user."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1massmodifyacct/get/parameters/26",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594; #/paths/~1massmodifyacct/get/parameters/26. MXCHECK- followed by the primary domain carries integer priority, for example MXCHECK-example.com=10."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Uses form POST. Each call makes one attempt, with no automatic retry or rollback. Typed input support is source-backed and has no live mutation verification in this slice."
+        },
+        {
+          "kind": "documented",
+          "text": "All 51 case-sensitive source fields are retained. user accepts a scalar or nonempty sequential list with user-1/user-2 suffixes. mxPriorities adds literal MXCHECK- to domain suffix keys and preserves integer zero; null or [] sends no priorities."
+        },
+        {
+          "kind": "documented",
+          "text": "Hosting-plan changes can overwrite custom account settings. Renaming database objects can move data and require application changes; restoration can fail, and successful renames can still warn about original database/grant deletion failures. Preserve root-only BACKUP and cross-reseller OWNER permissions and the Web Server role restriction on enabling CGI."
+        },
+        {
+          "kind": "documented",
+          "text": "Inspect every per-user payload result, reason, warnings and messages. Outer success does not establish every account succeeded. PUSHBULLET_ACCESS_TOKEN remains sensitive. Existing omission, unlimited and flag semantics are unchanged."
+        }
+      ]
     },
     "whm1:modify_account_enhancement": {
       "name": "modifyAccountEnhancement",

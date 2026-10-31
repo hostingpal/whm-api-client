@@ -177,17 +177,49 @@
       ]
     },
     "whm1:cpgreylist_save_common_mail_providers_config": {
-      "exclude": {
-        "reason": "PROVIDERKEY is a dynamic parameter-name placeholder, not a literal wire key. Exclude the whole operation until reviewed dynamic-key encoding exists (whm-api-client-8x0.1.25).",
-        "evidence": [
-          {
-            "kind": "doc",
-            "version": "pinned 2026-10-13",
-            "date": "2026-10-31",
-            "note": "The pinned PROVIDERKEY description states that its name is the provider key and gives google=0; a generated literal PROVIDERKEY argument would send the wrong wire request."
+      "method": "POST",
+      "order": [
+        "autotrust_new_common_mail_providers",
+        "PROVIDERKEY"
+      ],
+      "params": {
+        "PROVIDERKEY": {
+          "php": "providers",
+          "collection": {
+            "kind": "map",
+            "item_type": "bool",
+            "allow_scalar": false,
+            "empty": "allow",
+            "prefix": ""
           }
-        ]
-      }
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned PROVIDERKEY description states that its name is the provider key and gives google=0; a generated literal PROVIDERKEY argument would send the wrong wire request."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1cpgreylist_save_common_mail_providers_config/get/parameters/1",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594; #/paths/~1cpgreylist_save_common_mail_providers_config/get/parameters/1. Provider key is the parameter name, with google=0 as the documented example."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Uses form POST. Each call makes one attempt, with no automatic retry or rollback. Typed input support is source-backed and has no live mutation verification in this slice."
+        },
+        {
+          "kind": "documented",
+          "text": "providers is an optional literal-key bool map. Null or [] sends no provider-specific fields; omitted provider fields leave existing providers unchanged. Dispatch still occurs, and omitted autotrust_new_common_mail_providers retains its server default 1. Explicit false sends 0. Fixed-field collisions reject even for equal values."
+        }
+      ]
     },
     "whm1:cpgreylist_status": {
       "name": "cpgreylistStatus",

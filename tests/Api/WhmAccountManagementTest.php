@@ -513,9 +513,9 @@ final class WhmAccountManagementTest extends TestCase
         self::assertCount(2, $http->getRequests());
     }
 
-    public function testJsonAndDynamicKeyedOperationsRemainExcluded(): void
+    public function testJsonOperationsRemainExcluded(): void
     {
-        $methods = ['personalizationGet', 'personalizationSet', 'convertAddonInitiateConversion', 'massModifyAccount'];
+        $methods = ['personalizationGet', 'personalizationSet'];
         foreach ($methods as $method) {
             self::assertFalse(method_exists(Accounts::class, $method));
         }

@@ -1544,29 +1544,142 @@
       ]
     },
     "whm1:create_featurelist": {
-      "exclude": {
-        "reason": "Dynamic feature-name request fields require an explicit map encoding under whm-api-client-8x0.1.31; the documented featurelistname is a placeholder, not a literal wire key. Do not expose a method that silently omits feature configuration.",
-        "evidence": [
-          {
-            "kind": "doc",
-            "version": "pinned 2026-10-13",
-            "date": "2026-10-31",
-            "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /create_featurelist GET parameters/featurelistname description explicitly states the parameter name is the feature name. The example changemx=1 confirms dynamic names; overwrite can replace a list and reseller Add/Remove Package permission is required."
-          }
-        ]
-      }
+      "method": "POST",
+      "order": [
+        "featurelist",
+        "featurelistname",
+        "overwrite"
+      ],
+      "params": {
+        "featurelistname": {
+          "php": "features",
+          "collection": {
+            "kind": "map",
+            "item_type": "bool",
+            "allow_scalar": false,
+            "empty": "allow",
+            "prefix": ""
+          },
+          "required": true
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /create_featurelist GET parameters/featurelistname description explicitly states the parameter name is the feature name. The example changemx=1 confirms dynamic names; overwrite can replace a list and reseller Add/Remove Package permission is required."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1create_featurelist/get/parameters/1",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594; #/paths/~1create_featurelist/get/parameters/1. The description explicitly makes the parameter name the feature name. Required PHP features map is a deliberate API safety boundary; explicit [] still dispatches no feature fields."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Uses form POST. Each call makes one attempt, with no automatic retry or rollback. Typed input support is source-backed and has no live mutation verification in this slice."
+        },
+        {
+          "kind": "documented",
+          "text": "features preserves literal feature keys and strict bool values (true=1, false=0). An explicit map is required; [] sends no feature fields. Collisions with fixed and reserved fields reject before dispatch."
+        },
+        {
+          "kind": "documented",
+          "text": "A reseller must possess Add/Remove Package permission. Empty create behavior is not specified; overwrite=true may replace an existing list."
+        }
+      ]
     },
     "whm1:update_featurelist": {
-      "exclude": {
-        "reason": "Dynamic feature-name request fields require an explicit map encoding under whm-api-client-8x0.1.31; the documented feature name is a placeholder, not a literal wire key. Do not expose a method that silently omits feature configuration.",
-        "evidence": [
-          {
-            "kind": "doc",
-            "version": "pinned 2026-10-13",
-            "date": "2026-10-31",
-            "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /update_featurelist GET parameters/feature name description explicitly states the parameter name is the feature name. Omitting feature fields disables all features in the list, and response updated_features/invalid_features also use dynamic feature names."
-          }
-        ]
+      "method": "POST",
+      "order": [
+        "featurelist",
+        "feature name"
+      ],
+      "params": {
+        "feature name": {
+          "php": "features",
+          "collection": {
+            "kind": "map",
+            "item_type": "bool",
+            "allow_scalar": false,
+            "empty": "allow",
+            "prefix": ""
+          },
+          "required": true
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /update_featurelist GET parameters/feature name description explicitly states the parameter name is the feature name. Omitting feature fields disables all features in the list, and response updated_features/invalid_features also use dynamic feature names."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1update_featurelist/get/parameters/1",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594; #/paths/~1update_featurelist/get/parameters/1. The description explicitly makes the parameter name the feature name. Required PHP features map is a deliberate API safety boundary; explicit [] still dispatches no feature fields."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Uses form POST. Each call makes one attempt, with no automatic retry or rollback. Typed input support is source-backed and has no live mutation verification in this slice."
+        },
+        {
+          "kind": "documented",
+          "text": "features preserves literal feature keys and strict bool values (true=1, false=0). An explicit map is required; [] sends no feature fields. Collisions with fixed and reserved fields reject before dispatch."
+        },
+        {
+          "kind": "documented",
+          "text": "The source explicitly says sending no feature fields disables all features. It does not define the behavior of absent individual features in a populated update."
+        }
+      ],
+      "response": {
+        "updated_features": {
+          "replace": {
+            "type": "map",
+            "values": {
+              "type": "flag"
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+              "pointer": "/paths/~1update_featurelist/get/responses/200/content/application~1json/schema/properties/data/properties/updated_features/properties/feature name/description",
+              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594; #/paths/~1update_featurelist/get/responses/200/content/application~1json/schema/properties/data/properties/updated_features/properties/feature name/description. The feature name is the return name. Replace only this placeholder-based hash with a dynamic map of integer 0|1, including the untyped autoresponders example. Preserve optional presence."
+            }
+          ]
+        },
+        "invalid_features[]": {
+          "replace": {
+            "type": "map",
+            "values": {
+              "type": "flag"
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+              "pointer": "/paths/~1update_featurelist/get/responses/200/content/application~1json/schema/properties/data/properties/invalid_features/items/properties/invalid feature/description",
+              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594; #/paths/~1update_featurelist/get/responses/200/content/application~1json/schema/properties/data/properties/invalid_features/items/properties/invalid feature/description. The feature name is the return name. Replace only each list item with a dynamic map of integer 0|1. Preserve the list and optional presence."
+            }
+          ]
+        }
       }
     }
   }

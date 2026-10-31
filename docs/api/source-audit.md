@@ -5909,3 +5909,78 @@ Artifact SHA-256: `9ba5d1c2f5202e6e897e420b48c621961a97aea2f0611af92710cadfeb928
 The controller independently verified source/map/generator/overlay/effective-spec
 hashes, ordered identities and structural-only output. Remaining DNSSEC and
 SpamAssassin mutation evidence stays under `8x0.2.26` and `8x0.2.23.1`.
+
+## Named-map WHM adopters (2026-10-31)
+
+This source-backed adoption supersedes the seven typed exclusions recorded above
+under `8x0.1.25`, `.1.28`, `.1.29` and `.1.31`; the historical evidence remains
+unchanged. The pinned decompressed WHM source SHA-256 was independently verified as
+`6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594`.
+No source refresh, historical capture edit or live request occurred.
+
+All seven operations use form POST under current mutation/secret policy, although
+the pinned source variant is GET. The four affected overlay files retain prior
+exclusion evidence and add structured source hash plus exact parameter pointers.
+In the table below every pointer is relative to `/paths/~1FUNCTION/get/`.
+
+| Function | Parameter pointer(s) | Public map and exact wire expansion |
+| --- | --- | --- |
+| create_featurelist | `parameters/1` (`featurelistname`) | Required `features: array<string,bool>`; literal feature keys, true/false become 1/0 |
+| update_featurelist | `parameters/1` (`feature name`) | Required `features: array<string,bool>`; literal feature keys, true/false become 1/0 |
+| cpgreylist_save_common_mail_providers_config | `parameters/1` (`PROVIDERKEY`) | Optional nullable `providers: array<string,bool>`; literal provider keys |
+| reset_autossl_provider | `parameters/1` (`x_*`) | Optional nullable sensitive `parameters: array<string,string>`; `x_` plus caller suffix |
+| set_autossl_provider | `parameters/1` (`x_*`) | Optional nullable sensitive `parameters: array<string,string>`; `x_` plus caller suffix |
+| convert_addon_initiate_conversion | `parameters/2` (`copymysqldb-*`), `parameters/3`, `parameters/4` | Optional nullable `copyMysqlDatabases: array<string,string>`; `copymysqldb-` plus old database name; optional scalar/nonempty-list `moveMysqlDatabases` and `moveMysqlUsers`, unsuffixed scalar versus one-based `movemysqldb-1` / `movemysqluser-1` |
+| massmodifyacct | `parameters/0` (`user`), `parameters/26` (`MXCHECK-*`) | Required scalar/nonempty-list `user`, unsuffixed scalar versus one-based `user-1`; optional nullable `mxPriorities: array<string,int>` with literal `MXCHECK-` prefix |
+
+Each map explicitly allows empty input. Both feature arguments are required at
+the native PHP signature with no [] default. Explicit [] still dispatches: update
+has the documented disable-all effect, and create's empty meaning is unspecified.
+Populated-update omission semantics are not inferred. Optional null/[] maps emit
+no map fields and still dispatch. Greylisting omission retains existing provider
+settings but the separate autotrust default 1 may act. Conversion copy omission
+copies no databases. AutoSSL prefix text is never stripped (`x_name` becomes
+`x_x_name`); terms URLs are deliberate caller input and are never fetched or
+automatically accepted. Reset affects remote registration, and disabling uses
+`disableAutoSsl()`.
+
+All six conversion source parameters and all 51 massmodifyacct source parameters
+are retained. Wire names preserve exact case, zero/false and existing scalar
+unlimited/null policies. Bulk modification retains hosting-plan overwrite risk,
+root-only permission and Web Server role caveats, rename data/restoration/deletion
+warnings, sensitive Pushbullet input, and separate per-user results. Outer API
+success does not prove that every user modification succeeded. Conversion merely
+initiates work and returns a nonnullable opaque object; no polling, rollback,
+cleanup or completion is inferred. Collection trace redaction remains independent
+of semantic secret classification; the two AutoSSL maps and Pushbullet token
+retain actual sensitive classification.
+
+Only two response corrections were needed: `update_featurelist.updated_features`
+is a dynamic `array<string,0|1>`, and each `invalid_features` list item is a dynamic
+`array<string,0|1>`. The source explicitly says each feature name is the return
+name at the following pointers (relative to the update operation):
+
+- `responses/200/content/application~1json/schema/properties/data/properties/updated_features/properties/feature name/description`
+- `responses/200/content/application~1json/schema/properties/data/properties/invalid_features/items/properties/invalid feature/description`
+
+The formal placeholder properties and untyped autoresponders example do not
+establish literal return field names. Optionality, separate `featurelist`, strict
+integer flag values and list/map boundaries remain intact. Other feature
+inventory contracts are unchanged. All other new responses preserve the complete
+pinned fields, void metadata-only provider responses, opaque conversion result,
+per-user bulk outcomes, and missing/null distinctions under existing container
+policy. No unknown-field acknowledgement or response-wide loosening was added.
+
+Independent literal fixtures cover every public method, singleton/multiple maps,
+empty/null/omitted optional maps, required map omission, 0/false/empty strings,
+one-pass escaped keys/values, literal doubled prefixes, scalar/list spelling,
+all 51 case-sensitive bulk fields, fixed/reserved collisions, strict late invalid
+entries, PHP integer keys, stale metadata clearing, trace redaction, strict
+response flags and partial results, API errors, accepted-outcome payload errors
+and exactly one attempt. Shared map/indexed grammar tests retain deeper key/type
+and route-reservation coverage. These are offline checks only: no account,
+Greylisting, feature-list or AutoSSL registration mutation was run.
+
+Official generation increases canonical typed coverage from 1,098 to 1,105:
+UAPI stays 519 and WHM rises 579 to 586. Groups stay 91 (68 UAPI + 23 WHM), and
+generated PHP files stay 185. Generic calls remain distinct from typed coverage.

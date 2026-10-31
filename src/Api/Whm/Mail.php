@@ -61,6 +61,14 @@ use SensitiveParameter;
  *         is_trusted?: 0|1,
  *     }>,
  * }
+ * @phpstan-type CpgreylistSaveCommonMailProvidersConfigResult array{
+ *     autotrust_new_common_mail_providers?: 0|1,
+ *     common_mail_providers?: array<array-key, array{
+ *         autoupdate?: 0|1,
+ *         display_name?: string,
+ *         is_trusted?: 0|1,
+ *     }>,
+ * }
  * @phpstan-type CpgreylistStatusResult array{
  *     is_enabled?: 0|1,
  *     is_exim_enabled?: 0|1,
@@ -656,6 +664,50 @@ final readonly class Mail
          * Validated against MailSpec::CPGREYLIST_LOAD_COMMON_MAIL_PROVIDERS_CONFIG.
          */
         $result = ($this->run)(MailSpec::CPGREYLIST_LOAD_COMMON_MAIL_PROVIDERS_CONFIG, []);
+
+        return $result;
+    }
+
+    /**
+     * Update Greylisting new mail provider handling.
+     *
+     * This function sets whether Greylisting trusts new entries to cPanel's common mail providers list.
+     *
+     * Documented: Uses form POST. Each call makes one attempt, with no automatic retry or rollback. Typed input support
+     * is source-backed and has no live mutation verification in this slice.
+     *
+     * Documented: providers is an optional literal-key bool map. Null or [] sends no provider-specific fields; omitted
+     * provider fields leave existing providers unchanged. Dispatch still occurs, and omitted
+     * autotrust_new_common_mail_providers retains its server default 1. Explicit false sends 0. Fixed-field collisions
+     * reject even for equal values.
+     *
+     * API-map identity: whm1:cpgreylist_save_common_mail_providers_config#GET (wire name
+     * cpgreylist_save_common_mail_providers_config; Spam Protection (Greylisting)).
+     *
+     * @param bool|null $autotrustNewCommonMailProviders Whether Greylisting automatically trusts new mail providers
+     *     that cPanel adds to the common mail providers list. Null omits it.
+     * @param array<string, bool>|null $providers Whether Greylisting automatically trusts new IP addresses that cPanel
+     *     adds to this mail provider. Null omits it.
+     * @return CpgreylistSaveCommonMailProvidersConfigResult
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/spam-protection-(greylisting)/cpgreylist-cpgreylist_save_common_mail_providers_config
+     */
+    public function cpgreylistSaveCommonMailProvidersConfig(
+        ?bool $autotrustNewCommonMailProviders = null,
+        #[SensitiveParameter]
+        ?array $providers = null,
+    ): array {
+        /**
+         * @var CpgreylistSaveCommonMailProvidersConfigResult $result
+         * Validated against MailSpec::CPGREYLIST_SAVE_COMMON_MAIL_PROVIDERS_CONFIG.
+         */
+        $result = ($this->run)(MailSpec::CPGREYLIST_SAVE_COMMON_MAIL_PROVIDERS_CONFIG, [
+            'autotrustNewCommonMailProviders' => $autotrustNewCommonMailProviders,
+            'providers' => $providers,
+        ]);
 
         return $result;
     }

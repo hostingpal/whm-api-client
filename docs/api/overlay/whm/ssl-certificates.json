@@ -966,17 +966,51 @@
       ]
     },
     "whm1:reset_autossl_provider": {
-      "exclude": {
-        "reason": "The documented x_* parameters represent dynamically named provider-specific fields. The typed parameter schema cannot safely represent this parameter map; follow-up whm-api-client-8x0.1.28 retains full provider configuration support.",
-        "evidence": [
-          {
-            "kind": "doc",
-            "version": "pinned 2026-10-13",
-            "date": "2026-10-31",
-            "note": "reset_autossl_provider defines additional query parameters beginning with x_, with x_terms_of_service_accepted as an example. A literal x_* field does not implement that contract. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
-          }
-        ]
-      }
+      "name": "resetAutoSslProvider",
+      "method": "POST",
+      "params": {
+        "x_*": {
+          "php": "parameters",
+          "collection": {
+            "kind": "map",
+            "item_type": "string",
+            "allow_scalar": false,
+            "empty": "allow",
+            "prefix": "x_"
+          },
+          "sensitive": true
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "reset_autossl_provider defines additional query parameters beginning with x_, with x_terms_of_service_accepted as an example. A literal x_* field does not implement that contract. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1reset_autossl_provider/get/parameters/1",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594; #/paths/~1reset_autossl_provider/get/parameters/1. Additional provider parameters begin with x_; x_terms_of_service_accepted accepts a caller-chosen terms URL."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Uses form POST. Each call makes one attempt, with no automatic retry or rollback. Typed input support is source-backed and has no live mutation verification in this slice."
+        },
+        {
+          "kind": "documented",
+          "text": "parameters is an optional sensitive suffix-key string map. The client adds literal x_ once without stripping a supplied x_; null or [] sends no provider-specific fields. Terms acceptance is deliberate caller input; the client never fetches URLs or automatically consents."
+        },
+        {
+          "kind": "documented",
+          "text": "Resets registration with the remote AutoSSL provider."
+        }
+      ]
     },
     "whm1:reset_service_ssl_certificate": {
       "name": "resetServiceSslCertificate",
@@ -1126,17 +1160,51 @@
       ]
     },
     "whm1:set_autossl_provider": {
-      "exclude": {
-        "reason": "The documented x_* parameters represent dynamically named provider-specific fields. The typed parameter schema cannot safely represent this parameter map; follow-up whm-api-client-8x0.1.28 retains full provider configuration support.",
-        "evidence": [
-          {
-            "kind": "doc",
-            "version": "pinned 2026-10-13",
-            "date": "2026-10-31",
-            "note": "set_autossl_provider defines additional query parameters beginning with x_, with x_terms_of_service_accepted as an example. A literal x_* field does not implement that contract. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
-          }
-        ]
-      }
+      "name": "setAutoSslProvider",
+      "method": "POST",
+      "params": {
+        "x_*": {
+          "php": "parameters",
+          "collection": {
+            "kind": "map",
+            "item_type": "string",
+            "allow_scalar": false,
+            "empty": "allow",
+            "prefix": "x_"
+          },
+          "sensitive": true
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "set_autossl_provider defines additional query parameters beginning with x_, with x_terms_of_service_accepted as an example. A literal x_* field does not implement that contract. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1set_autossl_provider/get/parameters/1",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594; #/paths/~1set_autossl_provider/get/parameters/1. Additional provider parameters begin with x_; x_terms_of_service_accepted accepts a caller-chosen terms URL."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Uses form POST. Each call makes one attempt, with no automatic retry or rollback. Typed input support is source-backed and has no live mutation verification in this slice."
+        },
+        {
+          "kind": "documented",
+          "text": "parameters is an optional sensitive suffix-key string map. The client adds literal x_ once without stripping a supplied x_; null or [] sends no provider-specific fields. Terms acceptance is deliberate caller input; the client never fetches URLs or automatically consents."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes the AutoSSL provider. Use disableAutoSsl() to disable AutoSSL."
+        }
+      ]
     },
     "whm1:set_autossl_user_excluded_domains": {
       "name": "setAutoSslUserExcludedDomains",

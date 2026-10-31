@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 91 generated typed groups cover 1,098 documented operations (see
+The 91 generated typed groups cover 1,105 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, DNS zone and DNSSEC
 management, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -1334,11 +1334,12 @@ and source gaps.
 ### WHM login and mail protection
 
 `whm()->cpHulk()` implements sixteen pinned cPHulk functions, and
-`whm()->mail()` implements fourteen Greylisting functions. Fifteen reads use GET;
-fifteen mutations use form POST. The JSON batch-record operation remains under
-`8x0.1.18`. The provider-configuration setter is excluded under `8x0.1.25` because
-its `PROVIDERKEY` placeholder represents a dynamic parameter name, not a literal
-wire field. The pre-existing Mail SNI exclusion stays intact.
+`whm()->mail()` implements fifteen Greylisting functions. Fifteen reads use GET;
+sixteen mutations use form POST. The JSON batch-record operation remains under
+`8x0.1.18`. `cpgreylistSaveCommonMailProvidersConfig()` accepts optional `providers`
+as a literal-key bool map. Null or [] sends no provider-specific fields; existing
+provider settings remain unchanged, while omitted autotrust retains default 1.
+The pre-existing Mail SNI exclusion stays intact.
 
 cPHulk configuration can change login protection, firewall blocking and commands
 run after attacks. Command and generic configuration-value inputs remain sensitive.
@@ -1653,10 +1654,13 @@ retains remaining source/live coverage.
 
 ### WHM SSL certificate management
 
-`whm()->ssl()` exposes 32 of the 34 pinned SSL Certificates operations: ten GET
-reads and 22 form POST calls, including source-classified POST fetch operations.
-Provider reset/selection remains excluded under `8x0.1.28` because `x_*` denotes
-dynamic input names, not a literal parameter. Provider inventories preserve strict
+`whm()->ssl()` exposes all 34 pinned SSL Certificates operations: ten GET
+reads and 24 form POST calls, including source-classified POST fetch operations.
+`resetAutoSslProvider()` and `setAutoSslProvider()` accept optional sensitive
+`parameters` string maps with a literal `x_` prefix added to caller suffix keys.
+Null or [] sends no extra provider fields. Terms URLs require deliberate caller
+acceptance; the client does not fetch URLs or automatically consent. Reset affects
+remote registration; use `disableAutoSsl()` to disable AutoSSL. Provider inventories preserve strict
 named fields and opaque additional values; treat returned provider data as private.
 
 PEM, private-key, CA-bundle and passphrase inputs remain sensitive. Domain exclusion
@@ -1760,10 +1764,15 @@ for inventories, enhancements, conversion status, quota/bandwidth controls,
 password policy, Digest Authentication and document roots. Password-strength
 calculation uses POST because its password input is sensitive.
 
-JSON personalization calls remain under `8x0.1.18`. Conversion initiation and
-bulk modification remain excluded under `8x0.1.29`: their keyed database-copy and
-MX fields need explicit support. Omitting conversion copy fields copies no MySQL
-databases; the client does not silently drop them. Conversion status supports
+JSON personalization calls remain under `8x0.1.18`. Conversion initiation accepts
+`copyMysqlDatabases` as an old-to-new string map with literal `copymysqldb-` prefix;
+null or [] copies no databases. `moveMysqlDatabases`/`moveMysqlUsers` preserve
+unsuffixed scalar fields and use one-based suffixes for nonempty lists.
+`massmodifyacct()` retains all 51 case-sensitive fields, accepts a scalar or
+one-based user list and optional integer `mxPriorities` with `MXCHECK-` prefix.
+Inspect each per-user result; outer success does not prove every account succeeded.
+These mutations have no live verification in this slice; the client adds no retry,
+polling, completion, cleanup or rollback. Conversion status supports
 one integer job ID; contradictory indexed examples remain in `8x0.1.21`.
 
 `getMaximumUsers()` preserves the pinned optional `users` integer and the
@@ -1821,12 +1830,16 @@ behavior is tracked in `8x0.2.41`; empty-container evidence ambiguity remains
 
 ### Expanded WHM hosting plans
 
-`whm()->hostingPlans()` exposes twenty of 24 pinned functions, including package
+`whm()->hostingPlans()` exposes 22 of 24 pinned functions, including package
 creation, editing, deletion, extension management, matching, application inventory
 and feature overrides. The original eight methods and two deprecated exclusions
 are retained, with a narrow team-limit response correction in `listPackages()`.
-Dynamic feature-list creation/update fields remain excluded under `8x0.1.31`. The twelve additions use four GET and eight form POST
-methods.
+`createFeaturelist()` and `updateFeaturelist()` require an explicit `features`
+bool map with literal keys. [] still dispatches: update disables every feature;
+empty create behavior is unspecified. Populated-update omission behavior is not
+inferred. Create requires reseller Add/Remove Package permission and overwrite
+can replace an existing list. Updated/invalid feature responses preserve dynamic
+feature keys and integer 0|1 values. Both new methods use form POST.
 
 Package options preserve exact wire casing, omission, false/zero and literal
 `unlimited` values. Quotas use the source's MB units. `editPackage()` changes
@@ -2890,3 +2903,33 @@ Project-authored code and documentation are licensed under the
 The bundled cPanel documentation snapshots retain their upstream terms and are
 not covered by the project's MIT license. See the
 [third-party documentation notice](docs/api/README.md#licensing).
+
+### Named-map WHM inputs
+
+Seven additional source-backed WHM operations use typed maps: feature-list create/update,
+Greylisting provider configuration, AutoSSL provider reset/selection, addon conversion
+initiation and bulk account modification. Maps preserve literal suffix keys, strict scalar
+values and a single form-encoding pass; fixed/routing-field collisions, integer PHP keys
+and invalid late values reject before dispatch and clear stale metadata. No dynamic map
+is sent as a placeholder, JSON string or bracket syntax. Every collection argument is
+trace-redacted independently of whether it is semantically secret.
+
+```php
+$client->whm()->hostingPlans()->updateFeaturelist('custom', ['email' => true, 'ftp' => false]);
+$client->whm()->mail()->cpgreylistSaveCommonMailProvidersConfig(
+    autotrustNewCommonMailProviders: false,
+    providers: ['google' => false],
+);
+$client->whm()->ssl()->setAutoSslProvider('cPanel', parameters: []);
+$client->whm()->accounts()->massmodifyacct(
+    user: ['alice', 'bob'],
+    mxPriorities: ['alice.example' => 0, 'bob.example' => 10],
+);
+```
+
+Map prefixes are literal: supplying `x_name` to an AutoSSL map emits `x_x_name`.
+Feature maps are required, with no default []; all other maps are optional and nullable.
+Empty feature update disables all features, while empty create has no specified meaning.
+Empty optional maps still dispatch the fixed request. These seven form POST methods
+are offline-verified only; source contracts and typed coverage establish no successful
+live mutation, account conversion, provider registration or feature change.
