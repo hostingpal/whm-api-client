@@ -709,7 +709,13 @@ final class MailSpec
         'returns' => [
             'type' => 'object',
             'fields' => [
-                'forward_to' => ['type' => 'list', 'items' => ['type' => 'string']],
+                'forward_to' => [
+                    'type' => 'union',
+                    'anyOf' => [
+                        ['type' => 'list', 'items' => ['type' => 'string']],
+                        ['type' => 'string', 'literal' => ''],
+                    ],
+                ],
             ],
         ],
     ];

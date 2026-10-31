@@ -222,7 +222,7 @@ use SensitiveParameter;
  *     }>,
  * }
  * @phpstan-type GetUserEmailForwardDestinationResult array{
- *     forward_to?: list<string>,
+ *     forward_to?: list<string>|'',
  * }
  * @phpstan-type InstallDkimPrivateKeysResult array{
  *     payload?: list<array{
@@ -1481,6 +1481,11 @@ final readonly class Mail
      *
      * Documented: Reads forwarding destinations for a system account. root commonly receives server notices and nobody
      * may receive CGI bounce mail when suexec is unused. Returned destinations are not fetched or sent mail.
+     *
+     * Observed: WHM GET on cPanel 11.138.0.19 returned forward_to as the literal empty string. The result retains
+     * either the pinned string list or that exact empty string, preserving omission separately. Its meaning has not
+     * been established; the client does not interpret it as a forwarding state. Null and other scalar strings remain
+     * invalid. The immutable 2026-10-31-whm-mail-management.json capture remains failed and unwaived.
      *
      * API-map identity: whm1:get_user_email_forward_destination#GET (wire name get_user_email_forward_destination;
      * cPanel Account Mail Management).

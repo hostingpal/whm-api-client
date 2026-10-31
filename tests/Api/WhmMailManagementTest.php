@@ -626,6 +626,58 @@ final class WhmMailManagementTest extends TestCase
         }
     }
 
+    /** @return iterable<string, array{string, array<string, mixed>}> */
+    public static function forwardDestinationVariants(): iterable
+    {
+        yield 'omitted field' => ['{}', []];
+        yield 'empty destination list' => ['{"forward_to":[]}', ['forward_to' => []]];
+        yield 'populated pinned list' => ['{"forward_to":["fixture@example.test","fixture"]}',
+            ['forward_to' => ['fixture@example.test', 'fixture']]];
+        yield 'observed literal empty string' => ['{"forward_to":""}', ['forward_to' => '']];
+    }
+
+    /** @param array<string, mixed> $expected */
+    #[DataProvider('forwardDestinationVariants')]
+    public function testForwardDestinationPreservesItsExactVariants(string $payload, array $expected): void
+    {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope('get_user_email_forward_destination', $payload)));
+        self::assertSame($expected, $client->whm()->mail()->getUserEmailForwardDestination('fixture'));
+        self::assertSame(1, $client->whm()->responseMeta()?->whmResult());
+        self::assertCount(1, $http->getRequests());
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function invalidForwardDestinations(): iterable
+    {
+        foreach (
+            [
+            'null' => 'null', 'boolean' => 'false', 'integer' => '0', 'float' => '1.5',
+            'single address string' => '"fixture@example.test"', 'space string' => '" "',
+            'zero string' => '"0"', 'arbitrary string' => '"unlimited"',
+            'nonempty object' => '{"destination":"fixture@example.test"}',
+            'nullable list item' => '[null]', 'integer list item' => '[0]', 'nested list item' => '[["fixture"]]',
+            ] as $label => $value
+        ) {
+            yield $label => ['{"forward_to":' . $value . '}'];
+        }
+    }
+
+    #[DataProvider('invalidForwardDestinations')]
+    public function testForwardDestinationCorrectionRejectsOtherScalarsAndMalformedLists(string $payload): void
+    {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope('get_user_email_forward_destination', $payload)));
+        try {
+            $client->whm()->mail()->getUserEmailForwardDestination('fixture');
+            self::fail('Only the pinned string list and the observed literal empty string are accepted.');
+        } catch (PayloadMismatchException $exception) {
+            self::assertSame($exception->metadata, $client->whm()->responseMeta());
+            self::assertSame(1, $client->whm()->responseMeta()?->whmResult());
+            self::assertCount(1, $http->getRequests());
+        }
+    }
+
     public function testSpfMultipleRecordSerializationIsNotGuessed(): void
     {
         [$client, $http] = self::client();

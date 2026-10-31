@@ -1416,6 +1416,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /get_user_email_forward_destination x-readonly=true; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 11.52. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "The immutable WHM GET observation whm1:get_user_email_forward_destination#GET at revision e0237496016fa8546c3cbd310e302b654c9a9396 on cPanel 11.138.0.19 records $.forward_to as empty-string. Artifact docs/api/evidence/2026-10-31-whm-mail-management.json SHA-256 3b990bd9f1bb37f7e823cf8c36acc7f0d2f6a8a346213bb272d13a55abc4bcc5; observed_at 2026-10-31T03:32:40Z, source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, original effective-contract SHA-256 ee73161c3e3f0d03cacff3cd4ee4676766a558cedce5f6cf3822d3e972db83b0. Preserve the documented list<string> and additionally accept only the exact empty-string literal at this field. Omission remains possible, null and nonempty scalar strings remain invalid. The empty string is retained verbatim; its meaning has not been established. The original capture remains failed and immutable; this correction does not waive its recorded finding."
         }
       ],
       "notes": [
@@ -1426,11 +1432,42 @@
         {
           "kind": "documented",
           "text": "Reads forwarding destinations for a system account. root commonly receives server notices and nobody may receive CGI bounce mail when suexec is unused. Returned destinations are not fetched or sent mail."
+        },
+        {
+          "kind": "observed",
+          "text": "WHM GET on cPanel 11.138.0.19 returned forward_to as the literal empty string. The result retains either the pinned string list or that exact empty string, preserving omission separately. Its meaning has not been established; the client does not interpret it as a forwarding state. Null and other scalar strings remain invalid. The immutable 2026-10-31-whm-mail-management.json capture remains failed and unwaived."
         }
       ],
       "order": [
         "user"
-      ]
+      ],
+      "response": {
+        "forward_to": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "list",
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "string",
+                "literal": ""
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "The immutable WHM GET observation whm1:get_user_email_forward_destination#GET at revision e0237496016fa8546c3cbd310e302b654c9a9396 on cPanel 11.138.0.19 records $.forward_to as empty-string. Artifact docs/api/evidence/2026-10-31-whm-mail-management.json SHA-256 3b990bd9f1bb37f7e823cf8c36acc7f0d2f6a8a346213bb272d13a55abc4bcc5; observed_at 2026-10-31T03:32:40Z, source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, original effective-contract SHA-256 ee73161c3e3f0d03cacff3cd4ee4676766a558cedce5f6cf3822d3e972db83b0. Preserve the documented list<string> and additionally accept only the exact empty-string literal at this field. Omission remains possible, null and nonempty scalar strings remain invalid. The empty string is retained verbatim; its meaning has not been established. The original capture remains failed and immutable; this correction does not waive its recorded finding."
+            }
+          ]
+        }
+      }
     },
     "whm1:hold_outgoing_email": {
       "name": "holdOutgoingEmail",
