@@ -24,10 +24,10 @@ use SensitiveParameter;
  *     file?: string,
  * }
  * @phpstan-type CheckRemoteSshConnectionResult array{
- *     comment?: string,
- *     protocol_versions?: list<string>,
+ *     comment?: string|null,
+ *     protocol_versions?: list<string>|null,
  *     received?: string,
- *     server_software?: string,
+ *     server_software?: string|null,
  * }
  * @phpstan-type ConvertOpenSshToPuttyResult array{
  *     key?: string,
@@ -76,8 +76,8 @@ use SensitiveParameter;
  * }
  * @phpstan-type GetProviderClientConfigurationsResult array{
  *     client_configurations?: array{
- *         client_id?: string,
- *         client_secret?: string,
+ *         client_id?: string|null,
+ *         client_secret?: string|null,
  *         redirect_uris?: list<string>,
  *     },
  * }
@@ -139,7 +139,7 @@ use SensitiveParameter;
  *     }>,
  *     primary_account?: array{
  *         secret?: string,
- *     },
+ *     }|null,
  *     team?: array<array-key, array{
  *         secret?: string,
  *     }>,
@@ -177,19 +177,24 @@ final readonly class Authentication
      * This function authorizes a public SSH key to access the server. When you call this function, it adds the key to
      * the `/root/.ssh/authorized_keys` file.
      *
-     * Documented: Available in cPanel 11 and later. Omitted request options retain server defaults; explicit false and
-     * zero remain explicit.
+     * Documented: Available in cPanel 11 and later.
      *
      * Documented: Only root and root-enabled resellers may authorize root public keys. file must exist under
-     * /root/.ssh; text takes precedence when both are supplied. Preserve both formally required arguments. options is a
-     * comma-separated string, omitted for no options. Key text is sensitive. Authorization changes access immediately;
-     * the client does not retry or roll back.
+     * /root/.ssh; text takes precedence when both are supplied. The documented file mode needs text to be omitted,
+     * despite the formal required marker. options is a comma-separated string and defaults to no options.
+     *
+     * Policy: Client policy: retain the required file argument and existing argument positions; optional text=null
+     * omits text so the server can use file. Key text is sensitive. Client policy: send one request without automatic
+     * retry or rollback.
+     *
+     * Policy: Client encoding policy: omit optional arguments supplied as null and preserve explicit false or zero
+     * where accepted by the parameter. This does not assert an undocumented server default.
      *
      * API-map identity: whm1:authorizesshkey#GET (wire name authorizesshkey; SSH Keys and Connections).
      *
      * @param bool $authorize Whether to authorize the public SSH key to access the server.
      * @param string $file The public SSH key file's name.
-     * @param string $text The text of the SSH public key file.
+     * @param string|null $text The text of the SSH public key file. Null omits it.
      * @param string|null $options A comma-separated list of options to include with the public SSH key. Null omits it.
      * @return AuthorizeSshKeyResult
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
@@ -201,7 +206,7 @@ final readonly class Authentication
         bool $authorize,
         string $file,
         #[SensitiveParameter]
-        string $text,
+        ?string $text = null,
         ?string $options = null,
     ): array {
         /** @var AuthorizeSshKeyResult $result Validated against AuthenticationSpec::AUTHORIZESSHKEY. */
@@ -220,12 +225,16 @@ final readonly class Authentication
      *
      * This function tests an SSH connection to another server.
      *
-     * Documented: Available in cPanel 11 and later. Omitted request options retain server defaults; explicit false and
-     * zero remain explicit.
+     * Documented: Available in cPanel 11 and later.
      *
-     * Documented: This POST can connect to the specified remote SSH host; it is not a passive local inventory. Omitted
-     * port retains 22. The pinned response describes undef for some string fields without declaring nullable types; no
-     * null compatibility is inferred from that prose or the example string null.
+     * Documented: This function tests a connection to the specified remote SSH host. Omitted port retains 22. The
+     * pinned description says comment, protocol_versions and server_software are undef on a successful connection;
+     * these leaves accept null while retaining their documented non-null types.
+     *
+     * Policy: Client policy: use form POST and perform no automatic follow-up connection, retry or rollback.
+     *
+     * Policy: Client encoding policy: omit optional arguments supplied as null and preserve explicit false or zero
+     * where accepted by the parameter. This does not assert an undocumented server default.
      *
      * API-map identity: whm1:check_remote_ssh_connection#GET (wire name check_remote_ssh_connection; SSH Keys and
      * Connections).
@@ -254,13 +263,16 @@ final readonly class Authentication
      *
      * This function converts an OpenSSH private key to a PuTTY key.
      *
-     * Documented: Available in cPanel 11.32 and later. Omitted request options retain server defaults; explicit false
-     * and zero remain explicit.
+     * Documented: Available in cPanel 11.32 and later.
      *
-     * Documented: Converts a stored OpenSSH private key into private PuTTY key material returned as sensitive payload
-     * data. Omitted keep_file=1 keeps the original; explicit false deletes it. Omitted passphrase defaults to empty.
-     * file identifies a stored key and is distinct from key material. Do not transfer private keys over insecure ports.
-     * No retry or rollback is provided.
+     * Documented: Converts a stored OpenSSH private key into private PuTTY key material. Omitted keep_file=1 keeps the
+     * original; explicit false deletes it. Omitted passphrase defaults to empty. file identifies a stored key.
+     *
+     * Policy: Treat returned private key material as sensitive and do not transfer it over insecure ports. Client
+     * policy: send one request without automatic retry or rollback.
+     *
+     * Policy: Client encoding policy: omit optional arguments supplied as null and preserve explicit false or zero
+     * where accepted by the parameter. This does not assert an undocumented server default.
      *
      * API-map identity: whm1:convertopensshtoputty#GET (wire name convertopensshtoputty; SSH Keys and Connections).
      *
@@ -294,17 +306,21 @@ final readonly class Authentication
      *
      * This function function deletes an SSH key from the server.
      *
-     * Documented: Available in cPanel 11 and later. Omitted request options retain server defaults; explicit false and
-     * zero remain explicit.
+     * Documented: Available in cPanel 11 and later.
      *
-     * Documented: Only root may delete root keys. Omitted leave_authorized=1 leaves authorization in place; explicit
-     * false does not. Deletion can change access immediately and has no client retry or rollback. file is a stored key
-     * filename, not private key material.
+     * Documented: Only root may delete root keys. Omitted leave_authorized=1 leaves authorization in place after
+     * deletion; explicit false does not. file identifies a stored key file.
+     *
+     * Policy: Deletion can affect access. Client policy: send one request without automatic retry or rollback.
+     *
+     * Policy: Client encoding policy: omit optional arguments supplied as null and preserve explicit false or zero
+     * where accepted by the parameter. This does not assert an undocumented server default.
      *
      * API-map identity: whm1:deletesshkey#GET (wire name deletesshkey; SSH Keys and Connections).
      *
      * @param string $file The SSH key file's name.
-     * @param bool|null $leaveAuthorized Whether to authorize the SSH key to access the server. Null omits it.
+     * @param bool|null $leaveAuthorized Whether authorization remains after deleting the SSH key. 1 leaves
+     *     authorization in place; 0 does not. Omitting the argument retains the documented default 1. Null omits it.
      * @return DeleteSshKeyResult
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
@@ -327,11 +343,11 @@ final readonly class Authentication
      *
      * This function disables a external authentication identity provider for a specified service.
      *
-     * Documented: Available in cPanel 54 and later. Omitted request options retain server defaults; explicit false and
-     * zero remain explicit.
+     * Documented: Available in cPanel 54 and later.
      *
-     * Documented: Disables the selected external provider for one service immediately. No retry or rollback is
-     * provided.
+     * Documented: Disables the selected external provider for one service.
+     *
+     * Policy: Client policy: send one request without automatic retry or rollback.
      *
      * API-map identity: whm1:disable_authentication_provider#GET (wire name disable_authentication_provider; External
      * Authentication).
@@ -354,11 +370,13 @@ final readonly class Authentication
      *
      * This function disables any enabled identity provider modules that fail to load.
      *
-     * Documented: Available in cPanel 54 and later. Omitted request options retain server defaults; explicit false and
-     * zero remain explicit.
+     * Documented: Available in cPanel 54 and later.
      *
-     * Documented: Disables enabled provider modules that fail to load. Inspect provider_failure and per-service
-     * failures_to_disable even after envelope success. No retry or rollback is provided.
+     * Documented: Disables enabled provider modules that fail to load. The response includes provider_failure and
+     * per-service failures_to_disable.
+     *
+     * Policy: Inspect provider and service failures independently of envelope success. Client policy: send one request
+     * without automatic retry or rollback.
      *
      * API-map identity: whm1:disable_failing_authentication_providers#GET (wire name
      * disable_failing_authentication_providers; External Authentication).
@@ -385,10 +403,11 @@ final readonly class Authentication
      *
      * This function enables an external authentication identity provider for a specified service.
      *
-     * Documented: Available in cPanel 54 and later. Omitted request options retain server defaults; explicit false and
-     * zero remain explicit.
+     * Documented: Available in cPanel 54 and later.
      *
-     * Documented: Enables the selected external provider for one service immediately. No retry or rollback is provided.
+     * Documented: Enables the selected external provider for one service.
+     *
+     * Policy: Client policy: send one request without automatic retry or rollback.
      *
      * API-map identity: whm1:enable_authentication_provider#GET (wire name enable_authentication_provider; External
      * Authentication).
@@ -411,13 +430,17 @@ final readonly class Authentication
      *
      * This function generates an SSH key pair.
      *
-     * Documented: Available in cPanel 11.32 and later. Omitted request options retain server defaults; explicit false
-     * and zero remain explicit.
+     * Documented: Available in cPanel 11.32 and later.
      *
      * Documented: Omitted abort_on_existing_key=1 aborts if the name exists; explicit false continues. Algorithm
      * omission uses the system default; DSA defaults to 1024 bits and id_dsa, RSA to 4096 bits and id_rsa despite the
      * formal name default id_rsa. Omitted comment and passphrase default to empty. A fingerprint may be null.
-     * Generation changes keys immediately; no automatic retry or rollback.
+     *
+     * Policy: Key generation can affect stored keys. Client policy: send one request without automatic retry or
+     * rollback.
+     *
+     * Policy: Client encoding policy: omit optional arguments supplied as null and preserve explicit false or zero
+     * where accepted by the parameter. This does not assert an undocumented server default.
      *
      * API-map identity: whm1:generatesshkeypair#GET (wire name generatesshkeypair; SSH Keys and Connections).
      *
@@ -461,12 +484,12 @@ final readonly class Authentication
      *
      * This function lists available external authentication identity providers for all services.
      *
-     * Documented: Available in cPanel 54 and later. Omitted request options retain server defaults; explicit false and
-     * zero remain explicit.
+     * Documented: Available in cPanel 54 and later.
      *
-     * Documented: Returned provider links and documentation URLs are private payload data that may contain credentials
-     * or tokens; never log or follow them automatically. Icon data is returned without rendering. The pinned field
-     * spelling whostmgr_enabled is preserved separately from whostmgrd_link.
+     * Documented: The pinned field spelling whostmgr_enabled is preserved separately from whostmgrd_link.
+     *
+     * Policy: Treat returned provider links and documentation URLs as private payload data; do not log or follow them
+     * automatically. Icon data is returned without rendering.
      *
      * API-map identity: whm1:get_available_authentication_providers#GET (wire name
      * get_available_authentication_providers; External Authentication).
@@ -493,13 +516,15 @@ final readonly class Authentication
      *
      * This function retrieves the login URL for the cPanel Store or a cPanel Market provider.
      *
-     * Documented: Available in cPanel 62 and later. Omitted request options retain server defaults; explicit false and
-     * zero remain explicit.
+     * Documented: Available in cPanel 62 and later.
      *
-     * Documented: The pinned x-readonly=true describes a GET, but url_after_login may contain tokens and stays
-     * sensitive. The existing secret-bearing transport policy therefore sends this operation as form POST. Live POST
-     * compatibility remains unverified. The returned login URL is sensitive payload data; return it without fetching
-     * it, following redirects or logging it.
+     * Documented: The pinned operation is GET with x-readonly=true, and its url_after_login example contains a state
+     * query value. The reviewer inspected Whostmgr/API/1/Market.pm on 11.138.0.19: this operation delegates through a
+     * provider and can make an outbound call. This is source inspection; the reviewer did not invoke it.
+     *
+     * Policy: Client policy: treat redirect input as sensitive and use form POST to keep it out of the request URL.
+     * This is a conservative privacy choice, not an upstream claim that url_after_login contains tokens. Live POST
+     * compatibility remains unverified. Return the login URL without fetching it, following redirects or logging it.
      *
      * API-map identity: whm1:get_login_url#GET (wire name get_login_url; Login URL).
      *
@@ -531,11 +556,14 @@ final readonly class Authentication
      *
      * This function retrieves the configuration details for the client of an external authentication identity provider.
      *
-     * Documented: Available in cPanel 54 and later. Omitted request options retain server defaults; explicit false and
-     * zero remain explicit.
+     * Documented: Available in cPanel 54 and later.
      *
-     * Documented: The pinned x-readonly=false retains POST for this credential-bearing read. Returned client IDs,
-     * secrets and redirect URLs are sensitive payload data; never log or follow them.
+     * Documented: The pinned operation declares x-readonly=false. The reviewed source-family correction allows absent
+     * or null client_id and client_secret for unset configuration, matching the configuration-fields family; this POST
+     * response was not observed live. redirect_uris retains its documented list of strings.
+     *
+     * Policy: Client policy: keep this credential-bearing read as form POST. Treat client IDs, secrets and redirect
+     * URLs as sensitive payload data; do not log or follow them.
      *
      * API-map identity: whm1:get_provider_client_configurations#GET (wire name get_provider_client_configurations;
      * External Authentication).
@@ -567,11 +595,14 @@ final readonly class Authentication
      *
      * This function retrieves the configuration fields for a external authentication identity provider.
      *
-     * Documented: Available in cPanel 54 and later. Omitted request options retain server defaults; explicit false and
-     * zero remain explicit.
+     * Documented: Available in cPanel 54 and later.
      *
-     * Documented: Configuration values and provider identifiers are private payload data; a field value can be null
-     * while omitted values remain absent. Do not log returned configuration values.
+     * Documented: The pinned value field is optional and nullable; absence and explicit null remain distinct.
+     *
+     * Observed: The independent WHM GET review on 11.138.0.19 observed value:null for unset provider configuration
+     * fields. This observation does not establish the unexecuted client-configuration POST response.
+     *
+     * Policy: Treat configuration values and provider identifiers as private payload data; do not log returned values.
      *
      * API-map identity: whm1:get_provider_configuration_fields#GET (wire name get_provider_configuration_fields;
      * External Authentication).
@@ -604,11 +635,10 @@ final readonly class Authentication
      * This function retrieves the display configuration for the login button of an external authentication identity
      * provider.
      *
-     * Documented: Available in cPanel 58.0.12 and later. Omitted request options retain server defaults; explicit false
-     * and zero remain explicit.
+     * Documented: Available in cPanel 58.0.12 and later.
      *
-     * Documented: Returned URLs and configuration values are private payload data. The client neither follows links nor
-     * decodes or renders icons.
+     * Policy: Treat returned URLs and configuration values as private payload data. The client neither follows links
+     * nor decodes or renders icons.
      *
      * API-map identity: whm1:get_provider_display_configurations#GET (wire name get_provider_display_configurations;
      * External Authentication).
@@ -636,12 +666,13 @@ final readonly class Authentication
      *
      * This function lists all accounts that link to available external authentication identity providers.
      *
-     * Documented: Available in cPanel 54 and later. Omitted request options retain server defaults; explicit false and
-     * zero remain explicit.
+     * Documented: Available in cPanel 54 and later.
      *
-     * Documented: Returns private account-link identities. subject_unique_identifier remains the exact pinned string,
-     * including leading zeros and oversized identifiers. No numeric conversion or inference from UAPI counterparts is
-     * applied.
+     * Documented: subject_unique_identifier has the pinned string type, including leading zeros and oversized
+     * identifiers.
+     *
+     * Policy: Treat returned account-link identities as private payload data. Preserve identifiers without numeric
+     * conversion or inference from UAPI counterparts.
      *
      * API-map identity: whm1:get_users_authn_linked_accounts#GET (wire name get_users_authn_linked_accounts; External
      * Authentication).
@@ -668,12 +699,16 @@ final readonly class Authentication
      *
      * This function imports an SSH key.
      *
-     * Documented: Available in cPanel 11 and later. Omitted request options retain server defaults; explicit false and
-     * zero remain explicit.
+     * Documented: Available in cPanel 11 and later.
      *
-     * Documented: Raw key contents and passphrases are sensitive. For PPK imports passphrase is conditionally required;
-     * extraction defaults to 1 for PPK and 0 for other imports. Omitted options retain those format-dependent defaults.
-     * Import changes stored keys immediately; no retry or rollback.
+     * Documented: For PPK imports passphrase is conditionally required; extraction defaults to 1 for PPK and 0 for
+     * other imports. Omitted extraction options retain those format-dependent defaults.
+     *
+     * Policy: Raw key contents and passphrases are sensitive. Import can affect stored keys. Client policy: send one
+     * request without automatic retry or rollback.
+     *
+     * Policy: Client encoding policy: omit optional arguments supplied as null and preserve explicit false or zero
+     * where accepted by the parameter. This does not assert an undocumented server default.
      *
      * API-map identity: whm1:importsshkey#GET (wire name importsshkey; SSH Keys and Connections).
      *
@@ -708,33 +743,35 @@ final readonly class Authentication
      *
      * This function adds an External Authentication authorization link to an account.
      *
-     * Documented: Available in cPanel 56 and later. Omitted request options retain server defaults; explicit false and
-     * zero remain explicit.
+     * Documented: Available in cPanel 56 and later.
      *
-     * Documented: Adds an authorization link to the named local account immediately. Keep external identifiers as
-     * strings. No retry or rollback is provided.
+     * Documented: Adds an external authentication authorization link to the named local account. External identifiers
+     * have the pinned string type.
+     *
+     * Policy: Client argument order starts with the local username, then providerId, subjectUniqueIdentifier and
+     * preferredUsername. Client policy: send one request without automatic retry or rollback.
      *
      * API-map identity: whm1:link_user_authn_provider#GET (wire name link_user_authn_provider; External
      * Authentication).
      *
-     * @param string $preferredUsername The preferred username of the account on the identity provider.
+     * @param string $username The account's username.
      * @param string $providerId The name of the identity provider.
      * @param string $subjectUniqueIdentifier The unique identifier for the user at the identity provider.
-     * @param string $username The account's username.
+     * @param string $preferredUsername The preferred username of the account on the identity provider.
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/external-authentication/accounts-link_user_authn_provider
      */
     public function linkUserAuthnProvider(
-        string $preferredUsername,
+        string $username,
         string $providerId,
         string $subjectUniqueIdentifier,
-        string $username,
+        string $preferredUsername,
     ): void {
         ($this->run)(AuthenticationSpec::LINK_USER_AUTHN_PROVIDER, [
-            'preferredUsername' => $preferredUsername,
+            'username' => $username,
             'providerId' => $providerId,
             'subjectUniqueIdentifier' => $subjectUniqueIdentifier,
-            'username' => $username,
+            'preferredUsername' => $preferredUsername,
         ]);
     }
 
@@ -743,13 +780,17 @@ final readonly class Authentication
      *
      * This function lists the server's SSH keys.
      *
-     * Documented: Available in cPanel 11 and later. Omitted request options retain server defaults; explicit false and
-     * zero remain explicit.
+     * Documented: Available in cPanel 11 and later.
      *
-     * Documented: Only root may list root keys. The pinned x-readonly=false retains POST. Omitted private=1 and
+     * Documented: Only root may list root keys. The pinned operation declares x-readonly=false. Omitted private=1 and
      * private_texts=1 may return private key material; public_texts=0 and sync_authorized=0 are server defaults.
-     * Returned key text is sensitive payload data; never log it. sync_authorized can alter authorization state. Stored
-     * files are identifiers, not material. No retry or rollback.
+     * sync_authorized can alter authorization state. Stored file names identify keys.
+     *
+     * Policy: Client policy: use form POST and treat returned key text as sensitive payload data; never log it. Client
+     * policy: send one request without automatic retry or rollback.
+     *
+     * Policy: Client encoding policy: omit optional arguments supplied as null and preserve explicit false or zero
+     * where accepted by the parameter. This does not assert an undocumented server default.
      *
      * API-map identity: whm1:listsshkeys#GET (wire name listsshkeys; SSH Keys and Connections).
      *
@@ -791,13 +832,13 @@ final readonly class Authentication
      *
      * This function sets the values of configuration fields for an external authentication identity provider.
      *
-     * Documented: Available in cPanel 54 and later. Omitted request options retain server defaults; explicit false and
-     * zero remain explicit.
+     * Documented: Available in cPanel 54 and later.
      *
-     * Documented: configurations is the pinned string input; supply the provider-specific serialized configuration
-     * text, including JSON text when required by that provider. It is sensitive and form-encoded once; no automatic
-     * object or JSON encoding is performed. Provider settings can change login access immediately; no retry or
-     * rollback.
+     * Documented: configurations is the pinned string input for provider-specific configuration.
+     *
+     * Policy: Supply provider-specific serialized configuration text, including JSON when that provider requires it.
+     * The client treats it as sensitive and form-encodes it once, without automatic object or JSON encoding. Provider
+     * settings can affect login access. Client policy: send one request without automatic retry or rollback.
      *
      * API-map identity: whm1:set_provider_client_configurations#GET (wire name set_provider_client_configurations;
      * External Authentication).
@@ -827,21 +868,24 @@ final readonly class Authentication
      * This function sets the display configuration for the login button of an external authentication identity
      * provider.
      *
-     * Documented: Available in cPanel 54 and later. Omitted request options retain server defaults; explicit false and
-     * zero remain explicit.
+     * Documented: Available in cPanel 54 and later.
      *
-     * Documented: The pinned query-parameter description explicitly requires JSON-encoded key-value text. Supply
-     * caller-serialized JSON as configurations, form-encoded once; do not pass a PHP object. The native string|int
-     * boundary is the existing scalar representation of a content-based query parameter, not automatic object encoding;
-     * its narrower typing remains tracked under whm-api-client-8x0.1.23. Configuration JSON is sensitive. No retry or
-     * rollback.
+     * Documented: The pinned configurations query parameter requires JSON-encoded key-value text with the documented
+     * keys color, display_name, icon, icon_type, label and textcolor.
+     *
+     * Policy: Supply caller-serialized JSON, form-encoded once; do not pass a PHP object. The native string|int
+     * boundary is the existing scalar representation of a content-based query parameter and does not establish integer
+     * semantics; narrower typing is tracked under whm-api-client-8x0.1.23. Configuration JSON is sensitive. Client
+     * policy: send one request without automatic retry or rollback.
      *
      * API-map identity: whm1:set_provider_display_configurations#GET (wire name set_provider_display_configurations;
      * External Authentication).
      *
      * @param string|int $configurations Caller-serialized JSON-encoded key-value text for the display configuration.
-     *     Pass a JSON string; the existing string|int scalar boundary does not encode PHP objects. Form-encoded exactly
-     *     once.
+     *     Documented string keys: color (button background RGB color), display_name (identity provider display name),
+     *     icon (button icon data), icon_type (icon MIME type, default image/svg+xml), label (button text label),
+     *     textcolor (label RGB color). Pass a JSON string; the existing string|int scalar boundary does not encode PHP
+     *     objects. Form-encoded exactly once.
      * @param string $providerId The identity provider's key.
      * @param 'cpaneld'|'whostmgrd'|'webmaild' $serviceName The cPanel & WHM service's name.
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
@@ -865,10 +909,11 @@ final readonly class Authentication
      *
      * This function disables the Two-Factor Authentication (2FA) security policy on the server.
      *
-     * Documented: Available in cPanel 54 and later. Omitted request options retain server defaults; explicit false and
-     * zero remain explicit.
+     * Documented: Available in cPanel 54 and later.
      *
-     * Documented: Disables the server-wide 2FA security policy immediately. No retry or rollback is provided.
+     * Documented: Disables the server-wide 2FA security policy.
+     *
+     * Policy: Client policy: send one request without automatic retry or rollback.
      *
      * API-map identity: whm1:twofactorauth_disable_policy#GET (wire name twofactorauth_disable_policy; Two-Factor
      * Authentication).
@@ -886,10 +931,11 @@ final readonly class Authentication
      *
      * This function enables the Two-Factor Authentication (2FA) security policy on the server.
      *
-     * Documented: Available in cPanel 54 and later. Omitted request options retain server defaults; explicit false and
-     * zero remain explicit.
+     * Documented: Available in cPanel 54 and later.
      *
-     * Documented: Enables the server-wide 2FA security policy immediately. No retry or rollback is provided.
+     * Documented: Enables the server-wide 2FA security policy.
+     *
+     * Policy: Client policy: send one request without automatic retry or rollback.
      *
      * API-map identity: whm1:twofactorauth_enable_policy#GET (wire name twofactorauth_enable_policy; Two-Factor
      * Authentication).
@@ -909,12 +955,12 @@ final readonly class Authentication
      * the secret that this function returns and a valid verification token with WHM API 1's
      * `twofactorauth_set_tfa_config` function to configure Two-Factor Authentication (2FA) on an account.
      *
-     * Documented: Available in cPanel 54 and later. Omitted request options retain server defaults; explicit false and
-     * zero remain explicit.
+     * Documented: Available in cPanel 54 and later.
      *
-     * Documented: Returns a fresh random secret and an OTP authentication URL for subsequent configuration. Both are
-     * sensitive payload data; never log them or fetch the URL. Keep this secret-bearing read as POST. The client
-     * performs no automatic follow-up configuration or retry.
+     * Documented: Returns a fresh random secret and an OTP authentication URL for subsequent configuration.
+     *
+     * Policy: Treat both results as sensitive payload data; never log them or fetch the URL. Client policy keeps this
+     * secret-bearing read as POST, without automatic follow-up configuration or retry.
      *
      * API-map identity: whm1:twofactorauth_generate_tfa_config#GET (wire name twofactorauth_generate_tfa_config;
      * Two-Factor Authentication).
@@ -941,8 +987,7 @@ final readonly class Authentication
      *
      * This function returns the currently configured issuer. The issuer appears within the authentication app.
      *
-     * Documented: Available in cPanel 54 and later. Omitted request options retain server defaults; explicit false and
-     * zero remain explicit.
+     * Documented: Available in cPanel 54 and later.
      *
      * Documented: Returns the issuer for the authenticated user and the system default. The system-wide default is the
      * hostname if root has not configured an issuer.
@@ -970,12 +1015,15 @@ final readonly class Authentication
      * This function returns the Two-Factor Authentication (2FA) configuration for a cPanel account, its email accounts,
      * and its team user accounts.
      *
-     * Documented: Available in cPanel 118 and later. Omitted request options retain server defaults; explicit false and
-     * zero remain explicit.
+     * Documented: Available in cPanel 118 and later.
      *
-     * Documented: Returns private 2FA secrets for the cPanel account and its email and team accounts. Usernames and
-     * account names remain dynamic keys. Preserve optional primary_account, email and team branches and their optional
-     * secrets. Never log returned data. The pinned x-readonly=false retains POST.
+     * Documented: Returns 2FA configuration for the cPanel account and its email and team accounts. Usernames and
+     * account names are dynamic keys. primary_account is conditional on 2FA being enabled; the reviewed source
+     * correction permits it to be absent or null. Its object fields and the email and team branches retain their
+     * existing contracts. This POST response was not observed live. The pinned operation declares x-readonly=false.
+     *
+     * Policy: Client policy: keep this secret-bearing read as POST and treat returned configuration as private payload
+     * data; never log it.
      *
      * API-map identity: whm1:twofactorauth_get_tfa_config_for_user#GET (wire name
      * twofactorauth_get_tfa_config_for_user; Two-Factor Authentication).
@@ -1004,11 +1052,15 @@ final readonly class Authentication
      * This function returns a list of user-controlled accounts and whether the accounts have Two-Factor Authentication
      * (2FA) enabled.
      *
-     * Documented: Available in cPanel 54 and later. Omitted request options retain server defaults; explicit false and
-     * zero remain explicit.
+     * Documented: Available in cPanel 54 and later.
      *
-     * Documented: Omitting user requests all controlled accounts. A supplied empty user remains explicit. Returned
-     * usernames remain map keys; is_enabled stays an integer 0/1 flag. Account inventory is private payload data.
+     * Documented: Omitting user requests all controlled accounts. Returned usernames are map keys; is_enabled is an
+     * integer 0/1 flag.
+     *
+     * Policy: A supplied empty user remains explicit. Treat account inventory as private payload data.
+     *
+     * Policy: Client encoding policy: omit optional arguments supplied as null and preserve explicit false or zero
+     * where accepted by the parameter. This does not assert an undocumented server default.
      *
      * API-map identity: whm1:twofactorauth_get_user_configs#GET (wire name twofactorauth_get_user_configs; Two-Factor
      * Authentication).
@@ -1036,11 +1088,12 @@ final readonly class Authentication
      *
      * This function displays the Two-Factor Authentication (2FA) policy status on the server.
      *
-     * Documented: Available in cPanel 54 and later. Omitted request options retain server defaults; explicit false and
-     * zero remain explicit.
+     * Documented: Available in cPanel 54 and later.
      *
-     * Documented: A payload is_enabled=0 is a successful disabled state when the WHM envelope result is 1; envelope
-     * failure remains an API error.
+     * Documented: A payload is_enabled=0 indicates disabled policy independently of the WHM envelope result.
+     *
+     * Policy: Client outcome policy: envelope failure remains an API error; payload is_enabled=0 is accepted when the
+     * envelope succeeds.
      *
      * API-map identity: whm1:twofactorauth_policy_status#GET (wire name twofactorauth_policy_status; Two-Factor
      * Authentication).
@@ -1067,14 +1120,14 @@ final readonly class Authentication
      *
      * This function removes the Two-Factor Authentication (2FA) settings for one or more specified user accounts.
      *
-     * Documented: Available in cPanel 54 and later. Omitted request options retain server defaults; explicit false and
-     * zero remain explicit.
+     * Documented: Available in cPanel 54 and later.
      *
-     * Documented: Supports the documented scalar user form. The pinned multiple-user example starts user-1,user-2; the
-     * existing numbered encoder starts user,user-1, so that indexed variant remains unsupported under
-     * whm-api-client-8x0.1.21 rather than inferring equivalence. Removal requires user setup again. users_modified
-     * includes accounts without prior 2FA configuration; it does not prove an actual removal. Inspect failed
-     * independently of envelope success. No retry or rollback.
+     * Documented: The pinned multiple-user example starts user-1,user-2. Removal requires user setup again.
+     * users_modified includes accounts without prior 2FA configuration, so it does not prove an actual removal.
+     *
+     * Policy: Client policy supports the documented scalar user form. The existing numbered encoder starts user,user-1,
+     * so the different indexed variant remains unsupported under whm-api-client-8x0.1.21. Inspect failed independently
+     * of envelope success. Client policy: send one request without automatic retry or rollback.
      *
      * API-map identity: whm1:twofactorauth_remove_user_config#GET (wire name twofactorauth_remove_user_config;
      * Two-Factor Authentication).
@@ -1103,11 +1156,11 @@ final readonly class Authentication
      * This function sets the `issuer` value that the system uses to generate the `secret` and `otpurls` values for
      * Two-Factor Authentication on your accounts.
      *
-     * Documented: Available in cPanel 54 and later. Omitted request options retain server defaults; explicit false and
-     * zero remain explicit.
+     * Documented: Available in cPanel 54 and later.
      *
-     * Documented: Changes the issuer used to generate 2FA secrets and OTP URLs. No automatic retry or rollback is
-     * provided.
+     * Documented: Changes the issuer used to generate 2FA secrets and OTP URLs.
+     *
+     * Policy: Client policy: send one request without automatic retry or rollback.
      *
      * API-map identity: whm1:twofactorauth_set_issuer#GET (wire name twofactorauth_set_issuer; Two-Factor
      * Authentication).
@@ -1128,12 +1181,15 @@ final readonly class Authentication
      * reseller account. You can generate a random secret and an OTP authentication URL with WHM API 1's
      * `twofactorauth_generate_tfa_configorauth_generate_tfa_config` function.
      *
-     * Documented: Available in cPanel 54 and later. Omitted request options retain server defaults; explicit false and
-     * zero remain explicit.
+     * Documented: Available in cPanel 54 and later.
      *
-     * Documented: Sets the root or reseller account 2FA secret and token. Both arguments are sensitive; preserve
-     * leading zero token digits as a string. Inspect the returned integer success flag independently of the WHM
-     * outcome. Changes access immediately; no retry or rollback.
+     * Documented: Sets the root or reseller account 2FA secret and token. Use twoFactorAuthGenerateTfaConfig() to
+     * obtain a random secret and OTP authentication URL; the pinned description contains a duplicated function-name
+     * typo.
+     *
+     * Policy: Both arguments are sensitive; preserve leading zero token digits as a string. Inspect the returned
+     * integer success flag independently of the WHM outcome. Client policy: send one request without automatic retry or
+     * rollback.
      *
      * API-map identity: whm1:twofactorauth_set_tfa_config#GET (wire name twofactorauth_set_tfa_config; Two-Factor
      * Authentication).
@@ -1169,27 +1225,30 @@ final readonly class Authentication
      *
      * This function unlinks a cPanel account from an external authentication identity provider.
      *
-     * Documented: Available in cPanel 54 and later. Omitted request options retain server defaults; explicit false and
-     * zero remain explicit.
+     * Documented: Available in cPanel 54 and later.
      *
-     * Documented: Removes an external authentication link immediately. Identifiers remain strings, with no numeric
-     * conversion. No retry or rollback is provided.
+     * Documented: Removes an external authentication link from a local account. External identifiers have the pinned
+     * string type.
+     *
+     * Policy: Client argument order starts with the local username, then providerId and subjectUniqueIdentifier.
+     * Preserve identifiers without numeric conversion. Client policy: send one request without automatic retry or
+     * rollback.
      *
      * API-map identity: whm1:unlink_user_authn_provider#GET (wire name unlink_user_authn_provider; Authentication
      * Providers).
      *
+     * @param string $username The account's username.
      * @param string $providerId The system's internal key for the identity provider.
      * @param string $subjectUniqueIdentifier The unique identifier for the user at the identity provider.
-     * @param string $username The account's username.
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/authentication-providers/accounts-unlink_user_authn_provider
      */
-    public function unlinkUserAuthnProvider(string $providerId, string $subjectUniqueIdentifier, string $username): void
+    public function unlinkUserAuthnProvider(string $username, string $providerId, string $subjectUniqueIdentifier): void
     {
         ($this->run)(AuthenticationSpec::UNLINK_USER_AUTHN_PROVIDER, [
+            'username' => $username,
             'providerId' => $providerId,
             'subjectUniqueIdentifier' => $subjectUniqueIdentifier,
-            'username' => $username,
         ]);
     }
 }

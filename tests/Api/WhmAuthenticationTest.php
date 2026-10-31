@@ -32,6 +32,7 @@ final class WhmAuthenticationTest extends TestCase
 {
     /** @param AuthCall $call */
     #[DataProvider('operations')]
+    #[DataProvider('reviewedNullableResponses')]
     public function testWireRequestsAndPayloads(
         string $function,
         string $method,
@@ -60,6 +61,17 @@ final class WhmAuthenticationTest extends TestCase
             static fn (Authentication $a): mixed => $a->authorizeSshKey(false, 'id.pub', 'key +&=%20', 'no-pty'),
             'authorize=0&file=id.pub&text=key%20%2B%26%3D%2520&options=no-pty',
             '{"authorized":0,"file":"id.pub","unknown":true}', ['authorized' => 0, 'file' => 'id.pub']];
+        yield 'authorize existing file without text' => ['authorizesshkey', 'POST',
+            static fn (Authentication $a): mixed => $a->authorizeSshKey(true, 'id.pub'),
+            'authorize=1&file=id.pub', '{"authorized":1,"file":"id.pub"}', ['authorized' => 1, 'file' => 'id.pub']];
+        yield 'authorize null text omitted while options remain' => ['authorizesshkey', 'POST',
+            static fn (Authentication $a): mixed => $a->authorizeSshKey(false, 'id.pub', null, 'no-pty'),
+            'authorize=0&file=id.pub&options=no-pty', '{"authorized":0,"file":"id.pub"}',
+            ['authorized' => 0, 'file' => 'id.pub']];
+        yield 'authorize explicit empty text remains present' => ['authorizesshkey', 'POST',
+            static fn (Authentication $a): mixed => $a->authorizeSshKey(true, 'id.pub', ''),
+            'authorize=1&file=id.pub&text=', '{"authorized":1,"file":"id.pub"}',
+            ['authorized' => 1, 'file' => 'id.pub']];
         yield 'remote ssh check is POST' => ['check_remote_ssh_connection', 'POST',
             static fn (Authentication $a): mixed => $a->checkRemoteSshConnection('remote.test', 2222),
             'host=remote.test&port=2222',
@@ -67,6 +79,11 @@ final class WhmAuthenticationTest extends TestCase
                 . '"server_software":"fixture"}',
             ['comment' => 'fixture', 'protocol_versions' => ['2.0', ''], 'received' => 'SSH-fixture',
                 'server_software' => 'fixture']];
+        yield 'remote ssh documented successful connection has null leaves' => ['check_remote_ssh_connection', 'POST',
+            static fn (Authentication $a): mixed => $a->checkRemoteSshConnection('remote.test'),
+            'host=remote.test',
+            '{"comment":null,"protocol_versions":null,"received":"SSH-fixture","server_software":null}',
+            ['comment' => null, 'protocol_versions' => null, 'received' => 'SSH-fixture', 'server_software' => null]];
         yield 'conversion may remove original file' => ['convertopensshtoputty', 'POST',
             static fn (Authentication $a): mixed => $a->convertOpenSshToPutty('id', false, 'pass +&'),
             'file=id&keep_file=0&passphrase=pass%20%2B%26', '{"key":"fixture-private-key"}',
@@ -129,6 +146,11 @@ final class WhmAuthenticationTest extends TestCase
                 . '"redirect_uris":["https://fixture.test/",""]}}',
             ['client_configurations' => ['client_id' => 'fake-id', 'client_secret' => 'fake-secret',
                 'redirect_uris' => ['https://fixture.test/', '']]]];
+        yield 'client configuration unset fields retain redirect list' => ['get_provider_client_configurations', 'POST',
+            static fn (Authentication $a): mixed => $a->getProviderClientConfigurations('fixture', 'whostmgrd'),
+            'provider_id=fixture&service_name=whostmgrd',
+            '{"client_configurations":{"client_id":null,"client_secret":null,"redirect_uris":[]}}',
+            ['client_configurations' => ['client_id' => null, 'client_secret' => null, 'redirect_uris' => []]]];
         yield 'provider fields nullable value' => ['get_provider_configuration_fields', 'GET',
             static fn (Authentication $a): mixed => $a->getProviderConfigurationFields('fixture', 'webmaild'),
             'provider_id=fixture&service_name=webmaild',
@@ -161,10 +183,10 @@ final class WhmAuthenticationTest extends TestCase
             null, null];
         yield 'link identity' => ['link_user_authn_provider', 'POST',
             static function (Authentication $a): mixed {
-                $a->linkUserAuthnProvider('remote', 'fixture', '00123456789012345678901', 'alice');
+                $a->linkUserAuthnProvider('alice', 'fixture', '00123456789012345678901', 'remote');
                 return null;
-            }, 'preferred_username=remote&provider_id=fixture&subject_unique_identifier=00123456789012345678901'
-                . '&username=alice', null, null];
+            }, 'username=alice&provider_id=fixture&subject_unique_identifier=00123456789012345678901'
+                . '&preferred_username=remote', null, null];
         yield 'list root keys remains POST' => ['listsshkeys', 'POST',
             static fn (Authentication $a): mixed => $a->listSshKeys(
                 files: 'id +&',
@@ -215,10 +237,21 @@ final class WhmAuthenticationTest extends TestCase
             ['alice' => ['email' => ['mail@fixture.test' => ['secret' => 'FAKE'], 'empty@fixture.test' => []],
                 'primary_account' => ['secret' => 'FAKE'], 'team' => ['team@alice' => ['secret' => 'FAKE']]],
                 'bob' => []]];
+        yield 'TFA primary account null empty and missing remain distinct' => ['twofactorauth_get_tfa_config_for_user',
+            'POST', static fn (Authentication $a): mixed => $a->twoFactorAuthGetTfaConfigForUser('alice'), 'user=alice',
+            '{"alice":{"email":{"mail@fixture.test":{"secret":"FAKE"}},"primary_account":null,"team":{}},'
+                . '"bob":{},"carol":{"primary_account":{}},"dave":{"primary_account":{"secret":"FAKE"}}}',
+            ['alice' => ['email' => ['mail@fixture.test' => ['secret' => 'FAKE']], 'primary_account' => null,
+                'team' => []], 'bob' => [], 'carol' => ['primary_account' => []],
+                'dave' => ['primary_account' => ['secret' => 'FAKE']]]];
         yield 'all users TFA flags' => ['twofactorauth_get_user_configs', 'GET',
             static fn (Authentication $a): mixed => $a->twoFactorAuthGetUserConfigs(), '',
             '{"alice":{"is_enabled":0,"primary_domain":"fixture.test"},"bob":{}}',
             ['alice' => ['is_enabled' => 0, 'primary_domain' => 'fixture.test'], 'bob' => []]];
+        yield 'named user TFA filter' => ['twofactorauth_get_user_configs', 'GET',
+            static fn (Authentication $a): mixed => $a->twoFactorAuthGetUserConfigs('alice'), 'user=alice',
+            '{"alice":{"is_enabled":0,"primary_domain":"fixture.test"}}',
+            ['alice' => ['is_enabled' => 0, 'primary_domain' => 'fixture.test']]];
         yield 'policy status zero is successful' => ['twofactorauth_policy_status', 'GET',
             static fn (Authentication $a): mixed => $a->twoFactorAuthPolicyStatus(), '',
             '{"is_enabled":0}', ['is_enabled' => 0]];
@@ -236,9 +269,9 @@ final class WhmAuthenticationTest extends TestCase
             'secret=FAKE%20%2B%26&tfa_token=001234', '{"success":0}', ['success' => 0]];
         yield 'unlink identity' => ['unlink_user_authn_provider', 'POST',
             static function (Authentication $a): mixed {
-                $a->unlinkUserAuthnProvider('fixture', '00123456789012345678901', 'alice');
+                $a->unlinkUserAuthnProvider('alice', 'fixture', '00123456789012345678901');
                 return null;
-            }, 'provider_id=fixture&subject_unique_identifier=00123456789012345678901&username=alice', null, null];
+            }, 'username=alice&provider_id=fixture&subject_unique_identifier=00123456789012345678901', null, null];
     }
 
     /** @return iterable<string, array{AuthCall, string, string, string}> */
@@ -259,8 +292,12 @@ final class WhmAuthenticationTest extends TestCase
             'generatesshkeypair', 'POST', ''];
         yield 'root key inventory defaults' => [static fn (Authentication $a): mixed => $a->listSshKeys(),
             'listsshkeys', 'POST', ''];
-        yield 'one user TFA filter' => [static fn (Authentication $a): mixed => $a->twoFactorAuthGetUserConfigs(''),
+        yield 'explicit empty TFA filter' => [
+            static fn (Authentication $a): mixed => $a->twoFactorAuthGetUserConfigs(''),
             'twofactorauth_get_user_configs', 'GET', 'user='];
+        yield 'named file authorization skips optional text' => [
+            static fn (Authentication $a): mixed => $a->authorizeSshKey(true, 'id.pub', options: 'no-pty'),
+            'authorizesshkey', 'POST', 'authorize=1&file=id.pub&options=no-pty'];
     }
 
     /** @param AuthCall $call */
@@ -300,6 +337,73 @@ final class WhmAuthenticationTest extends TestCase
         );
         self::assertNotContains('accesshash', $methods);
         self::assertNotContains('twoFactorAuthSetTfaConfigForUser', $methods);
+    }
+
+    public function testAuthorizationTextIsOptionalAndStillSensitive(): void
+    {
+        $method = new ReflectionMethod(Authentication::class, 'authorizeSshKey');
+        self::assertSame(2, $method->getNumberOfRequiredParameters());
+        $text = $method->getParameters()[2];
+        self::assertSame('text', $text->getName());
+        self::assertTrue($text->isOptional());
+        self::assertTrue($text->allowsNull());
+        self::assertNull($text->getDefaultValue());
+        self::assertCount(1, $text->getAttributes(SensitiveParameter::class));
+    }
+
+    public function testExternalIdentitySignaturesKeepTheLocalUsernameFirst(): void
+    {
+        foreach (
+            [
+            'linkUserAuthnProvider' => ['username', 'providerId', 'subjectUniqueIdentifier', 'preferredUsername'],
+            'unlinkUserAuthnProvider' => ['username', 'providerId', 'subjectUniqueIdentifier'],
+            ] as $method => $expected
+        ) {
+            self::assertSame($expected, array_map(
+                static fn ($parameter): string => $parameter->getName(),
+                (new ReflectionMethod(Authentication::class, $method))->getParameters(),
+            ));
+        }
+    }
+
+    /** @return iterable<string, Operation> */
+    public static function reviewedNullableResponses(): iterable
+    {
+        foreach (['comment', 'protocol_versions', 'server_software'] as $field) {
+            yield 'remote null ' . $field => ['check_remote_ssh_connection', 'POST',
+                static fn (Authentication $a): mixed => $a->checkRemoteSshConnection('remote.test'),
+                'host=remote.test', '{"' . $field . '":null}', [$field => null]];
+        }
+        yield 'remote omitted optional leaves preserves banner' => ['check_remote_ssh_connection', 'POST',
+            static fn (Authentication $a): mixed => $a->checkRemoteSshConnection('remote.test'), 'host=remote.test',
+            '{"received":"SSH-fixture"}', ['received' => 'SSH-fixture']];
+        yield 'remote empty strings and empty version list' => ['check_remote_ssh_connection', 'POST',
+            static fn (Authentication $a): mixed => $a->checkRemoteSshConnection('remote.test'), 'host=remote.test',
+            '{"comment":"","protocol_versions":[],"received":"","server_software":""}',
+            ['comment' => '', 'protocol_versions' => [], 'received' => '', 'server_software' => '']];
+        foreach (['client_id', 'client_secret'] as $field) {
+            yield 'client null ' . $field => ['get_provider_client_configurations', 'POST',
+                static fn (Authentication $a): mixed => $a->getProviderClientConfigurations('fixture', 'cpaneld'),
+                'provider_id=fixture&service_name=cpaneld', '{"client_configurations":{"' . $field . '":null}}',
+                ['client_configurations' => [$field => null]]];
+        }
+        yield 'client fields omitted' => ['get_provider_client_configurations', 'POST',
+            static fn (Authentication $a): mixed => $a->getProviderClientConfigurations('fixture', 'cpaneld'),
+            'provider_id=fixture&service_name=cpaneld', '{"client_configurations":{}}',
+            ['client_configurations' => []]];
+        yield 'client empty strings remain distinct from null' => ['get_provider_client_configurations', 'POST',
+            static fn (Authentication $a): mixed => $a->getProviderClientConfigurations('fixture', 'cpaneld'),
+            'provider_id=fixture&service_name=cpaneld',
+            '{"client_configurations":{"client_id":"","client_secret":""}}',
+            ['client_configurations' => ['client_id' => '', 'client_secret' => '']]];
+        yield 'provider values null omitted and empty preserve known row fields' => [
+            'get_provider_configuration_fields', 'GET',
+            static fn (Authentication $a): mixed => $a->getProviderConfigurationFields('fixture', 'cpaneld'),
+            'provider_id=fixture&service_name=cpaneld',
+            '{"configuration_fields":[{"description":"Secret","display_order":1,"field_id":"client_secret",'
+                . '"label":"Client Secret","value":null},{"field_id":"client_id"},{"value":""}]}',
+            ['configuration_fields' => [['description' => 'Secret', 'display_order' => 1, 'field_id' => 'client_secret',
+                'label' => 'Client Secret', 'value' => null], ['field_id' => 'client_id'], ['value' => '']]]];
     }
 
     /** @return iterable<string, array{AuthCall, string}> */
@@ -354,6 +458,58 @@ final class WhmAuthenticationTest extends TestCase
         yield 'set TFA success bool' => [
             static fn (Authentication $a): mixed => $a->twoFactorAuthSetTfaConfig('FAKE', '000000'),
             '{"success":false}'];
+        foreach (['comment', 'server_software'] as $field) {
+            foreach (['0', 'true', 'false', '1.5', '[]', '{}'] as $bad) {
+                yield 'remote strict ' . $field . ' ' . $bad => [
+                    static fn (Authentication $a): mixed => $a->checkRemoteSshConnection('remote.test'),
+                    '{"' . $field . '":' . $bad . '}'];
+            }
+        }
+        foreach (['0', 'false', '"2.0"', '{}', '[null]', '[1]', '[{}]'] as $bad) {
+            yield 'remote strict protocol list ' . $bad => [
+                static fn (Authentication $a): mixed => $a->checkRemoteSshConnection('remote.test'),
+                '{"protocol_versions":' . $bad . '}'];
+        }
+        foreach (['null', '0', 'false', '[]', '{}'] as $bad) {
+            yield 'remote received remains nonnullable string ' . $bad => [
+                static fn (Authentication $a): mixed => $a->checkRemoteSshConnection('remote.test'),
+                '{"received":' . $bad . '}'];
+        }
+        foreach (['client_id', 'client_secret'] as $field) {
+            foreach (['0', 'true', 'false', '1.5', '[]', '{}'] as $bad) {
+                yield 'client strict ' . $field . ' ' . $bad => [
+                    static fn (Authentication $a): mixed => $a->getProviderClientConfigurations('fixture', 'cpaneld'),
+                    '{"client_configurations":{"' . $field . '":' . $bad . '}}'];
+            }
+        }
+        foreach (['null', 'false', '"uri"', '{}', '[null]', '[1]'] as $bad) {
+            yield 'client redirect stays strict ' . $bad => [
+                static fn (Authentication $a): mixed => $a->getProviderClientConfigurations('fixture', 'cpaneld'),
+                '{"client_configurations":{"redirect_uris":' . $bad . '}}'];
+        }
+        yield 'client configuration container remains nonnullable' => [
+            static fn (Authentication $a): mixed => $a->getProviderClientConfigurations('fixture', 'cpaneld'),
+            '{"client_configurations":null}'];
+        foreach (['0', 'true', '1.5', '[]', '{}'] as $bad) {
+            yield 'provider value remains string or null ' . $bad => [
+                static fn (Authentication $a): mixed => $a->getProviderConfigurationFields('fixture', 'cpaneld'),
+                '{"configuration_fields":[{"value":' . $bad . '}]}'];
+        }
+        foreach (['0', 'false', '"secret"', '[{}]'] as $bad) {
+            yield 'primary account remains object or null ' . $bad => [
+                static fn (Authentication $a): mixed => $a->twoFactorAuthGetTfaConfigForUser('alice'),
+                '{"alice":{"primary_account":' . $bad . '}}'];
+        }
+        foreach (['null', '0', 'false'] as $bad) {
+            yield 'primary secret remains nonnullable string ' . $bad => [
+                static fn (Authentication $a): mixed => $a->twoFactorAuthGetTfaConfigForUser('alice'),
+                '{"alice":{"primary_account":{"secret":' . $bad . '}}}'];
+        }
+        foreach (['email', 'team'] as $field) {
+            yield 'TFA sibling map remains nonnullable ' . $field => [
+                static fn (Authentication $a): mixed => $a->twoFactorAuthGetTfaConfigForUser('alice'),
+                '{"alice":{"' . $field . '":null}}'];
+        }
     }
 
     /** @param AuthCall $call */

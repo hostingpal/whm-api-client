@@ -135,7 +135,10 @@ Operation entries (all keys optional):
 - `notes`: docblock lines, each `{"kind", "text"}`. Kind `documented` restates
   the pinned documentation and renders as "Documented:"; kind `observed` records
   runtime behaviour, renders as "Observed:" and needs live operation-level
-  evidence. `probe` is stored, not read by the generator.
+  evidence. Kind `policy` renders as "Policy:" for client transport, sensitivity,
+  encoding or other client decisions, without claiming upstream or live evidence.
+  A policy note does not waive live evidence required by a separate observed note.
+  `probe` is stored, not read by the generator.
 - `response`: corrections keyed by payload path. A path is dot-separated field
   names; `[]` steps into list items and `{}` into map values, as in `acct`,
   `acct[]`, `data{}` or `acct[].uid`; the empty path is invalid. A backslash escapes

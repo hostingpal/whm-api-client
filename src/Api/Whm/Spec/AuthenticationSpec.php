@@ -43,10 +43,10 @@ final class AuthenticationSpec
         'returns' => [
             'type' => 'object',
             'fields' => [
-                'comment' => ['type' => 'string'],
-                'protocol_versions' => ['type' => 'list', 'items' => ['type' => 'string']],
+                'comment' => ['type' => 'string', 'nullable' => true],
+                'protocol_versions' => ['type' => 'list', 'nullable' => true, 'items' => ['type' => 'string']],
                 'received' => ['type' => 'string'],
-                'server_software' => ['type' => 'string'],
+                'server_software' => ['type' => 'string', 'nullable' => true],
             ],
         ],
     ];
@@ -227,8 +227,8 @@ final class AuthenticationSpec
                 'client_configurations' => [
                     'type' => 'object',
                     'fields' => [
-                        'client_id' => ['type' => 'string'],
-                        'client_secret' => ['type' => 'string'],
+                        'client_id' => ['type' => 'string', 'nullable' => true],
+                        'client_secret' => ['type' => 'string', 'nullable' => true],
                         'redirect_uris' => ['type' => 'list', 'items' => ['type' => 'string']],
                     ],
                 ],
@@ -341,10 +341,10 @@ final class AuthenticationSpec
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [
-            'preferredUsername' => ['name' => 'preferred_username', 'encoding' => 'scalar'],
+            'username' => ['name' => 'username', 'encoding' => 'scalar'],
             'providerId' => ['name' => 'provider_id', 'encoding' => 'scalar'],
             'subjectUniqueIdentifier' => ['name' => 'subject_unique_identifier', 'encoding' => 'scalar'],
-            'username' => ['name' => 'username', 'encoding' => 'scalar'],
+            'preferredUsername' => ['name' => 'preferred_username', 'encoding' => 'scalar'],
         ],
         'returns' => null,
     ];
@@ -474,6 +474,7 @@ final class AuthenticationSpec
                     ],
                     'primary_account' => [
                         'type' => 'object',
+                        'nullable' => true,
                         'fields' => [
                             'secret' => ['type' => 'string'],
                         ],
@@ -571,9 +572,9 @@ final class AuthenticationSpec
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [
+            'username' => ['name' => 'username', 'encoding' => 'scalar'],
             'providerId' => ['name' => 'provider_id', 'encoding' => 'scalar'],
             'subjectUniqueIdentifier' => ['name' => 'subject_unique_identifier', 'encoding' => 'scalar'],
-            'username' => ['name' => 'username', 'encoding' => 'scalar'],
         ],
         'returns' => null,
     ];

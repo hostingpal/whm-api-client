@@ -35,7 +35,7 @@
     "note": {
       "type": "object",
       "properties": {
-        "kind": {"enum": ["documented", "observed"]},
+        "kind": {"enum": ["documented", "observed", "policy"]},
         "text": {"type": "string", "minLength": 1}
       },
       "required": ["kind", "text"],
