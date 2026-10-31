@@ -54,6 +54,21 @@ final class SensitiveTraceTest extends TestCase
 
     private const STRING_TOTP = '029817';
 
+    private const BUILDER_SECRETS = [
+        'private+&=%',
+        'cHJvbXB0+&=%',
+        'https://panel.test/route#x',
+        'https://user:pass@builder.test/archive+&.zip',
+        'owner+other@example.test',
+        'owner@example.test',
+        'https://panel.test/cpsess123/index.html#x',
+        'Example & Co',
+        '{"Attribute1":9,"text":"+&=%"}',
+        'a note',
+        '000-123',
+        '1 Main St',
+    ];
+
     private string|false $ignoreArgs = false;
 
     protected function setUp(): void
@@ -116,6 +131,102 @@ final class SensitiveTraceTest extends TestCase
         } catch (RuntimeException $exception) {
             $seen = [];
             self::assertTrue(self::contains($exception->getTrace(), $seen));
+        }
+    }
+
+    #[DataProvider('builderContactControls')]
+    public function testSearchDetectsEveryCreateWebsiteContactValue(string $secret): void
+    {
+        $leak = static function (string $value): never {
+            throw new RuntimeException('Control failure.');
+        };
+        try {
+            $leak($secret);
+        } catch (RuntimeException $exception) {
+            $seen = [];
+            self::assertSame([$secret], $exception->getTrace()[0]['args'] ?? []);
+            self::assertTrue(self::contains($exception->getTrace()[0], $seen));
+        }
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function builderContactControls(): iterable
+    {
+        yield 'company' => ['Example & Co'];
+        yield 'street' => ['1 Main St'];
+        yield 'phone' => ['000-123'];
+        yield 'note' => ['a note'];
+        yield 'metadata' => ['{"Attribute1":9,"text":"+&=%"}'];
+    }
+
+    /** @return iterable<string, array{string, string, string, string}> */
+    public static function builderFailures(): iterable
+    {
+        foreach (['direct', 'bare', 'bridged'] as $route) {
+            foreach (
+                ['Nova' => ['add_api_token', 'ensure_account', 'get_sso_link', 'publish'],
+                'Sitejet' => ['add_api_token', 'create_website', 'get_sso_link']] as $group => $functions
+            ) {
+                foreach ($functions as $function) {
+                    foreach (['api', 'http', 'transport', 'invalid', 'payload'] as $failure) {
+                        yield "$route $group $function $failure" => [$route, $group, $function, $failure];
+                    }
+                }
+            }
+        }
+    }
+
+    #[DataProvider('builderFailures')]
+    public function testBuilderFailurePipelinesKeepReviewedSensitiveValuesOutOfTraces(
+        string $route,
+        string $group,
+        string $function,
+        string $failure,
+    ): void {
+        [$client, $http] = self::client($route !== 'bridged');
+        if ($failure === 'transport') {
+            $http->addException(self::networkFailure());
+        } elseif ($failure === 'http') {
+            $http->addResponse(new Response(503, [], '{}'));
+        } elseif ($failure === 'invalid') {
+            $http->addResponse(new Response(200, [], 'invalid json'));
+        } else {
+            $result = '{"status":' . ($failure === 'api' ? '0' : '1') . ',"data":false}';
+            $body = match ($route) {
+                'direct' => '{"result":' . $result . '}',
+                'bare' => $result,
+                default => '{"metadata":{"result":1},"data":{"uapi":' . $result . '}}',
+            };
+            $http->addResponse(new Response(200, [], $body));
+        }
+        [$method, $arguments] = $group === 'Nova'
+            ? UapiNovaTest::fixture($function) : UapiSitejetTest::fixture($function);
+        $account = $client->uapi($route === 'bridged' ? 'npr' : null);
+        $builder = $group === 'Nova' ? $account->nova() : $account->sitejet();
+        try {
+            $builder->$method(...$arguments);
+            self::fail('Expected builder failure.');
+        } catch (ApiException $exception) {
+            $expected = match ($failure) {
+                'api' => ApiErrorException::class,
+                'http' => HttpException::class,
+                'transport' => TransportException::class,
+                'payload' => PayloadMismatchException::class,
+                default => InvalidResponseException::class,
+            };
+            self::assertInstanceOf($expected, $exception);
+            self::assertSecretAbsent($exception);
+            self::assertCount(1, $http->getRequests());
+            if ($exception instanceof PayloadMismatchException) {
+                self::assertTrue($exception->outcomeConfirmed);
+                self::assertFalse($exception->payload);
+                self::assertSame($account->responseMeta(), $exception->metadata);
+            }
+        }
+        $request = $http->getLastRequest();
+        self::assertInstanceOf(RequestInterface::class, $request);
+        foreach (self::BUILDER_SECRETS as $secret) {
+            self::assertStringNotContainsString($secret, (string) $request->getUri());
         }
     }
 
@@ -1044,7 +1155,7 @@ final class SensitiveTraceTest extends TestCase
                 self::contains($current->getTrace(), $seen),
                 'A trace argument of ' . $current::class . ' contains the secret.',
             );
-            foreach ([self::SECRET, (string) self::TOTP, self::STRING_TOTP] as $secret) {
+            foreach ([self::SECRET, (string) self::TOTP, self::STRING_TOTP, ...self::BUILDER_SECRETS] as $secret) {
                 self::assertStringNotContainsString($secret, $current->getTraceAsString());
                 self::assertStringNotContainsString($secret, $current->getMessage());
             }
@@ -1069,9 +1180,12 @@ final class SensitiveTraceTest extends TestCase
         }
 
         if (is_string($value)) {
-            return str_contains($value, self::SECRET)
-                || str_contains($value, (string) self::TOTP)
-                || str_contains($value, self::STRING_TOTP);
+            foreach ([self::SECRET, (string) self::TOTP, self::STRING_TOTP, ...self::BUILDER_SECRETS] as $secret) {
+                if (str_contains($value, $secret)) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         if ($value instanceof SensitiveParameterValue || $value instanceof MockClient) {

@@ -93,6 +93,8 @@ trait UapiGroups
 
     private ?Notifications $notificationsGroup = null;
 
+    private ?Nova $novaGroup = null;
+
     private ?Park $parkGroup = null;
 
     private ?PassengerApps $passengerAppsGroup = null;
@@ -108,6 +110,8 @@ trait UapiGroups
     private ?Restore $restoreGroup = null;
 
     private ?ServerInformation $serverInformationGroup = null;
+
+    private ?Sitejet $sitejetGroup = null;
 
     private ?SpamAssassin $spamAssassinGroup = null;
 
@@ -556,6 +560,23 @@ trait UapiGroups
     }
 
     /**
+     * Select the Nova operations without making a request.
+     *
+     * Pinned availability is cPanel 110+. Observed: Reviewer 5721328890 on cPanel 11.138.0.19 reports all six Nova
+     * reads they called failed on both routes because Cpanel::API::Nova could not load. Reviewer-source inspection
+     * found the module file absent. All eleven methods are unavailable for verification on this server. Write failures
+     * are expected from the missing module but were not executed. Every Nova response shape, including overlay repairs,
+     * remains unobserved. Policy: Each call makes one request without automatic retry, polling, rollback or undo.
+     * Returned tokens, SSO URLs and account metadata are sensitive payload data. The client does not fetch returned
+     * URLs or inspect website files. API success does not establish publication completion, rendering or interactive
+     * SSO login.
+     */
+    public function nova(): Nova
+    {
+        return $this->novaGroup ??= new Nova($this->run(...));
+    }
+
+    /**
      * Select the Park operations without making a request.
      *
      * The Park module for UAPI.
@@ -633,6 +654,18 @@ trait UapiGroups
     public function serverInformation(): ServerInformation
     {
         return $this->serverInformationGroup ??= new ServerInformation($this->run(...));
+    }
+
+    /**
+     * Select the Sitejet operations without making a request.
+     *
+     * Policy: Each call makes one request without automatic retry, polling, rollback or undo. Returned tokens, SSO URLs
+     * and account metadata are sensitive payload data. The client does not fetch returned URLs or inspect website
+     * files. API success does not establish publication completion, rendering or interactive SSO login.
+     */
+    public function sitejet(): Sitejet
+    {
+        return $this->sitejetGroup ??= new Sitejet($this->run(...));
     }
 
     /**
