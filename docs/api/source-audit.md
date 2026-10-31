@@ -5896,7 +5896,16 @@ The separate opt-in `dnssec-indexed-input-v1` catalog in
 then direct and bridged fetchDsRecords(domain: ['npr.rs']). Both DS probes carry
 argument variant `singleton-domain-list` and guard literal domain-0=npr.rs URLs.
 It reuses the account/domain opt-ins, exact GET guard, one-attempt runner and
-structural sanitizer. It has not been executed live as part of this implementation.
-Any subsequent capture establishes only singleton-list wire acceptance, not
-multiple distinct domains, populated DS variants, mutations, DNS propagation or
-resolver validation. Historical DNS catalogs and evidence remain unchanged.
+structural sanitizer. The [new capture](evidence/2026-10-31-dnssec-indexed-input.json)
+at `5e0ea6b3646f6210f0229c0c585f1ac0b3954cad` on `11.138.0.19` passes all three
+HTTP/API/payload/probe checks and strict assessment, with zero discrepancies.
+Both DS results contain empty domain detail objects: keys and nsec_details are
+absent. This establishes singleton-list wire acceptance through direct UAPI and
+the WHM bridge; multiple distinct domains, populated DS variants, mutations, DNS
+propagation and resolver validation remain unestablished. No DNS, key, registrar,
+DDNS or preference state changed. Historical DNS catalogs and evidence remain
+unchanged, and the completed capture must not be repeated merely for integration.
+Artifact SHA-256: `9ba5d1c2f5202e6e897e420b48c621961a97aea2f0611af92710cadfeb9289e8`.
+The controller independently verified source/map/generator/overlay/effective-spec
+hashes, ordered identities and structural-only output. Remaining DNSSEC and
+SpamAssassin mutation evidence stays under `8x0.2.26` and `8x0.2.23.1`.

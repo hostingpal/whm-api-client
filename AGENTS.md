@@ -337,8 +337,12 @@ API envelope. `enableDnssec()`, `disableDnssec()` and `fetchDsRecords()` accept
 `domain` as a string or a nonempty sequential string list. Scalars retain `domain`;
 arrays always use zero-based `domain-0`/`domain-1`, including singleton arrays.
 Other DNSSEC methods retain their existing arguments. Remaining indexed families
-and source contradictions stay under `8x0.1.21`; this input support adds no live
-batch coverage.
+and source contradictions stay under `8x0.1.21`. The separate
+[2026-10-31 singleton-list capture](docs/api/evidence/2026-10-31-dnssec-indexed-input.json)
+at `5e0ea6b` on `11.138.0.19` passes three GETs and strict assessment with zero
+discrepancies. It confirms DS singleton-list acceptance on both routes; domain
+detail objects are empty. Multi-domain batches, populated DS fields and mutations
+remain unestablished; no DNS, key, registrar or preference state changed.
 Omitting `keySetup` retains `classic` even with `algoNum: 13`; choose `simple`
 explicitly for the documented combined-key setup above algorithm 8. Key removal
 is irreversible and can break validation while registrar DS records reference it.
