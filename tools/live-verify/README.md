@@ -1308,6 +1308,28 @@ failed and unwaived. The observed account limit
 empty string is preserved without inferred semantics. ACL/reseller inventories
 are empty. No settings changed; historical evidence and follow-up `8x0.2.36` remain.
 
+## WHM IP address inventory
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/whm-ip-addresses.php \
+  --output=docs/api/evidence/YYYY-MM-DD-whm-ip-addresses.json
+```
+
+Five fixed GETs read version, the default shared IP, IPv6 ranges, IPv4 addresses
+and IPv6 addresses. Existing exact request guards, opt-in, committed-input checks,
+verified TLS and structural evidence capture apply. No address/range is guessed;
+no NAT check, address change, interface shutdown, account move or mapping update
+runs. The evidence cannot establish routing, reachability or application delivery.
+Keep remaining live variants under `8x0.2.37`.
+
+The corrected WHM IP-address capture at `fde160d` on `11.138.0.19` passes all five
+GET observations and strict assessment with zero discrepancies. IPv6 range
+`enabled` accepts exact quoted flags; `mostrecent` and `note` accept null only
+where observed. IPv4/IPv6/range rows are populated; range-user lists are empty.
+No network or address/range change ran. The original failed capture is immutable
+and follow-up `8x0.2.37` retains all remaining live coverage.
+
 ## WHM integration groups
 
 Run `WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs php tools/live-verify/whm-integrations.php --output=docs/api/evidence/YYYY-MM-DD-whm-integrations.json`.

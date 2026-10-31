@@ -4155,6 +4155,88 @@ write methods remain unobserved under `8x0.2.36`; no new capture, privilege chan
 or lifecycle ran for these corrections. Reviewer reports remain separate from
 the immutable six-GET artifacts.
 
+## WHM IP address administration
+
+`whm()->ipAddresses()` exposes all sixteen pinned IPv4, IPv6 and NAT functions.
+Six reads use GET and ten mutations or NAT-check helpers use form POST. Each
+method retains its source availability floor and parameter order. Addresses,
+netmasks, ranges and notes are forwarded without rewriting or new validation.
+
+`getSharedIp()` preserves the literal `~` value when no shared address exists.
+IPv6 inventory retains the `SHARED` range name, optional rows and lists, and
+integer status flags. Only the observed IPv6 range `enabled` field additionally
+accepts exact quoted 0/1 flags, and its `mostrecent` and `note` fields accept null.
+Other fields retain their reviewed contracts. Explicit false becomes zero,
+while omitted options retain server defaults.
+
+`disableIpv6Account()` returns null for absent/null data on clean success,
+following reviewed upstream source. Present failure fields remain validated,
+including mixed `reason` values; inspect them even after envelope success. This
+write response is source-backed and offline-tested, not live-observed.
+`addIps()` returns void; pinned per-address messages remain available at
+`responseMeta()->whm['output']['messages']`.
+
+On `11.138.0.19`, the reviewer observed `getIpv6RangeUsage()` returning the upstream
+constants `used=20`, `free=1000000` and `forbidden=65536`. These placeholders do
+not measure actual address capacity or utilization on that version.
+
+`deleteIp(skipIfShutdown: true)` prevents removal when the interface is already
+down; false or omission permits removal. The switch does not shut it down. NAT
+and site-IP changes can alter connectivity and hosted configuration. Account IPv6
+enablement/disablement and range removal are separate operations. Read each
+method's selector and destructive/default caveats before calling it. The client
+adds no retries, rollback, NAT probing or network reconfiguration beyond the
+single requested operation. API success does not prove reachability, DNS, mail
+routing, HTTP delivery or TLS behavior.
+
+All sixteen methods have independent offline contracts. The fixed five-GET live
+catalog selects WHM version, the default shared IP, IPv6 ranges and IPv4/IPv6
+inventories. It guesses no address or range, performs no NAT check and changes
+no account, address, interface, mapping or network state. Empty inventories do
+not establish populated row schemas. Follow-up `8x0.2.37` retains all unobserved
+variants and lifecycle behavior.
+
+The initial [WHM IP-address capture](evidence/2026-10-31-whm-ip-addresses.json) at
+`adb1dfdca8c5308315ef1cad23d902675798d579` on `11.138.0.19` records five successful
+HTTP/API observations and four payload/probe passes. `ipv6_range_list` has three
+known-field differences: a numeric-string `enabled`, and null `mostrecent` and
+`note`. Those findings support exact quoted-flag compatibility only for that
+operation's `enabled`, and nullable strings only for its other two fields. The
+structural artifact does not establish both quoted flag values were observed.
+Sibling fields and all other operations retain their existing contracts.
+
+IPv4 addresses, IPv6 addresses and range rows are populated; shared-IP lookup
+returns a string. Empty range-user lists establish no populated user elements.
+No network, address, range or NAT setting changed, and no address/range identifier
+was guessed for a probe. Strict status remains failed in this original artifact,
+which is immutable. Follow-up `8x0.2.37` retains unobserved variants and mutations.
+Initial SHA-256:
+`439b50dbddb6d3577889ac9013a154ffde1151a8b4a53b8292c674e5ff1b3900`.
+
+The [corrected IP-address capture](evidence/2026-10-31-whm-ip-addresses-corrected.json)
+at `fde160d4c41a1651405d9a2c985941c71a6d57da` on `11.138.0.19` passes all five
+HTTP/API/payload/probe checks and strict assessment with zero discrepancies.
+The three operation-specific IPv6 range corrections now pass. IPv4, IPv6 and
+range inventories are populated; the range-user lists remain empty. This verifies
+only the four inventory operations plus version, not address/range lifecycle,
+NAT behavior, exclusion semantics or network configuration changes. No mutation
+ran. The initial failed artifact stays unchanged and `8x0.2.37` remains open.
+Corrected SHA-256:
+`185dd1b1d6728a6aad76ce258f60f1177f08e9f368c85935667e713889a9a552`.
+
+### PR50 reviewed corrections and evidence limits
+
+[Claude review 5720554070](https://github.com/hostingpal/whm-api-client/pull/50#pullrequestreview-5720554070)
+reports read-only WHM checks on `11.138.0.19`, including range usage, public/shared
+IP reads and unknown-range error handling. The observed usage placeholders are
+separate from the committed inventory captures. The clean IPv6-disable response
+comes from reviewed `Whostmgr/API/1/IPv6.pm` source; regression tests accept absent
+or null successful data while retaining strict validation of present data.
+Pinned `/delip/get` values establish the corrected shutdown-skip description,
+and `/addips/get` supplies the metadata message contract. No new live request or
+capture ran for these corrections. All ten form POST methods, including the NAT
+check helper, remain unobserved under `8x0.2.37`. Both historical artifacts remain
+immutable; no schema finding was waived or replayed.
 
 ## WHM integrations and hooks
 

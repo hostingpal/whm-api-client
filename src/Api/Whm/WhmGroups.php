@@ -29,6 +29,8 @@ trait WhmGroups
 
     private ?Integrations $integrationsGroup = null;
 
+    private ?IpAddresses $ipAddressesGroup = null;
+
     private ?Mail $mailGroup = null;
 
     private ?ModSecurity $modSecurityGroup = null;
@@ -122,6 +124,16 @@ trait WhmGroups
     public function integrations(): Integrations
     {
         return $this->integrationsGroup ??= new Integrations($this->run(...));
+    }
+
+    /**
+     * Select the IP Address Management operations without making a request.
+     *
+     * WHM API 1 functions in the documented IP Address Management group.
+     */
+    public function ipAddresses(): IpAddresses
+    {
+        return $this->ipAddressesGroup ??= new IpAddresses($this->run(...));
     }
 
     /**
