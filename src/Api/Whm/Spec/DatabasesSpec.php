@@ -68,13 +68,29 @@ final class DatabasesSpec
             'type' => 'object',
             'fields' => [
                 'payload' => [
-                    'type' => 'list',
-                    'items' => [
-                        'type' => 'object',
-                        'fields' => [
-                            'name' => ['type' => 'string'],
-                            'reason' => ['type' => 'string'],
-                            'value' => ['type' => 'string'],
+                    'type' => 'union',
+                    'anyOf' => [
+                        [
+                            'type' => 'list',
+                            'items' => [
+                                'type' => 'object',
+                                'fields' => [
+                                    'name' => ['type' => 'string'],
+                                    'reason' => ['type' => 'string'],
+                                    'value' => ['type' => 'string'],
+                                ],
+                            ],
+                        ],
+                        [
+                            'type' => 'map',
+                            'values' => [
+                                'type' => 'object',
+                                'fields' => [
+                                    'name' => ['type' => 'string'],
+                                    'reason' => ['type' => 'string'],
+                                    'value' => ['type' => 'string'],
+                                ],
+                            ],
                         ],
                     ],
                 ],
@@ -179,7 +195,7 @@ final class DatabasesSpec
                     'fields' => [
                         'mysql-version' => ['type' => 'string'],
                         'prefix_length' => ['type' => 'int'],
-                        'use_db_prefix' => ['type' => 'flag'],
+                        'use_db_prefix' => ['type' => 'flag', 'accept' => ['string-flag']],
                     ],
                 ],
                 'mysql_databases' => ['type' => 'map', 'values' => ['type' => 'list', 'items' => ['type' => 'string']]],
@@ -306,6 +322,7 @@ final class DatabasesSpec
             'fields' => [
                 'job_in_progress' => [
                     'type' => 'object',
+                    'nullable' => true,
                     'fields' => [
                         'profile_name' => ['type' => 'string'],
                         'start_time' => ['type' => 'int'],
@@ -326,6 +343,7 @@ final class DatabasesSpec
                 ],
                 'last_job_details' => [
                     'type' => 'object',
+                    'nullable' => true,
                     'fields' => [
                         'end_time' => ['type' => 'int'],
                         'profile_name' => ['type' => 'string'],

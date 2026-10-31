@@ -37,6 +37,10 @@ use SensitiveParameter;
  *         name?: string,
  *         reason?: string,
  *         value?: string,
+ *     }>|array<array-key, array{
+ *         name?: string,
+ *         reason?: string,
+ *         value?: string,
  *     }>,
  * }
  * @phpstan-type InstallableMysqlVersionsResult array{
@@ -119,7 +123,7 @@ use SensitiveParameter;
  *             start_time?: int,
  *             status?: string,
  *         }>,
- *     },
+ *     }|null,
  *     last_job_details?: array{
  *         end_time?: int,
  *         profile_name?: string,
@@ -131,7 +135,7 @@ use SensitiveParameter;
  *             start_time?: int,
  *             status?: string,
  *         }>,
- *     },
+ *     }|null,
  * }
  * @phpstan-type RemoteMysqlReadProfileResult array{
  *     profile_details?: array{
@@ -299,6 +303,11 @@ final readonly class Databases
      * Documented: Returns recommendations, without applying database configuration changes. Large output is possible;
      * the source recommends filtering and sorting. Recommendation values remain strings, including unit suffixes.
      *
+     * Observed: The immutable 2026-10-31 WHM Databases capture on cPanel 11.138.0.19 returned payload as a map with
+     * dynamic keys and object values containing strings. It masks both map keys and row field names. The effective
+     * union preserves the pinned list plus a map of the same optional name/reason/value string records; applying those
+     * named fields to map rows is source-based inference, not named live-field proof.
+     *
      * API-map identity: whm1:get_database_optimizations#GET (wire name get_database_optimizations; MySQL Databases).
      *
      * @return GetDatabaseOptimizationsResult
@@ -450,6 +459,10 @@ final readonly class Databases
      * Documented: Requires the cPanel account user. mysql_databases retains database names as map keys and each
      * associated string list, including empty user lists. mysql_config preserves the literal mysql-version key, integer
      * prefix length and integer use_db_prefix flag.
+     *
+     * Observed: The immutable 2026-10-31 WHM Databases capture on cPanel 11.138.0.19 records a numeric-string at
+     * mysql_config.use_db_prefix without revealing its value. Only exact quoted 0/1 forms normalize to their pinned
+     * integer flags at this field; prefix_length and other numeric fields remain unchanged.
      *
      * API-map identity: whm1:list_mysql_databases_and_users#GET (wire name list_mysql_databases_and_users; MySQL
      * Databases).
@@ -677,6 +690,11 @@ final readonly class Databases
      * Documented: Activation has several steps and may take time. Inspect job_in_progress and last_job_details, their
      * independent optional timestamps/status fields and step lists. The client performs one read per call and does not
      * poll or infer completion from API success.
+     *
+     * Observed: The immutable 2026-10-31 WHM Databases capture on cPanel 11.138.0.19 returned both job_in_progress and
+     * last_job_details explicitly null. Each optional field separately permits null while retaining its pinned record
+     * and step fields; omission and null remain distinct, and null alone does not establish completion or a specific
+     * activation state.
      *
      * API-map identity: whm1:remote_mysql_monitor_profile_activation#GET (wire name
      * remote_mysql_monitor_profile_activation; Remote MySQL Databases).

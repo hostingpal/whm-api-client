@@ -330,11 +330,11 @@ final class WhmDatabasesTest extends TestCase
         ];
         yield 'version number' => ['current_mysql_version', 'currentMysqlVersion', [], '{"version":8.0}'];
         yield 'engine null' => ['latest_available_mysql_version', 'latestAvailableMysqlVersion', [], '{"server":null}'];
-        yield 'optimizations object' => [
+        yield 'optimizations scalar' => [
             'get_database_optimizations',
             'getDatabaseOptimizations',
             [],
-            '{"payload":{}}',
+            '{"payload":true}',
         ];
         yield 'optimization value number' => [
             'get_database_optimizations',
@@ -361,11 +361,11 @@ final class WhmDatabasesTest extends TestCase
             ['example'],
             '{"mysql_databases":{"example_db":[1]}}',
         ];
-        yield 'database prefix quoted flag' => [
+        yield 'database prefix noncanonical flag' => [
             'list_mysql_databases_and_users',
             'listMysqlDatabasesAndUsers',
             ['example'],
-            '{"mysql_config":{"use_db_prefix":"0"}}',
+            '{"mysql_config":{"use_db_prefix":"00"}}',
         ];
         yield 'prefix length float' => [
             'list_mysql_databases_and_users',
@@ -498,6 +498,116 @@ final class WhmDatabasesTest extends TestCase
             self::assertSame(1, $client->whm()->responseMeta()?->whmResult());
         }
         self::assertCount(1, $http->getRequests());
+    }
+
+    /** @return iterable<string, array{string, string, array<array-key, mixed>, string, array<array-key, mixed>}> */
+    public static function observedCompatibilityPayloads(): iterable
+    {
+        // These map names and string values are synthetic fixtures, not recovered names from masked live evidence.
+        yield 'optimization map retains dynamic names and all three pinned fields' => [
+            'get_database_optimizations', 'getDatabaseOptimizations', [],
+            '{"payload":{"synthetic-setting":{"name":"synthetic-name","reason":"synthetic-reason",'
+                . '"value":"2M"},"synthetic-empty":{}}}',
+            ['payload' => ['synthetic-setting' => ['name' => 'synthetic-name', 'reason' => 'synthetic-reason',
+                'value' => '2M'], 'synthetic-empty' => []]],
+        ];
+        yield 'empty optimization map' => [
+            'get_database_optimizations', 'getDatabaseOptimizations', [], '{"payload":{}}', ['payload' => []],
+        ];
+        yield 'prefix quoted zero' => [
+            'list_mysql_databases_and_users', 'listMysqlDatabasesAndUsers', ['example'],
+            '{"mysql_config":{"use_db_prefix":"0"}}', ['mysql_config' => ['use_db_prefix' => 0]],
+        ];
+        yield 'prefix quoted one' => [
+            'list_mysql_databases_and_users', 'listMysqlDatabasesAndUsers', ['example'],
+            '{"mysql_config":{"use_db_prefix":"1"}}', ['mysql_config' => ['use_db_prefix' => 1]],
+        ];
+        yield 'both activation job fields null' => [
+            'remote_mysql_monitor_profile_activation', 'remoteMysqlMonitorProfileActivation', [],
+            '{"job_in_progress":null,"last_job_details":null}',
+            ['job_in_progress' => null, 'last_job_details' => null],
+        ];
+        yield 'current job null and prior job record retained' => [
+            'remote_mysql_monitor_profile_activation', 'remoteMysqlMonitorProfileActivation', [],
+            '{"job_in_progress":null,"last_job_details":{"profile_name":"synthetic","steps":[]}}',
+            ['job_in_progress' => null, 'last_job_details' => ['profile_name' => 'synthetic', 'steps' => []]],
+        ];
+        yield 'prior job null and current job record retained' => [
+            'remote_mysql_monitor_profile_activation', 'remoteMysqlMonitorProfileActivation', [],
+            '{"job_in_progress":{"status":"INPROGRESS","start_time":0},"last_job_details":null}',
+            ['job_in_progress' => ['start_time' => 0, 'status' => 'INPROGRESS'], 'last_job_details' => null],
+        ];
+    }
+
+    /**
+     * @param array<array-key, mixed> $arguments
+     * @param array<array-key, mixed> $expected
+     */
+    #[DataProvider('observedCompatibilityPayloads')]
+    public function testReviewedLiveStructuralVariantsPreservePinnedRecordFields(
+        string $operation,
+        string $method,
+        array $arguments,
+        string $payload,
+        array $expected,
+    ): void {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope($operation, $payload)));
+
+        self::assertSame($expected, $client->whm()->databases()->{$method}(...$arguments));
+        self::assertCount(1, $http->getRequests());
+    }
+
+    /** @return iterable<string, array{string, string, array<array-key, mixed>, string}> */
+    public static function compatibilityBoundaries(): iterable
+    {
+        foreach (
+            ['""', '"00"', '"01"', '"-0"', '"+1"', '"1.0"', '"0.0"', '" 1"', '"1 "',
+            '"2"', '"true"', 'true', 'false', 'null', '0.0', '1.0', '2'] as $flag
+        ) {
+            yield 'prefix rejects ' . $flag => [
+                'list_mysql_databases_and_users', 'listMysqlDatabasesAndUsers', ['example'],
+                '{"mysql_config":{"use_db_prefix":' . $flag . '}}',
+            ];
+        }
+        foreach (['name', 'reason', 'value'] as $field) {
+            yield 'optimization map rejects integer ' . $field => [
+                'get_database_optimizations', 'getDatabaseOptimizations', [],
+                '{"payload":{"synthetic-setting":{"' . $field . '":1}}}',
+            ];
+            yield 'optimization list rejects null ' . $field => [
+                'get_database_optimizations', 'getDatabaseOptimizations', [],
+                '{"payload":[{"' . $field . '":null}]}',
+            ];
+        }
+        foreach (['null', '"text"', '1', 'true', '[1]'] as $record) {
+            yield 'optimization map rejects nonrecord ' . $record => [
+                'get_database_optimizations', 'getDatabaseOptimizations', [],
+                '{"payload":{"synthetic-setting":' . $record . '}}',
+            ];
+        }
+        foreach (['job_in_progress', 'last_job_details'] as $field) {
+            foreach (['true', '"text"', '1', '[1]'] as $record) {
+                yield 'activation rejects nonrecord ' . $field . ' ' . $record => [
+                    'remote_mysql_monitor_profile_activation', 'remoteMysqlMonitorProfileActivation', [],
+                    '{"' . $field . '":' . $record . '}',
+                ];
+            }
+        }
+    }
+
+    /** @param array<array-key, mixed> $arguments */
+    #[DataProvider('compatibilityBoundaries')]
+    public function testLiveCorrectionsRejectUnestablishedValues(
+        string $operation,
+        string $method,
+        array $arguments,
+        string $payload,
+    ): void {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope($operation, $payload)));
+        $this->expectException(PayloadMismatchException::class);
+        $client->whm()->databases()->{$method}(...$arguments);
     }
 
     public function testOptionalInputsAreOmittedAndEmptyMapsAndListsRemainEmpty(): void

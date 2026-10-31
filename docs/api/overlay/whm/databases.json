@@ -77,6 +77,10 @@
         {
           "kind": "documented",
           "text": "Returns recommendations, without applying database configuration changes. Large output is possible; the source recommends filtering and sorting. Recommendation values remain strings, including unit suffixes."
+        },
+        {
+          "kind": "observed",
+          "text": "The immutable 2026-10-31 WHM Databases capture on cPanel 11.138.0.19 returned payload as a map with dynamic keys and object values containing strings. It masks both map keys and row field names. The effective union preserves the pinned list plus a map of the same optional name/reason/value string records; applying those named fields to map rows is source-based inference, not named live-field proof."
         }
       ],
       "evidence": [
@@ -85,8 +89,73 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /get_database_optimizations GET declares x-readonly=true. Use an explicit GET for this read."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Immutable docs/api/evidence/2026-10-31-whm-databases.json SHA-256 263cf2cfb1d5ec0c0c8a3fe6884e9b7611bc636db38f9977512cb052dd7e3a47, captured at e0ac45dfd43464abec2d87f7883aca2b1ab5fe6e on cPanel 11.138.0.19, pinned source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. whm1:get_database_optimizations#GET through the WHM GET route returned HTTP 200 and API success, but payload validation failed at $.payload. Structural payload paths record $.payload object, $.payload.* object and $.payload.*.* string. The container mismatch masks all map keys and record field names. This establishes the map container and object/string structure only, not named row fields or identities. Add only a map-of-pinned-records alternative beside the formal list. Do not infer opaque row fields, arbitrary scalars, null records or new keys. The original failed artifact remains unchanged and unwaived.",
+          "fingerprint": "docs/api/evidence/2026-10-31-whm-databases.json"
         }
-      ]
+      ],
+      "response": {
+        "payload": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "list",
+                "items": {
+                  "type": "object",
+                  "fields": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "reason": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              {
+                "type": "map",
+                "values": {
+                  "type": "object",
+                  "fields": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "reason": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, /get_database_optimizations GET responses/200/content/application~1json/schema/properties/data/properties/payload/items declares an object with optional string name, reason and value. Retain the formal list alternative and every pinned record field unchanged. Applying that pinned record schema to values of the observed map is source-based family inference; those row names and meanings are not established by masked live evidence."
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Immutable docs/api/evidence/2026-10-31-whm-databases.json SHA-256 263cf2cfb1d5ec0c0c8a3fe6884e9b7611bc636db38f9977512cb052dd7e3a47, captured at e0ac45dfd43464abec2d87f7883aca2b1ab5fe6e on cPanel 11.138.0.19, pinned source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. whm1:get_database_optimizations#GET through the WHM GET route returned HTTP 200 and API success, but payload validation failed at $.payload. Structural payload paths record $.payload object, $.payload.* object and $.payload.*.* string. The container mismatch masks all map keys and record field names. This establishes the map container and object/string structure only, not named row fields or identities. Add only a map-of-pinned-records alternative beside the formal list. Do not infer opaque row fields, arbitrary scalars, null records or new keys. The original failed artifact remains unchanged and unwaived.",
+              "fingerprint": "docs/api/evidence/2026-10-31-whm-databases.json"
+            }
+          ]
+        }
+      }
     },
     "whm1:installable_mysql_versions": {
       "method": "GET",
@@ -182,6 +251,10 @@
         {
           "kind": "documented",
           "text": "Requires the cPanel account user. mysql_databases retains database names as map keys and each associated string list, including empty user lists. mysql_config preserves the literal mysql-version key, integer prefix length and integer use_db_prefix flag."
+        },
+        {
+          "kind": "observed",
+          "text": "The immutable 2026-10-31 WHM Databases capture on cPanel 11.138.0.19 records a numeric-string at mysql_config.use_db_prefix without revealing its value. Only exact quoted 0/1 forms normalize to their pinned integer flags at this field; prefix_length and other numeric fields remain unchanged."
         }
       ],
       "evidence": [
@@ -190,8 +263,31 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /list_mysql_databases_and_users GET declares x-readonly=true. Use an explicit GET for this read."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Immutable docs/api/evidence/2026-10-31-whm-databases.json SHA-256 263cf2cfb1d5ec0c0c8a3fe6884e9b7611bc636db38f9977512cb052dd7e3a47, captured at e0ac45dfd43464abec2d87f7883aca2b1ab5fe6e on cPanel 11.138.0.19, pinned source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. whm1:list_mysql_databases_and_users#GET through the WHM GET route returned HTTP 200 and API success, with a type mismatch at $.mysql_config.use_db_prefix whose structural type is numeric-string. Its pinned integer enum is [0,1]. Normalize only the exact string forms \"0\" and \"1\" at this field, retaining integer 0/1 outputs and native flags. Reject noncanonical forms, fractional strings, booleans, null and values outside 0/1; no sibling numeric or flag field changes. The structural capture does not reveal the actual flag value. The original failed artifact remains unchanged and unwaived.",
+          "fingerprint": "docs/api/evidence/2026-10-31-whm-databases.json"
         }
-      ]
+      ],
+      "response": {
+        "mysql_config.use_db_prefix": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Immutable docs/api/evidence/2026-10-31-whm-databases.json SHA-256 263cf2cfb1d5ec0c0c8a3fe6884e9b7611bc636db38f9977512cb052dd7e3a47, captured at e0ac45dfd43464abec2d87f7883aca2b1ab5fe6e on cPanel 11.138.0.19, pinned source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. whm1:list_mysql_databases_and_users#GET through the WHM GET route returned HTTP 200 and API success, with a type mismatch at $.mysql_config.use_db_prefix whose structural type is numeric-string. Its pinned integer enum is [0,1]. Normalize only the exact string forms \"0\" and \"1\" at this field, retaining integer 0/1 outputs and native flags. Reject noncanonical forms, fractional strings, booleans, null and values outside 0/1; no sibling numeric or flag field changes. The structural capture does not reveal the actual flag value. The original failed artifact remains unchanged and unwaived.",
+              "fingerprint": "docs/api/evidence/2026-10-31-whm-databases.json"
+            }
+          ]
+        }
+      }
     },
     "whm1:remote_mysql_create_profile": {
       "method": "POST",
@@ -320,6 +416,10 @@
         {
           "kind": "documented",
           "text": "Activation has several steps and may take time. Inspect job_in_progress and last_job_details, their independent optional timestamps/status fields and step lists. The client performs one read per call and does not poll or infer completion from API success."
+        },
+        {
+          "kind": "observed",
+          "text": "The immutable 2026-10-31 WHM Databases capture on cPanel 11.138.0.19 returned both job_in_progress and last_job_details explicitly null. Each optional field separately permits null while retaining its pinned record and step fields; omission and null remain distinct, and null alone does not establish completion or a specific activation state."
         }
       ],
       "evidence": [
@@ -328,8 +428,41 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /remote_mysql_monitor_profile_activation GET declares x-readonly=true. Use an explicit GET for this read."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Immutable docs/api/evidence/2026-10-31-whm-databases.json SHA-256 263cf2cfb1d5ec0c0c8a3fe6884e9b7611bc636db38f9977512cb052dd7e3a47, captured at e0ac45dfd43464abec2d87f7883aca2b1ab5fe6e on cPanel 11.138.0.19, pinned source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. whm1:remote_mysql_monitor_profile_activation#GET through the WHM GET route returned HTTP 200 and API success, with explicit null at both $.job_in_progress and $.last_job_details, with type mismatches at both paths. Permit null only for these two independently optional object fields while retaining their full pinned object and nested step schemas. Omission remains distinct from explicit null; no completion or job-state meaning is inferred from null. The original failed artifact remains unchanged and unwaived.",
+          "fingerprint": "docs/api/evidence/2026-10-31-whm-databases.json"
         }
-      ]
+      ],
+      "response": {
+        "job_in_progress": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Immutable docs/api/evidence/2026-10-31-whm-databases.json SHA-256 263cf2cfb1d5ec0c0c8a3fe6884e9b7611bc636db38f9977512cb052dd7e3a47, captured at e0ac45dfd43464abec2d87f7883aca2b1ab5fe6e on cPanel 11.138.0.19, pinned source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. whm1:remote_mysql_monitor_profile_activation#GET through the WHM GET route returned HTTP 200 and API success, with explicit null at $.job_in_progress and a type mismatch there. Permit null only for this optional object field while retaining its full pinned object and nested step schemas. Omission remains distinct from explicit null; no completion or job-state meaning is inferred from null. The original failed artifact remains unchanged and unwaived.",
+              "fingerprint": "docs/api/evidence/2026-10-31-whm-databases.json"
+            }
+          ]
+        },
+        "last_job_details": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Immutable docs/api/evidence/2026-10-31-whm-databases.json SHA-256 263cf2cfb1d5ec0c0c8a3fe6884e9b7611bc636db38f9977512cb052dd7e3a47, captured at e0ac45dfd43464abec2d87f7883aca2b1ab5fe6e on cPanel 11.138.0.19, pinned source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. whm1:remote_mysql_monitor_profile_activation#GET through the WHM GET route returned HTTP 200 and API success, with explicit null at $.last_job_details and a type mismatch there. Permit null only for this optional object field while retaining its full pinned object and nested step schemas. Omission remains distinct from explicit null; no completion or job-state meaning is inferred from null. The original failed artifact remains unchanged and unwaived.",
+              "fingerprint": "docs/api/evidence/2026-10-31-whm-databases.json"
+            }
+          ]
+        }
+      }
     },
     "whm1:remote_mysql_read_profile": {
       "method": "POST",

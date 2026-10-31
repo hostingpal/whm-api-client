@@ -394,3 +394,23 @@ No repository, deployment, application configuration or dependency installation
 changed, and no returned URL was fetched. No contract was broadened from an API
 failure, and no repeated capture was run merely to seek a passing status. SHA-256:
 `48b5b71e8feb9107310383e50f311f39d99301a3fb57c4179a00d12c97e44a64`.
+
+## WHM database administration capture
+
+The initial [WHM database capture](2026-10-31-whm-databases.json) at
+`e0ac45dfd43464abec2d87f7883aca2b1ab5fe6e` on `11.138.0.19` records nine HTTP
+200 and successful-API observations: six payload/probe passes and three payload
+failures. Database optimizations return an object map under `payload`; the
+container mismatch masks its row field names. The compatible map alternative
+uses the same optional `name`, `reason` and `value` string fields as the pinned
+list schema. Those row names are source-based interpretation, not named live
+proof from this artifact. The original list alternative remains supported.
+
+The selected account's `mysql_config.use_db_prefix` is a numeric string;
+compatibility accepts only exact string flags `0` and `1`. Profile activation
+status returns explicit null for `job_in_progress` and `last_job_details`.
+These narrow corrections preserve omission and every pinned field. No profile
+credentials were requested, and no upgrade, checker, profile, password, database
+or user change ran. The initial artifact stays failed and immutable. Follow-up
+`8x0.2.33` retains remaining behavior and variants. SHA-256:
+`263cf2cfb1d5ec0c0c8a3fe6884e9b7611bc636db38f9977512cb052dd7e3a47`.
