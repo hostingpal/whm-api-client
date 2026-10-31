@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace HostingPal\WhmApiClient\Api;
 
 use HostingPal\WhmApiClient\Api\Engine\JsonBody;
+use HostingPal\WhmApiClient\Api\Engine\JsonRouting;
 use HostingPal\WhmApiClient\Api\Engine\MultipartEncoder;
 use HostingPal\WhmApiClient\Api\Engine\OrderedFields;
 use HostingPal\WhmApiClient\Api\Engine\ParameterExpander;
@@ -177,31 +178,30 @@ abstract class AbstractApiClient
      * Validate the new JSON entrypoints' explicit query before legacy filtering.
      *
      * Presence checks precede value expansion so even reserved nulls are rejected.
+     * The case-sensitive api. prefix and route-specific exact names are reserved.
      * Expansion checks final wire names, using static, data-free diagnostics.
      * Generated dispatch checks OrderedFields here before withRouting(); the JSON
      * executor accepts the resulting already-routed query. Existing generic call()
      * filtering and collision semantics are unaffected.
      *
      * @param Parameters|OrderedFields $query
-     * @param list<string> $reserved
+     * @param list<string> $reserved Additional exact names reserved by the route.
      */
     final protected function validateJsonQuery(
         #[SensitiveParameter] array|OrderedFields $query,
         array $reserved,
     ): void {
         if ($query instanceof OrderedFields) {
-            $query->assertNoReserved($reserved);
+            foreach ($query->all() as $field) {
+                JsonRouting::assertAllowed($field['name'], $reserved);
+            }
 
             return;
         }
         foreach ($query as $name => $value) {
-            if (in_array($name, $reserved, true)) {
-                throw new InvalidArgumentException('The query overlaps a reserved routing field.');
-            }
+            JsonRouting::assertAllowed((string) $name, $reserved);
             foreach (ParameterExpander::expand((string) $name, $value) as $field) {
-                if (in_array($field['name'], $reserved, true)) {
-                    throw new InvalidArgumentException('The query overlaps a reserved routing field.');
-                }
+                JsonRouting::assertAllowed($field['name'], $reserved);
             }
         }
     }

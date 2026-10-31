@@ -105,8 +105,9 @@ final class WhmClient extends AbstractApiClient
      * POST an already serialized JSON document to a WHM API 1 operation.
      *
      * The configured host and credentials own the request. Valid JSON roots retain
-     * their exact bytes without endpoint schema validation; api.version stays fixed
-     * in the URL and is rejected in caller query fields and root object members.
+     * their exact bytes without endpoint schema validation. The case-sensitive api.
+     * prefix is reserved in caller query fields and root object members; the library
+     * adds its fixed api.version in the URL after caller validation.
      * Query uses the existing parameter representation and is encoded once. Keep
      * secrets in the body: servers may log the separate query. The untyped result,
      * outcome policy, envelope errors and metadata follow call(); no retries occur.
@@ -130,10 +131,9 @@ final class WhmClient extends AbstractApiClient
                 'WHM function names contain only letters, digits, underscores, and "/" separators.',
             );
         }
-        $reserved = array_keys(self::RESERVED);
-        $this->validateJsonQuery($query, $reserved);
+        $this->validateJsonQuery($query, []);
         $body = JsonBody::present($json);
-        $body->assertNoReservedRoot($reserved);
+        $body->assertNoReservedRoot([]);
 
         return CallResult::fromApiResponse($this->executeJsonPost(
             '/json-api/' . $operation,

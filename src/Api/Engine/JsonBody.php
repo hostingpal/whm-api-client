@@ -48,7 +48,7 @@ final readonly class JsonBody
      * Numeric-looking keys and duplicate ordinary members are allowed. Only names
      * are inspected; decoded values never affect bytes or endpoint validation.
      *
-     * @param list<string> $reserved
+     * @param list<string> $reserved Additional exact names reserved by the route.
      */
     public function assertNoReservedRoot(array $reserved): void
     {
@@ -56,9 +56,9 @@ final readonly class JsonBody
             return;
         }
         $members = json_decode($this->content, true, 512, JSON_BIGINT_AS_STRING);
-        foreach ($reserved as $name) {
-            if (is_array($members) && array_key_exists($name, $members)) {
-                throw new InvalidArgumentException('The JSON body overlaps a reserved routing field.');
+        if (is_array($members)) {
+            foreach (array_keys($members) as $name) {
+                JsonRouting::assertAllowed((string) $name, $reserved);
             }
         }
     }

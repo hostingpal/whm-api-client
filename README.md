@@ -2370,8 +2370,9 @@ WHM execution-wrapper names do not establish account-bound UAPI JSON compatibili
 once after required routing fields. Keep secrets in the body because servers may
 log query strings. These new entrypoints reject reserved routing names by presence
 in caller query fields, their marker expansions and decoded root JSON members,
-even when the value is null or the member name is escaped. WHM reserves
-`api.version`; direct UAPI also reserves `cpanel.user`, `cpanel.module` and
+even when the value is null or the member name is escaped. Both routes reserve
+the entire case-sensitive `api.` prefix, including bare `api.` and future controls;
+direct UAPI also reserves exactly `cpanel.user`, `cpanel.module` and
 `cpanel.function`. Nested member names remain endpoint data. Legacy `call()`
 filtering is unchanged. `CallResult`, `OutcomePolicy`, metadata snapshots and the
 standard transport/HTTP/envelope/API exceptions work as above; failures never retry

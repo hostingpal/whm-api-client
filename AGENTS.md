@@ -2427,8 +2427,9 @@ remaining compatibility stay under `8x0.2.46`; no repeat is needed for integrati
   at most 511 nested containers. Explicit query uses the existing Parameters
   representation, stays in the URL and is encoded once; keep secrets in the body.
   New-only reservations reject explicit/expanded query and decoded root member
-  presence, including escaped names and nulls: WHM api.version; direct UAPI also
-  cpanel.user/module/function. Nested members remain data. Legacy call() filtering
+  presence, including escaped names and nulls: both routes reserve the entire
+  case-sensitive api. prefix, including bare api. and future controls; direct UAPI
+  also reserves exact cpanel.user/module/function. Nested members remain data. Legacy call() filtering
   stays unchanged. Both return CallResult with standard envelopes/outcome policies;
   neither raw transport nor wrapper names establish typed or live coverage.
   Internal JsonBody distinguishes absent (no bytes/Content-Type) from present

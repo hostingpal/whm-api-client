@@ -149,7 +149,12 @@ final class RawJsonCallTest extends TestCase
     public static function reservedInputs(): iterable
     {
         foreach ([false, true] as $direct) {
-            $names = $direct ? ['api.version', 'cpanel.user', 'cpanel.module', 'cpanel.function'] : ['api.version'];
+            $names = [
+                'api.version', 'api.filter', 'api.sort', 'api.paginate', 'api.columns', 'api.', 'api.future_control',
+            ];
+            if ($direct) {
+                $names = [...$names, 'cpanel.user', 'cpanel.module', 'cpanel.function'];
+            }
             foreach ($names as $name) {
                 $prefix = ($direct ? 'direct ' : 'WHM ') . $name;
                 yield $prefix . ' query null' => [$direct, '{}', [$name => null]];
@@ -172,6 +177,7 @@ final class RawJsonCallTest extends TestCase
         $http->addResponse(self::success($direct));
         self::call($client, $direct, '{}');
         $handle = $direct ? $client->uapi() : $client->whm();
+        $http->addResponse(self::success($direct));
         try {
             self::call($client, $direct, $json, $query);
             self::fail('Expected routing collision rejection.');
@@ -179,6 +185,7 @@ final class RawJsonCallTest extends TestCase
             self::assertNull($handle->responseMeta());
             self::assertCount(1, $http->getRequests());
             self::assertStringNotContainsString('override', $exception->getMessage());
+            self::assertNull($exception->getPrevious());
         }
     }
 
@@ -187,9 +194,89 @@ final class RawJsonCallTest extends TestCase
     {
         [$client, $http] = self::client($direct);
         $http->addResponse(self::success($direct));
-        $json = '{"nested":{"api.version":null,"cpanel.user":null,"cpanel.module":null,"cpanel.function":null}}';
+        $json = '{"nested":{"api.":null,"api.future_control":1,"api.version":null,'
+            . '"cpanel.user":null,"cpanel.module":null,"cpanel.function":null}}';
         self::call($client, $direct, $json);
         self::assertSame($json, (string) self::lastRequest($http)->getBody());
+    }
+
+    #[DataProvider('routes')]
+    public function testRoutingPrefixLookalikesRemainLiteralData(bool $direct): void
+    {
+        [$client, $http] = self::client($direct);
+        $http->addResponse(self::success($direct));
+        $json = '{"Api.version":null,"API.version":null,"api_version":null,"xapi.version":null,'
+            . '"ordinary":1,"ordinary":2,"\\u0000key":null,"0":1}';
+        self::call($client, $direct, $json, [
+            'Api.version' => 'a', 'API.version' => 'b', 'api_version' => 'c', 'xapi.version' => 'd',
+        ]);
+        self::assertSame($json, (string) self::lastRequest($http)->getBody());
+        self::assertSame(
+            ($direct ? '' : 'api.version=1&') . 'Api.version=a&API.version=b&api_version=c&xapi.version=d',
+            self::lastRequest($http)->getUri()->getQuery(),
+        );
+    }
+
+    public function testWhmCpanelNamesRemainOrdinaryData(): void
+    {
+        [$client, $http] = self::client(false);
+        $http->addResponse(self::success(false));
+        $json = '{"cpanel.user":null,"cpanel.module":null,"cpanel.function":null}';
+        self::call($client, false, $json, [
+            'cpanel.user' => 'a', 'cpanel.module' => 'b', 'cpanel.function' => 'c',
+        ]);
+        self::assertSame($json, (string) self::lastRequest($http)->getBody());
+        self::assertSame(
+            'api.version=1&cpanel.user=a&cpanel.module=b&cpanel.function=c',
+            self::lastRequest($http)->getUri()->getQuery(),
+        );
+    }
+
+    #[DataProvider('routes')]
+    public function testOrderedPrefixNamesRejectBeforeRouting(bool $direct): void
+    {
+        $factory = new Psr17Factory();
+        $http = new MockClient($factory);
+        $client = new class (new HttpTransport($http, $factory, $factory)) extends AbstractApiClient {
+            public function __construct(HttpTransport $transport)
+            {
+                parent::__construct(ClientConfigFactory::fromArray([
+                    'host' => 'api.example.test', 'authType' => 'whm', 'token' => 'fixture-token',
+                ]), $transport);
+            }
+
+            public function send(#[SensitiveParameter] OrderedFields $query, bool $direct): void
+            {
+                $this->beginRequest();
+                $this->validateJsonQuery($query, $direct ? ['cpanel.user', 'cpanel.module', 'cpanel.function'] : []);
+                $this->executeJsonPost(
+                    '/operation',
+                    $direct ? $query : $query->withRouting(['api.version' => 1]),
+                    JsonBody::present('{}'),
+                    $direct ? ResponseRoute::DirectUapi : ResponseRoute::Whm,
+                );
+            }
+        };
+        $names = [
+            'api.version', 'api.filter', 'api.sort', 'api.paginate', 'api.columns', 'api.', 'api.future_control',
+        ];
+        foreach ($names as $name) {
+            $http->addResponse(self::success($direct));
+            $client->send(new OrderedFields(), $direct);
+            self::assertNotNull($client->responseMeta());
+            $requestCount = count($http->getRequests());
+            $query = new OrderedFields();
+            $query->append('caller', $name, 'override');
+            $http->addResponse(self::success($direct));
+            try {
+                $client->send($query, $direct);
+                self::fail('Expected emitted routing collision rejection before dispatch.');
+            } catch (InvalidArgumentException $exception) {
+                self::assertNull($client->responseMeta());
+                self::assertCount($requestCount, $http->getRequests());
+                self::assertNull($exception->getPrevious());
+            }
+        }
     }
 
     public function testSeparateDirectAccountsRetainTheirOwnCredentialsAndMetadata(): void

@@ -139,19 +139,26 @@ final class UapiClient extends AbstractApiClient
      *
      * WHM-bridged handles reject this route locally after metadata reset. Direct
      * access uses only this handle's host, credentials and account. Valid JSON roots
-     * retain exact bytes without endpoint schema validation; api.version and the
-     * cpanel.user/module/function routing names are rejected in query fields and
-     * root object members, including nulls. Nested member names remain data.
+     * retain exact bytes without endpoint schema validation. The case-sensitive api.
+     * prefix and exact cpanel.user/module/function names are reserved in caller
+     * query fields and root object members, including nulls. Nested names remain data.
      * Query uses the existing parameter representation and is encoded once. Keep
      * secrets in the body: servers may log the separate query. The untyped result,
      * outcome policy, envelope errors and metadata follow call(); no retries occur.
      * Choose a JSON-compatible operation with a standard envelope. This raw escape
      * hatch establishes neither typed coverage nor live endpoint compatibility.
+     * Reviewer-inspected 11.138.0.19 UAPI source generally accepts flat JSON
+     * arguments; nested structures require the function's requires_json declaration.
+     * The corrected review identifies five functions across four modules:
+     * ClamScanner (1), ContactInformation (1), Personalization (2), StatsManager (1).
+     * This source attribution is neither live verification nor an endpoint allowlist.
      *
      * @param Parameters $query Explicit URL query data, never merged into the body.
      * @throws InvalidArgumentException If bridged, or a name, JSON document or query is invalid; metadata clears first.
      * @throws ApiException If transport, HTTP, or the API envelope fails.
      * @see https://api.docs.cpanel.net/cpanel/introduction
+     * @see https://github.com/hostingpal/whm-api-client/pull/73#pullrequestreview-5722705880
+     * @see https://github.com/hostingpal/whm-api-client/pull/73#issuecomment-6543354915
      */
     public function callJson(
         string $module,
@@ -171,7 +178,7 @@ final class UapiClient extends AbstractApiClient
                 );
             }
         }
-        $reserved = ['api.version', 'cpanel.user', 'cpanel.module', 'cpanel.function'];
+        $reserved = ['cpanel.user', 'cpanel.module', 'cpanel.function'];
         $this->validateJsonQuery($query, $reserved);
         $body = JsonBody::present($json);
         $body->assertNoReservedRoot($reserved);

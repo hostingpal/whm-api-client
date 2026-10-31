@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace HostingPal\WhmApiClient\Tests\Api;
 
 use Closure;
+use HostingPal\WhmApiClient\Api\AbstractApiClient;
+use HostingPal\WhmApiClient\Api\Engine\OrderedFields;
 use HostingPal\WhmApiClient\Api\NumberedList;
 use HostingPal\WhmApiClient\Api\RepeatedList;
 use HostingPal\WhmApiClient\Api\RequestMethod;
 use HostingPal\WhmApiClient\Api\Whm\Integrations;
 use HostingPal\WhmApiClient\Client;
+use HostingPal\WhmApiClient\Config\ClientConfigFactory;
 use HostingPal\WhmApiClient\Exception\ApiErrorException;
 use HostingPal\WhmApiClient\Exception\ApiException;
 use HostingPal\WhmApiClient\Exception\HttpException;
@@ -29,6 +32,7 @@ use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use RuntimeException;
+use SensitiveParameter;
 use SensitiveParameterValue;
 use Throwable;
 
@@ -705,12 +709,43 @@ final class SensitiveTraceTest extends TestCase
     public function testLocalValidationFailuresKeepSecretsOutOfTraceArguments(string $route, Closure $call): void
     {
         [$client, $http] = self::client($route === 'direct');
+        $http->addResponse(new Response(200, [], $route === 'direct' ? '{"status":1,"data":null}'
+            : '{"metadata":{"result":1},"data":null}'));
 
         try {
             $call($client);
             self::fail('Expected a local validation failure.');
         } catch (InvalidArgumentException $exception) {
             self::assertSame([], $http->getRequests());
+            self::assertSecretAbsent($exception);
+        }
+    }
+
+    public function testOrderedJsonRoutingFailureKeepsSecretsOutOfTraceArguments(): void
+    {
+        $factory = new Psr17Factory();
+        $http = new MockClient($factory);
+        $client = new class (new HttpTransport($http, $factory, $factory)) extends AbstractApiClient {
+            public function __construct(HttpTransport $transport)
+            {
+                parent::__construct(ClientConfigFactory::fromArray([
+                    'host' => 'api.example.test', 'authType' => 'whm', 'token' => 'fixture-token',
+                ]), $transport);
+            }
+
+            public function check(#[SensitiveParameter] OrderedFields $query): void
+            {
+                $this->validateJsonQuery($query, []);
+            }
+        };
+        $query = new OrderedFields();
+        $query->append('caller', 'api.' . self::SECRET, self::SECRET);
+        try {
+            $client->check($query);
+            self::fail('Expected an emitted routing collision.');
+        } catch (InvalidArgumentException $exception) {
+            self::assertSame([], $http->getRequests());
+            self::assertNull($exception->getPrevious());
             self::assertSecretAbsent($exception);
         }
     }
@@ -730,6 +765,35 @@ final class SensitiveTraceTest extends TestCase
                 '{"cpanel.user":null,"secret":"' . self::SECRET . '"}',
             ),
         ];
+        foreach (['whm', 'direct'] as $route) {
+            yield $route . ' raw JSON reserved prefix root' => [
+                $route,
+                static fn (Client $client): mixed => $route === 'whm'
+                    ? $client->whm()->callJson('operation', '{"api\\u002e' . self::SECRET . '":null}')
+                    : $client->uapi()->callJson('Example', 'operation', '{"api\\u002e' . self::SECRET . '":null}'),
+            ];
+            yield $route . ' raw JSON reserved prefix query' => [
+                $route,
+                static fn (Client $client): mixed => $route === 'whm'
+                    ? $client->whm()->callJson('operation', '{}', ['api.' . self::SECRET => self::SECRET])
+                    : $client->uapi()->callJson('Example', 'operation', '{}', ['api.' . self::SECRET => self::SECRET]),
+            ];
+            yield $route . ' raw JSON reserved prefix marker' => [
+                $route,
+                static fn (Client $client): mixed => $route === 'whm'
+                    ? $client->whm()->callJson(
+                        'operation',
+                        '{}',
+                        ['api.' . self::SECRET => new NumberedList(self::SECRET)],
+                    )
+                    : $client->uapi()->callJson(
+                        'Example',
+                        'operation',
+                        '{}',
+                        ['api.' . self::SECRET => new NumberedList(self::SECRET)],
+                    ),
+            ];
+        }
         yield 'WHM raw JSON late invalid query' => [
             'whm',
             static fn (Client $client): mixed => $client->whm()->callJson(
