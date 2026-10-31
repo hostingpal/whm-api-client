@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 91 generated typed groups cover 1,105 documented operations (see
+The 91 generated typed groups cover 1,106 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, DNS zone and DNSSEC
 management, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -15,7 +15,9 @@ Generic `call()` methods provide GET and form-encoded POST access without a type
 group, subject to the operation's parameter, route and envelope requirements.
 The separate `callJson()` entrypoints send validated raw JSON bytes through WHM
 or direct cPanel UAPI; WHM-bridged UAPI JSON is rejected locally. `call()` remains
-GET/form-only. Three typed SSL methods support reviewed multipart string fields. The library provides token
+GET/form-only. `statsManager()->saveConfiguration()` provides the first typed JSON
+body, through direct cPanel UAPI only, with account-wide replacement semantics.
+Three typed SSL methods support reviewed multipart string fields. The library provides token
 authentication, direct and WHM-routed UAPI, typed array payloads, API exceptions,
 and per-client response metadata over a PSR HTTP transport.
 
@@ -460,8 +462,55 @@ The resource and web statistics slice exposes eleven GET operations across
 Bandwidth protocols, retention and grouped queries complement resource limits,
 statistics-bar values, domain bandwidth, daily AwStats counters, error logs,
 report-file inventory and analyzer configuration. `StatsManager/save_configuration`
-requires a JSON request body and remains excluded from typed coverage under `8x0.1.18`; generic form
-calls do not provide that transport.
+is the first generated typed JSON-body operation. Generic `call()` remains form-only.
+
+`statsManager()->saveConfiguration($configuration)` replaces the account's analyzer
+configuration. Explicitly call `getConfiguration()` first and prepare the complete
+intended domain/analyzer set. A partial-looking input can reset other settings to
+defaults. The client makes no implicit read, merge, patch, retry, restore or rollback.
+The [PR73 reviewer](https://github.com/hostingpal/whm-api-client/pull/73#pullrequestreview-5722705880)
+reports that the 11.138.0.19 handler builds defaults for every domain/analyzer,
+applies changes, then saves; its POD says unspecified configurations are disabled.
+This is attributed upstream evidence, without a promise that every default is
+universally disabled.
+
+The required input is `array{changes: non-empty-list<array{domain: string,
+analyzers: list<array{name: string, enabled: bool}>}>}`. Every listed field is
+required; `analyzers: []` remains valid. Native bools map to integer 0/1 wire flags.
+Names remain strings without a closed analyzer enum. Unknown members, malformed
+lists, nulls and wrong scalar types fail locally before I/O. Requiredness is an
+operation-scoped correction to the formally optional pinned 11.138.0.10 input,
+bound to the attributed 11.138.0.19 handler and raw server observations. Valid
+structure does not establish completeness, ownership, availability or persistence.
+
+This method sends one direct-cPanel UAPI POST with exactly `Content-Type:
+application/json`. The WHM bridge rejects it locally after clearing metadata.
+Available from cPanel 90 with the WebServer role; root/reseller control can prevent
+user changes. Returned domain/analyzer fields remain optional, with native integer
+0/1 flags. The pinned save-response description says `locked=1` is user-manageable
+and `locked=0` is root/reseller-controlled. Inspect `responseMeta()` and warnings:
+the reviewer reports `raw_warning` for skipped `not_owned`, `not_available` and
+`unrecognized` entries even with status 1. No payload `raw_warning` field is invented;
+success does not prove every requested setting applied. Check persistence separately.
+
+The successful live-write gate in `8x0.1.18` remains **OPEN**. The reviewer's
+well-formed raw direct-JSON requests bypassed this client and were blocked by
+`_can_self_manage` on 11.138.0.19: “You may not modify the weblog analyzer
+configuration”. Passing the gate requires a root/reseller server-wide statistics
+setting change; this work authorizes no such change and ran no live calls.
+Twelve other pinned JSON-body operations remain deferred; remaining
+selection/source/route audit is tracked under `8x0.29.6`.
+
+```php
+$statsManager = $client->uapi()->statsManager(); // Direct cPanel credentials.
+$currentConfiguration = $statsManager->getConfiguration();
+// The caller now prepares the complete intended domain/analyzer set from this
+// explicit read, accounting for server availability and converting choices to bool.
+/** @var StatsConfigurationInput $completeIntendedConfiguration */
+$savedConfiguration = $statsManager->saveConfiguration($completeIntendedConfiguration);
+$warnings = $client->uapi()->responseMeta()?->uapiWarnings();
+// Inspect warnings and verify persistence; status 1 does not prove every item applied.
+```
 
 Pipe-separated grouping, domain, protocol and display arguments are supplied as
 strings and encoded once. Omitted options preserve server defaults; explicit
@@ -1327,8 +1376,8 @@ $client->whm()->modSecurity()->updateSettings(settings: [
 
 This emits `setting_id1=1&state1=On&setting_id2=2&state2=Off&remove2=0`;
 there is no `remove1`. Empty state strings, integer zero and string `'0'` remain
-values. The alias adds one public method, while canonical coverage remains 1,105
-operations (519 UAPI and 586 WHM), 91 groups and 185 generated PHP files.
+values. The alias adds one public method, while canonical coverage remains 1,106
+operations (520 UAPI and 586 WHM), 91 groups and 185 generated files (184 PHP files plus the coverage document).
 
 The twelve source-backed empty-result mutations accept an omitted or null payload
 while retaining any returned mixed data; they are not weakened to void. Omitted
@@ -2298,7 +2347,10 @@ not establish typed coverage or verification of that operation.
 
 The [pinned request-body inventory](docs/api/source-inventory.json) includes 13
 JSON operations (8 WHM, 5 UAPI) and 9 multipart operations (1 WHM, 8 UAPI).
-Typed JSON-body adoption and the remaining multipart operations are excluded.
+StatsManager/save_configuration is the first typed JSON-body adopter; the other
+12 JSON-body operations and remaining multipart operations stay excluded. Typed
+JSON-body machinery is available; remaining selection/source/route audit is
+tracked under `whm-api-client-8x0.29.6`.
 Raw `callJson()` provides JSON transport without a typed contract or endpoint
 compatibility claim; `call()` remains GET/form-only. Selected typed
 operation support is tracked under `whm-api-client-8x0.1.18` (JSON) and

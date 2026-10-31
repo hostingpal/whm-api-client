@@ -2751,8 +2751,9 @@ The resource and web statistics slice exposes eleven GET operations across
 Bandwidth protocols, retention and grouped queries complement resource limits,
 statistics-bar values, domain bandwidth, daily AwStats counters, error logs,
 report-file inventory and analyzer configuration. `StatsManager/save_configuration`
-requires a JSON request body and remains excluded under `8x0.1.18`; generic form
-calls do not provide that transport.
+now has generated typed JSON-body support; its separate successful-live-write gate
+remains open under `8x0.1.18`. See the first typed JSON-body adoption entry below.
+Generic form calls do not provide that transport.
 
 Pipe-separated grouping, domain, protocol and display arguments are supplied as
 strings and encoded once. Omitted options preserve server defaults; explicit
@@ -6096,3 +6097,87 @@ constant, including the existing alternate-input constant, is byte-for-byte equa
 to the base export: response shapes, outcome policy, transport and parameter wire
 metadata are unchanged. Existing indexed, repeat, map, record and additional-method
 coverage remains intact. Validation is offline only; no live API call ran.
+
+
+## First typed JSON-body adoption: StatsManager (2026-10-31)
+
+`statsManager()->saveConfiguration($configuration)` replaces the account's analyzer
+configuration. Explicitly call `getConfiguration()` first and prepare the complete
+intended domain/analyzer set. A partial-looking input can reset other settings to
+defaults. The client makes no implicit read, merge, patch, retry, restore or rollback.
+The [PR73 reviewer](https://github.com/hostingpal/whm-api-client/pull/73#pullrequestreview-5722705880)
+reports that the 11.138.0.19 handler builds defaults for every domain/analyzer,
+applies changes, then saves; its POD says unspecified configurations are disabled.
+This is attributed upstream evidence, without a promise that every default is
+universally disabled.
+
+The required input is `array{changes: non-empty-list<array{domain: string,
+analyzers: list<array{name: string, enabled: bool}>}>}`. Every listed field is
+required; `analyzers: []` remains valid. Native bools map to integer 0/1 wire flags.
+Names remain strings without a closed analyzer enum. Unknown members, malformed
+lists, nulls and wrong scalar types fail locally before I/O. Requiredness is an
+operation-scoped correction to the formally optional pinned 11.138.0.10 input,
+bound to the attributed 11.138.0.19 handler and raw server observations. Valid
+structure does not establish completeness, ownership, availability or persistence.
+
+This method sends one direct-cPanel UAPI POST with exactly `Content-Type:
+application/json`. The WHM bridge rejects it locally after clearing metadata.
+Available from cPanel 90 with the WebServer role; root/reseller control can prevent
+user changes. Returned domain/analyzer fields remain optional, with native integer
+0/1 flags. The pinned save-response description says `locked=1` is user-manageable
+and `locked=0` is root/reseller-controlled. Inspect `responseMeta()` and warnings:
+the reviewer reports `raw_warning` for skipped `not_owned`, `not_available` and
+`unrecognized` entries even with status 1. No payload `raw_warning` field is invented;
+success does not prove every requested setting applied. Check persistence separately.
+
+The successful live-write gate in `8x0.1.18` remains **OPEN**. The reviewer's
+well-formed raw direct-JSON requests bypassed this client and were blocked by
+`_can_self_manage` on 11.138.0.19: “You may not modify the weblog analyzer
+configuration”. Passing the gate requires a root/reseller server-wide statistics
+setting change; this work authorizes no such change and ran no live calls.
+Twelve other pinned JSON-body operations remain deferred; remaining
+selection/source/route audit is tracked under `8x0.29.6`.
+
+This adoption binds `uapi:StatsManager/save_configuration#POST` to immutable UAPI
+OpenAPI decompressed SHA-256
+`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`.
+The selected request location is
+`/paths/~1StatsManager~1save_configuration/post/requestBody`; its JSON schema is
+`/content/application~1json/schema` beneath that location. Source-bound effective
+corrections require the body, root `changes`, change-row `domain`/`analyzers`, and
+analyzer-row `name`/`enabled`, with a nonempty `changes` list. Each correction
+records its exact schema-node pointer and source SHA separately. No response
+requiredness or pinned source content changes. Source version 90+, WebServer role,
+`x-readonly=false` and `x-rollback=none` remain.
+
+The [review of original head 4ee9fae](https://github.com/hostingpal/whm-api-client/pull/73#pullrequestreview-5722705880)
+was submitted 2026-10-31 at 12:27:37 UTC. Its Perl findings under
+`/usr/local/cpanel` (`Cpanel/StatManager.pm`,
+`Cpanel/StatsManager/Configuration/Domain.pm::save_configuration`,
+`Cpanel::JSONAPI::is_json_request`, `Cpanel::API::_safety_check_args`, and
+`Cpanel/Args.pm:86`) are attributed to that reviewer, not local inspection.
+The [count correction](https://github.com/hostingpal/whm-api-client/pull/73#issuecomment-6543354915)
+posted at 12:27:45 UTC establishes five `requires_json` functions across four
+modules, not five modules. Reviewer requests deliberately bypassed this client on
+a disposable account; the reviewer reports token revocation and account/home
+cleanup. Missing body, `{}`, empty changes and non-array changes failed there;
+well-formed writes remained permission-blocked. These observations establish no
+successful client write, persistence, server-wide permission change or bridge
+compatibility. Historical capture artifacts remain immutable.
+
+Independent offline endpoint fixtures exercise exact POST/header/auth/path/JSON
+bytes, true/false mapping, empty analyzers, strict input failure with stale-metadata
+reset and zero new sends, local bridge refusal, sensitive traces, warning-bearing
+success, optional response fields, native flags, API failure and confirmed-outcome
+payload mismatch without retry. Generic/raw/legacy form/SSL behavior is unchanged.
+The JSON-only renderer places overlay notes before pinned source prose; non-JSON
+method documentation ordering stays unchanged. Other current exclusion reasons and
+ClamScanner workflow notes distinguish delivered machinery from deferred adoption;
+their evidence and executable contracts remain unchanged.
+
+Canonical generated coverage increases from 1,105 to 1,106 operations: 520 UAPI
+and 586 WHM, still 91 groups and 185 generated files (184 PHP files plus
+`docs/api/coverage.md`). Only this endpoint
+exclusion is removed. The remaining 12 JSON-body operations are not adopted or
+claimed live-compatible. This source/offline implementation child does not close
+parent `whm-api-client-8x0.1.18` or waive its successful-live-write gate.

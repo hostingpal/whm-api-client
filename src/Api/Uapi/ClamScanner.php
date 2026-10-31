@@ -71,8 +71,9 @@ final readonly class ClamScanner
      *
      * Documented: Available in cPanel 94 and later. Operates on the selected account. The documented workflow starts a
      * scan, polls getScanStatus until complete, lists infected files, lets the user choose each action, queues JSON
-     * disinfection and polls checkDisinfectionStatus. This client does not start or poll automatically. Typed
-     * disinfectFiles support is excluded pending typed JSON-body support under whm-api-client-8x0.1.18.
+     * disinfection and polls checkDisinfectionStatus. This client does not start or poll automatically. Typed JSON-body
+     * machinery is available; disinfectFiles adoption remains deferred under whm-api-client-8x0.1.18, with remaining
+     * selection/source/route audit under whm-api-client-8x0.29.6.
      *
      * Documented: Omit lastId to return the entire disinfection log; supplying the last received record ID returns only
      * subsequent records and is recommended for polling performance. The source specifies an integer minimum of 1;
@@ -111,8 +112,9 @@ final readonly class ClamScanner
      *
      * Documented: Available in cPanel 94 and later. Operates on the selected account. The documented workflow starts a
      * scan, polls getScanStatus until complete, lists infected files, lets the user choose each action, queues JSON
-     * disinfection and polls checkDisinfectionStatus. This client does not start or poll automatically. Typed
-     * disinfectFiles support is excluded pending typed JSON-body support under whm-api-client-8x0.1.18.
+     * disinfection and polls checkDisinfectionStatus. This client does not start or poll automatically. Typed JSON-body
+     * machinery is available; disinfectFiles adoption remains deferred under whm-api-client-8x0.1.18, with remaining
+     * selection/source/route audit under whm-api-client-8x0.29.6.
      *
      * Documented: Available scan types depend on the administrator settings in Configure ClamAV. The pinned formal data
      * schema is one object with optional id and message strings. id documents home, mail, public_html and public_ftp;
@@ -147,8 +149,9 @@ final readonly class ClamScanner
      *
      * Documented: Available in cPanel 94 and later. Operates on the selected account. The documented workflow starts a
      * scan, polls getScanStatus until complete, lists infected files, lets the user choose each action, queues JSON
-     * disinfection and polls checkDisinfectionStatus. This client does not start or poll automatically. Typed
-     * disinfectFiles support is excluded pending typed JSON-body support under whm-api-client-8x0.1.18.
+     * disinfection and polls checkDisinfectionStatus. This client does not start or poll automatically. Typed JSON-body
+     * machinery is available; disinfectFiles adoption remains deferred under whm-api-client-8x0.1.18, with remaining
+     * selection/source/route audit under whm-api-client-8x0.29.6.
      *
      * Documented: current_file is the current path and infected_files is a string list. scan_complete remains integer
      * 0/1. scanned_file_count and total_file_count count files; scanned_file_size is bytes and total_file_size_MiB is
@@ -187,8 +190,9 @@ final readonly class ClamScanner
      *
      * Documented: Available in cPanel 94 and later. Operates on the selected account. The documented workflow starts a
      * scan, polls getScanStatus until complete, lists infected files, lets the user choose each action, queues JSON
-     * disinfection and polls checkDisinfectionStatus. This client does not start or poll automatically. Typed
-     * disinfectFiles support is excluded pending typed JSON-body support under whm-api-client-8x0.1.18.
+     * disinfection and polls checkDisinfectionStatus. This client does not start or poll automatically. Typed JSON-body
+     * machinery is available; disinfectFiles adoption remains deferred under whm-api-client-8x0.1.18, with remaining
+     * selection/source/route audit under whm-api-client-8x0.29.6.
      *
      * Documented: Returns a list with optional absolute file path and virus_type in each row. Empty results remain an
      * empty list. Paths and virus descriptions are payload data; the client does not open the files or take any action
@@ -217,8 +221,9 @@ final readonly class ClamScanner
      *
      * Documented: Available in cPanel 94 and later. Operates on the selected account. The documented workflow starts a
      * scan, polls getScanStatus until complete, lists infected files, lets the user choose each action, queues JSON
-     * disinfection and polls checkDisinfectionStatus. This client does not start or poll automatically. Typed
-     * disinfectFiles support is excluded pending typed JSON-body support under whm-api-client-8x0.1.18.
+     * disinfection and polls checkDisinfectionStatus. This client does not start or poll automatically. Typed JSON-body
+     * machinery is available; disinfectFiles adoption remains deferred under whm-api-client-8x0.1.18, with remaining
+     * selection/source/route audit under whm-api-client-8x0.29.6.
      *
      * Documented: scanType is required: home scans the entire account home, mail the email directory, public_html the
      * web directory and public_ftp the FTP directory. Availability depends on administrator configuration. Starts

@@ -117,3 +117,25 @@ func TestJSONVirtualStatsConfigurationSourceToGeneratedInput(t *testing.T) {
 		t.Fatal("reviewed body became optional")
 	}
 }
+
+func TestJSONBodyNotesLeadSourceDocumentationOnlyForJSON(t *testing.T) {
+	result := goldenResult()
+	op := &result.Groups[0].Operations[0]
+	op.Notes = []effective.Note{{Label: "Documented", Text: "Account-wide replacement: explicitly read first and supply the complete intended set."}}
+	for _, jsonBody := range []bool{false, true} {
+		if jsonBody {
+			op.JSONBody = &effective.JSONBody{PHP: "configuration", Alias: "ConfigurationInput", Routes: "direct", Required: true, Schema: effective.InputSpec{Type: "object"}}
+		}
+		doc := methodDoc(t, string(Render(result)["src/Api/Uapi/DomainInfo.php"]), "listDomains")
+		note, summary, description := strings.Index(doc, "Account-wide replacement:"), strings.Index(doc, op.Summary), strings.Index(doc, op.Description)
+		if note < 0 || summary < 0 || description < 0 {
+			t.Fatalf("missing documentation: %s", doc)
+		}
+		if jsonBody && !(note < summary && summary < description) {
+			t.Fatalf("JSON replacement guidance must precede pinned source prose: %s", doc)
+		}
+		if !jsonBody && !(summary < description && description < note) {
+			t.Fatalf("existing non-JSON documentation order changed: %s", doc)
+		}
+	}
+}

@@ -280,14 +280,24 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 	const indent = "    "
 	ret := resultSpec(op)
 	w.line(indent + "/**")
+	// JSON-body notes carry operation-specific whole-configuration obligations.
+	// Put them before source prose without changing legacy documentation order.
+	if op.JSONBody != nil {
+		for _, note := range op.Notes {
+			w.doc(indent, note.Label+": "+note.Text)
+			w.line(indent + " *")
+		}
+	}
 	w.doc(indent, op.Summary)
 	if op.Description != "" {
 		w.line(indent + " *")
 		w.doc(indent, op.Description)
 	}
-	for _, note := range op.Notes {
-		w.line(indent + " *")
-		w.doc(indent, note.Label+": "+note.Text)
+	if op.JSONBody == nil {
+		for _, note := range op.Notes {
+			w.line(indent + " *")
+			w.doc(indent, note.Label+": "+note.Text)
+		}
 	}
 	if op.OptionalPayload && ret != nil {
 		w.line(indent + " *")

@@ -29,17 +29,117 @@
       ]
     },
     "uapi:StatsManager/save_configuration": {
-      "exclude": {
-        "reason": "Requires an application/json request body containing nested changes/analyzers objects; typed JSON-body support remains tracked under whm-api-client-8x0.1.18. Raw callJson() supplies no typed contract and establishes no endpoint compatibility. This operation is not deprecated.",
-        "evidence": [
-          {
-            "kind": "doc",
-            "version": "pinned 2026-10-13",
-            "date": "2026-10-31",
-            "note": "Pinned /StatsManager/save_configuration POST requestBody/content/application~1json declares changes as an array of domain/analyzers objects. Its HTTP wire example explicitly sends Content-Type: application/json and its CLI example uses uapi --input=json. x-readonly=false and x-rollback=none; no deprecated marker is declared. Do not replace the required JSON representation with form encoding."
+      "name": "saveConfiguration",
+      "variant": "POST",
+      "body": "json",
+      "json_body": {
+        "php": "configuration",
+        "alias": "StatsConfigurationInput",
+        "routes": "direct",
+        "required": true,
+        "corrections": {
+          "": {
+            "required": [
+              "changes"
+            ],
+            "evidence": [
+              {
+                "kind": "doc",
+                "version": "pinned 11.138.0.10; attributed reviewer handler 11.138.0.19",
+                "date": "2026-10-31",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "pointer": "/paths/~1StatsManager~1save_configuration/post/requestBody/content/application~1json/schema",
+                "note": "Pinned fields are formally optional. The reviewed handler needs the declared complete structure; apply only this operation-scoped effective requiredness correction. Attributed reviewer source/observations: https://github.com/hostingpal/whm-api-client/pull/73#pullrequestreview-5722705880. This is not successful typed-client/live-write evidence."
+              }
+            ]
+          },
+          "/properties/changes/items": {
+            "required": [
+              "domain",
+              "analyzers"
+            ],
+            "evidence": [
+              {
+                "kind": "doc",
+                "version": "pinned 11.138.0.10; attributed reviewer handler 11.138.0.19",
+                "date": "2026-10-31",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "pointer": "/paths/~1StatsManager~1save_configuration/post/requestBody/content/application~1json/schema/properties/changes/items",
+                "note": "Pinned fields are formally optional. The reviewed handler needs the declared complete structure; apply only this operation-scoped effective requiredness correction. Attributed reviewer source/observations: https://github.com/hostingpal/whm-api-client/pull/73#pullrequestreview-5722705880. This is not successful typed-client/live-write evidence."
+              }
+            ]
+          },
+          "/properties/changes/items/properties/analyzers/items": {
+            "required": [
+              "name",
+              "enabled"
+            ],
+            "evidence": [
+              {
+                "kind": "doc",
+                "version": "pinned 11.138.0.10; attributed reviewer handler 11.138.0.19",
+                "date": "2026-10-31",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "pointer": "/paths/~1StatsManager~1save_configuration/post/requestBody/content/application~1json/schema/properties/changes/items/properties/analyzers/items",
+                "note": "Pinned fields are formally optional. The reviewed handler needs the declared complete structure; apply only this operation-scoped effective requiredness correction. Attributed reviewer source/observations: https://github.com/hostingpal/whm-api-client/pull/73#pullrequestreview-5722705880. This is not successful typed-client/live-write evidence."
+              }
+            ]
+          },
+          "/properties/changes": {
+            "nonempty": true,
+            "evidence": [
+              {
+                "kind": "doc",
+                "version": "pinned 11.138.0.10; attributed reviewer handler 11.138.0.19",
+                "date": "2026-10-31",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "pointer": "/paths/~1StatsManager~1save_configuration/post/requestBody/content/application~1json/schema/properties/changes",
+                "note": "Pinned changes is an array; reviewer direct-UAPI observations reject an empty changes list. Apply only the explicit nonempty input policy; analyzers may remain empty. Attributed reviewer source/observations: https://github.com/hostingpal/whm-api-client/pull/73#pullrequestreview-5722705880. This is not successful typed-client/live-write evidence."
+              }
+            ]
           }
-        ]
-      }
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 11.138.0.10; attributed reviewer handler 11.138.0.19",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1StatsManager~1save_configuration/post/requestBody",
+          "note": "Pinned inline application/json body is formally optional. The reviewed handler and raw missing-body/missing-changes observations require a complete configuration body. Select source POST separately from the fixed effective POST JSON policy. Attributed reviewer source/observations: https://github.com/hostingpal/whm-api-client/pull/73#pullrequestreview-5722705880. This is not successful typed-client/live-write evidence."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Account-wide replacement: explicitly read StatsManager/get_configuration first and supply the complete intended domain/analyzer set for this account. A partial-looking input can reset other settings to defaults. The client performs no implicit read, merge, patch, retry, restore or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "The PR73 reviewer inspected the 11.138.0.19 handler: it builds defaults for every domain/analyzer, applies supplied changes, then saves. Its POD says unspecified configurations are disabled. These are attributed upstream findings, not a successful typed-client write or a promise that every default is universally disabled."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 90 and later; disabled when the WebServer role is disabled. Root/reseller-controlled analyzers cannot be managed by the cPanel user. Pinned x-readonly=false and x-rollback=none remain; this is one direct-UAPI JSON POST, and WHM-bridged UAPI is refused locally after metadata reset."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned 11.138.0.10 body and nested members are formally optional. Attributed 11.138.0.19 reviewer handler findings and raw direct-UAPI missing/empty-changes failures support this operation-scoped effective correction: configuration and every listed member are required, changes is nonempty, and analyzers may be empty. Structural validity does not prove account completeness, ownership, analyzer availability or persistence."
+        },
+        {
+          "kind": "documented",
+          "text": "Input enabled requires native bool and maps to integer 0/1, following the formal integer enum rather than quoted samples. The reviewer reports enabled == 1 comparison; no successful end-to-end write or bool mapping was observed. Names remain strings without a closed analyzer enum. Response row fields remain optional and flags remain integer 0/1. The pinned response description says locked=1 is user-manageable and locked=0 is root/reseller-controlled; do not infer semantics from the name."
+        },
+        {
+          "kind": "documented",
+          "text": "The reviewer reports status 1 can accompany skipped entries and raw_warning for not_owned, not_available or unrecognized entries. Inspect responseMeta() and its warnings and verify persistence separately; success does not establish that every requested setting applied. No raw_warning payload field or synthetic partial-failure exception is added."
+        },
+        {
+          "kind": "documented",
+          "text": "Successful live-write gate whm-api-client-8x0.1.18 remains OPEN. The reviewer's well-formed direct JSON requests on 11.138.0.19 bypassed this client and were blocked by _can_self_manage: You may not modify the weblog analyzer configuration. Passing that gate requires a root/reseller server-wide setting change, which is not authorized. No live call or server setting change is part of this adoption. Review: https://github.com/hostingpal/whm-api-client/pull/73#pullrequestreview-5722705880."
+        }
+      ]
     }
   }
 }

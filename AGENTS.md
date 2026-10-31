@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 91 typed groups cover 1,105 documented operations:
+and cPanel UAPI surface. The 91 typed groups cover 1,106 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -214,7 +214,10 @@ envelope handling. These legacy call() methods do not support JSON or multipart
 request bodies. Separate callJson() entrypoints provide raw JSON POST through WHM
 and direct cPanel UAPI; bridged UAPI rejects JSON locally after metadata reset. The
 pinned inventory includes 13 JSON operations (8 WHM, 5 UAPI) and 9 multipart
-operations (1 WHM, 8 UAPI); selected implementations remain open under
+operations (1 WHM, 8 UAPI). StatsManager/save_configuration is the first typed
+JSON-body adopter; the other 12 JSON endpoints remain deferred, with remaining
+selection/source/route audit under `whm-api-client-8x0.29.6`. Selected
+implementations and the StatsManager successful-live-write gate remain open under
 `whm-api-client-8x0.1.18` and `whm-api-client-8x0.1.19`. Generic access is not
 typed or live-verified coverage. The 2026-10-13 spec's
 [scaling decision (typed core plus generic calls)](docs/superpowers/specs/2026-10-13-php-client-design.md#scaling-decision-typed-core-plus-generic-calls)
@@ -412,8 +415,44 @@ The resource and web statistics slice exposes eleven GET operations across
 Bandwidth protocols, retention and grouped queries complement resource limits,
 statistics-bar values, domain bandwidth, daily AwStats counters, error logs,
 report-file inventory and analyzer configuration. `StatsManager/save_configuration`
-requires a JSON request body and remains excluded from typed coverage under `8x0.1.18`; generic form
-calls do not provide that transport.
+is the first generated typed JSON-body operation. Generic `call()` remains form-only.
+
+`statsManager()->saveConfiguration($configuration)` replaces the account's analyzer
+configuration. Explicitly call `getConfiguration()` first and prepare the complete
+intended domain/analyzer set. A partial-looking input can reset other settings to
+defaults. The client makes no implicit read, merge, patch, retry, restore or rollback.
+The [PR73 reviewer](https://github.com/hostingpal/whm-api-client/pull/73#pullrequestreview-5722705880)
+reports that the 11.138.0.19 handler builds defaults for every domain/analyzer,
+applies changes, then saves; its POD says unspecified configurations are disabled.
+This is attributed upstream evidence, without a promise that every default is
+universally disabled.
+
+The required input is `array{changes: non-empty-list<array{domain: string,
+analyzers: list<array{name: string, enabled: bool}>}>}`. Every listed field is
+required; `analyzers: []` remains valid. Native bools map to integer 0/1 wire flags.
+Names remain strings without a closed analyzer enum. Unknown members, malformed
+lists, nulls and wrong scalar types fail locally before I/O. Requiredness is an
+operation-scoped correction to the formally optional pinned 11.138.0.10 input,
+bound to the attributed 11.138.0.19 handler and raw server observations. Valid
+structure does not establish completeness, ownership, availability or persistence.
+
+This method sends one direct-cPanel UAPI POST with exactly `Content-Type:
+application/json`. The WHM bridge rejects it locally after clearing metadata.
+Available from cPanel 90 with the WebServer role; root/reseller control can prevent
+user changes. Returned domain/analyzer fields remain optional, with native integer
+0/1 flags. The pinned save-response description says `locked=1` is user-manageable
+and `locked=0` is root/reseller-controlled. Inspect `responseMeta()` and warnings:
+the reviewer reports `raw_warning` for skipped `not_owned`, `not_available` and
+`unrecognized` entries even with status 1. No payload `raw_warning` field is invented;
+success does not prove every requested setting applied. Check persistence separately.
+
+The successful live-write gate in `8x0.1.18` remains **OPEN**. The reviewer's
+well-formed raw direct-JSON requests bypassed this client and were blocked by
+`_can_self_manage` on 11.138.0.19: “You may not modify the weblog analyzer
+configuration”. Passing the gate requires a root/reseller server-wide statistics
+setting change; this work authorizes no such change and ran no live calls.
+Twelve other pinned JSON-body operations remain deferred; remaining
+selection/source/route audit is tracked under `8x0.29.6`.
 
 Pipe-separated grouping, domain, protocol and display arguments are supplied as
 strings and encoded once. Omitted options preserve server defaults; explicit
@@ -2863,8 +2902,8 @@ the depth-limit audit `8x0.10.5` stays open.
 The seven named-map WHM adopters add source-backed typed form POST support for
 create/update_featurelist, cpgreylist_save_common_mail_providers_config,
 reset/set_autossl_provider, convert_addon_initiate_conversion and massmodifyacct.
-Canonical coverage is now 1,105 operations (519 UAPI, 586 WHM), 91 groups and 185
-generated PHP files. See README's Named-map WHM inputs and source-audit's matching
+Canonical coverage is now 1,106 operations (520 UAPI, 586 WHM), 91 groups and 185
+generated files (184 PHP files plus the coverage document). See README's Named-map WHM inputs and source-audit's matching
 entry for evidence and exact contract boundaries. Maps preserve literal keys and
 prefixes, strict bool/string/int values and omission/empty-map distinctions.
 Required feature maps have no default []; empty update disables all features and
@@ -2883,5 +2922,5 @@ pointer evidence. Types and requiredness come from canonical source parameters;
 record fields cannot declare a separate result, route, variant, outcome or method.
 Record expansion appends directly to OrderedFields with original argument origin
 and no repeat-family exception. Keep scalar/index/map/SSL/generic paths unchanged.
-Coverage remains 1,105 operations, 91 groups, 185 generated PHP files. No live batch
+Coverage remains 1,106 operations, 91 groups, 185 generated files (184 PHP files plus the coverage document). No live batch
 write or report submission was performed; comma-delimited report IDs remain in .1.24.
