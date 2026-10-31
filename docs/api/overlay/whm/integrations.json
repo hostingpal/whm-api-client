@@ -3,7 +3,572 @@
   "family": "whm1",
   "group": "Integrations",
   "accessor": "integrations",
+  "class": "Integrations",
+  "description": "Account-scoped cPanel integration links and groups, and server-wide script/Perl hook inventory and management. Configuration, tokens, URLs and hook command payloads may be private. The client does not activate links, fetch returned URLs or invoke hooks; changes are single requests without retry or rollback.",
   "operations": {
-    "whm1:get_remote_access_hash": {"exclude": {"reason": "Deprecated remote access key; API tokens replace it (api_token_list), not as a drop-in.", "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-13", "note": "Flagged deprecated: true; We deprecated this function."}]}}
+    "whm1:create_integration_group": {
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM /create_integration_group has x-readonly=false, x-cpanel-available-version 54; reviewed reads use GET and mutations/unknown-risk retrievals use form POST. Parameter names, requiredness and scalar encodings follow the pinned schema and prose. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. The response schema contains metadata without a data property; no payload is documented."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 54 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "The group belongs to the explicitly supplied cPanel account. Supplying an existing group_id replaces the existing group. The source warns about replacement using create-link wording; no merge behavior is promised."
+        },
+        {
+          "kind": "documented",
+          "text": "order is a required integer with documented minimum 1. The source notes that an item is automatically created under the username menu in the interface header. No data payload is documented."
+        }
+      ],
+      "void": true
+    },
+    "whm1:create_integration_link": {
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM /create_integration_link has x-readonly=false, x-cpanel-available-version 54; reviewed reads use GET and mutations/unknown-risk retrievals use form POST. Parameter names, requiredness and scalar encodings follow the pinned schema and prose. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. The response schema contains metadata without a data property; no payload is documented."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 54 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "The link belongs to the explicitly supplied cPanel account. An existing app value replaces that link. The server creates APP.adminconfig and APP.userconfig under /var/cpanel/integration/links/USERNAME; no client-side file access occurs."
+        },
+        {
+          "kind": "documented",
+          "text": "implements is the caller-supplied service string from get_users_links. The listed billing, customer_service, support and upgrade services are typical examples, not a closed enum. group_id keeps the documented built-in group choices. order is a string; it is not converted to an integer."
+        },
+        {
+          "kind": "documented",
+          "text": "Supply autologin_token_url, url, or both. If the autologin endpoint is absent or unavailable, the server redirects the user to url. The server may POST app, token, user and subscriber_unique_id to the autologin endpoint and process redirect_url or retry/attempt responses; this client only configures the link and never fetches either URL."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitted hide defaults to 0 (display the link); true sends 1 (hide). Omitted group_id places the item under the username menu. Omitted base64_png_image uses a puzzle-piece icon; supplied image data stays an unchanged string and is not decoded or rendered."
+        },
+        {
+          "kind": "documented",
+          "text": "Token and URL arguments may contain credentials and are sensitive. No data payload is documented. Replacement and later link use can affect authentication behavior; the client does not retry or roll back the request."
+        }
+      ],
+      "void": true,
+      "params": {
+        "token": {
+          "sensitive": true
+        },
+        "autologin_token_url": {
+          "sensitive": true
+        },
+        "url": {
+          "sensitive": true
+        }
+      }
+    },
+    "whm1:delete_hook": {
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM /delete_hook has x-readonly=false, x-cpanel-available-version 11.32; reviewed reads use GET and mutations/unknown-risk retrievals use form POST. Parameter names, requiredness and scalar encodings follow the pinned schema and prose. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. The response schema contains metadata without a data property; no payload is documented."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.32 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "This removes the server-wide script hook identified by id, as returned by listHooks(). It does not invoke the hook. No data payload is documented; removal has no client retry or rollback."
+        }
+      ],
+      "void": true
+    },
+    "whm1:edit_hook": {
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM /edit_hook has x-readonly=false, x-cpanel-available-version 11.32; reviewed reads use GET and mutations/unknown-risk retrievals use form POST. Parameter names, requiredness and scalar encodings follow the pinned schema and prose. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. The response schema contains metadata without a data property; no payload is documented."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.32 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "This edits a server-wide hook identified by listHooks(). exectype selects script or module; hook is the absolute script path or module::subroutine invocation. Module hooks call a Perl module and cannot escalate privileges."
+        },
+        {
+          "kind": "documented",
+          "text": "enabled controls whether the hook is enabled. Omitted escalateprivs defaults to 0 and applies only to script hooks; true runs the script as root. stage pre runs before the triggering function and post runs after it. Lower weight runs earlier within the stage; the documented minimum is 1."
+        },
+        {
+          "kind": "documented",
+          "text": "check runs after the hook to check its results; rollback identifies the rollback script. The hook, check and rollback strings may contain private command information and remain sensitive. Editing may cause commands to run when later events trigger the hook; this client does not invoke them automatically."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitted options retain server behavior. The rollback parameter names an upstream hook script, not a client transaction guarantee. No data payload is documented; the client performs one request with no retry or automatic rollback."
+        }
+      ],
+      "void": true,
+      "params": {
+        "check": {
+          "sensitive": true
+        },
+        "hook": {
+          "sensitive": true
+        },
+        "rollback": {
+          "sensitive": true
+        }
+      }
+    },
+    "whm1:get_integration_link_user_config": {
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM /get_integration_link_user_config has x-readonly=false, x-cpanel-available-version 54; reviewed reads use GET and mutations/unknown-risk retrievals use form POST. Parameter names, requiredness and scalar encodings follow the pinned schema and prose. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 54 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "The specified app and explicit cPanel account select the user configuration. The pinned source marks this retrieval x-readonly=false, so it uses form POST."
+        },
+        {
+          "kind": "documented",
+          "text": "Returned userconfig URL, image, subscriber and account values are payload data and may be private. URLs are returned without fetching them, and image strings are not decoded or rendered. Optional fields remain omitted; null is not inferred for documented strings."
+        },
+        {
+          "kind": "documented",
+          "text": "The app parameter repeats a create-link replacement warning in the pinned text. This retrieval does not create a link; the source inconsistency is retained here without inferring a write or an extra request."
+        }
+      ]
+    },
+    "whm1:list_hooks": {
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM /list_hooks has x-readonly=true, x-cpanel-available-version 11.32; reviewed reads use GET and mutations/unknown-risk retrievals use form POST. Parameter names, requiredness and scalar encodings follow the pinned schema and prose. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.32 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "This lists server-wide hook categories, events, stage order, stages, attributes and actions. Action check, description and rollback fields explicitly allow null; other omitted fields remain omitted. Flags retain native integer 0/1 values and weights retain integers."
+        },
+        {
+          "kind": "documented",
+          "text": "Hook paths, command/module text and descriptions are private payload data. No hook script, check script, rollback script or returned URL is executed or fetched by the client."
+        },
+        {
+          "kind": "documented",
+          "text": "The thirteen action leaf types are restored from the original pinned schema because the effective schema expansion depth limit otherwise yields mixed at that depth. Only the explicitly nullable check, description and rollback fields permit null; this is source coverage, not live normalization."
+        }
+      ],
+      "response": {
+        "categories[].events[].stages[].actions[].blocking": {
+          "replace": {
+            "type": "flag"
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /list_hooks data.categories[].events[].stages[].actions[].blocking declares integer with integer 0/1 enum. Effective schema expansion depth 8 otherwise emits mixed here; restore only this explicit pinned leaf type, leaving presence optional. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        },
+        "categories[].events[].stages[].actions[].category": {
+          "replace": {
+            "type": "string"
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /list_hooks data.categories[].events[].stages[].actions[].category declares string. Effective schema expansion depth 8 otherwise emits mixed here; restore only this explicit pinned leaf type, leaving presence optional. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        },
+        "categories[].events[].stages[].actions[].check": {
+          "replace": {
+            "type": "string",
+            "nullable": true
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /list_hooks data.categories[].events[].stages[].actions[].check declares string and nullable:true. Effective schema expansion depth 8 otherwise emits mixed here; restore only this explicit pinned leaf type, leaving presence optional. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        },
+        "categories[].events[].stages[].actions[].description": {
+          "replace": {
+            "type": "string",
+            "nullable": true
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /list_hooks data.categories[].events[].stages[].actions[].description declares string and nullable:true. Effective schema expansion depth 8 otherwise emits mixed here; restore only this explicit pinned leaf type, leaving presence optional. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        },
+        "categories[].events[].stages[].actions[].enabled": {
+          "replace": {
+            "type": "flag"
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /list_hooks data.categories[].events[].stages[].actions[].enabled declares integer with integer 0/1 enum. Effective schema expansion depth 8 otherwise emits mixed here; restore only this explicit pinned leaf type, leaving presence optional. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        },
+        "categories[].events[].stages[].actions[].escalateprivs": {
+          "replace": {
+            "type": "flag"
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /list_hooks data.categories[].events[].stages[].actions[].escalateprivs declares integer with integer 0/1 enum. Effective schema expansion depth 8 otherwise emits mixed here; restore only this explicit pinned leaf type, leaving presence optional. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        },
+        "categories[].events[].stages[].actions[].event": {
+          "replace": {
+            "type": "string"
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /list_hooks data.categories[].events[].stages[].actions[].event declares string. Effective schema expansion depth 8 otherwise emits mixed here; restore only this explicit pinned leaf type, leaving presence optional. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        },
+        "categories[].events[].stages[].actions[].exectype": {
+          "replace": {
+            "type": "string"
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /list_hooks data.categories[].events[].stages[].actions[].exectype declares string. Effective schema expansion depth 8 otherwise emits mixed here; restore only this explicit pinned leaf type, leaving presence optional. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        },
+        "categories[].events[].stages[].actions[].hook": {
+          "replace": {
+            "type": "string"
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /list_hooks data.categories[].events[].stages[].actions[].hook declares string. Effective schema expansion depth 8 otherwise emits mixed here; restore only this explicit pinned leaf type, leaving presence optional. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        },
+        "categories[].events[].stages[].actions[].id": {
+          "replace": {
+            "type": "string"
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /list_hooks data.categories[].events[].stages[].actions[].id declares string. Effective schema expansion depth 8 otherwise emits mixed here; restore only this explicit pinned leaf type, leaving presence optional. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        },
+        "categories[].events[].stages[].actions[].rollback": {
+          "replace": {
+            "type": "string",
+            "nullable": true
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /list_hooks data.categories[].events[].stages[].actions[].rollback declares string and nullable:true. Effective schema expansion depth 8 otherwise emits mixed here; restore only this explicit pinned leaf type, leaving presence optional. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        },
+        "categories[].events[].stages[].actions[].stage": {
+          "replace": {
+            "type": "string"
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /list_hooks data.categories[].events[].stages[].actions[].stage declares string. Effective schema expansion depth 8 otherwise emits mixed here; restore only this explicit pinned leaf type, leaving presence optional. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        },
+        "categories[].events[].stages[].actions[].weight": {
+          "replace": {
+            "type": "int"
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /list_hooks data.categories[].events[].stages[].actions[].weight declares integer. Effective schema expansion depth 8 otherwise emits mixed here; restore only this explicit pinned leaf type, leaving presence optional. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        }
+      }
+    },
+    "whm1:list_integration_groups": {
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM /list_integration_groups has x-readonly=true, x-cpanel-available-version 54; reviewed reads use GET and mutations/unknown-risk retrievals use form POST. Parameter names, requiredness and scalar encodings follow the pinned schema and prose. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 54 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "This lists integration-link groups only for the explicitly supplied cPanel account. The payload field is links and each optional row field is group; an empty links list remains empty. This read does not create, reorder or remove groups."
+        }
+      ]
+    },
+    "whm1:list_integration_links": {
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM /list_integration_links has x-readonly=true, x-cpanel-available-version 54; reviewed reads use GET and mutations/unknown-risk retrievals use form POST. Parameter names, requiredness and scalar encodings follow the pinned schema and prose. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 54 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "This lists integration links only for the explicitly supplied cPanel account. The payload field is links and each optional row field is app. Returned application identifiers are payload data; the client does not follow or activate links."
+        }
+      ]
+    },
+    "whm1:remove_integration_group": {
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM /remove_integration_group has x-readonly=false, x-cpanel-available-version 54; reviewed reads use GET and mutations/unknown-risk retrievals use form POST. Parameter names, requiredness and scalar encodings follow the pinned schema and prose. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 54 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "This removes the integration-link group identified by group_id from the explicitly supplied cPanel account. The source does not specify the effect on links within the group."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned data schema is unconstrained. Preserve decoded JSON fields, scalar values and explicit null without inventing a field schema; absent data remains a payload mismatch. The client does not retry or roll back removal."
+        }
+      ]
+    },
+    "whm1:remove_integration_link": {
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM /remove_integration_link has x-readonly=false, x-cpanel-available-version 54; reviewed reads use GET and mutations/unknown-risk retrievals use form POST. Parameter names, requiredness and scalar encodings follow the pinned schema and prose. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 54 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "This removes the application link identified by app from the explicitly supplied cPanel account. The client does not contact the linked application."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned data schema is unconstrained. Preserve decoded JSON fields, scalar values and explicit null without inventing a field schema; absent data remains a payload mismatch. The client does not retry or roll back removal."
+        }
+      ]
+    },
+    "whm1:reorder_hooks": {
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM /reorder_hooks has x-readonly=false, x-cpanel-available-version 11.32; reviewed reads use GET and mutations/unknown-risk retrievals use form POST. Parameter names, requiredness and scalar encodings follow the pinned schema and prose. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.32 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "ids is caller-serialized comma-separated hook IDs in priority order, obtained from listHooks(). It remains an unchanged string encoded once as a form field; the client does not invent repeated keys, array encoding or JSON serialization."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned hook_order node omits type but documents a list, declares object items and shows an array example. The reviewed correction makes it a list with optional string id and integer weight fields. Lower weight has greater priority; no numeric-string normalization is inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "This changes the server-wide hook order and does not invoke hooks. The client does not retry or automatically restore the previous order."
+        }
+      ],
+      "response": {
+        "hook_order": {
+          "replace": {
+            "type": "list",
+            "items": {
+              "type": "object",
+              "fields": {
+                "id": {
+                  "type": "string"
+                },
+                "weight": {
+                  "type": "int"
+                }
+              }
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /reorder_hooks data.hook_order lacks type, but its description states a list, items declares an object with string id and integer weight, and example is an array of those records. Correct only this missing container type and preserve optional fields. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        }
+      }
+    },
+    "whm1:update_integration_link_token": {
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM /update_integration_link_token has x-readonly=false, x-cpanel-available-version 54; reviewed reads use GET and mutations/unknown-risk retrievals use form POST. Parameter names, requiredness and scalar encodings follow the pinned schema and prose. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 54 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "This replaces the token for the specified application link and explicit cPanel account. Changing the application name instead requires deleting and recreating the link. The token input is sensitive; no linked URL is fetched."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned data schema is unconstrained. Preserve decoded JSON fields, scalar values and explicit null without inventing a field schema; absent data remains a payload mismatch. The client does not retry or roll back token replacement."
+        }
+      ],
+      "params": {
+        "token": {
+          "sensitive": true
+        }
+      }
+    },
+    "whm1:get_remote_access_hash": {
+      "exclude": {
+        "reason": "Deprecated remote access key; API tokens replace it (api_token_list), not as a drop-in.",
+        "evidence": [
+          {
+            "kind": "doc",
+            "version": "pinned 2026-10-13",
+            "date": "2026-10-13",
+            "note": "Flagged deprecated: true; We deprecated this function."
+          }
+        ]
+      }
+    }
   }
 }

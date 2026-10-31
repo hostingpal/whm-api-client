@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 76 typed groups cover 695 documented operations:
+and cPanel UAPI surface. The 77 typed groups cover 707 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -1679,3 +1679,34 @@ Beads block to `CLAUDE.md` (do not run `bd setup claude` to re-add one).
 Preserve the generated Beads blocks and keep project-specific additions outside
 them. If `bd setup` regenerates a Beads block with profile-neutral wording,
 re-apply the team-maintainer wording; the Git Workflow section is authoritative.
+
+
+## WHM integrations and hooks
+
+`whm()->integrations()` exposes all twelve nondeprecated functions: three GET
+reads and nine form POST operations for integration groups/links, token replacement
+and hook listing/editing/deletion/order. The deprecated remote-access-hash function
+remains excluded. The source marks user-configuration retrieval as state-changing;
+it therefore uses POST despite its name.
+
+Tokens, autologin URLs and executable hook/check/rollback text remain sensitive.
+Returned commands, configuration, links and URLs are payload data, never executed
+or fetched. Hook changes can affect later server events and privilege escalation;
+upstream rollback scripts do not create a client transaction guarantee. Per-method
+versions, defaults and exact requiredness remain in generated PHPDoc.
+
+Hook ordering accepts caller-prepared CSV IDs, encoded once; no array serializer
+is inferred. Documented data-free operations return void. Removal/token operations
+with unspecified data schemas retain mixed payloads and reject absence.
+The source's hook_order array is repaired from its items and example evidence.
+
+Thirteen deeply nested action leaves receive explicit source-backed scalar/nullable
+types because the generator's depth limit would otherwise yield mixed values.
+The global recursion limit is unchanged; `8x0.10.5` tracks broader visibility and
+audit of that fallback. These field corrections preserve strict flags and nullable
+check/description/rollback values without inventing new fields.
+
+All twelve methods have independent offline contracts. The fixed two-GET catalog
+reads version and integration-group IDs for designated `npr`. It reads no hook
+commands, credential links or user configuration and performs no hook/link/token
+change or URL fetch. Remaining live work stays under `8x0.2.49`.

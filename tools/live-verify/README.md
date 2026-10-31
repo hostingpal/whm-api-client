@@ -1307,3 +1307,12 @@ separate reviewer report attributes it to the omitted user. Strict status remain
 failed and unwaived. The observed account limit
 empty string is preserved without inferred semantics. ACL/reseller inventories
 are empty. No settings changed; historical evidence and follow-up `8x0.2.36` remain.
+
+## WHM integration groups
+
+Run `WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs php tools/live-verify/whm-integrations.php --output=docs/api/evidence/YYYY-MM-DD-whm-integrations.json`.
+
+Two fixed GETs read version and list_integration_groups with user=npr. Existing
+committed-input, exact request guard, opt-in, verified TLS and new-only structural
+output rules apply. No hook commands, credential links or user configuration are
+read; no hook/link/token mutation or URL fetch runs. `8x0.2.49` retains gaps.

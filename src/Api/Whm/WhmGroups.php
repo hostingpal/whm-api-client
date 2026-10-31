@@ -27,6 +27,8 @@ trait WhmGroups
 
     private ?HostingPlans $hostingPlansGroup = null;
 
+    private ?Integrations $integrationsGroup = null;
+
     private ?Mail $mailGroup = null;
 
     private ?ModSecurity $modSecurityGroup = null;
@@ -108,6 +110,18 @@ trait WhmGroups
     public function hostingPlans(): HostingPlans
     {
         return $this->hostingPlansGroup ??= new HostingPlans($this->run(...));
+    }
+
+    /**
+     * Select the Integrations operations without making a request.
+     *
+     * Account-scoped cPanel integration links and groups, and server-wide script/Perl hook inventory and management.
+     * Configuration, tokens, URLs and hook command payloads may be private. The client does not activate links, fetch
+     * returned URLs or invoke hooks; changes are single requests without retry or rollback.
+     */
+    public function integrations(): Integrations
+    {
+        return $this->integrationsGroup ??= new Integrations($this->run(...));
     }
 
     /**

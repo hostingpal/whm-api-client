@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 76 generated typed groups cover 695 documented operations (see
+The 77 generated typed groups cover 707 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, read-only DNS zones
 and resolvers, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -1790,3 +1790,34 @@ Project-authored code and documentation are licensed under the
 The bundled cPanel documentation snapshots retain their upstream terms and are
 not covered by the project's MIT license. See the
 [third-party documentation notice](docs/api/README.md#licensing).
+
+
+## WHM integrations and hooks
+
+`whm()->integrations()` exposes all twelve nondeprecated functions: three GET
+reads and nine form POST operations for integration groups/links, token replacement
+and hook listing/editing/deletion/order. The deprecated remote-access-hash function
+remains excluded. The source marks user-configuration retrieval as state-changing;
+it therefore uses POST despite its name.
+
+Tokens, autologin URLs and executable hook/check/rollback text remain sensitive.
+Returned commands, configuration, links and URLs are payload data, never executed
+or fetched. Hook changes can affect later server events and privilege escalation;
+upstream rollback scripts do not create a client transaction guarantee. Per-method
+versions, defaults and exact requiredness remain in generated PHPDoc.
+
+Hook ordering accepts caller-prepared CSV IDs, encoded once; no array serializer
+is inferred. Documented data-free operations return void. Removal/token operations
+with unspecified data schemas retain mixed payloads and reject absence.
+The source's hook_order array is repaired from its items and example evidence.
+
+Thirteen deeply nested action leaves receive explicit source-backed scalar/nullable
+types because the generator's depth limit would otherwise yield mixed values.
+The global recursion limit is unchanged; `8x0.10.5` tracks broader visibility and
+audit of that fallback. These field corrections preserve strict flags and nullable
+check/description/rollback values without inventing new fields.
+
+All twelve methods have independent offline contracts. The fixed two-GET catalog
+reads version and integration-group IDs for designated `npr`. It reads no hook
+commands, credential links or user configuration and performs no hook/link/token
+change or URL fetch. Remaining live work stays under `8x0.2.49`.
