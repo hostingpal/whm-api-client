@@ -873,19 +873,18 @@ final readonly class Authentication
      * Documented: The pinned configurations query parameter requires JSON-encoded key-value text with the documented
      * keys color, display_name, icon, icon_type, label and textcolor.
      *
-     * Policy: Supply caller-serialized JSON, form-encoded once; do not pass a PHP object. The native string|int
-     * boundary is the existing scalar representation of a content-based query parameter and does not establish integer
-     * semantics; narrower typing is tracked under whm-api-client-8x0.1.23. Configuration JSON is sensitive. Client
-     * policy: send one request without automatic retry or rollback.
+     * Policy: Supply caller-serialized JSON, form-encoded once; do not pass a PHP object. The native argument is a
+     * string representing the content-based query parameter; JSON syntax is not validated. Configuration JSON is
+     * sensitive. Client policy: send one request without automatic retry or rollback.
      *
      * API-map identity: whm1:set_provider_display_configurations#GET (wire name set_provider_display_configurations;
      * External Authentication).
      *
-     * @param string|int $configurations Caller-serialized JSON-encoded key-value text for the display configuration.
+     * @param string $configurations Caller-serialized JSON-encoded key-value text for the display configuration.
      *     Documented string keys: color (button background RGB color), display_name (identity provider display name),
      *     icon (button icon data), icon_type (icon MIME type, default image/svg+xml), label (button text label),
-     *     textcolor (label RGB color). Pass a JSON string; the existing string|int scalar boundary does not encode PHP
-     *     objects. Form-encoded exactly once.
+     *     textcolor (label RGB color). Pass a JSON string; the client does not encode PHP objects or validate JSON
+     *     syntax. Form-encoded exactly once.
      * @param string $providerId The identity provider's key.
      * @param 'cpaneld'|'whostmgrd'|'webmaild' $serviceName The cPanel & WHM service's name.
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
@@ -893,7 +892,7 @@ final readonly class Authentication
      */
     public function setProviderDisplayConfigurations(
         #[SensitiveParameter]
-        string|int $configurations,
+        string $configurations,
         string $providerId,
         string $serviceName,
     ): void {

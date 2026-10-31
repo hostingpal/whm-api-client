@@ -1115,7 +1115,7 @@
         },
         {
           "kind": "documented",
-          "text": "Supply metadataJson as caller-serialized JSON object text. The client sends the text once as a form field and performs no JSON serialization or decoding. The current scalar native boundary also permits integers but establishes no documented integer semantics; native string-only JSON-content inputs remain tracked under whm-api-client-8x0.1.23. Any omitted metadata keys adopt system defaults. Prefer setAutoSslMetadataKey for one key."
+          "text": "Supply metadataJson as caller-serialized JSON object text. The client sends the text once as a form field and performs no JSON serialization or decoding. The native argument is a string; the client does not validate its JSON syntax. Any omitted metadata keys adopt system defaults. Prefer setAutoSslMetadataKey for one key."
         }
       ],
       "params": {

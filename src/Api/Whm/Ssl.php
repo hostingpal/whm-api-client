@@ -1329,20 +1329,19 @@ final readonly class Ssl
      * client provides no retries or rollback.
      *
      * Documented: Supply metadataJson as caller-serialized JSON object text. The client sends the text once as a form
-     * field and performs no JSON serialization or decoding. The current scalar native boundary also permits integers
-     * but establishes no documented integer semantics; native string-only JSON-content inputs remain tracked under
-     * whm-api-client-8x0.1.23. Any omitted metadata keys adopt system defaults. Prefer setAutoSslMetadataKey for one
+     * field and performs no JSON serialization or decoding. The native argument is a string; the client does not
+     * validate its JSON syntax. Any omitted metadata keys adopt system defaults. Prefer setAutoSslMetadataKey for one
      * key.
      *
      * API-map identity: whm1:set_autossl_metadata#GET (wire name set_autossl_metadata; Auto-Generated Certificates).
      *
-     * @param string|int $metadataJson JSON-encoded object of metadata keys and values that control AutoSSL's behavior.
+     * @param string $metadataJson JSON-encoded object of metadata keys and values that control AutoSSL's behavior.
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/auto-generated-certificates/ssl-set_autossl_metadata
      */
     public function setAutoSslMetadata(
         #[SensitiveParameter]
-        string|int $metadataJson,
+        string $metadataJson,
     ): void {
         ($this->run)(SslSpec::SET_AUTOSSL_METADATA, ['metadataJson' => $metadataJson]);
     }

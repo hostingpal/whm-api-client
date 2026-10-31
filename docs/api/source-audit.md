@@ -3013,7 +3013,7 @@ them `x-readonly=false`.
 
 Repository `sourceRepository` is caller-supplied JSON text, sent once as a form
 parameter. The client does not JSON-encode a PHP object or decode/re-encode the
-string. The existing scalar parameter boundary is `string|int|null`; supply the
+string. The native parameter is `?string`; supply the
 documented serialized JSON string, or omit it. Clone URLs may contain credentials,
 so this argument stays sensitive. The pinned source warns that repository deletion
 permanently removes directory contents. The PR40 reviewer instead observed
@@ -3694,9 +3694,8 @@ Remaining source/live behavior stays under `8x0.2.32`.
 
 WordPressBackup `cancel()` and `start()` return an optional string `site`,
 preserving the pinned outer type across format-only alternatives. Their generated
-input currently accepts `string|int`; supply a string site as documented. Integer
-site semantics are not established. The generator limitation is tracked under
-`8x0.1.23`; it does not weaken the response contract.
+input is `string`, following the same source type without URL/path format
+validation. The existing response replacements remain in place under `8x0.1.23`.
 
 ## Account backup and restoration capture
 
@@ -3764,7 +3763,7 @@ from a real backup and WordPress success remain unobserved. Empty operation list
 after completion and empty Backup inventory despite an existing archive were also
 observed upstream; no new semantics are inferred from them. Follow-up `8x0.2.32`
 retains these limits and future committed mutation evidence. The format-only site
-input limitation remains `8x0.1.23` for correction before the first tagged release.
+input correction is recorded in the `8x0.1.23` scalar-fidelity audit below.
 
 ## WHM database administration (2026-10-31)
 
@@ -4464,9 +4463,9 @@ additional properties through the existing object-values mechanism. Treat their
 results and service/configuration values as private payload data.
 
 Profile activation accepts documented serialized JSON text in its optional role
-argument, with one form-encoding pass. Its native `string|int` boundary does not
-establish integer semantics or automatic object encoding; supply a JSON string.
-The typing limitation remains under `8x0.1.23` before release. Available-tier
+argument, with one form-encoding pass. Its native `?string` argument accepts
+caller-serialized text, with null omission and no automatic object encoding or
+JSON syntax validation. Available-tier
 maps preserve the five pinned named fields alongside dynamic values. Both
 service-configuration reads document `dovecot`; undocumented services are outside
 the contract, and null data from such a service can fail validation. Configuration
@@ -4550,7 +4549,7 @@ documented Dovecot contract; no broad null compatibility is inferred.
 All 49 POST methods remain unobserved. Successful linked-server lookup and
 populated linked inventories require linked servers; tweak-setting null/integer
 variants also remain unobserved under `8x0.2.38`. Profile-activation input typing
-remains under `8x0.1.23` before release. No new live call or capture ran for these
+now preserves serialized strings under `8x0.1.23`. No new live call or capture ran for these
 corrections. Both historical captures remain immutable, and their two masked
 unknown-field observations stay strict failures without acknowledgment or waiver.
 
@@ -4807,9 +4806,9 @@ compatibility, not observations from executing those POST methods.
 
 Provider display configurations accept caller-serialized JSON containing the
 pinned `color`, `display_name`, `icon`, `icon_type`, `label` and `textcolor` keys,
-as a form field encoded once. The native `string|int` boundary has no documented
-integer semantics or automatic object encoding. Before release, `8x0.1.23` must
-also cover this content-based query schema, separately from JSON-body transport.
+as a form field encoded once. The native `string` argument preserves supplied
+serialized bytes without automatic object encoding or JSON syntax validation.
+This content-based query schema does not introduce JSON-body transport.
 TFA removal currently
 supports scalar `user`; the separately documented `user-1`/`user-2` family remains
 under `8x0.1.21`, without assuming equivalence to another numbered encoding.
@@ -4959,8 +4958,8 @@ arrays use documented numbered names; deferred installation uses repeated fields
 whose five lists callers must align by position, including each certificate and
 private key. Neither the client nor its type checks validate equal lengths or
 pairing. An empty bundle requests server-side bundle download. The metadata setter accepts caller-serialized JSON text encoded once as
-a form field; its current native `string|int` boundary does not establish integer
-semantics or automatic object encoding (`8x0.1.23`). This is not a JSON request body.
+a form field; its native `string` argument preserves supplied text without JSON
+syntax validation or automatic object encoding. This is not a JSON request body.
 
 Generation stores key/CSR material even when certificate generation is skipped.
 Service certificate installation requires a separate service restart; the client
@@ -5052,7 +5051,7 @@ automatic retry, rollback or alignment check for the five enqueue lists.
 No new live request, capture, credential/private-key read, server-wide write or
 URL fetch ran for these corrections. Both prior artifacts are immutable.
 Remaining operations, variants, TLS serving/trust, issuance and service-certificate
-changes stay open under `8x0.2.39`; input gaps `8x0.1.28` and `8x0.1.23` remain.
+changes stay open under `8x0.2.39`; input gap `8x0.1.28` remains; the scalar-text correction is recorded under `8x0.1.23` below.
 
 ## Expanded WHM DNS management
 
@@ -5278,9 +5277,8 @@ do not change existing mailboxes. A package in use cannot be deleted;
 `deletePackage()` returns no value. The client performs no retry or rollback.
 
 Feature overrides accept caller-serialized JSON text in form fields, encoded
-once, rather than a JSON body or automatically serialized PHP arrays. The scalar
-native `string|int` input limitation remains under `8x0.1.23`; integer JSON
-semantics are not established. Extension names and optional variables are
+once, rather than a JSON body or automatically serialized PHP arrays. Their native
+arguments are strings; JSON syntax is not validated. Extension names and optional variables are
 case-sensitive. `deletePackageExtension()` removes the named extensions and
 associated variables; the typed input does not invent arbitrary variable fields.
 
@@ -5533,7 +5531,7 @@ strings so values returned by `phpGetHandlers()` can be supplied to
 INI content/directives and pool configuration inputs stay sensitive and are
 encoded once. Pool parameters accept caller-serialized JSON text; they do not
 introduce JSON bodies or automatic PHP-array serialization. The native
-string|int limitation remains under `8x0.1.23`.
+`?string` argument omits null and preserves text without JSON syntax validation.
 
 Impacted-domain selectors are individually optional according to explicit
 either-or-both source prose, but callers must supply a domain or a true
@@ -6032,3 +6030,69 @@ sources and historical evidence are unchanged. No ModSecurity write, rule report
 vendor contact or live compatibility assertion is part of this work. One accepted
 envelope does not establish atomic batch success. `.1.24` retains separate
 comma-delimited report row-ID requirements.
+
+
+## Scalar input source fidelity (`8x0.1.23`, 2026-10-31)
+
+The pinned UAPI source (decompressed SHA-256
+`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`)
+and WHM source (`6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594`)
+contain twelve query parameters declared through `content/application~1json`.
+The table records all twelve, using JSON Pointer locators in the corresponding
+pinned source. No source file or historical live artifact changed.
+
+| Source | Parameter locator | Existing method / disposition | Native argument before → after | Preserved policy |
+| --- | --- | --- | --- | --- |
+| UAPI | `/paths/~1Batch~1strict/get/parameters/0` (`command`) | Unlisted; remains ungenerated | `No typed argument` | No endpoint adoption |
+| UAPI | `/paths/~1Market~1request_ssl_certificates/get/parameters/1` (`certificate`) | Unlisted; remains ungenerated | `No typed argument` | No endpoint adoption |
+| UAPI | `/paths/~1Market~1request_ssl_certificates/get/parameters/3` (`identity_verification`) | Unlisted; remains ungenerated | `No typed argument` | No endpoint adoption |
+| UAPI | `/paths/~1VersionControl~1create/get/parameters/3` (`source_repository`) | versionControl()->create() | `string\|int\|null → ?string` | Sensitive; null omission |
+| UAPI | `/paths/~1VersionControl~1update/get/parameters/3` (`source_repository`) | versionControl()->update() | `string\|int\|null → ?string` | Sensitive; null omission |
+| WHM | `/paths/~1add_override_features_for_user/get/parameters/0` (`features`) | hostingPlans()->addOverrideFeaturesForUser() | `string\|int → string` | Non-sensitive; required |
+| WHM | `/paths/~1php_set_vhost_versions/get/parameters/3` (`php_fpm_pool_parms`) | webServer()->phpSetVhostVersions() | `string\|int\|null → ?string` | Sensitive; null omission |
+| WHM | `/paths/~1remove_override_features_for_user/get/parameters/0` (`features`) | hostingPlans()->removeOverrideFeaturesForUser() | `string\|int → string` | Non-sensitive; required |
+| WHM | `/paths/~1set_autossl_metadata/get/parameters/0` (`metadata_json`) | ssl()->setAutoSslMetadata() | `string\|int → string` | Sensitive; required |
+| WHM | `/paths/~1set_provider_display_configurations/get/parameters/0` (`configurations`) | authentication()->setProviderDisplayConfigurations() | `string\|int → string` | Sensitive; required |
+| WHM | `/paths/~1start_profile_activation/get/parameters/1` (`optional`) | server()->startProfileActivation() | `string\|int\|null → ?string` | Sensitive; null omission |
+| WHM | `/paths/~1update_customizations/get/parameters/1` (`data`) | Unlisted; remains ungenerated | `No typed argument` | No endpoint adoption |
+
+Unlisted operations are outside the `scope: listed` overlay; they are distinct
+from explicit exclusions. No Batch orchestration, Market certificate-ordering or
+customization method is adopted here. VersionControl/create's content schema has
+properties and required names without an explicit root type; its parameter content
+and source description still establish caller-serialized text, not structured input.
+
+The four outer-typed format alternatives are all under WordPressBackup:
+
+| Pinned UAPI schema locator | Before → after |
+| --- | --- |
+| `/paths/~1WordPressBackup~1cancel/get/parameters/0/schema` | `cancel(string\|int $site)` → `cancel(string $site)` |
+| `/paths/~1WordPressBackup~1start/get/parameters/0/schema` | `start(string\|int $site)` → `start(string $site)` |
+| `/paths/~1WordPressBackup~1cancel/get/responses/200/content/application~1json/schema/properties/result/properties/data/properties/site` | Optional string unchanged; existing response replacement retained |
+| `/paths/~1WordPressBackup~1start/get/responses/200/content/application~1json/schema/properties/result/properties/data/properties/site` | Optional string unchanged; existing response replacement retained |
+
+Format-only typeless alternatives retain the outer scalar type, including existing
+enum/nullability handling. Explicit branch types, allOf and richer compositions
+keep their prior lowering; this introduces no general schema intersection or URL,
+hostname, range or format validation.
+
+The eight existing JSON-content arguments remain scalar text, preserving supplied
+bytes before the single outer query/form encoding pass. Their method names, argument
+order, POST policy, sensitivity, null omission and results are unchanged. JSON text
+is never parsed, validated, re-encoded, normalized or repaired. Duplicate keys, large
+numbers, malformed text and empty strings stay supplied text. Unknown/multiple media,
+sibling schema/content and collection mappings fail generation instead of being
+silently treated as JSON strings. This adds no runtime input-validation path.
+
+Native strings follow normal PHP call-site typing. A strict caller's integer raises
+native TypeError before the generated method starts, so prior metadata is retained;
+there is no universal weak-caller rejection or pre-TypeError lifecycle reset. Generic
+`call()` keeps its existing scalar representation and encoding. Structured JSON
+companions and JSON request bodies remain separate work.
+
+Official generation retains 91 groups, 1,105 canonical operations (519 UAPI and
+586 WHM), 36 explicit exclusions and 185 generated files. Every generated spec
+constant, including the existing alternate-input constant, is byte-for-byte equal
+to the base export: response shapes, outcome policy, transport and parameter wire
+metadata are unchanged. Existing indexed, repeat, map, record and additional-method
+coverage remains intact. Validation is offline only; no live API call ran.

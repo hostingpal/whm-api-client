@@ -255,20 +255,20 @@ final readonly class HostingPlans
      * affect package or account capabilities; this method performs one request with no retry or rollback.
      *
      * Documented: features is caller-supplied serialized JSON text, sent once as a form field. The source
-     * application/json content describes a query parameter, not a JSON request body. The existing scalar boundary is
-     * string|int; integer acceptance does not establish valid JSON semantics. No PHP object/list encoder is supplied
-     * (whm-api-client-8x0.1.23). Feature names and switches are not credentials. Use getFeatureNames() for available
-     * names; the CLI and URL examples use quoted 1 for enabled although the formal map declares integer flags.
+     * application/json content describes a query parameter, not a JSON request body. The native argument is a string.
+     * No JSON syntax validation or PHP object/list encoder is supplied. Feature names and switches are not credentials.
+     * Use getFeatureNames() for available names; the CLI and URL examples use quoted 1 for enabled although the formal
+     * map declares integer flags.
      *
      * API-map identity: whm1:add_override_features_for_user#GET (wire name add_override_features_for_user; Feature
      * Access).
      *
      * @param string $user The cPanel username.
-     * @param string|int $features Caller-serialized JSON object mapping feature names to enable/disable values.
+     * @param string $features Caller-serialized JSON object mapping feature names to enable/disable values.
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/feature-access/accounts-add_override_features_for_user
      */
-    public function addOverrideFeaturesForUser(string $user, string|int $features): void
+    public function addOverrideFeaturesForUser(string $user, string $features): void
     {
         ($this->run)(HostingPlansSpec::ADD_OVERRIDE_FEATURES_FOR_USER, ['user' => $user, 'features' => $features]);
     }
@@ -1105,20 +1105,19 @@ final readonly class HostingPlans
      * affect package or account capabilities; this method performs one request with no retry or rollback.
      *
      * Documented: features is caller-supplied serialized JSON text, sent once as a form field. The source
-     * application/json content describes a query parameter, not a JSON request body. The existing scalar boundary is
-     * string|int; integer acceptance does not establish valid JSON semantics. No PHP object/list encoder is supplied
-     * (whm-api-client-8x0.1.23). Feature names and switches are not credentials. Use getFeatureNames() for available
-     * names; only the named overrides are removed.
+     * application/json content describes a query parameter, not a JSON request body. The native argument is a string.
+     * No JSON syntax validation or PHP object/list encoder is supplied. Feature names and switches are not credentials.
+     * Use getFeatureNames() for available names; only the named overrides are removed.
      *
      * API-map identity: whm1:remove_override_features_for_user#GET (wire name remove_override_features_for_user;
      * Feature Access).
      *
      * @param string $user The user's username.
-     * @param string|int $features Caller-serialized JSON array of feature names.
+     * @param string $features Caller-serialized JSON array of feature names.
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/feature-access/accounts-remove_override_features_for_user
      */
-    public function removeOverrideFeaturesForUser(string $user, string|int $features): void
+    public function removeOverrideFeaturesForUser(string $user, string $features): void
     {
         ($this->run)(HostingPlansSpec::REMOVE_OVERRIDE_FEATURES_FOR_USER, ['user' => $user, 'features' => $features]);
     }

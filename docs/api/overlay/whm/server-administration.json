@@ -2071,7 +2071,7 @@
         },
         {
           "kind": "documented",
-          "text": "optional must be caller-supplied JSON text mapping role names to integer 0/1 values. Existing scalar encoding exposes a string|int native boundary; integer acceptance does not establish valid JSON-object semantics. The client does not serialize PHP objects or validate JSON text, and form-encodes supplied text exactly once. Omission disables the profile optional roles, if any; profiles without optional roles ignore it. Freeform text is sensitive."
+          "text": "optional must be caller-supplied JSON text mapping role names to integer 0/1 values. The native argument is a nullable string; null omits the field. The client does not serialize PHP objects or validate JSON text, and form-encodes supplied text exactly once. Omission disables the profile optional roles, if any; profiles without optional roles ignore it. Freeform text is sensitive."
         }
       ],
       "evidence": [

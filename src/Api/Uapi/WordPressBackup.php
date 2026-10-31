@@ -134,14 +134,14 @@ final readonly class WordPressBackup
      *
      * API-map identity: uapi:WordPressBackup/cancel#GET (wire name cancel).
      *
-     * @param string|int $site The WordPress site's URL without the protocol prefix.
+     * @param string $site The WordPress site's URL without the protocol prefix.
      * @return CancelResult
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/wordpress-manager-backups/wordpressbackup-cancel
      */
-    public function cancel(string|int $site): array
+    public function cancel(string $site): array
     {
         /** @var CancelResult $result Validated against WordPressBackupSpec::CANCEL. */
         $result = ($this->run)(WordPressBackupSpec::CANCEL, ['site' => $site]);
@@ -294,14 +294,14 @@ final readonly class WordPressBackup
      *
      * API-map identity: uapi:WordPressBackup/start#GET (wire name start).
      *
-     * @param string|int $site The WordPress site's URL without the protocol prefix.
+     * @param string $site The WordPress site's URL without the protocol prefix.
      * @return StartResult
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/wordpress-manager-backups/wordpressbackup-start
      */
-    public function start(string|int $site): array
+    public function start(string $site): array
     {
         /** @var StartResult $result Validated against WordPressBackupSpec::START. */
         $result = ($this->run)(WordPressBackupSpec::START, ['site' => $site]);

@@ -108,6 +108,15 @@ func (s schemas) shape(sourceID string, obj map[string]any, key string, flat boo
 	}
 	for _, unionKey := range []string{"oneOf", "anyOf"} {
 		if options, ok := obj[unionKey].([]any); ok && len(options) > 0 {
+			if s.formatOnlyScalarAlternatives(sourceID, obj, unionKey, options) {
+				plain := make(map[string]any, len(obj)-1)
+				for name, value := range obj {
+					if name != unionKey {
+						plain[name] = value
+					}
+				}
+				return s.shape(sourceID, plain, key, flat, depth, seen)
+			}
 			return s.union(sourceID, options, depth, seen)
 		}
 	}
@@ -160,6 +169,39 @@ func (s schemas) shape(sourceID string, obj map[string]any, key string, flat boo
 		return TypeSpec{Type: "map", Values: &TypeSpec{Type: "mixed"}}
 	}
 	return TypeSpec{Type: "mixed"}
+}
+
+// formatOnlyScalarAlternatives recognizes annotation-only alternatives under a
+// concrete scalar type. Formats do not replace the outer type; this deliberately does
+// not intersect explicitly typed branches or richer compositions.
+func (s schemas) formatOnlyScalarAlternatives(sourceID string, obj map[string]any, unionKey string, options []any) bool {
+	outerType, _ := obj["type"].(string)
+	switch outerType {
+	case "string", "integer", "number", "boolean":
+	default:
+		return false
+	}
+	for _, name := range []string{"oneOf", "anyOf", "allOf", "discriminator"} {
+		if name != unionKey {
+			if _, present := obj[name]; present {
+				return false
+			}
+		}
+	}
+	for _, option := range options {
+		branch, _, _, ok := s.follow(sourceID, option)
+		if !ok || text(branch["format"]) == "" {
+			return false
+		}
+		for name := range branch {
+			switch name {
+			case "format", "example", "examples", "description", "title":
+			default:
+				return false
+			}
+		}
+	}
+	return true
 }
 
 // allOf merges the parts of an allOf together with the schema's own sibling

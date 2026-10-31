@@ -1027,7 +1027,7 @@
         },
         {
           "kind": "policy",
-          "text": "Multiple vhosts use numbered fields vhost, vhost-1, and so on. Explicit false is sent as 0. The client sends phpFpmPoolParms once in the form field without JSON encoding or decoding, does not validate its inner schema, and retains the existing string|int|null scalar boundary (whm-api-client-8x0.1.23). Treat this configuration text as sensitive. No retry or rollback is provided."
+          "text": "Multiple vhosts use numbered fields vhost, vhost-1, and so on. Explicit false is sent as 0. The client sends phpFpmPoolParms once in the form field without JSON encoding or decoding, does not validate its inner schema, and accepts a nullable string; null omits the field. Treat this configuration text as sensitive. No retry or rollback is provided."
         },
         {
           "kind": "documented",
@@ -1045,7 +1045,7 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
-          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /php_set_vhost_versions: vhost documents incrementing vhost-1/vhost-2 names; use existing numbered encoding (vhost, vhost-1, ...), including scalar single-host support. version prose explicitly accepts any custom PHP package name despite a finite schema enum, so keep string PHPDoc. php_fpm_pool_parms is explicitly a JSON-encoded string containing a hash in a query parameter, not a JSON request body; use existing scalar encoding and require caller-supplied serialized JSON text without decode/re-encode. Existing native scalar boundary is string|int|null (whm-api-client-8x0.1.23)."
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /php_set_vhost_versions: vhost documents incrementing vhost-1/vhost-2 names; use existing numbered encoding (vhost, vhost-1, ...), including scalar single-host support. version prose explicitly accepts any custom PHP package name despite a finite schema enum, so keep string PHPDoc. php_fpm_pool_parms is explicitly a JSON-encoded string containing a hash in a query parameter, not a JSON request body; use existing scalar encoding and require caller-supplied serialized JSON text without decode/re-encode. The native serialized-text argument is a nullable string; null omits the field."
         },
         {
           "kind": "doc",

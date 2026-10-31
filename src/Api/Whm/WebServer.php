@@ -1026,8 +1026,8 @@ final readonly class WebServer
      *
      * Policy: Multiple vhosts use numbered fields vhost, vhost-1, and so on. Explicit false is sent as 0. The client
      * sends phpFpmPoolParms once in the form field without JSON encoding or decoding, does not validate its inner
-     * schema, and retains the existing string|int|null scalar boundary (whm-api-client-8x0.1.23). Treat this
-     * configuration text as sensitive. No retry or rollback is provided.
+     * schema, and accepts a nullable string; null omits the field. Treat this configuration text as sensitive. No retry
+     * or rollback is provided.
      *
      * Documented: The PR 58 PHP.pm source report says the operation loads current version/FPM state and changes
      * supplied values: omitting phpFpm preserves the current FPM state. The pinned version prose accepts custom PHP
@@ -1040,7 +1040,7 @@ final readonly class WebServer
      * @param string $version The virtual host's (vhost) PHP version.
      * @param string|list<string> $vhosts The virtual host's name.
      * @param bool|null $phpFpm Whether PHP-FPM is enabled. Null omits it.
-     * @param string|int|null $phpFpmPoolParms A JSON-encoded string containing a hash of values. Null omits it.
+     * @param string|null $phpFpmPoolParms A JSON-encoded string containing a hash of values. Null omits it.
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/php/php-php_set_vhost_versions
@@ -1050,7 +1050,7 @@ final readonly class WebServer
         string|array $vhosts,
         ?bool $phpFpm = null,
         #[SensitiveParameter]
-        string|int|null $phpFpmPoolParms = null,
+        ?string $phpFpmPoolParms = null,
     ): void {
         ($this->run)(WebServerSpec::PHP_SET_VHOST_VERSIONS, [
             'version' => $version,
