@@ -71,6 +71,10 @@
         {
           "kind": "documented",
           "text": "Vendor names remain returned keys; cpanel rows alone declare the active flag. Custom and vendor rows declare path. Empty profile lists and omitted row fields retain their meaning."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19 through WHM GET, cpanel profile version fields included strings and native integers/floats. Their original representations are preserved; custom and vendor row version fields remain strings. The failed capture also contains a masked unknown cpanel-row field, which remains unwaived and does not add a typed field."
         }
       ],
       "evidence": [
@@ -79,6 +83,13 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /ea4_list_profiles: x-readonly=true; this inventory operation has no secret-bearing request fields and uses GET."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "fingerprint": "docs/api/evidence/2026-10-31-whm-webserver-configuration.json",
+          "note": "Immutable docs/api/evidence/2026-10-31-whm-webserver-configuration.json SHA-256 1522b42c63825127dc0f925e953c545f93ae89ad4c9df2c9d8cc99307a35b31b, revision 3d43621d5ad3acc8a5e4437b916a8701aa77950f, source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. whm1:ea4_list_profiles#GET on the WHM route with method GET, effective contract SHA-256 5f990a7a711935ca9571413b02f98ca2532f61ef4fc9fd6526cf03841615b1e3, payload path cpanel[].version. The captured $.cpanel[].version types are numeric-string, int and float. Keep the pinned string variant unchanged, including its exact spelling, and accept native integer/float values without string coercion. Only cpanel rows change; custom/vendor version fields remain strict strings. Masked $.cpanel[].* string unknown-field findings remain unwaived; no unknown field is named or added. HTTP 200 and API success preceded a payload mismatch on the original contract; this correction does not rewrite or waive that failed capture."
         }
       ],
       "response": {
@@ -225,6 +236,28 @@
               "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /ea4_list_profiles: The data schema declares cpanel and custom profile lists together with additionalProperties vendor-created profile lists. Keep the distinct optional cpanel active flag and declared custom fields, and validate undeclared vendor keys against the documented vendor row list using existing object.values. Every row field is optional; empty lists/maps remain empty."
             }
           ]
+        },
+        "cpanel[].version": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "fingerprint": "docs/api/evidence/2026-10-31-whm-webserver-configuration.json",
+              "note": "Immutable docs/api/evidence/2026-10-31-whm-webserver-configuration.json SHA-256 1522b42c63825127dc0f925e953c545f93ae89ad4c9df2c9d8cc99307a35b31b, revision 3d43621d5ad3acc8a5e4437b916a8701aa77950f, source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. whm1:ea4_list_profiles#GET on the WHM route with method GET, effective contract SHA-256 5f990a7a711935ca9571413b02f98ca2532f61ef4fc9fd6526cf03841615b1e3, payload path cpanel[].version. The captured $.cpanel[].version types are numeric-string, int and float. Keep the pinned string variant unchanged, including its exact spelling, and accept native integer/float values without string coercion. Only cpanel rows change; custom/vendor version fields remain strict strings. Masked $.cpanel[].* string unknown-field findings remain unwaived; no unknown field is named or added. HTTP 200 and API success preceded a payload mismatch on the original contract; this correction does not rewrite or waive that failed capture."
+            }
+          ]
         }
       }
     },
@@ -290,6 +323,10 @@
         {
           "kind": "documented",
           "text": "Available in cPanel 64 and later. This function returns any recommendations attached to your installed\nEasyApache 4 packages. For more information about the recommendation system,\nread our [EasyApache 4 Recommendations](https://go.cpanel.net/EasyApache4Recommendations) documentation.\n\n**Important:**\n\nWhen you disable the [Web Server role](https://go.cpanel.net/howtouseserverprofiles#roles), the system **disables** this function."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19 through WHM GET, top-level recommendation url fields included strings and native booleans. Boolean values are preserved without inferred meaning. Child options[].url remains a string. Masked unknown recommendation-row fields remain unwaived and do not add typed fields."
         }
       ],
       "evidence": [
@@ -298,8 +335,39 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /ea4_recommendations: x-readonly=true; this inventory operation has no secret-bearing request fields and uses GET."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "fingerprint": "docs/api/evidence/2026-10-31-whm-webserver-configuration.json",
+          "note": "Immutable docs/api/evidence/2026-10-31-whm-webserver-configuration.json SHA-256 1522b42c63825127dc0f925e953c545f93ae89ad4c9df2c9d8cc99307a35b31b, revision 3d43621d5ad3acc8a5e4437b916a8701aa77950f, source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. whm1:ea4_recommendations#GET on the WHM route with method GET, effective contract SHA-256 64f465b44664b4deed60983a86b1af69f5322c6d43a17ab6ef91d2e616214e85, payload path {}[].url. The captured $.*[].url types are bool and string. Add only a native boolean alternative to the top recommendation URL field, preserving both boolean values without inventing a false-only enum or meaning. The nested options[].url field was missing in this capture and retains its pinned string contract. Masked $.*[].* list<string> unknown-field findings remain unwaived; no unknown field is named or added. HTTP 200 and API success preceded a payload mismatch on the original contract; this correction does not rewrite or waive that failed capture."
         }
-      ]
+      ],
+      "response": {
+        "{}[].url": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "bool"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "fingerprint": "docs/api/evidence/2026-10-31-whm-webserver-configuration.json",
+              "note": "Immutable docs/api/evidence/2026-10-31-whm-webserver-configuration.json SHA-256 1522b42c63825127dc0f925e953c545f93ae89ad4c9df2c9d8cc99307a35b31b, revision 3d43621d5ad3acc8a5e4437b916a8701aa77950f, source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. whm1:ea4_recommendations#GET on the WHM route with method GET, effective contract SHA-256 64f465b44664b4deed60983a86b1af69f5322c6d43a17ab6ef91d2e616214e85, payload path {}[].url. The captured $.*[].url types are bool and string. Add only a native boolean alternative to the top recommendation URL field, preserving both boolean values without inventing a false-only enum or meaning. The nested options[].url field was missing in this capture and retains its pinned string contract. Masked $.*[].* list<string> unknown-field findings remain unwaived; no unknown field is named or added. HTTP 200 and API success preceded a payload mismatch on the original contract; this correction does not rewrite or waive that failed capture."
+            }
+          ]
+        }
+      }
     },
     "whm1:ea4_save_profile": {
       "method": "POST",
@@ -524,7 +592,11 @@
         },
         {
           "kind": "documented",
-          "text": "All row fields remain optional. PHP version source stays the documented list of optional domain/system_default objects; the stray properties sibling does not establish an object variant. FPM pool fields remain integers and flags remain strict integer 0/1. Pool configuration can contain sensitive values; treat returned configuration and failure payloads as sensitive."
+          "text": "All row fields remain optional. The pinned PHP version source is a list of optional domain/system_default objects; its stray properties sibling alone does not establish an object variant. The separately observed map alternative is recorded below. FPM pool fields remain integers and flags remain strict integer 0/1. Pool configuration can contain sensitive values; treat returned configuration and failure payloads as sensitive."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19 through WHM GET, phpversion_source was an object whose masked dynamic values were strings. Keep the pinned optional-field object list and this string-valued map as separate alternatives. Map keys and strings are preserved without inferring key identities or meanings; scalar string roots and non-string map values remain invalid."
         }
       ],
       "evidence": [
@@ -533,9 +605,54 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /php_get_vhost_versions: x-readonly=true; this inventory operation has no secret-bearing request fields and uses GET."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "fingerprint": "docs/api/evidence/2026-10-31-whm-webserver-configuration.json",
+          "note": "Immutable docs/api/evidence/2026-10-31-whm-webserver-configuration.json SHA-256 1522b42c63825127dc0f925e953c545f93ae89ad4c9df2c9d8cc99307a35b31b, revision 3d43621d5ad3acc8a5e4437b916a8701aa77950f, source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. whm1:php_get_vhost_versions#GET on the WHM route with method GET, effective contract SHA-256 74a3e5b25793063379c7c1c1c4f85e0668116b3c9e4f0f256d77a3f2aeaebe38, payload path versions[].phpversion_source. The pinned source declares phpversion_source as a list of objects with optional domain:string and system_default:integer fields, not a scalar string. Keep that exact list alternative. The captured $.versions[].phpversion_source is an object and $.versions[].phpversion_source.* is string. Add only a string-valued map alternative; preserve keys and exact string values without guessing the masked key names or their meaning. No scalar string or nullable/numeric/boolean map-child alternative is inferred. HTTP 200 and API success preceded a payload mismatch on the original contract; this correction does not rewrite or waive that failed capture."
         }
       ],
-      "unwrap": "versions"
+      "unwrap": "versions",
+      "response": {
+        "versions[].phpversion_source": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "list",
+                "items": {
+                  "type": "object",
+                  "fields": {
+                    "domain": {
+                      "type": "string"
+                    },
+                    "system_default": {
+                      "type": "int"
+                    }
+                  }
+                }
+              },
+              {
+                "type": "map",
+                "values": {
+                  "type": "string"
+                }
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "fingerprint": "docs/api/evidence/2026-10-31-whm-webserver-configuration.json",
+              "note": "Immutable docs/api/evidence/2026-10-31-whm-webserver-configuration.json SHA-256 1522b42c63825127dc0f925e953c545f93ae89ad4c9df2c9d8cc99307a35b31b, revision 3d43621d5ad3acc8a5e4437b916a8701aa77950f, source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. whm1:php_get_vhost_versions#GET on the WHM route with method GET, effective contract SHA-256 74a3e5b25793063379c7c1c1c4f85e0668116b3c9e4f0f256d77a3f2aeaebe38, payload path versions[].phpversion_source. The pinned source declares phpversion_source as a list of objects with optional domain:string and system_default:integer fields, not a scalar string. Keep that exact list alternative. The captured $.versions[].phpversion_source is an object and $.versions[].phpversion_source.* is string. Add only a string-valued map alternative; preserve keys and exact string values without guessing the masked key names or their meaning. No scalar string or nullable/numeric/boolean map-child alternative is inferred. HTTP 200 and API success preceded a payload mismatch on the original contract; this correction does not rewrite or waive that failed capture."
+            }
+          ]
+        }
+      }
     },
     "whm1:php_get_vhosts_by_version": {
       "unwrap": "vhosts",

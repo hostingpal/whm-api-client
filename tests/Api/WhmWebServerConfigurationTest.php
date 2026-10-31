@@ -359,6 +359,116 @@ final class WhmWebServerConfigurationTest extends TestCase
         }
     }
 
+    /** @return iterable<string, array{string, string, string, array<array-key, mixed>}> */
+    public static function observedKnownFieldVariants(): iterable
+    {
+        // Synthetic values and map keys exercise only structural types from the immutable 3d43621 capture.
+        yield 'only cpanel profile version accepts native numeric variants' => [
+            'ea4_list_profiles', 'ea4ListProfiles',
+            '{"cpanel":[{"version":"1.20"},{"version":2},{"version":1.25}],'
+                . '"custom":[{"version":"1.20"}],"synthetic-vendor":[{"version":"2.00"}]}',
+            ['cpanel' => [['version' => '1.20'], ['version' => 2], ['version' => 1.25]],
+                'custom' => [['version' => '1.20']], 'synthetic-vendor' => [['version' => '2.00']]],
+        ];
+        yield 'top recommendation URL preserves both boolean values without invented meaning' => [
+            'ea4_recommendations', 'ea4Recommendations',
+            '{"synthetic-package":[{"url":false},{"url":true},{"url":"https://example.test/info",'
+                . '"options":[{"url":"https://example.test/option"}]}]}',
+            ['synthetic-package' => [
+        ['url' => false], ['url' => true],
+                ['options' => [['url' => 'https://example.test/option']], 'url' => 'https://example.test/info']]],
+        ];
+        yield 'vhost source map preserves synthetic keys and exact string values alongside pinned list' => [
+            'php_get_vhost_versions', 'phpGetVhostVersions',
+            '{"versions":[{"phpversion_source":{"synthetic-source":"0","synthetic-version":"ea-php84"}},'
+                . '{"phpversion_source":[{"domain":"example.test"},{"system_default":1}]},'
+                . '{"phpversion_source":{}},{}]}',
+            [
+        ['phpversion_source' => ['synthetic-source' => '0', 'synthetic-version' => 'ea-php84']],
+                ['phpversion_source' => [['domain' => 'example.test'], ['system_default' => 1]]],
+                ['phpversion_source' => []], []],
+        ];
+    }
+
+    /** @param array<array-key, mixed> $expected */
+    #[DataProvider('observedKnownFieldVariants')]
+    public function testOnlyReviewedKnownFieldsAcceptCapturedStructuralTypes(
+        string $operation,
+        string $method,
+        string $payload,
+        array $expected,
+    ): void {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope($operation, $payload)));
+        self::assertSame($expected, $client->whm()->webServer()->{$method}());
+        self::assertCount(1, $http->getRequests());
+        self::assertSame(1, $client->whm()->responseMeta()?->whmResult());
+    }
+
+    /** @return iterable<string, array{string, string, string}> */
+    public static function unobservedKnownFieldVariants(): iterable
+    {
+        foreach (['null', 'true', '[]', '{}'] as $value) {
+            yield 'cpanel version rejects ' . $value => [
+                'ea4_list_profiles', 'ea4ListProfiles', '{"cpanel":[{"version":' . $value . '}]}',
+            ];
+        }
+        yield 'custom profile version remains string' => [
+            'ea4_list_profiles', 'ea4ListProfiles', '{"custom":[{"version":2}]}',
+        ];
+        yield 'dynamic vendor profile version remains string' => [
+            'ea4_list_profiles', 'ea4ListProfiles', '{"synthetic-vendor":[{"version":1.25}]}',
+        ];
+        yield 'cpanel active flag remains integer' => [
+            'ea4_list_profiles', 'ea4ListProfiles', '{"cpanel":[{"active":false}]}',
+        ];
+        foreach (['null', '0', '1.5', '[]', '{}'] as $value) {
+            yield 'top recommendation URL rejects ' . $value => [
+                'ea4_recommendations', 'ea4Recommendations', '{"synthetic-package":[{"url":' . $value . '}]}',
+            ];
+        }
+        yield 'child recommendation URL remains string' => [
+            'ea4_recommendations', 'ea4Recommendations', '{"synthetic-package":[{"options":[{"url":false}]}]}',
+        ];
+        foreach (['null', 'true', '0', '1.5', '[]', '{}'] as $value) {
+            yield 'vhost source map child rejects ' . $value => [
+                'php_get_vhost_versions', 'phpGetVhostVersions',
+                '{"versions":[{"phpversion_source":{"synthetic-source":' . $value . '}}]}',
+            ];
+        }
+        yield 'vhost source scalar string was never pinned or observed' => [
+            'php_get_vhost_versions', 'phpGetVhostVersions', '{"versions":[{"phpversion_source":"ea-php84"}]}',
+        ];
+        yield 'vhost source pinned list field remains strict' => [
+            'php_get_vhost_versions', 'phpGetVhostVersions',
+            '{"versions":[{"phpversion_source":[{"system_default":"1"}]}]}',
+        ];
+        yield 'vhost source null remains distinct from omission' => [
+            'php_get_vhost_versions', 'phpGetVhostVersions', '{"versions":[{"phpversion_source":null}]}',
+        ];
+        yield 'vhost PHP flag remains integer' => [
+            'php_get_vhost_versions', 'phpGetVhostVersions', '{"versions":[{"php_fpm":"0"}]}',
+        ];
+    }
+
+    #[DataProvider('unobservedKnownFieldVariants')]
+    public function testCapturedFieldCorrectionsDoNotWidenSiblingsOrUnobservedTypes(
+        string $operation,
+        string $method,
+        string $payload,
+    ): void {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope($operation, $payload)));
+        try {
+            $client->whm()->webServer()->{$method}();
+            self::fail('Unobserved type must fail the field contract.');
+        } catch (PayloadMismatchException $exception) {
+            self::assertTrue($exception->outcomeConfirmed);
+            self::assertSame($exception->metadata, $client->whm()->responseMeta());
+        }
+        self::assertCount(1, $http->getRequests());
+    }
+
     private static function envelope(string $operation, ?string $payload): string
     {
         return '{"metadata":{"command":"' . $operation . '","reason":"OK","result":1,"version":1}'

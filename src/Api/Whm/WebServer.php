@@ -34,7 +34,7 @@ use SensitiveParameter;
  *         validation_data?: array{
  *             not_on_server?: list<string>,
  *         },
- *         version?: string,
+ *         version?: string|int|float,
  *     }>,
  *     custom?: list<array{
  *         desc?: string,
@@ -72,7 +72,7 @@ use SensitiveParameter;
  *         text?: string,
  *         url?: string,
  *     }>,
- *     url?: string,
+ *     url?: string|bool,
  * }>>
  * @phpstan-type Ea4SaveProfileResult array{
  *     already_exists?: 0|1,
@@ -109,7 +109,7 @@ use SensitiveParameter;
  *     phpversion_source?: list<array{
  *         domain?: string,
  *         system_default?: int,
- *     }>,
+ *     }>|array<array-key, string>,
  *     version?: string,
  *     vhost?: string,
  * }>
@@ -244,6 +244,11 @@ final readonly class WebServer
      * Documented: Vendor names remain returned keys; cpanel rows alone declare the active flag. Custom and vendor rows
      * declare path. Empty profile lists and omitted row fields retain their meaning.
      *
+     * Observed: On cPanel 11.138.0.19 through WHM GET, cpanel profile version fields included strings and native
+     * integers/floats. Their original representations are preserved; custom and vendor row version fields remain
+     * strings. The failed capture also contains a masked unknown cpanel-row field, which remains unwaived and does not
+     * add a typed field.
+     *
      * API-map identity: whm1:ea4_list_profiles#GET (wire name ea4_list_profiles; EasyApache Settings).
      *
      * @return Ea4ListProfilesResult
@@ -298,6 +303,10 @@ final readonly class WebServer
      * installed EasyApache 4 packages. For more information about the recommendation system, read our [EasyApache 4
      * Recommendations](https://go.cpanel.net/EasyApache4Recommendations) documentation. **Important:** When you disable
      * the [Web Server role](https://go.cpanel.net/howtouseserverprofiles#roles), the system **disables** this function.
+     *
+     * Observed: On cPanel 11.138.0.19 through WHM GET, top-level recommendation url fields included strings and native
+     * booleans. Boolean values are preserved without inferred meaning. Child options[].url remains a string. Masked
+     * unknown recommendation-row fields remain unwaived and do not add typed fields.
      *
      * API-map identity: whm1:ea4_recommendations#GET (wire name ea4_recommendations; EasyApache Settings).
      *
@@ -624,10 +633,16 @@ final readonly class WebServer
      * you disable the [Web Server role](https://go.cpanel.net/howtouseserverprofiles#roles), the system **disables**
      * this function.
      *
-     * Documented: All row fields remain optional. PHP version source stays the documented list of optional
-     * domain/system_default objects; the stray properties sibling does not establish an object variant. FPM pool fields
-     * remain integers and flags remain strict integer 0/1. Pool configuration can contain sensitive values; treat
-     * returned configuration and failure payloads as sensitive.
+     * Documented: All row fields remain optional. The pinned PHP version source is a list of optional
+     * domain/system_default objects; its stray properties sibling alone does not establish an object variant. The
+     * separately observed map alternative is recorded below. FPM pool fields remain integers and flags remain strict
+     * integer 0/1. Pool configuration can contain sensitive values; treat returned configuration and failure payloads
+     * as sensitive.
+     *
+     * Observed: On cPanel 11.138.0.19 through WHM GET, phpversion_source was an object whose masked dynamic values were
+     * strings. Keep the pinned optional-field object list and this string-valued map as separate alternatives. Map keys
+     * and strings are preserved without inferring key identities or meanings; scalar string roots and non-string map
+     * values remain invalid.
      *
      * API-map identity: whm1:php_get_vhost_versions#GET (wire name php_get_vhost_versions; PHP).
      *

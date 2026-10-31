@@ -98,7 +98,13 @@ final class WebServerSpec
                                     'not_on_server' => ['type' => 'list', 'items' => ['type' => 'string']],
                                 ],
                             ],
-                            'version' => ['type' => 'string'],
+                            'version' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'string'],
+                                    ['type' => 'number'],
+                                ],
+                            ],
                         ],
                     ],
                 ],
@@ -173,7 +179,13 @@ final class WebServerSpec
                                 ],
                             ],
                         ],
-                        'url' => ['type' => 'string'],
+                        'url' => [
+                            'type' => 'union',
+                            'anyOf' => [
+                                ['type' => 'string'],
+                                ['type' => 'bool'],
+                            ],
+                        ],
                     ],
                 ],
             ],
@@ -376,13 +388,19 @@ final class WebServerSpec
                                 ],
                             ],
                             'phpversion_source' => [
-                                'type' => 'list',
-                                'items' => [
-                                    'type' => 'object',
-                                    'fields' => [
-                                        'domain' => ['type' => 'string'],
-                                        'system_default' => ['type' => 'int'],
+                                'type' => 'union',
+                                'anyOf' => [
+                                    [
+                                        'type' => 'list',
+                                        'items' => [
+                                            'type' => 'object',
+                                            'fields' => [
+                                                'domain' => ['type' => 'string'],
+                                                'system_default' => ['type' => 'int'],
+                                            ],
+                                        ],
                                     ],
+                                    ['type' => 'map', 'values' => ['type' => 'string']],
                                 ],
                             ],
                             'version' => ['type' => 'string'],
