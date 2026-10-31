@@ -141,6 +141,16 @@ Operation entries (all keys optional):
   value. The setting flows into the effective contract and generated runtime
   spec. Only `ea4SaveProfile(tags: [])` selects it; required packages and other
   list operations retain empty-list rejection.
+  `reject_empty: true` is an evidence-gated client target-scope policy. It requires
+  a required, concrete, nonnullable string or repeat-encoded string/list source,
+  without enums, composition, omission or simultaneous type correction. Only
+  scalar/repeat encodings are supported. Runtime validation rejects missing/null,
+  empty or keyed lists, nonstring entries, blank strings and trimmed `0`; the
+  latter guards Perl-falsey all-domain fallback. Values are not trimmed or DNS
+  validated. The policy currently selects only WHM apply/remove DMARC domains;
+  unflagged parameters and generic calls retain existing behavior. Typed native
+  missing/null failures occur before metadata reset; runner policy failures clear
+  metadata without I/O. Deliberate all-domain calls use documented generic POSTs.
 - `order`: wire names moved to the front of the signature in that order;
   required arguments always precede optional ones, so an order that lists an
   optional parameter before a required one, or an omitted parameter, is a problem.

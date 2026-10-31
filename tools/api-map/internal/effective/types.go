@@ -44,6 +44,7 @@ type Param struct {
 	Description string
 	Required    bool
 	Sensitive   bool
+	RejectEmpty bool `json:",omitempty"` // explicit nonblank, nonzero target policy
 	OmitEmpty   bool `json:",omitempty"` // explicit omission of [] for optional repeat string-list inputs
 }
 

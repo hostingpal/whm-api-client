@@ -181,6 +181,20 @@ final class SensitiveTraceTest extends TestCase
         }
     }
 
+    public function testGuardedTargetsStayOutOfLocalValidationTraceArguments(): void
+    {
+        try {
+            \HostingPal\WhmApiClient\Api\Engine\ArgumentEncoder::encode(
+                ['domains' => ['name' => 'domain', 'encoding' => 'repeat', 'reject_empty' => true]],
+                ['domains' => [self::SECRET, '']],
+            );
+            self::fail('Expected a target-policy failure.');
+        } catch (InvalidArgumentException $exception) {
+            self::assertSecretAbsent($exception);
+            self::assertStringNotContainsString(self::SECRET, $exception->getMessage());
+        }
+    }
+
     public function testPayloadFailuresKeepSecretsOutOfTraceArguments(): void
     {
         [$client, $http] = self::client(false);

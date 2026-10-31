@@ -4056,6 +4056,106 @@ enablement, mutation or repeat capture ran. Both immutable artifacts retain thei
 failed/unwaived status under `8x0.2.35`, and the reviewer reports do not expand the
 committed eight-GET catalog or establish login/mail enforcement.
 
+## Expanded WHM mail management
+
+`whm()->mail()` adds 51 methods while preserving all sixteen existing overlay
+entries, including the fourteen typed greylisting methods and two exclusions.
+The group covers 65 of 67 pinned functions. Twenty additions use GET and 31 use
+form POST for mail authentication/DNS, incoming blocks, outgoing-mail controls,
+mailbox state, diagnostics, SNI, spamd/Exim settings and message/session actions.
+
+Private keys, Exim configuration and mailbox search expressions remain sensitive.
+Syntax validation uses POST for private configuration text despite the pinned GET
+declaration; its POST compatibility remains live-unverified. Source-marked mutating
+checks such as DKIM validation and Exim configuration checking also use POST.
+Message, queue, private-key and mobileconfig results remain private payloads.
+No returned URL or configuration text is executed or fetched.
+
+Repeated and numbered families follow each operation's explicit source spelling.
+Paired DKIM key and manual-MX lists retain caller responsibility for positional
+matching. `installSpfRecords()` accepts one scalar domain/record pair: the record
+suffix family is not established and remains under `8x0.1.21`. Tracking filter,
+sort and chunk controls require explicitly prepared generic parameters where
+the typed source surface does not declare them. No dynamic field is invented.
+
+Per-item domain/mailbox results remain separate from API success. DKIM and DMARC
+validation payloads use source-described lists despite missing formal type nodes.
+Other optional, nullable, opaque, absent and void contracts remain strict.
+Each method preserves availability, role restrictions, defaults, units and effects.
+Hold/release and suspend/unsuspend are distinct operations; expunge can permanently
+remove messages. Enabling SNI can succeed with a warning that it is always enabled;
+the deprecated disabling function stays excluded. The client adds no mail sending,
+retry, rollback, automatic expunge or configuration restart.
+
+All 51 additions have independent offline contracts. The fixed eight-GET catalog
+reads version, default DMARC policy, SNI support/status, blocked country/domain
+inventories, owned mailbox names and forwarding destinations for designated
+`npr`/`npr.rs`. It reads no messages, queue contents, private keys or mobileconfig
+and sends no messages or mutations. These reads establish no mail delivery,
+filtering enforcement, TLS serving or key-installation behavior.
+Remaining live work stays under `8x0.2.48`.
+
+## WHM mail-management read evidence
+
+The initial [WHM mail-management capture](evidence/2026-10-31-whm-mail-management.json)
+at `e0237496016fa8546c3cbd310e302b654c9a9396` on `11.138.0.19` records eight
+HTTP/API successes and seven payload/probe passes. Only forward_to differs:
+get_user_email_forward_destination returns literal empty string alongside the
+pinned list-of-strings contract. The correction preserves that exact literal,
+without inferring its meaning. Scalar-string support is now separately source-derived;
+null remains invalid. The failed original
+artifact is immutable. Its SHA-256 is
+`3b990bd9f1bb37f7e823cf8c36acc7f0d2f6a8a346213bb272d13a55abc4bcc5`.
+
+The [corrected capture](evidence/2026-10-31-whm-mail-management-corrected.json)
+at `437c951` on `11.138.0.19` passes all eight HTTP/API/payload/probe checks
+and strict assessment with zero discrepancies. Blocked-country/domain and mailbox
+lists are empty; they establish no populated rows. Default DMARC, SNI and the
+literal forward destination are read-only API observations, not evidence of DNS,
+mail routing, TLS negotiation or message delivery. No keys, message content,
+queue content or mail configuration were changed or read beyond the fixed catalog.
+All 31 new form POST methods and remaining read variants stay under `8x0.2.48`.
+Corrected SHA-256:
+`f2f0f37ec2fb441a2949728c84cf68d0f9dd2141672bf584e06a88cd500ed6c2`.
+
+### PR61 reviewed corrections and boundaries
+
+The PR61 reviewer reported canonical integer strings for mailbox `messages` and
+`vsize`, null DMARC `record`/`error`, and quoted PTR `ip_version` with null `error`
+on `11.138.0.19` through WHM. These are separate reviewer observations, not a new
+committed capture. Only those integer leaves normalize canonical bounded values;
+other fields retain strict types. Matching DKIM/SPF `error` and SPF `ip_version`
+compatibility follows the shared source family; those variants have no independent
+live observation here. Omission stays distinct from null.
+
+The reviewed `Cpanel/Email/UserForward.pm` alias branch supports a scalar string,
+while `.forward` supports a string list. `forward_to` accepts either, preserving
+exact empty strings without interpreting their meaning. Nonempty strings are
+source-derived support, not new live evidence. Both historical capture files stay
+byte-identical; the original failed finding remains unwaived.
+
+Typed `applyDmarc(policies, domains)` and `removeDmarc(domains)` require explicit
+targets. Client policy rejects blank strings/list entries and trimmed `0` before
+I/O, because falsey omission can select every server domain. This is scope safety,
+not DNS validation. Native missing/null argument failures occur before metadata
+reset; policy errors clear metadata before dispatch. To deliberately select all
+domains, use the generic default-POST `whm()->call('remove_dmarc', [])` or
+`whm()->call('apply_dmarc', ['policy' => $policy])`. Those explicit generic calls
+bypass typed validation and return unvalidated payloads.
+
+`unblockIncomingEmailFromCountry(countryCodes)` now requires an explicit country
+selection as client policy. `setUserEmailForwardDestination(user, forwardTo)` is
+user-first; recipient-count methods put `user` first where present and `startTime`
+before `endTime`. The Exim check's absent/null success payload is accepted based
+on the pinned error-only message description; healthy/repair POST behavior is
+source-only and unobserved here. Present Exim payloads remain strictly validated.
+
+`enableDkim()`, `applyDmarc()` and `installSpfRecords()` retain the Flag outcome
+policy. On API result `0`, the exception retains metadata but loses per-domain
+`data`; pinned docs do not define partial-failure result semantics. Re-read domain
+state before further action and never retry automatically. No new live request,
+mutation, capture, waiver or outcome handling was introduced by these corrections.
+
 ## WHM reseller administration
 
 `whm()->resellers()` covers all 21 pinned functions: seven reads use GET and

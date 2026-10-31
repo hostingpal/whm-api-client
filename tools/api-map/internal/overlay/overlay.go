@@ -100,6 +100,8 @@ type Param struct {
 	Omit        bool   `json:"omit,omitempty"`
 	// OmitEmpty explicitly omits [] on optional repeated string-list inputs.
 	OmitEmpty *bool `json:"omit_empty,omitempty"`
+	// RejectEmpty requires an explicit nonblank, nonzero target.
+	RejectEmpty *bool `json:"reject_empty,omitempty"`
 }
 
 // Correction changes the documented response type at one payload path.

@@ -280,6 +280,7 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 	multi := false
 	scalarMulti := false
 	omitEmpty := false
+	rejectEmpty := false
 	for _, p := range op.Params {
 		description := p.Description
 		if !p.Required {
@@ -290,6 +291,7 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 		}
 		w.paramDoc(indent, p, description)
 		omitEmpty = omitEmpty || p.OmitEmpty
+		rejectEmpty = rejectEmpty || p.RejectEmpty
 		multi = multi || isMultiple(p.Encoding)
 		scalarMulti = scalarMulti || p.Encoding == "suffix-numbered-scalar"
 	}
@@ -304,7 +306,9 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 		w.line(indent + " * @throws PayloadMismatchException If the envelope was accepted but the payload differs from the contract;")
 		w.line(indent + " *     the outcome is not checked.")
 	}
-	if multi {
+	if rejectEmpty {
+		w.line(indent + " * @throws InvalidArgumentException If an explicit target is absent, blank, zero, or an invalid string list.")
+	} else if multi {
 		if omitEmpty {
 			w.line(indent + " * @throws InvalidArgumentException If a non-omittable list argument is empty,")
 			w.line(indent + " *     or any list is keyed or contains non-strings.")
@@ -422,6 +426,9 @@ func specClass(g effective.Group) string {
 				if p.OmitEmpty {
 					setting = ", 'omit_empty' => true"
 				}
+				if p.RejectEmpty {
+					setting += ", 'reject_empty' => true"
+				}
 				entry := "            " + phpString(p.PHP) + " => ['name' => " + phpString(p.Wire) +
 					", 'encoding' => " + phpString(p.Encoding) + setting + "],"
 				if len(entry) <= lineWidth {
@@ -433,6 +440,9 @@ func specClass(g effective.Group) string {
 				w.line("                'encoding' => " + phpString(p.Encoding) + ",")
 				if p.OmitEmpty {
 					w.line("                'omit_empty' => true,")
+				}
+				if p.RejectEmpty {
+					w.line("                'reject_empty' => true,")
 				}
 				w.line("            ],")
 			}

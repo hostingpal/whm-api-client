@@ -68,6 +68,11 @@ func Validate(set Set) []string {
 			}
 			problems = append(problems, missingEvidence(id, op)...)
 			for wire, param := range op.Params {
+				if param.RejectEmpty != nil {
+					if !*param.RejectEmpty || param.Omit || param.OmitEmpty != nil {
+						problems = append(problems, id+": reject_empty must be true and cannot have omit or omit_empty")
+					}
+				}
 				if param.OmitEmpty != nil {
 					if !*param.OmitEmpty {
 						problems = append(problems, id+": omit_empty must be true")
@@ -164,6 +169,9 @@ func missingEvidence(id string, op Operation) []string {
 		}
 		if op.Params[wire].Required != nil {
 			settings = append(settings, "required on parameter "+wire)
+		}
+		if op.Params[wire].RejectEmpty != nil {
+			settings = append(settings, "reject_empty on parameter "+wire)
 		}
 		if op.Params[wire].OmitEmpty != nil {
 			settings = append(settings, "omit_empty on parameter "+wire)

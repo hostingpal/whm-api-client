@@ -337,6 +337,9 @@ func (b *builder) params(op model.Operation, v model.Variant, ov overlay.Operati
 		documented[p.Name] = true
 		if o, ok := ov.Params[p.Name]; ok && o.Omit {
 			omitted[p.Name] = true
+			if o.RejectEmpty != nil {
+				b.problem(op.ID + ": omitted parameter " + p.Name + " cannot have reject_empty")
+			}
 			if o.OmitEmpty != nil {
 				b.problem(op.ID + ": omitted parameter " + p.Name + " cannot have omit_empty")
 			}
@@ -385,6 +388,15 @@ func (b *builder) params(op model.Operation, v model.Variant, ov overlay.Operati
 		}
 		if o.Encoding != "" {
 			param.PHPType, param.DocType, param.Encoding = encodingTypes(o.Encoding, param)
+		}
+		if o.RejectEmpty != nil {
+			if !*o.RejectEmpty || !param.Required || o.OmitEmpty != nil || o.Type != "" ||
+				(param.Encoding != "scalar" && param.Encoding != "repeat") ||
+				!b.schemas.targetString(p.Locator.SourceID, decl["schema"], param.Encoding == "repeat") {
+				b.problem(op.ID + ": parameter " + p.Name + ": reject_empty requires true on a required concrete nonnullable string or repeat string/list source without enums or composition")
+			} else {
+				param.RejectEmpty = true
+			}
 		}
 		if o.OmitEmpty != nil {
 			if !*o.OmitEmpty || decl["required"] == true || param.Required || param.Encoding != "repeat" ||

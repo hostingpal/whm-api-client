@@ -1559,3 +1559,21 @@ The new artifact is `2026-10-31-whm-system-packages-reviewed.json`, SHA-256
 It does not rerun either historical inventory probe or alter their findings.
 No mutation, cache repair, build-log read or URL fetch ran. All seven POSTs and
 remaining compatibility stay under `8x0.2.46`; no repeat is needed for integration.
+
+## Expanded WHM mail inventory
+
+Run `WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs php tools/live-verify/whm-mail-management.php --output=docs/api/evidence/YYYY-MM-DD-whm-mail-management.json`.
+
+Eight fixed GETs read version, default DMARC, SNI support/status, incoming-block
+inventories, owned mailbox names and system forwarding destinations. Account/domain
+selectors are fixed to npr/npr.rs. Existing committed-input, exact request guard,
+opt-in, verified TLS and new-only structural output rules apply. No messages,
+queue contents, keys or mobileconfig are read; no mail is delivered and no state
+changes. Follow-up `8x0.2.48` retains unobserved behavior and variants.
+
+The corrected WHM mail-management capture at 437c951 on 11.138.0.19 passes all
+eight GET observations and strict assessment with zero discrepancies. Only
+get_user_email_forward_destination.forward_to additionally preserves literal empty
+string alongside list<string>, without assigning meaning. PR61 source review
+separately supports arbitrary strings, with null still invalid. Inventories are empty and no mail mutation/delivery/key/queue inspection
+ran. Initial e023749 evidence remains failed and immutable; 8x0.2.48 stays open.

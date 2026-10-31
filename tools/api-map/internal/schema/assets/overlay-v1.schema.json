@@ -52,6 +52,7 @@
         "sensitive": {"type": "boolean"},
         "omit": {"type": "boolean"},
         "omit_empty": {"const": true},
+        "reject_empty": {"const": true},
         "required": {"type": "boolean"},
         "enum_doc": {"type": "boolean"}
       },

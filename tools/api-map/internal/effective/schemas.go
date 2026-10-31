@@ -560,3 +560,20 @@ func mergeNames(base, extra []string) []string {
 	}
 	return sortedKeys(set)
 }
+
+// targetString admits only concrete unrestricted strings or repeated string lists.
+func (s schemas) targetString(sourceID string, node any, listAllowed bool) bool {
+	obj, nextID, _, ok := s.follow(sourceID, node)
+	if !ok || isNullable(obj) {
+		return false
+	}
+	for _, key := range []string{"enum", "allOf", "anyOf", "oneOf", "discriminator"} {
+		if _, present := obj[key]; present {
+			return false
+		}
+	}
+	if obj["type"] == "string" {
+		return true
+	}
+	return listAllowed && obj["type"] == "array" && s.targetString(nextID, obj["items"], false)
+}
