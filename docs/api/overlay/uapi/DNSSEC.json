@@ -54,14 +54,24 @@
         },
         {
           "kind": "documented",
-          "text": "Payload success is an optional integer 0/1 flag for the requested key, separate from the UAPI envelope status. An API-success response can still report success=0 and an error string; inspect the payload. Omitted fields stay absent, empty strings stay empty, and null or absent data is a payload mismatch."
+          "text": "Payload success is an optional integer 0/1 flag for the requested key, separate from the UAPI envelope status. An API-success response can still report success=0 and an error string; inspect the payload. Omitted fields stay absent, empty domain/error text stays empty, and null or absent data is a payload mismatch."
         },
         {
           "kind": "documented",
           "text": "Omitting active retains the documented default of 1. Omitting key_size retains the algorithm/key-type-specific server default: RSA-family KSK 2048/ZSK 1024, algorithm 13 uses 256, and algorithm 14 uses 384 bits. Explicit false remains 0. Add the DS records to the registrar after enabling DNSSEC. Keys cannot be modified in place; the source requires disabling/deleting and re-creating a key to change it."
+        },
+        {
+          "kind": "observed",
+          "text": "The returned new_key_id is normalized to int so it can be passed directly to typed key operations under strict types. Canonical decimal integer strings within PHP integer range and integers are accepted; malformed numeric strings and null fail validation. Optional omission remains distinct. This is a reviewed correction to the pinned string contract, consistent with enableDnssec()."
         }
       ],
       "evidence": [
+        {
+          "kind": "live",
+          "version": "not recorded in PR39 review 5720009405",
+          "date": "2026-10-31",
+          "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/39#pullrequestreview-5720009405 for revision 476d418a0c9bf9781208af9ed1f885bb3d29f4d6 observed add_zone_key POST new_key_id digit strings on npr.rs through direct UAPI and the WHM bridge. The response correction below records the reviewed integer normalization for typed chaining. The review does not state a server version. These lifecycle observations are separate from the committed five-GET empty-zone capture."
+        },
         {
           "kind": "doc",
           "version": "pinned 2026-10-13",
@@ -96,6 +106,22 @@
         },
         "key_size": {
           "sensitive": false
+        }
+      },
+      "response": {
+        "new_key_id": {
+          "type": "int",
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "not recorded in PR39 review 5720009405",
+              "date": "2026-10-31",
+              "note": "Reviewer lifecycle observations at https://github.com/hostingpal/whm-api-client/pull/39#pullrequestreview-5720009405 against revision 476d418a0c9bf9781208af9ed1f885bb3d29f4d6 on npr.rs through direct UAPI and the WHM bridge. Actual add_zone_key method POST returned new_key_id as a digit string, matching the pinned string example. Normalize only lossless canonical in-range integer strings to int, consistent with enable_dnssec and the integer key_id arguments of activate/deactivate/remove and both exports. Integers are also accepted; optional presence and non-nullability stay unchanged. This public type correction rejects arbitrary strings, leading zeros, fractional values and overflow; other response identifiers and success flags are unchanged. The server version is not recorded in the review. Reviewer-reported runtime evidence is separate from the committed five-GET capture, which observed no enabled DNSSEC zone."
+            }
+          ]
         }
       }
     },
@@ -208,6 +234,10 @@
         },
         {
           "kind": "documented",
+          "text": "The pinned key_setup guidance specifies simple (one combined KSK/ZSK) for algo_num greater than 8 and classic (separate KSK and ZSK) for algorithms at or below 8. Omitting keySetup retains the classic default even with algoNum: 13; select keySetup: simple explicitly for the documented combined-key setup."
+        },
+        {
+          "kind": "documented",
           "text": "The enabled map is keyed by domain and preserves optional enabled, new_key_id and nsec_version. Its per-domain flag is distinct from envelope success. Only new_key_id also accepts a lossless canonical integer string, as the pinned example quotes it; it normalizes to int. Other integer contracts are unchanged."
         }
       ],
@@ -311,14 +341,24 @@
         },
         {
           "kind": "documented",
-          "text": "Payload success is an optional integer 0/1 flag for the requested key, separate from the UAPI envelope status. An API-success response can still report success=0 and an error string; inspect the payload. Omitted fields stay absent, empty strings stay empty, and null or absent data is a payload mismatch."
+          "text": "Payload success is an optional integer 0/1 flag for the requested export, separate from the UAPI envelope status. Inspect this flag even when the envelope reports success. This operation has no documented payload error field. Omitted fields stay absent, empty text stays empty, and null or absent data is a payload mismatch."
         },
         {
           "kind": "documented",
           "text": "Returns public DNSKEY record text and an integer identifier. This is the documented read-only key export and uses GET; it does not export the private key."
+        },
+        {
+          "kind": "observed",
+          "text": "Reviewer observations through direct UAPI and the WHM bridge returned key_id as a digit string. Canonical decimal integer strings within PHP integer range normalize to int; other field contracts remain unchanged."
         }
       ],
       "evidence": [
+        {
+          "kind": "live",
+          "version": "not recorded in PR39 review 5720009405",
+          "date": "2026-10-31",
+          "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/39#pullrequestreview-5720009405 for revision 476d418a0c9bf9781208af9ed1f885bb3d29f4d6 observed export_zone_dnskey GET key_id digit strings on npr.rs through direct UAPI and the WHM bridge. The response correction below records the narrow integer normalization. The review does not state a server version. These lifecycle observations are separate from the committed five-GET empty-zone capture."
+        },
         {
           "kind": "doc",
           "version": "pinned 2026-10-13",
@@ -336,6 +376,21 @@
         "key_id": {
           "sensitive": false
         }
+      },
+      "response": {
+        "key_id": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "not recorded in PR39 review 5720009405",
+              "date": "2026-10-31",
+              "note": "Reviewer lifecycle observations at https://github.com/hostingpal/whm-api-client/pull/39#pullrequestreview-5720009405 against revision 476d418a0c9bf9781208af9ed1f885bb3d29f4d6 on npr.rs through direct UAPI and the WHM bridge. Actual export_zone_dnskey method GET returned key_id as a digit string despite the pinned integer schema. Accept only lossless canonical in-range integer strings and normalize to int. Existing integer values, optional presence, non-nullability and success flags remain unchanged. The server version is not recorded in the review. Reviewer-reported runtime evidence is separate from the committed five-GET capture, which observed no enabled DNSSEC zone."
+            }
+          ]
+        }
       }
     },
     "uapi:DNSSEC/export_zone_key": {
@@ -350,14 +405,24 @@
         },
         {
           "kind": "documented",
-          "text": "Payload success is an optional integer 0/1 flag for the requested key, separate from the UAPI envelope status. An API-success response can still report success=0 and an error string; inspect the payload. Omitted fields stay absent, empty strings stay empty, and null or absent data is a payload mismatch."
+          "text": "Payload success is an optional integer 0/1 flag for the requested export, separate from the UAPI envelope status. Inspect this flag even when the envelope reports success. This operation has no documented payload error field. Omitted fields stay absent, empty text stays empty, and null or absent data is a payload mismatch."
         },
         {
           "kind": "documented",
-          "text": "Exports private key material in key_content. The source classifies this operation as non-read-only, so it uses form POST. The returned private data remains sensitive payload data and is not included in response metadata or exception stack arguments."
+          "text": "Exports private key material in key_content. The source classifies this operation as non-read-only, so it uses form POST. Returned private data is absent from response metadata and library exception stack arguments, but PayloadMismatchException::$payload retains the unvalidated response and can contain private key material. Treat both successful results and exception payloads as sensitive; do not log them."
+        },
+        {
+          "kind": "observed",
+          "text": "Reviewer observations through direct UAPI and the WHM bridge returned key_id as a digit string. Canonical decimal integer strings within PHP integer range normalize to int; other field contracts remain unchanged."
         }
       ],
       "evidence": [
+        {
+          "kind": "live",
+          "version": "not recorded in PR39 review 5720009405",
+          "date": "2026-10-31",
+          "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/39#pullrequestreview-5720009405 for revision 476d418a0c9bf9781208af9ed1f885bb3d29f4d6 observed export_zone_key POST key_id digit strings on npr.rs through direct UAPI and the WHM bridge. The response correction below records the narrow integer normalization; private key material is not persisted here. The review does not state a server version. These lifecycle observations are separate from the committed five-GET empty-zone capture."
+        },
         {
           "kind": "doc",
           "version": "pinned 2026-10-13",
@@ -374,6 +439,21 @@
       "params": {
         "key_id": {
           "sensitive": false
+        }
+      },
+      "response": {
+        "key_id": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "not recorded in PR39 review 5720009405",
+              "date": "2026-10-31",
+              "note": "Reviewer lifecycle observations at https://github.com/hostingpal/whm-api-client/pull/39#pullrequestreview-5720009405 against revision 476d418a0c9bf9781208af9ed1f885bb3d29f4d6 on npr.rs through direct UAPI and the WHM bridge. Actual export_zone_key method POST returned key_id as a digit string despite the pinned integer schema. Accept only lossless canonical in-range integer strings and normalize to int. Existing integer values, optional presence, non-nullability and success flags remain unchanged. The server version is not recorded in the review. Reviewer-reported runtime evidence is separate from the committed five-GET capture, which observed no enabled DNSSEC zone. No private key content is persisted in this evidence."
+            }
+          ]
         }
       }
     },
@@ -393,14 +473,24 @@
         },
         {
           "kind": "documented",
-          "text": "The result is a domain-keyed map. Each optional keys map is keyed by the key tag, while optional nsec_details is its sibling. The pinned example incorrectly places nsec_details inside keys; the explicit schema and NSEC description define the sibling placement, which this contract retains. The example's misplaced shape is not evidence of another supported tree."
+          "text": "The result is a domain-keyed map. Each optional keys map is keyed by the key tag, while optional nsec_details is its sibling. The pinned example incorrectly places nsec_details inside keys; the explicit schema and NSEC description define the sibling placement, confirmed by the reviewer through both routes. The misplaced example is not another supported tree."
         },
         {
           "kind": "documented",
-          "text": "All key, digest and NSEC fields retain optional presence. Keys may include sensitive privatekey text; treat the full result as sensitive. NSEC semantics may return only nsec_version. Only the exact example-backed algo_num, created, nsec3_hash_algo_num and nsec3_iterations fields accept lossless canonical integer strings, normalizing to int. nsec3_opt_out also accepts exact quoted 0/1; other flags and integer fields remain strict. These are documentation-derived compatibilities, not live observations."
+          "text": "All key, digest and NSEC fields retain optional presence. Keys may include sensitive privatekey text; treat successful results and PayloadMismatchException::$payload as sensitive. NSEC semantics may return only nsec_version. The example-backed key algo_num, created, nsec3_hash_algo_num and nsec3_iterations accept lossless canonical integer strings, normalizing to int. nsec3_opt_out accepts only exact quoted 0/1; nsec3_narrow and other flags and integer fields remain strict."
+        },
+        {
+          "kind": "observed",
+          "text": "Reviewer observations on enabled zones through direct UAPI and the WHM bridge confirmed digit strings for created, nsec3_hash_algo_num, nsec3_iterations and nsec3_opt_out, and additionally found digit strings in keys[].digests[].algo_num. The digest algorithm now accepts canonical decimal integer strings within PHP integer range and normalizes to int. nsec3_narrow remained an integer. These observations are separate from the committed empty-zone capture."
         }
       ],
       "evidence": [
+        {
+          "kind": "live",
+          "version": "not recorded in PR39 review 5720009405",
+          "date": "2026-10-31",
+          "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/39#pullrequestreview-5720009405 for revision 476d418a0c9bf9781208af9ed1f885bb3d29f4d6 observed populated fetch_ds_records GET through direct UAPI and the WHM bridge on npr.rs: nsec_details is a sibling of keys; created, nsec3_hash_algo_num, nsec3_iterations, nsec3_opt_out and keys[].digests[].algo_num arrive as digit strings, while nsec3_narrow remains an integer. The response correction below preserves the existing normalizations and adds digest algo_num acceptance. The review does not state a server version. These lifecycle observations are separate from the committed five-GET empty-zone capture; no private key or digest material is persisted here."
+        },
         {
           "kind": "doc",
           "version": "pinned 2026-10-13",
@@ -453,7 +543,10 @@
                               "type": "string"
                             },
                             "algo_num": {
-                              "type": "int"
+                              "type": "int",
+                              "accept": [
+                                "numeric-string"
+                              ]
                             },
                             "digest": {
                               "type": "string"
@@ -522,7 +615,13 @@
               "kind": "doc",
               "version": "pinned 2026-10-13",
               "date": "2026-10-31",
-              "note": "Pinned /DNSSEC/fetch_ds_records data.properties.additionalProperties and its keys.properties.additionalProperties are misplaced map declarations. Their descriptions explicitly say return names are the domain and key_tag, and the example uses those names. Replace only this root with the equivalent two dynamic maps, retaining every declared key/digest/NSEC field and all optional presence. nsec_details is a sibling of keys in the schema; preserve that placement despite the inconsistent example nesting. The example specifically quotes key algo_num and created, and NSEC nsec3_hash_algo_num, nsec3_iterations and nsec3_opt_out. Normalize lossless canonical integer strings only on the first four fields; accept only exact quoted 0/1 on nsec3_opt_out. Keep active, bits, flags, key_id, key_tag, digest algo_num and nsec3_narrow strict. privatekey remains an optional string with sensitive payload handling; no private material is included in evidence or fixtures. No live observation is claimed."
+              "note": "Pinned /DNSSEC/fetch_ds_records data.properties.additionalProperties and its keys.properties.additionalProperties are misplaced map declarations. Their descriptions explicitly say return names are the domain and key_tag, and the example uses those names. Replace only this root with the equivalent two dynamic maps, retaining every declared key/digest/NSEC field and all optional presence. nsec_details is a sibling of keys in the schema; preserve that placement despite the inconsistent example nesting. The example specifically quotes key algo_num and created, and NSEC nsec3_hash_algo_num, nsec3_iterations and nsec3_opt_out. Normalize lossless canonical integer strings only on the first four fields; accept only exact quoted 0/1 on nsec3_opt_out. This documentation-derived correction keeps active, bits, flags, key_id, key_tag, digest algo_num and nsec3_narrow strict; the separate reviewer observation below adds digest algo_num compatibility. privatekey remains an optional string with sensitive payload handling; no private material is included in evidence or fixtures. This entry records pinned documentation evidence only."
+            },
+            {
+              "kind": "live",
+              "version": "not recorded in PR39 review 5720009405",
+              "date": "2026-10-31",
+              "note": "Reviewer lifecycle observations at https://github.com/hostingpal/whm-api-client/pull/39#pullrequestreview-5720009405 against revision 476d418a0c9bf9781208af9ed1f885bb3d29f4d6 on npr.rs through direct UAPI and the WHM bridge. Actual fetch_ds_records method GET observed the schema-correct sibling nsec_details and digit strings at nsec_details.nsec3_iterations, nsec3_opt_out, nsec3_hash_algo_num, keys[].created and keys[].digests[].algo_num. Preserve the existing example-backed normalizations and add canonical in-range integer-string acceptance only for digest algo_num; no source enum or minimum is newly enforced. nsec3_opt_out remains exact 0/1 and nsec3_narrow remains strict integer 0/1. Preserve every field, optional presence and null rejection. The server version is not recorded in the review. Reviewer-reported runtime evidence is separate from the committed five-GET capture, which observed no enabled DNSSEC zone. No private key, digest or other live payload values are persisted here."
             }
           ]
         }
@@ -540,14 +639,24 @@
         },
         {
           "kind": "documented",
-          "text": "Payload success is an optional integer 0/1 flag for the requested key, separate from the UAPI envelope status. An API-success response can still report success=0 and an error string; inspect the payload. Omitted fields stay absent, empty strings stay empty, and null or absent data is a payload mismatch."
+          "text": "Payload success is an optional integer 0/1 flag for the requested key, separate from the UAPI envelope status. An API-success response can still report success=0 and an error string; inspect the payload. Omitted fields stay absent, empty domain/error text stays empty, and null or absent data is a payload mismatch."
         },
         {
           "kind": "documented",
-          "text": "Pass the raw private security-key data returned by pdnsutil export-zone-key. key_data is sensitive and form-encoded exactly once; no pre-encoding is required. new_key_id is a documented string and is preserved unchanged."
+          "text": "Pass the raw private security-key data returned by pdnsutil export-zone-key. key_data is sensitive and form-encoded exactly once; no pre-encoding is required."
+        },
+        {
+          "kind": "observed",
+          "text": "The returned new_key_id is normalized to int so it can be passed directly to typed key operations under strict types. Canonical decimal integer strings within PHP integer range and integers are accepted; malformed numeric strings and null fail validation. Optional omission remains distinct. This is a reviewed correction to the pinned string contract, consistent with enableDnssec()."
         }
       ],
       "evidence": [
+        {
+          "kind": "live",
+          "version": "not recorded in PR39 review 5720009405",
+          "date": "2026-10-31",
+          "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/39#pullrequestreview-5720009405 for revision 476d418a0c9bf9781208af9ed1f885bb3d29f4d6 observed import_zone_key POST new_key_id digit strings on npr.rs through direct UAPI and the WHM bridge. The response correction below records the reviewed integer normalization for typed chaining; private key material is not persisted here. The review does not state a server version. These lifecycle observations are separate from the committed five-GET empty-zone capture."
+        },
         {
           "kind": "doc",
           "version": "pinned 2026-10-13",
@@ -568,6 +677,22 @@
         "key_type": {
           "sensitive": false
         }
+      },
+      "response": {
+        "new_key_id": {
+          "type": "int",
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "not recorded in PR39 review 5720009405",
+              "date": "2026-10-31",
+              "note": "Reviewer lifecycle observations at https://github.com/hostingpal/whm-api-client/pull/39#pullrequestreview-5720009405 against revision 476d418a0c9bf9781208af9ed1f885bb3d29f4d6 on npr.rs through direct UAPI and the WHM bridge. Actual import_zone_key method POST returned new_key_id as a digit string, matching the pinned string example. Normalize only lossless canonical in-range integer strings to int, consistent with enable_dnssec and the integer key_id arguments of activate/deactivate/remove and both exports. Integers are also accepted; optional presence and non-nullability stay unchanged. This public type correction rejects arbitrary strings, leading zeros, fractional values and overflow; other response identifiers and success flags are unchanged. The server version is not recorded in the review. Reviewer-reported runtime evidence is separate from the committed five-GET capture, which observed no enabled DNSSEC zone. No private key content is persisted in this evidence."
+            }
+          ]
+        }
       }
     },
     "uapi:DNSSEC/remove_zone_key": {
@@ -586,7 +711,7 @@
         },
         {
           "kind": "documented",
-          "text": "Removes the named security key. The response key_id is documented as a string and is preserved unchanged; the request key_id is an integer identifier."
+          "text": "Removing the named security key is irreversible; the client provides no recovery or rollback. Removing a key still referenced by registrar DS records can break DNSSEC validation, so coordinate the registrar DS change before removal. The response key_id is documented as a string and is preserved unchanged; the request key_id is an integer identifier."
         }
       ],
       "evidence": [

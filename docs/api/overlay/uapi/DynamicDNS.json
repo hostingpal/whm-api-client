@@ -58,7 +58,7 @@
         },
         {
           "kind": "documented",
-          "text": "The ID forms part of the domain address-update URL and is sensitive. Send it only in the form body. A missing or null response payload is invalid; omitted deleted stays omitted."
+          "text": "The ID forms part of the domain address-update URL and is sensitive. When the DDNS domain is deleted, its existing update URL stops working. Send the ID only in the form body. A missing or null response payload is invalid; omitted deleted stays omitted."
         },
         {
           "kind": "documented",
@@ -76,7 +76,7 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
-          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /DynamicDNS/list GET responses/200/content/application~1json/schema/properties/result/properties/data/items/properties/id states that the DDNS ID goes into the URL the client uses to update the domain IP address resolution. Mark the corresponding id input sensitive and keep it in the POST form body."
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /DynamicDNS/list GET responses/200/content/application~1json/schema/properties/result/properties/data/items/properties/id states that the DDNS ID goes into the URL the client uses to update the domain IP address resolution. Mark the corresponding id input sensitive and keep it in the POST form body. Together with /DynamicDNS/delete GET description and data.properties.deleted description, which state that the existing DDNS domain is deleted, this establishes that its existing update URL no longer works."
         }
       ]
     },
@@ -112,7 +112,7 @@
         },
         {
           "kind": "documented",
-          "text": "Assigns a new random ID to the existing DDNS domain. Because the ID forms part of the address-update URL, this changes that URL identifier. The supplied ID is sensitive and remains in the form body; the returned replacement ID is capability data and must not be fetched."
+          "text": "Assigns a new random ID to the existing DDNS domain. Because the ID forms part of the address-update URL, the existing update URL stops working; update DDNS clients to use the replacement URL. The supplied ID is sensitive and remains in the form body; the returned replacement ID is capability data and must not be fetched."
         },
         {
           "kind": "documented",
@@ -134,7 +134,7 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
-          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /DynamicDNS/list GET responses/200/content/application~1json/schema/properties/result/properties/data/items/properties/id states that the DDNS ID goes into the URL the client uses to update the domain IP address resolution. Mark the corresponding id input sensitive and keep it in the POST form body."
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /DynamicDNS/list GET responses/200/content/application~1json/schema/properties/result/properties/data/items/properties/id states that the DDNS ID goes into the URL the client uses to update the domain IP address resolution. Mark the corresponding id input sensitive and keep it in the POST form body. Together with /DynamicDNS/recreate GET description and data.properties.id description, which assign a new ID to the existing DDNS domain, this establishes that its old update URL no longer works and clients need the replacement URL."
         }
       ]
     },

@@ -67,13 +67,16 @@ final class UapiDnssecTest extends TestCase
         }
         if ($function === 'add_zone_key' || $function === 'import_zone_key') {
             return [...$cases,
-                ['{"domain":"example.com","error":"synthetic failure","new_key_id":"001","success":0}',
-                    ['domain' => 'example.com', 'error' => 'synthetic failure', 'new_key_id' => '001', 'success' => 0]],
-                ['{"new_key_id":"1","success":1}', ['new_key_id' => '1', 'success' => 1]]];
+                ['{"domain":"example.com","error":"synthetic failure","new_key_id":"1","success":0}',
+                    ['domain' => 'example.com', 'error' => 'synthetic failure', 'new_key_id' => 1, 'success' => 0]],
+                ['{"new_key_id":"12","success":1}', ['new_key_id' => 12, 'success' => 1]],
+                ['{"new_key_id":12,"success":1}', ['new_key_id' => 12, 'success' => 1]]];
         }
         if ($function === 'export_zone_dnskey') {
             return [...$cases,
                 ['{"dnskey":"synthetic DNSKEY text","key_id":12,"success":1}',
+                    ['dnskey' => 'synthetic DNSKEY text', 'key_id' => 12, 'success' => 1]],
+                ['{"dnskey":"synthetic DNSKEY text","key_id":"12","success":1}',
                     ['dnskey' => 'synthetic DNSKEY text', 'key_id' => 12, 'success' => 1]],
                 ['{"dnskey":"","success":0}', ['dnskey' => '', 'success' => 0]]];
         }
@@ -83,6 +86,8 @@ final class UapiDnssecTest extends TestCase
                     . '"key_tag":33930,"key_type":"ZSK","success":1}',
                     ['domain' => 'example.com', 'key_content' => 'synthetic private key text', 'key_id' => 12,
                         'key_tag' => 33930, 'key_type' => 'ZSK', 'success' => 1]],
+                ['{"key_content":"synthetic private key text","key_id":"12","success":1}',
+                    ['key_content' => 'synthetic private key text', 'key_id' => 12, 'success' => 1]],
                 ['{"key_content":"","success":0}', ['key_content' => '', 'success' => 0]]];
         }
         if ($function === 'enable_dnssec') {
@@ -99,7 +104,7 @@ final class UapiDnssecTest extends TestCase
             return [...$cases,
                 ['{"example.com":{"keys":{"33930":{"active":1,"algo_desc":"RSA/SHA-256",'
                     . '"algo_num":"8","algo_tag":"RSASHA256","bits":1024,"created":"1590002705",'
-                    . '"digests":[{"algo_desc":"SHA-256","algo_num":2,"digest":"synthetic digest"},{}],'
+                    . '"digests":[{"algo_desc":"SHA-256","algo_num":"2","digest":"synthetic digest"},{}],'
                     . '"flags":256,"key_id":2,"key_tag":33930,"key_type":"ZSK","privatekey":"synthetic key"},'
                     . '"99":{"active":0}},"nsec_details":{"nsec3_hash_algo_desc":"SHA-1",'
                     . '"nsec3_hash_algo_num":"1","nsec3_iterations":"3","nsec3_narrow":1,'
@@ -117,7 +122,11 @@ final class UapiDnssecTest extends TestCase
                 ['{"example.com":{},"other.example":{"keys":{"0007":{"created":0,"digests":[]}},'
                     . '"nsec_details":{}}}',
                     ['example.com' => [], 'other.example' => ['keys' => ['0007' => ['created' => 0, 'digests' => []]],
-                        'nsec_details' => []]]]];
+                        'nsec_details' => []]]],
+                ['{"example.com":{"keys":{"7":{"created":"0","digests":[{"algo_num":2}]}},'
+                    . '"nsec_details":{"nsec3_iterations":"0","nsec3_opt_out":"1","nsec3_narrow":0}}}',
+                    ['example.com' => ['keys' => [7 => ['created' => 0, 'digests' => [['algo_num' => 2]]]],
+                        'nsec_details' => ['nsec3_iterations' => 0, 'nsec3_narrow' => 0, 'nsec3_opt_out' => 1]]]]];
         }
         $field = $function === 'set_nsec3' ? 'enabled' : 'disabled';
         return [...$cases,
@@ -197,6 +206,11 @@ final class UapiDnssecTest extends TestCase
                     foreach (['algo_desc', 'digest', 'algo_num'] as $field) {
                         $cases[] = '{"example.com":{"keys":{"1":{"digests":[{"' . $field . '":null}]}}}}';
                     }
+                    foreach (
+                        ['true', '1.5', '"1.5"', '"01"', '"+1"', '" 1"', '"1e2"', '"9223372036854775808"'] as $bad
+                    ) {
+                        $cases[] = '{"example.com":{"keys":{"1":{"digests":[{"algo_num":' . $bad . '}]}}}}';
+                    }
                     array_push(
                         $cases,
                         '{"example.com":{"keys":{"1":{"active":2}}}}',
@@ -232,8 +246,13 @@ final class UapiDnssecTest extends TestCase
                         $cases[] = '{"success":' . $bad . '}';
                     }
                     $id = in_array($function, ['add_zone_key', 'import_zone_key'], true) ? 'new_key_id' : 'key_id';
-                    $intId = in_array($function, ['export_zone_key', 'export_zone_dnskey'], true);
-                    foreach (['null', 'true', '1.5', '[]', $intId ? '"1"' : '1'] as $bad) {
+                    $intId = in_array($function, [
+                        'export_zone_key', 'export_zone_dnskey', 'add_zone_key', 'import_zone_key',
+                    ], true);
+                    $badIds = $intId
+                        ? ['"01"', '"1.0"', '"+1"', '" 1"', '"1e2"', '"9223372036854775808"']
+                        : ['1'];
+                    foreach (['null', 'true', '1.5', '[]', ...$badIds] as $bad) {
                         $cases[] = '{"' . $id . '":' . $bad . '}';
                     }
                     $stringFields = match ($function) {
@@ -251,6 +270,38 @@ final class UapiDnssecTest extends TestCase
                 }
             }
         }
+    }
+
+    #[DataProvider('routes')]
+    public function testCreatedKeyIdentifiersCanBePassedToEveryTypedKeyOperation(string $route): void
+    {
+        [$client, $http] = self::client($route);
+        $dns = $client->uapi('npr')->dnssec();
+        foreach (['add', 'import'] as $source) {
+            $http->addResponse(new Response(200, [], self::envelope($route, '{"new_key_id":"12","success":1}')));
+            $created = $source === 'add'
+                ? $dns->addZoneKey('example.com', 13, 'ksk')
+                : $dns->importZoneKey('example.com', 'synthetic key', 'ksk');
+            self::assertArrayHasKey('new_key_id', $created);
+            $keyId = $created['new_key_id'] ?? null;
+            self::assertSame(12, $keyId);
+            foreach (
+                ['activate_zone_key', 'deactivate_zone_key', 'export_zone_dnskey', 'export_zone_key',
+                    'remove_zone_key'] as $function
+            ) {
+                $http->addResponse(new Response(200, [], self::envelope($route, '{"success":1}')));
+                $result = match ($function) {
+                    'activate_zone_key' => $dns->activateZoneKey('example.com', $keyId),
+                    'deactivate_zone_key' => $dns->deactivateZoneKey('example.com', $keyId),
+                    'export_zone_dnskey' => $dns->exportZoneDnskey('example.com', $keyId),
+                    'export_zone_key' => $dns->exportZoneKey('example.com', $keyId),
+                    default => $dns->removeZoneKey('example.com', $keyId),
+                };
+                self::assertSame(['success' => 1], $result);
+                self::assertRequest($http, $route, $function, 'domain=example.com&key_id=12');
+            }
+        }
+        self::assertCount(12, $http->getRequests());
     }
 
     #[DataProvider('operationRoutes')]
@@ -356,6 +407,7 @@ final class UapiDnssecTest extends TestCase
                     };
                     self::fail('Malformed payload must fail.');
                 } catch (PayloadMismatchException $error) {
+                    self::assertSame(json_decode($payload, true, 512, JSON_THROW_ON_ERROR), $error->payload);
                     foreach ($error->getTrace() as $frame) {
                         if (!str_starts_with($frame['class'] ?? '', 'HostingPal\\WhmApiClient\\')) {
                             continue;

@@ -335,11 +335,21 @@ removal; the client provides no retry or rollback. Dynamic domain/key maps retai
 their returned keys, optional fields and per-domain results separately from the
 API envelope. Single-domain calls use the documented `domain` argument; the
 `domain-0`/`domain-1` family remains tracked under `8x0.1.21`.
+Omitting `keySetup` retains `classic` even with `algoNum: 13`; choose `simple`
+explicitly for the documented combined-key setup above algorithm 8. Key removal
+is irreversible and can break validation while registrar DS records reference it.
+Reviewed key identifiers normalize canonical in-range integer strings to integers
+for direct use in subsequent typed key methods. Digest algorithm identifiers also
+accept that narrow conversion; other flags and numeric fields remain strict.
+Export payloads expose an optional `success` flag, with no promised `error` field.
 
 Imported key material and Dynamic DNS input IDs are sensitive parameters.
-`fetchDsRecords()` may return private-key material, and Dynamic DNS IDs form part
+`exportZoneKey()` results and `PayloadMismatchException::$payload` can contain
+private keys; do not log either. `fetchDsRecords()` may also return private-key
+material, and Dynamic DNS IDs form part
 of update URLs; treat those result values as sensitive and do not fetch update
-URLs while inspecting inventory. `recreate()` replaces the DDNS identifier.
+URLs while inspecting inventory. `recreate()` replaces the DDNS identifier and
+invalidates its previous update URL; deletion also invalidates its update URL.
 `setDescription()` returns no payload. Deletion's source `number` enum `[0, 1]` becomes an integer `0|1` flag under
 the existing generator; zero means the identifier did not exist for deletion.
 Omitted timestamps and explicit null `last_update_time` remain distinct.
@@ -353,7 +363,7 @@ not establish DNS propagation or DNSSEC validation by resolvers.
 The [DNS security capture](docs/api/evidence/2026-10-31-dns-security.json) at
 `372df78` on `11.138.0.19` passes all five GET observations and strict assessment
 with zero discrepancies. DS detail objects and the DDNS inventory are empty;
-populated fields and the other fifteen methods remain offline coverage. No DNS,
+populated fields and the other fifteen methods have no committed live evidence. No DNS,
 key, registrar or DDNS state changed. Follow-up `8x0.2.26` remains open.
 
 The directory groups cover all ten pinned functions, available from cPanel 88.

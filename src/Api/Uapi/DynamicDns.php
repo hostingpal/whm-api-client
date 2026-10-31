@@ -99,8 +99,9 @@ final readonly class DynamicDns
      * existed; one means it existed and is now deleted. A successful deleted=0 is not a UAPI failure; UAPI status=0
      * still fails. No float, string or boolean conversion is inferred.
      *
-     * Documented: The ID forms part of the domain address-update URL and is sensitive. Send it only in the form body. A
-     * missing or null response payload is invalid; omitted deleted stays omitted.
+     * Documented: The ID forms part of the domain address-update URL and is sensitive. When the DDNS domain is deleted,
+     * its existing update URL stops working. Send the ID only in the form body. A missing or null response payload is
+     * invalid; omitted deleted stays omitted.
      *
      * Documented: The pinned operation declares no rollback. Mutations use form POST; the client performs no retry or
      * automatic rollback.
@@ -166,8 +167,8 @@ final readonly class DynamicDns
      * disables this function.
      *
      * Documented: Assigns a new random ID to the existing DDNS domain. Because the ID forms part of the address-update
-     * URL, this changes that URL identifier. The supplied ID is sensitive and remains in the form body; the returned
-     * replacement ID is capability data and must not be fetched.
+     * URL, the existing update URL stops working; update DDNS clients to use the replacement URL. The supplied ID is
+     * sensitive and remains in the form body; the returned replacement ID is capability data and must not be fetched.
      *
      * Documented: The response id is optional. Preserve omission; a missing payload or explicit null is invalid. The
      * client does not retry or roll back this identifier rotation.

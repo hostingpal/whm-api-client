@@ -28,7 +28,7 @@ use SensitiveParameter;
  * @phpstan-type AddZoneKeyResult array{
  *     domain?: string,
  *     error?: string,
- *     new_key_id?: string,
+ *     new_key_id?: int,
  *     success?: 0|1,
  * }
  * @phpstan-type DeactivateZoneKeyResult array{
@@ -92,7 +92,7 @@ use SensitiveParameter;
  * @phpstan-type ImportZoneKeyResult array{
  *     domain?: string,
  *     error?: string,
- *     new_key_id?: string,
+ *     new_key_id?: int,
  *     success?: 0|1,
  * }
  * @phpstan-type RemoveZoneKeyResult array{
@@ -163,12 +163,17 @@ final readonly class Dnssec
      *
      * Documented: Payload success is an optional integer 0/1 flag for the requested key, separate from the UAPI
      * envelope status. An API-success response can still report success=0 and an error string; inspect the payload.
-     * Omitted fields stay absent, empty strings stay empty, and null or absent data is a payload mismatch.
+     * Omitted fields stay absent, empty domain/error text stays empty, and null or absent data is a payload mismatch.
      *
      * Documented: Omitting active retains the documented default of 1. Omitting key_size retains the
      * algorithm/key-type-specific server default: RSA-family KSK 2048/ZSK 1024, algorithm 13 uses 256, and algorithm 14
      * uses 384 bits. Explicit false remains 0. Add the DS records to the registrar after enabling DNSSEC. Keys cannot
      * be modified in place; the source requires disabling/deleting and re-creating a key to change it.
+     *
+     * Observed: The returned new_key_id is normalized to int so it can be passed directly to typed key operations under
+     * strict types. Canonical decimal integer strings within PHP integer range and integers are accepted; malformed
+     * numeric strings and null fail validation. Optional omission remains distinct. This is a reviewed correction to
+     * the pinned string contract, consistent with enableDnssec().
      *
      * API-map identity: uapi:DNSSEC/add_zone_key#GET (wire name add_zone_key).
      *
@@ -287,6 +292,10 @@ final readonly class Dnssec
      * 64-bit salt. use_nsec3=false selects NSEC and the server ignores other NSEC3 settings. Explicit false, zero and
      * empty string are sent without being omitted.
      *
+     * Documented: The pinned key_setup guidance specifies simple (one combined KSK/ZSK) for algo_num greater than 8 and
+     * classic (separate KSK and ZSK) for algorithms at or below 8. Omitting keySetup retains the classic default even
+     * with algoNum: 13; select keySetup: simple explicitly for the documented combined-key setup.
+     *
      * Documented: The enabled map is keyed by domain and preserves optional enabled, new_key_id and nsec_version. Its
      * per-domain flag is distinct from envelope success. Only new_key_id also accepts a lossless canonical integer
      * string, as the pinned example quotes it; it normalizes to int. Other integer contracts are unchanged.
@@ -346,12 +355,17 @@ final readonly class Dnssec
      * Documented: Available from cPanel 88; operates on the selected account. Disabling the DNS role disables this
      * operation. The client performs no automatic retry or rollback.
      *
-     * Documented: Payload success is an optional integer 0/1 flag for the requested key, separate from the UAPI
-     * envelope status. An API-success response can still report success=0 and an error string; inspect the payload.
-     * Omitted fields stay absent, empty strings stay empty, and null or absent data is a payload mismatch.
+     * Documented: Payload success is an optional integer 0/1 flag for the requested export, separate from the UAPI
+     * envelope status. Inspect this flag even when the envelope reports success. This operation has no documented
+     * payload error field. Omitted fields stay absent, empty text stays empty, and null or absent data is a payload
+     * mismatch.
      *
      * Documented: Returns public DNSKEY record text and an integer identifier. This is the documented read-only key
      * export and uses GET; it does not export the private key.
+     *
+     * Observed: Reviewer observations through direct UAPI and the WHM bridge returned key_id as a digit string.
+     * Canonical decimal integer strings within PHP integer range normalize to int; other field contracts remain
+     * unchanged.
      *
      * API-map identity: uapi:DNSSEC/export_zone_dnskey#GET (wire name export_zone_dnskey).
      *
@@ -379,13 +393,19 @@ final readonly class Dnssec
      * Documented: Available from cPanel 84; operates on the selected account. Disabling the DNS role disables this
      * operation. The client performs no automatic retry or rollback.
      *
-     * Documented: Payload success is an optional integer 0/1 flag for the requested key, separate from the UAPI
-     * envelope status. An API-success response can still report success=0 and an error string; inspect the payload.
-     * Omitted fields stay absent, empty strings stay empty, and null or absent data is a payload mismatch.
+     * Documented: Payload success is an optional integer 0/1 flag for the requested export, separate from the UAPI
+     * envelope status. Inspect this flag even when the envelope reports success. This operation has no documented
+     * payload error field. Omitted fields stay absent, empty text stays empty, and null or absent data is a payload
+     * mismatch.
      *
      * Documented: Exports private key material in key_content. The source classifies this operation as non-read-only,
-     * so it uses form POST. The returned private data remains sensitive payload data and is not included in response
-     * metadata or exception stack arguments.
+     * so it uses form POST. Returned private data is absent from response metadata and library exception stack
+     * arguments, but PayloadMismatchException::$payload retains the unvalidated response and can contain private key
+     * material. Treat both successful results and exception payloads as sensitive; do not log them.
+     *
+     * Observed: Reviewer observations through direct UAPI and the WHM bridge returned key_id as a digit string.
+     * Canonical decimal integer strings within PHP integer range normalize to int; other field contracts remain
+     * unchanged.
      *
      * API-map identity: uapi:DNSSEC/export_zone_key#GET (wire name export_zone_key).
      *
@@ -418,14 +438,20 @@ final readonly class Dnssec
      *
      * Documented: The result is a domain-keyed map. Each optional keys map is keyed by the key tag, while optional
      * nsec_details is its sibling. The pinned example incorrectly places nsec_details inside keys; the explicit schema
-     * and NSEC description define the sibling placement, which this contract retains. The example's misplaced shape is
-     * not evidence of another supported tree.
+     * and NSEC description define the sibling placement, confirmed by the reviewer through both routes. The misplaced
+     * example is not another supported tree.
      *
      * Documented: All key, digest and NSEC fields retain optional presence. Keys may include sensitive privatekey text;
-     * treat the full result as sensitive. NSEC semantics may return only nsec_version. Only the exact example-backed
-     * algo_num, created, nsec3_hash_algo_num and nsec3_iterations fields accept lossless canonical integer strings,
-     * normalizing to int. nsec3_opt_out also accepts exact quoted 0/1; other flags and integer fields remain strict.
-     * These are documentation-derived compatibilities, not live observations.
+     * treat successful results and PayloadMismatchException::$payload as sensitive. NSEC semantics may return only
+     * nsec_version. The example-backed key algo_num, created, nsec3_hash_algo_num and nsec3_iterations accept lossless
+     * canonical integer strings, normalizing to int. nsec3_opt_out accepts only exact quoted 0/1; nsec3_narrow and
+     * other flags and integer fields remain strict.
+     *
+     * Observed: Reviewer observations on enabled zones through direct UAPI and the WHM bridge confirmed digit strings
+     * for created, nsec3_hash_algo_num, nsec3_iterations and nsec3_opt_out, and additionally found digit strings in
+     * keys[].digests[].algo_num. The digest algorithm now accepts canonical decimal integer strings within PHP integer
+     * range and normalizes to int. nsec3_narrow remained an integer. These observations are separate from the committed
+     * empty-zone capture.
      *
      * API-map identity: uapi:DNSSEC/fetch_ds_records#GET (wire name fetch_ds_records).
      *
@@ -454,11 +480,15 @@ final readonly class Dnssec
      *
      * Documented: Payload success is an optional integer 0/1 flag for the requested key, separate from the UAPI
      * envelope status. An API-success response can still report success=0 and an error string; inspect the payload.
-     * Omitted fields stay absent, empty strings stay empty, and null or absent data is a payload mismatch.
+     * Omitted fields stay absent, empty domain/error text stays empty, and null or absent data is a payload mismatch.
      *
      * Documented: Pass the raw private security-key data returned by pdnsutil export-zone-key. key_data is sensitive
-     * and form-encoded exactly once; no pre-encoding is required. new_key_id is a documented string and is preserved
-     * unchanged.
+     * and form-encoded exactly once; no pre-encoding is required.
+     *
+     * Observed: The returned new_key_id is normalized to int so it can be passed directly to typed key operations under
+     * strict types. Canonical decimal integer strings within PHP integer range and integers are accepted; malformed
+     * numeric strings and null fail validation. Optional omission remains distinct. This is a reviewed correction to
+     * the pinned string contract, consistent with enableDnssec().
      *
      * API-map identity: uapi:DNSSEC/import_zone_key#GET (wire name import_zone_key).
      *
@@ -499,8 +529,10 @@ final readonly class Dnssec
      * envelope status. An API-success response can still report success=0 and an error string; inspect the payload.
      * Omitted fields stay absent, empty strings stay empty, and null or absent data is a payload mismatch.
      *
-     * Documented: Removes the named security key. The response key_id is documented as a string and is preserved
-     * unchanged; the request key_id is an integer identifier.
+     * Documented: Removing the named security key is irreversible; the client provides no recovery or rollback.
+     * Removing a key still referenced by registrar DS records can break DNSSEC validation, so coordinate the registrar
+     * DS change before removal. The response key_id is documented as a string and is preserved unchanged; the request
+     * key_id is an integer identifier.
      *
      * API-map identity: uapi:DNSSEC/remove_zone_key#GET (wire name remove_zone_key).
      *

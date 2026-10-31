@@ -50,7 +50,7 @@ final class DnssecSpec
             'fields' => [
                 'domain' => ['type' => 'string'],
                 'error' => ['type' => 'string'],
-                'new_key_id' => ['type' => 'string'],
+                'new_key_id' => ['type' => 'int', 'accept' => ['numeric-string']],
                 'success' => ['type' => 'flag'],
             ],
         ],
@@ -139,7 +139,7 @@ final class DnssecSpec
             'type' => 'object',
             'fields' => [
                 'dnskey' => ['type' => 'string'],
-                'key_id' => ['type' => 'int'],
+                'key_id' => ['type' => 'int', 'accept' => ['numeric-string']],
                 'success' => ['type' => 'flag'],
             ],
         ],
@@ -159,7 +159,7 @@ final class DnssecSpec
             'fields' => [
                 'domain' => ['type' => 'string'],
                 'key_content' => ['type' => 'string'],
-                'key_id' => ['type' => 'int'],
+                'key_id' => ['type' => 'int', 'accept' => ['numeric-string']],
                 'key_tag' => ['type' => 'int'],
                 'key_type' => ['type' => 'string'],
                 'success' => ['type' => 'flag'],
@@ -197,7 +197,7 @@ final class DnssecSpec
                                         'type' => 'object',
                                         'fields' => [
                                             'algo_desc' => ['type' => 'string'],
-                                            'algo_num' => ['type' => 'int'],
+                                            'algo_num' => ['type' => 'int', 'accept' => ['numeric-string']],
                                             'digest' => ['type' => 'string'],
                                         ],
                                     ],
@@ -242,7 +242,7 @@ final class DnssecSpec
             'fields' => [
                 'domain' => ['type' => 'string'],
                 'error' => ['type' => 'string'],
-                'new_key_id' => ['type' => 'string'],
+                'new_key_id' => ['type' => 'int', 'accept' => ['numeric-string']],
                 'success' => ['type' => 'flag'],
             ],
         ],
