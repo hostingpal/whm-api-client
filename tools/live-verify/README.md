@@ -1418,6 +1418,115 @@ configuration or link data was requested, and no state changed. It establishes
 no login, TFA challenge, SSH access or mutation compatibility. `8x0.2.40` remains
 open for all unobserved functions and variants.
 
+## Site-builder domain capabilities
+
+Run `WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs php tools/live-verify/site-builders.php --output=docs/api/evidence/YYYY-MM-DD-site-builders.json`.
+
+Five fixed GETs read version and Nova/Sitejet can_create_domains through both UAPI
+routes. Existing opt-in, committed-input, exact request guard, TLS and immutable
+structural-output rules apply. No external account/site creation, private token or
+content retrieval, SSO/OAuth, publishing/restoration or URL fetch runs. Capability
+results do not establish successful creation or rendering. Keep gaps under `8x0.2.57`.
+
+The site-builder capture at fcd979d on 11.138.0.19 records five HTTP-200 reads:
+version and both Sitejet capability reads pass; both Nova capability reads fail
+at the API layer. Strict assessment remains failed with zero schema discrepancies,
+without diagnosing the cause from that capture alone. No account/site/token/content/publish/restore/SSO
+operation or URL fetch ran. Remaining live work stays under 8x0.2.57.
+
+Separately, reviewer 5721328890 on `11.138.0.19` found `Cpanel::API::Nova`
+missing and all six Nova reads they called failing on both routes. All eleven
+Nova methods are unavailable for verification; writes were not executed and all
+Nova response shapes remain unobserved. Their Sitejet reads and local disposable
+account writes are attributed in the [source audit](../../docs/api/source-audit.md#nova-and-sitejet-site-builders); remote service calls,
+successful restoration and published metadata remain unobserved. The historical
+capture stays failed/not_checked without a waiver, and no corrected-head capture
+ran. Remaining gaps stay open under `8x0.2.57`.
+
+## Log metadata administration
+
+Run `WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs php tools/live-verify/log-administration.php --output=docs/api/evidence/YYYY-MM-DD-log-administration.json`.
+
+Eight fixed GETs read version, WHM retention and selected-account settings/archive/
+error-log metadata through both UAPI routes. Existing opt-in, committed-input,
+exact request guard, TLS and immutable structural-output rules apply. No existing
+log contents, archive deletion or settings mutation runs. Keep gaps under `8x0.2.55`.
+
+The corrected log metadata capture at dd5e626 on 11.138.0.19 passes eight GET
+checks and strict assessment with zero discrepancies. The original capture-bound rules normalize only WHM default_retention and
+UAPI get_settings retention_days integer strings and exact quoted archive_logs/
+prune_archive flags. The separate reviewer lines_read correction is described below. Account/archive rows are populated, error-log lists empty. No log
+content, deletion or setting mutation ran. Initial e5476c1 evidence stays failed
+and immutable; remaining live work stays under 8x0.2.55.
+
+Separate review [5721279104](https://github.com/hostingpal/whm-api-client/pull/68#pullrequestreview-5721279104)
+at `984c5c16e47c43741b50e817a6f87149eb2f86d5` on `11.138.0.19` exercised
+all seven methods with synthetic logs/archives on a disposable account, both UAPI
+routes and the single WHM route. Its token was revoked and account/home removed.
+It observed empty direct `view_error_log` with `log_content: []` and string
+`lines_read: "0"`; nonempty direct/bridged counts were integers. This separate
+review observation motivates only that leaf's integer-string compatibility and
+is absent from both committed captures. The review also observed stored false/zero
+settings, unchanged omitted flags after clearing retention, server rejection of
+1000 outside -1..999 and of an empty-argument settings call. Reviewer source
+inspection found WebServer/rawlog requirements in shared `%API`; neither is
+pinned or a disabled-role runtime test. Unreadable/symlink null metadata,
+php_fpm_error_log and actual rotation/pruning remain open under `8x0.2.55`.
+No corrected-head live run is claimed.
+
+## DAV service and shared-addressbook status
+
+Run `WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs php tools/live-verify/dav-calendar.php --output=docs/api/evidence/YYYY-MM-DD-dav-calendar.json` only for an explicitly requested capture.
+
+The fixed seven-GET catalog is diagnostic: version, then shared-addressbook,
+DAV service and Horde status through both UAPI routes. Order, exact URIs, account
+binding, opt-in, committed-input guard, TLS and immutable structural output remain
+unchanged. It reads no private configurations, contacts, calendars or delegations
+and changes no setting/collection. It is no availability guarantee.
+
+The original `628c46e` capture on `11.138.0.19` has seven HTTP 200 observations:
+version and two service-state passes, four shared/Horde API failures with payload
+`not_checked`. Strict status remains failed despite zero schema discrepancies;
+there is no waiver. Separate reviewer report 5721214794 attributes the shared read
+to a return-0 stub and Horde to a missing handler on that version. Two misleading
+overlay success recipes are removed; the fixed catalog retains both diagnostic
+failures. The runner does not reinterpret errors as success, infer false, or
+accept expected-error recipes. No new capture ran for this correction.
+
+The reviewer separately used npr reads on both routes and disposable-account
+writes; those are outside this artifact. Keep remaining live work in `8x0.2.56`.
+
+## GPG public inventory and two-factor status
+
+Run `WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs php tools/live-verify/gpg-two-factor.php --output=docs/api/evidence/YYYY-MM-DD-gpg-two-factor.json`.
+
+Five fixed GETs read version and selected-account public-key inventory/two-factor
+status through both UAPI routes. Existing opt-in, committed-input, exact request
+guard, TLS and immutable structural-output rules apply. No key export, secret-key
+inventory, private/team configuration, key/authentication mutation or login test
+runs. Keep remaining live coverage under `8x0.2.54`.
+
+The GPG/two-factor capture at f213ab8 on 11.138.0.19 passes five GET checks and
+strict assessment with zero discrepancies. Both public-key lists are empty;
+two-factor status has integer is_enabled with issuer omitted. In that capture, no key content,
+secret inventory, private/team configuration, key/authentication mutation or
+login enforcement was tested. Remaining live work stays under 8x0.2.54.
+
+Separate [review 5722555389](https://github.com/hostingpal/whm-api-client/pull/66#pullrequestreview-5722555389)
+at `9b34fd5b791857625f3c7b5085f919a0a81bf124` on `11.138.0.19` used disposable
+`wrvgpg` with token/account/home cleanup confirmed. It observed populated list
+fields through both routes, empty-string generation payload mismatches after keys
+were created, raw-armored import preserving the ID and normalized re-export,
+and leading-zero TOTP API enrollment/removal. Other reviewer routes are unspecified.
+Six POST methods have explicit reviewer execution evidence: GPG generation with
+payload mismatch, secret export, import, deletion, TOTP enrollment and removal.
+The reported fixture secret generation does not separately identify
+`generateUserConfiguration()` or its typed result; team configuration also remains
+unobserved. The narrow response corrections pass offline fixtures; no
+successful typed corrected-head acceptance or login enforcement is claimed.
+This reviewer report does not alter the immutable five-GET artifact or catalog.
+Remaining routes/variants and committed mutation evidence stay under `8x0.2.54`.
+
 ## WHM SSL inventory
 
 ```sh

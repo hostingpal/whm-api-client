@@ -1,0 +1,227 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "DAV",
+  "accessor": "dav",
+  "class": "Dav",
+  "operations": {
+    "uapi:DAV/disable_shared_global_addressbook": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later. Operates on the current cPanel account's webmail accounts. name accepts a cPanel account username or a Webmail email address; omission selects the currently authenticated user. Supplied names are forwarded unchanged, and an empty string is sent rather than omitted."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns an object with an optional integer shared flag: 1 means shared/enabled and 0 means not shared/enabled. This flag is separate from UAPI status; status 0 remains an API failure. Omitted shared stays omitted; explicit null and quoted or boolean flags are not inferred."
+        },
+        {
+          "kind": "observed",
+          "text": "Review 5721214794 on cPanel 11.138.0.19: the reviewer-inspected handler is a stub/no-op that returns shared=0 and changes no shared-addressbook availability. A successful response does not establish contact access or DAV enforcement."
+        },
+        {
+          "kind": "policy",
+          "text": "The client sends one form POST and does not retry or roll back this operation."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /DAV/disable_shared_global_addressbook. Declares x-readonly=false and x-rollback=none; use form POST for the account sharing change. The optional name retains its documented authenticated-user default by omission."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/67#pullrequestreview-5721214794 at head 2db7f7e077d68a63f89fbb15647202f6da832dc7; server implementation references are reviewer-inspected Cpanel/API/DAV.pm and Cpanel/API/CPDAVD.pm, not a new local server inspection. Shared-addressbook enable/disable handlers are no-op stubs on this version, returning shared=0; do not describe them as exposing or withdrawing access."
+        }
+      ]
+    },
+    "uapi:DAV/enable_shared_global_addressbook": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later. Operates on the current cPanel account's webmail accounts. name accepts a cPanel account username or a Webmail email address; omission selects the currently authenticated user. Supplied names are forwarded unchanged, and an empty string is sent rather than omitted."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns an object with an optional integer shared flag: 1 means shared/enabled and 0 means not shared/enabled. This flag is separate from UAPI status; status 0 remains an API failure. Omitted shared stays omitted; explicit null and quoted or boolean flags are not inferred."
+        },
+        {
+          "kind": "observed",
+          "text": "Review 5721214794 on cPanel 11.138.0.19: the reviewer-inspected handler is a stub/no-op that returns shared=0 and changes no shared-addressbook availability. A successful response does not establish contact access or DAV enforcement."
+        },
+        {
+          "kind": "policy",
+          "text": "The client sends one form POST and does not retry or roll back this operation."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /DAV/enable_shared_global_addressbook. Declares x-readonly=false and x-rollback=none; use form POST for the account sharing change. The optional name retains its documented authenticated-user default by omission."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/67#pullrequestreview-5721214794 at head 2db7f7e077d68a63f89fbb15647202f6da832dc7; server implementation references are reviewer-inspected Cpanel/API/DAV.pm and Cpanel/API/CPDAVD.pm, not a new local server inspection. Shared-addressbook enable/disable handlers are no-op stubs on this version, returning shared=0; do not describe them as exposing or withdrawing access."
+        }
+      ]
+    },
+    "uapi:DAV/has_shared_global_addressbook": {
+      "notes": [
+        {
+          "kind": "observed",
+          "text": "Review 5721214794 on cPanel 11.138.0.19: the handler is a stub returning 0. With or without name, including after enable, it raises ApiErrorException with empty errors(); this is an API failure, not a false/not-shared result."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later. Operates on the current cPanel account's webmail accounts. name accepts a cPanel account username or a Webmail email address; omission selects the currently authenticated user. Supplied names are forwarded unchanged, and an empty string is sent rather than omitted."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns an object with an optional integer shared flag: 1 means shared/enabled and 0 means not shared/enabled. This flag is separate from UAPI status; status 0 remains an API failure. Omitted shared stays omitted; explicit null and quoted or boolean flags are not inferred."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/67#pullrequestreview-5721214794 at head 2db7f7e077d68a63f89fbb15647202f6da832dc7; server implementation references are reviewer-inspected Cpanel/API/DAV.pm and Cpanel/API/CPDAVD.pm, not a new local server inspection. Both routes return API failure with empty errors; reviewer inspected the return-0 stub. Keep Flag outcome and the pinned successful object contract; remove the misleading success probe recipe."
+        }
+      ]
+    },
+    "uapi:DAV/get_calendar_contacts_config": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.50 and later. user accepts a cPanel account or valid email account user; omission selects the currently authenticated user. The pinned user schema has two oneOf alternatives, both explicitly string, for account usernames and email addresses. Supplied identifiers are forwarded unchanged."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns optional ActiveSync, non-SSL and SSL connection settings, optional calendar/address-book lists and the selected user. Optional fields remain omitted and empty lists remain empty; no nullable fields are inferred."
+        },
+        {
+          "kind": "policy",
+          "text": "Connection configuration, account identifiers, calendar/contact descriptions, names, paths and URLs may be private payload data. Returned URLs are not fetched and no CalDAV, CardDAV or ActiveSync connection is made. This read does not establish certificate trust, successful client authentication or access enforcement."
+        },
+        {
+          "kind": "observed",
+          "text": "Review 5721214794 on cPanel 11.138.0.19: no_ssl.port and ssl.port were canonical integer strings direct and native integers bridged. Both normalize to integers. activesync.port uses the same source-family/offline policy; ActiveSync was disabled and its port unobserved. Flags and sibling fields remain strict."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /DAV/get_calendar_contacts_config. The optional user parameter has no outer schema type, but schema.oneOf/0 and /1 both explicitly declare type:string and provide username/email examples. The nested configuration payload declares all fields optional and supplies no nullable fields; preserve the two connection sections independently."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/67#pullrequestreview-5721214794 at head 2db7f7e077d68a63f89fbb15647202f6da832dc7; server implementation references are reviewer-inspected Cpanel/API/DAV.pm and Cpanel/API/CPDAVD.pm, not a new local server inspection. no_ssl.port and ssl.port are digit strings direct and integers bridged on both npr reads. Accept canonical bounded integer strings, preserving native integers and strict sibling fields."
+        }
+      ],
+      "response": {
+        "no_ssl.port": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/67#pullrequestreview-5721214794 at head 2db7f7e077d68a63f89fbb15647202f6da832dc7; server implementation references are reviewer-inspected Cpanel/API/DAV.pm and Cpanel/API/CPDAVD.pm, not a new local server inspection. no_ssl.port and ssl.port are digit strings direct and integers bridged on both npr reads. Accept canonical bounded integer strings, preserving native integers and strict sibling fields."
+            }
+          ]
+        },
+        "ssl.port": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/67#pullrequestreview-5721214794 at head 2db7f7e077d68a63f89fbb15647202f6da832dc7; server implementation references are reviewer-inspected Cpanel/API/DAV.pm and Cpanel/API/CPDAVD.pm, not a new local server inspection. no_ssl.port and ssl.port are digit strings direct and integers bridged on both npr reads. Accept canonical bounded integer strings, preserving native integers and strict sibling fields."
+            }
+          ]
+        },
+        "activesync.port": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/67#pullrequestreview-5721214794 at head 2db7f7e077d68a63f89fbb15647202f6da832dc7; server implementation references are reviewer-inspected Cpanel/API/DAV.pm and Cpanel/API/CPDAVD.pm, not a new local server inspection. ActiveSync was disabled and its port unobserved. Apply the same canonical bounded integer-string conversion to this pinned integer port by explicit connection-port source-family compatibility; this is offline/family inference, not operation-field live evidence."
+            }
+          ]
+        }
+      }
+    },
+    "uapi:DAV/is_dav_service_enabled": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.50 and later. No request parameters or defaults are declared in the pinned operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns an optional integer enabled flag, where 1 means enabled and 0 means disabled. This flag is distinct from UAPI status. Explicit null, booleans and quoted flags remain invalid. This service-state read does not connect to DAV or establish client authentication or enforcement."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {},
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      }
+    },
+    "uapi:DAV/is_horde_enabled": {
+      "notes": [
+        {
+          "kind": "observed",
+          "text": "Review 5721214794 on cPanel 11.138.0.19: both routes fail because the system could not find function \"is_horde_enabled\" in module \"DAV\". The handler is absent on the reviewed server; no enabled value was observed."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.50 and later. No request parameters or defaults are declared in the pinned operation."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned enabled schema is integer and its prose promises only 0 because Horde is no longer installed."
+        },
+        {
+          "kind": "policy",
+          "text": "The current validator checks integer type, not this singleton enum: 1 and -1 remain accepted offline; null, booleans and quoted integers are rejected."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/67#pullrequestreview-5721214794 at head 2db7f7e077d68a63f89fbb15647202f6da832dc7; server implementation references are reviewer-inspected Cpanel/API/DAV.pm and Cpanel/API/CPDAVD.pm, not a new local server inspection. Both routes return the missing-function API error. Keep the pinned integer payload and Flag outcome; remove only the success probe recipe."
+        }
+      ]
+    }
+  }
+}

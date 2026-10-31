@@ -27,15 +27,21 @@ trait WhmGroups
 
     private ?CpHulk $cpHulkGroup = null;
 
+    private ?Customizations $customizationsGroup = null;
+
     private ?Databases $databasesGroup = null;
 
     private ?Dns $dnsGroup = null;
 
     private ?HostingPlans $hostingPlansGroup = null;
 
+    private ?InProductSurvey $inProductSurveyGroup = null;
+
     private ?Integrations $integrationsGroup = null;
 
     private ?IpAddresses $ipAddressesGroup = null;
+
+    private ?Logs $logsGroup = null;
 
     private ?Mail $mailGroup = null;
 
@@ -47,13 +53,19 @@ trait WhmGroups
 
     private ?Resellers $resellersGroup = null;
 
+    private ?Security $securityGroup = null;
+
     private ?Server $serverGroup = null;
 
     private ?Ssl $sslGroup = null;
 
+    private ?SupportTickets $supportTicketsGroup = null;
+
     private ?SystemPackages $systemPackagesGroup = null;
 
     private ?Transfers $transfersGroup = null;
+
+    private ?UserData $userDataGroup = null;
 
     private ?WebServer $webServerGroup = null;
 
@@ -133,6 +145,17 @@ trait WhmGroups
     }
 
     /**
+     * Select the Customizations operations without making a request.
+     *
+     * WHM Jupiter interface customization retrieval and deletion. Retrieval preserves opaque payload data; update
+     * serialization remains excluded.
+     */
+    public function customizations(): Customizations
+    {
+        return $this->customizationsGroup ??= new Customizations($this->run(...));
+    }
+
+    /**
      * Select the Databases operations without making a request.
      *
      * WHM API 1 functions in the documented Databases group.
@@ -163,6 +186,16 @@ trait WhmGroups
     }
 
     /**
+     * Select the InProductSurvey operations without making a request.
+     *
+     * WHM in-product survey metadata. Returned URLs may contain private tokens and are never fetched by the client.
+     */
+    public function inProductSurvey(): InProductSurvey
+    {
+        return $this->inProductSurveyGroup ??= new InProductSurvey($this->run(...));
+    }
+
+    /**
      * Select the Integrations operations without making a request.
      *
      * Account-scoped cPanel integration links and groups, and server-wide script/Perl hook inventory and management.
@@ -182,6 +215,16 @@ trait WhmGroups
     public function ipAddresses(): IpAddresses
     {
         return $this->ipAddressesGroup ??= new IpAddresses($this->run(...));
+    }
+
+    /**
+     * Select the Logs operations without making a request.
+     *
+     * WHM API 1 functions in the documented Logs group.
+     */
+    public function logs(): Logs
+    {
+        return $this->logsGroup ??= new Logs($this->run(...));
     }
 
     /**
@@ -251,6 +294,17 @@ trait WhmGroups
     }
 
     /**
+     * Select the Security operations without making a request.
+     *
+     * WHM root login IP restrictions. Changes can remove root password access to the control panel; no automatic retry
+     * or rollback is provided.
+     */
+    public function security(): Security
+    {
+        return $this->securityGroup ??= new Security($this->run(...));
+    }
+
+    /**
      * Select the Server Administration operations without making a request.
      *
      * WHM API 1 functions in the documented Server Administration group.
@@ -268,6 +322,30 @@ trait WhmGroups
     public function ssl(): Ssl
     {
         return $this->sslGroup ??= new Ssl($this->run(...));
+    }
+
+    /**
+     * Select the cPanel Support Tickets operations without making a request.
+     *
+     * WHM API 1 functions in the documented cPanel Support Tickets group. Observed: The PR65 reviewer called
+     * getSupportAgreement(), getSupportInfo(), whitelistCheck() and list() through WHM GET on 11.138.0.19 with this
+     * client's stateless token authentication. All four raised ApiErrorException: "The system failed to restore the
+     * saved session." These failed reads establish no successful payload compatibility. All ten POST methods remain
+     * unobserved. Documented: The pinned URL examples use /cpsess##########/json-api/, agreement and support-info reads
+     * require a cPanelID token in the current session, and validateOauth2Code() stores the validated token on the
+     * current session. Reviewer source trace 5722449280 on 11.138.0.19: Whostmgr::TicketSupport::Token->new calls
+     * Cpanel::Session::Restore::restoreSession() and fails with "The system failed to restore the saved session." when
+     * none exists. Whostmgr/TicketSupport.pm:31 builds remote Customer Portal calls through that object.
+     * ticket_validate_oauth2_code directly calls Token->new()->fetch($args), so validateOauth2Code() cannot succeed
+     * statelessly. This trace establishes the session requirement for paths reaching the Customer Portal, not
+     * local-only methods. It is attributed reviewer evidence, not code inspected in the local pinned documentation. The
+     * client has no session or cookie handling. All fourteen methods have no observed success path. Policy: Keep these
+     * typed contracts available with this compatibility limit; no session management, automatic retry or inferred
+     * success is added. Session compatibility and all unobserved methods remain open under whm-api-client-8x0.2.53.
+     */
+    public function supportTickets(): SupportTickets
+    {
+        return $this->supportTicketsGroup ??= new SupportTickets($this->run(...));
     }
 
     /**
@@ -291,6 +369,17 @@ trait WhmGroups
     public function transfers(): Transfers
     {
         return $this->transfersGroup ??= new Transfers($this->run(...));
+    }
+
+    /**
+     * Select the UserData operations without making a request.
+     *
+     * WHM scoped private configuration in root scope for any WHM caller. Never log input or returned configuration
+     * values, including raw mismatch payloads.
+     */
+    public function userData(): UserData
+    {
+        return $this->userDataGroup ??= new UserData($this->run(...));
     }
 
     /**

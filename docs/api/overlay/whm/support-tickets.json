@@ -1,0 +1,683 @@
+{
+  "schema_version": "1.0",
+  "family": "whm1",
+  "group": "cPanel Support Tickets",
+  "class": "SupportTickets",
+  "accessor": "supportTickets",
+  "operations": {
+    "whm1:ticket_create_stub_ticket": {
+      "name": "createStubTicket",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 60. The source classifies this operation as x-readonly=false and says it is unavailable through the command line."
+        },
+        {
+          "kind": "policy",
+          "text": "Uses one form POST request without automatic retries, polling or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Creates a stub ticket used to create a cPanel support ticket. The returned secure_id is a private token and ticket_id is an integer selector for later operations."
+        },
+        {
+          "kind": "policy",
+          "text": "Never log the token or infer that a completed support ticket or remote access exists."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /ticket_create_stub_ticket has x-readonly=false, x-cpanel-available-version=60, and the reviewed parameter and 200-response schemas. Canonical WHM x-tagGroups assigns Support Access and Ticket Management tags to cPanel Support Tickets. Preserve source requiredness, omission, scalar wire types and optional result fields. All operations say they are unavailable through the command line; mutating operations use form POST. WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:ticket_get_support_agreement": {
+      "name": "getSupportAgreement",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 60. The source classifies this operation as x-readonly=true and says it is unavailable through the command line."
+        },
+        {
+          "kind": "policy",
+          "text": "Uses one GET request without automatic retries, polling or rollback. GET follows the explicit x-readonly=true classification despite the shared pinned request-body prose."
+        },
+        {
+          "kind": "documented",
+          "text": "Requires a cPanelID token in the current session and retrieves agreement text and acceptance metadata from the Customer Portal. accepted remains integer 0|1; accepted_date and accepted_date_human independently preserve omitted versus explicit null."
+        },
+        {
+          "kind": "policy",
+          "text": "Agreement HTML and download/view URLs are payload data: the client never renders, fetches or accepts them."
+        },
+        {
+          "kind": "observed",
+          "text": "The PR65 reviewer reports this WHM GET on 11.138.0.19 with stateless token authentication raising ApiErrorException: \"The system failed to restore the saved session.\" No successful payload compatibility is established; see the group-level attributed reviewer source trace and open whm-api-client-8x0.2.53."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /ticket_get_support_agreement has x-readonly=true, x-cpanel-available-version=60, and the reviewed parameter and 200-response schemas. Canonical WHM x-tagGroups assigns Support Access and Ticket Management tags to cPanel Support Tickets. Preserve source requiredness, omission, scalar wire types and optional result fields. All operations say they are unavailable through the command line; mutating operations use form POST. WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "The PR65 reviewer reports this WHM GET on 11.138.0.19 with stateless token authentication raising ApiErrorException: \"The system failed to restore the saved session.\" No successful payload compatibility is established; see the group-level attributed reviewer source trace and open whm-api-client-8x0.2.53. Separate reviewer report at original head 1847c97694013013167638bd33ab89db4b8002cd: https://github.com/hostingpal/whm-api-client/pull/65. No new call or capture ran for this correction; the original review ran no POST. The final reviewer source trace 5722449280 establishes the Customer Portal session path described on the group; local-only methods are not covered."
+        }
+      ]
+    },
+    "whm1:ticket_get_support_info": {
+      "name": "getSupportInfo",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 78.0.6. The source classifies this operation as x-readonly=true and says it is unavailable through the command line."
+        },
+        {
+          "kind": "policy",
+          "text": "Uses one GET request without automatic retries, polling or rollback. GET follows the explicit x-readonly=true classification despite the shared pinned request-body prose."
+        },
+        {
+          "kind": "documented",
+          "text": "Requires a cPanelID token in the current session and retrieves license-holder support information. Architecture and distro support integers include -1 for unknown; binary flags remain integer 0|1. If pub_tech_contact has no value, the server uses pub_support_contact according to the source."
+        },
+        {
+          "kind": "policy",
+          "text": "The client does not synthesize contact values or fetch returned links. Optional logo_url, pub_support_contact and pub_tech_contact preserve omission, null and exact strings, including empty strings. Null compatibility is a review/source-family inference from optional and if-available prose, not an explicit pinned nullable declaration or live observation."
+        },
+        {
+          "kind": "observed",
+          "text": "The PR65 reviewer reports this WHM GET on 11.138.0.19 with stateless token authentication raising ApiErrorException: \"The system failed to restore the saved session.\" No successful payload compatibility is established; see the group-level attributed reviewer source trace and open whm-api-client-8x0.2.53."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /ticket_get_support_info has x-readonly=true, x-cpanel-available-version=78.0.6, and the reviewed parameter and 200-response schemas. Canonical WHM x-tagGroups assigns Support Access and Ticket Management tags to cPanel Support Tickets. Preserve source requiredness, omission, scalar wire types and optional result fields. All operations say they are unavailable through the command line; mutating operations use form POST. WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "The PR65 reviewer reports this WHM GET on 11.138.0.19 with stateless token authentication raising ApiErrorException: \"The system failed to restore the saved session.\" No successful payload compatibility is established; see the group-level attributed reviewer source trace and open whm-api-client-8x0.2.53. Separate reviewer report at original head 1847c97694013013167638bd33ab89db4b8002cd: https://github.com/hostingpal/whm-api-client/pull/65. No new call or capture ran for this correction; the original review ran no POST. The final reviewer source trace 5722449280 establishes the Customer Portal session path described on the group; local-only methods are not covered."
+        }
+      ],
+      "response": {
+        "logo_url": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Review/source-family compatibility inference from optional/if-available support-contact prose; pinned schemas are optional strings without explicit nullable flags. Preserve omitted versus null versus exact empty string. No live payload observation is claimed. Pinned WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        },
+        "pub_support_contact": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Review/source-family compatibility inference from optional/if-available support-contact prose; pinned schemas are optional strings without explicit nullable flags. Preserve omitted versus null versus exact empty string. No live payload observation is claimed. Pinned WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        },
+        "pub_tech_contact": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Review/source-family compatibility inference from optional/if-available support-contact prose; pinned schemas are optional strings without explicit nullable flags. Preserve omitted versus null versus exact empty string. No live payload observation is claimed. Pinned WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        }
+      }
+    },
+    "whm1:ticket_grant": {
+      "name": "grant",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11.44. The source classifies this operation as x-readonly=false and says it is unavailable through the command line."
+        },
+        {
+          "kind": "policy",
+          "text": "Uses one form POST request without automatic retries, polling or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Installs a Customer Portal SSH key and may change server-wide support access and firewall whitelist state. Omitted sshUsername lets the server retrieve the username from the ticket."
+        },
+        {
+          "kind": "policy",
+          "text": "secureId is sensitive. No root default is inferred. Inspect each firewall status and non_fatals even after API success. Success does not establish remote SSH access or security enforcement. Echoed server_num and ticket_id accept bounded canonical integer strings under the existing WHM compatibility family and normalize them to integers; these variants remain unobserved for this operation."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /ticket_grant has x-readonly=false, x-cpanel-available-version=11.44, and the reviewed parameter and 200-response schemas. Canonical WHM x-tagGroups assigns Support Access and Ticket Management tags to cPanel Support Tickets. Preserve source requiredness, omission, scalar wire types and optional result fields. All operations say they are unavailable through the command line; mutating operations use form POST. WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "order": [
+        "secure_id",
+        "server_num",
+        "ticket_id",
+        "ssh_username"
+      ],
+      "params": {
+        "secure_id": {
+          "sensitive": true
+        }
+      },
+      "response": {
+        "server_num": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned echoed selector is an integer. Reviewed compatibility with the established WHM canonical integer-string family uses the existing bounded normalization; preserve native integers and reject noncanonical, nonintegral and out-of-range variants. Source-family compatibility only, unobserved on this operation; request arguments remain required native integers. Pinned WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        },
+        "ticket_id": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned echoed selector is an integer. Reviewed compatibility with the established WHM canonical integer-string family uses the existing bounded normalization; preserve native integers and reject noncanonical, nonintegral and out-of-range variants. Source-family compatibility only, unobserved on this operation; request arguments remain required native integers. Pinned WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        }
+      }
+    },
+    "whm1:ticket_list": {
+      "name": "list",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11.44. The source classifies this operation as x-readonly=true and says it is unavailable through the command line."
+        },
+        {
+          "kind": "policy",
+          "text": "Uses one GET request without automatic retries, polling or rollback. GET follows the explicit x-readonly=true classification despite the shared pinned request-body prose."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned source requires serverNum and ticketId despite the inventory-style name. Omitted sshUsername lets the server select the user from the ticket. The auths and nested servers are lists of optional-field objects, as expressly described by the source."
+        },
+        {
+          "kind": "policy",
+          "text": "No root default is inferred. Ticket subjects, SSH destinations and non-fatal support text are payload data and are never executed, contacted or logged automatically. Nested auth_time preserves omission, integer and null. Null compatibility for NOT_AUTHED rows is a review/source-family inference from the conditional grant timestamp, not an explicit pinned nullable declaration or live observation. Other IDs and timestamps keep their existing contracts."
+        },
+        {
+          "kind": "observed",
+          "text": "The PR65 reviewer reports this WHM GET on 11.138.0.19 with stateless token authentication raising ApiErrorException: \"The system failed to restore the saved session.\" No successful payload compatibility is established; see the group-level attributed reviewer source trace and open whm-api-client-8x0.2.53."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /ticket_list has x-readonly=true, x-cpanel-available-version=11.44, and the reviewed parameter and 200-response schemas. Canonical WHM x-tagGroups assigns Support Access and Ticket Management tags to cPanel Support Tickets. Preserve source requiredness, omission, scalar wire types and optional result fields. All operations say they are unavailable through the command line; mutating operations use form POST. WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "The PR65 reviewer reports this WHM GET on 11.138.0.19 with stateless token authentication raising ApiErrorException: \"The system failed to restore the saved session.\" No successful payload compatibility is established; see the group-level attributed reviewer source trace and open whm-api-client-8x0.2.53. Separate reviewer report at original head 1847c97694013013167638bd33ab89db4b8002cd: https://github.com/hostingpal/whm-api-client/pull/65. No new call or capture ran for this correction; the original review ran no POST. The final reviewer source trace 5722449280 establishes the Customer Portal session path described on the group; local-only methods are not covered."
+        }
+      ],
+      "order": [
+        "server_num",
+        "ticket_id",
+        "ssh_username"
+      ],
+      "response": {
+        "auths": {
+          "replace": {
+            "type": "list",
+            "items": {
+              "type": "object",
+              "fields": {
+                "servers": {
+                  "type": "list",
+                  "items": {
+                    "type": "object",
+                    "fields": {
+                      "auth_status": {
+                        "type": "string"
+                      },
+                      "auth_time": {
+                        "type": "int",
+                        "nullable": true
+                      },
+                      "server_name": {
+                        "type": "string"
+                      },
+                      "server_num": {
+                        "type": "int"
+                      },
+                      "ssh": {
+                        "type": "string"
+                      },
+                      "ssh_username": {
+                        "type": "string"
+                      },
+                      "whm_ip": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "ticket_id": {
+                  "type": "int"
+                },
+                "ticket_status": {
+                  "type": "string"
+                },
+                "ticket_subject": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned data.auths and auths.items.properties.servers each omit type but explicitly say \"An array of objects\" and provide object item schemas. Repair only those missing array types, preserving all optional item fields and strict integer identifiers and integer-or-null auth_time. No populated live result is claimed. WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Nullable auth_time for NOT_AUTHED rows is a reviewed source-family inference from the conditional grant timestamp, not an explicit pinned nullable flag or live observation. All sibling types and omission rules remain unchanged."
+            }
+          ]
+        }
+      }
+    },
+    "whm1:ticket_remove_closed": {
+      "name": "removeClosed",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11.44. The source classifies this operation as x-readonly=false and says it is unavailable through the command line."
+        },
+        {
+          "kind": "policy",
+          "text": "Uses one form POST request without automatic retries, polling or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Removes support SSH keys and closed support tickets and can affect server-wide firewall whitelist state. csf_wl_status is absent when CSF is unavailable."
+        },
+        {
+          "kind": "policy",
+          "text": "Inspect revoked_keys, non_fatals and every available firewall status. API success alone does not establish remote access removal or firewall enforcement."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /ticket_remove_closed has x-readonly=false, x-cpanel-available-version=11.44, and the reviewed parameter and 200-response schemas. Canonical WHM x-tagGroups assigns Support Access and Ticket Management tags to cPanel Support Tickets. Preserve source requiredness, omission, scalar wire types and optional result fields. All operations say they are unavailable through the command line; mutating operations use form POST. WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:ticket_revoke": {
+      "name": "revoke",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11.44. The source classifies this operation as x-readonly=false and says it is unavailable through the command line."
+        },
+        {
+          "kind": "policy",
+          "text": "Uses one form POST request without automatic retries, polling or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Removes the Customer Portal SSH key identified by required serverNum, sshUsername and ticketId. This can change server-wide support access and firewall whitelist state."
+        },
+        {
+          "kind": "policy",
+          "text": "Inspect revoked_keys, non_fatals and individual firewall statuses even after API success; remote access removal and security enforcement are not proven by the API envelope. Echoed server_num and ticket_id accept bounded canonical integer strings under the existing WHM compatibility family and normalize them to integers; these variants remain unobserved for this operation."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /ticket_revoke has x-readonly=false, x-cpanel-available-version=11.44, and the reviewed parameter and 200-response schemas. Canonical WHM x-tagGroups assigns Support Access and Ticket Management tags to cPanel Support Tickets. Preserve source requiredness, omission, scalar wire types and optional result fields. All operations say they are unavailable through the command line; mutating operations use form POST. WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "order": [
+        "server_num",
+        "ssh_username",
+        "ticket_id"
+      ],
+      "response": {
+        "server_num": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned echoed selector is an integer. Reviewed compatibility with the established WHM canonical integer-string family uses the existing bounded normalization; preserve native integers and reject noncanonical, nonintegral and out-of-range variants. Source-family compatibility only, unobserved on this operation; request arguments remain required native integers. Pinned WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        },
+        "ticket_id": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned echoed selector is an integer. Reviewed compatibility with the established WHM canonical integer-string family uses the existing bounded normalization; preserve native integers and reject noncanonical, nonintegral and out-of-range variants. Source-family compatibility only, unobserved on this operation; request arguments remain required native integers. Pinned WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        }
+      }
+    },
+    "whm1:ticket_ssh_test": {
+      "name": "sshTest",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11.44. The source classifies this operation as x-readonly=false and says it is unavailable through the command line."
+        },
+        {
+          "kind": "policy",
+          "text": "Uses one form POST request without automatic retries, polling or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Contacts the Customer Portal to verify its SSH connection to the server. The payload result and non_fatals are separate from API metadata.result."
+        },
+        {
+          "kind": "policy",
+          "text": "This operation uses form POST despite its diagnostic name. Success does not establish all remote-access or security properties."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /ticket_ssh_test has x-readonly=false, x-cpanel-available-version=11.44, and the reviewed parameter and 200-response schemas. Canonical WHM x-tagGroups assigns Support Access and Ticket Management tags to cPanel Support Tickets. Preserve source requiredness, omission, scalar wire types and optional result fields. All operations say they are unavailable through the command line; mutating operations use form POST. WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "order": [
+        "server_num",
+        "ticket_id"
+      ]
+    },
+    "whm1:ticket_ssh_test_start": {
+      "name": "sshTestStart",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 60. The source classifies this operation as x-readonly=false and says it is unavailable through the command line."
+        },
+        {
+          "kind": "policy",
+          "text": "Uses one form POST request without automatic retries, polling or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Initiates an SSH connection test. The pinned response declares an opaque object with no field contract."
+        },
+        {
+          "kind": "policy",
+          "text": "Successful absent or null data returns null; present opaque object fields, including nested unknown values, are retained. Present invalid non-object data still fails after an accepted API outcome, when the test may already have started; do not retry automatically. This optional-payload compatibility is source-inferred and offline-tested only. Returned commands, tokens and links are payload data and are never executed or fetched. A successful start does not establish completed SSH connectivity."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /ticket_ssh_test_start has x-readonly=false, x-cpanel-available-version=60, and the reviewed parameter and 200-response schemas. Canonical WHM x-tagGroups assigns Support Access and Ticket Management tags to cPanel Support Tickets. Preserve source requiredness, omission, scalar wire types and optional result fields. All operations say they are unavailable through the command line; mutating operations use form POST. WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned data is an object with no field contract and is not required by the response envelope. Reviewed source-inferred optional-payload compatibility returns null for successful absent/null data while preserving present opaque object fields and rejecting invalid present nonobjects. No live POST observation, synthetic success, retry or outcome relaxation is claimed. Pinned WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "order": [
+        "server_num",
+        "ticket_id"
+      ],
+      "optional_payload": true
+    },
+    "whm1:ticket_update_service_agreement_approval": {
+      "name": "updateServiceAgreementApproval",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 60. The source classifies this operation as x-readonly=false and says it is unavailable through the command line."
+        },
+        {
+          "kind": "policy",
+          "text": "Uses one form POST request without automatic retries, polling or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Records acceptance of the specified Technical Support Agreement version in the Customer Portal with the user login and acceptance date/time. This is an agreement acceptance action. The source specifies no data payload."
+        },
+        {
+          "kind": "policy",
+          "text": "Inspect responseMeta() for API outcome."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /ticket_update_service_agreement_approval has x-readonly=false, x-cpanel-available-version=60, and the reviewed parameter and 200-response schemas. Canonical WHM x-tagGroups assigns Support Access and Ticket Management tags to cPanel Support Tickets. Preserve source requiredness, omission, scalar wire types and optional result fields. All operations say they are unavailable through the command line; mutating operations use form POST. WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "order": [
+        "version"
+      ],
+      "void": true
+    },
+    "whm1:ticket_validate_oauth2_code": {
+      "name": "validateOauth2Code",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 60. The source classifies this operation as x-readonly=false and says it is unavailable through the command line."
+        },
+        {
+          "kind": "policy",
+          "text": "Uses one form POST request without automatic retries, polling or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Exchanges the OAuth2 code for a token and stores it in the current session. The source specifies no data payload."
+        },
+        {
+          "kind": "policy",
+          "text": "code and redirectUri are sensitive because callback query data can contain credentials or state. Both values are sent once as form data and encoded once; the client does not follow the redirect. Inspect responseMeta() for API outcome. Session reuse remains unestablished; see the group-level limitation."
+        },
+        {
+          "kind": "documented",
+          "text": "Reviewer source trace 5722449280 on 11.138.0.19: Whostmgr::TicketSupport::Token->new calls Cpanel::Session::Restore::restoreSession() and fails with \"The system failed to restore the saved session.\" when none exists. Whostmgr/TicketSupport.pm:31 builds remote Customer Portal calls through that object. ticket_validate_oauth2_code directly calls Token->new()->fetch($args), so validateOauth2Code() cannot succeed statelessly. This trace establishes the session requirement for paths reaching the Customer Portal, not local-only methods. It is attributed reviewer evidence, not code inspected in the local pinned documentation."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /ticket_validate_oauth2_code has x-readonly=false, x-cpanel-available-version=60, and the reviewed parameter and 200-response schemas. Canonical WHM x-tagGroups assigns Support Access and Ticket Management tags to cPanel Support Tickets. Preserve source requiredness, omission, scalar wire types and optional result fields. All operations say they are unavailable through the command line; mutating operations use form POST. WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "reviewer source trace on 11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer source trace 5722449280 on 11.138.0.19: Whostmgr::TicketSupport::Token->new calls Cpanel::Session::Restore::restoreSession() and fails with \"The system failed to restore the saved session.\" when none exists. Whostmgr/TicketSupport.pm:31 builds remote Customer Portal calls through that object. ticket_validate_oauth2_code directly calls Token->new()->fetch($args), so validateOauth2Code() cannot succeed statelessly. This trace establishes the session requirement for paths reaching the Customer Portal, not local-only methods. It is attributed reviewer evidence, not code inspected in the local pinned documentation. See https://github.com/hostingpal/whm-api-client/pull/65#pullrequestreview-5722449280; whm-api-client-m6p. No successful live payload or POST is claimed."
+        }
+      ],
+      "order": [
+        "code",
+        "redirect_uri"
+      ],
+      "params": {
+        "code": {
+          "sensitive": true
+        },
+        "redirect_uri": {
+          "sensitive": true
+        }
+      },
+      "void": true
+    },
+    "whm1:ticket_whitelist_check": {
+      "name": "whitelistCheck",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11.44. The source classifies this operation as x-readonly=true and says it is unavailable through the command line."
+        },
+        {
+          "kind": "policy",
+          "text": "Uses one GET request without automatic retries, polling or rollback. GET follows the explicit x-readonly=true classification despite the shared pinned request-body prose."
+        },
+        {
+          "kind": "documented",
+          "text": "Checks the correlation between server firewall whitelists and support access grants."
+        },
+        {
+          "kind": "policy",
+          "text": "Returned chain_status and problem are payload diagnostics, separately from the API outcome; they do not independently establish firewall enforcement or remote access."
+        },
+        {
+          "kind": "observed",
+          "text": "The PR65 reviewer reports this WHM GET on 11.138.0.19 with stateless token authentication raising ApiErrorException: \"The system failed to restore the saved session.\" No successful payload compatibility is established; see the group-level attributed reviewer source trace and open whm-api-client-8x0.2.53."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /ticket_whitelist_check has x-readonly=true, x-cpanel-available-version=11.44, and the reviewed parameter and 200-response schemas. Canonical WHM x-tagGroups assigns Support Access and Ticket Management tags to cPanel Support Tickets. Preserve source requiredness, omission, scalar wire types and optional result fields. All operations say they are unavailable through the command line; mutating operations use form POST. WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "The PR65 reviewer reports this WHM GET on 11.138.0.19 with stateless token authentication raising ApiErrorException: \"The system failed to restore the saved session.\" No successful payload compatibility is established; see the group-level attributed reviewer source trace and open whm-api-client-8x0.2.53. Separate reviewer report at original head 1847c97694013013167638bd33ab89db4b8002cd: https://github.com/hostingpal/whm-api-client/pull/65. No new call or capture ran for this correction; the original review ran no POST. The final reviewer source trace 5722449280 establishes the Customer Portal session path described on the group; local-only methods are not covered."
+        }
+      ]
+    },
+    "whm1:ticket_whitelist_setup": {
+      "name": "whitelistSetup",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11.44. The source classifies this operation as x-readonly=false and says it is unavailable through the command line."
+        },
+        {
+          "kind": "policy",
+          "text": "Uses one form POST request without automatic retries, polling or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Adds cPanel Support IP addresses to the server firewall whitelist; it does not change the cPHulk whitelist. The source logs errors to /usr/local/cpanel/logs/error_log."
+        },
+        {
+          "kind": "policy",
+          "text": "Inspect payload chain_status even when metadata.result indicates API success; no security enforcement guarantee is inferred."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /ticket_whitelist_setup has x-readonly=false, x-cpanel-available-version=11.44, and the reviewed parameter and 200-response schemas. Canonical WHM x-tagGroups assigns Support Access and Ticket Management tags to cPanel Support Tickets. Preserve source requiredness, omission, scalar wire types and optional result fields. All operations say they are unavailable through the command line; mutating operations use form POST. WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:ticket_whitelist_unsetup": {
+      "name": "whitelistUnsetup",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11.44. The source classifies this operation as x-readonly=false and says it is unavailable through the command line."
+        },
+        {
+          "kind": "policy",
+          "text": "Uses one form POST request without automatic retries, polling or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Removes cPanel Support IP addresses from the server firewall whitelist; it does not change the cPHulk whitelist. The source logs errors to /usr/local/cpanel/logs/error_log."
+        },
+        {
+          "kind": "policy",
+          "text": "Inspect payload chain_status even when metadata.result indicates API success; no security enforcement guarantee is inferred."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /ticket_whitelist_unsetup has x-readonly=false, x-cpanel-available-version=11.44, and the reviewed parameter and 200-response schemas. Canonical WHM x-tagGroups assigns Support Access and Ticket Management tags to cPanel Support Tickets. Preserve source requiredness, omission, scalar wire types and optional result fields. All operations say they are unavailable through the command line; mutating operations use form POST. WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    }
+  },
+  "description": "WHM API 1 functions in the documented cPanel Support Tickets group.\n\nObserved: The PR65 reviewer called getSupportAgreement(), getSupportInfo(), whitelistCheck() and list() through WHM GET on 11.138.0.19 with this client's stateless token authentication. All four raised ApiErrorException: \"The system failed to restore the saved session.\" These failed reads establish no successful payload compatibility. All ten POST methods remain unobserved.\n\nDocumented: The pinned URL examples use /cpsess##########/json-api/, agreement and support-info reads require a cPanelID token in the current session, and validateOauth2Code() stores the validated token on the current session.\n\nReviewer source trace 5722449280 on 11.138.0.19: Whostmgr::TicketSupport::Token->new calls Cpanel::Session::Restore::restoreSession() and fails with \"The system failed to restore the saved session.\" when none exists. Whostmgr/TicketSupport.pm:31 builds remote Customer Portal calls through that object. ticket_validate_oauth2_code directly calls Token->new()->fetch($args), so validateOauth2Code() cannot succeed statelessly. This trace establishes the session requirement for paths reaching the Customer Portal, not local-only methods. It is attributed reviewer evidence, not code inspected in the local pinned documentation. The client has no session or cookie handling. All fourteen methods have no observed success path.\n\nPolicy: Keep these typed contracts available with this compatibility limit; no session management, automatic retry or inferred success is added. Session compatibility and all unobserved methods remain open under whm-api-client-8x0.2.53."
+}

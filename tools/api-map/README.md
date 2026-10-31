@@ -205,6 +205,17 @@ Operation entries (all keys optional):
   inferred from upstream enums and is invalid on other types. Only `replace` may
   address the payload root, with the empty path.
 
+A narrowly evidenced retrieval exception can restore an omitted payload contract:
+only WHM GET operations with `x-readonly=true`, a resolved plain 200 JSON object
+whose only property is `metadata`, and no payload issue or partial alternatives
+qualify. The overlay must supply exactly one root response replacement with an
+unadorned `mixed` spec and valid correction-level `live` evidence. `void`,
+`optional_payload`, `unwrap`, exclusions, compositions and payload siblings do
+not qualify. This preserves opaque observed data without inferring fields;
+missing data still fails in the existing runtime. Ordinary corrections to a
+documented payload remain unchanged. PR70 review 5721307565 supplies the
+attributed retrieval observation; it is separate from source-only corrections.
+
 The generator reads the pinned schemas as follows. `allOf` merges its parts and
 its sibling `properties`/`required`, skipping parts that carry only annotations.
 A `oneOf`/`anyOf` branch that admits only null makes the union nullable; two or

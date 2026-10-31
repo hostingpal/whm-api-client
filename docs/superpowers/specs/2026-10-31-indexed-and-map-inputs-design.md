@@ -103,9 +103,13 @@ List indices in PHP always start at zero. A one-based wire family does not requi
 one-based PHP array keys.
 
 Empty lists are rejected for the initial indexed/repeated families. Do not turn
-`[]` into omission: missing token ACLs can grant all available privileges, and a
-missing SpamAssassin value can delete a preference. Any future empty-list exception
-needs operation-specific evidence, an explicit encoding and its own tests.
+`[]` into omission: missing ACLs on token **creation** can grant all available
+privileges, and a missing SpamAssassin value can delete a preference. For token
+update, the reviewer-inspected implementation on `11.138.0.19` instead preserves
+omitted fields and drops empty lists; accepting `[]` would silently leave the
+existing value unchanged. Reject it for that reason, not an inferred privilege
+reset. The source/pinned contradiction is recorded below. Any future empty-list
+exception needs operation-specific evidence, an explicit encoding and its own tests.
 
 The typed repeat extension must support `list<int>` for DNS removal indices while
 preserving current string-repeat behavior. It must not widen every repeated field
@@ -123,7 +127,6 @@ field on the wire.
 | --- | --- | --- |
 | `['changemx' => true]` | Empty | `changemx=1` |
 | `['google' => false]` | Empty | `google=0` |
-| `['example.com' => 10]` | `MXCHECK-` | `MXCHECK-example.com=10` |
 | `['old_database' => 'new_database']` | `copymysqldb-` | `copymysqldb-old_database=new_database` |
 | `['terms_of_service_accepted' => $url]` | `x_` | `x_terms_of_service_accepted=<encoded URL>` |
 
@@ -145,9 +148,9 @@ and similar bytes are data, not manually assembled separators. The encoder does
 not promise the server accepts every syntactically representable identifier.
 
 Map value types are operation-specific. Feature/Greylisting maps use booleans;
-MX priorities use integers; database targets and AutoSSL provider parameters use
-strings. Credential-bearing maps are sensitive in their entirety. Accepting a
-terms-of-service URL does not fetch it or imply that the client accepted terms on
+database targets and AutoSSL provider parameters use strings. Credential-bearing
+maps are sensitive in their entirety. Accepting a terms-of-service URL does not
+fetch it or imply that the client accepted terms on
 the user's behalf: the caller deliberately supplies the documented value.
 
 ### Empty maps, omission and replacement behavior
@@ -155,21 +158,29 @@ the user's behalf: the caller deliberately supplies the documented value.
 Allowed empty maps expand to zero dynamic fields, but the method still sends its
 one request with the fixed fields. Never short-circuit the call as a no-op.
 
-- `update_featurelist`: no supplied features disables all features. The new
-  generated `updateFeaturelist(string $featurelist, array $features)` therefore
-  requires the map argument; `features: []` explicitly requests the documented
-  clear behavior. Values and their 0/1 meaning stay source-derived. This spec does
-  not invent how omitted individual features behave in a nonempty update.
-- `create_featurelist`: use the same deliberate required `features` argument,
-  including an explicit empty map when the caller wants no dynamic feature fields.
-  Preserve `overwrite` as a separate optional argument with its existing source
-  meaning. An empty create map does not acquire an invented clear interpretation.
+- `update_featurelist`: the new generated
+  `updateFeaturelist(string $featurelist, array $features)` requires a **nonempty**
+  boolean map; reject `features: []` before I/O to avoid a successful no-op. The
+  pinned `feature name` description says no supplied features disables all features.
+  That conflicts with the reviewer's source inspection and live observations on
+  `11.138.0.19`: no features changes nothing, and omitted keys in a nonempty update
+  preserve their existing state. Unknown names appear in `invalid_features`; the
+  reviewed source dies for unknown names only when a custom features file exists.
+  Callers must inspect `invalid_features`; do not invent an always-failing
+  unknown-name rule or an atomicity guarantee.
+- `create_featurelist`: keep a required boolean `features` map, with `[]` explicitly
+  allowed. It sends no dynamic feature fields and, in the reviewer's corrected
+  live report on `11.138.0.19`, creates an all-disabled list (120 of 120 features
+  disabled in that fixture). This is version-scoped reviewer evidence, not a new
+  local observation or a promise for every server version. Preserve `overwrite`
+  as a separate optional argument with its existing source meaning. The later
+  correction supersedes the initial review's untested create caveat.
 - Greylisting provider maps may be optional. Omitted/null and allowed `[]` send no
   provider-specific fields, leaving existing providers unchanged by those fields.
   Other arguments and upstream defaults, including autotrust, may still act.
-- Optional database-copy/MX maps preserve omitted behavior; the operation's source
+- Optional database-copy maps preserve omitted behavior; the operation's source
   defines what absence means. Empty maps add no map fields, without suppressing the
-  remaining operation.
+  remaining operation. MXCHECK adoption is excluded as described below.
 - AutoSSL provider maps can be empty at the encoding layer. Provider requirements
   remain server-specific; do not synthesize credentials or legal-acceptance fields.
 
@@ -177,6 +188,8 @@ The exact PHP argument names for newly introduced map-only operations are chosen
 in their endpoint adoption bead, checked against source meaning and existing group
 names. The `features` names above are fixed public choices for feature-list calls.
 An already published method signature must not be changed by that later choice.
+Feature behavior above comes from the [2026-10-31 review](https://github.com/hostingpal/whm-api-client/pull/72#pullrequestreview-5722427592)
+and its superseding [2026-10-31 correction](https://github.com/hostingpal/whm-api-client/pull/72#issuecomment-6544681850).
 
 ## Related-field record batches
 
@@ -261,14 +274,26 @@ repeat family. Indexed groups, map groups, records and fixed parameters cannot
 borrow that exception. Collision checks operate on the complete expanded names,
 including the field prefix; no last-write-wins rule is allowed.
 
-Reject collisions with reserved routing fields before the handles' existing
-reserved-field filtering can discard them. WHM reserves `api.version`; bridged
-UAPI additionally reserves `cpanel.user`, `cpanel.module` and `cpanel.function`.
-The route-aware validator obtains these names from the handle. User maps cannot
-change the target account, module, function, API version, HTTP method or endpoint.
-Do not globally change legacy generic-call reserved-field filtering in this work;
-new generated expansion must fail on its own collisions, and old behavior has
-regression coverage. No new generic map/index helper is required by this spec.
+Reject collisions with reserved fields before the handles' existing filtering
+can discard them. Every generated route (WHM, direct UAPI and bridged UAPI)
+reserves the entire case-sensitive `api.` prefix, including `api.version`.
+Bridged UAPI additionally reserves exactly `cpanel.user`, `cpanel.module` and
+`cpanel.function`. The route-aware validator obtains the prefix and exact-name
+reservations from the handle and checks every expanded field name. The
+[2026-10-31 review](https://github.com/hostingpal/whm-api-client/pull/72#pullrequestreview-5722427592)
+attributes this to `Whostmgr/API/1/Data/Args.pm:90` and `Cpanel/Args.pm:86` on
+`11.138.0.19`: `api.*` fields are consumed as API controls rather than operation
+arguments. For example, `api.filter.enable`, `api.sort.enable`, `api.chunk.enable`
+and `api.columns.enable` could change filtering or output while silently removing
+a map entry. `uapi_cpanel` consumes the three exact bridge names above. User maps
+cannot change the target account, module, function, API version, HTTP method,
+endpoint or these API controls.
+
+Legacy generic `call()` filtering remains an explicit compatibility boundary:
+this generated-only rule does not globally change its existing reserved-field
+filtering. New generated expansion must fail on its own collisions, and old
+behavior retains regression coverage. No new generic map/index helper is required
+by this spec.
 
 Malformed generated specs fail as `LogicException`; invalid collection contents
 fail as `InvalidArgumentException`, with no network request and cleared metadata.
@@ -295,12 +320,66 @@ with the pinned source hash and parameter/prose pointer. Formal properties,
 required flags and explanatory text must be inspected together. General support
 for a pattern is not evidence that a particular endpoint uses it.
 
-The pinned inputs are the 2026-10-13 snapshots under `docs/api/sources/2026-10-13/`:
+The pinned inputs are the 2026-10-13 snapshots under `docs/api/sources/2026-10-13/`
+(OpenAPI version `11.138.0.10`):
 
 - WHM decompressed SHA-256:
   `6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594`.
 - UAPI decompressed SHA-256:
   `172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`.
+
+### Reviewer evidence and version-scoped contradictions
+
+The pinned contracts above were read locally from immutable documentation
+snapshots. Separately, the [2026-10-31 review of `a25aec7`](https://github.com/hostingpal/whm-api-client/pull/72#pullrequestreview-5722427592)
+reports upstream implementation inspection on `11.138.0.19`; those Perl files
+were not inspected locally for this design correction. That review reports a live
+disposable feature-list fixture, while the [later 2026-10-31 correction](https://github.com/hostingpal/whm-api-client/pull/72#issuecomment-6544681850)
+adds live create-feature-list and MXCHECK findings from disposable resources.
+These reports are distinct from pinned contracts and committed capture artifacts;
+this documentation correction performs no live requests.
+
+For the following families, the reviewer's source inspection resolves the
+numbering ambiguity on `11.138.0.19`. It does not establish live list behavior or
+an already implemented public API:
+
+| Family | Reviewer-inspected reader and accepted wire fields |
+| --- | --- |
+| Token ACL update | `_parse_and_validate_acls` accepts `acl` or `acl-N` for numeric `N`, including zero- or one-based suffixes |
+| Token IP update | `get_length_arguments($args, 'whitelist_ip')` accepts `whitelist_ip` or `whitelist_ip-N`; the pinned `whitelist-ip` spelling is not supported by this reader |
+| Conversion job IDs | `_parse_job_ids` accepts `job_id` or `job_id-N`, including zero- or one-based suffixes |
+| SPF domain/record pairs | `validate_domain_value_pairs_or_die` through `map_length_required_multiple_to_key_values` pairs the `domain` and `record` families by sorted position; a count mismatch errors |
+
+The review describes `Cpanel::Form::Param` as collecting bare and numerically
+suffixed names in numeric order, with UAPI `get_multiple` using the same optional
+numeric-suffix family. Implementations must still select one explicit pattern in
+each effective operation spec and audit source, item types and empty/scalar policy
+per operation. The conflicting pinned examples alone no longer block these
+families. No multi-value list form in this table was observed live by that review.
+
+Token update has a separate omission contradiction. Pinned
+`/paths/api_token_update/get/parameters` text describes omitted ACLs, IPs and expiry
+as resets. The reviewer-inspected `update_token` on `11.138.0.19` copies only supplied
+fields, preserving omitted ACLs, IPs and expiry; `_build_create_or_update_args`
+drops empty lists. The creation-only all-privileges default must not be attributed
+to this update handler. The reviewer corrects their earlier PR57 interpretation
+and reports source-based rename semantics: a generic
+`whm()->call('api_token_update', ...)` with only `token_name` and `new_name` preserves
+other fields on that version. No root-credential execution established this.
+Keep the current stricter `updateToken()` signature and production documentation
+unchanged in this design PR; `whm-api-client-y9y` and `8x0.1.21` own the separate
+overlay/signature follow-up, including version compatibility and list support.
+
+MXCHECK maps are excluded from typed adoption in this design. The pinned
+`/paths/massmodifyacct/get` and `/paths/modifyacct/get` parameter schemas describe
+an integer priority, but the later correction supersedes the review's initial
+approval. The reviewer reports that calls with words and integers returned success
+without changing the stored MXCHECK setting on `11.138.0.19`. Their source inspection
+identifies the actual constants in `Whostmgr/DNS/Constants.pm` as `auto`, `local`,
+`remote` and `secondary`; this does not establish a working word-map replacement
+for those operations. Preserve the pinned discrepancy and defer this adoption
+until operation-specific effective behavior is established. `8x0.1.29` retains its
+database-copy adopter; the MXCHECK limitation is separate.
 
 ### Initial adoption and unresolved variants
 
@@ -309,16 +388,15 @@ The pinned inputs are the 2026-10-13 snapshots under `docs/api/sources/2026-10-1
 | UAPI DNSSEC enable/disable/fetch DS `domain` | Scalar or string list; list uses `domain-0`, `domain-1` | `8x0.1.21` |
 | UAPI SpamAssassin update preference `value` | Preserve scalar/null; list uses `value-0`, `value-1` | `8x0.1.20` |
 | WHM token create/dashboard ACL/IP, token revoke, TFA user removal | Apply each evidenced pattern separately; revoke/TFA start at 1 | `8x0.1.21` |
-| WHM token ACL update | Prose and examples disagree on first index; remains gated until resolved | `8x0.1.21` |
-| WHM account conversion status `job_id` | Integer family has conflicting index examples; remains gated | `8x0.1.21` |
-| WHM SPF domain/record pairs | Domain numbering does not establish the record pattern; remains gated | `8x0.1.21` |
+| WHM token ACL/IP update | Source-supported `acl`/`acl-N` and `whitelist_ip`/`whitelist_ip-N` on `11.138.0.19`; explicit pattern, type and policy audit still required | `8x0.1.21` |
+| WHM account conversion status `job_id` | Source-supported `job_id`/`job_id-N` on `11.138.0.19`; retain integer type and choose explicit pattern | `8x0.1.21` |
+| WHM SPF domain/record pairs | Source-supported sorted-position pairing on `11.138.0.19`; related records and explicit pattern/policy required, not independent parallel arrays | `8x0.1.21` |
 | WHM ModSecurity batch settings | Related records; suffix 1, 2; scalar method preserved | `8x0.1.24` |
 | WHM ModSecurity report row IDs | Comma-separated representation is separate from numbered encoding; source/type audit stays in its bead | `8x0.1.24` |
 | WHM Greylisting provider flags | Identity-key boolean map; autotrust remains fixed | `8x0.1.25` |
 | WHM AutoSSL provider settings/reset | String map with `x_` prefix, entire map sensitive | `8x0.1.28` |
 | WHM addon conversion database copies | String map with `copymysqldb-` prefix | `8x0.1.29` |
-| WHM bulk account MX values | Integer map with `MXCHECK-` prefix | `8x0.1.29` |
-| WHM feature-list create/update | Required `features` boolean map; identity keys | `8x0.1.31` |
+| WHM feature-list create/update | Required `features` boolean map; reject empty update, allow empty create with version-scoped all-disabled evidence | `8x0.1.31` |
 | WHM mass DNS edit removal indices | Typed repeated integer list; add/edit JSON strings unchanged | `8x0.1.30` |
 
 These rows refer to the named parameter descriptions on the corresponding pinned
@@ -337,10 +415,21 @@ strings, unchanged duplicates/order and late invalid entries producing zero I/O.
 
 Map fixtures include integer-coerced keys, empty/control/invalid UTF-8 keys, dots,
 hyphens and percent-encoded data, fixed/prefix/cross-family collisions in both
-orders, reserved names on both WHM and bridged UAPI, and sensitive diagnostics.
+orders, and sensitive diagnostics. Reservation fixtures cover WHM, direct UAPI
+and bridged UAPI: reject `api.version` and the full case-sensitive `api.` prefix
+(including `api.filter.enable`, `api.sort.enable`, `api.chunk.enable` and
+`api.columns.enable`) on all three routes, plus exactly `cpanel.user`,
+`cpanel.module` and `cpanel.function` on the bridge. Include case distinctions and
+unreserved lookalikes so the prefix/exact-name rules cannot become broader by
+accident. Keep legacy generic filtering regression expectations separate.
 Record fixtures include optional fields present only in later rows, missing
 required keys, unknown keys, nulls, mixed state types and whole-batch rejection.
 An allowed empty map must still issue the expected fixed-parameter request.
+Feature fixtures must reject missing maps for both methods and empty updates
+before I/O, accept explicit empty create maps with the fixed request, and preserve
+false values. These are future implementation requirements; an offline fixture
+does not prove server state changes or broaden the reviewer's version-scoped
+all-disabled create observation.
 
 Generation tests cover strict PHPStan shapes, scalar signature compatibility,
 malformed metadata rejection, aliases sharing one canonical coverage count,
