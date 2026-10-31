@@ -6528,3 +6528,32 @@ must survive. No redundant new guard, multipart support or downstream JSON work
 was added. The tooling README now documents sole application/json/scalar-text
 mapping and every generation failure category. All validation remains offline;
 no server operation, source refresh or live capture belongs to this correction.
+
+
+## PR80 serializer review corrections (2026-10-31)
+
+[Review 5723592475](https://github.com/hostingpal/whm-api-client/pull/80#pullrequestreview-5723592475)
+and its [superseding comment 6545641470](https://github.com/hostingpal/whm-api-client/pull/80#issuecomment-6545641470)
+are applied on the normally integrated approved-master surface. The complete
+source-audit history above remains verbatim. The merged JSON-input design owns
+the 511-container rule; the duplicate depth clarification is removed.
+
+The internal schema-guided serializer shares the existing form scalar float
+algorithm through FloatEncoder. Its round-trip decimal tokens preserve finite
+float values and negative zero without reading or changing precision,
+serialize_precision or locale settings; their digit count is not guaranteed
+minimal. Strings and floats are exercised with ini_get and ini_set disabled.
+Explicit list-only boolean nonempty defaults to false: an empty flagged list
+fails locally, while ordinary empty lists remain valid. The spelling matches the
+existing downstream descriptor; this foundation adds no endpoint or public entry.
+Schema errors are tested as exact LogicException, independently from caller-value
+InvalidArgumentException, including recursive unions and the complete nesting
+boundary. Local negative controls cover unknown descriptor keys, the nesting
+limit, UTF-8 field names, duplicate required names and explicit nullable:null.
+
+This is offline serializer and regression evidence on local PHP 8.4.26, not a
+PHP 8.3 CI run, live endpoint result, generated JSON-body adoption or persistent
+configuration verification. Existing generated contracts, source snapshots,
+overlays and live evidence are unchanged. Routing, transport and endpoint work
+remain with their separately reviewed adopters; schema caching is deferred until
+wiring establishes stable generated-schema ownership and lifetime.
