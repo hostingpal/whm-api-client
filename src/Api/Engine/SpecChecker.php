@@ -34,7 +34,7 @@ use LogicException;
 final class SpecChecker
 {
     private const ENCODINGS = [
-        'scalar', 'bool', 'repeat', 'numbered', 'suffix-numbered', 'suffix-numbered-scalar', 'collection',
+        'scalar', 'bool', 'repeat', 'numbered', 'suffix-numbered', 'suffix-numbered-scalar', 'collection', 'records',
     ];
 
     /** Accepted wire variants per type; types not listed accept none. */
@@ -191,6 +191,11 @@ final class SpecChecker
                 throw new LogicException('Invalid parameter spec for ' . $name . '.');
             }
 
+            if ($param['encoding'] === 'records') {
+                RecordEncoder::check($param['records'] ?? null);
+            } elseif (array_key_exists('records', $param)) {
+                throw new LogicException('Record metadata requires records encoding.');
+            }
             $map = false;
             if ($param['encoding'] === 'collection') {
                 $map = CollectionEncoder::check($param['collection'] ?? null)['kind'] === 'map';

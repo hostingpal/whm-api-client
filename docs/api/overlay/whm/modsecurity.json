@@ -78,11 +78,15 @@
         },
         {
           "kind": "documented",
-          "text": "The typed signature supports a single setting. Indexed setting_id1/state1/remove1 families remain unavailable through this signature (whm-api-client-8x0.1.24). remove=true makes the state value ignored by the server, but the formal source still requires state. State can contain a SecHttpBlKey access key and is sensitive."
+          "text": "batchSettings() accepts one setting; updateSettings() accepts a nonempty sequential list of associative records with required settingId and state and optional boolean remove. remove=true makes state ignored by the server, but the formal source still requires it. Missing remove retains its original row index. State can contain a SecHttpBlKey access key; the entire record input is sensitive."
         },
         {
           "kind": "documented",
           "text": "Use setting IDs 0 through 9, as limited by the pinned source. The shared Settings.pm defaults may be strings or integers, and updated_settings[].default preserves either exactly. This default correction is source-backed and tested offline; batch writes were not observed."
+        },
+        {
+          "kind": "policy",
+          "text": "Both methods issue one form POST to the same canonical operation, with no retries or rollback. A successful envelope does not establish atomic per-setting success. Record input coverage is source-backed and offline only; no live batch write was performed."
         }
       ],
       "response": {
@@ -107,7 +111,66 @@
             }
           ]
         }
-      }
+      },
+      "additional_methods": [
+        {
+          "name": "updateSettings",
+          "inputs": [
+            {
+              "php": "settings",
+              "records": {
+                "alias": "ModSecuritySettingInput",
+                "start": 1,
+                "separator": "",
+                "sensitive": true,
+                "fields": [
+                  {
+                    "source": "setting_id",
+                    "php": "settingId",
+                    "prefix": "setting_id"
+                  },
+                  {
+                    "source": "state",
+                    "php": "state",
+                    "prefix": "state"
+                  },
+                  {
+                    "source": "remove",
+                    "php": "remove",
+                    "prefix": "remove"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "2026-10-13 pinned WHM OpenAPI",
+          "date": "2026-10-31",
+          "note": "setting_id documents the one-based suffix family. The three related fields share the original row position; required setting_id/state and optional remove retain source requiredness. This is input mapping evidence, not a live write.",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1modsec_batch_settings/get/parameters/0"
+        },
+        {
+          "kind": "doc",
+          "version": "2026-10-13 pinned WHM OpenAPI",
+          "date": "2026-10-31",
+          "note": "state documents the one-based suffix family. The three related fields share the original row position; required setting_id/state and optional remove retain source requiredness. This is input mapping evidence, not a live write.",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1modsec_batch_settings/get/parameters/1"
+        },
+        {
+          "kind": "doc",
+          "version": "2026-10-13 pinned WHM OpenAPI",
+          "date": "2026-10-31",
+          "note": "remove documents the one-based suffix family. The three related fields share the original row position; required setting_id/state and optional remove retain source requiredness. This is input mapping evidence, not a live write.",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1modsec_batch_settings/get/parameters/2"
+        }
+      ]
     },
     "whm1:modsec_check_rule": {
       "name": "checkRule",

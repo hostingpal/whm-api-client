@@ -8,6 +8,7 @@ use Closure;
 use HostingPal\WhmApiClient\Api\Whm\Spec\ModSecuritySpec;
 use HostingPal\WhmApiClient\Exception\ApiException;
 use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
+use InvalidArgumentException;
 use SensitiveParameter;
 
 /**
@@ -329,6 +330,12 @@ use SensitiveParameter;
  *         vendor_url?: string,
  *     },
  * }
+ *
+ * @phpstan-type ModSecuritySettingInput array{
+ *     settingId: int,
+ *     state: string|int,
+ *     remove?: bool,
+ * }
  */
 final readonly class ModSecurity
 {
@@ -454,13 +461,18 @@ final readonly class ModSecurity
      *
      * Documented: Available in cPanel & WHM 11.46 and later.
      *
-     * Documented: The typed signature supports a single setting. Indexed setting_id1/state1/remove1 families remain
-     * unavailable through this signature (whm-api-client-8x0.1.24). remove=true makes the state value ignored by the
-     * server, but the formal source still requires state. State can contain a SecHttpBlKey access key and is sensitive.
+     * Documented: batchSettings() accepts one setting; updateSettings() accepts a nonempty sequential list of
+     * associative records with required settingId and state and optional boolean remove. remove=true makes state
+     * ignored by the server, but the formal source still requires it. Missing remove retains its original row index.
+     * State can contain a SecHttpBlKey access key; the entire record input is sensitive.
      *
      * Documented: Use setting IDs 0 through 9, as limited by the pinned source. The shared Settings.pm defaults may be
      * strings or integers, and updated_settings[].default preserves either exactly. This default correction is
      * source-backed and tested offline; batch writes were not observed.
+     *
+     * Policy: Both methods issue one form POST to the same canonical operation, with no retries or rollback. A
+     * successful envelope does not establish atomic per-setting success. Record input coverage is source-backed and
+     * offline only; no live batch write was performed.
      *
      * API-map identity: whm1:modsec_batch_settings#GET (wire name modsec_batch_settings; Server Settings).
      *
@@ -486,6 +498,48 @@ final readonly class ModSecurity
             'state' => $state,
             'remove' => $remove,
         ]);
+
+        return $result;
+    }
+
+    /**
+     * Run ModSecurity batch settings.
+     *
+     * This function adds, updates, and removes global ModSecurity™ configuration directives. The function modifies
+     * these directives in the `/usr/local/apache/conf/modsec2.cpanel.conf` file.
+     *
+     * Documented: Available in cPanel & WHM 11.46 and later.
+     *
+     * Documented: batchSettings() accepts one setting; updateSettings() accepts a nonempty sequential list of
+     * associative records with required settingId and state and optional boolean remove. remove=true makes state
+     * ignored by the server, but the formal source still requires it. Missing remove retains its original row index.
+     * State can contain a SecHttpBlKey access key; the entire record input is sensitive.
+     *
+     * Documented: Use setting IDs 0 through 9, as limited by the pinned source. The shared Settings.pm defaults may be
+     * strings or integers, and updated_settings[].default preserves either exactly. This default correction is
+     * source-backed and tested offline; batch writes were not observed.
+     *
+     * Policy: Both methods issue one form POST to the same canonical operation, with no retries or rollback. A
+     * successful envelope does not establish atomic per-setting success. Record input coverage is source-backed and
+     * offline only; no live batch write was performed.
+     *
+     * API-map identity: whm1:modsec_batch_settings#GET (wire name modsec_batch_settings; Server Settings).
+     *
+     * @param non-empty-list<ModSecuritySettingInput> $settings Records in input order; optional fields retain their
+     *     original row index.
+     * @return BatchSettingsResult
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/server-settings/modsecurity-modsec_batch_settings
+     */
+    public function updateSettings(
+        #[SensitiveParameter]
+        array $settings,
+    ): array {
+        /** @var BatchSettingsResult $result Validated against ModSecuritySpec::UPDATE_SETTINGS. */
+        $result = ($this->run)(ModSecuritySpec::UPDATE_SETTINGS, ['settings' => $settings]);
 
         return $result;
     }

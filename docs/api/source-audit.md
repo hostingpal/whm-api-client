@@ -3890,10 +3890,19 @@ Vendor preview/add/update may fetch remote content, and `reportRule(send: true)`
 can transmit log information and contact details to a third party. The client adds
 no retries, rollback, URL fetching or automatic deployment.
 
-`batchSettings()` currently supports the pinned single-setting arguments. Its
-indexed multi-setting families remain under `8x0.1.24`. `reportRule()` retains the
-formal integer row-ID input; the contradictory prose's comma-separated multi-ID
-form is also deferred there. The source restricts batch setting IDs to 0 through 9.
+`batchSettings(int $settingId, string|int $state, ?bool $remove = null)` retains
+its single-setting contract. `updateSettings(array $settings)` adds a nonempty
+sequential list of `ModSecuritySettingInput` associative records: required integer
+`settingId`, required `string|int` `state`, and optional boolean `remove`. State
+remains required even with `remove: true`; explicit null and unknown row keys fail
+locally. Missing optional fields retain the original one-based row index, and
+input order and duplicate setting IDs are preserved. The entire collection is
+sensitive. Both methods share one canonical response contract and issue one form
+POST, with no retries, rollback or promise of atomic per-setting success.
+`reportRule()` retains the formal integer row-ID input; the contradictory prose's
+comma-separated multi-ID form remains under `8x0.1.24`. The source restricts batch
+setting IDs to 0 through 9; this change adds no client-side ID/range or state enum
+validation. Record input support is source-backed and tested offline only.
 The twelve source-backed empty-result mutations accept an omitted or null payload
 while retaining any returned mixed data; they are not weakened to void. Omitted
 wire payloads on those writes remain unobserved.
@@ -5984,3 +5993,42 @@ Greylisting, feature-list or AutoSSL registration mutation was run.
 Official generation increases canonical typed coverage from 1,098 to 1,105:
 UAPI stays 519 and WHM rises 579 to 586. Groups stay 91 (68 UAPI + 23 WHM), and
 generated PHP files stay 185. Generic calls remain distinct from typed coverage.
+
+
+## Related-field record inputs and canonical method aliases (2026-10-31)
+
+`whm()->modSecurity()->updateSettings()` is an additional public symbol for
+`whm1:modsec_batch_settings`. The existing scalar `batchSettings()` remains intact.
+The selected source variant, form POST policy, outcome, route and response shape
+are canonical; the generated alias spec inherits them and replaces only params.
+The response PHPDoc remains `BatchSettingsResult`. Counts stay 1,105 canonical
+operations (519 UAPI, 586 WHM), 91 groups and 185 generated PHP files.
+
+The immutable pinned WHM OpenAPI decompressed SHA256 is
+`6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594`.
+Operation-scoped evidence binds the shared one-based index decision separately to:
+
+| Source pointer | Row field | Source contract and wire family |
+| --- | --- | --- |
+| `/paths/~1modsec_batch_settings/get/parameters/0` | `settingId` | Required integer; `setting_id1`, `setting_id2`, `setting_id3` |
+| `/paths/~1modsec_batch_settings/get/parameters/1` | `state` | Required string or integer; `state1`, `state2`, `state3` |
+| `/paths/~1modsec_batch_settings/get/parameters/2` | `remove` | Optional integer 0/1 exposed as boolean; `remove1`, `remove2`, `remove3` |
+
+Ignored-if-remove prose does not waive required state. Record rows are associative
+arrays with strict known keys, within a nonempty sequential outer list. A missing
+optional remove emits nothing for that row, without shifting later indexes.
+Explicit null is invalid for every field. Declaration order governs fields;
+caller row order and duplicate IDs are preserved. No state enum, ID constraints,
+coercion, deduplication or conditional requiredness is invented. The whole input
+is sensitive because states may contain configuration secrets; this semantic
+classification requires canonical POST independently of trace annotations.
+
+Offline fixtures verify literal singleton/multi-row POST bytes, optional gaps,
+empty/zero states, duplicate IDs, key ordering, strict malformed inputs/specs,
+concrete collisions, stale metadata reset, enabled-trace privacy and one attempt
+on API or payload failure. Generator fixtures reject public/spec/type symbol
+collisions, inconsistent contract declarations and unbound mappings. Pinned
+sources and historical evidence are unchanged. No ModSecurity write, rule report,
+vendor contact or live compatibility assertion is part of this work. One accepted
+envelope does not establish atomic batch success. `.1.24` retains separate
+comma-delimited report row-ID requirements.

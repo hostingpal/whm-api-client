@@ -45,6 +45,13 @@ use LogicException;
  *   omits optional arguments. Generated collections receive SensitiveParameter
  *   for trace protection, independently of
  *   secret-bearing transport classification, which still requires POST.
+ *   Encoding 'records' requires records: {start, separator, fields}. Fields map
+ *   row keys to {prefix, type, required}; strict types are string/int/bool/string|int.
+ *   A nonempty sequential list of associative records expands in row/declared-field
+ *   order. Missing optional fields remain absent; explicit null/unknown keys fail.
+ *   Every field uses the original row position; no independent-list compaction.
+ *   Additional generated method constants inherit the canonical operation spec
+ *   and replace only params, sharing route, method, outcome and return schema.
  * - returns: required key; a type spec (see ShapeValidator for the grammar), or
  *   an explicit null for a void operation.
  * - unwrap: optional string naming a field declared in an object "returns";

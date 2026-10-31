@@ -136,6 +136,37 @@ final class ModSecuritySpec
         ],
     ];
 
+    public const UPDATE_SETTINGS = [
+        ...self::MODSEC_BATCH_SETTINGS,
+        'params' => [
+            'settings' => [
+                'name' => 'settings',
+                'encoding' => 'records',
+                'records' => [
+                    'start' => 1,
+                    'separator' => '',
+                    'fields' => [
+                        'settingId' => [
+                            'prefix' => 'setting_id',
+                            'type' => 'int',
+                            'required' => true,
+                        ],
+                        'state' => [
+                            'prefix' => 'state',
+                            'type' => 'string|int',
+                            'required' => true,
+                        ],
+                        'remove' => [
+                            'prefix' => 'remove',
+                            'type' => 'bool',
+                            'required' => false,
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
     public const MODSEC_CHECK_RULE = [
         'function' => 'modsec_check_rule',
         'method' => 'POST',

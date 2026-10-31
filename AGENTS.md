@@ -1072,10 +1072,19 @@ Vendor preview/add/update may fetch remote content, and `reportRule(send: true)`
 can transmit log information and contact details to a third party. The client adds
 no retries, rollback, URL fetching or automatic deployment.
 
-`batchSettings()` currently supports the pinned single-setting arguments. Its
-indexed multi-setting families remain under `8x0.1.24`. `reportRule()` retains the
-formal integer row-ID input; the contradictory prose's comma-separated multi-ID
-form is also deferred there. The source restricts batch setting IDs to 0 through 9.
+`batchSettings(int $settingId, string|int $state, ?bool $remove = null)` retains
+its single-setting contract. `updateSettings(array $settings)` adds a nonempty
+sequential list of `ModSecuritySettingInput` associative records: required integer
+`settingId`, required `string|int` `state`, and optional boolean `remove`. State
+remains required even with `remove: true`; explicit null and unknown row keys fail
+locally. Missing optional fields retain the original one-based row index, and
+input order and duplicate setting IDs are preserved. The entire collection is
+sensitive. Both methods share one canonical response contract and issue one form
+POST, with no retries, rollback or promise of atomic per-setting success.
+`reportRule()` retains the formal integer row-ID input; the contradictory prose's
+comma-separated multi-ID form remains under `8x0.1.24`. The source restricts batch
+setting IDs to 0 through 9; this change adds no client-side ID/range or state enum
+validation. Record input support is source-backed and tested offline only.
 The twelve source-backed empty-result mutations accept an omitted or null payload
 while retaining any returned mixed data; they are not weakened to void. Omitted
 wire payloads on those writes remain unobserved.
@@ -2849,3 +2858,16 @@ empty create behavior is unspecified. Optional empty/null maps dispatch without
 expanded fields. All 51 bulk-edit parameters remain represented. Trace redaction
 of collections does not itself classify them as secret. These seven mutations
 have no live verification in this slice; no retry, polling or rollback is added.
+
+
+The generated `updateSettings()` alias maps a strict related-field record list to
+`whm1:modsec_batch_settings`, retaining `batchSettings()` and its result alias.
+Additional methods are input mappings on the canonical operation, never separate
+operations. Alias specs inherit the canonical spec and replace only params.
+Every mapped field needs matching operation-scoped source SHA256 and parameter
+pointer evidence. Types and requiredness come from canonical source parameters;
+record fields cannot declare a separate result, route, variant, outcome or method.
+Record expansion appends directly to OrderedFields with original argument origin
+and no repeat-family exception. Keep scalar/index/map/SSL/generic paths unchanged.
+Coverage remains 1,105 operations, 91 groups, 185 generated PHP files. No live batch
+write or report submission was performed; comma-delimited report IDs remain in .1.24.
