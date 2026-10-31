@@ -1418,6 +1418,62 @@ configuration or link data was requested, and no state changed. It establishes
 no login, TFA challenge, SSH access or mutation compatibility. `8x0.2.40` remains
 open for all unobserved functions and variants.
 
+## Site-builder domain capabilities
+
+Run `WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs php tools/live-verify/site-builders.php --output=docs/api/evidence/YYYY-MM-DD-site-builders.json`.
+
+Five fixed GETs read version and Nova/Sitejet can_create_domains through both UAPI
+routes. Existing opt-in, committed-input, exact request guard, TLS and immutable
+structural-output rules apply. No external account/site creation, private token or
+content retrieval, SSO/OAuth, publishing/restoration or URL fetch runs. Capability
+results do not establish successful creation or rendering. Keep gaps under `8x0.2.57`.
+
+The site-builder capture at fcd979d on 11.138.0.19 records five HTTP-200 reads:
+version and both Sitejet capability reads pass; both Nova capability reads fail
+at the API layer. Strict assessment remains failed with zero schema discrepancies,
+without diagnosing the cause from that capture alone. No account/site/token/content/publish/restore/SSO
+operation or URL fetch ran. Remaining live work stays under 8x0.2.57.
+
+Separately, reviewer 5721328890 on `11.138.0.19` found `Cpanel::API::Nova`
+missing and all six Nova reads they called failing on both routes. All eleven
+Nova methods are unavailable for verification; writes were not executed and all
+Nova response shapes remain unobserved. Their Sitejet reads and local disposable
+account writes are attributed in the [source audit](../../docs/api/source-audit.md#nova-and-sitejet-site-builders); remote service calls,
+successful restoration and published metadata remain unobserved. The historical
+capture stays failed/not_checked without a waiver, and no corrected-head capture
+ran. Remaining gaps stay open under `8x0.2.57`.
+
+## Log metadata administration
+
+Run `WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs php tools/live-verify/log-administration.php --output=docs/api/evidence/YYYY-MM-DD-log-administration.json`.
+
+Eight fixed GETs read version, WHM retention and selected-account settings/archive/
+error-log metadata through both UAPI routes. Existing opt-in, committed-input,
+exact request guard, TLS and immutable structural-output rules apply. No existing
+log contents, archive deletion or settings mutation runs. Keep gaps under `8x0.2.55`.
+
+The corrected log metadata capture at dd5e626 on 11.138.0.19 passes eight GET
+checks and strict assessment with zero discrepancies. The original capture-bound rules normalize only WHM default_retention and
+UAPI get_settings retention_days integer strings and exact quoted archive_logs/
+prune_archive flags. The separate reviewer lines_read correction is described below. Account/archive rows are populated, error-log lists empty. No log
+content, deletion or setting mutation ran. Initial e5476c1 evidence stays failed
+and immutable; remaining live work stays under 8x0.2.55.
+
+Separate review [5721279104](https://github.com/hostingpal/whm-api-client/pull/68#pullrequestreview-5721279104)
+at `984c5c16e47c43741b50e817a6f87149eb2f86d5` on `11.138.0.19` exercised
+all seven methods with synthetic logs/archives on a disposable account, both UAPI
+routes and the single WHM route. Its token was revoked and account/home removed.
+It observed empty direct `view_error_log` with `log_content: []` and string
+`lines_read: "0"`; nonempty direct/bridged counts were integers. This separate
+review observation motivates only that leaf's integer-string compatibility and
+is absent from both committed captures. The review also observed stored false/zero
+settings, unchanged omitted flags after clearing retention, server rejection of
+1000 outside -1..999 and of an empty-argument settings call. Reviewer source
+inspection found WebServer/rawlog requirements in shared `%API`; neither is
+pinned or a disabled-role runtime test. Unreadable/symlink null metadata,
+php_fpm_error_log and actual rotation/pruning remain open under `8x0.2.55`.
+No corrected-head live run is claimed.
+
 ## DAV service and shared-addressbook status
 
 Run `WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs php tools/live-verify/dav-calendar.php --output=docs/api/evidence/YYYY-MM-DD-dav-calendar.json` only for an explicitly requested capture.

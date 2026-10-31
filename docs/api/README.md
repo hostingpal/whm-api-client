@@ -1,7 +1,7 @@
 # Official API documentation inputs
 
 The source audit for Beads `whm-api-client-gwi.1` covers **WHM API 1** and
-**cPanel UAPI**. The PHP package implements typed groups for 1,098 documented operations
+**cPanel UAPI**. The PHP package implements typed groups for 1,135 documented operations
 plus generic calls; these documents pin the contracts and do not by themselves
 establish endpoint implementation or live-test coverage. Coverage is generated:
 [coverage.md](coverage.md) lists generated groups and exclusions, and live
@@ -144,3 +144,7 @@ failures and collection truthiness rules are version-attributed in PHPDoc and
 [source audit](source-audit.md#dav-calendars-contacts-and-delegation). The immutable
 seven-GET artifact remains failed/unwaived; the fixed catalog is diagnostic, and
 two misleading success recipes are removed. No sources, runtime or generator changed.
+
+Nova and Sitejet contracts and reviewer-source/live boundaries are recorded in
+[source-audit.md](source-audit.md#nova-and-sitejet-site-builders). Their historical
+five-GET capture remains failed; no corrected-head live acceptance is implied.

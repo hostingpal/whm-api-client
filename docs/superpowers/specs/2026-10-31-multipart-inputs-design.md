@@ -59,6 +59,60 @@ convention is `file-0`, `file-1`, etc. File Storage role availability is require
 These facts come from the local pinned operation and upload tutorial; transport
 support alone is neither live verification nor coverage of all multipart APIs.
 
+## Source, observed evidence and client policy
+
+**Source:** The locally inspected [pinned manifest](../../api/sources/2026-10-13/manifest.json)
+binds snapshot `2026-10-13`; both OpenAPI inputs declare `11.138.0.10`. The
+uncompressed WHM source SHA-256 is
+`6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594`;
+the UAPI source is
+`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`.
+The [Fileman operation](https://api.docs.cpanel.net/openapi/cpanel/operation/upload_files/)
+request/response and [upload tutorial](https://api.docs.cpanel.net/guides/quickstart-development-guide/tutorial-use-uapis-fileman-upload-files-function-in-custom-code/)
+are pinned locally; the tutorial's uncompressed SHA-256 is
+`1d5f4516ad562bf2046f8e0a9808c5870adddbd1d9545fc4d9b2e0658a586c33`.
+These source contracts establish the inventory, file-N convention, query
+parameters, role/route caveats and response shape. They were not refreshed here.
+Tutorial examples do not override this client's verified-TLS requirement.
+
+**Observed (reviewer report):** [Review 5722763413](https://github.com/hostingpal/whm-api-client/pull/74#pullrequestreview-5722763413),
+submitted `2026-10-31T12:47:52Z` against `5f541618d768de9613ec27018721a0a139555fd1`,
+reports raw multipart POSTs through direct UAPI on cPanel `11.138.0.19`. The
+reviewer created disposable `wrvup`/`wrvup2` accounts, reported both accounts and
+home directories removed and temporary tokens revoked. These calls bypassed the
+client; they establish server observations, not generated-client execution,
+committed sanitized capture or bridged/WHM upload coverage. No upload or capture
+is repeated by this correction.
+
+The reviewer reports known-length status `1`/succeeded `1` twice, while chunked
+framing produced HTTP 200/status `0` with a missing-file error twice and with a
+200 KB body. The `Cpanel/Form.pm:69` CONTENT_LENGTH gate is the reviewer's
+installed-source explanation, not locally pinned source inspection. Likewise,
+the reviewer's `extract_api_args`/`Cpanel/Args.pm:86` trace says every `api.*`
+name is extracted; those Perl sources are not part of this local snapshot.
+An escaped quote in `qu\"ote.txt` was reported stored as `qu` with status `1`;
+percent-encoding `%22` was not tested.
+
+The same report observes byte-identical CRLF/NUL/0xFF content and real zero-byte
+files; UTF-8/spaces preserved; `<`, `>` and `;` rejected per file; duplicate
+`dup.txt` parts stored as `dup.txt` and `dup-2.txt`; existing-name failure without
+overwrite and replacement with `overwrite=1`. It reports query placement of all
+four ordinary parameters, creation of a missing directory, `0644`/`600`
+permissions and omitted-dir home behavior. One-good/one-bad returned status `1`;
+a single existing filename returned status `0` with a row reason but generic
+envelope errors. Reported integer counts/status/size, failed-row null size and
+mixed diskinfo types agree with the pinned shape. Acceptance of `file`, lone
+`file-1` and arbitrary filename-bearing part names is a server detail: retain the
+documented file-N convention. These reports are version/route-specific, not
+universal filename, overwrite or antivirus guarantees.
+
+**Policy:** Known total length for every new multipart request, global quote
+rejection, complete `api.` reservation and typed Fileman Unchecked are the
+reviewed client decisions below. They do not infer WHM/bridge upload support,
+virus-scanner verification or further endpoint coverage from direct raw calls.
+Independent offline acceptance, reported live observations and future client
+fixture evidence remain separate.
+
 ## Public upload value
 
 Add `HostingPal\WhmApiClient\Upload` with these public static factories:
@@ -80,6 +134,7 @@ Upload::fromStream(
     string $filename,
     StreamInterface $stream,
     string $contentType = 'application/octet-stream',
+    ?int $size = null,
 ): Upload;
 ```
 
@@ -88,8 +143,13 @@ are descriptors; factories perform no HTTP request, file open, content read or
 stream seek. Paths are local filesystem paths only, never PHP wrappers or URLs.
 Relative paths are anchored to the working directory when the descriptor is
 created. A path's basename supplies the default filename; overrides are explicit.
-Factories may reject invalid descriptor metadata without altering handle metadata
-because no API attempt has begun.
+Factories may reject invalid descriptor metadata, including a negative explicit
+size, without altering handle metadata because no API attempt has begun. The first
+three `fromStream()` arguments and their names remain unchanged; optional fourth
+`$size` is an assertion of the exact nonnegative number of bytes remaining at the
+API call's starting cursor. It is neither the original stream's total size nor a
+limit selecting a prefix to upload. Null requests derivation at call time, not an
+unknown-length HTTP body.
 
 Strings contain exact bytes, including NUL, empty content and non-UTF-8 binary
 data. They are never treated as paths or base64-encoded. A zero-byte file is a
@@ -98,11 +158,14 @@ guessing occurs. An override must be a valid ASCII `type/subtype` token pair;
 arbitrary parameters and part headers are outside the initial contract.
 
 Filenames are nonempty valid UTF-8 basenames. Reject controls, DEL, path separators
-(`/` and `\\`) and the complete names `.` or `..`. Preserve valid spelling;
-never silently basename an explicit filename or rewrite it. The header encoder
-quotes/escapes a literal double quote safely. The typed Fileman adopter also
-rejects its documented `<`, `>` and `;` filename characters. Generic upload values
-do not invent that endpoint-specific restriction for other operations.
+(`/` and `\\`), literal double quotes (`"`) and the complete names `.` or `..`.
+Preserve valid UTF-8 spelling and spaces; never silently basename an explicit
+filename or rewrite it. Reject a double quote at descriptor validation for every
+source factory: escaping it in a header does not preserve the observed stored
+name. Do not percent-encode or otherwise rewrite rejected names as a workaround.
+The typed Fileman adopter also rejects its documented `<`, `>` and `;` filename
+characters. Generic upload values do not inherit those endpoint-specific
+restrictions for other operations.
 
 Descriptor diagnostics and debug/serialization behavior must not expose paths,
 contents or stream internals: serialization is refused and debug information is
@@ -123,8 +186,20 @@ the API call begins. Never rewind it to zero or close/detach it, including when
 the HTTP client closes the composite body. A successful send advances it; a
 failure can consume some bytes. The caller must deliberately reposition a
 seekable stream or supply another stream before another call. Non-seekable
-readable streams are supported; empty/EOF streams produce empty files. Reject
-unreadable or detached sources before HTTP without consuming bytes.
+readable streams remain supported when their remaining length is known or an
+explicit `$size` supplies it. A known zero remainder produces an empty file;
+unknown size is not inferred to be zero from EOF. Reject unreadable or detached
+sources before HTTP without consuming bytes.
+
+At call time derive remaining length as `getSize() - tell()` only when both values
+are reliable nonnegative integers and the cursor is within the total size. Never
+rewind or read to discover a length. A null `getSize()` does not make a readable
+stream unusable: an explicit remaining-size assertion can supply the length. If
+size or position is unknown and no exact remainder can be derived, require that
+assertion. If explicit and derived remaining lengths are both known, reject a
+disagreement before HTTP and before reading any source. Reject invalid lengths
+or out-of-bounds positions locally. The caller must supply an accurate assertion
+and must not mutate or advance the stream during a call.
 
 Reject the same borrowed `StreamInterface` object in two parts of one request:
 its shared mutable cursor cannot represent independent files. Different wrappers
@@ -133,10 +208,15 @@ that aliasing and must not mutate any source during a call. Reusing path or stri
 descriptors opens independent files or uses independent byte cursors respectively.
 Reusing a borrowed descriptor in a later call uses its then-current position.
 
-Open all owned files and validate source readability before dispatch. If a later
-open fails, close earlier owned files, leave borrowed stream positions unchanged,
-and send zero requests. Subsequent read failures cannot be made atomic with the
-server and never trigger retry, rollback or inferred cleanup.
+Open all owned files and validate every source's readability and remaining length
+before dispatch and before reading any source byte. Use exact byte-string lengths
+and owned regular-file metadata without reading content. If a later open, length
+check or request-total calculation fails, close every already-opened owned file,
+leave all borrowed cursors unchanged and send zero requests. Unknown remaining
+length is such a local rejection, with zero bytes read from every source. No
+chunked fallback, buffering, spooling, drain or alternate route is permitted.
+Subsequent read failures cannot be made atomic with the server and never trigger
+retry, rollback or inferred cleanup.
 
 ## Streaming body and framing
 
@@ -150,11 +230,29 @@ incremental reads, not buffering performed by an injected PSR client.
 The initial composite stream may be non-seekable. Closing or detaching it releases
 owned resources only; it never transfers or destroys a borrowed source. Seek,
 write and detach behavior must satisfy PSR contracts and be covered independently.
-Get size without reading content: return a correctly bounded total remaining
-size only when all part lengths/starting positions are known; otherwise return
-null. Never drain a stream just to compute Content-Length. Unknown-length support
-ultimately depends on the injected HTTP client/server; fail clearly without a
-hidden buffering or alternate-route fallback when sending fails.
+The composite body's `getSize()` reports its stable total body length, including
+after reads, as required by PSR; it does not report the changing unread remainder.
+Each source contributes its remaining length at the starting cursor. Before HTTP
+dispatch and before reading any source byte, compute the exact multipart total,
+including every header, text part, CRLF, boundary and closing delimiter. Use
+checked integer arithmetic; invalid or overflowing lengths reject locally with
+the preparation cleanup above. Never drain a stream to size it.
+
+Set exact `Content-Length` and multipart `Content-Type` with the selected boundary
+on the final request; the library emits no `Transfer-Encoding`. The injected PSR
+client must honor this framing. Requiring a known total for new WHM and direct
+UAPI multipart calls is conservative client policy informed by direct Fileman
+observations, not live proof of WHM behavior.
+
+Bind each source's reads to its declared remaining length. Unexpected early EOF
+or a read failure aborts safely with no retry; preceding bytes may already have
+arrived at the server. An explicit size asserts the entire remainder and gives
+no permission to truncate. The library cannot prove an unknown/non-seekable
+source's actual length in advance or detect all excess bytes without reading
+beyond that assertion. Do not probe or drain beyond the declared length merely
+to verify it. Unverifiable excess is a caller-assertion limitation, not a claim
+that a prefix upload is correct. Owned resources are always released and borrowed
+sources are never rewound, closed or detached.
 
 Use CRLF multipart framing, a library-generated boundary with at least 192 random
 bits, `Content-Disposition: form-data` and the exact field names. File parts carry
@@ -221,12 +319,22 @@ fallback. Existing reviewed bridged SSL string methods continue working through
 their current operation-specific path. This restriction is not a claim that all
 multipart bridge operations are impossible.
 
-WHM reserves `api.version`; new UAPI multipart calls also reserve `cpanel.user`,
-`cpanel.module` and `cpanel.function`, as well as `api.version`, on both routes.
-Reject reserved names in all part records and query fields after expansion,
-including a reserved field whose query value is null. Reject cross-placement
-query/part name collisions. Repetition within the explicit part list remains
-intentional. Legacy generic `call()` behavior is unchanged.
+Reserve the entire case-sensitive `api.` prefix for both new WHM and direct
+UAPI multipart calls: `api.` itself and every `api.*` name are forbidden in all
+raw part names, raw query keys and expanded query fields. Check raw keys by
+presence, including a reserved query key whose value is null. New UAPI multipart
+calls additionally reserve the exact `cpanel.user`, `cpanel.module` and
+`cpanel.function` names even on direct access; this is conservative client policy.
+The unsupported bridge still rejects locally before any source open or read.
+Lookalikes such as `API.version`, `apiVersion` and bare `api` remain permitted by
+the existing token rule; do not normalize case or spelling.
+
+Reject a collision between any part name and an emitted query-field name after
+query expansion. Nonreserved null query values emit nothing, so their omission
+creates no cross-placement wire collision and claims no declaration ownership.
+Reserved raw keys still reject by presence even when null. Preserve intentional
+repetition within the explicit part list. Legacy generic `call()` filtering is
+unchanged.
 
 Validate names, complete parts/query input, reservations, source metadata and
 supported route after clearing response metadata and before any file read/open or
@@ -279,12 +387,32 @@ byte strings, integer|string inode counts, infinity strings and additional strin
 display fields. Generate its exact pinned shape; do not infer required fields,
 coerce decimals to integers or interpret absent diskinfo as zero usage.
 
-UAPI success does not imply that every file succeeded. Return documented counts
-and per-file statuses; do not raise a new synthetic exception for a partial batch
-whose envelope succeeded. Existing error policy still throws when the API envelope
-fails, including all-files-failed errors. Do not promise recovery of a full data
-payload from ApiErrorException; any enhancement there is separate. A payload
-mismatch after an accepted outcome can mean files were stored; never retry it.
+Generate `OutcomePolicy::Unchecked` explicitly in this typed operation's spec.
+Preserve and validate the same exact pinned return shape for integer envelope
+status `1` and `0`: all-success, one-good/one-bad and all-files-failed responses
+with valid data return counts, per-file rows, reasons and warnings. In particular,
+a single existing filename can return status `0` with a useful row reason.
+Status `1` does not establish that all files were stored, and status `0` alone does
+not throw under this typed policy. Callers inspect response metadata, counts,
+row status/reason and warnings. Do not synthesize partial- or total-failure
+exceptions or change the global `Flag` policy.
+
+Unchecked does not waive envelope or payload validation. The existing typed UAPI
+engine requires integer status `0|1`; missing, malformed or noninteger status is
+an `InvalidResponseException`. HTTP and unusable-envelope failures still fail.
+The data object remains required even though its pinned members are optional:
+missing, null or malformed data, or an invalid member shape, raises
+`PayloadMismatchException` with the response snapshot, unvalidated payload and
+`outcomeConfirmed=false` under Unchecked. Valid data is not weakened to opaque or
+optional output. Any failure can follow stored files; never retry automatically,
+roll back or infer cleanup from a flag or exception.
+
+Generic `callMultipart()` still defaults to `OutcomePolicy::Flag`; callers may
+explicitly choose Unchecked to retain raw `CallResult` data. Under the unchanged
+Flag default an all-failed status `0` raises `ApiErrorException` without the data
+payload, and `ResponseMetadata::$uapi` excludes data, so its per-file reasons are
+unavailable there. Do not extend that exception or the metadata snapshot. The
+typed choice avoids this loss when the response contains a valid pinned payload.
 
 ## Security and verification
 
@@ -304,9 +432,24 @@ that request creation never reads entire sources, and that bodies are attached a
 streams. Existing form/GET/SSL bytes and all supported envelopes remain covered.
 
 Generator tests must start from pinned Fileman source, preserve known return
-shapes, fail for unsupported binary constructs, generate explicit route policy,
-and reproduce committed PHP without handwritten edits. Run Composer strict
-validation/check plus Go/source/map/generation checks when their surfaces change.
+shapes, fail for unsupported binary constructs, generate explicit route and
+Unchecked outcome policies, and reproduce committed PHP without handwritten
+edits. Run Composer strict validation/check plus Go/source/map/generation checks
+when their surfaces change. This PR corrects the design only; the following are
+implementation acceptance fixtures, not newly executed tests or a RED claim.
+
+| Area | Required independent offline acceptance |
+| --- | --- |
+| Known length | Current-position derivation, explicit remaining size on a non-seekable or null-size stream, known zero, matching explicit/derived sizes, exact final Content-Length and stable composite getSize() after reads. |
+| Preflight failures | Unknown remainder without assertion, negative/invalid lengths, out-of-bounds cursor, explicit/derived disagreement and total overflow reject with zero HTTP, zero source reads, unchanged borrowed cursors and all opened owned files closed. |
+| Read boundaries | Exact declared reads, early EOF and read failure abort without retry; no extra-byte probe or drain; inaccurate unverifiable excess remains the documented caller limitation. |
+| Names and bytes | Reject literal double quotes in every Upload factory without escaping/rewrite fixtures; preserve UTF-8/spaces, raw binary/NUL/non-UTF-8 content and real zero-byte parts; typed-only `<`, `>`, `;` rejection. |
+| Reserved prefix | Reject `api.`, `api.version` and arbitrary `api.other` in raw parts and raw or expanded query fields on WHM/direct UAPI, including reserved raw null keys; reject exact cpanel routing names on new direct UAPI. |
+| Case and omission | Permit token-valid case/lookalikes and bare `api`; allow a nonreserved null query value alongside the same part name because no query field is emitted. |
+| Expansion and repetition | Reject emitted query/part collisions after list-marker expansion; preserve repeated explicit part names and file/text order; reject accidental generated fixed/family collisions. |
+| Fileman returns | All-success, partial status 1, and single-existing-file/all-failed status 0 preserve valid counts, rows, reasons and warnings under generated Unchecked. |
+| Fileman failures | Missing/null/malformed required data and malformed members preserve payload-mismatch metadata with outcomeConfirmed=false; missing/invalid/noninteger status, HTTP and envelope failures retain their distinct exceptions and never retry. |
+| Compatibility | Generic default Flag and explicit Unchecked remain distinct; legacy form/GET/SSL bytes, metadata lifecycle, ownership and supported envelopes remain intact. |
 
 A separate opted-in live fixture may use only fresh owned files/directories on
 designated test accounts, with overwrite disabled, unique names, one small binary
@@ -349,5 +492,8 @@ file numbering is not permission to guess other operation index bases. JSON body
 and multipart capabilities are independent, even if both extend request dispatch.
 
 The user's latest approval resumes implementation of the three agreed designs.
-Review and integration remain in the existing chats; an implementation PR's
-publication is distinct from its external approval, merge and live coverage.
+Implementations must incorporate the reviewed public-contract corrections from
+PRs 72, 73 and 74 before delivery; that requirement does not pause the owner's
+resumed implementation. Review and integration remain in the existing chats; an
+implementation PR's publication is distinct from its external approval, merge
+and live coverage.
