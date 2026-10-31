@@ -3,7 +3,1043 @@
   "family": "whm1",
   "group": "Authentication",
   "accessor": "authentication",
+  "class": "Authentication",
+  "description": "WHM authentication providers, root SSH keys and two-factor policy. Returned credentials, private keys, 2FA secrets, account links and URLs are private payload data; never log them or fetch URLs automatically.",
   "operations": {
-    "whm1:accesshash": {"exclude": {"reason": "Deprecated legacy access hash; API tokens replace it (api_token_create), not as a drop-in.", "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-13", "note": "Flagged deprecated: true; We deprecated this function."}]}}
+    "whm1:accesshash": {
+      "exclude": {
+        "reason": "Deprecated legacy access hash; API tokens replace it (api_token_create), not as a drop-in.",
+        "evidence": [
+          {
+            "kind": "doc",
+            "version": "pinned 2026-10-13",
+            "date": "2026-10-13",
+            "note": "Flagged deprecated: true; We deprecated this function."
+          }
+        ]
+      }
+    },
+    "whm1:authorizesshkey": {
+      "name": "authorizeSshKey",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Only root and root-enabled resellers may authorize root public keys. file must exist under /root/.ssh; text takes precedence when both are supplied. The documented file mode needs text to be omitted, despite the formal required marker. options is a comma-separated string and defaults to no options."
+        },
+        {
+          "kind": "policy",
+          "text": "Client policy: retain the required file argument and existing argument positions; optional text=null omits text so the server can use file. Key text is sensitive. Client policy: send one request without automatic retry or rollback."
+        },
+        {
+          "kind": "policy",
+          "text": "Client encoding policy: omit optional arguments supplied as null and preserve explicit false or zero where accepted by the parameter. This does not assert an undocumented server default."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, /authorizesshkey declares x-readonly=false; use form POST."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The /authorizesshkey file/text descriptions say that supplying both makes the server ignore file. Make only text optional so file-only mode is reachable despite its contradictory formal required:true marker. file and authorize remain required; retain existing argument positions. This is source-only; authorization was not executed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/52#pullrequestreview-5720627530."
+        }
+      ],
+      "params": {
+        "text": {
+          "sensitive": true,
+          "required": false
+        }
+      },
+      "order": [
+        "authorize",
+        "file",
+        "text",
+        "options"
+      ]
+    },
+    "whm1:check_remote_ssh_connection": {
+      "name": "checkRemoteSshConnection",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "This function tests a connection to the specified remote SSH host. Omitted port retains 22. The pinned description says comment, protocol_versions and server_software are undef on a successful connection; these leaves accept null while retaining their documented non-null types."
+        },
+        {
+          "kind": "policy",
+          "text": "Client policy: use form POST and perform no automatic follow-up connection, retry or rollback."
+        },
+        {
+          "kind": "policy",
+          "text": "Client encoding policy: omit optional arguments supplied as null and preserve explicit false or zero where accepted by the parameter. This does not assert an undocumented server default."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, /check_remote_ssh_connection declares x-readonly=false; use form POST."
+        }
+      ],
+      "response": {
+        "comment": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /check_remote_ssh_connection comment description explicitly specifies undef when the local and remote servers connect successfully. Admit JSON null while preserving the existing non-null type and optionality. This corrects the prose/schema conflict using pinned documentation; no SSH connection or POST execution was observed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/52#pullrequestreview-5720627530."
+            }
+          ]
+        },
+        "protocol_versions": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /check_remote_ssh_connection protocol_versions description explicitly specifies undef when the local and remote servers connect successfully. Admit JSON null while preserving the existing non-null type and optionality. This corrects the prose/schema conflict using pinned documentation; no SSH connection or POST execution was observed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/52#pullrequestreview-5720627530."
+            }
+          ]
+        },
+        "server_software": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /check_remote_ssh_connection server_software description explicitly specifies undef when the local and remote servers connect successfully. Admit JSON null while preserving the existing non-null type and optionality. This corrects the prose/schema conflict using pinned documentation; no SSH connection or POST execution was observed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/52#pullrequestreview-5720627530."
+            }
+          ]
+        }
+      }
+    },
+    "whm1:convertopensshtoputty": {
+      "name": "convertOpenSshToPutty",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.32 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Converts a stored OpenSSH private key into private PuTTY key material. Omitted keep_file=1 keeps the original; explicit false deletes it. Omitted passphrase defaults to empty. file identifies a stored key."
+        },
+        {
+          "kind": "policy",
+          "text": "Treat returned private key material as sensitive and do not transfer it over insecure ports. Client policy: send one request without automatic retry or rollback."
+        },
+        {
+          "kind": "policy",
+          "text": "Client encoding policy: omit optional arguments supplied as null and preserve explicit false or zero where accepted by the parameter. This does not assert an undocumented server default."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, /convertopensshtoputty declares x-readonly=false; use form POST."
+        }
+      ],
+      "params": {
+        "passphrase": {
+          "sensitive": true
+        }
+      }
+    },
+    "whm1:deletesshkey": {
+      "name": "deleteSshKey",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Only root may delete root keys. Omitted leave_authorized=1 leaves authorization in place after deletion; explicit false does not. file identifies a stored key file."
+        },
+        {
+          "kind": "policy",
+          "text": "Deletion can affect access. Client policy: send one request without automatic retry or rollback."
+        },
+        {
+          "kind": "policy",
+          "text": "Client encoding policy: omit optional arguments supplied as null and preserve explicit false or zero where accepted by the parameter. This does not assert an undocumented server default."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, /deletesshkey declares x-readonly=false; use form POST."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /deletesshkey leave_authorized enum descriptions are Leave authorized / Do not leave authorized, with default 1. Clarify that this controls retaining authorization after deletion, rather than newly authorizing a key. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/52#pullrequestreview-5720627530."
+        }
+      ],
+      "params": {
+        "leave_authorized": {
+          "description": "Whether authorization remains after deleting the SSH key. 1 leaves authorization in place; 0 does not. Omitting the argument retains the documented default 1."
+        }
+      }
+    },
+    "whm1:disable_authentication_provider": {
+      "name": "disableAuthenticationProvider",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Disables the selected external provider for one service."
+        },
+        {
+          "kind": "policy",
+          "text": "Client policy: send one request without automatic retry or rollback."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, /disable_authentication_provider declares x-readonly=false; use form POST. The success schema declares only metadata and no data payload."
+        }
+      ],
+      "void": true
+    },
+    "whm1:disable_failing_authentication_providers": {
+      "name": "disableFailingAuthenticationProviders",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Disables enabled provider modules that fail to load. The response includes provider_failure and per-service failures_to_disable."
+        },
+        {
+          "kind": "policy",
+          "text": "Inspect provider and service failures independently of envelope success. Client policy: send one request without automatic retry or rollback."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, /disable_failing_authentication_providers declares x-readonly=false; use form POST."
+        }
+      ]
+    },
+    "whm1:enable_authentication_provider": {
+      "name": "enableAuthenticationProvider",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Enables the selected external provider for one service."
+        },
+        {
+          "kind": "policy",
+          "text": "Client policy: send one request without automatic retry or rollback."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, /enable_authentication_provider declares x-readonly=false; use form POST. The success schema declares only metadata and no data payload."
+        }
+      ],
+      "void": true
+    },
+    "whm1:generatesshkeypair": {
+      "name": "generateSshKeyPair",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.32 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitted abort_on_existing_key=1 aborts if the name exists; explicit false continues. Algorithm omission uses the system default; DSA defaults to 1024 bits and id_dsa, RSA to 4096 bits and id_rsa despite the formal name default id_rsa. Omitted comment and passphrase default to empty. A fingerprint may be null."
+        },
+        {
+          "kind": "policy",
+          "text": "Key generation can affect stored keys. Client policy: send one request without automatic retry or rollback."
+        },
+        {
+          "kind": "policy",
+          "text": "Client encoding policy: omit optional arguments supplied as null and preserve explicit false or zero where accepted by the parameter. This does not assert an undocumented server default."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, /generatesshkeypair declares x-readonly=false; use form POST."
+        }
+      ],
+      "params": {
+        "passphrase": {
+          "sensitive": true
+        }
+      }
+    },
+    "whm1:get_available_authentication_providers": {
+      "name": "getAvailableAuthenticationProviders",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned field spelling whostmgr_enabled is preserved separately from whostmgrd_link."
+        },
+        {
+          "kind": "policy",
+          "text": "Treat returned provider links and documentation URLs as private payload data; do not log or follow them automatically. Icon data is returned without rendering."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, /get_available_authentication_providers declares x-readonly=true; use GET."
+        }
+      ]
+    },
+    "whm1:get_login_url": {
+      "name": "getLoginUrl",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 62 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation is GET with x-readonly=true, and its url_after_login example contains a state query value. The reviewer inspected Whostmgr/API/1/Market.pm on 11.138.0.19: this operation delegates through a provider and can make an outbound call. This is source inspection; the reviewer did not invoke it."
+        },
+        {
+          "kind": "policy",
+          "text": "Client policy: treat redirect input as sensitive and use form POST to keep it out of the request URL. This is a conservative privacy choice, not an upstream claim that url_after_login contains tokens. Live POST compatibility remains unverified. Return the login URL without fetching it, following redirects or logging it."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /get_login_url is GET with x-readonly=true; url_after_login is a redirect URL, and its example contains a state query value. The pinned text does not claim it carries tokens. Treating the input as sensitive and using form POST are conservative client privacy policy. POST compatibility remains live-unverified. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/52#pullrequestreview-5720627530."
+        },
+        {
+          "kind": "doc",
+          "version": "11.138.0.19 source inspection",
+          "date": "2026-10-31",
+          "note": "The reviewer inspected Whostmgr/API/1/Market.pm on cPanel 11.138.0.19 and reported that get_login_url delegates through a provider, so it can make an outbound call. This is source inspection, not live execution: the reviewer ran no POST methods. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/52#pullrequestreview-5720627530."
+        }
+      ],
+      "params": {
+        "url_after_login": {
+          "sensitive": true
+        }
+      }
+    },
+    "whm1:get_provider_client_configurations": {
+      "name": "getProviderClientConfigurations",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares x-readonly=false. The reviewed source-family correction allows absent or null client_id and client_secret for unset configuration, matching the configuration-fields family; this POST response was not observed live. redirect_uris retains its documented list of strings."
+        },
+        {
+          "kind": "policy",
+          "text": "Client policy: keep this credential-bearing read as form POST. Treat client IDs, secrets and redirect URLs as sensitive payload data; do not log or follow them."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, /get_provider_client_configurations declares x-readonly=false; use form POST."
+        }
+      ],
+      "response": {
+        "client_configurations.client_id": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /get_provider_client_configurations declares client_id as an optional string. The same credential field is represented by /get_provider_configuration_fields value, whose pinned schema is nullable and whose null examples identify client_id and client_secret. The review approves absent/null compatibility for this source family; the live null observation belongs only to get_provider_configuration_fields, not this unexecuted POST. Preserve redirect_uris and container contracts. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/52#pullrequestreview-5720627530."
+            }
+          ]
+        },
+        "client_configurations.client_secret": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /get_provider_client_configurations declares client_secret as an optional string. The same credential field is represented by /get_provider_configuration_fields value, whose pinned schema is nullable and whose null examples identify client_id and client_secret. The review approves absent/null compatibility for this source family; the live null observation belongs only to get_provider_configuration_fields, not this unexecuted POST. Preserve redirect_uris and container contracts. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/52#pullrequestreview-5720627530."
+            }
+          ]
+        }
+      }
+    },
+    "whm1:get_provider_configuration_fields": {
+      "name": "getProviderConfigurationFields",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned value field is optional and nullable; absence and explicit null remain distinct."
+        },
+        {
+          "kind": "observed",
+          "text": "The independent WHM GET review on 11.138.0.19 observed value:null for unset provider configuration fields. This observation does not establish the unexecuted client-configuration POST response."
+        },
+        {
+          "kind": "policy",
+          "text": "Treat configuration values and provider identifiers as private payload data; do not log returned values."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, /get_provider_configuration_fields declares x-readonly=true; use GET."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Independent WHM GET review at revision 35f88ebca106a117fd0feb9e06347e20007416b8: get_provider_configuration_fields returned value:null for unset fields, matching the pinned nullable string and null examples. The generated value field already permits null and absence; no response override is needed. Review: https://github.com/hostingpal/whm-api-client/pull/52#pullrequestreview-5720627530."
+        }
+      ]
+    },
+    "whm1:get_provider_display_configurations": {
+      "name": "getProviderDisplayConfigurations",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 58.0.12 and later."
+        },
+        {
+          "kind": "policy",
+          "text": "Treat returned URLs and configuration values as private payload data. The client neither follows links nor decodes or renders icons."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, /get_provider_display_configurations declares x-readonly=true; use GET."
+        }
+      ]
+    },
+    "whm1:get_users_authn_linked_accounts": {
+      "name": "getUsersAuthnLinkedAccounts",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "subject_unique_identifier has the pinned string type, including leading zeros and oversized identifiers."
+        },
+        {
+          "kind": "policy",
+          "text": "Treat returned account-link identities as private payload data. Preserve identifiers without numeric conversion or inference from UAPI counterparts."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, /get_users_authn_linked_accounts declares x-readonly=true; use GET."
+        }
+      ]
+    },
+    "whm1:importsshkey": {
+      "name": "importSshKey",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "For PPK imports passphrase is conditionally required; extraction defaults to 1 for PPK and 0 for other imports. Omitted extraction options retain those format-dependent defaults."
+        },
+        {
+          "kind": "policy",
+          "text": "Raw key contents and passphrases are sensitive. Import can affect stored keys. Client policy: send one request without automatic retry or rollback."
+        },
+        {
+          "kind": "policy",
+          "text": "Client encoding policy: omit optional arguments supplied as null and preserve explicit false or zero where accepted by the parameter. This does not assert an undocumented server default."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, /importsshkey declares x-readonly=false; use form POST. The success schema declares only metadata and no data payload."
+        }
+      ],
+      "void": true,
+      "params": {
+        "key": {
+          "sensitive": true
+        },
+        "passphrase": {
+          "sensitive": true
+        }
+      }
+    },
+    "whm1:link_user_authn_provider": {
+      "name": "linkUserAuthnProvider",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 56 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Adds an external authentication authorization link to the named local account. External identifiers have the pinned string type."
+        },
+        {
+          "kind": "policy",
+          "text": "Client argument order starts with the local username, then providerId, subjectUniqueIdentifier and preferredUsername. Client policy: send one request without automatic retry or rollback."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, /link_user_authn_provider declares x-readonly=false; use form POST. The success schema declares only metadata and no data payload."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /link_user_authn_provider identifies username as the local account and provider_id/subject_unique_identifier as the external identity. Client argument ordering puts the local account first to avoid silent misbinding among string arguments, as requested by the review. Wire names and string types are unchanged; this POST was not executed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/52#pullrequestreview-5720627530."
+        }
+      ],
+      "void": true,
+      "order": [
+        "username",
+        "provider_id",
+        "subject_unique_identifier",
+        "preferred_username"
+      ]
+    },
+    "whm1:listsshkeys": {
+      "name": "listSshKeys",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Only root may list root keys. The pinned operation declares x-readonly=false. Omitted private=1 and private_texts=1 may return private key material; public_texts=0 and sync_authorized=0 are server defaults. sync_authorized can alter authorization state. Stored file names identify keys."
+        },
+        {
+          "kind": "policy",
+          "text": "Client policy: use form POST and treat returned key text as sensitive payload data; never log it. Client policy: send one request without automatic retry or rollback."
+        },
+        {
+          "kind": "policy",
+          "text": "Client encoding policy: omit optional arguments supplied as null and preserve explicit false or zero where accepted by the parameter. This does not assert an undocumented server default."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, /listsshkeys declares x-readonly=false; use form POST."
+        }
+      ]
+    },
+    "whm1:set_provider_client_configurations": {
+      "name": "setProviderClientConfigurations",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "configurations is the pinned string input for provider-specific configuration."
+        },
+        {
+          "kind": "policy",
+          "text": "Supply provider-specific serialized configuration text, including JSON when that provider requires it. The client treats it as sensitive and form-encodes it once, without automatic object or JSON encoding. Provider settings can affect login access. Client policy: send one request without automatic retry or rollback."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, /set_provider_client_configurations declares x-readonly=false; use form POST. The success schema declares only metadata and no data payload."
+        }
+      ],
+      "void": true,
+      "params": {
+        "configurations": {
+          "sensitive": true
+        }
+      }
+    },
+    "whm1:set_provider_display_configurations": {
+      "name": "setProviderDisplayConfigurations",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned configurations query parameter requires JSON-encoded key-value text with the documented keys color, display_name, icon, icon_type, label and textcolor."
+        },
+        {
+          "kind": "policy",
+          "text": "Supply caller-serialized JSON, form-encoded once; do not pass a PHP object. The native string|int boundary is the existing scalar representation of a content-based query parameter and does not establish integer semantics; narrower typing is tracked under whm-api-client-8x0.1.23. Configuration JSON is sensitive. Client policy: send one request without automatic retry or rollback."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, /set_provider_display_configurations declares x-readonly=false; use form POST. The success schema declares only metadata and no data payload. Its configurations query parameter has application/json content with the description JSON-encoded key-value format; preserve the existing scalar string|int representation and require caller-serialized text. Narrow native typing remains whm-api-client-8x0.1.23."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /set_provider_display_configurations configurations.content.application/json.schema declares color, display_name, icon, icon_type, label and textcolor string properties. Restore those keys and their meanings in the parameter description; retain its scalar encoding and sensitive-input policy. The content-based scalar typing follow-up is whm-api-client-8x0.1.23. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/52#pullrequestreview-5720627530."
+        }
+      ],
+      "void": true,
+      "params": {
+        "configurations": {
+          "sensitive": true,
+          "encoding": "scalar",
+          "description": "Caller-serialized JSON-encoded key-value text for the display configuration. Documented string keys: color (button background RGB color), display_name (identity provider display name), icon (button icon data), icon_type (icon MIME type, default image/svg+xml), label (button text label), textcolor (label RGB color). Pass a JSON string; the existing string|int scalar boundary does not encode PHP objects. Form-encoded exactly once."
+        }
+      }
+    },
+    "whm1:twofactorauth_disable_policy": {
+      "name": "twoFactorAuthDisablePolicy",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Disables the server-wide 2FA security policy."
+        },
+        {
+          "kind": "policy",
+          "text": "Client policy: send one request without automatic retry or rollback."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, /twofactorauth_disable_policy declares x-readonly=false; use form POST. The success schema declares only metadata and no data payload."
+        }
+      ],
+      "void": true
+    },
+    "whm1:twofactorauth_enable_policy": {
+      "name": "twoFactorAuthEnablePolicy",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Enables the server-wide 2FA security policy."
+        },
+        {
+          "kind": "policy",
+          "text": "Client policy: send one request without automatic retry or rollback."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, /twofactorauth_enable_policy declares x-readonly=false; use form POST. The success schema declares only metadata and no data payload."
+        }
+      ],
+      "void": true
+    },
+    "whm1:twofactorauth_generate_tfa_config": {
+      "name": "twoFactorAuthGenerateTfaConfig",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a fresh random secret and an OTP authentication URL for subsequent configuration."
+        },
+        {
+          "kind": "policy",
+          "text": "Treat both results as sensitive payload data; never log them or fetch the URL. Client policy keeps this secret-bearing read as POST, without automatic follow-up configuration or retry."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, /twofactorauth_generate_tfa_config declares x-readonly=false; use form POST."
+        }
+      ]
+    },
+    "whm1:twofactorauth_get_issuer": {
+      "name": "twoFactorAuthGetIssuer",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns the issuer for the authenticated user and the system default. The system-wide default is the hostname if root has not configured an issuer."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, /twofactorauth_get_issuer declares x-readonly=true; use GET."
+        }
+      ]
+    },
+    "whm1:twofactorauth_get_tfa_config_for_user": {
+      "name": "twoFactorAuthGetTfaConfigForUser",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 118 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns 2FA configuration for the cPanel account and its email and team accounts. Usernames and account names are dynamic keys. primary_account is conditional on 2FA being enabled; the reviewed source correction permits it to be absent or null. Its object fields and the email and team branches retain their existing contracts. This POST response was not observed live. The pinned operation declares x-readonly=false."
+        },
+        {
+          "kind": "policy",
+          "text": "Client policy: keep this secret-bearing read as POST and treat returned configuration as private payload data; never log it."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, /twofactorauth_get_tfa_config_for_user declares x-readonly=false; use form POST."
+        }
+      ],
+      "response": {
+        "{}.primary_account": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned primary_account describes the account secret only if 2FA is enabled and is already optional. The review approves an additional null representation for this unset conditional branch. Preserve the existing object shape, secret type, email and team maps; no response from this POST was observed live. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/52#pullrequestreview-5720627530."
+            }
+          ]
+        }
+      }
+    },
+    "whm1:twofactorauth_get_user_configs": {
+      "name": "twoFactorAuthGetUserConfigs",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitting user requests all controlled accounts. Returned usernames are map keys; is_enabled is an integer 0/1 flag."
+        },
+        {
+          "kind": "policy",
+          "text": "A supplied empty user remains explicit. Treat account inventory as private payload data."
+        },
+        {
+          "kind": "policy",
+          "text": "Client encoding policy: omit optional arguments supplied as null and preserve explicit false or zero where accepted by the parameter. This does not assert an undocumented server default."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, /twofactorauth_get_user_configs declares x-readonly=true; use GET."
+        }
+      ]
+    },
+    "whm1:twofactorauth_policy_status": {
+      "name": "twoFactorAuthPolicyStatus",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "A payload is_enabled=0 indicates disabled policy independently of the WHM envelope result."
+        },
+        {
+          "kind": "policy",
+          "text": "Client outcome policy: envelope failure remains an API error; payload is_enabled=0 is accepted when the envelope succeeds."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, /twofactorauth_policy_status declares x-readonly=true; use GET."
+        }
+      ]
+    },
+    "whm1:twofactorauth_remove_user_config": {
+      "name": "twoFactorAuthRemoveUserConfig",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned multiple-user example starts user-1,user-2. Removal requires user setup again. users_modified includes accounts without prior 2FA configuration, so it does not prove an actual removal."
+        },
+        {
+          "kind": "policy",
+          "text": "Client policy supports the documented scalar user form. The existing numbered encoder starts user,user-1, so the different indexed variant remains unsupported under whm-api-client-8x0.1.21. Inspect failed independently of envelope success. Client policy: send one request without automatic retry or rollback."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, /twofactorauth_remove_user_config declares x-readonly=false; use form POST."
+        }
+      ]
+    },
+    "whm1:twofactorauth_set_issuer": {
+      "name": "twoFactorAuthSetIssuer",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes the issuer used to generate 2FA secrets and OTP URLs."
+        },
+        {
+          "kind": "policy",
+          "text": "Client policy: send one request without automatic retry or rollback."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, /twofactorauth_set_issuer declares x-readonly=false; use form POST. The success schema declares only metadata and no data payload."
+        }
+      ],
+      "void": true
+    },
+    "whm1:twofactorauth_set_tfa_config": {
+      "name": "twoFactorAuthSetTfaConfig",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Sets the root or reseller account 2FA secret and token. Use twoFactorAuthGenerateTfaConfig() to obtain a random secret and OTP authentication URL; the pinned description contains a duplicated function-name typo."
+        },
+        {
+          "kind": "policy",
+          "text": "Both arguments are sensitive; preserve leading zero token digits as a string. Inspect the returned integer success flag independently of the WHM outcome. Client policy: send one request without automatic retry or rollback."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, /twofactorauth_set_tfa_config declares x-readonly=false; use form POST."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /twofactorauth_set_tfa_config description duplicates the generate function name. The pinned /twofactorauth_generate_tfa_config operation maps to the existing public twoFactorAuthGenerateTfaConfig() method. Correct that cross-reference in an overlay note without changing either operation. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/52#pullrequestreview-5720627530."
+        }
+      ],
+      "params": {
+        "secret": {
+          "sensitive": true
+        },
+        "tfa_token": {
+          "sensitive": true
+        }
+      }
+    },
+    "whm1:twofactorauth_set_tfa_config_for_user": {
+      "exclude": {
+        "reason": "Requires an application/json request body, unsupported by the form-only generic and typed transport in this slice; tracked under whm-api-client-8x0.1.18.",
+        "evidence": [
+          {
+            "kind": "doc",
+            "version": "pinned 2026-10-13",
+            "date": "2026-10-31",
+            "note": "Pinned whm.openapi.json SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, /twofactorauth_set_tfa_config_for_user, requestBody and HTTP wire example explicitly require application/json; this is not a JSON-content query parameter."
+          }
+        ]
+      }
+    },
+    "whm1:unlink_user_authn_provider": {
+      "name": "unlinkUserAuthnProvider",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Removes an external authentication link from a local account. External identifiers have the pinned string type."
+        },
+        {
+          "kind": "policy",
+          "text": "Client argument order starts with the local username, then providerId and subjectUniqueIdentifier. Preserve identifiers without numeric conversion. Client policy: send one request without automatic retry or rollback."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, /unlink_user_authn_provider declares x-readonly=false; use form POST. The success schema declares only metadata and no data payload."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /unlink_user_authn_provider identifies username as the local account and provider_id/subject_unique_identifier as the external identity. Client argument ordering puts the local account first to avoid silent misbinding among string arguments, as requested by the review. Wire names and string types are unchanged; this POST was not executed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/52#pullrequestreview-5720627530."
+        }
+      ],
+      "void": true,
+      "order": [
+        "username",
+        "provider_id",
+        "subject_unique_identifier"
+      ]
+    }
   }
 }

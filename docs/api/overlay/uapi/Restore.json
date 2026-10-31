@@ -1,0 +1,138 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "Restore",
+  "class": "Restore",
+  "accessor": "restore",
+  "operations": {
+    "uapi:Restore/directory_listing": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 68 for the selected account. Disabling the File Storage role disables this function. Paths are forwarded unchanged, with no client path normalization or archive fetching. Optional fields stay absent; integer flags remain 0|1, with no quoted-number or boolean coercion. Null or absent data is a payload mismatch."
+        },
+        {
+          "kind": "documented",
+          "text": "path identifies a subdirectory within the user home directory and must begin and end with /. The response compares backed-up type with onDiskType; conflict and exists are payload flags, distinct from the UAPI status. Empty listings remain empty."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Restore/directory_listing GET declares x-readonly=true; use GET for the explicitly read-only operation. Source decompressed SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        }
+      ]
+    },
+    "uapi:Restore/get_users": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 72 for the selected account. Disabling the File Storage role disables this function. Paths are forwarded unchanged, with no client path normalization or archive fetching. Optional fields stay absent; integer flags remain 0|1, with no quoted-number or boolean coercion. Null or absent data is a payload mismatch."
+        },
+        {
+          "kind": "documented",
+          "text": "Lists reseller users with existing backup metadata. The response is a string list, including an empty list; the client does not infer account ownership or backup availability beyond the returned metadata."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19 with server backups disabled, the reviewed direct and bridged getUsers calls still returned an empty list. This does not establish that backup files or metadata are available."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Restore/get_users GET declares x-readonly=true; use GET for the explicitly read-only operation. Source decompressed SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Restore/get_users x-cpanel-available-version is cPanel 72. Source decompressed SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/45#pullrequestreview-5720426019: Restore/query_file_info and Restore/restore_file failed because server Backup Status was disabled, while Restore/get_users returned an empty list. The review exercised direct and bridged UAPI on cPanel 11.138.0.19; restore_file with a real backup was not run."
+        }
+      ]
+    },
+    "uapi:Restore/query_file_info": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 68 for the selected account. Disabling the File Storage role disables this function. Paths are forwarded unchanged, with no client path normalization or archive fetching. Optional fields stay absent; integer flags remain 0|1, with no quoted-number or boolean coercion. Null or absent data is a payload mismatch."
+        },
+        {
+          "kind": "documented",
+          "text": "path must start with /. Omitting exists retains the default 0; explicit false is sent as 0 and true as 1. The response exists field is conditional on the request, and fileSize appears only for files. File sizes are integer bytes and mtime is an integer timestamp; omission and zero remain distinct. backupID strings retain daily, weekly/monthly and incremental forms."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19 with server backups disabled, the reviewed direct and bridged calls failed with the upstream Backup Status is currently disabled error. This installation setting prevents the operation; the client surfaces ApiErrorException without retrying. A real backup restoration was not exercised."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Restore/query_file_info GET declares x-readonly=true; use GET for the explicitly read-only operation. Source decompressed SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/45#pullrequestreview-5720426019: Restore/query_file_info and Restore/restore_file failed because server Backup Status was disabled, while Restore/get_users returned an empty list. The review exercised direct and bridged UAPI on cPanel 11.138.0.19; restore_file with a real backup was not run."
+        }
+      ]
+    },
+    "uapi:Restore/restore_file": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 68 for the selected account. Disabling the File Storage role disables this function. Paths are forwarded unchanged, with no client path normalization or archive fetching. Optional fields stay absent; integer flags remain 0|1, with no quoted-number or boolean coercion. Null or absent data is a payload mismatch."
+        },
+        {
+          "kind": "documented",
+          "text": "Restores the file or directory to its original location. overwrite is required: true sends 1 and allows replacing the on-disk item, while false sends 0. path is an absolute path within the backup and must begin with /. The source requires proper filename parsing to prevent XSS. This mutation has no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "backupId accepts documented daily date, incremental, weekly/date, monthly/date, weekly/incremental and monthly/incremental selectors. The optional payload success flag describes the overwrite outcome separately from UAPI status; inspect both and retain success=0."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19 with server backups disabled, the reviewed direct and bridged calls failed with the upstream Backup Status is currently disabled error. This installation setting prevents the operation; the client surfaces ApiErrorException without retrying. A real backup restoration was not exercised."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Restore/restore_file GET declares x-readonly=false. Its x-rollback=none classification is retained; use form POST for this state-changing operation. Source decompressed SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/45#pullrequestreview-5720426019: Restore/query_file_info and Restore/restore_file failed because server Backup Status was disabled, while Restore/get_users returned an empty list. The review exercised direct and bridged UAPI on cPanel 11.138.0.19; restore_file with a real backup was not run."
+        }
+      ],
+      "order": [
+        "backupID",
+        "overwrite",
+        "path"
+      ]
+    }
+  }
+}

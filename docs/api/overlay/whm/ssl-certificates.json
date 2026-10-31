@@ -47,7 +47,7 @@
           "text": "The independent disposable-account review on 11.138.0.19 observed a quoted removed_vhost_data[].is_ssl flag after successful removal. The old payload spec failed after the change had taken effect. The field now accepts exact strings 0 and 1 alongside native flags."
         },
         {
-          "kind": "documented",
+          "kind": "policy",
           "text": "Client behavior: treat SSL vhost deletion as irreversible; the client provides no rollback or automatic retry. An outcome-confirmed payload error can occur after removal has already taken effect and must not trigger an automatic retry."
         }
       ],
@@ -112,11 +112,11 @@
           "text": "Supply the same number of items in cab, crt, key, username and vhostName, with the corresponding account, vhost, certificate, private key and bundle at each position. Empty cab strings request automatic CA-bundle download. Queue acceptance does not prove installation, service readiness or TLS behavior."
         },
         {
-          "kind": "documented",
+          "kind": "policy",
           "text": "Client behavior: neither the parameter types nor the repeated-field encoder checks equal lengths or positional alignment across these five lists. Callers must align them before sending private keys for installation."
         },
         {
-          "kind": "documented",
+          "kind": "policy",
           "text": "Client behavior: accept an absent or null data payload for this reviewed unstructured response, while preserving present opaque object values. This source-backed compatibility is offline-tested; payload omission and this operation were not observed live."
         }
       ],
@@ -791,7 +791,7 @@
           "text": "The independent disposable-account review on 11.138.0.19 saw installation status and non-empty warning_domains, and confirmed that envelope success can carry payload status:0."
         },
         {
-          "kind": "documented",
+          "kind": "policy",
           "text": "Client behavior: a valid payload status:0 or non-empty warning_domains does not by itself cause an exception. The operation outcome checks the WHM envelope; callers must assess the returned installation status and per-domain results."
         }
       ],
@@ -912,7 +912,7 @@
           "text": "This is a documented no-op: it always succeeds without rebuilding or changing installed-certificate state."
         },
         {
-          "kind": "documented",
+          "kind": "policy",
           "text": "Client behavior: accept an absent or null data payload for this reviewed unstructured response, while preserving present opaque object values. This source-backed compatibility is offline-tested; payload omission and this operation were not observed live."
         }
       ],

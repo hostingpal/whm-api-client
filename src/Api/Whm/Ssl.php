@@ -382,9 +382,9 @@ final readonly class Ssl
      * flag after successful removal. The old payload spec failed after the change had taken effect. The field now
      * accepts exact strings 0 and 1 alongside native flags.
      *
-     * Documented: Client behavior: treat SSL vhost deletion as irreversible; the client provides no rollback or
-     * automatic retry. An outcome-confirmed payload error can occur after removal has already taken effect and must not
-     * trigger an automatic retry.
+     * Policy: Client behavior: treat SSL vhost deletion as irreversible; the client provides no rollback or automatic
+     * retry. An outcome-confirmed payload error can occur after removal has already taken effect and must not trigger
+     * an automatic retry.
      *
      * API-map identity: whm1:delete_ssl_vhost#GET (wire name delete_ssl_vhost; cPanel Account Settings).
      *
@@ -443,11 +443,11 @@ final readonly class Ssl
      * account, vhost, certificate, private key and bundle at each position. Empty cab strings request automatic
      * CA-bundle download. Queue acceptance does not prove installation, service readiness or TLS behavior.
      *
-     * Documented: Client behavior: neither the parameter types nor the repeated-field encoder checks equal lengths or
+     * Policy: Client behavior: neither the parameter types nor the repeated-field encoder checks equal lengths or
      * positional alignment across these five lists. Callers must align them before sending private keys for
      * installation.
      *
-     * Documented: Client behavior: accept an absent or null data payload for this reviewed unstructured response, while
+     * Policy: Client behavior: accept an absent or null data payload for this reviewed unstructured response, while
      * preserving present opaque object values. This source-backed compatibility is offline-tested; payload omission and
      * this operation were not observed live.
      *
@@ -1087,7 +1087,7 @@ final readonly class Ssl
      * Observed: The independent disposable-account review on 11.138.0.19 saw installation status and non-empty
      * warning_domains, and confirmed that envelope success can carry payload status:0.
      *
-     * Documented: Client behavior: a valid payload status:0 or non-empty warning_domains does not by itself cause an
+     * Policy: Client behavior: a valid payload status:0 or non-empty warning_domains does not by itself cause an
      * exception. The operation outcome checks the WHM envelope; callers must assess the returned installation status
      * and per-domain results.
      *
@@ -1174,7 +1174,7 @@ final readonly class Ssl
      * Documented: This is a documented no-op: it always succeeds without rebuilding or changing installed-certificate
      * state.
      *
-     * Documented: Client behavior: accept an absent or null data payload for this reviewed unstructured response, while
+     * Policy: Client behavior: accept an absent or null data payload for this reviewed unstructured response, while
      * preserving present opaque object values. This source-backed compatibility is offline-tested; payload omission and
      * this operation were not observed live.
      *
