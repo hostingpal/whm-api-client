@@ -646,6 +646,15 @@ observations keep strict status failed and remain unwaived under `8x0.2.28`.
 Eleven functions pass on both routes and general EA4 recommendations pass directly.
 No mutation or secret retrieval ran; user information remains domain-only.
 
+The final [reviewed user-information capture](docs/api/evidence/2026-10-31-account-environment-reviewed.json)
+at `c4576669980a1ab22952f96b976a34bf0db7be58` on `11.138.0.19` passes all three
+GET observations: WHM version and the fixed 60-field user selector on both routes.
+All HTTP/API/payload/probe checks and strict assessment pass with zero discrepancies.
+The token selector and seven pinned fields absent on `npr` are excluded; no wire
+form is established for those seven. No mutation or token retrieval ran. Earlier
+EA4 failures and masked findings remain immutable and unwaived under `8x0.2.28`.
+Reviewer mutation/lifecycle reports remain separate from this committed read capture.
+
 Separate [Claude reviewer evidence](https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923)
 on cPanel `11.138.0.19` reproduces `getPhpRecommendations()` API failures through
 direct UAPI and the WHM bridge. Inspection of `Cpanel/API/EA4.pm` ties the failures

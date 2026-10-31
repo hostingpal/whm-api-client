@@ -3253,3 +3253,23 @@ remain client-supported, with no wire-form claim from this capture. It requests 
 performs no mutation, and will capture only sanitized structure at the reviewed
 corrected revision. This paragraph describes the recipe, not a completed run.
 The original account-environment artifacts keep their original failures and hashes.
+
+
+### Final account-environment review capture (2026-10-31)
+
+The final [reviewed user-information capture](evidence/2026-10-31-account-environment-reviewed.json)
+at `c4576669980a1ab22952f96b976a34bf0db7be58` on `11.138.0.19` passes all three
+GET observations: WHM version and the fixed 60-field user selector on both routes.
+All HTTP/API/payload/probe checks and strict assessment pass with zero discrepancies.
+The token selector and seven pinned fields absent on `npr` are excluded; no wire
+form is established for those seven. No mutation or token retrieval ran. Earlier
+EA4 failures and masked findings remain immutable and unwaived under `8x0.2.28`.
+Reviewer mutation/lifecycle reports remain separate from this committed read capture.
+
+Artifact SHA-256: `e191517fda7b8ec3a4eb8bfd4df75d75d831cebc917d739e63a8f96a7744b5e4`.
+The single run follows [Claude review 5720313728](https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720313728)
+after its three corrections. The allowlist is fixed in source, never derived from
+live responses. All 60 prior JSON artifacts and 24 pinned-source files are unchanged.
+The correction passed 31,127 offline tests / 233,646 assertions plus formatting,
+maximum PHPStan, strict Composer, source/map/generation and full Go tests/vet.
+No settings or resources were changed, so no mutation cleanup was needed.

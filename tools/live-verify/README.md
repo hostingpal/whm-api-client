@@ -1085,3 +1085,13 @@ The recipe covers broad user-field wire compatibility, not every account state
 or mutation. Every discrepancy and failed observation remains a strict failure;
 no acknowledgment or retry is added. The requested capture follows review of the
 corrected contracts and writes to a new immutable path.
+
+
+The final [reviewed user-information capture](../../docs/api/evidence/2026-10-31-account-environment-reviewed.json)
+at `c4576669980a1ab22952f96b976a34bf0db7be58` on `11.138.0.19` passes all three
+GET observations: WHM version and the fixed 60-field user selector on both routes.
+All HTTP/API/payload/probe checks and strict assessment pass with zero discrepancies.
+The token selector and seven pinned fields absent on `npr` are excluded; no wire
+form is established for those seven. No mutation or token retrieval ran. Earlier
+EA4 failures and masked findings remain immutable and unwaived under `8x0.2.28`.
+Reviewer mutation/lifecycle reports remain separate from this committed read capture.
