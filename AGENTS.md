@@ -1078,3 +1078,10 @@ Beads block to `CLAUDE.md` (do not run `bd setup claude` to re-add one).
 Preserve the generated Beads blocks and keep project-specific additions outside
 them. If `bd setup` regenerates a Beads block with profile-neutral wording,
 re-apply the team-maintainer wording; the Git Workflow section is authoritative.
+
+The corrected WHM backup/restoration capture at `a5b6e3a` on `11.138.0.19` records
+11 HTTP/API successes and ten payload/probe passes. The integer weekday and
+`check_min_free_space` quoted flag pass; `prebackup` still fails strict 0/1 handling,
+and an unknown configuration integer remains. Strict status stays failed and
+unwaived under `8x0.2.29`; no broad coercion or guessed field is added. Backup and
+queue inventories are empty, module rows populated, and no mutation ran.

@@ -395,3 +395,19 @@ backup/queue rows, destination behavior, backup creation, restoration, migration
 queue mutation or configuration-write semantics. All original findings remain in
 `8x0.2.29`; source contradictions are unresolved. Initial SHA-256:
 `4b788b00b69944d305473bd89004e6199914cf2b366ed90676b3313aac32daca`.
+
+The [corrected backup/restoration capture](2026-10-31-backup-restoration-corrected.json)
+at `a5b6e3a959185702d9e2146dc6323e0c69ec3cdf` on `11.138.0.19` records eleven
+HTTP/API successes and ten payload/probe passes. The weekday integer and
+`check_min_free_space` quoted flag now pass. `prebackup` still fails its strict
+0/1 contract: the artifact classifies it only as numeric-string, which does not
+establish its spelling or a valid flag value. The optional exact quoted-flag
+acceptance does not make this response compatible. No broader numeric coercion,
+new enum value or guessed sentinel is added. The unknown configuration integer
+also remains unresolved. Strict status stays failed with no acknowledgments.
+
+Both artifacts remain immutable. Empty inventories/queues establish no populated
+row schemas; the module summary is populated. No mutation, backup creation,
+restoration or configuration behavior is established. Follow-up `8x0.2.29` retains
+the `prebackup` mismatch, unknown field and all source/live gaps. Corrected SHA-256:
+`f910fcd3377c881e07d496fd727bec622016bd8df33552cfe381552752acde47`.
