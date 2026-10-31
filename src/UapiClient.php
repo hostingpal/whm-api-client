@@ -206,8 +206,22 @@ final class UapiClient extends AbstractApiClient
      *
      * @param array<mixed> $spec
      */
-    private function dispatch(array $spec, #[SensitiveParameter] OrderedFields $parameters): ApiResponse
-    {
+    private function dispatch(
+        array $spec,
+        #[SensitiveParameter] OrderedFields $parameters,
+        #[SensitiveParameter] ?JsonBody $body = null,
+    ): ApiResponse {
+        if ($body !== null) {
+            if ($this->isBridged()) {
+                throw new InvalidArgumentException('JSON bodies require a direct cPanel UAPI handle.');
+            }
+            return $this->executeJsonPost(
+                '/execute/' . OperationSpec::text($spec, 'module') . '/' . OperationSpec::text($spec, 'function'),
+                $body,
+                ResponseRoute::DirectUapi,
+                OperationSpec::outcome($spec),
+            );
+        }
         return $this->request(
             OperationSpec::text($spec, 'module'),
             OperationSpec::text($spec, 'function'),

@@ -55,6 +55,7 @@ type RecordField struct {
 
 // Param is one generated method argument.
 type Param struct {
+	Input       *InputSpec          `json:",omitempty"`
 	Source      string              // Pinned parameter identity, independent of corrected wire names.
 	Records     *RecordSpec         `json:",omitempty"`
 	Collection  *overlay.Collection `json:",omitempty"`
@@ -72,7 +73,8 @@ type Param struct {
 
 // Operation owns one canonical response/route contract and its public input mappings.
 type Operation struct {
-	AdditionalMethods []Method `json:",omitempty"`
+	JSONBody          *JSONBody `json:",omitempty"`
+	AdditionalMethods []Method  `json:",omitempty"`
 
 	ID          string
 	VariantID   string

@@ -148,3 +148,98 @@ two misleading success recipes are removed. No sources, runtime or generator cha
 Nova and Sitejet contracts and reviewer-source/live boundaries are recorded in
 [source-audit.md](source-audit.md#nova-and-sitejet-site-builders). Their historical
 five-GET capture remains failed; no corrected-head live acceptance is implied.
+
+
+## Typed whole JSON body grammar
+
+The generator supports an explicit `body: "json"` selection, independently of
+form fields and JSON-valued string parameters. StatsManager/save_configuration is the first selected production operation; the
+remaining JSON-body operations stay excluded. A selection must
+bind operation-level `doc` evidence to the exact pinned source SHA-256 and the
+selected variant's `/requestBody` JSON pointer. `variant` continues to identify the
+source method; the effective transport is fixed POST.
+
+The operation overlay uses:
+
+```json
+{
+  "body": "json",
+  "json_body": {
+    "php": "configuration",
+    "alias": "ConfigurationInput",
+    "routes": "direct"
+  }
+}
+```
+
+`php` names the whole public argument; JSON-body operations declare no query parameters.
+`alias` is a unique PHPStan alias ending in `Input`. `routes: "direct"` enables
+ordinary WHM API 1 or direct cPanel UAPI according to the selected family, while
+refusing the account bridge locally. A nonempty `params` spec fails lint; upstream
+JSON parsing ignores URL arguments. Both routes require a nonnullable object root.
+WHM inserts library-owned `api.version:1` as the first root member and sends no URL
+version. Direct UAPI sends the encoded object unchanged. Form/GET and multipart
+query behavior is independent.
+
+Lowering uses a separate strict request schema. It supports explicit objects,
+sequential lists, strings, integers, finite numbers, booleans, nullability and
+scalar alternatives with disjoint PHP input domains. A formal integer enum
+containing exactly numeric `0` and `1` selects a bool input serialized as integer
+`0|1`; native JSON booleans remain booleans. Input aliases and response aliases are
+separate; response compatibility never admits numeric strings in request fields.
+Object fields keep their formal names and requiredness. Generation rejects declared
+names PHP would convert to integer array keys on a supported platform, including
+canonical signed decimal integers within the 64-bit range. String-preserving names
+such as `01`, `+1`, `-0`, `1.0` and integers outside that range retain their spelling.
+Unknown members reject unless `additionalProperties` supplies an explicit supported
+value schema; integer caller keys remain invalid.
+
+A required body has a required native array argument. WHM JSON body specs must
+be required: omission would lose API1 root routing. Optional direct-UAPI objects use
+`?array $body = null`: null or omission means absence, while `[]` sends `{}`.
+A present body sets exactly `Content-Type: application/json`; absence sends no
+bytes or JSON Content-Type. Scalar, list, null and nullable-object whole-body specs
+fail with exact `LogicException` before input validation or I/O. Nested schema
+nodes and the shared serializer still support scalar/list/object roots for future
+JSON-valued fields; that grammar does not imply executable scalar-body methods.
+
+Native array argument errors occur before method entry and metadata reset in both
+strict and weak callers; arrays do not coerce scalars or invoke Stringable callbacks.
+Nested array fields, including StatsManager's `enabled`, remain strictly validated
+in either caller mode: integer/string flags are rejected after metadata reset.
+
+Narrow input corrections live in `json_body.corrections`, keyed by JSON pointers
+relative to the source schema (`""` means the root). An object correction may set
+`required` to a list of declared fields. List and string corrections may set boolean `nonempty` (default false). True
+produces `non-empty-list<T>` or `non-empty-string` PHPDoc; false is explicitly valid.
+Lists reject exactly `[]`; strings reject exactly the zero-byte string, preserving
+zero-looking and whitespace strings without trimming. Only StatsManager domain
+uses the string policy; analyzer names and ordinary lists retain default-off behavior.
+Each correction requires its own `evidence` list with the exact pinned SHA-256,
+full schema-node pointer and attribution in `note`. `json_body.required` can
+correct whole-body requiredness under the source-bound operation evidence.
+Snapshots stay unchanged. A correction cannot rename, replace or invent fields.
+These policies do not implement general enums, ranges or formats. Same-document
+references bind corrections to the resolved source-node pointer. Cross-document
+input corrections fail until their separate provenance can be represented.
+
+Generation fails for missing formal types, ambiguous container alternatives,
+unsupported composition, binary input, unschematized additional values, exhausted
+nesting budgets, non-object or nullable roots, query parameters, and any declared
+reserved root members (optional or required).
+The request grammar accepts up to 511 object/list containers, independently of the
+response resolver's fallback policy. The full case-sensitive `api.` prefix is
+reserved on JSON root members, including additional map keys; direct UAPI
+also reserves exact `cpanel.user`, `cpanel.module` and `cpanel.function`. Declared optional reserved root fields fail lint even when absent; additional
+reserved root keys reject by presence at execution. Nested/lookalike names remain data. This policy
+is applied by whole-body execution and does not constrain the shared serializer
+when it is used for a JSON-valued form parameter.
+
+Generated operation constants carry `json_body: {php, required, routes, schema}`
+separately from `params`. Trusted malformed descriptors raise `LogicException`;
+invalid caller values reaching the serializer raise `InvalidArgumentException`.
+These runtime checks fail before I/O after metadata reset; pre-entry native
+signature errors and conversions follow the caller-mode boundary above. Successful
+dispatch uses the shared one-attempt JSON executor and
+the existing envelope, metadata and typed response validation rules. There is no
+retry, implicit read, mutation rollback or successful-live-write claim.

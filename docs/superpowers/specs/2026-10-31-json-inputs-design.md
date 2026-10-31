@@ -92,7 +92,8 @@ exactly equivalent strict syntax check. Reject invalid UTF-8, invalid JSON, empt
 or whitespace-only documents, trailing non-whitespace text and documents rejected
 by that depth argument. The accepted boundary is **511 nested JSON containers**:
 count every object or list, including the root and an empty deepest container;
-scalar leaves add no container level. Raw execution requires an object root. This is a
+scalar leaves add no container level. Raw and typed whole-body execution require a nonnullable object root; the
+shared serializer grammar remains general for JSON-valued fields. This is a
 client resource constraint, not a claim that deeper JSON is syntactically invalid.
 Do not strip a BOM or repair malformed input.
 
@@ -265,23 +266,22 @@ recursion or a network request.
 
 ### Body presence and public method generation
 
-The internal request representation distinguishes absent body, present JSON null,
-present empty object and present empty list. Never represent all four as one PHP
-null sentinel or infer body presence from truthiness.
+Typed whole-body execution requires a nonnullable object schema and no query
+parameters. Scalar, list, null and nullable-object root specs fail exact
+LogicException before I/O. WHM JSON specs must require the body so API1 root
+routing cannot disappear; optional WHM specs fail locally and during generation.
+A supported direct-UAPI optional object body uses `?array $body = null`:
+null or omission means no bytes and no Content-Type; `[]` sends `{}` with exact
+application/json. A required body has a required native array argument. Nested
+object members preserve absence independently from explicit null. The shared
+StructuredJsonSchema/encoder still supports scalar/list/object roots for field
+JSON, but those root kinds do not establish whole-body execution support.
 
-For new body operations, the canonical generated input is a precisely shaped
-whole-body argument. An optional, non-nullable object body uses `?array $body = null`:
-null omits the HTTP body; `[]` sends `{}`. An optional, non-nullable list similarly
-uses null for absence and `[]` for a present list. A required body has a required
-argument. A required nullable body accepts explicit null as JSON null.
-
-If an operation has an *optional nullable* body, introduce an explicit `Omitted`
-enum default (`Omitted::Value`) for that argument: omitted/default means no body,
-explicit null means a present JSON null. This is a presence marker, not a raw-JSON
-wrapper. All thirteen currently pinned JSON-body schemas must be audited before
-claiming that this case is needed or covered; unused marker support need not ship.
-Nested object-member presence always uses `array_key_exists`, so absent and null
-stay distinct without a marker inside ordinary object arrays.
+Both strict and weak callers reject non-array arguments before method entry, so
+native TypeErrors retain prior metadata. Native array binding does not coerce
+scalars or invoke Stringable conversion. Nested fields remain strictly validated
+after entry and metadata reset in both modes. Obsolete scalar whole-body fixtures
+are replaced with supported generated object-body caller tests.
 
 Whole-body arguments avoid losing optional-member presence while flattening body
 fields into PHP defaults. A generated convenience alias with named body fields may
@@ -291,15 +291,17 @@ such convenience; the canonical body form preserves the reviewed effective
 presence contract, including the StatsManager correction below. Do not change an
 already published scalar/string method's signature in order to retrofit this layout.
 
-An omitted body means no body bytes and no JSON Content-Type. A present JSON null
-means four bytes `null` and JSON Content-Type. Empty object/list bodies have their
-own bytes and the JSON header. Transport code must preserve that distinction.
+An omitted object body means no bytes or JSON Content-Type. A present empty object
+has its own bytes and the JSON header. WHM adds library-owned api.version:1 first
+in that object; direct UAPI retains {}. Neither JSON route sends URL arguments.
 
 ## First typed body adopter: StatsManager
 
 **This operation replaces the account's analyzer configuration.** Callers must
 explicitly read `StatsManager/get_configuration` first, then supply the complete
-intended set of domain/analyzer settings for the account. The
+intended set of domain/analyzer settings for the account. Round-trip
+`enabled_by_user` (user choice) into input `enabled`, rather than effective
+`enabled`. Analyzers absent from the read receive their defaults. The
 [reviewer-inspected handler](#source-and-review-evidence) builds a default
 configuration for every domain and analyzer, applies supplied changes, then saves.
 Its POD says unspecified domain/analyzer configurations are disabled. Preserve
@@ -323,14 +325,18 @@ member names. The generated input shape is:
 ```php
 /** @phpstan-type StatsConfigurationInput array{
  *     changes: non-empty-list<array{
- *         domain: string,
+ *         domain: non-empty-string,
  *         analyzers: list<array{name: string, enabled: bool}>,
  *     }>,
  * } */
 ```
 
 Require `changes` to be a non-empty list. Every change requires `domain` and
-`analyzers`; every analyzer requires `name` and `enabled`. Missing or null
+`analyzers`; domain rejects the zero-byte string. Explicit boolean `nonempty`
+defaults to false on list/string descriptors; true rejects only [] or the empty
+string. Zero-looking and whitespace strings remain unchanged. This is not hostname
+validation: the attributed handler also skips the string `0`, so complete domain
+selection from getConfiguration remains essential. Every analyzer requires `name` and `enabled`. Missing or null
 configuration, `[]`, empty `changes`, empty change rows, and missing required
 analyzer fields must fail locally without I/O (PHP signature errors remain outside
 the lifecycle). Do not add a nonempty analyzer-list constraint, broad string-format
@@ -342,11 +348,15 @@ The reviewed input-field policy maps native `enabled: bool` to integer `0|1` on
 the wire; it implies no general scalar coercion. Pinned samples quote these flags,
 while the formal schema declares integer `0|1`. The reviewer reports the handler
 compares `enabled == 1`, supporting that explicit mapping, but no successful write
-or end-to-end boolean mapping was observed. The pinned response remains a list of
-domain records with optional `domain` and `analyzers`; analyzer rows have optional
-`name` and integer `0|1` `available`, `enabled`, `locked` fields. Input requiredness
-does not change response requiredness. Preserve those response flags and the
-source descriptions without inferring enforcement from them.
+or end-to-end boolean mapping was observed. A source-evidenced 11.138.0.19 correction replaces the incorrect pinned save
+analyzer row with getConfiguration's row: optional name, enabled and enabled_by_user,
+with native integer 0|1 flags. Both handlers return the same _get_configuration
+builder. locked and analyzer available_for_user belong in metadata; locked=1 means
+reseller/root-only and locked=0 means user-manageable. No successful write or live
+write response was observed. Empty analyzer names produce unrecognized warnings;
+empty domains are silently skipped by the handler and reject locally. Status 1
+can still contain warnings/skips. Input requiredness does not change response
+requiredness. Attribution and pinned pointers live in the operation overlay.
 
 ```php
 // Future generated API; direct cPanel handle.
@@ -494,8 +504,10 @@ disinfect, notification preferences, Personalization get/set, StatsManager save)
 All thirteen are POST body operations; none has a formally top-level nullable
 body. This count is backlog inventory, not delivery acceptance or live coverage.
 
-The initial body generation grammar supports reviewed explicit object/list/scalar
-schemas, nullability and unambiguous alternatives. Missing formal type declarations
+The shared input grammar supports reviewed explicit object/list/scalar schemas,
+nullability and unambiguous alternatives. Whole-body generation requires a
+nonnullable object root and no query declarations; reserved root names are linted
+whether optional or required. Missing formal type declarations
 need explicit evidenced corrections. Composed/ambiguous schemas, dynamic content
 with no schema, general format-only inheritance fixes and depth fallback are not
 silently solved here; retain `8x0.1.22`, `8x0.1.23`, `8x0.10.5` as applicable.

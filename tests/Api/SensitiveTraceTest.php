@@ -532,6 +532,61 @@ final class SensitiveTraceTest extends TestCase
         }
     }
 
+    public function testTypedJsonPayloadMismatchRedactsInputAndResponse(): void
+    {
+        [$client, $http] = self::client(true);
+        $http->addResponse(new Response(200, [], '{"status":1,"data":[{"domain":"' . self::SECRET
+            . '","analyzers":[{"name":"' . self::SECRET . '","enabled_by_user":"1"}]}]}'));
+        $caught = null;
+        try {
+            $client->uapi()->statsManager()->saveConfiguration([
+                'changes' => [['domain' => self::SECRET, 'analyzers' => [['name' => self::SECRET, 'enabled' => true]]]],
+            ]);
+        } catch (Throwable $error) {
+            $caught = $error;
+        }
+        self::assertNotNull($caught);
+        self::assertSame(PayloadMismatchException::class, $caught::class);
+        self::assertInstanceOf(PayloadMismatchException::class, $caught);
+        self::assertSecretAbsent($caught);
+        self::assertCount(1, $http->getRequests());
+        self::assertSame($client->uapi()->responseMeta(), $caught->metadata);
+        self::assertTrue($caught->outcomeConfirmed);
+    }
+
+    public function testTypedJsonTransportFramesStayRedactedWhenClientThrows(): void
+    {
+        $factory = new Psr17Factory();
+        $http = new class implements ClientInterface {
+            public function sendRequest(RequestInterface $request): ResponseInterface
+            {
+                throw new RuntimeException('Client failure.');
+            }
+        };
+        $client = new Client([
+            'host' => 'api.example.test', 'authType' => 'cpanel', 'username' => 'npr', 'token' => 'fixture-token',
+        ], new HttpTransport($http, $factory, $factory));
+        $caught = null;
+        try {
+            $client->uapi()->statsManager()->saveConfiguration([
+                'changes' => [[
+                    'domain' => self::SECRET, 'analyzers' => [['name' => self::SECRET, 'enabled' => false]],
+                ]],
+            ]);
+        } catch (Throwable $error) {
+            $caught = $error;
+        }
+        self::assertNotNull($caught);
+        self::assertSame(RuntimeException::class, $caught::class);
+        $frames = $caught->getTrace();
+        self::assertSame([$http::class, 'sendRequest'], [$frames[0]['class'] ?? null, $frames[0]['function']]);
+        // Only the external client's frame necessarily holds the request it receives.
+        unset($frames[0]['args']);
+        $seen = [];
+        self::assertFalse(self::contains($frames, $seen), 'A library frame contains typed JSON secrets.');
+        self::assertNull($client->uapi()->responseMeta());
+    }
+
     public function testGuardedTargetsStayOutOfLocalValidationTraceArguments(): void
     {
         try {
@@ -1082,6 +1137,12 @@ final class SensitiveTraceTest extends TestCase
     /** @return iterable<string, array{'whm'|'direct'|'bridged', Closure(Client): mixed}> */
     private static function secretCalls(): iterable
     {
+        yield 'direct typed StatsManager JSON body' => [
+            'direct',
+            static fn (Client $client): mixed => $client->uapi()->statsManager()->saveConfiguration([
+                'changes' => [['domain' => self::SECRET, 'analyzers' => [['name' => self::SECRET, 'enabled' => true]]]],
+            ]),
+        ];
         yield 'WHM raw JSON body' => [
             'whm',
             static fn (Client $client): mixed => $client->whm()->callJson(

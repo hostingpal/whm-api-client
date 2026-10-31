@@ -212,6 +212,19 @@ Operation entries (all keys optional):
 - `order`: wire names moved to the front of the signature in that order;
   required arguments always precede optional ones, so an order that lists an
   optional parameter before a required one, or an omitted parameter, is a problem.
+- Typed complete JSON bodies use the source-bound `body: "json"` / `json_body`
+  grammar documented in [the input guidance](../../docs/api/README.md#typed-whole-json-body-grammar).
+  Whole-body execution requires a nonnullable object root, no query parameters,
+  exact application/json and direct routes. WHM adds root api.version:1 first;
+  direct UAPI retains the encoded object. WHM JSON specs must require the body to
+  retain API1 routing. On direct UAPI only, optional array/null means absent body,
+  while [] means a present empty object. Native array TypeErrors precede metadata
+  reset in strict and weak callers; nested array fields stay strict in either mode.
+  The shared input grammar still represents scalar/list/object values for field
+  JSON. Explicit boolean nonempty defaults off on lists/strings; true means
+  non-empty-list or non-empty-string, rejecting [] or the zero-byte string only.
+  The narrow StatsManager domain correction does not trim or validate hostnames.
+
 - `body` (`multipart`) selects reviewed inline string multipart encoding; `body_fields`
   maps explicitly corrected body property names to existing query parameter names.
   Both require operation-level evidence.
@@ -389,8 +402,8 @@ body property name to an existing query parameter, such as `{"crt": "key"}`; unk
 sources, unknown targets, duplicate targets and omitted multipart fields fail generation.
 The runtime keeps routing fields in the query and sends binary-preserving string fields
 with a collision-checked multipart boundary. This routing capability is not evidence of
-live operation support. Generic `call()` stays form-only. JSON bodies, unreviewed
-multipart bodies, bodies without plain properties, and deprecated operations remain
+live operation support. Generic `call()` stays form-only. JSON bodies without an
+explicit reviewed selection, unreviewed multipart bodies, bodies without plain properties, and deprecated operations remain
 unsupported by generation. Evidence is `kind` (`doc` or `live`), `version`, `date`
 (`YYYY-MM-DD`), `note` and an optional `fingerprint`.
 

@@ -164,8 +164,19 @@ final class WhmClient extends AbstractApiClient
      *
      * @param array<mixed> $spec
      */
-    private function dispatch(array $spec, #[SensitiveParameter] OrderedFields $parameters): ApiResponse
-    {
+    private function dispatch(
+        array $spec,
+        #[SensitiveParameter] OrderedFields $parameters,
+        #[SensitiveParameter] ?JsonBody $body = null,
+    ): ApiResponse {
+        if ($body !== null) {
+            return $this->executeJsonPost(
+                '/json-api/' . OperationSpec::text($spec, 'function'),
+                $body,
+                ResponseRoute::Whm,
+                OperationSpec::outcome($spec),
+            );
+        }
         return $this->request(
             OperationSpec::text($spec, 'function'),
             $parameters,

@@ -6586,3 +6586,153 @@ update_sql_config uses a URL sample and TFA user configuration supplies neither.
 No source refresh, live request, write, evidence capture or upstream replay was
 performed for this correction. Local wire fixtures and regression/generation gates
 are offline evidence only; PHP 8.4.26 results do not claim PHP 8.3 CI execution.
+
+
+## First typed JSON-body adoption: StatsManager (2026-10-31)
+
+`statsManager()->saveConfiguration($configuration)` replaces the account's analyzer
+configuration. Explicitly call `getConfiguration()` first and prepare the complete
+intended domain/analyzer set. Round-trip enabled_by_user (the user choice), not
+effective enabled. Analyzers omitted from the read receive defaults. A partial-looking input can reset other settings to
+defaults. The client makes no implicit read, merge, patch, retry, restore or rollback.
+The [PR73 reviewer](https://github.com/hostingpal/whm-api-client/pull/73#pullrequestreview-5722705880)
+reports that the 11.138.0.19 handler builds defaults for every domain/analyzer,
+applies changes, then saves; its POD says unspecified configurations are disabled.
+This is attributed upstream evidence, without a promise that every default is
+universally disabled.
+
+The required input is `array{changes: non-empty-list<array{domain: non-empty-string,
+analyzers: list<array{name: string, enabled: bool}>}>}`. Every listed field is
+required; `analyzers: []` remains valid. Native bools map to integer 0/1 wire flags.
+Names remain strings without a closed analyzer enum. Unknown members, malformed
+lists, nulls and wrong scalar types fail locally before I/O. Requiredness is an
+operation-scoped correction to the formally optional pinned 11.138.0.10 input,
+bound to the attributed 11.138.0.19 handler and raw server observations. Valid
+structure does not establish completeness, ownership, availability or persistence.
+
+This method sends one direct-cPanel UAPI POST with exactly `Content-Type:
+application/json`. The WHM bridge rejects it locally after clearing metadata.
+Available from cPanel 90 with the WebServer role; root/reseller control can prevent
+user changes. Returned domain/analyzer fields remain optional, with native integer
+0/1 flags. The pinned save analyzer row is contradicted by the 11.138.0.19
+handler: it returns _get_configuration(), as does get_configuration. The corrected
+row is name, enabled, enabled_by_user. locked and analyzer available_for_user belong
+to metadata; locked=1 is reseller/root-only and locked=0 is user-manageable. Inspect `responseMeta()` and warnings:
+the reviewer reports `raw_warning` for skipped `not_owned`, `not_available` and
+`unrecognized` entries even with status 1. No payload `raw_warning` field is invented;
+success does not prove every requested setting applied. Check persistence separately.
+
+The successful live-write gate in `8x0.1.18` remains **OPEN**. The reviewer's
+well-formed raw direct-JSON requests bypassed this client and were blocked by
+`_can_self_manage` on 11.138.0.19: “You may not modify the weblog analyzer
+configuration”. Passing the gate requires a root/reseller server-wide statistics
+setting change; this work authorizes no such change and ran no live calls.
+Twelve other pinned JSON-body operations remain deferred; remaining
+selection/source/route audit is tracked under `8x0.29.6`.
+
+This adoption binds `uapi:StatsManager/save_configuration#POST` to immutable UAPI
+OpenAPI decompressed SHA-256
+`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`.
+The selected request location is
+`/paths/~1StatsManager~1save_configuration/post/requestBody`; its JSON schema is
+`/content/application~1json/schema` beneath that location. Source-bound effective
+corrections require the body, root `changes`, change-row `domain`/`analyzers`, and
+analyzer-row `name`/`enabled`, with a nonempty `changes` list. Each correction
+records its exact schema-node pointer and source SHA separately. Response requiredness and pinned source content remain unchanged. The
+source-evidenced save row replacement is scoped below. Source version 90+, WebServer role,
+`x-readonly=false` and `x-rollback=none` remain.
+
+The [review of original head 4ee9fae](https://github.com/hostingpal/whm-api-client/pull/73#pullrequestreview-5722705880)
+was submitted 2026-10-31 at 12:27:37 UTC. Its Perl findings under
+`/usr/local/cpanel` (`Cpanel/StatManager.pm`,
+`Cpanel/StatsManager/Configuration/Domain.pm::save_configuration`,
+`Cpanel::JSONAPI::is_json_request`, `Cpanel::API::_safety_check_args`, and
+`Cpanel/Args.pm:86`) are attributed to that reviewer, not local inspection.
+The [count correction](https://github.com/hostingpal/whm-api-client/pull/73#issuecomment-6543354915)
+posted at 12:27:45 UTC establishes five `requires_json` functions across four
+modules, not five modules. Reviewer requests deliberately bypassed this client on
+a disposable account; the reviewer reports token revocation and account/home
+cleanup. Missing body, `{}`, empty changes and non-array changes failed there;
+well-formed writes remained permission-blocked. These observations establish no
+successful client write, persistence, server-wide permission change or bridge
+compatibility. Historical capture artifacts remain immutable.
+
+Independent offline endpoint fixtures exercise exact POST/header/auth/path/JSON
+bytes, true/false mapping, empty analyzers, strict input failure with stale-metadata
+reset and zero new sends, local bridge refusal, sensitive traces, warning-bearing
+success, optional response fields, native flags, API failure and confirmed-outcome
+payload mismatch without retry. Generic/raw/legacy form/SSL behavior is unchanged.
+The JSON-only renderer places overlay notes before pinned source prose; non-JSON
+method documentation ordering stays unchanged. Other current exclusion reasons and
+ClamScanner workflow notes distinguish delivered machinery from deferred adoption;
+their evidence and executable contracts remain unchanged.
+
+Canonical generated coverage increases from approved master's 1,142 to 1,143
+operations: 549 UAPI and 594 WHM, still 99 groups and 201 generated files (200 PHP
+files plus `docs/api/coverage.md`). Only this endpoint
+exclusion is removed. The remaining 12 JSON-body operations are not adopted or
+claimed live-compatible. This source/offline implementation child does not close
+parent `whm-api-client-8x0.1.18` or waive its successful-live-write gate.
+
+
+## PR82 typed JSON review correction (2026-10-31)
+
+[Review 5724006365](https://github.com/hostingpal/whm-api-client/pull/82#pullrequestreview-5724006365)
+attributes handler inspection to cPanel 11.138.0.19. save_configuration returns
+_get_configuration(), the same builder as get_configuration. The operation-only
+response replacement therefore uses the pinned get row: name:string,
+enabled:integer[0,1], enabled_by_user:integer[0,1], all optional. It removes the
+incorrect pinned save row's available and locked fields. locked and analyzer
+available_for_user are metadata; can_user_manage_themself() ? 0 : 1 makes locked=1
+reseller/root-only. The overlay binds both exact save/get schema-node pointers and
+source decompressed SHA-256
+172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc.
+This is attributed source/offline evidence, not a successful write or observed
+write payload. Existing getConfiguration code, shape, prose and behavior remain
+unchanged. The account-wide replacement, enabled_by_user round-trip and omitted
+analyzer defaults are public caller obligations; status 1 may contain warnings/skips.
+
+The domain-only nonempty correction rejects exactly the zero-byte string, while
+preserving '0', '00' and whitespace verbatim. The attributed Perl handler also
+skips '0', so this policy prevents the reviewed empty-string case but is not
+complete domain validity or reset prevention. Callers must use the complete
+account domain/analyzer set from getConfiguration. An empty analyzer name instead
+produces an unrecognized warning; analyzers:[] remains valid. Explicit nonempty
+false stays accepted and default-off on strings/lists. No trimming, enum, range,
+hostname grammar, implicit read/merge/patch/retry/rollback or live mutation is added.
+
+Typed dispatch reuses the approved PR81 shared executor, including WHM first-root
+api.version:1 insertion and no URL query, object-root policy, exact Content-Type,
+account binding, metadata snapshots and one-attempt handling. Whole-body lint
+requires nonnullable object roots, empty params and no declared optional/required
+reserved api.* or exact direct-UAPI control members. Nested/lookalike names remain
+data. StructuredJsonSchema roots stay general for later field-JSON work. The
+approved PR80 FloatEncoder and no-ini behavior remain shared and unchanged.
+
+The existing SpecChecker hashes complete generated constant specs and remembers
+only successful checks; changed specs are revalidated. No new schema cache or
+unchecked caller-owned reference cache is introduced. StructuredJsonSchema::from
+still checks the schema independently at encoding. Generated constants provide a
+finite production ownership boundary; a broader cache/performance change has no
+correctness evidence in this slice and remains deferred.
+
+Obsolete generated scalar whole-body fixtures are replaced with supported object
+fixtures via the official renderer. Scalar/list/null malformed specs are exercised
+separately through the real handle with exact LogicException/no-I/O assertions.
+Strict/weak callers both reject non-array native arguments before entry without
+metadata reset or Stringable conversion; nested array flags remain strict after
+metadata reset. Generic serializer scalar/list coverage remains intact. Local
+validation is PHP 8.4.26; this does not claim PHP 8.3 CI execution. No live call,
+server setting change, source refresh or evidence capture ran. The successful
+StatsManager write gate 8x0.1.18 remains open and permission-blocked.
+
+
+The PR82 integration check identified that an omitted optional WHM JSON body
+would carry neither root api.version nor URL routing. The typed engine and Go
+builder therefore reject optional WHM JSON body specs before I/O as unsupported;
+there is no production WHM adopter in this slice. Required empty objects still
+insert api.version:1. Direct UAPI alone retains supported omission versus present
+empty-object semantics. JsonBody/raw81 behavior is unchanged; a future optional
+WHM adopter needs a reviewed extension. Focused RED/GREEN proves exact
+LogicException, zero new sends and primed-handle metadata reset. The unchanged
+schema-cache decision costs repeated schema checking per encode, not correctness.

@@ -185,7 +185,7 @@ func groupClass(g effective.Group) string {
 			uses = append(uses, rootNamespace+`\Exception\PayloadMismatchException`)
 		}
 		for _, p := range op.Params {
-			if isMultiple(p.Encoding) || p.RejectEmpty {
+			if isMultiple(p.Encoding) || p.RejectEmpty || p.Input != nil {
 				uses = append(uses, "InvalidArgumentException")
 			}
 			if redactArgument(p) {
@@ -216,6 +216,12 @@ func groupClass(g effective.Group) string {
 			aliases = true
 		}
 		w.typeAlias(op.Alias, *spec)
+	}
+	for _, op := range g.Operations {
+		if d := op.JSONBody; d != nil {
+			w.line(" *")
+			w.docTag("", "@phpstan-type "+d.Alias+" "+inputShape(d.Schema, ""))
+		}
 	}
 	for _, op := range publicMethods(g) {
 		for _, p := range op.Params {
@@ -275,14 +281,24 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 	const indent = "    "
 	ret := resultSpec(op)
 	w.line(indent + "/**")
+	// JSON-body notes carry operation-specific whole-configuration obligations.
+	// Put them before source prose without changing legacy documentation order.
+	if op.JSONBody != nil {
+		for _, note := range op.Notes {
+			w.doc(indent, note.Label+": "+note.Text)
+			w.line(indent + " *")
+		}
+	}
 	w.doc(indent, op.Summary)
 	if op.Description != "" {
 		w.line(indent + " *")
 		w.doc(indent, op.Description)
 	}
-	for _, note := range op.Notes {
-		w.line(indent + " *")
-		w.doc(indent, note.Label+": "+note.Text)
+	if op.JSONBody == nil {
+		for _, note := range op.Notes {
+			w.line(indent + " *")
+			w.doc(indent, note.Label+": "+note.Text)
+		}
 	}
 	if op.OptionalPayload && ret != nil {
 		w.line(indent + " *")
@@ -305,6 +321,10 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 		description := p.Description
 		if !p.Required {
 			description = strings.TrimSpace(description + " Null omits it.")
+		}
+		if p.Input != nil {
+			description = strings.TrimSpace(description + " Validated whole JSON body. Secrets belong in the body, not URL query fields. Direct routes only.")
+			multi = true
 		}
 		if p.OmitEmpty {
 			description = strings.TrimSpace(description + " Empty list omits it.")
@@ -333,7 +353,10 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 		w.line(indent + " * @throws PayloadMismatchException If the envelope was accepted but the payload differs from the contract;")
 		w.line(indent + " *     the outcome is not checked.")
 	}
-	if rejectEmpty {
+	if op.JSONBody != nil {
+		w.line(indent + " * @throws InvalidArgumentException If the whole JSON body is invalid, root routing names are reserved,")
+		w.line(indent + " *     or this account handle uses the unsupported WHM bridge.")
+	} else if rejectEmpty {
 		w.line(indent + " * @throws InvalidArgumentException If an explicit target is absent, blank, zero, or an invalid string list.")
 	} else if multi {
 		if records {
@@ -466,11 +489,22 @@ func specClass(g effective.Group) string {
 			}
 			w.line("        'outcome' => " + phpString(op.Outcome) + ",")
 		}
-		if len(op.Params) == 0 {
+		if d := op.JSONBody; d != nil {
+			w.line("        'json_body' => [")
+			w.line("            'php' => " + phpString(d.PHP) + ",")
+			w.line(fmt.Sprintf("            'required' => %t,", d.Required))
+			w.line("            'routes' => " + phpString(d.Routes) + ",")
+			w.line("            'schema' => " + inputLiteral(d.Schema, "            ") + ",")
+			w.line("        ],")
+		}
+		if len(op.Params) == 0 || (op.JSONBody != nil && len(op.Params) == 1) {
 			w.line("        'params' => [],")
 		} else {
 			w.line("        'params' => [")
 			for _, p := range op.Params {
+				if p.Input != nil {
+					continue
+				}
 				setting := ""
 				if p.OmitEmpty {
 					setting = ", 'omit_empty' => true"

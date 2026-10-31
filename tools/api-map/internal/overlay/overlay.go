@@ -70,6 +70,7 @@ type Operation struct {
 	// the map documents with several variants.
 	Variant    string            `json:"variant,omitempty"`
 	Method     string            `json:"method,omitempty"`
+	JSONBody   *JSONBody         `json:"json_body,omitempty"`
 	Body       string            `json:"body,omitempty"`
 	BodyFields map[string]string `json:"body_fields,omitempty"`
 	Outcome    string            `json:"outcome,omitempty"`
@@ -89,6 +90,21 @@ type Operation struct {
 	// parameter, parameter requiredness, scalar type/description corrections or
 	// suppressed enum documentation.
 	Evidence []Evidence `json:"evidence,omitempty"`
+}
+
+// JSONBody selects one whole application/json body; source schemas remain immutable.
+// Corrections address schema nodes by JSON pointer relative to the root schema.
+type JSONBody struct {
+	PHP         string                     `json:"php"`
+	Alias       string                     `json:"alias"`
+	Routes      string                     `json:"routes"`
+	Required    *bool                      `json:"required,omitempty"`
+	Corrections map[string]InputCorrection `json:"corrections,omitempty"`
+}
+type InputCorrection struct {
+	Required []string   `json:"required,omitempty"`
+	Nonempty *bool      `json:"nonempty,omitempty"`
+	Evidence []Evidence `json:"evidence"`
 }
 
 // Note is one line appended to the generated docblock. Kind separates facts

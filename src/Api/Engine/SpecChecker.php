@@ -126,6 +126,11 @@ final class SpecChecker
         }
 
         self::params($spec['params'] ?? null, isset($spec['module']));
+        if (OperationSpec::body($spec) === RequestBodyFormat::Json) {
+            self::jsonBody($spec);
+        } elseif (array_key_exists('json_body', $spec)) {
+            throw new LogicException('JSON body metadata requires JSON encoding.');
+        }
         if (OperationSpec::body($spec) === RequestBodyFormat::Multipart) {
             if (($spec['method'] ?? null) !== 'POST' || !isset($spec['module'])) {
                 throw new LogicException('Multipart requires a UAPI POST operation.');
@@ -170,6 +175,28 @@ final class SpecChecker
             || !array_key_exists($unwrap, $fields)
         ) {
             throw new LogicException('Invalid unwrap spec.');
+        }
+    }
+
+    /** @param array<mixed> $spec */
+    private static function jsonBody(array $spec): void
+    {
+        $body = OperationSpec::jsonBody($spec);
+        $schema = StructuredJsonSchema::from($body['schema']);
+        if ($spec['params'] !== []) {
+            throw new LogicException('JSON body operations cannot declare query parameters.');
+        }
+        if ($schema->type !== 'object' || $schema->nullable) {
+            throw new LogicException('JSON body operations require a nonnullable object root.');
+        }
+        if (!isset($spec['module']) && !$body['required']) {
+            throw new LogicException('WHM JSON bodies must be required to carry API version routing.');
+        }
+        $reserved = isset($spec['module']) ? ['cpanel.user', 'cpanel.module', 'cpanel.function'] : [];
+        foreach (array_keys($schema->fields) as $name) {
+            if (str_starts_with($name, 'api.') || in_array($name, $reserved, true)) {
+                throw new LogicException('JSON schema declares a reserved root member.');
+            }
         }
     }
 

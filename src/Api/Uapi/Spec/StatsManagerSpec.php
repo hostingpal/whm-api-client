@@ -40,4 +40,66 @@ final class StatsManagerSpec
             ],
         ],
     ];
+
+    public const SAVE_CONFIGURATION = [
+        'function' => 'save_configuration',
+        'module' => 'StatsManager',
+        'method' => 'POST',
+        'body' => 'json',
+        'outcome' => 'flag',
+        'json_body' => [
+            'php' => 'configuration',
+            'required' => true,
+            'routes' => 'direct',
+            'schema' => [
+                'type' => 'object',
+                'fields' => [
+                    'changes' => [
+                        'type' => 'list',
+                        'nonempty' => true,
+                        'items' => [
+                            'type' => 'object',
+                            'fields' => [
+                                'analyzers' => [
+                                    'type' => 'list',
+                                    'items' => [
+                                        'type' => 'object',
+                                        'fields' => [
+                                            'enabled' => ['type' => 'flag'],
+                                            'name' => ['type' => 'string'],
+                                        ],
+                                        'required' => ['name', 'enabled'],
+                                    ],
+                                ],
+                                'domain' => ['type' => 'string', 'nonempty' => true],
+                            ],
+                            'required' => ['domain', 'analyzers'],
+                        ],
+                    ],
+                ],
+                'required' => ['changes'],
+            ],
+        ],
+        'params' => [],
+        'returns' => [
+            'type' => 'list',
+            'items' => [
+                'type' => 'object',
+                'fields' => [
+                    'analyzers' => [
+                        'type' => 'list',
+                        'items' => [
+                            'type' => 'object',
+                            'fields' => [
+                                'enabled' => ['type' => 'flag'],
+                                'enabled_by_user' => ['type' => 'flag'],
+                                'name' => ['type' => 'string'],
+                            ],
+                        ],
+                    ],
+                    'domain' => ['type' => 'string'],
+                ],
+            ],
+        ],
+    ];
 }

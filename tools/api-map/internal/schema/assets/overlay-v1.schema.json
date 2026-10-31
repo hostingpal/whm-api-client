@@ -265,6 +265,74 @@
       "required": ["evidence"],
       "additionalProperties": false
     },
+    "inputCorrection": {
+      "type": "object",
+      "properties": {
+        "required": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "nonempty": {
+          "type": "boolean"
+        },
+        "evidence": {
+          "$ref": "#/$defs/evidenceList"
+        }
+      },
+      "required": [
+        "evidence"
+      ],
+      "additionalProperties": false,
+      "anyOf": [
+        {
+          "required": [
+            "required"
+          ]
+        },
+        {
+          "required": [
+            "nonempty"
+          ]
+        }
+      ]
+    },
+    "jsonBody": {
+      "type": "object",
+      "properties": {
+        "php": {
+          "type": "string",
+          "pattern": "^[a-z][A-Za-z0-9]*$"
+        },
+        "alias": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Za-z0-9]*Input$"
+        },
+        "routes": {
+          "const": "direct"
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "corrections": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^(/.*)?$"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/inputCorrection"
+          }
+        }
+      },
+      "required": [
+        "php",
+        "alias",
+        "routes"
+      ],
+      "additionalProperties": false
+    },
     "operation": {
       "type": "object",
       "properties": {
@@ -272,7 +340,8 @@
         "function": {"type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*/[A-Za-z_][A-Za-z0-9_]*$"},
         "variant": {"enum": ["GET", "POST"]},
         "method": {"enum": ["GET", "POST"]},
-        "body": {"enum": ["multipart"]},
+        "body": {"enum": ["multipart", "json"]},
+        "json_body": {"$ref": "#/$defs/jsonBody"},
         "body_fields": {"type": "object", "minProperties": 1, "additionalProperties": {"type": "string", "minLength": 1}},
         "outcome": {"enum": ["flag", "unchecked"]},
         "unwrap": {"type": "string", "minLength": 1},

@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 99 typed groups cover 1,142 documented operations:
+and cPanel UAPI surface. The 99 typed groups cover 1,143 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -214,7 +214,10 @@ envelope handling. These legacy call() methods do not support JSON or multipart
 request bodies. Separate callJson() entrypoints provide raw JSON POST through WHM
 and direct cPanel UAPI; bridged UAPI rejects JSON locally after metadata reset. The
 pinned inventory includes 13 JSON operations (8 WHM, 5 UAPI) and 9 multipart
-operations (1 WHM, 8 UAPI); selected implementations remain open under
+operations (1 WHM, 8 UAPI). StatsManager/save_configuration is the first typed
+JSON-body adopter; the other 12 JSON endpoints remain deferred, with remaining
+selection/source/route audit under `whm-api-client-8x0.29.6`. Selected
+implementations and the StatsManager successful-live-write gate remain open under
 `whm-api-client-8x0.1.18` and `whm-api-client-8x0.1.19`. Generic access is not
 typed or live-verified coverage. The 2026-10-13 spec's
 [scaling decision (typed core plus generic calls)](docs/superpowers/specs/2026-10-13-php-client-design.md#scaling-decision-typed-core-plus-generic-calls)
@@ -418,8 +421,52 @@ The resource and web statistics slice exposes eleven GET operations across
 Bandwidth protocols, retention and grouped queries complement resource limits,
 statistics-bar values, domain bandwidth, daily AwStats counters, error logs,
 report-file inventory and analyzer configuration. `StatsManager/save_configuration`
-requires a JSON request body and remains excluded from typed coverage under `8x0.1.18`; generic form
-calls do not provide that transport.
+is the first generated typed JSON-body operation. Generic `call()` remains form-only.
+
+`statsManager()->saveConfiguration($configuration)` replaces the account's analyzer
+configuration. Explicitly call `getConfiguration()` first and prepare the complete
+intended domain/analyzer set. Round-trip `enabled_by_user` (the user choice) into
+input `enabled`, rather than the effective `enabled` returned by the read. Analyzers
+absent from the read receive defaults. A partial-looking input can reset other
+settings to defaults. The client makes no implicit read, merge, patch, retry, restore or rollback.
+The [PR73 reviewer](https://github.com/hostingpal/whm-api-client/pull/73#pullrequestreview-5722705880)
+reports that the 11.138.0.19 handler builds defaults for every domain/analyzer,
+applies changes, then saves; its POD says unspecified configurations are disabled.
+This is attributed upstream evidence, without a promise that every default is
+universally disabled.
+
+The required input is `array{changes: non-empty-list<array{domain: non-empty-string,
+analyzers: list<array{name: string, enabled: bool}>}>}`. Every listed field is
+required; only the zero-byte domain string is rejected. `'0'`, `'00'` and whitespace
+are forwarded unchanged; this is not domain validation. `analyzers: []` and empty
+analyzer names remain valid inputs. Native bools map to integer 0/1 wire flags.
+Names remain strings without a closed analyzer enum. Unknown members, malformed
+lists, nulls and wrong scalar types fail locally before I/O. Requiredness is an
+operation-scoped correction to the formally optional pinned 11.138.0.10 input,
+bound to the attributed 11.138.0.19 handler and raw server observations. Valid
+structure does not establish completeness, ownership, availability or persistence.
+
+This method sends one direct-cPanel UAPI POST with exactly `Content-Type:
+application/json`. The WHM bridge rejects it locally after clearing metadata.
+Available from cPanel 90 with the WebServer role; root/reseller control can prevent
+user changes. Returned domain/analyzer fields remain optional, with native integer
+0/1 flags. On 11.138.0.19 the source uses the same row builder as `getConfiguration()`:
+`name`, `enabled`, `enabled_by_user`. `locked` and analyzer `available_for_user` belong
+to response metadata: `locked=1` is reseller/root-only and `locked=0` is user-manageable.
+Inspect `responseMeta()` warnings for skipped `not_owned`, `not_available` and
+`unrecognized` entries even with status 1. An empty analyzer name produces an
+`unrecognized` warning, while the handler silently skips an empty domain. The client
+rejects the empty string locally; it does not establish validity of other domains.
+No payload `raw_warning` field is invented;
+success does not prove every requested setting applied. Check persistence separately.
+
+The successful live-write gate in `8x0.1.18` remains **OPEN**. The reviewer's
+well-formed raw direct-JSON requests bypassed this client and were blocked by
+`_can_self_manage` on 11.138.0.19: “You may not modify the weblog analyzer
+configuration”. Passing the gate requires a root/reseller server-wide statistics
+setting change; this work authorizes no such change and ran no live calls.
+Twelve other pinned JSON-body operations remain deferred; remaining
+selection/source/route audit is tracked under `8x0.29.6`.
 
 Pipe-separated grouping, domain, protocol and display arguments are supplied as
 strings and encoded once. Omitted options preserve server defaults; explicit
@@ -1830,7 +1877,8 @@ Deletion/settings can permanently affect archives. Mutations retain unconstraine
 present JSON payloads, including null, and reject absent data. All seven methods
 have offline contracts, including both UAPI routes; the private-log mismatch test
 uses the shared trace suite with argument capture and positive controls.
-Existing StatsManager coverage and its deferred JSON save operation are unchanged.
+StatsManager/save_configuration is separately adopted as a direct typed JSON POST;
+its successful-write gate remains open under `8x0.1.18`.
 
 The fixed eight-GET catalog observes version, WHM retention and selected-account
 settings/archive/error-log metadata. It reads no log contents and makes no writes.

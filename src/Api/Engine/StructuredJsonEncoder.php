@@ -75,6 +75,9 @@ final class StructuredJsonEncoder
         if (!self::matches($value, $schema)) {
             throw new InvalidArgumentException('Structured JSON value does not match its schema.');
         }
+        if ($schema->type === 'string' && $schema->nonempty && $value === '') {
+            throw new InvalidArgumentException('Structured JSON string must not be empty.');
+        }
         if (is_array($value)) {
             // Defensive: the checked schema already bounds every traversable container.
             if ($depth >= StructuredJsonSchema::MAX_DEPTH - 1) {
