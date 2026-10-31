@@ -753,3 +753,12 @@ attempted. The rejection is not attributed to a particular operation. All fourte
 write methods remain unobserved under `8x0.2.36`; no new capture, privilege change
 or lifecycle ran for these corrections. Reviewer reports remain separate from
 the immutable six-GET artifacts.
+
+## WHM transfer metadata, 2026-10-31
+
+`2026-10-31-whm-transfers.json` at `a5badae` on `11.138.0.19` passes all
+three fixed GET observations and strict assessment, with zero discrepancies.
+Module priorities and designated-user flags were populated; remote and mutation
+behavior remains unobserved under `8x0.2.47`. No remote credential check,
+session/log read, transfer/control/archive mutation or URL fetch ran.
+SHA-256 `8a8d004b5b765c7f79862d8a177d93855757617eada816812a6983b4116a0a1e`.

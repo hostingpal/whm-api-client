@@ -1825,3 +1825,14 @@ catalog reads version, available modules and username validation for designated
 `npr`. It supplies no remote host, session ID, log or archive path, performs no
 credential check or transfer/control/deletion, and does not guess identifiers.
 Remaining live behavior stays under `8x0.2.47`.
+
+
+The bounded transfer-metadata capture at `a5badae` on `11.138.0.19` records
+three HTTP/API/payload/probe passes and a passed strict assessment, with zero
+discrepancies. It observes populated module priorities as strings and the four
+integer validation flags for designated `npr`. These reads do not establish
+remote authentication, transfer, restoration or account-creation behavior. No
+remote credential check, session/log read, transfer/control/archive mutation or
+URL fetch ran. Other methods and variants remain under `8x0.2.47`.
+Artifact SHA-256:
+`8a8d004b5b765c7f79862d8a177d93855757617eada816812a6983b4116a0a1e`.
