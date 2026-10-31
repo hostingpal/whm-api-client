@@ -1414,3 +1414,38 @@ Existing exact request guards, committed inputs, opt-in, verified TLS and struct
 capture apply. No passwords, private links or account/configuration mutations are
 selected. No conversion, purchase or message runs. Strict discrepancies remain
 failures; remaining behavior and variants stay under `8x0.2.41`.
+
+## WHM hosting plans
+
+Run `WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs php tools/live-verify/whm-hosting-plans.php --output=docs/api/evidence/YYYY-MM-DD-whm-hosting-plans.json`.
+
+The original two fixed GETs read version and matchpkgs without selectors. A
+reviewer received an empty match result while listPackages returned a plan on
+11.138.0.19; the cause is unknown. Selector omission does not guarantee complete
+inventory. Preserve the completed artifact; do not rerun it merely for green. Existing
+exact request guards, committed inputs, opt-in, verified TLS and structural-only
+capture apply. No package or feature mutation, arbitrary file read, template
+execution or URL fetch runs. Findings stay unwaived; `8x0.2.43` retains live gaps.
+
+
+### Reviewed hosting-plan contracts
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/whm-hosting-plans-review.php \
+  --output=docs/api/evidence/YYYY-MM-DD-whm-hosting-plans-reviewed.json
+```
+
+The separate `whm-hosting-plans-review-v1` recipe adds the explicitly requested
+`getPackageInfo('default')` and `getAvailableApplications()` reads, alongside WHM
+version. The stock default package is grounded in the reviewer report, not an
+inferred default for the required `name` parameter. Its exact request guards,
+explicit live opt-in, committed-input checks and structural-only publication are
+unchanged. No write, arbitrary file selector, template execution or URL fetch is
+included. It writes a new immutable artifact; the original capture is preserved.
+
+The requested 2026-10-31 run is complete in
+`docs/api/evidence/2026-10-31-whm-hosting-plans-reviewed.json` at `1336c4d`.
+All three HTTP/API/payload/probe outcomes pass; two masked application item and
+subitem unknown-field observations retain a failed, unwaived strict assessment
+under `8x0.2.43`. Do not rerun this completed capture merely to clear findings.
