@@ -817,3 +817,18 @@ updates, profile activation, licensing, node connectivity or notification delive
 No mutation, credential read or URL request ran. Follow-up `8x0.2.38` retains the
 unknown findings and unobserved variants. Corrected SHA-256:
 `db24e53879fff4754369b984969640b51ea483713ad71c735d6d1bb1be88f6b8`.
+
+## WHM NGINX configuration evidence
+
+The [NGINX configuration capture](2026-10-31-whm-nginx.json) at
+`2b36d29b8c535b3199b9cf505b22a3b741921f93` on `11.138.0.19` records three
+HTTP-200 observations. Version passes; both configuration calls return API failure,
+so their payloads are not validated and the strict assessment remains failed.
+The sanitized artifact establishes neither the failure cause nor any successful
+NGINX configuration compatibility. No contract is widened or finding waived.
+
+No cache clearing, rebuild, reset, toggle or service change ran. The client does
+not enable NGINX or retry these calls to obtain passing evidence. All six methods
+remain offline-tested, with live coverage and populated variants open under
+`8x0.2.51`. SHA-256:
+`7678649795f70b7ffeba17a0775715370d3bcd220182557427c897edbbdbd591`.

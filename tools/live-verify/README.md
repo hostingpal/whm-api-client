@@ -1364,3 +1364,9 @@ Three fixed GETs read version and merged system/npr cache configurations. Existi
 opt-in, committed-input, exact request guard, TLS and immutable structural-output
 rules apply. No all-user inventory, cache clearing/rebuild/reset/toggle, service
 restart or HTTP enforcement test runs. Keep gaps under `8x0.2.51`.
+
+The NGINX capture at 2b36d29 on 11.138.0.19 records three HTTP-200 observations:
+version passes, but both configuration reads fail at the API layer, with payloads
+not checked. Strict status stays failed and no failure cause is inferred. No
+cache or service change ran; all six methods remain offline-tested and live gaps
+stay under 8x0.2.51. Preserve the artifact without retries or schema loosening.

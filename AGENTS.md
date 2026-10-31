@@ -1376,6 +1376,13 @@ version, merged system configuration and merged configuration for designated
 npr only. It does not clear, rebuild, reset, toggle, restart or measure cache/HTTP
 behavior. Unobserved variants and mutations remain under `8x0.2.51`.
 
+
+The NGINX capture at 2b36d29 on 11.138.0.19 records three HTTP-200 observations:
+version passes, but both configuration reads fail at the API layer, with payloads
+not checked. Strict status stays failed and no failure cause is inferred. No
+cache or service change ran; all six methods remain offline-tested and live gaps
+stay under 8x0.2.51. Preserve the artifact without retries or schema loosening.
+
 ## Architecture and Conventions
 
 - Follow the [agreed PHP client interface](docs/superpowers/specs/2026-10-13-php-client-design.md):
