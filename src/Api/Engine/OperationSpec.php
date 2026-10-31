@@ -27,6 +27,15 @@ use LogicException;
  *   omit_empty is accepted only with repeat and skips exactly [] before wrapping
  *   it as a repeated list. Generation restricts this explicit option to optional
  *   string-list source parameters; absent settings retain empty-list rejection.
+ *   New explicit encoding 'collection' requires a collection descriptor with
+ *   kind ('indexed'|'repeat'), item_type ('string'|'int'|'bool'|'string|int'),
+ *   allow_scalar (boolean), and empty ('reject'). Indexed descriptors additionally
+ *   require literal identifier prefix, separator (''|'-'), and nonnegative integer
+ *   start (at most 2147483647). Repeat descriptors forbid these index fields.
+ *   Scalars use name; arrays always use the list pattern, including singletons.
+ *   Bool items become integer 1/0. Null/float items are invalid; optional top-level
+ *   null still omits. Collection metadata never combines with legacy encodings,
+ *   omit_empty or reject_empty. All generated collection arguments are sensitive.
  * - returns: required key; a type spec (see ShapeValidator for the grammar), or
  *   an explicit null for a void operation.
  * - unwrap: optional string naming a field declared in an object "returns";

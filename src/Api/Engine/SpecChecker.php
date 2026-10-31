@@ -33,7 +33,9 @@ use LogicException;
  */
 final class SpecChecker
 {
-    private const ENCODINGS = ['scalar', 'bool', 'repeat', 'numbered', 'suffix-numbered', 'suffix-numbered-scalar'];
+    private const ENCODINGS = [
+        'scalar', 'bool', 'repeat', 'numbered', 'suffix-numbered', 'suffix-numbered-scalar', 'collection',
+    ];
 
     /** Accepted wire variants per type; types not listed accept none. */
     private const ACCEPT = [
@@ -186,6 +188,12 @@ final class SpecChecker
                 || !in_array($param['encoding'] ?? null, self::ENCODINGS, true)
             ) {
                 throw new LogicException('Invalid parameter spec for ' . $name . '.');
+            }
+
+            if ($param['encoding'] === 'collection') {
+                CollectionEncoder::check($param['collection'] ?? null);
+            } elseif (array_key_exists('collection', $param)) {
+                throw new LogicException('Collection metadata requires collection encoding.');
             }
 
             if (

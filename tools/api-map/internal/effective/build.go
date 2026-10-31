@@ -356,6 +356,9 @@ func (b *builder) params(op model.Operation, v model.Variant, ov overlay.Operati
 		documented[p.Name] = true
 		if o, ok := ov.Params[p.Name]; ok && o.Omit {
 			omitted[p.Name] = true
+			if o.Collection != nil {
+				b.problem(op.ID + ": omitted parameter " + p.Name + " cannot have collection")
+			}
 			if o.RejectEmpty != nil {
 				b.problem(op.ID + ": omitted parameter " + p.Name + " cannot have reject_empty")
 			}
@@ -399,7 +402,7 @@ func (b *builder) params(op model.Operation, v model.Variant, ov overlay.Operati
 		if reason := secretDecision(p.Name, text(decl["description"]), spec, param.Sensitive); reason != "" && o.Sensitive == nil {
 			b.problem(op.ID + ": parameter " + p.Name + " may carry a secret (" + reason + `); declare "sensitive" true or false`)
 		}
-		if composite && o.Encoding == "" {
+		if composite && o.Encoding == "" && o.Collection == nil {
 			b.problem(op.ID + ": parameter " + p.Name + " has an object or list schema; declare its encoding or omit it")
 		}
 		if o.PHP != "" {
@@ -407,6 +410,9 @@ func (b *builder) params(op model.Operation, v model.Variant, ov overlay.Operati
 		}
 		if o.Encoding != "" {
 			param.PHPType, param.DocType, param.Encoding = encodingTypes(o.Encoding, param)
+		}
+		if o.Collection != nil {
+			b.collection(op, p, ov, spec, &param)
 		}
 		if o.RejectEmpty != nil {
 			if !*o.RejectEmpty || !param.Required || o.OmitEmpty != nil || o.Type != "" ||
@@ -459,6 +465,9 @@ func (b *builder) params(op model.Operation, v model.Variant, ov overlay.Operati
 		}
 		if o.Sensitive != nil {
 			param.Sensitive = *o.Sensitive
+		}
+		if param.Collection != nil {
+			param.Sensitive = true
 		}
 		if !IsMethodName(param.PHP) || reservedArguments[param.PHP] {
 			b.problem(op.ID + ": parameter " + p.Name + " needs an overlay php name")
@@ -532,6 +541,7 @@ func (b *builder) params(op model.Operation, v model.Variant, ov overlay.Operati
 			}
 		}
 	}
+	b.collectionOverlaps(op.ID, params)
 	return params
 }
 
