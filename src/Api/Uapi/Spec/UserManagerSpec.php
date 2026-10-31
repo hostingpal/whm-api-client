@@ -756,20 +756,20 @@ final class UserManagerSpec
             'items' => [
                 'type' => 'object',
                 'fields' => [
-                    'alternate_email' => ['type' => 'string'],
-                    'avatar_url' => ['type' => 'string'],
+                    'alternate_email' => ['type' => 'string', 'nullable' => true],
+                    'avatar_url' => ['type' => 'string', 'nullable' => true],
                     'can_delete' => ['type' => 'flag'],
                     'can_set_password' => ['type' => 'flag'],
                     'can_set_quota' => ['type' => 'flag'],
                     'dismissed' => ['type' => 'flag'],
                     'dismissed_merge_candidates' => ['type' => 'list', 'items' => ['type' => 'string']],
-                    'domain' => ['type' => 'string'],
+                    'domain' => ['type' => 'string', 'nullable' => true],
                     'full_username' => ['type' => 'string'],
                     'guid' => ['type' => 'string'],
                     'has_expired_invite' => ['type' => 'flag'],
                     'has_invite' => ['type' => 'flag'],
                     'has_siblings' => ['type' => 'flag'],
-                    'invite_expiration' => ['type' => 'int'],
+                    'invite_expiration' => ['type' => 'int', 'nullable' => true],
                     'issues' => [
                         'type' => 'list',
                         'items' => [
@@ -786,8 +786,8 @@ final class UserManagerSpec
                     ],
                     'merge_candidates' => ['type' => 'list', 'items' => ['type' => 'string']],
                     'parent_type' => ['type' => 'string', 'nullable' => true],
-                    'phone_number' => ['type' => 'string'],
-                    'real_name' => ['type' => 'string'],
+                    'phone_number' => ['type' => 'string', 'nullable' => true],
+                    'real_name' => ['type' => 'string', 'nullable' => true],
                     'services' => [
                         'type' => 'object',
                         'fields' => [
@@ -803,7 +803,7 @@ final class UserManagerSpec
                                 'fields' => [
                                     'enabled' => ['type' => 'flag'],
                                     'homedir' => ['type' => 'string'],
-                                    'quota' => ['type' => 'int'],
+                                    'quota' => ['type' => 'int', 'nullable' => true],
                                 ],
                             ],
                             'special' => ['type' => 'flag'],

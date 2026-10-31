@@ -3153,3 +3153,20 @@ each account read uses both routes. Team listings are excluded because their sou
 includes password fields. No GUID/service lookup identifiers are guessed, no account
 is modified and no invitation, activation or reset email is sent. All remaining
 methods and variants remain offline-tested under live follow-up `8x0.2.30`.
+
+The initial [team/user-management capture](evidence/2026-10-31-team-user-management.json)
+at `5cae92f5ef3dfdb4ff9e83b8ab06be6d17867677` on `11.138.0.19` records nine HTTP
+200 observations. Version and both password-strength reads pass. Team counts and
+role descriptions fail at the API on both routes, as does the bridged user list;
+no cause is established. The direct user inventory succeeds at the API but has
+seven known null mismatches: `alternate_email`, `avatar_url`, `domain`,
+`invite_expiration`, `phone_number`, `real_name` and `services.ftp.quota`.
+These observations support nullability only at those list-row paths. One masked
+unknown-field observation with a null value remains untyped and unwaived. Strict assessment is failed.
+
+The direct inventory is populated; it establishes no successful bridge payload or
+team schema, and the team listing that includes password fields was not called.
+No user, service, role or password changed and no message was sent. Follow-up
+`8x0.2.30` retains API failures, the unknown field and unobserved operations/variants.
+Initial immutable SHA-256:
+`b0bbf85e9054d68f8a06eb984a63cdac76c81d9b9a2cf6cebb3e81c0d0c04116`.

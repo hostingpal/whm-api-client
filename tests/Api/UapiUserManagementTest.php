@@ -295,6 +295,18 @@ final class UapiUserManagementTest extends TestCase
                             '[{"issues":[{"used":"1"}]}]',
                             '[{"merge_candidates":[{}]}]',
                             '[{"dismissed_merge_candidates":[{}]}]',
+                            '[{"full_username":null}]',
+                            '[{"can_delete":null}]',
+                            '[{"services":{"email":{"quota":null}}}]',
+                            '[{"services":{"ftp":{"homedir":null}}}]',
+                            '[{"alternate_email":false}]',
+                            '[{"avatar_url":0}]',
+                            '[{"domain":1}]',
+                            '[{"invite_expiration":"0"}]',
+                            '[{"phone_number":0}]',
+                            '[{"real_name":false}]',
+                            '[{"services":{"ftp":{"quota":"0"}}}]',
+                            '[{"services":{"ftp":{"quota":0.5}}}]',
                         );
                     } elseif ($function === 'check_account_conflicts') {
                         array_push(
@@ -322,6 +334,9 @@ final class UapiUserManagementTest extends TestCase
                         if ($function === 'create_user') {
                             $cases[] = '{"services":{"ftp":{"quota":0}}}';
                         }
+                        if ($function === 'create_user' || $function === 'delete_user') {
+                            $cases[] = '{"alternate_email":null}';
+                        }
                         if ($function === 'lookup_user') {
                             array_push(
                                 $cases,
@@ -345,6 +360,43 @@ final class UapiUserManagementTest extends TestCase
                     yield "$route $module/$function $index" => [$route, $module, $function, $payload];
                 }
             }
+        }
+    }
+
+    /** @param list<array<string, mixed>> $expected */
+    #[DataProvider('observedNullableListFields')]
+    public function testObservedNullListFieldsRemainDistinctFromOmission(
+        string $route,
+        string $payload,
+        array $expected,
+    ): void {
+        [$client, $http] = self::client($route);
+        $account = $client->uapi('npr');
+        $http->addResponse(new Response(200, [], self::envelope($route, $payload)));
+        self::assertSame($expected, $account->userManager()->listUsers(flat: true));
+        self::assertRequest($http, $route, 'UserManager', 'list_users', 'flat=1');
+        self::assertCount(1, $http->getRequests());
+    }
+
+    /** @return iterable<string, array{string, string, list<array<string, mixed>>}> */
+    public static function observedNullableListFields(): iterable
+    {
+        // Direct UAPI on 11.138.0.19 at 5cae92f: immutable capture SHA-256 b0bbf85e...0c04116.
+        // Other routes below exercise the common offline contract, not a claim of observed bridge success.
+        foreach (['direct', 'bare', 'bridge'] as $route) {
+            foreach (
+                ['alternate_email', 'avatar_url', 'domain', 'invite_expiration',
+                'phone_number', 'real_name'] as $field
+            ) {
+                yield "$route $field" => [$route, '[{"' . $field . '":null}]', [[$field => null]]];
+            }
+            yield "$route services.ftp.quota" => [$route, '[{"services":{"ftp":{"quota":null}}}]',
+                [['services' => ['ftp' => ['quota' => null]]]]];
+            yield "$route all observed nulls" => [$route,
+                '[{"alternate_email":null,"avatar_url":null,"domain":null,"invite_expiration":null,'
+                    . '"phone_number":null,"real_name":null,"services":{"ftp":{"quota":null}}}]',
+                [['alternate_email' => null, 'avatar_url' => null, 'domain' => null, 'invite_expiration' => null,
+                    'phone_number' => null, 'real_name' => null, 'services' => ['ftp' => ['quota' => null]]]]];
         }
     }
 

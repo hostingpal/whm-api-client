@@ -437,20 +437,20 @@ use SensitiveParameter;
  *     username?: string,
  * }
  * @phpstan-type ListUsersResult list<array{
- *     alternate_email?: string,
- *     avatar_url?: string,
+ *     alternate_email?: string|null,
+ *     avatar_url?: string|null,
  *     can_delete?: 0|1,
  *     can_set_password?: 0|1,
  *     can_set_quota?: 0|1,
  *     dismissed?: 0|1,
  *     dismissed_merge_candidates?: list<string>,
- *     domain?: string,
+ *     domain?: string|null,
  *     full_username?: string,
  *     guid?: string,
  *     has_expired_invite?: 0|1,
  *     has_invite?: 0|1,
  *     has_siblings?: 0|1,
- *     invite_expiration?: int,
+ *     invite_expiration?: int|null,
  *     issues?: list<array{
  *         area?: string,
  *         limit?: int,
@@ -461,8 +461,8 @@ use SensitiveParameter;
  *     }>,
  *     merge_candidates?: list<string>,
  *     parent_type?: string|null,
- *     phone_number?: string,
- *     real_name?: string,
+ *     phone_number?: string|null,
+ *     real_name?: string|null,
  *     services?: array{
  *         email?: array{
  *             enabled?: 0|1,
@@ -471,7 +471,7 @@ use SensitiveParameter;
  *         ftp?: array{
  *             enabled?: 0|1,
  *             homedir?: string,
- *             quota?: int,
+ *             quota?: int|null,
  *         },
  *         special?: 0|1,
  *         webdisk?: array{

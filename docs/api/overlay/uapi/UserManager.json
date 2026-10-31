@@ -334,6 +334,85 @@
           "bridged-uapi"
         ],
         "expected": "success"
+      },
+      "response": {
+        "[].alternate_email": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Immutable docs/api/evidence/2026-10-31-team-user-management.json, SHA-256 b0bbf85e9054d68f8a06eb984a63cdac76c81d9b9a2cf6cebb3e81c0d0c04116, captures uapi:UserManager/list_users#GET via direct-uapi at revision 5cae92f5ef3dfdb4ff9e83b8ab06be6d17867677 with flat=true. The original HTTP 200/API-success response records null at $[].alternate_email, causing a type_mismatch against effective contract 44a369b60c83715ac4e0d634623f398c658cb19eafd437f99d0877c82f6c0da9. Add only explicit null at [].alternate_email; retain optional presence and the existing scalar type. The bridge call failed at the API layer, so this is direct-route field evidence only. Unknown $[].* null remains untyped and unwaived; sibling operations and all other fields are unchanged. The initial artifact remains failed and immutable."
+            }
+          ]
+        },
+        "[].avatar_url": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Immutable docs/api/evidence/2026-10-31-team-user-management.json, SHA-256 b0bbf85e9054d68f8a06eb984a63cdac76c81d9b9a2cf6cebb3e81c0d0c04116, captures uapi:UserManager/list_users#GET via direct-uapi at revision 5cae92f5ef3dfdb4ff9e83b8ab06be6d17867677 with flat=true. The original HTTP 200/API-success response records null at $[].avatar_url, causing a type_mismatch against effective contract 44a369b60c83715ac4e0d634623f398c658cb19eafd437f99d0877c82f6c0da9. Add only explicit null at [].avatar_url; retain optional presence and the existing scalar type. The bridge call failed at the API layer, so this is direct-route field evidence only. Unknown $[].* null remains untyped and unwaived; sibling operations and all other fields are unchanged. The initial artifact remains failed and immutable."
+            }
+          ]
+        },
+        "[].domain": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Immutable docs/api/evidence/2026-10-31-team-user-management.json, SHA-256 b0bbf85e9054d68f8a06eb984a63cdac76c81d9b9a2cf6cebb3e81c0d0c04116, captures uapi:UserManager/list_users#GET via direct-uapi at revision 5cae92f5ef3dfdb4ff9e83b8ab06be6d17867677 with flat=true. The original HTTP 200/API-success response records null at $[].domain, causing a type_mismatch against effective contract 44a369b60c83715ac4e0d634623f398c658cb19eafd437f99d0877c82f6c0da9. Add only explicit null at [].domain; retain optional presence and the existing scalar type. The bridge call failed at the API layer, so this is direct-route field evidence only. Unknown $[].* null remains untyped and unwaived; sibling operations and all other fields are unchanged. The initial artifact remains failed and immutable."
+            }
+          ]
+        },
+        "[].invite_expiration": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Immutable docs/api/evidence/2026-10-31-team-user-management.json, SHA-256 b0bbf85e9054d68f8a06eb984a63cdac76c81d9b9a2cf6cebb3e81c0d0c04116, captures uapi:UserManager/list_users#GET via direct-uapi at revision 5cae92f5ef3dfdb4ff9e83b8ab06be6d17867677 with flat=true. The original HTTP 200/API-success response records null at $[].invite_expiration, causing a type_mismatch against effective contract 44a369b60c83715ac4e0d634623f398c658cb19eafd437f99d0877c82f6c0da9. Add only explicit null at [].invite_expiration; retain optional presence and the existing scalar type. The bridge call failed at the API layer, so this is direct-route field evidence only. Unknown $[].* null remains untyped and unwaived; sibling operations and all other fields are unchanged. The initial artifact remains failed and immutable."
+            }
+          ]
+        },
+        "[].phone_number": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Immutable docs/api/evidence/2026-10-31-team-user-management.json, SHA-256 b0bbf85e9054d68f8a06eb984a63cdac76c81d9b9a2cf6cebb3e81c0d0c04116, captures uapi:UserManager/list_users#GET via direct-uapi at revision 5cae92f5ef3dfdb4ff9e83b8ab06be6d17867677 with flat=true. The original HTTP 200/API-success response records null at $[].phone_number, causing a type_mismatch against effective contract 44a369b60c83715ac4e0d634623f398c658cb19eafd437f99d0877c82f6c0da9. Add only explicit null at [].phone_number; retain optional presence and the existing scalar type. The bridge call failed at the API layer, so this is direct-route field evidence only. Unknown $[].* null remains untyped and unwaived; sibling operations and all other fields are unchanged. The initial artifact remains failed and immutable."
+            }
+          ]
+        },
+        "[].real_name": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Immutable docs/api/evidence/2026-10-31-team-user-management.json, SHA-256 b0bbf85e9054d68f8a06eb984a63cdac76c81d9b9a2cf6cebb3e81c0d0c04116, captures uapi:UserManager/list_users#GET via direct-uapi at revision 5cae92f5ef3dfdb4ff9e83b8ab06be6d17867677 with flat=true. The original HTTP 200/API-success response records null at $[].real_name, causing a type_mismatch against effective contract 44a369b60c83715ac4e0d634623f398c658cb19eafd437f99d0877c82f6c0da9. Add only explicit null at [].real_name; retain optional presence and the existing scalar type. The bridge call failed at the API layer, so this is direct-route field evidence only. Unknown $[].* null remains untyped and unwaived; sibling operations and all other fields are unchanged. The initial artifact remains failed and immutable."
+            }
+          ]
+        },
+        "[].services.ftp.quota": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Immutable docs/api/evidence/2026-10-31-team-user-management.json, SHA-256 b0bbf85e9054d68f8a06eb984a63cdac76c81d9b9a2cf6cebb3e81c0d0c04116, captures uapi:UserManager/list_users#GET via direct-uapi at revision 5cae92f5ef3dfdb4ff9e83b8ab06be6d17867677 with flat=true. The original HTTP 200/API-success response records null at $[].services.ftp.quota, causing a type_mismatch against effective contract 44a369b60c83715ac4e0d634623f398c658cb19eafd437f99d0877c82f6c0da9. Add only explicit null at [].services.ftp.quota; retain optional presence and the existing scalar type. The bridge call failed at the API layer, so this is direct-route field evidence only. Unknown $[].* null remains untyped and unwaived; sibling operations and all other fields are unchanged. The initial artifact remains failed and immutable."
+            }
+          ]
+        }
       }
     },
     "uapi:UserManager/lookup_service_account": {
