@@ -59,6 +59,20 @@ final readonly class StructuredJsonSchema
         return self::node($schema, 0, 0);
     }
 
+    /** Whether this root accepts explicit JSON null, including a scalar alternative. */
+    public function acceptsNull(): bool
+    {
+        if ($this->nullable || $this->type === 'null') {
+            return true;
+        }
+        foreach ($this->alternatives as $branch) {
+            if ($branch->acceptsNull()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static function node(#[SensitiveParameter] mixed $schema, int $containers, int $descriptors): self
     {
         if ($descriptors > self::MAX_DEPTH || !is_array($schema)) {

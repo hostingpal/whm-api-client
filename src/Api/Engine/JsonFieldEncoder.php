@@ -21,7 +21,7 @@ final class JsonFieldEncoder
             throw new LogicException('Invalid JSON field descriptor.');
         }
         $schema = StructuredJsonSchema::from($descriptor['schema']);
-        if (!$descriptor['required'] && self::acceptsNull($schema)) {
+        if (!$descriptor['required'] && $schema->acceptsNull()) {
             throw new LogicException('Optional nullable JSON fields are unsupported.');
         }
         return $descriptor;
@@ -44,18 +44,5 @@ final class JsonFieldEncoder
             return null;
         }
         return StructuredJsonEncoder::encode($value, $checked['schema']);
-    }
-
-    private static function acceptsNull(StructuredJsonSchema $schema): bool
-    {
-        if ($schema->nullable || $schema->type === 'null') {
-            return true;
-        }
-        foreach ($schema->alternatives as $branch) {
-            if (self::acceptsNull($branch)) {
-                return true;
-            }
-        }
-        return false;
     }
 }
