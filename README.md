@@ -3,13 +3,13 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 91 generated typed groups cover 1,113 documented operations (see
+The 92 generated typed groups cover 1,117 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, DNS zone and DNSSEC
 management, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
 features, domain management, directory access, the complete Email and SSL modules,
-disk quotas, 14 Fileman operations and the complete pinned MySQL, FTP, PostgreSQL
-and Mime sections, plus mail protection through BoxTrapper, EmailAuth, SpamAssassin
+disk quotas, 14 Fileman operations, the complete ImageManager module and the
+complete pinned MySQL, FTP, PostgreSQL and Mime sections, plus mail protection through BoxTrapper, EmailAuth, SpamAssassin
 and cPGreyList.
 Generic `call()` methods provide GET and form-encoded POST access without a typed
 group, subject to the operation's parameter, route and envelope requirements.
@@ -343,6 +343,7 @@ An empty live list does not verify the types of records it never returned.
 | `uapi()->features()` | All 5 operations: `getFeatureMetadata()`, `hasFeature()`, `hasFeaturesLike()`, `listFeatures()`, `listFeaturesLike()` |
 | `uapi()->email()` | All 96 pinned functions, including mailbox lifecycle, quotas and suspension, forwarders, filters, MX routing, autoresponders, spam settings and delivery diagnostics; see [generated methods](src/Api/Uapi/Email.php). |
 | `uapi()->ssl()` | All 49 nondeprecated functions, including certificate/key/CSR inventory and lifecycle, installation, AutoSSL, SNI and redirects; see [generated methods](src/Api/Uapi/Ssl.php). |
+| `uapi()->imageManager()` | `convertFile()`, `createThumbnails()`, `getDimensions()`, `resizeImage()` (complete pinned module). |
 | `uapi()->quota()` | `getQuotaInfo()`, `getLocalQuotaInfo()` |
 | `uapi()->ftp()` | `addFtp()`, `allowsAnonymousFtp()`, `allowsAnonymousFtpIncoming()`, `changePassword()`, `deleteFtp()`, `ftpExists()`, `getFtpDaemonInfo()`, `getPort()`, `getQuota()`, `getWelcomeMessage()`, `killSession()`, `listFtp()`, `listFtpWithDisk()`, `listSessions()`, `serverName()`, `setAnonymousFtp()`, `setAnonymousFtpIncoming()`, `setHomedir()`, `setQuota()`, `setWelcomeMessage()` |
 | `uapi()->mysql()` | `listDatabases()`, `listUsers()`, `getPrivilegesOnDatabase()`, `getRestrictions()`, `getServerInformation()`, `createDatabase()`, `createUser()`, `setPrivilegesOnDatabase()`, `deleteUser()`, `deleteDatabase()`, `addHost()`, `addHostNote()`, `checkDatabase()`, `deleteHost()`, `dumpDatabaseSchema()`, `getHostNotes()`, `listRoutines()`, `locateServer()`, `renameDatabase()`, `renameUser()`, `repairDatabase()`, `revokeAccessToDatabase()`, `setPassword()`, `setupDbAndUser()`, `updatePrivileges()` |
@@ -1449,8 +1450,8 @@ $client->whm()->modSecurity()->updateSettings(settings: [
 
 This emits `setting_id1=1&state1=On&setting_id2=2&state2=Off&remove2=0`;
 there is no `remove1`. Empty state strings, integer zero and string `'0'` remain
-values. The alias adds one public method, while canonical coverage is now 1,113
-operations (525 UAPI and 588 WHM), 91 groups and 185 generated files (184 PHP files plus the coverage document).
+values. The alias adds one public method, while canonical coverage is now 1,117
+operations (529 UAPI and 588 WHM), 92 groups and 187 generated files (186 PHP files plus the coverage document).
 
 The twelve source-backed empty-result mutations accept an omitted or null payload
 while retaining any returned mixed data; they are not weakened to void. Omitted
@@ -3317,3 +3318,49 @@ required upload alternative. Streaming, source preparation, transport, old gener
 operations and SSL bridge behavior remain unchanged. Inherited PR84/source and
 PR86 preparation-exception/metadata acceptance gates remain external-owned and
 unwaived; this adoption does not resolve them.
+
+
+### UAPI ImageManager (2026-10-31)
+
+`uapi()->imageManager()` exposes all four pinned functions, available from cPanel
+82 with the WebServer role. `getDimensions(imageFile)` uses GET and returns
+optional integer pixel `height` and `width` fields. `convertFile(imageFile, type)`,
+`createThumbnails(dir, heightPercentage, widthPercentage)` and
+`resizeImage(height, imageFile, width, saveOriginalAs: null)` use form POST.
+Paths are account-server paths sent unchanged and encoded once; the client does
+not access local files or normalize paths. Conversion's source describes its path
+as relative to the account `/home` directory; the other methods accept absolute
+or user-home-relative paths. Formats remain strings. Positive dimensions and
+thumbnail percentages 1 through 99 are documented requirements; integer forwarding
+adds no new range validation or promise that zero/negative values work upstream.
+
+```php
+$images = $client->uapi('example')->imageManager();
+$dimensions = $images->getDimensions(imageFile: 'images/photo.jpg');
+$converted = $images->convertFile(imageFile: 'images/photo.jpg', type: 'png');
+$thumbnails = $images->createThumbnails(dir: 'images', heightPercentage: 25, widthPercentage: 25);
+$resizedPath = $images->resizeImage(height: 300, imageFile: 'images/photo.jpg', width: 200,
+    saveOriginalAs: 'images/original.jpg');
+```
+
+Conversion returns optional `converted_file`; resize returns the absolute resized
+image path as a string. Thumbnail rows retain optional integer `failed`, `file`,
+`reason` and `thumbnail_file` fields, including partial failures under API status 1.
+The source documents `failed=1` only on failure; the existing integer contract does
+not enforce that singleton enum. Thumbnails go in a `thumbnails` subdirectory with
+`tn_` filenames. Inspect every row; success does not prove every thumbnail exists.
+Optional result fields preserve omission, and empty thumbnail lists stay empty.
+Missing/null payloads and wrong kinds or scalar types raise payload mismatches.
+
+Omitted/null `saveOriginalAs` sends no field and saves no original copy; an explicit
+empty string stays present. The source calls `save_original_as` a directory but
+uses the file-like example `images/original.jpg`; this discrepancy remains explicit.
+The client does no implicit read, backup, restore, cleanup, collision handling,
+retry or rollback, and promises no atomicity. Resize has a pinned clean rollback
+label, without a defined client restore protocol. No server calls or image mutations
+ran for this slice. Offline tests establish requests and payload handling; live
+transformations and HTTP image behavior remain open under `8x0.2.60`.
+
+Exactly four canonical operations are added: 1,117 total (529 UAPI, 588 WHM),
+92 groups and 187 generated outputs (186 PHP files plus coverage). Source schemas,
+historical evidence, shared runtime and generator grammar are unchanged.

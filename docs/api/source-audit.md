@@ -6542,3 +6542,71 @@ composed forms remain under `8x0.1.30`. This adoption uses existing repeat
 machinery only. No server, DNS mutation, no-op probe, resolver query or live API
 call ran. Historical findings and captures remain unchanged; offline fixtures do
 not establish server acceptance, concurrency behavior or propagation.
+
+
+### Complete UAPI ImageManager typed adoption (2026-10-31)
+
+All four nondeprecated ImageManager functions from the complete pinned module are
+adopted through a dedicated `imageManager()` accessor and the existing generator.
+Source: `docs/api/sources/2026-10-13/cpanel.openapi.json.gz`, decompressed SHA-256
+`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`.
+The exact selected pointers are `/paths/~1ImageManager~1convert_file/get`,
+`/paths/~1ImageManager~1create_thumbnails/get`,
+`/paths/~1ImageManager~1get_dimensions/get` and
+`/paths/~1ImageManager~1resize_image/get`. Each declares cPanel 82 availability
+and the WebServer role restriction. The read has `x-readonly:true` and retains GET;
+the other three have `x-readonly:false` and use form POST under the existing
+mutation policy. Conversion and thumbnails declare `x-rollback:none`; resize
+declares `x-rollback:clean`, without defining a client restore protocol; the read
+has no rollback marker. These are selected GET source variants, not claims that
+the pinned spec declared POST variants.
+
+Parameter pointers under each operation's `/parameters` bind the wire spellings
+and native types: conversion 0/1 are required string image_file/type; thumbnails
+0/1/2 are required string dir and integer height_percentage/width_percentage;
+dimensions 0 is required string image_file; resize 0/1/2 are required integer
+height, string image_file and integer width, while 3 is optional string
+save_original_as. Public names/order are `convertFile(imageFile, type)`,
+`createThumbnails(dir, heightPercentage, widthPercentage)`,
+`getDimensions(imageFile)` and `resizeImage(height, imageFile, width,
+saveOriginalAs: null)`. Paths follow existing Fileman scalar conventions with no
+new sensitivity annotations; shared sensitive runtime frames stay unchanged.
+No path joining, resolving, local filesystem access or extra encoding occurs.
+Conversion's path is described as account `/home` relative; the others accept
+absolute or user-home-relative paths. Positive dimensions and percentages 1..99
+stay documented constraints without new runtime range validation. Scalar zero or
+negative forwarding in synthetic tests establishes representation, not upstream
+acceptance. type stays a string without a new closed enum.
+
+Every return comes from the selected operation's
+`/responses/200/content/application~1json/schema/properties/result/properties/data`:
+conversion has optional nonnullable string converted_file; dimensions optional
+nonnullable integer height/width; thumbnails a list of objects with optional
+nonnullable integer failed and string file/reason/thumbnail_file; resize a string
+absolute filepath. failed's source enum [1] does not create a bool or flag contract
+under existing scalar lowering. Thumbnail empty lists, omitted fields, partial
+failure rows and reasons remain distinct; API status 1 does not establish that all
+thumbnails were created. The source describes a thumbnails subdirectory and tn_
+filenames. Existing empty-array compatibility for declared objects remains; null,
+missing or wrong-kind roots and malformed fields/rows fail payload validation.
+No response correction, normalization or grammar extension is introduced.
+
+For resize, omitted/null saveOriginalAs emits no field and saves no original copy;
+explicit empty string is sent. Parameter 3 calls its value a directory while its
+schema example is images/original.jpg. This discrepancy remains documented, with
+no inferred filesystem operation. The client makes one request, no implicit read,
+backup, restore, cleanup, collision handling, rollback or atomicity guarantee.
+Independent real-client mock-HTTP tests cover both routes, bare direct envelopes,
+literal encoded paths, every method/body/routing/auth contract, native scalar
+rejection before metadata reset, per-row failures, malformed/absent payloads,
+confirmed outcome, API/outer-WHM precedence and HTTP/transport no-retry behavior.
+
+Baseline 1ae58592834e77ebc8ecfe63708aa29b863d6860 had 1,113 canonical operations
+(525 UAPI, 588 WHM), 91 groups and 185 outputs. This slice adds exactly four UAPI
+operations and one group: 1,117 canonical operations (529 UAPI, 588 WHM), 92 groups,
+187 outputs (186 PHP files plus coverage). The pinned sources, immutable evidence,
+prior audit prefix, shared runtime/generator and existing operation contracts are
+preserved. No server/image/file change or live API call ran. Offline typed coverage
+does not establish transformation correctness, image format support, collision or
+HTTP-serving behavior; follow-up `whm-api-client-8x0.2.60` remains open. Inherited
+parent/source/upload acceptance work remains external-owned and unwaived.

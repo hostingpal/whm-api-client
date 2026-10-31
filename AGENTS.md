@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 91 typed groups cover 1,113 documented operations:
+and cPanel UAPI surface. The 92 typed groups cover 1,117 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -3118,3 +3118,39 @@ required upload alternative. Streaming, source preparation, transport, old gener
 operations and SSL bridge behavior remain unchanged. Inherited PR84/source and
 PR86 preparation-exception/metadata acceptance gates remain external-owned and
 unwaived; this adoption does not resolve them.
+
+
+### UAPI ImageManager (2026-10-31)
+
+`uapi()->imageManager()` covers all four pinned functions from cPanel 82 with the
+WebServer role. `getDimensions(imageFile)` remains GET; `convertFile(imageFile,
+type)`, `createThumbnails(dir, heightPercentage, widthPercentage)` and
+`resizeImage(height, imageFile, width, saveOriginalAs: null)` use form POST. Paths
+follow existing Fileman scalar conventions and are sent unchanged, encoded once,
+without local file access, normalization or a new sensitivity policy. Conversion's
+pinned path prose says account `/home` relative; the others allow absolute or
+user-home-relative paths. Shared response/request frames retain their sensitive
+annotations. No new format enum or range validation is introduced: dimensions are
+documented positive and percentages 1 through 99, while scalar forwarding alone
+does not establish server acceptance of zero/negative values.
+
+Conversion returns an object with optional string converted_file, dimensions an
+object with optional integer height/width, thumbnails a list with optional integer
+failed and string file/reason/thumbnail_file, and resize a string absolute path.
+All fields are nonnullable. Preserve omitted fields, empty thumbnail lists and
+mixed successful/failed rows under status 1; never infer all-thumbnail success.
+failed's source singleton enum [1] follows existing integer lowering, without new
+flag or enum semantics. Existing legacy empty-array object compatibility remains.
+Missing/null roots and wrong types mismatch with captured metadata and confirmed
+outcome. Thumbnails use a thumbnails subdirectory and tn_ filenames.
+
+Omitted/null saveOriginalAs emits no field and the server saves no original copy;
+explicit empty string stays present. Preserve the source discrepancy: its prose
+calls save_original_as a directory while its example images/original.jpg looks
+file-like. Never infer a local filesystem operation, automatic backup/read/restore,
+cleanup, collision behavior, atomicity, retry or rollback. Resize has a pinned clean
+rollback label without a defined client restore protocol. This slice ran no live
+calls; transformations and HTTP image behavior remain open under 8x0.2.60.
+Canonical coverage is 1,117 operations (529 UAPI, 588 WHM), 92 groups and 187
+outputs (186 PHP files plus coverage), using existing generator/runtime machinery.
+Pinned sources, historical evidence and unrelated generated contracts are unchanged.

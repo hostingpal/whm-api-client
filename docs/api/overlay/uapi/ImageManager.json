@@ -1,0 +1,124 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "ImageManager",
+  "accessor": "imageManager",
+  "operations": {
+    "uapi:ImageManager/convert_file": {
+      "name": "convertFile",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later; disabled when the WebServer role is disabled. Paths are account-server paths forwarded unchanged, without local filesystem access, path normalization or resolution."
+        },
+        {
+          "kind": "documented",
+          "text": "image_file is relative to the cPanel account home directory according to the pinned /home wording. type remains a string without a closed format enum. The optional converted_file field is the new absolute image path; omission remains absent and explicit null is invalid."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes account image files through form POST. The pinned source declares no rollback. The client makes one attempt with no automatic retry, restore, cleanup, backup, collision handling or atomicity guarantee."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1ImageManager~1convert_file/get: x-cpanel-available-version=cPanel 82, description requires the WebServer role, parameters (image_file, type) preserve source scalar types and requiredness, and responses/200/content/application~1json/schema/properties/result/properties/data preserves source kind and optional nonnullable fields. x-readonly=false and x-rollback=none; use form POST under the generated-client mutation policy.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1ImageManager~1convert_file/get"
+        }
+      ]
+    },
+    "uapi:ImageManager/create_thumbnails": {
+      "name": "createThumbnails",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later; disabled when the WebServer role is disabled. Paths are account-server paths forwarded unchanged, without local filesystem access, path normalization or resolution."
+        },
+        {
+          "kind": "documented",
+          "text": "dir accepts an absolute directory path or a path relative to the user home directory. Thumbnails are saved in a thumbnails subdirectory with tn_ prepended to filenames. The documented height and width percentages are 1 through 99; the client forwards integers without adding range validation."
+        },
+        {
+          "kind": "documented",
+          "text": "The result is a list with optional failed, file, reason and thumbnail_file fields. failed is documented as the integer 1, returned only when a thumbnail was not created; the existing integer policy does not enforce that singleton enum. reason is failure information and file and thumbnail_file are absolute paths. API status 1 does not establish that every thumbnail was created; inspect each row. Empty lists remain empty."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes account image files through form POST. The pinned source declares no rollback. The client makes one attempt with no automatic retry, restore, cleanup, backup, collision handling or atomicity guarantee."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1ImageManager~1create_thumbnails/get: x-cpanel-available-version=cPanel 82, description requires the WebServer role, parameters (dir, height_percentage, width_percentage) preserve source scalar types and requiredness, and responses/200/content/application~1json/schema/properties/result/properties/data preserves source kind and optional nonnullable fields. x-readonly=false and x-rollback=none; use form POST under the generated-client mutation policy.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1ImageManager~1create_thumbnails/get"
+        }
+      ]
+    },
+    "uapi:ImageManager/get_dimensions": {
+      "name": "getDimensions",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later; disabled when the WebServer role is disabled. Paths are account-server paths forwarded unchanged, without local filesystem access, path normalization or resolution."
+        },
+        {
+          "kind": "documented",
+          "text": "image_file accepts an absolute path or a path relative to the user home directory. This read uses GET. Optional height and width are integer pixel dimensions, documented as positive. Omission remains absent and explicit null is invalid; the existing scalar policy adds no response range validation."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1ImageManager~1get_dimensions/get: x-cpanel-available-version=cPanel 82, description requires the WebServer role, parameters (image_file) preserve source scalar types and requiredness, and responses/200/content/application~1json/schema/properties/result/properties/data preserves source kind and optional nonnullable fields. x-readonly=true; retain GET for the read.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1ImageManager~1get_dimensions/get"
+        }
+      ]
+    },
+    "uapi:ImageManager/resize_image": {
+      "name": "resizeImage",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later; disabled when the WebServer role is disabled. Paths are account-server paths forwarded unchanged, without local filesystem access, path normalization or resolution."
+        },
+        {
+          "kind": "documented",
+          "text": "image_file and save_original_as accept absolute paths or paths relative to the user home directory. Height and width are documented as positive pixel dimensions; the client forwards integers without adding range validation. The result is the absolute resized image path as a string."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitting saveOriginalAs (including null) omits save_original_as and the server does not save a copy of the original. Explicit empty string is sent. The pinned save_original_as description calls it a directory, while its example images/original.jpg looks file-like; the client forwards it unchanged without resolving that discrepancy or performing a local filesystem operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes account image files through form POST. The pinned source labels rollback clean but defines no client restore protocol. The client makes one attempt with no automatic retry, restore, cleanup, backup, collision handling or atomicity guarantee, and performs no automatic rollback."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1ImageManager~1resize_image/get: x-cpanel-available-version=cPanel 82, description requires the WebServer role, parameters (height, image_file, width, save_original_as) preserve source scalar types and requiredness, and responses/200/content/application~1json/schema/properties/result/properties/data preserves source kind and optional nonnullable fields. x-readonly=false and x-rollback=clean; use form POST under the generated-client mutation policy.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1ImageManager~1resize_image/get"
+        }
+      ]
+    }
+  }
+}
