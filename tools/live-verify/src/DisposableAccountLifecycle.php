@@ -28,19 +28,27 @@ use Throwable;
  * marker, held only in memory, is the sole proof that an account is this run's; it is read again at every gate, and
  * nothing is mutated on an account it does not prove. Only an explicit API refusal is a known `createacct` outcome.
  * After a lost response, gateway error or unreadable body an absent read cannot rule out a creation still in flight,
- * so the account stays unconfirmed and is never reported absent.
+ * so the account stays unconfirmed, and so do its domain, zone and files, until the marker proves otherwise.
  *
  * Token. A short-lived token lives only in memory and is confirmed before the recipe sees it. Its name is fixed and
  * proves nothing alone: a revoke needs the marker read again plus a listing that shows it, or this run's own confirmed
  * creation, since setup read the name absent just before its one create. An unreadable listing therefore cannot
- * withhold the revoke of a token this run created, while a lost creation that no listing can show is never revoked.
+ * withhold the revoke of a token this run created, while a lost creation that no listing can show is never revoked and
+ * never reported absent: as with the account, only an explicit refusal is a known outcome.
  *
  * Cleanup. No mutation repeats. Only the ownership read that gates a cleanup decision repeats, at most three reads and
  * only after a TransportException, so one lost read cannot abandon an account and its token. Anything the server
  * returned is final, however unusable. Failure at one resource never stops the next. Token, account, domain and zone
- * absence are each read independently, and an optional filesystem proof runs last. It is read-only and repeats nothing,
- * so its outcome only changes the report. A failed or uncertain step fails `cleanup`, and the fields still say what
- * each resource showed.
+ * absence are each read independently. A failed or uncertain step fails `cleanup`, and the fields still say what each
+ * resource showed.
+ *
+ * Filesystem. An optional proof runs twice. After setup, it must show the account in every location it can always be
+ * found, which is the positive control that ties the proof to the server this run changed. Last, it looks for what
+ * remains. Without a passed control, a later absence is unconfirmed. It is read-only and repeats nothing, so its
+ * outcome only changes the report.
+ *
+ * One truth. `status`, `setup` and `failures` here are the only ones a run has, and recipes copy them. An exercise
+ * never swallows a failure: it records its detail and throws, naming it with ExerciseFailure.
  *
  * Results carry fixed labels only. Credentials, names, raw payloads and exception text never leave memory.
  *
@@ -50,12 +58,14 @@ use Throwable;
  *     creation: 'not_attempted'|'confirmed'|'unconfirmed', cleanup: CleanupOutcome
  * }
  * @phpstan-type FilesystemOutcome 'not_claimed'|'confirmed_absent'|'present'|'unconfirmed'
+ * @phpstan-type FilesystemControl array{status: 'not_run'|'passed'|'failed', counts: array<string, int>}
  * @phpstan-type Outcome array{
  *     status: 'passed'|'failed', setup: 'passed'|'failed', exercise: 'passed'|'failed'|'not_run',
  *     cleanup: 'passed'|'failed'|'not_required', failures: list<string>,
  *     account: ResourceOutcome, token: ResourceOutcome,
  *     domain_cleanup: CleanupOutcome, zone_cleanup: CleanupOutcome,
- *     filesystem_cleanup: FilesystemOutcome, filesystem_residue: array<string, int>
+ *     filesystem_cleanup: FilesystemOutcome, filesystem_residue: array<string, int>,
+ *     filesystem_control: FilesystemControl
  * }
  */
 final class DisposableAccountLifecycle
@@ -76,9 +86,12 @@ final class DisposableAccountLifecycle
         'token' => ['creation' => 'not_attempted', 'cleanup' => 'not_required'],
         'domain_cleanup' => 'not_required', 'zone_cleanup' => 'not_required',
         'filesystem_cleanup' => 'not_claimed', 'filesystem_residue' => [],
+        'filesystem_control' => ['status' => 'not_run', 'counts' => []],
     ];
 
     private bool $creationOutcomeUnknown = false;
+
+    private bool $tokenCreationOutcomeUnknown = false;
 
     private bool $used = false;
 
@@ -101,10 +114,12 @@ final class DisposableAccountLifecycle
     /**
      * Provision, call $exercise with the memory-only token, clean up, and report every resource. Single-use.
      *
-     * $exercise runs only after setup fully passed. $cleanOwned, if given, removes what the exercise made inside the
-     * account: it runs only once the marker proves the account, before the token is revoked so the token still works,
-     * and even when the exercise failed. It returns failure labels for the report. Anything either callback throws is
-     * reported, and it stops nothing. The result's `status` is `passed` only if setup, exercise and cleanup all passed.
+     * $exercise runs only after setup fully passed. It throws on any failure, a failed expectation included, using
+     * ExerciseFailure to name it; anything else is reported as `exercise_failure`. $cleanOwned, if given, removes what
+     * the exercise made inside the account: it runs only once the marker proves the account, before the token is
+     * revoked so the token still works, and even when the exercise failed. It returns failure labels for the report.
+     * Anything either callback throws stops nothing. The result's `status` is `passed` only if setup, exercise and
+     * cleanup all passed, and it is the run's only status.
      *
      * @param Closure(string): void $exercise
      * @param (Closure(): list<string>)|null $cleanOwned
@@ -127,9 +142,12 @@ final class DisposableAccountLifecycle
             $token = null;
         }
         if ($token !== null) {
+            $this->observeFilesystemControl();
             try {
                 $exercise($token);
                 $this->outcome['exercise'] = 'passed';
+            } catch (ExerciseFailure $failure) {
+                array_push($this->outcome['failures'], ...$failure->labels);
             } catch (Throwable) {
                 $this->outcome['failures'][] = 'exercise_failure';
             }
@@ -173,12 +191,19 @@ final class DisposableAccountLifecycle
         }
         $this->outcome['token']['creation'] = 'unconfirmed';
         $parameters = ['name' => $this->account->tokenName, 'expires_at' => $this->account->tokenExpiresAt];
-        $result = $this->tokens->call(
-            'Tokens',
-            'create_full_access',
-            $this->account->readOnlyToken ? [...$parameters, 'readonly' => 1] : $parameters,
-            RequestMethod::Post,
-        );
+        try {
+            $result = $this->tokens->call(
+                'Tokens',
+                'create_full_access',
+                $this->account->readOnlyToken ? [...$parameters, 'readonly' => 1] : $parameters,
+                RequestMethod::Post,
+            );
+        } catch (ApiErrorException $refusal) {
+            throw $refusal;
+        } catch (Throwable $failure) {
+            $this->tokenCreationOutcomeUnknown = true;
+            throw $failure;
+        }
         $this->outcome['token']['creation'] = 'confirmed';
         $token = is_array($result->data) ? ($result->data['token'] ?? null) : null;
         if (!is_string($token)) {
@@ -386,6 +411,7 @@ final class DisposableAccountLifecycle
         try {
             if ($this->accountOwned()) {
                 $this->outcome['account']['creation'] = 'confirmed';
+                $this->creationOutcomeUnknown = false;
                 $this->cleanOwned($cleanOwned);
                 $this->cleanUpToken();
                 if (!$this->accountOwned()) {
@@ -413,25 +439,36 @@ final class DisposableAccountLifecycle
         } catch (Throwable) {
             $this->cleanupFailure('account_identity_unconfirmed');
         }
-        try {
-            $this->outcome['domain_cleanup'] = $this->domainExists() ? 'present' : 'confirmed_absent';
-            if ($this->outcome['domain_cleanup'] === 'present') {
-                $this->cleanupFailure('domain_still_present');
-            }
-        } catch (Throwable) {
-            $this->outcome['domain_cleanup'] = 'unconfirmed';
-            $this->cleanupFailure('domain_absence_unconfirmed');
-        }
-        try {
-            $this->outcome['zone_cleanup'] = $this->zoneExists() ? 'present' : 'confirmed_absent';
-            if ($this->outcome['zone_cleanup'] === 'present') {
-                $this->cleanupFailure('zone_still_present');
-            }
-        } catch (Throwable) {
-            $this->outcome['zone_cleanup'] = 'unconfirmed';
-            $this->cleanupFailure('zone_absence_unconfirmed');
-        }
+        $this->outcome['domain_cleanup'] = $this->independentAbsence($this->domainExists(...), 'domain');
+        $this->outcome['zone_cleanup'] = $this->independentAbsence($this->zoneExists(...), 'zone');
         $this->proveFilesystemAbsence();
+    }
+
+    /**
+     * Read one resource after cleanup; what it shows stands, but an unknown creation forbids calling it absent.
+     *
+     * @param Closure(): bool $exists
+     * @return 'confirmed_absent'|'present'|'unconfirmed'
+     */
+    private function independentAbsence(Closure $exists, string $resource): string
+    {
+        try {
+            $present = $exists();
+        } catch (Throwable) {
+            $present = null;
+        }
+        if ($present === true) {
+            $this->cleanupFailure($resource . '_still_present');
+
+            return 'present';
+        }
+        if ($present === null || $this->creationOutcomeUnknown) {
+            $this->cleanupFailure($resource . '_absence_unconfirmed');
+
+            return 'unconfirmed';
+        }
+
+        return 'confirmed_absent';
     }
 
     /**
@@ -465,7 +502,11 @@ final class DisposableAccountLifecycle
             $listed = null;
         }
         if ($listed === false) {
-            $this->outcome['token']['cleanup'] = 'confirmed_absent';
+            if ($this->tokenCreationOutcomeUnknown) {
+                $this->cleanupFailure('token_creation_outcome_unknown');
+            } else {
+                $this->outcome['token']['cleanup'] = 'confirmed_absent';
+            }
 
             return;
         }
@@ -497,15 +538,36 @@ final class DisposableAccountLifecycle
         }
     }
 
-    /** Run the optional proof once, last; it only reports, and anything short of proven absence fails the claim. */
+    /**
+     * Require the proof to see this run's account in every location, while it exists, before trusting a later absence.
+     *
+     * A failure here costs only the filesystem claim, so the exercise still runs. Only labels and counts are kept.
+     */
+    private function observeFilesystemControl(): void
+    {
+        if ($this->filesystem === null) {
+            return;
+        }
+        $finding = $this->readFilesystem($this->filesystem);
+        $missing = array_diff(FilesystemAbsenceProof::ACCOUNT_LOCATIONS, array_keys($finding['residue']));
+        $this->outcome['filesystem_control'] = [
+            'status' => $finding['outcome'] === 'present' && $missing === [] ? 'passed' : 'failed',
+            'counts' => $finding['residue'],
+        ];
+    }
+
+    /** Run the final proof once, last; it only reports, and anything short of proven absence fails the claim. */
     private function proveFilesystemAbsence(): void
     {
         if ($this->filesystem === null) {
             return;
         }
-        try {
-            $finding = $this->filesystem->check($this->account->user, $this->account->domain);
-        } catch (Throwable) {
+        $finding = $this->readFilesystem($this->filesystem);
+        $control = $this->outcome['filesystem_control']['status'];
+        if ($control === 'failed') {
+            $this->cleanupFailure('filesystem_control_failed');
+        }
+        if ($finding['outcome'] === 'confirmed_absent' && $control !== 'passed') {
             $finding = ['outcome' => 'unconfirmed', 'residue' => []];
         }
         $this->outcome['filesystem_cleanup'] = $finding['outcome'];
@@ -514,6 +576,16 @@ final class DisposableAccountLifecycle
             $this->cleanupFailure('filesystem_residue_present');
         } elseif ($finding['outcome'] === 'unconfirmed') {
             $this->cleanupFailure('filesystem_absence_unconfirmed');
+        }
+    }
+
+    /** @return Finding */
+    private function readFilesystem(FilesystemAbsenceProof $filesystem): array
+    {
+        try {
+            return $filesystem->check($this->account->user, $this->account->domain);
+        } catch (Throwable) {
+            return ['outcome' => 'unconfirmed', 'residue' => []];
         }
     }
 

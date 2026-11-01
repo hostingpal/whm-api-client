@@ -48,30 +48,23 @@ final readonly class FilemanUploadRecipe
 
     public string $directory;
 
-    public string $contactEmail;
-
-    /** The exact account, domain, token and marker of this run, as the shared lifecycle binds them. */
-    public DisposableAccount $account;
-
     /** @var array<Label, string> */
     public array $names;
 
-    /** Bind one 128-bit lowercase hexadecimal run value and an exact token expiration; performs no I/O. */
-    public function __construct(#[SensitiveParameter] string $entropy, public int $expiresAt)
+    /**
+     * Bind one 128-bit lowercase hexadecimal run value to this recipe's own account; performs no I/O.
+     *
+     * Uploads need a writable token, and every URI here names one account, so any other binding is refused.
+     */
+    public function __construct(#[SensitiveParameter] string $entropy, public DisposableAccount $account)
     {
-        if (preg_match('/\A[0-9a-f]{32}\z/', $entropy) !== 1 || $expiresAt < 1) {
-            throw new InvalidArgumentException('Fileman upload recipe requires 128 bits of entropy and an expiration.');
+        if (
+            preg_match('/\A[0-9a-f]{32}\z/', $entropy) !== 1 || $account->user !== self::ACCOUNT
+            || $account->domain !== self::DOMAIN || $account->tokenName !== self::TOKEN_NAME || $account->readOnlyToken
+        ) {
+            throw new InvalidArgumentException('Fileman upload recipe needs 128 bits of entropy and its own account.');
         }
         $this->directory = 'wlupload-fixture-' . $entropy;
-        $this->contactEmail = 'upload-' . $entropy . '@' . self::DOMAIN;
-        $this->account = new DisposableAccount(
-            self::ACCOUNT,
-            self::DOMAIN,
-            self::TOKEN_NAME,
-            $this->contactEmail,
-            $expiresAt,
-            readOnlyToken: false,
-        );
         $names = [];
         foreach (self::LABELS as $label) {
             $names[$label] = $label . '-' . substr($entropy, 0, 16) . '.bin';

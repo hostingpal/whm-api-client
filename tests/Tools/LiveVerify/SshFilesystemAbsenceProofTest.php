@@ -64,6 +64,7 @@ final class SshFilesystemAbsenceProofTest extends TestCase
 
         self::assertSame(
             "-T\n-o\nBatchMode=yes\n-o\nStrictHostKeyChecking=yes\n-o\nConnectTimeout=10\n-o\nUpdateHostKeys=no\n"
+                . "-o\nControlMaster=no\n-o\nControlPath=none\n"
                 . "oblak.test\nsh -s -- wlupload wlupload.example.com\n",
             file_get_contents($this->directory . '/argv'),
         );
@@ -112,11 +113,21 @@ final class SshFilesystemAbsenceProofTest extends TestCase
     public function testTheFixedScriptCanOnlyReadAndPrint(): void
     {
         $lines = explode("\n", rtrim(SshFilesystemAbsenceProof::SCRIPT, "\n"));
+        self::assertSame([
+            'matches() {',
+            '    found=$(find "$@") || return 1',
+            "    printf '%s' \"\$found\" | grep -c ''",
+            '}',
+            'lines() {',
+            '    count=$(grep -c "$@")',
+            "    [ \"\$?\" -le 1 ] && printf '%s' \"\$count\"",
+            '}',
+        ], array_splice($lines, 0, 8));
         self::assertSame("printf 'complete=1\\n'", array_pop($lines));
         self::assertCount(14, $lines);
         foreach ($lines as $line) {
             self::assertMatchesRegularExpression(
-                '/\Aprintf \'[a-z_]+=%s\\\\n\' "\$\((?:find [^;&|<>`]+ \| wc -l|grep -c [^;&|<>`]+)\)"\z/',
+                '/\Aprintf \'[a-z_]+=%s\\\\n\' "\$\((?:matches|lines) [^;&|<>`]+\)"\z/',
                 $line,
             );
             self::assertDoesNotMatchRegularExpression(
@@ -257,15 +268,112 @@ final class SshFilesystemAbsenceProofTest extends TestCase
         yield 'no sessions' => ['var/cpanel/sessions', 'remove'];
     }
 
-    public function testRealResidueIsReportedEvenBesideAnUnusableInventory(): void
+    /** An empty place is still a successful read, so what another location shows stays reportable. */
+    public function testRealResidueIsReportedEvenBesideAnEmptyInventory(): void
     {
         $tree = $this->tree();
         mkdir($tree . '/home/wlupload');
-        self::removeTree($tree . '/var/cpanel/sessions');
+        unlink($tree . '/var/named/other.db');
 
         self::assertSame(
             ['outcome' => 'present', 'residue' => ['home' => 1]],
             $this->realScript($tree)->check(self::USER, self::DOMAIN),
+        );
+    }
+
+    /**
+     * Every search must be able to fail on its own; a failed one leaves a blank count that the parser refuses.
+     *
+     * Only the name search fails here. Its inventory still succeeds, so the inventory rule cannot be what catches it.
+     */
+    #[DataProvider('searchedPlaces')]
+    public function testAFailedSearchNeverReadsAsAbsent(string $place): void
+    {
+        $tree = $this->tree();
+        $shims = $this->shim(
+            'find',
+            'case "$*" in *' . $place . '*wlupload*) exit 1;; esac' . "\n" . 'exec /usr/bin/find "$@"',
+        );
+
+        self::assertSame(
+            ['outcome' => 'unconfirmed', 'residue' => []],
+            $this->realScript($tree, $shims)->check(self::USER, self::DOMAIN),
+        );
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function searchedPlaces(): iterable
+    {
+        yield '/home' => ['/home'];
+        yield '/var/cpanel/users' => ['/var/cpanel/users'];
+        yield '/var/cpanel/userdata' => ['/var/cpanel/userdata'];
+        yield '/var/named' => ['/var/named'];
+        yield '/var/cpanel/sessions' => ['/var/cpanel/sessions'];
+    }
+
+    /** Lines already printed before an error are a partial answer, so they must not become a count. */
+    public function testASearchThatFailsAfterSomeOutputGivesNoCount(): void
+    {
+        $tree = $this->tree();
+        $shims = $this->shim('find', "printf 'partial\\n'\nexit 1");
+
+        self::assertSame(
+            ['outcome' => 'unconfirmed', 'residue' => []],
+            $this->realScript($tree, $shims)->check(self::USER, self::DOMAIN),
+        );
+    }
+
+    /** grep exits 1 when it finds nothing, which is an answer, and 2 when it cannot read, which is not. */
+    public function testAGrepThatCannotReadNeverReadsAsAbsent(): void
+    {
+        $tree = $this->tree();
+        $shims = $this->shim(
+            'grep',
+            'case "$*" in *wlupload*passwd*) printf 0; exit 2;; esac' . "\n" . 'exec /usr/bin/grep "$@"',
+        );
+
+        self::assertSame(
+            ['outcome' => 'unconfirmed', 'residue' => []],
+            $this->realScript($tree, $shims)->check(self::USER, self::DOMAIN),
+        );
+    }
+
+    /** The real failure: a nested directory that cannot be read used to count as nothing found. */
+    public function testAnUnreadableSubtreeNeverReadsAsAbsent(): void
+    {
+        if (function_exists('posix_getuid') && posix_getuid() === 0) {
+            self::markTestSkipped('Root can read every directory, so this needs an unprivileged user.');
+        }
+        $tree = $this->tree();
+        $sealed = $tree . '/var/cpanel/sessions/raw';
+        chmod($sealed, 0);
+        $finding = $this->realScript($tree)->check(self::USER, self::DOMAIN);
+        chmod($sealed, 0700);
+
+        self::assertSame(['outcome' => 'unconfirmed', 'residue' => []], $finding);
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function reportedCounts(): iterable
+    {
+        foreach (['home', 'users', 'userdata', 'userdomains', 'passwd', 'zones', 'sessions'] as $location) {
+            yield $location . ' inventory' => [$location . '_inventory'];
+            yield $location . ' matches' => [$location];
+        }
+    }
+
+    /** A blank count is a search that failed, and it refuses the whole report, residue elsewhere included. */
+    #[DataProvider('reportedCounts')]
+    public function testABlankCountRefusesTheWholeReport(string $label): void
+    {
+        $report = (string) preg_replace('/^' . $label . '=[0-9]+$/m', $label . '=', self::CLEAN);
+        self::assertNotSame(self::CLEAN, $report);
+        $report = str_replace("\nzones=0", "\nzones=" . ($label === 'zones' ? '' : '2'), $report);
+        $ssh = $this->standIn("cat > /dev/null\nprintf " . escapeshellarg($report) . "\n");
+
+        self::assertSame(
+            ['outcome' => 'unconfirmed', 'residue' => []],
+            (new SshFilesystemAbsenceProof($ssh))->check(self::USER, self::DOMAIN),
         );
     }
 
@@ -324,6 +432,19 @@ final class SshFilesystemAbsenceProofTest extends TestCase
 
         self::assertSame(['outcome' => 'unconfirmed', 'residue' => []], $finding);
         self::assertLessThan(3.0, microtime(true) - $started);
+    }
+
+    /** A shared connection's master keeps standard error open after ssh exits, which must not cost a clean report. */
+    public function testALingeringChildHoldingStandardErrorCostsNothing(): void
+    {
+        $ssh = $this->standIn(
+            "cat > /dev/null\nsleep 5 > /dev/null < /dev/null &\nprintf " . escapeshellarg(self::CLEAN) . "\nexit 0\n",
+        );
+        $started = microtime(true);
+        $finding = (new SshFilesystemAbsenceProof($ssh, 3.0))->check(self::USER, self::DOMAIN);
+
+        self::assertSame(['outcome' => 'confirmed_absent', 'residue' => []], $finding);
+        self::assertLessThan(2.0, microtime(true) - $started);
     }
 
     public function testMissingBinaryIsUnconfirmed(): void
@@ -397,14 +518,32 @@ final class SshFilesystemAbsenceProofTest extends TestCase
         return $path;
     }
 
-    /** Run the real fixed script through the exact remote command, with its absolute paths moved under one tree. */
-    private function realScript(string $tree): SshFilesystemAbsenceProof
+    /**
+     * Run the real fixed script through the exact remote command, with its absolute paths moved under one tree.
+     *
+     * The script reads its own /home-style arguments, so a shim matching a place sees that place inside the tree.
+     */
+    private function realScript(string $tree, ?string $shims = null): SshFilesystemAbsenceProof
     {
         $move = 's# /# ' . $tree . '/#g';
+        $path = $shims === null ? '' : 'PATH=' . escapeshellarg($shims) . ':"$PATH"' . "\n";
 
         return new SshFilesystemAbsenceProof($this->standIn(
-            "for last; do :; done\nsed " . escapeshellarg($move) . ' | eval "$last"' . "\n",
+            $path . "for last; do :; done\nsed " . escapeshellarg($move) . ' | eval "$last"' . "\n",
         ));
+    }
+
+    /** Shadow one command for the real script alone, as a failure the operating system would otherwise have to cause. */
+    private function shim(string $command, string $body): string
+    {
+        $directory = $this->directory . '/shims';
+        if (!is_dir($directory)) {
+            mkdir($directory, 0700);
+        }
+        file_put_contents($directory . '/' . $command, "#!/bin/sh\n" . $body . "\n");
+        chmod($directory . '/' . $command, 0700);
+
+        return $directory;
     }
 
     /** A healthy server's inventories: other accounts everywhere, and no trace of the checked account. */

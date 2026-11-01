@@ -53,76 +53,96 @@ final class DisposableAccountTest extends TestCase
         self::assertFalse($first->readOnlyToken);
     }
 
-    /** @param array{string, string, string, string, int} $arguments */
+    /** @param array{string, string, string, string} $identities */
     #[DataProvider('invalidBindings')]
-    public function testUnsafeIdentitiesAreRefusedBeforeAnyUse(array $arguments): void
+    public function testUnsafeIdentitiesAreRefusedBeforeAnyUse(array $identities): void
     {
         $this->expectException(InvalidArgumentException::class);
-        new DisposableAccount(...[...$arguments, false]);
+        new DisposableAccount(...[...$identities, time() + 900, false]);
     }
 
-    /** @return iterable<string, array{array{string, string, string, string, int}}> */
+    /** @return iterable<string, array{array{string, string, string, string}}> */
     public static function invalidBindings(): iterable
     {
         $user = DisposableAccountServer::USER;
         $domain = DisposableAccountServer::DOMAIN;
         $token = DisposableAccountServer::TOKEN_NAME;
-        yield 'empty user' => [['', $domain, $token, self::MARKER, 2000000000]];
-        yield 'uppercase user' => [['Wdisposable', $domain, $token, self::MARKER, 2000000000]];
-        yield 'leading digit' => [['1account', $domain, $token, self::MARKER, 2000000000]];
-        yield 'shell text in user' => [['a;id', $domain, $token, self::MARKER, 2000000000]];
-        yield 'seventeen character user' => [[str_repeat('a', 17), $domain, $token, self::MARKER, 2000000000]];
-        yield 'trailing newline in user' => [[$user . "\n", $domain, $token, self::MARKER, 2000000000]];
-        yield 'bare domain' => [[$user, 'localhost', $token, self::MARKER, 2000000000]];
-        yield 'domain with a slash' => [[$user, 'a.example.com/x', $token, self::MARKER, 2000000000]];
-        yield 'token with a space' => [[$user, $domain, 'a b', self::MARKER, 2000000000]];
+        yield 'empty user' => [['', $domain, $token, self::MARKER]];
+        yield 'uppercase user' => [['Wdisposable', $domain, $token, self::MARKER]];
+        yield 'leading digit' => [['1account', $domain, $token, self::MARKER]];
+        yield 'shell text in user' => [['a;id', $domain, $token, self::MARKER]];
+        yield 'seventeen character user' => [[str_repeat('a', 17), $domain, $token, self::MARKER]];
+        yield 'trailing newline in user' => [[$user . "\n", $domain, $token, self::MARKER]];
+        yield 'bare domain' => [[$user, 'localhost', $token, self::MARKER]];
+        yield 'domain with a slash' => [[$user, 'a.example.com/x', $token, self::MARKER]];
+        yield 'trailing newline in domain' => [[$user, $domain . "\n", $token, self::MARKER]];
+        yield 'token with a space' => [[$user, $domain, 'a b', self::MARKER]];
         yield 'marker on another domain' => [[$user, $domain, $token,
-            'fixture-0123456789abcdef0123456789abcdef@other.example.com', 2000000000]];
+            'fixture-0123456789abcdef0123456789abcdef@other.example.com']];
         yield 'marker too short to be random' => [[$user, $domain, $token,
-            'fixture-0123@wdisposable.example.com', 2000000000]];
+            'fixture-0123@wdisposable.example.com']];
         yield 'marker in uppercase' => [[$user, $domain, $token,
-            'fixture-0123456789ABCDEF0123456789ABCDEF@wdisposable.example.com', 2000000000]];
-        yield 'no expiry' => [[$user, $domain, $token, self::MARKER, 0]];
+            'fixture-0123456789ABCDEF0123456789ABCDEF@wdisposable.example.com']];
     }
 
-    #[DataProvider('invalidLifetimes')]
-    public function testFreshTokensMustBeShortLived(int $lifetime): void
+    /** The bound holds however a binding is built, so a recipe cannot reach a long-lived token by skipping fresh(). */
+    #[DataProvider('tokenLifetimes')]
+    public function testTheConstructorEnforcesTheTokenBound(int $lifetime, bool $allowed): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        DisposableAccount::fresh(
+        if (!$allowed) {
+            $this->expectException(InvalidArgumentException::class);
+        }
+        $account = self::bound(false, time() + $lifetime);
+        self::assertSame(DisposableAccountServer::USER, $account->user);
+    }
+
+    #[DataProvider('tokenLifetimes')]
+    public function testFreshTokensObeyTheSameBound(int $lifetime, bool $allowed): void
+    {
+        if (!$allowed) {
+            $this->expectException(InvalidArgumentException::class);
+        }
+        $account = DisposableAccount::fresh(
             DisposableAccountServer::USER,
             DisposableAccountServer::DOMAIN,
             DisposableAccountServer::TOKEN_NAME,
             $lifetime,
             readOnlyToken: false,
         );
+        self::assertSame(DisposableAccountServer::USER, $account->user);
     }
 
-    /** @return iterable<string, array{int}> */
-    public static function invalidLifetimes(): iterable
+    /** @return iterable<string, array{int, bool}> */
+    public static function tokenLifetimes(): iterable
     {
-        yield 'expired on arrival' => [0];
-        yield 'negative' => [-1];
-        yield 'longer than an hour' => [3601];
+        yield 'expired on arrival' => [0, false];
+        yield 'already expired' => [-1, false];
+        yield 'one minute' => [60, true];
+        yield 'exactly the bound' => [DisposableAccount::MAXIMUM_TOKEN_LIFETIME, true];
+        // Past the bound by enough that the clock moving during a test cannot make this pass.
+        yield 'past the bound' => [DisposableAccount::MAXIMUM_TOKEN_LIFETIME + 30, false];
+        yield 'a long-lived token' => [86400, false];
     }
 
     public function testMutationsAreTheFourExactFormPosts(): void
     {
+        $expiresAt = time() + 900;
         self::assertSame([
             self::WHM . 'createacct?api.version=1' => 'username=wdisposable&domain=wdisposable.example.com'
                 . '&contactemail=fixture-0123456789abcdef0123456789abcdef%40wdisposable.example.com'
                 . '&quota=64&forcedns=0&hasshell=0&ip=n',
             self::WHM . 'removeacct?api.version=1' => 'username=wdisposable&keepdns=0',
-            self::BRIDGE . 'create_full_access' => 'name=wdisposable-fixture&expires_at=2000000000',
+            self::BRIDGE . 'create_full_access' => 'name=wdisposable-fixture&expires_at=' . $expiresAt,
             self::BRIDGE . 'revoke' => 'name=wdisposable-fixture',
-        ], self::bound(false)->controlPosts());
+        ], self::bound(false, $expiresAt)->controlPosts());
     }
 
     public function testReadOnlyTokensAskForReadOnlyAccess(): void
     {
+        $expiresAt = time() + 900;
         self::assertSame(
-            'name=wdisposable-fixture&expires_at=2000000000&readonly=1',
-            self::bound(true)->controlPosts()[self::BRIDGE . 'create_full_access'],
+            'name=wdisposable-fixture&expires_at=' . $expiresAt . '&readonly=1',
+            self::bound(true, $expiresAt)->controlPosts()[self::BRIDGE . 'create_full_access'],
         );
     }
 
@@ -178,14 +198,14 @@ final class DisposableAccountTest extends TestCase
         );
     }
 
-    private static function bound(bool $readOnlyToken): DisposableAccount
+    private static function bound(bool $readOnlyToken, ?int $expiresAt = null): DisposableAccount
     {
         return new DisposableAccount(
             DisposableAccountServer::USER,
             DisposableAccountServer::DOMAIN,
             DisposableAccountServer::TOKEN_NAME,
             self::MARKER,
-            2000000000,
+            $expiresAt ?? time() + 900,
             $readOnlyToken,
         );
     }

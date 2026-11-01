@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace HostingPal\WhmApiClient\Tests\Tools\LiveVerify;
 
+use HostingPal\WhmApiClient\Tools\LiveVerify\DisposableAccount;
 use HostingPal\WhmApiClient\Tools\LiveVerify\FiniteQuotaGuard;
 use Http\Mock\Client;
 use LogicException;
@@ -22,6 +23,8 @@ final class FiniteQuotaGuardTest extends TestCase
     private const BRIDGE = self::WHM . 'uapi_cpanel?api.version=1&cpanel.user=wqfinite&cpanel.module=';
 
     private const DIRECT = 'https://test.oblak.host:2083/execute/Quota/';
+
+    private static ?int $expiresAt = null;
 
     /** @var array<string, string|false> */
     private array $environment = [];
@@ -47,7 +50,7 @@ final class FiniteQuotaGuardTest extends TestCase
         $http = new Client();
         $response = new Response(200, [], '{}');
         $http->addResponse($response);
-        $guard = new FiniteQuotaGuard($http, 'private-whm-token', 2000000000, self::MARKER);
+        $guard = new FiniteQuotaGuard($http, 'private-whm-token', self::account());
         $guard->bindToken('private-fixture-token');
 
         self::assertSame($response, $guard->sendRequest($request));
@@ -78,7 +81,7 @@ final class FiniteQuotaGuardTest extends TestCase
         yield 'create readonly token' => [self::request(
             'POST',
             self::BRIDGE . 'Tokens&cpanel.function=create_full_access',
-            'name=wqfinite-quota-readonly&expires_at=2000000000&readonly=1',
+            'name=wqfinite-quota-readonly&expires_at=' . self::expiresAt() . '&readonly=1',
         )];
         yield 'revoke fixture token' => [self::request(
             'POST',
@@ -91,11 +94,74 @@ final class FiniteQuotaGuardTest extends TestCase
         }
     }
 
+    /** Each mutation can pass this guard once, so nothing below it can retry one. */
+    #[DataProvider('controlMutations')]
+    public function testEveryControlMutationIsSingleUse(RequestInterface $request): void
+    {
+        $http = new Client();
+        $guard = new FiniteQuotaGuard($http, 'private-whm-token', self::account());
+        $guard->sendRequest($request);
+        $refused = false;
+        try {
+            $guard->sendRequest($request);
+        } catch (LogicException) {
+            $refused = true;
+        }
+        self::assertTrue($refused);
+        self::assertCount(1, $http->getRequests());
+    }
+
+    /** A refused attempt spends the mutation too, as the request may have been the reason to stop. */
+    public function testARefusedMutationIsSpentAsWell(): void
+    {
+        $http = new Client();
+        $guard = new FiniteQuotaGuard($http, 'private-whm-token', self::account());
+        $mutation = self::request('POST', self::WHM . 'removeacct?api.version=1', 'username=wqfinite&keepdns=0');
+        $refused = 0;
+        foreach ([$mutation->withHeader('Cookie', 'private-cookie'), $mutation] as $attempt) {
+            try {
+                $guard->sendRequest($attempt);
+            } catch (LogicException) {
+                ++$refused;
+            }
+        }
+        self::assertSame(2, $refused);
+        self::assertCount(0, $http->getRequests());
+    }
+
+    /** @return iterable<string, array{RequestInterface}> */
+    public static function controlMutations(): iterable
+    {
+        foreach (self::account()->controlPosts() as $uri => $body) {
+            yield $uri => [self::request('POST', $uri, $body)];
+        }
+    }
+
+    /** This guard's reads name wqfinite, so it refuses a binding for anything else, or a token that can write. */
+    #[DataProvider('foreignBindings')]
+    public function testRefusesABindingThatIsNotThisRecipesAccount(DisposableAccount $account): void
+    {
+        $this->expectException(LogicException::class);
+        new FiniteQuotaGuard(new Client(), 'private-whm-token', $account);
+    }
+
+    /** @return iterable<string, array{DisposableAccount}> */
+    public static function foreignBindings(): iterable
+    {
+        $user = FiniteQuotaGuard::ACCOUNT;
+        $domain = FiniteQuotaGuard::DOMAIN;
+        $token = FiniteQuotaGuard::TOKEN_NAME;
+        yield 'another account' => [DisposableAccount::fresh('other', $domain, $token, 900, true)];
+        yield 'another domain' => [DisposableAccount::fresh($user, 'other.example.com', $token, 900, true)];
+        yield 'another token' => [DisposableAccount::fresh($user, $domain, 'other-token', 900, true)];
+        yield 'a writable token' => [DisposableAccount::fresh($user, $domain, $token, 900, false)];
+    }
+
     #[DataProvider('rejectedRequests')]
     public function testRejectsUnreviewedTargetsBodiesMethodsAndHeaders(RequestInterface $request): void
     {
         $http = new Client();
-        $guard = new FiniteQuotaGuard($http, 'private-whm-token', 2000000000, self::MARKER);
+        $guard = new FiniteQuotaGuard($http, 'private-whm-token', self::account());
         $guard->bindToken('private-fixture-token');
         try {
             $guard->sendRequest($request);
@@ -161,7 +227,7 @@ final class FiniteQuotaGuardTest extends TestCase
         yield 'write token' => [self::request(
             'POST',
             self::BRIDGE . 'Tokens&cpanel.function=create_full_access',
-            'name=wqfinite-quota-readonly&expires_at=2000000000&readonly=0',
+            'name=wqfinite-quota-readonly&expires_at=' . self::expiresAt() . '&readonly=0',
         )];
         yield 'missing expiry' => [self::request(
             'POST',
@@ -171,7 +237,7 @@ final class FiniteQuotaGuardTest extends TestCase
         yield 'other expiry' => [self::request(
             'POST',
             self::BRIDGE . 'Tokens&cpanel.function=create_full_access',
-            'name=wqfinite-quota-readonly&expires_at=2000000001&readonly=1',
+            'name=wqfinite-quota-readonly&expires_at=' . (self::expiresAt() + 1) . '&readonly=1',
         )];
         $valid = self::request('GET', self::DIRECT . 'get_quota_info', '', true);
         yield 'other owner' => [$valid->withHeader('Authorization', 'cpanel npr:private-fixture-token')];
@@ -200,7 +266,7 @@ final class FiniteQuotaGuardTest extends TestCase
     public function testEverySendRequiresAllFourExactEnvironmentValues(string $key): void
     {
         $http = new Client();
-        $guard = new FiniteQuotaGuard($http, 'private-whm-token', 2000000000, self::MARKER);
+        $guard = new FiniteQuotaGuard($http, 'private-whm-token', self::account());
         putenv($key . '=other');
         $this->expectException(LogicException::class);
         try {
@@ -221,13 +287,31 @@ final class FiniteQuotaGuardTest extends TestCase
     public function testDirectAccessIsDeniedBeforeTheFixtureTokenIsBound(): void
     {
         $http = new Client();
-        $guard = new FiniteQuotaGuard($http, 'private-whm-token', 2000000000, self::MARKER);
+        $guard = new FiniteQuotaGuard($http, 'private-whm-token', self::account());
         $this->expectException(LogicException::class);
         try {
             $guard->sendRequest(self::request('GET', self::DIRECT . 'get_quota_info', '', true));
         } finally {
             self::assertCount(0, $http->getRequests());
         }
+    }
+
+    private static function account(): DisposableAccount
+    {
+        return new DisposableAccount(
+            FiniteQuotaGuard::ACCOUNT,
+            FiniteQuotaGuard::DOMAIN,
+            FiniteQuotaGuard::TOKEN_NAME,
+            self::MARKER,
+            self::expiresAt(),
+            true,
+        );
+    }
+
+    /** One expiry for the whole class, as providers run first and the binding enforces the token bound. */
+    private static function expiresAt(): int
+    {
+        return self::$expiresAt ??= time() + 1800;
     }
 
     /** @return array<string, string> */

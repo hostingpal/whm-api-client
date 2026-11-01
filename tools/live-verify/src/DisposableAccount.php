@@ -18,12 +18,22 @@ use SensitiveParameter;
  */
 final readonly class DisposableAccount
 {
-    /** The lifecycle's token outlives a run only by this much at most; cleanup still revokes it. */
+    /** A token outlives a lost run by this much at most; cleanup still revokes it. */
     public const MAXIMUM_TOKEN_LIFETIME = 3600;
+
+    /** A cPanel account name, narrow enough to reach a remote shell as a plain word. */
+    public const USER_PATTERN = '/\A[a-z][a-z0-9]{0,15}\z/';
+
+    /** A lowercase host name of at least two labels, equally free of shell metacharacters. */
+    public const DOMAIN_PATTERN = '/\A[a-z0-9]+(?:-[a-z0-9]+)*(?:\.[a-z0-9]+(?:-[a-z0-9]+)*)+\z/';
 
     private const WHM = 'https://test.oblak.host:2087/json-api/';
 
-    /** Bind exact identities; each is validated, so nothing unsafe can reach a request. Performs no I/O. */
+    /**
+     * Bind exact identities; each is validated, so nothing unsafe can reach a request. Performs no I/O.
+     *
+     * A recipe should use fresh(), which also draws the marker. The token bound holds here, for every binding.
+     */
     public function __construct(
         public string $user,
         public string $domain,
@@ -34,17 +44,21 @@ final readonly class DisposableAccount
         public bool $readOnlyToken,
     ) {
         $marker = '/\A[a-z]+-[0-9a-f]{32}@' . preg_quote($domain, '/') . '\z/';
+        $now = time();
         if (
-            preg_match('/\A[a-z][a-z0-9]{0,15}\z/', $user) !== 1
-            || preg_match('/\A[a-z0-9]+(?:-[a-z0-9]+)*(?:\.[a-z0-9]+(?:-[a-z0-9]+)*)+\z/', $domain) !== 1
-            || preg_match('/\A[a-z0-9_-]{1,64}\z/', $tokenName) !== 1
-            || preg_match($marker, $contactEmail) !== 1 || $tokenExpiresAt < 1
+            preg_match(self::USER_PATTERN, $user) !== 1 || preg_match(self::DOMAIN_PATTERN, $domain) !== 1
+            || preg_match('/\A[a-z0-9_-]{1,64}\z/', $tokenName) !== 1 || preg_match($marker, $contactEmail) !== 1
+            || $tokenExpiresAt <= $now || $tokenExpiresAt > $now + self::MAXIMUM_TOKEN_LIFETIME
         ) {
             throw new InvalidArgumentException('Disposable account binding is invalid.');
         }
     }
 
-    /** Bind one run's identities with a new 128-bit marker and a token that expires after the given seconds. */
+    /**
+     * Bind one run's identities with a new 128-bit marker and a token that expires after the given seconds.
+     *
+     * @throws InvalidArgumentException For an unsafe identity, or a lifetime outside 1 to MAXIMUM_TOKEN_LIFETIME.
+     */
     public static function fresh(
         string $user,
         string $domain,
@@ -52,10 +66,6 @@ final readonly class DisposableAccount
         int $tokenLifetime,
         bool $readOnlyToken,
     ): self {
-        if ($tokenLifetime < 1 || $tokenLifetime > self::MAXIMUM_TOKEN_LIFETIME) {
-            throw new InvalidArgumentException('Disposable account tokens must be short-lived.');
-        }
-
         return new self(
             $user,
             $domain,

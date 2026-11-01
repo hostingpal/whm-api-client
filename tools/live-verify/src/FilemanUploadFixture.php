@@ -24,8 +24,8 @@ use Throwable;
 /**
  * Prove typed Fileman uploads on one freshly created disposable account, once, then remove the account.
  *
- * DisposableAccountLifecycle owns identity, ownership, the short-lived writable token and account cleanup, and states
- * their rules. This fixture holds the uploads, the byte oracle and the cleanup of its own files.
+ * DisposableAccountLifecycle owns identity, ownership, the short-lived writable token, account cleanup and the run's
+ * status, and states their rules. This fixture holds the uploads, the byte oracle and the cleanup of its own files.
  *
  * Capture stops at the first unexpected state, because later uploads could not be interpreted. The batches with rows
  * run first, each gated by its rows and an inventory, so a problem in the readback endpoint, which has no earlier
@@ -54,6 +54,7 @@ use Throwable;
  * @phpstan-import-type CleanupOutcome from DisposableAccountLifecycle
  * @phpstan-import-type ResourceOutcome from DisposableAccountLifecycle
  * @phpstan-import-type FilesystemOutcome from DisposableAccountLifecycle
+ * @phpstan-import-type FilesystemControl from DisposableAccountLifecycle
  * @phpstan-type Observation array{
  *     phase: string, expectation: 'passed'|'failed'|'not_checked', uapi_status: int|null,
  *     operation: string, variant: string, argument_variant?: string, route: string, method: string|null,
@@ -83,10 +84,11 @@ use Throwable;
  *         files: array{proven_owned: int, deleted: int}
  *     },
  *     domain_cleanup: CleanupOutcome, zone_cleanup: CleanupOutcome,
- *     filesystem_cleanup: FilesystemOutcome, filesystem_residue: array<string, int>
+ *     filesystem_cleanup: FilesystemOutcome, filesystem_residue: array<string, int>,
+ *     filesystem_control: FilesystemControl
  * }
  * @phpstan-type Scenario array{
- *     scenario: 'fileman-upload-disposable-v3', target_role: 'disposable-test-account', probes: list<Observation>,
+ *     scenario: 'fileman-upload-disposable-v4', target_role: 'disposable-test-account', probes: list<Observation>,
  *     uploads: array<string, UploadSummary>, byte_oracle: array<string, OracleResult>,
  *     borrowed_streams: array<string, bool>, discrepancy_review: Assessment, fixture: Report, limitations: list<string>
  * }
@@ -136,8 +138,6 @@ final class FilemanUploadFixture
 
     private ?string $stoppedAt = null;
 
-    private bool $used = false;
-
     /**
      * Bind the fixed disposable account and a token expiration, without I/O.
      *
@@ -155,7 +155,13 @@ final class FilemanUploadFixture
         private readonly array $context,
         ?FilesystemAbsenceProof $filesystem = null,
     ) {
-        $this->recipe = new FilemanUploadRecipe(bin2hex(random_bytes(16)), time() + self::TOKEN_LIFETIME);
+        $this->recipe = new FilemanUploadRecipe(bin2hex(random_bytes(16)), DisposableAccount::fresh(
+            FilemanUploadRecipe::ACCOUNT,
+            FilemanUploadRecipe::DOMAIN,
+            FilemanUploadRecipe::TOKEN_NAME,
+            self::TOKEN_LIFETIME,
+            readOnlyToken: false,
+        ));
         $this->guard = new FilemanUploadGuard($http, $streaming, $whmToken, $this->recipe);
         $this->capture = new CaptureClient($this->guard);
         $this->runner = new EvidenceRunner($this->guard, $context, FilemanUploadRecipe::ACCOUNT);
@@ -183,44 +189,41 @@ final class FilemanUploadFixture
     {
         $this->report = self::report();
         try {
-            if ($this->used) {
-                throw new RuntimeException('Fileman upload fixture is single-use.');
-            }
-            FilemanUploadGuard::requireEnvironment();
-        } catch (Throwable) {
+            $outcome = $this->lifecycle->run(
+                function (#[SensitiveParameter] string $token): void {
+                    $this->capture($token);
+                },
+                fn (): array => $this->cleanupFiles(),
+            );
+        } catch (LogicException) {
             $this->report['failures'][] = 'configuration_failure';
 
             return $this->scenario();
         }
-        $this->used = true;
-        $this->report['setup'] = 'failed';
-        $outcome = $this->lifecycle->run(
-            function (#[SensitiveParameter] string $token): void {
-                $this->capture($token);
-            },
-            fn (): array => $this->cleanupFiles(),
-        );
         $resources = ['account' => $outcome['account'], 'token' => $outcome['token']];
         $this->report['resources'] = [...$this->report['resources'], ...$resources];
+        $this->report['status'] = $outcome['status'];
+        $this->report['setup'] = $outcome['setup'];
         $this->report['cleanup'] = $outcome['cleanup'];
-        $this->report['failures'] = array_values(array_unique([...$this->report['failures'], ...$outcome['failures']]));
+        $this->report['failures'] = $outcome['failures'];
         $this->report['domain_cleanup'] = $outcome['domain_cleanup'];
         $this->report['zone_cleanup'] = $outcome['zone_cleanup'];
         $this->report['filesystem_cleanup'] = $outcome['filesystem_cleanup'];
         $this->report['filesystem_residue'] = $outcome['filesystem_residue'];
-        if (
-            $this->report['failures'] === [] && $this->report['expectations'] === 'passed'
-            && $this->report['cleanup'] === 'passed'
-        ) {
-            $this->report['status'] = 'passed';
-        }
+        $this->report['filesystem_control'] = $outcome['filesystem_control'];
 
         return $this->scenario();
     }
 
-    /** Bind the token, run every phase, and settle what capture left for cleanup to report. */
+    /**
+     * Bind the token and run every phase, settle what cleanup must report, and tell the lifecycle what failed.
+     *
+     * @throws ExerciseFailure After recording, for a failed capture or any failed expectation, even in a finished one.
+     */
     private function capture(#[SensitiveParameter] string $token): void
     {
+        $failures = [];
+        $this->report['capture'] = 'failed';
         try {
             $this->guard->bindToken($token);
             $factory = new Psr17Factory();
@@ -228,30 +231,28 @@ final class FilemanUploadFixture
                 'host' => self::HOST, 'port' => 2083, 'authType' => 'cpanel',
                 'username' => FilemanUploadRecipe::ACCOUNT, 'token' => $token,
             ], new HttpTransport($this->capture, $factory, $factory));
-            $this->report['setup'] = 'passed';
-            $this->report['capture'] = 'failed';
             $this->exercise($this->report);
             $this->report['capture'] = 'passed';
         } catch (Throwable) {
-            if ($this->report['setup'] !== 'passed') {
-                $this->report['failures'][] = 'setup_failure';
-            } elseif (!$this->expectationFailed || $this->observationFailed()) {
-                $this->report['failures'][] = 'capture_failure';
+            if (!$this->expectationFailed || $this->observationFailed()) {
+                $failures[] = 'capture_failure';
             }
             $last = array_key_last($this->records);
             $this->report['stopped_at'] = $this->stoppedAt
                 ?? ($last === null ? null : $this->records[$last]['phase']);
-        } finally {
-            if ($this->expectationFailed) {
-                $this->report['expectations'] = 'failed';
-                $this->report['failures'][] = 'expectation_failure';
-            } elseif ($this->report['capture'] === 'passed') {
-                $this->report['expectations'] = 'passed';
-            }
-            $this->report['resources']['files']['proven_owned'] = count($this->owned);
-            if ($this->report['resources']['directory']['creation'] !== 'not_attempted') {
-                $this->report['resources']['directory']['cleanup'] = 'unconfirmed';
-            }
+        }
+        if ($this->expectationFailed) {
+            $this->report['expectations'] = 'failed';
+            $failures[] = 'expectation_failure';
+        } elseif ($this->report['capture'] === 'passed') {
+            $this->report['expectations'] = 'passed';
+        }
+        $this->report['resources']['files']['proven_owned'] = count($this->owned);
+        if ($this->report['resources']['directory']['creation'] !== 'not_attempted') {
+            $this->report['resources']['directory']['cleanup'] = 'unconfirmed';
+        }
+        if ($failures !== []) {
+            throw new ExerciseFailure($failures);
         }
     }
 
@@ -948,6 +949,7 @@ final class FilemanUploadFixture
                 'files' => ['proven_owned' => 0, 'deleted' => 0]],
             'domain_cleanup' => 'not_required', 'zone_cleanup' => 'not_required',
             'filesystem_cleanup' => 'not_claimed', 'filesystem_residue' => [],
+            'filesystem_control' => ['status' => 'not_run', 'counts' => []],
         ];
     }
 
@@ -967,7 +969,7 @@ final class FilemanUploadFixture
         unset($record);
 
         return [
-            'scenario' => 'fileman-upload-disposable-v3',
+            'scenario' => 'fileman-upload-disposable-v4',
             'target_role' => 'disposable-test-account',
             'probes' => $records,
             'uploads' => $this->uploads,
@@ -978,9 +980,9 @@ final class FilemanUploadFixture
             'limitations' => [
                 'direct_route_on_one_server_version_only',
                 'byte_oracle_is_reversible_transcoding_not_a_raw_download',
-                $this->report['filesystem_cleanup'] === 'not_claimed'
-                    ? 'api_absence_only_no_filesystem_or_home_directory_cleanup_claim'
-                    : 'filesystem_proof_covers_fixed_locations_at_one_moment',
+                $this->report['filesystem_cleanup'] === 'confirmed_absent'
+                    ? 'filesystem_proof_covers_fixed_locations_at_one_moment'
+                    : 'api_absence_only_no_filesystem_or_home_directory_cleanup_claim',
                 'observed_filename_and_size_variants_only',
                 'no_status_0_null_or_empty_rows_observation',
                 'no_antivirus_or_archive_behavior',

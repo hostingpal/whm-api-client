@@ -109,8 +109,26 @@ final class FilemanUploadCommandTest extends TestCase
         $result = self::runCommand($directory, ['WHM_API_LIVE_FS_CHECK' => '1', 'PATH' => $path]);
 
         self::assertSame(0, $result['status'], implode("\n", $result['output']));
-        self::assertSame("used\n", file_get_contents($directory . '/ssh-used'));
-        self::assertSame('confirmed_absent', self::fixtureReport($directory)['filesystem_cleanup']);
+        self::assertSame("used\nused\n", file_get_contents($directory . '/ssh-used'));
+        $report = self::fixtureReport($directory);
+        self::assertSame('confirmed_absent', $report['filesystem_cleanup']);
+        self::assertIsArray($report['filesystem_control']);
+        self::assertSame('passed', $report['filesystem_control']['status']);
+    }
+
+    /** Default checks stay offline even with the opt-in exported in the shell that runs them. */
+    public function testAnExportedOptInCannotReachSshFromTheOfflineSuite(): void
+    {
+        $directory = $this->sandbox(true);
+        $path = self::standInSsh($directory);
+        $exported = getenv('WHM_API_LIVE_FS_CHECK');
+        putenv('WHM_API_LIVE_FS_CHECK=1');
+        $result = self::runCommand($directory, ['PATH' => $path]);
+        putenv($exported === false ? 'WHM_API_LIVE_FS_CHECK' : 'WHM_API_LIVE_FS_CHECK=' . $exported);
+
+        self::assertSame(0, $result['status'], implode("\n", $result['output']));
+        self::assertFileDoesNotExist($directory . '/ssh-used');
+        self::assertSame('not_claimed', self::fixtureReport($directory)['filesystem_cleanup']);
     }
 
     public function testWithoutTheOptInNoConnectionIsMadeAndNothingIsClaimed(): void
@@ -165,17 +183,25 @@ final class FilemanUploadCommandTest extends TestCase
         self::assertSame(['Fileman upload verification failed (configuration_failure).'], $output);
     }
 
-    /** Put a recording `ssh` first on PATH that answers with a clean report, so no real connection can start. */
+    /**
+     * Put a recording `ssh` first on PATH, so no real connection can start.
+     *
+     * Like the server, it shows the account on the first call, the control, and nothing on the second.
+     */
     private static function standInSsh(string $directory): string
     {
         mkdir($directory . '/bin', 0700);
-        $report = '';
+        $present = '';
+        $absent = '';
         foreach (['home', 'users', 'userdata', 'userdomains', 'passwd', 'zones', 'sessions'] as $location) {
-            $report .= $location . '_inventory=2\n' . $location . '=0\n';
+            $present .= $location . '_inventory=2\n' . $location . '=' . ($location === 'sessions' ? 0 : 1) . '\n';
+            $absent .= $location . '_inventory=2\n' . $location . '=0\n';
         }
+        $used = escapeshellarg($directory . '/ssh-used');
         file_put_contents($directory . '/bin/ssh', "#!/bin/sh\ncat > /dev/null\n"
-            . 'echo used >> ' . escapeshellarg($directory . '/ssh-used') . "\n"
-            . "printf '" . $report . "complete=1\\n'\n");
+            . 'if [ -e ' . $used . " ]; then printf '" . $absent . "complete=1\\n'; "
+            . "else printf '" . $present . "complete=1\\n'; fi\n"
+            . 'echo used >> ' . $used . "\n");
         chmod($directory . '/bin/ssh', 0700);
 
         return $directory . '/bin:' . getenv('PATH');
@@ -242,8 +268,10 @@ final class FilemanUploadCommandTest extends TestCase
      */
     private static function runCommand(string $directory, array $environment = []): array
     {
+        // exec() inherits this process's environment, so the opt-in is cleared here rather than left to chance.
         $defaults = ['WHM_API_LIVE' => '1', 'WHM_API_LIVE_MUTATIONS' => '1', 'WHM_API_LIVE_ACCOUNT' => 'wlupload',
-            'WHM_API_LIVE_DOMAIN' => 'wlupload.example.com', 'OBLAK_TEST_WHM_KEY' => 'private-whm'];
+            'WHM_API_LIVE_DOMAIN' => 'wlupload.example.com', 'OBLAK_TEST_WHM_KEY' => 'private-whm',
+            'WHM_API_LIVE_FS_CHECK' => ''];
         $variables = '';
         foreach ($environment + $defaults as $key => $value) {
             $variables .= $key . '=' . escapeshellarg($value) . ' ';

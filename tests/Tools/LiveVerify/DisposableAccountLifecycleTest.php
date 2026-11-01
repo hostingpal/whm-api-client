@@ -10,6 +10,7 @@ use HostingPal\WhmApiClient\Http\HttpTransport;
 use HostingPal\WhmApiClient\Tools\LiveVerify\CaptureClient;
 use HostingPal\WhmApiClient\Tools\LiveVerify\DisposableAccount;
 use HostingPal\WhmApiClient\Tools\LiveVerify\DisposableAccountLifecycle;
+use HostingPal\WhmApiClient\Tools\LiveVerify\ExerciseFailure;
 use HostingPal\WhmApiClient\Tools\LiveVerify\FilesystemAbsenceProof;
 use LogicException;
 use Nyholm\Psr7\Factory\Psr17Factory;
@@ -71,6 +72,7 @@ final class DisposableAccountLifecycleTest extends TestCase
         self::assertSame('confirmed_absent', $outcome['zone_cleanup']);
         self::assertSame('not_claimed', $outcome['filesystem_cleanup']);
         self::assertSame([], $outcome['filesystem_residue']);
+        self::assertSame(['status' => 'not_run', 'counts' => []], $outcome['filesystem_control']);
         self::assertSame(
             ['createacct', 'Tokens/create_full_access', 'Tokens/revoke', 'removeacct'],
             $http->mutations,
@@ -296,6 +298,58 @@ final class DisposableAccountLifecycleTest extends TestCase
         self::assertSame([], $http->mutations);
         self::assertSame(1, $http->counts['createacct']);
         self::assertPrivate($outcome);
+    }
+
+    /** A creation still in flight would bring its domain and zone with it, so reading them gone proves nothing. */
+    #[DataProvider('unusableCreationReplies')]
+    public function testUnknownCreationNeverReportsTheDomainOrZoneAbsent(string $failure): void
+    {
+        $http = new DisposableAccountServer();
+        $http->failures['createacct:1'] = $failure . '_before';
+        $outcome = self::execute($http);
+
+        self::assertSame('unconfirmed', $outcome['domain_cleanup']);
+        self::assertSame('unconfirmed', $outcome['zone_cleanup']);
+        self::assertContains('domain_absence_unconfirmed', $outcome['failures']);
+        self::assertContains('zone_absence_unconfirmed', $outcome['failures']);
+        self::assertSame(2, $http->counts['listzones']);
+    }
+
+    /** The same reasoning holds for files, and this proof sees nothing because no creation has landed yet. */
+    #[DataProvider('unusableCreationReplies')]
+    public function testUnknownCreationNeverReportsTheFilesystemAbsent(string $failure): void
+    {
+        $http = new DisposableAccountServer();
+        $http->failures['createacct:1'] = $failure . '_before';
+        $proof = new RecordingFilesystemProof([self::finding('confirmed_absent')]);
+        $outcome = self::lifecycle($http, $proof)->run(self::noop());
+
+        self::assertSame('unconfirmed', $outcome['filesystem_cleanup']);
+        self::assertContains('filesystem_absence_unconfirmed', $outcome['failures']);
+    }
+
+    /** Unknown is a reason to doubt absence, not to hide residue that a list actually shows. */
+    public function testUnknownCreationStillReportsWhatIsVisiblyPresent(): void
+    {
+        $http = new DisposableAccountServer();
+        $http->concurrentContactEmail = DisposableAccountServer::FOREIGN_MARKER;
+        $http->failures['createacct:1'] = 'throw_before';
+        $outcome = self::execute($http);
+
+        self::assertSame('present', $outcome['domain_cleanup']);
+        self::assertSame('present', $outcome['zone_cleanup']);
+    }
+
+    /** Once the marker proves the account, the outcome is known, so its own removal can be proven as usual. */
+    #[DataProvider('unusableCreationReplies')]
+    public function testLostCreationTheMarkerProvesCanStillBeProvenGone(string $failure): void
+    {
+        $http = new DisposableAccountServer();
+        $http->failures['createacct:1'] = $failure . '_after';
+        $outcome = self::execute($http);
+
+        self::assertSame('confirmed_absent', $outcome['domain_cleanup']);
+        self::assertSame('confirmed_absent', $outcome['zone_cleanup']);
     }
 
     #[DataProvider('unusableCreationReplies')]
@@ -567,6 +621,36 @@ final class DisposableAccountLifecycleTest extends TestCase
         self::assertSame('failed', $outcome['cleanup']);
     }
 
+    /** A create still in flight can land after a listing that shows nothing, exactly as for the account. */
+    #[DataProvider('unusableCreationReplies')]
+    public function testLostTokenCreationIsNeverReportedAsAbsent(string $failure): void
+    {
+        $http = new DisposableAccountServer();
+        $http->failures['Tokens/create_full_access:1'] = $failure . '_before';
+        $outcome = self::execute($http);
+
+        self::assertSame(['creation' => 'unconfirmed', 'cleanup' => 'unconfirmed'], $outcome['token']);
+        self::assertContains('token_creation_outcome_unknown', $outcome['failures']);
+        self::assertSame('failed', $outcome['cleanup']);
+        self::assertArrayNotHasKey('Tokens/revoke', $http->counts);
+        self::assertSame(1, $http->counts['Tokens/create_full_access']);
+        // The unknown token stops nothing else: the account still goes, and with it any late token.
+        self::assertSame(1, $http->counts['removeacct']);
+        self::assertFalse($http->account);
+        self::assertPrivate($outcome);
+    }
+
+    public function testRefusedTokenCreationIsAKnownAbsence(): void
+    {
+        $http = new DisposableAccountServer();
+        $http->failures['Tokens/create_full_access:1'] = 'api_before';
+        $outcome = self::execute($http);
+
+        self::assertSame(['creation' => 'unconfirmed', 'cleanup' => 'confirmed_absent'], $outcome['token']);
+        self::assertNotContains('token_creation_outcome_unknown', $outcome['failures']);
+        self::assertSame('passed', $outcome['cleanup']);
+    }
+
     public function testAListingThatShowsTheTokenProvesALostCreation(): void
     {
         $http = new DisposableAccountServer();
@@ -575,6 +659,7 @@ final class DisposableAccountLifecycleTest extends TestCase
 
         self::assertSame(1, $http->counts['Tokens/revoke']);
         self::assertSame(['creation' => 'confirmed', 'cleanup' => 'confirmed_absent'], $outcome['token']);
+        self::assertNotContains('token_creation_outcome_unknown', $outcome['failures']);
     }
 
     public function testATokenListedAsAbsentSendsNoRevoke(): void
@@ -738,6 +823,22 @@ final class DisposableAccountLifecycleTest extends TestCase
         self::assertPrivate($outcome);
     }
 
+    /** A recipe rethrows after recording its detail, so the lifecycle's status is the only one there is. */
+    public function testNamedExerciseFailureFailsTheRunWithItsOwnLabels(): void
+    {
+        $http = new DisposableAccountServer();
+        $outcome = self::lifecycle($http)->run(static function (string $token): void {
+            throw new ExerciseFailure(['capture_failure', 'expectation_failure']);
+        });
+
+        self::assertSame('failed', $outcome['status']);
+        self::assertSame('failed', $outcome['exercise']);
+        self::assertSame('passed', $outcome['setup']);
+        self::assertSame(['capture_failure', 'expectation_failure'], $outcome['failures']);
+        self::assertSame('passed', $outcome['cleanup']);
+        self::assertFalse($http->account);
+    }
+
     public function testOwnedCleanupRunsAfterTheOwnershipGateWhileTheTokenStillWorks(): void
     {
         $http = new DisposableAccountServer();
@@ -846,7 +947,7 @@ final class DisposableAccountLifecycleTest extends TestCase
     {
         $http = new DisposableAccountServer();
         $seen = null;
-        $proof = new RecordingFilesystemProof(
+        $proof = RecordingFilesystemProof::after(
             self::finding('confirmed_absent'),
             static function () use ($http, &$seen): void {
                 $seen = [count($http->requests), $http->account, $http->zone, $http->manualDomain];
@@ -857,9 +958,152 @@ final class DisposableAccountLifecycleTest extends TestCase
         self::assertSame('passed', $outcome['status']);
         self::assertSame('confirmed_absent', $outcome['filesystem_cleanup']);
         self::assertSame([], $outcome['filesystem_residue']);
-        self::assertSame([[DisposableAccountServer::USER, DisposableAccountServer::DOMAIN]], $proof->calls);
         // The proof comes last: nothing was still gone-or-not, and no request ever follows it.
         self::assertSame([count($http->requests), false, false, false], $seen);
+    }
+
+    public function testControlRunsOnceAfterSetupAndBeforeTheExercise(): void
+    {
+        $http = new DisposableAccountServer();
+        $seen = [];
+        $proof = RecordingFilesystemProof::after(
+            self::finding('confirmed_absent'),
+            static function () use ($http, &$seen): void {
+                $seen[] = [$http->account, $http->tokens !== []];
+            },
+        );
+        $ranAfterControl = false;
+        $outcome = self::lifecycle($http, $proof)->run(
+            static function (string $token) use ($proof, &$ranAfterControl): void {
+                $ranAfterControl = count($proof->calls) === 1;
+            },
+        );
+
+        // The control saw the account and its token; the final proof saw neither.
+        self::assertSame([[true, true], [false, false]], $seen);
+        self::assertTrue($ranAfterControl);
+        self::assertSame(
+            array_fill(0, 2, [DisposableAccountServer::USER, DisposableAccountServer::DOMAIN]),
+            $proof->calls,
+        );
+    }
+
+    public function testControlIsRecordedInLabelsAndCountsOnly(): void
+    {
+        $outcome = self::lifecycle(
+            new DisposableAccountServer(),
+            RecordingFilesystemProof::after(self::finding('confirmed_absent')),
+        )->run(self::noop());
+
+        self::assertSame(
+            ['status' => 'passed', 'counts' => RecordingFilesystemProof::PRESENT['residue']],
+            $outcome['filesystem_control'],
+        );
+        self::assertPrivate($outcome);
+    }
+
+    /** Nothing has shown how session files are named, so a control cannot require one. */
+    public function testSessionsAreNeverRequiredByTheControlButAreStillRecorded(): void
+    {
+        $withSession = RecordingFilesystemProof::PRESENT;
+        $withSession['residue']['sessions'] = 3;
+        $outcome = self::lifecycle(
+            new DisposableAccountServer(),
+            new RecordingFilesystemProof([$withSession, self::finding('confirmed_absent')]),
+        )->run(self::noop());
+
+        self::assertSame('passed', $outcome['filesystem_control']['status']);
+        self::assertSame(3, $outcome['filesystem_control']['counts']['sessions']);
+        self::assertSame('confirmed_absent', $outcome['filesystem_cleanup']);
+    }
+
+    /**
+     * A proof that cannot see the account while it exists is looking elsewhere, so its later absence means nothing.
+     *
+     * @param Finding|null $control
+     */
+    #[DataProvider('failedControls')]
+    public function testFailedControlMeansALaterAbsenceIsNeverTrusted(?array $control): void
+    {
+        $http = new DisposableAccountServer();
+        $ran = false;
+        $outcome = self::lifecycle(
+            $http,
+            new RecordingFilesystemProof([$control, self::finding('confirmed_absent')]),
+        )->run(static function (string $token) use (&$ran): void {
+            $ran = true;
+        });
+
+        self::assertSame('failed', $outcome['filesystem_control']['status']);
+        self::assertSame('unconfirmed', $outcome['filesystem_cleanup']);
+        self::assertContains('filesystem_control_failed', $outcome['failures']);
+        self::assertContains('filesystem_absence_unconfirmed', $outcome['failures']);
+        self::assertSame('failed', $outcome['cleanup']);
+        self::assertSame('failed', $outcome['status']);
+        // It costs only the claim: the exercise ran, and cleanup and its API proofs stayed exact.
+        self::assertTrue($ran);
+        self::assertSame('passed', $outcome['exercise']);
+        self::assertSame('confirmed_absent', $outcome['account']['cleanup']);
+        self::assertSame('confirmed_absent', $outcome['token']['cleanup']);
+        self::assertSame(
+            ['createacct', 'Tokens/create_full_access', 'Tokens/revoke', 'removeacct'],
+            $http->mutations,
+        );
+        self::assertPrivate($outcome);
+    }
+
+    /** @return iterable<string, array{Finding|null}> */
+    public static function failedControls(): iterable
+    {
+        yield 'wrong machine sees nothing' => [self::finding('confirmed_absent')];
+        yield 'proof unreachable' => [self::finding('unconfirmed')];
+        yield 'proof threw' => [null];
+        yield 'no location required is shown' => [['outcome' => 'present', 'residue' => ['sessions' => 1]]];
+        yield 'every count but no present outcome' => [
+            ['outcome' => 'unconfirmed', 'residue' => RecordingFilesystemProof::PRESENT['residue']],
+        ];
+        foreach (array_keys(RecordingFilesystemProof::PRESENT['residue']) as $location) {
+            $partial = RecordingFilesystemProof::PRESENT;
+            unset($partial['residue'][$location]);
+            yield 'no ' . $location => [$partial];
+        }
+    }
+
+    public function testFailedControlDoesNotHideRealResidue(): void
+    {
+        $proof = new RecordingFilesystemProof([
+            self::finding('unconfirmed'),
+            ['outcome' => 'present', 'residue' => ['home' => 1]],
+        ]);
+        $outcome = self::lifecycle(new DisposableAccountServer(), $proof)->run(self::noop());
+
+        self::assertSame('present', $outcome['filesystem_cleanup']);
+        self::assertSame(['home' => 1], $outcome['filesystem_residue']);
+        self::assertContains('filesystem_residue_present', $outcome['failures']);
+    }
+
+    /** Setup failed, so no control ran: the one final read cannot be bound to the server that was changed. */
+    #[DataProvider('setupsWithoutAControl')]
+    public function testNoControlMeansNoTrustedAbsence(string $step, string $mode): void
+    {
+        $http = new DisposableAccountServer();
+        $http->failures[$step] = $mode;
+        $proof = new RecordingFilesystemProof([self::finding('confirmed_absent')]);
+        $outcome = self::lifecycle($http, $proof)->run(self::noop());
+
+        self::assertSame(['status' => 'not_run', 'counts' => []], $outcome['filesystem_control']);
+        self::assertCount(1, $proof->calls);
+        self::assertSame('unconfirmed', $outcome['filesystem_cleanup']);
+        self::assertContains('filesystem_absence_unconfirmed', $outcome['failures']);
+        self::assertNotContains('filesystem_control_failed', $outcome['failures']);
+    }
+
+    /** @return iterable<string, array{string, string}> */
+    public static function setupsWithoutAControl(): iterable
+    {
+        yield 'creation refused' => ['createacct:1', 'api_before'];
+        yield 'token refused' => ['Tokens/create_full_access:1', 'api_before'];
+        yield 'token capability read lost' => ['Tokens/list:2', 'throw_before'];
     }
 
     /** @param Finding|null $finding */
@@ -870,7 +1114,7 @@ final class DisposableAccountLifecycleTest extends TestCase
         string $failure,
     ): void {
         $http = new DisposableAccountServer();
-        $proof = new RecordingFilesystemProof($finding);
+        $proof = RecordingFilesystemProof::after($finding);
         $before = new DisposableAccountServer();
         self::execute($before);
         $outcome = self::lifecycle($http, $proof)->run(self::noop());
@@ -882,7 +1126,7 @@ final class DisposableAccountLifecycleTest extends TestCase
         // A filesystem result changes the report and nothing else: same requests, same effects, one check.
         self::assertSame($before->counts, $http->counts);
         self::assertSame($before->mutations, $http->mutations);
-        self::assertCount(1, $proof->calls);
+        self::assertCount(2, $proof->calls);
         // The API results stay what the API showed; only the overall claim failed.
         self::assertSame('confirmed_absent', $outcome['account']['cleanup']);
         self::assertSame('confirmed_absent', $outcome['token']['cleanup']);
@@ -903,7 +1147,7 @@ final class DisposableAccountLifecycleTest extends TestCase
 
     public function testFilesystemResidueCountsReachTheReport(): void
     {
-        $proof = new RecordingFilesystemProof(['outcome' => 'present', 'residue' => ['home' => 1, 'sessions' => 2]]);
+        $proof = RecordingFilesystemProof::after(['outcome' => 'present', 'residue' => ['home' => 1, 'sessions' => 2]]);
         $outcome = self::lifecycle(new DisposableAccountServer(), $proof)->run(self::noop());
 
         self::assertSame(['home' => 1, 'sessions' => 2], $outcome['filesystem_residue']);
@@ -914,7 +1158,7 @@ final class DisposableAccountLifecycleTest extends TestCase
     {
         $http = new DisposableAccountServer();
         $http->overrides['listzones:1'] = '{"zone":[{"domain":"wdisposable.example.com"}]}';
-        $proof = new RecordingFilesystemProof(self::finding('confirmed_absent'));
+        $proof = RecordingFilesystemProof::after(self::finding('confirmed_absent'));
         $outcome = self::lifecycle($http, $proof)->run(self::noop());
 
         self::assertSame([], $proof->calls);
@@ -926,10 +1170,10 @@ final class DisposableAccountLifecycleTest extends TestCase
     {
         $http = new DisposableAccountServer();
         $http->failures['removeacct:1'] = 'api_before';
-        $proof = new RecordingFilesystemProof(['outcome' => 'present', 'residue' => ['home' => 1]]);
+        $proof = RecordingFilesystemProof::after(['outcome' => 'present', 'residue' => ['home' => 1]]);
         $outcome = self::lifecycle($http, $proof)->run(self::noop());
 
-        self::assertCount(1, $proof->calls);
+        self::assertCount(2, $proof->calls);
         self::assertSame('present', $outcome['filesystem_cleanup']);
         self::assertSame('present', $outcome['account']['cleanup']);
     }

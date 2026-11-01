@@ -7,18 +7,18 @@ namespace HostingPal\WhmApiClient\Tools\LiveVerify;
 use Closure;
 use HostingPal\WhmApiClient\Client;
 use HostingPal\WhmApiClient\Http\HttpTransport;
+use LogicException;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Psr\Http\Client\ClientInterface;
-use RuntimeException;
 use SensitiveParameter;
 use Throwable;
 
 /**
  * Create one explicitly designated disposable account with a finite 64 MB quota and temporary read-only token.
  *
- * DisposableAccountLifecycle owns identity, ownership, the token and cleanup, and states their rules; this fixture
- * holds only the quota observations and how they are reported. Automatic service domains are outside the
- * get_domain_info inventory.
+ * DisposableAccountLifecycle owns identity, ownership, the token, cleanup and the run's status, and states their
+ * rules; this fixture holds only the quota observations and how they are reported. Automatic service domains are
+ * outside the get_domain_info inventory.
  *
  * @phpstan-import-type Record from EvidenceRunner
  * @phpstan-import-type Result from FiniteQuotaEvidence
@@ -27,13 +27,15 @@ use Throwable;
  * @phpstan-import-type CleanupOutcome from DisposableAccountLifecycle
  * @phpstan-import-type ResourceOutcome from DisposableAccountLifecycle
  * @phpstan-import-type FilesystemOutcome from DisposableAccountLifecycle
+ * @phpstan-import-type FilesystemControl from DisposableAccountLifecycle
  * @phpstan-type Report array{
  *     status: 'passed'|'failed', setup: 'passed'|'failed'|'not_started',
  *     capture: 'passed'|'failed'|'not_run', expectations: 'passed'|'failed'|'not_run',
  *     cleanup: 'passed'|'failed'|'not_required', failures: list<string>,
  *     resources: array{account: ResourceOutcome, token: ResourceOutcome},
  *     domain_cleanup: CleanupOutcome, zone_cleanup: CleanupOutcome,
- *     filesystem_cleanup: FilesystemOutcome, filesystem_residue: array<string, int>
+ *     filesystem_cleanup: FilesystemOutcome, filesystem_residue: array<string, int>,
+ *     filesystem_control: FilesystemControl
  * }
  * @phpstan-type Capture array{
  *     probes: list<Record>,
@@ -41,7 +43,7 @@ use Throwable;
  *     discrepancy_review: Assessment
  * }
  * @phpstan-type Scenario array{
- *     scenario: 'finite-quota-disposable-v2', target_role: 'disposable-test-account', probes: list<Record>,
+ *     scenario: 'finite-quota-disposable-v3', target_role: 'disposable-test-account', probes: list<Record>,
  *     unit_relationships: array{'direct-uapi': UnitRelationship, 'bridged-uapi': UnitRelationship},
  *     discrepancy_review: Assessment, fixture: Report
  * }
@@ -61,8 +63,6 @@ final class FiniteQuotaFixture
     /** @var Capture */
     private array $result;
 
-    private bool $used = false;
-
     /**
      * Bind the fixed disposable account and a token expiration one hour from construction, without I/O.
      *
@@ -75,15 +75,14 @@ final class FiniteQuotaFixture
         #[SensitiveParameter] string $whmToken,
         ?FilesystemAbsenceProof $filesystem = null,
     ) {
-        $account = new DisposableAccount(
+        $account = DisposableAccount::fresh(
             FiniteQuotaGuard::ACCOUNT,
             FiniteQuotaGuard::DOMAIN,
             FiniteQuotaGuard::TOKEN_NAME,
-            'finite-' . bin2hex(random_bytes(16)) . '@' . FiniteQuotaGuard::DOMAIN,
-            time() + self::TOKEN_LIFETIME,
+            self::TOKEN_LIFETIME,
             readOnlyToken: true,
         );
-        $this->guard = new FiniteQuotaGuard($http, $whmToken, $account->tokenExpiresAt, $account->contactEmail);
+        $this->guard = new FiniteQuotaGuard($http, $whmToken, $account);
         $capture = new CaptureClient($this->guard);
         $factory = new Psr17Factory();
         $client = new Client([
@@ -113,60 +112,51 @@ final class FiniteQuotaFixture
             'discrepancy_review' => FiniteQuotaEvidence::assess([]),
         ];
         try {
-            if ($this->used) {
-                throw new RuntimeException('Finite quota fixture is single-use.');
-            }
-            FiniteQuotaGuard::requireEnvironment();
-        } catch (Throwable) {
+            $outcome = $this->lifecycle->run(function (#[SensitiveParameter] string $token) use ($capture): void {
+                $this->capture($capture, $token);
+            });
+        } catch (LogicException) {
             $this->report['failures'][] = 'configuration_failure';
 
             return $this->scenario();
         }
-        $this->used = true;
-        $this->report['setup'] = 'failed';
-        $outcome = $this->lifecycle->run(function (#[SensitiveParameter] string $token) use ($capture): void {
-            $this->capture($capture, $token);
-        });
+        $this->report['status'] = $outcome['status'];
+        $this->report['setup'] = $outcome['setup'];
         $this->report['cleanup'] = $outcome['cleanup'];
-        $this->report['failures'] = array_values(array_unique([...$this->report['failures'], ...$outcome['failures']]));
+        $this->report['failures'] = $outcome['failures'];
         $this->report['resources'] = ['account' => $outcome['account'], 'token' => $outcome['token']];
         $this->report['domain_cleanup'] = $outcome['domain_cleanup'];
         $this->report['zone_cleanup'] = $outcome['zone_cleanup'];
         $this->report['filesystem_cleanup'] = $outcome['filesystem_cleanup'];
         $this->report['filesystem_residue'] = $outcome['filesystem_residue'];
-        if (
-            $this->report['failures'] === [] && $this->report['expectations'] === 'passed'
-            && $this->report['cleanup'] === 'passed'
-        ) {
-            $this->report['status'] = 'passed';
-        }
+        $this->report['filesystem_control'] = $outcome['filesystem_control'];
 
         return $this->scenario();
     }
 
     /**
-     * Bind the token, then record the quota observations; a failure here still reaches the lifecycle's cleanup.
+     * Bind the token, record the quota observations, and tell the lifecycle if either failed.
      *
      * @param Closure(ClientInterface, string): Result $capture
+     * @throws ExerciseFailure After recording what the report needs.
      */
     private function capture(#[SensitiveParameter] Closure $capture, #[SensitiveParameter] string $token): void
     {
+        $this->report['capture'] = 'failed';
         try {
             $this->guard->bindToken($token);
-            $this->report['setup'] = 'passed';
-            $this->report['capture'] = 'failed';
             $result = $capture($this->guard, $token);
-            $this->result = [
-                'probes' => $result['probes'], 'unit_relationships' => $result['unit_relationships'],
-                'discrepancy_review' => $result['discrepancy_review'],
-            ];
-            $this->report['capture'] = 'passed';
-            $this->report['expectations'] = $result['expectations'];
-            if ($result['expectations'] !== 'passed') {
-                $this->report['failures'][] = 'finite_quota_expectation_failure';
-            }
         } catch (Throwable) {
-            $this->report['failures'][] = $this->report['setup'] === 'passed' ? 'capture_failure' : 'setup_failure';
+            throw new ExerciseFailure(['capture_failure']);
+        }
+        $this->result = [
+            'probes' => $result['probes'], 'unit_relationships' => $result['unit_relationships'],
+            'discrepancy_review' => $result['discrepancy_review'],
+        ];
+        $this->report['capture'] = 'passed';
+        $this->report['expectations'] = $result['expectations'];
+        if ($result['expectations'] !== 'passed') {
+            throw new ExerciseFailure(['finite_quota_expectation_failure']);
         }
     }
 
@@ -181,6 +171,7 @@ final class FiniteQuotaFixture
             'resources' => ['account' => $resource, 'token' => $resource],
             'domain_cleanup' => 'not_required', 'zone_cleanup' => 'not_required',
             'filesystem_cleanup' => 'not_claimed', 'filesystem_residue' => [],
+            'filesystem_control' => ['status' => 'not_run', 'counts' => []],
         ];
     }
 
@@ -188,7 +179,7 @@ final class FiniteQuotaFixture
     private function scenario(): array
     {
         return [
-            'scenario' => 'finite-quota-disposable-v2', 'target_role' => 'disposable-test-account',
+            'scenario' => 'finite-quota-disposable-v3', 'target_role' => 'disposable-test-account',
             'probes' => $this->result['probes'], 'unit_relationships' => $this->result['unit_relationships'],
             'discrepancy_review' => $this->result['discrepancy_review'], 'fixture' => $this->report,
         ];

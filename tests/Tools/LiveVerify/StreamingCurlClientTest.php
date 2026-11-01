@@ -375,7 +375,10 @@ final class ProbeStream implements StreamInterface {
 }
 
 if ($mode === 'guarded') {
-    $recipe = new FilemanUploadRecipe('0123456789abcdef0123456789abcdef', 1790000000);
+    $recipe = new FilemanUploadRecipe(
+        '0123456789abcdef0123456789abcdef',
+        DisposableAccount::fresh('wlupload', 'wlupload.example.com', 'wlupload-upload-fixture', 900, false),
+    );
     $streaming = new StreamingCurlClient();
     $ordinary = new class implements \Psr\Http\Client\ClientInterface {
         public function sendRequest(\Psr\Http\Message\RequestInterface $request): \Psr\Http\Message\ResponseInterface {

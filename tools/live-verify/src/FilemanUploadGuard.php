@@ -86,19 +86,6 @@ final class FilemanUploadGuard implements ClientInterface
         $this->cpanelToken = $token;
     }
 
-    /** Require the explicit designated target without exposing supplied environment values. */
-    public static function requireEnvironment(): void
-    {
-        if (
-            getenv('WHM_API_LIVE') !== '1'
-            || getenv('WHM_API_LIVE_MUTATIONS') !== '1'
-            || getenv('WHM_API_LIVE_ACCOUNT') !== FilemanUploadRecipe::ACCOUNT
-            || getenv('WHM_API_LIVE_DOMAIN') !== FilemanUploadRecipe::DOMAIN
-        ) {
-            throw new LogicException('Fileman upload fixture requires both opt-ins and the designated account/domain.');
-        }
-    }
-
     /**
      * Authorize the next request as this upload phase, which can never be authorized again.
      *
@@ -148,7 +135,7 @@ final class FilemanUploadGuard implements ClientInterface
         $upload = $this->pendingUpload;
         $delete = $this->pendingDelete;
         $this->clearPending();
-        self::requireEnvironment();
+        $this->recipe->account->requireLiveOptIn();
         if (str_starts_with($request->getHeaderLine('Content-Type'), 'multipart/')) {
             return $this->upload($request, $upload);
         }

@@ -9,30 +9,48 @@ use HostingPal\WhmApiClient\Tools\LiveVerify\FilesystemAbsenceProof;
 use RuntimeException;
 
 /**
- * Offline stand-in for the SSH proof: returns one configured finding, or throws, and records every call.
+ * Offline stand-in for the SSH proof: returns configured findings in call order and records every call.
  *
  * @phpstan-import-type Finding from FilesystemAbsenceProof
  */
 final class RecordingFilesystemProof implements FilesystemAbsenceProof
 {
+    /** What a real proof reports while the account exists; sessions may or may not appear. */
+    public const PRESENT = [
+        'outcome' => 'present',
+        'residue' => ['home' => 1, 'users' => 1, 'userdata' => 1, 'userdomains' => 1, 'passwd' => 1, 'zones' => 2],
+    ];
+
     /** @var list<array{string, string}> */
     public array $calls = [];
 
     /**
-     * @param Finding|null $finding Null throws, as an implementation that fails outright would.
-     * @param (Closure(): void)|null $observe Runs at the moment of the check, to record what state it saw.
+     * @param list<Finding|null> $findings Returned in call order; null throws, and the last one repeats.
+     * @param (Closure(): void)|null $observe Runs at the moment of each check, to record what state it saw.
      */
-    public function __construct(private readonly ?array $finding, private readonly ?Closure $observe = null)
+    public function __construct(private readonly array $findings, private readonly ?Closure $observe = null)
     {
+    }
+
+    /**
+     * A proof whose control sees the account, followed by the given final finding.
+     *
+     * @param Finding|null $final
+     * @param (Closure(): void)|null $observe
+     */
+    public static function after(?array $final, ?Closure $observe = null): self
+    {
+        return new self([self::PRESENT, $final], $observe);
     }
 
     public function check(string $user, string $domain): array
     {
+        $index = min(count($this->calls), count($this->findings) - 1);
         $this->calls[] = [$user, $domain];
         if ($this->observe !== null) {
             ($this->observe)();
         }
 
-        return $this->finding ?? throw new RuntimeException('private filesystem failure');
+        return $this->findings[$index] ?? throw new RuntimeException('private filesystem failure');
     }
 }

@@ -239,7 +239,7 @@ final class VerifyCommandTest extends TestCase
         self::assertIsArray($document['finite_quota']);
         self::assertIsArray($document['finite_quota']['fixture']);
         self::assertIsArray($document['finite_quota']['discrepancy_review']);
-        self::assertSame('finite-quota-disposable-v2', $document['finite_quota']['scenario']);
+        self::assertSame('finite-quota-disposable-v3', $document['finite_quota']['scenario']);
         self::assertSame('disposable-test-account', $document['finite_quota']['target_role']);
         self::assertSame($fixtureStatus, $document['finite_quota']['fixture']['status']);
         self::assertSame($finiteStatus, $document['finite_quota']['discrepancy_review']['status']);
@@ -279,6 +279,23 @@ final class VerifyCommandTest extends TestCase
         yield 'explicit opt-in' => ['1', 'supplied'];
         yield 'empty' => ['', 'none'];
         yield 'anything else' => ['true', 'none'];
+    }
+
+    /** The harness builds the child's whole environment, so an exported opt-in cannot reach a default run. */
+    public function testAnExportedOptInCannotReachTheProofFromTheOfflineSuite(): void
+    {
+        $root = $this->fixtureHarness();
+        $exported = getenv('WHM_API_LIVE_FS_CHECK');
+        putenv('WHM_API_LIVE_FS_CHECK=1');
+        [$status] = self::executeCli(
+            ['--finite-quota-fixture', '--output=' . $root . '/observed.json'],
+            self::finiteQuotaEnvironment(),
+            $root,
+        );
+        putenv($exported === false ? 'WHM_API_LIVE_FS_CHECK' : 'WHM_API_LIVE_FS_CHECK=' . $exported);
+
+        self::assertSame(0, $status);
+        self::assertSame('none', file_get_contents($root . '/finite-filesystem-proof'));
     }
 
     public function testFiniteQuotaCleanupCompletesBeforeOutputWriteFailure(): void
@@ -965,7 +982,7 @@ final class FiniteQuotaFixture
         }
         unset($result['expectations']);
         return [
-            'scenario' => 'finite-quota-disposable-v2',
+            'scenario' => 'finite-quota-disposable-v3',
             'target_role' => 'disposable-test-account',
             ...$result,
             'fixture' => ['status' => in_array($case, [

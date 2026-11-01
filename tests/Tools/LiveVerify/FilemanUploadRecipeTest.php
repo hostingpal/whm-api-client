@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace HostingPal\WhmApiClient\Tests\Tools\LiveVerify;
 
 use HostingPal\WhmApiClient\Http\StreamingMultipartEncoder;
+use HostingPal\WhmApiClient\Tools\LiveVerify\DisposableAccount;
 use HostingPal\WhmApiClient\Tools\LiveVerify\FilemanUploadRecipe;
 use HostingPal\WhmApiClient\Upload;
 use InvalidArgumentException;
@@ -65,9 +66,8 @@ final class FilemanUploadRecipeTest extends TestCase
 
     public function testIdentifiersAreDerivedFromTheRunValueOnly(): void
     {
-        $recipe = new FilemanUploadRecipe(self::ENTROPY, 1790000000);
+        $recipe = new FilemanUploadRecipe(self::ENTROPY, self::account());
         self::assertSame('wlupload-fixture-' . self::ENTROPY, $recipe->directory);
-        self::assertSame('upload-' . self::ENTROPY . '@wlupload.example.com', $recipe->contactEmail);
         self::assertSame('bytes-0123456789abcdef.bin', $recipe->names['bytes']);
         self::assertCount(6, array_unique($recipe->names));
         self::assertSame(
@@ -77,25 +77,49 @@ final class FilemanUploadRecipeTest extends TestCase
     }
 
     #[DataProvider('invalidEntropy')]
-    public function testRefusesWeakRunValues(string $entropy, int $expiresAt): void
+    public function testRefusesWeakRunValues(string $entropy): void
     {
         $this->expectException(InvalidArgumentException::class);
-        new FilemanUploadRecipe($entropy, $expiresAt);
+        new FilemanUploadRecipe($entropy, self::account());
     }
 
-    /** @return iterable<string, array{string, int}> */
+    /** @return iterable<string, array{string}> */
     public static function invalidEntropy(): iterable
     {
-        yield 'empty' => ['', 1];
-        yield 'short' => ['0123456789abcdef', 1];
-        yield 'uppercase' => [strtoupper(self::ENTROPY), 1];
-        yield 'path traversal' => ['../../../../etc/passwd0000000000', 1];
-        yield 'no expiration' => [self::ENTROPY, 0];
+        yield 'empty' => [''];
+        yield 'short' => ['0123456789abcdef'];
+        yield 'uppercase' => [strtoupper(self::ENTROPY)];
+        yield 'path traversal' => ['../../../../etc/passwd0000000000'];
+    }
+
+    /** The recipe's URIs, paths and guard name one account, so it refuses a binding for anything else. */
+    #[DataProvider('foreignBindings')]
+    public function testRefusesABindingThatIsNotThisRecipesAccount(
+        string $user,
+        string $domain,
+        string $tokenName,
+        bool $readOnlyToken,
+    ): void {
+        $account = DisposableAccount::fresh($user, $domain, $tokenName, 900, $readOnlyToken);
+        $this->expectException(InvalidArgumentException::class);
+        new FilemanUploadRecipe(self::ENTROPY, $account);
+    }
+
+    /** @return iterable<string, array{string, string, string, bool}> */
+    public static function foreignBindings(): iterable
+    {
+        $user = FilemanUploadRecipe::ACCOUNT;
+        $domain = FilemanUploadRecipe::DOMAIN;
+        $token = FilemanUploadRecipe::TOKEN_NAME;
+        yield 'another account' => ['other', $domain, $token, false];
+        yield 'another domain' => [$user, 'other.example.com', $token, false];
+        yield 'another token' => [$user, $domain, 'other-token', false];
+        yield 'a read-only token cannot upload' => [$user, $domain, $token, true];
     }
 
     public function testExactUrisUseOverwriteDisabledAndExplicitCharsets(): void
     {
-        $recipe = new FilemanUploadRecipe(self::ENTROPY, 1790000000);
+        $recipe = new FilemanUploadRecipe(self::ENTROPY, self::account());
         $base = 'https://test.oblak.host:2083/execute/Fileman/';
         $directory = 'wlupload-fixture-' . self::ENTROPY;
         self::assertSame(
@@ -124,7 +148,7 @@ final class FilemanUploadRecipeTest extends TestCase
     #[DataProvider('uploadPhases')]
     public function testHandAssembledBodyEqualsTheLibraryEncoderForEveryPhase(string $phase): void
     {
-        $recipe = new FilemanUploadRecipe(self::ENTROPY, 1790000000);
+        $recipe = new FilemanUploadRecipe(self::ENTROPY, self::account());
         $parts = [];
         foreach ($recipe->parts($phase) as $part) {
             $parts[] = ['name' => $part['field'], 'value' => Upload::fromString($part['filename'], $part['bytes'])];
@@ -144,11 +168,22 @@ final class FilemanUploadRecipeTest extends TestCase
 
     public function testFailingPhasesReuseOwnedNamesWithConflictingBytes(): void
     {
-        $recipe = new FilemanUploadRecipe(self::ENTROPY, 1790000000);
+        $recipe = new FilemanUploadRecipe(self::ENTROPY, self::account());
         self::assertSame($recipe->names['bytes'], $recipe->parts('upload_partial')[0]['filename']);
         self::assertSame(FilemanUploadRecipe::CONFLICT_BYTES, $recipe->parts('upload_partial')[0]['bytes']);
         self::assertSame($recipe->names['partial'], $recipe->parts('upload_partial')[1]['filename']);
         self::assertSame($recipe->names['cursor'], $recipe->parts('upload_all_failed')[0]['filename']);
         self::assertSame(FilemanUploadRecipe::CONFLICT_BYTES, $recipe->parts('upload_all_failed')[0]['bytes']);
+    }
+
+    private static function account(): DisposableAccount
+    {
+        return DisposableAccount::fresh(
+            FilemanUploadRecipe::ACCOUNT,
+            FilemanUploadRecipe::DOMAIN,
+            FilemanUploadRecipe::TOKEN_NAME,
+            900,
+            readOnlyToken: false,
+        );
     }
 }
