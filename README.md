@@ -1818,9 +1818,9 @@ Missing read-only declarations remain conservative POST calls, including the
 three namespaced EcosystemFeatures functions.
 
 JSON connected-application saving remains under `8x0.1.18`. Configuration upload
-is described below. `systemNeedsReboot()` now preserves the documented envelope
-siblings through an explicit source-bound projection; generic calls keep their
-existing data-only extraction. Connected-application reads preserve declared typed fields and opaque
+is described below. `systemNeedsReboot()` returns the evidence-corrected ordinary
+`data` payload; generic calls retain their existing data-only extraction.
+Connected-application reads preserve declared typed fields and opaque
 additional properties through the existing object-values mechanism. Treat their
 results and service/configuration values as private payload data.
 

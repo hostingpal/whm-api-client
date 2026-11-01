@@ -1,6 +1,7 @@
 package effective
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 
@@ -160,5 +161,128 @@ func TestRootCorrectionsPreserveOrdinaryDocumentedPayloadAndVoid(t *testing.T) {
 	}
 	if got := groupByClass(t, result, "Accounts").Operations[0].Returns; got != nil {
 		t.Fatalf("metadata-only operation gained payload: %+v", got)
+	}
+}
+
+func TestMissingPayloadRootCorrectionRejectsMalformedEnvelopeAlternatives(t *testing.T) {
+	for _, composition := range []string{"anyOf", "oneOf", "allOf"} {
+		for _, name := range []string{"nonstring", "empty", "whitespace", "unresolved", "referenced", "nested", "cycle", "deep"} {
+			t.Run(composition+"/"+name, func(t *testing.T) {
+				m, set, root := correctedRootFixture(t)
+				schemas := map[string]any{}
+				m.Documents["whm-openapi"]["components"] = map[string]any{"schemas": schemas}
+				var branch any = root
+				switch name {
+				case "nonstring":
+					root["$ref"] = false
+				case "empty":
+					root["$ref"] = ""
+				case "whitespace":
+					root["$ref"] = " \n "
+				case "unresolved":
+					root["$ref"] = "#/missing"
+				case "referenced":
+					root["$ref"] = 17
+					schemas["Invalid"] = root
+					branch = map[string]any{"$ref": "#/components/schemas/Invalid"}
+				case "nested":
+					root["$ref"] = false
+					schemas["Invalid"] = map[string]any{"oneOf": []any{root}}
+					branch = map[string]any{"anyOf": []any{map[string]any{"$ref": "#/components/schemas/Invalid"}}}
+				case "cycle":
+					// Properties let ordinary payload resolution finish; the new
+					// admission guard must still reject a cyclic envelope reference.
+					root[composition] = []any{map[string]any{"$ref": "#/components/schemas/Loop"}}
+					schemas["Loop"] = root
+				case "deep":
+					for range 40 {
+						branch = map[string]any{"anyOf": []any{branch}}
+					}
+				}
+				envelope := map[string]any{composition: []any{branch}}
+				if composition == "allOf" {
+					// The ordinary WHM envelope reader uses properties rather
+					// than allOf alone; admission also validates composed nodes.
+					envelope["properties"] = map[string]any{"metadata": map[string]any{"type": "object"}}
+				}
+				setEnvelope(t, fixtureNode(t, m, "whm1:createacct"), envelope)
+				_, problems := buildProblems(t, m, set)
+				if !strings.Contains(problems, "whm1:createacct:") {
+					t.Fatalf("missing-payload root replacement accepted %s envelope alternative", name)
+				}
+			})
+		}
+	}
+}
+
+func TestMissingPayloadRootCorrectionPreservesResolvableEnvelopeAlternatives(t *testing.T) {
+	for _, composition := range []string{"anyOf", "oneOf", "allOf"} {
+		t.Run(composition, func(t *testing.T) {
+			m, set, root := correctedRootFixture(t)
+			// Result fields are outside the local envelope-reference guard.
+			root["properties"].(map[string]any)["metadata"] = map[string]any{"$ref": false}
+			m.Documents["whm-openapi"]["components"] = map[string]any{"schemas": map[string]any{"Envelope": root}}
+			ref := map[string]any{"$ref": "#/components/schemas/Envelope"}
+			var branch any = ref
+			for range 12 {
+				branch = map[string]any{"oneOf": []any{branch}}
+			}
+			envelope := map[string]any{composition: []any{branch, ref}}
+			if composition == "allOf" {
+				envelope["properties"] = map[string]any{"metadata": map[string]any{"type": "object"}}
+			}
+			setEnvelope(t, fixtureNode(t, m, "whm1:createacct"), envelope)
+			result, problems := buildProblems(t, m, set)
+			if problems != "" {
+				t.Fatal(problems)
+			}
+			if got := groupByClass(t, result, "Accounts").Operations[0].Returns; got == nil || fieldNames(*got) != "needs_reboot" {
+				t.Fatalf("resolvable no-data alternatives lost corrected payload: %+v", got)
+			}
+		})
+	}
+}
+
+func TestMissingPayloadRootCorrectionBoundsEnvelopeReferenceChains(t *testing.T) {
+	for _, count := range []int{12, 40} {
+		m, set, root := correctedRootFixture(t)
+		schemas := map[string]any{"Leaf": root}
+		m.Documents["whm-openapi"]["components"] = map[string]any{"schemas": schemas}
+		ref := "#/components/schemas/Leaf"
+		for i := range count {
+			name := fmt.Sprintf("Ref%d", i)
+			schemas[name] = map[string]any{"$ref": ref}
+			ref = "#/components/schemas/" + name
+		}
+		setEnvelope(t, fixtureNode(t, m, "whm1:createacct"), map[string]any{"anyOf": []any{map[string]any{"$ref": ref}}})
+		_, problems := buildProblems(t, m, set)
+		if count == 12 && problems != "" {
+			t.Fatalf("bounded reference chain was rejected: %s", problems)
+		}
+		if count == 40 && !strings.Contains(problems, "whm1:createacct:") {
+			t.Fatal("over-depth reference chain was accepted")
+		}
+	}
+}
+
+func TestMissingPayloadRootCorrectionLocallyRejectsCompositionCycles(t *testing.T) {
+	for _, composition := range []string{"anyOf", "oneOf", "allOf"} {
+		t.Run(composition, func(t *testing.T) {
+			m, set, _ := correctedRootFixture(t)
+			envelope := map[string]any{composition: []any{map[string]any{"$ref": "#/components/schemas/Loop"}}}
+			m.Documents["whm-openapi"]["components"] = map[string]any{"schemas": map[string]any{"Loop": envelope}}
+			setEnvelope(t, fixtureNode(t, m, "whm1:createacct"), envelope)
+			s, err := newSchemas(m)
+			if err != nil {
+				t.Fatal(err)
+			}
+			b := builder{schemas: s}
+			op := operationByID(t, m, "whm1:createacct")
+			// Exercise admission directly: ordinary payload resolution has
+			// separate, pre-existing recursion behavior outside this guard.
+			if b.missingPayloadRoot(op, op.Variants[0], set.Files[1].Operations[op.ID], payloadInfo{}) != nil {
+				t.Fatal("local missing-payload admission accepted a composition cycle")
+			}
+		})
 	}
 }

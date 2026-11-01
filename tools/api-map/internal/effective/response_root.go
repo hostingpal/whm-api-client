@@ -40,27 +40,50 @@ func (b *builder) missingPayloadRoot(op model.Operation, v model.Variant, ov ove
 	if err != nil {
 		return nil
 	}
-	// The ordinary resolver tolerates nonstring $ref values. Do not let a
-	// malformed reference create a new payload through this exceptional entry.
-	sourceID := loc.SourceID
-	for range 32 {
-		node, ok := asObject(raw)
-		if !ok {
-			return nil
-		}
-		value, present := node["$ref"]
-		if !present {
-			return &TypeSpec{}
-		}
+	// The ordinary resolver tolerates nonstring $ref values. Validate the
+	// envelope and its compositions locally before admitting this exception.
+	if !b.envelopeReferences(loc.SourceID, raw, 0, map[string]bool{}) {
+		return nil
+	}
+	return &TypeSpec{}
+}
+
+// envelopeReferences checks only envelope/reference nodes, never their result
+// properties. Reference siblings retain the ordinary resolver's follow behavior.
+// The depth bound includes composition and reference edges; path-local cycle
+// detection permits a valid reference reused by independent alternatives.
+func (b *builder) envelopeReferences(sourceID string, raw any, depth int, seen map[string]bool) bool {
+	if depth >= 32 {
+		return false
+	}
+	node, ok := asObject(raw)
+	if !ok {
+		return false
+	}
+	if value, present := node["$ref"]; present {
 		ref, ok := value.(string)
-		if !ok || ref == "" {
-			return nil
+		if !ok || strings.TrimSpace(ref) == "" {
+			return false
 		}
 		resolved, err := b.schemas.index.Resolve(sourceID, ref)
 		if err != nil || resolved.Origin.Pointer == nil {
-			return nil
+			return false
 		}
-		sourceID, raw = resolved.Origin.SourceID, resolved.Value
+		key := resolved.Origin.SourceID + "#" + *resolved.Origin.Pointer
+		if seen[key] {
+			return false
+		}
+		seen[key] = true
+		defer delete(seen, key)
+		return b.envelopeReferences(resolved.Origin.SourceID, resolved.Value, depth+1, seen)
 	}
-	return nil
+	for _, key := range []string{"oneOf", "anyOf", "allOf"} {
+		parts, _ := node[key].([]any)
+		for _, part := range parts {
+			if !b.envelopeReferences(sourceID, part, depth+1, seen) {
+				return false
+			}
+		}
+	}
+	return true
 }
