@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 101 generated typed groups cover 1,159 documented operations (see
+The 103 generated typed groups cover 1,165 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, DNS zone and DNSSEC
 management, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -3791,3 +3791,92 @@ source or installed-plugin successful payload. Populated `read_only` wire types
 remain unobserved: strict native integer 0|1 stays pinned, without speculative
 digit-string acceptance. The opaque `listUsers()` map remains unchanged. This
 integration performs no live call, plugin installation or calendar operation.
+
+
+### UAPI account cache management (2026-10-31)
+
+`uapi()->cacheBuster()` exposes both pinned browser resource version operations,
+available from cPanel 11.46. `read()` sends GET and `update()` sends form POST.
+Both are parameterless and return `array{cache_id?: int}`. The source describes an
+eight-digit random integer (and read declares 10000000–99999999); the client
+preserves strict integers without string normalization or local range checks.
+Missing fields remain omitted. It does not promise global uniqueness,
+monotonicity or security properties for this cache version.
+
+The application that updates a resource must explicitly call `update()` when it
+changes the resource, then append the returned ID to the resource URL query
+string as the source describes. For example:
+
+```php
+$account = $client->uapi('exampleuser');
+$current = $account->cacheBuster()->read();
+// After the application updates its resource:
+$updated = $account->cacheBuster()->update();
+if (isset($updated['cache_id'])) {
+    $resourceUrl = 'https://example.test/app.css?' . $updated['cache_id'];
+}
+```
+
+The client does not fetch resources or modify URLs. This browser cache version
+mechanism is separate from account NGINX cache management.
+
+`uapi()->nginxCaching()` exposes all four pinned operations from cPanel 100,
+requiring the installed `ea-nginx` package. `clearCache()` deletes the selected
+account's cache contents; `disableCache()` and `enableCache()` change caching;
+`resetCacheConfig()` resets configuration with no documented resulting defaults.
+These parameterless calls use form POST; they accept no user or all-user target.
+
+All four NGINX data schemas are exactly `{"properties":{}}`, without a type.
+The existing `mixed` return contract accepts any present JSON value, including
+null, scalars, lists and opaque objects recursively converted to arrays. Numeric
+object keys follow existing PHP array semantics. Missing data remains a payload
+mismatch under normal status handling; callers must inspect unconstrained results.
+No result field is inferred from WHM NginxManager or prior WHM observations.
+
+These mutations have no documented rollback. The client adds no implicit read,
+restore, retry or rollback and installs no package. NGINX operations do not promise
+browser invalidation, nor does CacheBuster promise NGINX invalidation. Offline
+coverage establishes routing and payload contracts, not installed-package
+compatibility, cache effects, browser refetches, observed response fields or reset
+defaults. Separate live follow-up `whm-api-client-8x0.2.62` remains open; no live
+call or server change ran in this slice. Delivery is `whm-api-client-8x0.4.20`.
+
+This adds exactly six canonical UAPI operations and two groups over `259c8d6`:
+1,128 operations (540 UAPI, 588 WHM), 95 groups and 193 generated outputs (192 PHP
+files plus coverage). Historical slice totals above remain historical.
+
+
+### PR95 ordered approved-master integration (2026-11-01)
+
+Normal integration of original PR95 `31ed8cff3294ffcea2f8993c47da567cc0e4b2b7`
+with approved master `052662324e298a36adebf9b8f8d4b80f112c0b6d` preserves
+all six original CacheBuster/NginxCaching contracts, overlays, generated methods
+and independent tests. Current combined coverage is 1,165 canonical operations
+(569 UAPI, 596 WHM), 103 groups and 209 generated outputs (208 PHP files plus
+coverage). Earlier delivery and integration totals remain historical.
+
+[PR95 review 5724999867](https://github.com/hostingpal/whm-api-client/pull/95#pullrequestreview-5724999867)
+by `seebeen` covers only original `259c8d6..31ed8cf`, with no required findings;
+it is not approval or live validation of the combined revision. On cPanel
+`11.138.0.19`, the reviewer reports CacheBuster read/update/read returned native
+JSON integer `cache_id` through direct UAPI and the WHM bridge on disposable
+account `wrvchc`. The reviewer reports revoking its temporary token and confirming
+the account and home directory gone; this integration performs no new cleanup
+verification or live capture.
+
+All four NginxCaching calls returned `ApiErrorException` through both routes
+because `ea-nginx` was absent. Installed-plugin successful responses and cache
+effects remain unobserved. The reviewer's handler-source inspection predicts
+explicit null on success because handlers do not set data; that is source
+inference, not successful runtime evidence. Historical MySQL explicit-null
+observations do not establish NGINX behavior. The pinned NGINX schema remains
+untyped `{"properties":{}}`: preserve present `mixed` values, including null,
+without narrowing to null-only; absent data still mismatches. Callers inspect
+unconstrained results. No automatic cross-invalidation, reset defaults, retry,
+rollback, package installation or browser refetch guarantee is added.
+
+Delivery `whm-api-client-8x0.4.20` is closed; separate installed-plugin/runtime
+follow-up `whm-api-client-8x0.2.62` remains open. This integration is offline.
+Required PHP 8.3 CI, fresh combined-revision reviews and inherited acceptance
+work remain separate gates; historical source/evidence and review results are
+preserved without replay or new runtime claims.

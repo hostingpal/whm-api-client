@@ -1,0 +1,164 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "NginxCaching",
+  "accessor": "nginxCaching",
+  "operations": {
+    "uapi:NginxCaching/clear_cache": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 100 and later. Requires the installed ea-nginx package. Deletes the selected account NGINX cache contents."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned data schema contains only properties:{} and no type. Existing mixed lowering preserves every present JSON value, including null, scalars, lists and opaque objects recursively converted to arrays. Missing data remains a payload mismatch."
+        },
+        {
+          "kind": "policy",
+          "text": "Callers must inspect the unconstrained result; no response field or installed-package behavior has been live verified. This operation is account-scoped, with no user or all-user argument, and does not promise browser cache invalidation."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST with no rollback. The client adds no implicit read, restore, retry or rollback and does not install ea-nginx."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1NginxCaching~1clear_cache/get: Available version cPanel 100; no parameters are accepted. x-readonly=false and x-rollback=none select form POST under the mutation policy. The description requires installed ea-nginx.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1NginxCaching~1clear_cache/get"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1NginxCaching~1clear_cache/get/responses/200/content/application~1json/schema/properties/result/properties/data: The exact data schema is {\"properties\":{}} with no type. Preserve existing mixed lowering, including any present JSON value; do not infer void, null-only or opaque-object-only results or known fields. An absent data member remains a mismatch.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1NginxCaching~1clear_cache/get/responses/200/content/application~1json/schema/properties/result/properties/data"
+        }
+      ]
+    },
+    "uapi:NginxCaching/disable_cache": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 100 and later. Requires the installed ea-nginx package. Disables caching for the selected account."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned data schema contains only properties:{} and no type. Existing mixed lowering preserves every present JSON value, including null, scalars, lists and opaque objects recursively converted to arrays. Missing data remains a payload mismatch."
+        },
+        {
+          "kind": "policy",
+          "text": "Callers must inspect the unconstrained result; no response field or installed-package behavior has been live verified. This operation is account-scoped, with no user or all-user argument, and does not promise browser cache invalidation."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST with no rollback. The client adds no implicit read, restore, retry or rollback and does not install ea-nginx."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1NginxCaching~1disable_cache/get: Available version cPanel 100; no parameters are accepted. x-readonly=false and x-rollback=none select form POST under the mutation policy. The description requires installed ea-nginx.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1NginxCaching~1disable_cache/get"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1NginxCaching~1disable_cache/get/responses/200/content/application~1json/schema/properties/result/properties/data: The exact data schema is {\"properties\":{}} with no type. Preserve existing mixed lowering, including any present JSON value; do not infer void, null-only or opaque-object-only results or known fields. An absent data member remains a mismatch.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1NginxCaching~1disable_cache/get/responses/200/content/application~1json/schema/properties/result/properties/data"
+        }
+      ]
+    },
+    "uapi:NginxCaching/enable_cache": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 100 and later. Requires the installed ea-nginx package. Enables caching for the selected account."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned data schema contains only properties:{} and no type. Existing mixed lowering preserves every present JSON value, including null, scalars, lists and opaque objects recursively converted to arrays. Missing data remains a payload mismatch."
+        },
+        {
+          "kind": "policy",
+          "text": "Callers must inspect the unconstrained result; no response field or installed-package behavior has been live verified. This operation is account-scoped, with no user or all-user argument, and does not promise browser cache invalidation."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST with no rollback. The client adds no implicit read, restore, retry or rollback and does not install ea-nginx."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1NginxCaching~1enable_cache/get: Available version cPanel 100; no parameters are accepted. x-readonly=false and x-rollback=none select form POST under the mutation policy. The description requires installed ea-nginx.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1NginxCaching~1enable_cache/get"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1NginxCaching~1enable_cache/get/responses/200/content/application~1json/schema/properties/result/properties/data: The exact data schema is {\"properties\":{}} with no type. Preserve existing mixed lowering, including any present JSON value; do not infer void, null-only or opaque-object-only results or known fields. An absent data member remains a mismatch.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1NginxCaching~1enable_cache/get/responses/200/content/application~1json/schema/properties/result/properties/data"
+        }
+      ]
+    },
+    "uapi:NginxCaching/reset_cache_config": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 100 and later. Requires the installed ea-nginx package. Resets the selected account NGINX caching configuration; the source does not define the resulting defaults."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned data schema contains only properties:{} and no type. Existing mixed lowering preserves every present JSON value, including null, scalars, lists and opaque objects recursively converted to arrays. Missing data remains a payload mismatch."
+        },
+        {
+          "kind": "policy",
+          "text": "Callers must inspect the unconstrained result; no response field or installed-package behavior has been live verified. This operation is account-scoped, with no user or all-user argument, and does not promise browser cache invalidation."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST with no rollback. The client adds no implicit read, restore, retry or rollback and does not install ea-nginx."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1NginxCaching~1reset_cache_config/get: Available version cPanel 100; no parameters are accepted. x-readonly=false and x-rollback=none select form POST under the mutation policy. The description requires installed ea-nginx.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1NginxCaching~1reset_cache_config/get"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1NginxCaching~1reset_cache_config/get/responses/200/content/application~1json/schema/properties/result/properties/data: The exact data schema is {\"properties\":{}} with no type. Preserve existing mixed lowering, including any present JSON value; do not infer void, null-only or opaque-object-only results or known fields. An absent data member remains a mismatch.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1NginxCaching~1reset_cache_config/get/responses/200/content/application~1json/schema/properties/result/properties/data"
+        }
+      ]
+    }
+  }
+}

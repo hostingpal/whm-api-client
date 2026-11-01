@@ -27,6 +27,8 @@ trait UapiGroups
 
     private ?BoxTrapper $boxTrapperGroup = null;
 
+    private ?CacheBuster $cacheBusterGroup = null;
+
     private ?Ccs $ccsGroup = null;
 
     private ?ClamScanner $clamScannerGroup = null;
@@ -94,6 +96,8 @@ trait UapiGroups
     private ?ModSecurity $modSecurityGroup = null;
 
     private ?Mysql $mysqlGroup = null;
+
+    private ?NginxCaching $nginxCachingGroup = null;
 
     private ?Notifications $notificationsGroup = null;
 
@@ -227,6 +231,16 @@ trait UapiGroups
     public function boxTrapper(): BoxTrapper
     {
         return $this->boxTrapperGroup ??= new BoxTrapper($this->run(...));
+    }
+
+    /**
+     * Select the CacheBuster operations without making a request.
+     *
+     * The CacheBuster module for UAPI.
+     */
+    public function cacheBuster(): CacheBuster
+    {
+        return $this->cacheBusterGroup ??= new CacheBuster($this->run(...));
     }
 
     /**
@@ -571,6 +585,16 @@ trait UapiGroups
     public function mysql(): Mysql
     {
         return $this->mysqlGroup ??= new Mysql($this->run(...));
+    }
+
+    /**
+     * Select the NginxCaching operations without making a request.
+     *
+     * The NginxCaching module for UAPI.
+     */
+    public function nginxCaching(): NginxCaching
+    {
+        return $this->nginxCachingGroup ??= new NginxCaching($this->run(...));
     }
 
     /**

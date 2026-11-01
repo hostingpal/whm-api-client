@@ -7694,3 +7694,113 @@ other methods, overlay notes and prior evidence remain intact. No new grammar,
 map correction, source refresh, API call or filesystem operation is introduced.
 Fresh combined offline gates and native preservation proofs bind the staged
 candidate; original acceptance is not future integrated-head approval.
+
+
+### Complete UAPI account cache management typed adoption (2026-10-31)
+
+CacheBuster (2 operations) and NginxCaching (4) are complete pinned modules,
+adopted through generated `CacheBuster`/`cacheBuster()` and
+`NginxCaching`/`nginxCaching()` groups. Source is
+`docs/api/sources/2026-10-13/cpanel.openapi.json.gz`, decompressed SHA-256
+`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`.
+Exact nondeprecated selected GET-source operation pointers are
+`/paths/~1CacheBuster~1read/get`, `/paths/~1CacheBuster~1update/get`,
+`/paths/~1NginxCaching~1clear_cache/get`,
+`/paths/~1NginxCaching~1disable_cache/get`,
+`/paths/~1NginxCaching~1enable_cache/get` and
+`/paths/~1NginxCaching~1reset_cache_config/get`. No parameters are accepted.
+Each overlay binds both its operation pointer and the corresponding exact
+`/responses/200/content/application~1json/schema/properties/result/properties/data`
+node through structured pinned-hash evidence.
+
+CacheBuster is available from cPanel 11.46. Only read has x-readonly:true and
+retains GET; update has x-readonly:false/x-rollback:none and uses form POST under
+the existing mutation policy. These are transport choices from GET source
+variants, not claims of documented POST variants. Both data schemas are objects
+with optional integer cache_id and no required field list. The read field declares
+minimum 10000000 and maximum 99999999; both field descriptions say eight digits,
+while update has no formal range. Preserve the existing optional strict integer
+shape without unwrapping, requiredness correction, string normalization, local
+range enforcement or ID generation. No uniqueness, monotonicity, security or
+credential-sensitivity guarantee is inferred. The read description requires the
+application to call update when updating the resource and append its returned ID
+to the resource URL query string; the client does not fetch resources or modify
+URLs.
+
+All NginxCaching operations are available from cPanel 100 and require installed
+ea-nginx per their descriptions. Each has x-readonly:false/x-rollback:none and
+uses form POST. clear_cache deletes account cache contents; disable_cache and
+enable_cache change caching; reset_cache_config resets configuration without
+specifying resulting defaults. All target the selected account without user or
+all-user arguments. They are separate from browser CacheBuster versioning; no
+cross-invalidation or WHM NginxManager behavior is inferred.
+
+Each NGINX data schema is exactly {properties:{}} without a type. This is neither
+an absent data member nor an explicit object schema. Existing lowering produces
+mixed: every present JSON value is accepted, including null, scalars, lists and
+opaque objects recursively converted to arrays. Dynamic numeric keys retain PHP
+array semantics. Missing data remains a PayloadMismatchException under Flag.
+There is no response correction or inferred result field. Consumers inspect the
+unconstrained values until separately evidenced refinement. All five mutations
+have no documented rollback and add no implicit read, restore, retry or rollback.
+
+Independent real-client/mock-HTTP fixtures cover all six operations on direct
+(wrapped and bare envelope) and bridged UAPI routes: exact URL/auth/method, GET
+without body, form POST with empty body and no invented payload parameters, one
+send, optional/populated/legacy-empty CacheBuster objects, strict field/root
+rejection, integers outside documented ranges without new local bounds, every
+present NGINX JSON kind including opaque nested maps/lists and numeric object
+keys, and missing mixed payload rejection. Confirmed payload mismatch metadata,
+API failure before payload validation, outer WHM failure precedence, metadata
+lifecycle, HTTP/transport no retry, parameterless native signatures and cached
+accessor identities are exercised. Tests use literal independent fixtures and
+public behavior, with no generated-spec mirrors or broad assertion-swallowing
+exception catches. Shared runtime/generator changes were unnecessary.
+
+Baseline `259c8d69f839f48eb0a8cad9fdfbb1d58f0a6bac` contains 1,122 canonical
+operations (534 UAPI, 588 WHM), 93 groups and 189 generated outputs. This adds
+exactly six canonical UAPI operations and two groups: 1,128 operations (540 UAPI,
+588 WHM), 95 groups, 193 outputs (192 PHP files plus coverage). Pinned sources,
+map checksum, immutable evidence, old overlays/specs and the prior audit prefix
+remain unchanged. No live API call, server cache mutation, package installation
+or browser/network resource fetch ran. Offline typed coverage does not establish
+ea-nginx availability, cache effects, browser refetching, observed result fields
+or reset defaults. Separate live follow-up `whm-api-client-8x0.2.62` remains open;
+delivery is `whm-api-client-8x0.4.20`. Required PHP 8.3 CI and inherited acceptance
+work remain external-owned and unwaived.
+
+
+### PR95 ordered approved-master integration (2026-11-01)
+
+Normal integration of original PR95 `31ed8cff3294ffcea2f8993c47da567cc0e4b2b7`
+with approved master `052662324e298a36adebf9b8f8d4b80f112c0b6d` preserves
+all six original CacheBuster/NginxCaching contracts, overlays, generated methods
+and independent tests. Current combined coverage is 1,165 canonical operations
+(569 UAPI, 596 WHM), 103 groups and 209 generated outputs (208 PHP files plus
+coverage). Earlier delivery and integration totals remain historical.
+
+[PR95 review 5724999867](https://github.com/hostingpal/whm-api-client/pull/95#pullrequestreview-5724999867)
+by `seebeen` covers only original `259c8d6..31ed8cf`, with no required findings;
+it is not approval or live validation of the combined revision. On cPanel
+`11.138.0.19`, the reviewer reports CacheBuster read/update/read returned native
+JSON integer `cache_id` through direct UAPI and the WHM bridge on disposable
+account `wrvchc`. The reviewer reports revoking its temporary token and confirming
+the account and home directory gone; this integration performs no new cleanup
+verification or live capture.
+
+All four NginxCaching calls returned `ApiErrorException` through both routes
+because `ea-nginx` was absent. Installed-plugin successful responses and cache
+effects remain unobserved. The reviewer's handler-source inspection predicts
+explicit null on success because handlers do not set data; that is source
+inference, not successful runtime evidence. Historical MySQL explicit-null
+observations do not establish NGINX behavior. The pinned NGINX schema remains
+untyped `{"properties":{}}`: preserve present `mixed` values, including null,
+without narrowing to null-only; absent data still mismatches. Callers inspect
+unconstrained results. No automatic cross-invalidation, reset defaults, retry,
+rollback, package installation or browser refetch guarantee is added.
+
+Delivery `whm-api-client-8x0.4.20` is closed; separate installed-plugin/runtime
+follow-up `whm-api-client-8x0.2.62` remains open. This integration is offline.
+Required PHP 8.3 CI, fresh combined-revision reviews and inherited acceptance
+work remain separate gates; historical source/evidence and review results are
+preserved without replay or new runtime claims.
