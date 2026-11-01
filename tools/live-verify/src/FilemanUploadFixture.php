@@ -75,7 +75,8 @@ use Throwable;
  * }
  * @phpstan-type OracleResult array{
  *     expected_bytes: int, expected_utf8_bytes: int, returned_utf8_bytes: int|null, content_exact: bool,
- *     first_difference: int|null, from_charset_exact: bool, to_charset_exact: bool
+ *     first_difference: int|null, from_charset_echo: 'exact'|'lowercase'|'other',
+ *     to_charset_echo: 'exact'|'lowercase'|'other'
  * }
  * @phpstan-type Report array{
  *     status: 'passed'|'failed', setup: 'passed'|'failed'|'not_started', capture: 'passed'|'failed'|'not_run',
@@ -88,7 +89,7 @@ use Throwable;
  *     domain_cleanup: CleanupOutcome, zone_cleanup: CleanupOutcome, filesystem_cleanup: 'not_claimed'
  * }
  * @phpstan-type Scenario array{
- *     scenario: 'fileman-upload-disposable-v1', target_role: 'disposable-test-account', probes: list<Observation>,
+ *     scenario: 'fileman-upload-disposable-v2', target_role: 'disposable-test-account', probes: list<Observation>,
  *     uploads: array<string, UploadSummary>, byte_oracle: array<string, OracleResult>,
  *     borrowed_streams: array<string, bool>, discrepancy_review: Assessment, fixture: Report, limitations: list<string>
  * }
@@ -534,7 +535,7 @@ final class FilemanUploadFixture
     /**
      * Read every listed file, record each oracle outcome, then stop if any content differed.
      *
-     * All reads complete first: they mutate nothing, and one mismatch should not hide the others. A differing
+     * All reads complete first: they mutate nothing, and one mismatch should not hide the others. An unaccepted
      * charset echo over exact content fails the run at its end instead: it cannot affect how later uploads are read.
      *
      * @param array<string, Label> $phases
@@ -573,23 +574,23 @@ final class FilemanUploadFixture
         $payload = is_array($result) ? $result : [];
         $content = $payload['content'] ?? null;
         $exact = $content === $expected;
-        $from = self::charsetExact($payload, 'from_char', 'from_charset', FilemanUploadRecipe::FROM_CHARSET);
-        $to = self::charsetExact($payload, 'to_char', 'to_charset', FilemanUploadRecipe::TO_CHARSET);
+        $from = self::charsetEcho($payload, 'from_char', 'from_charset', FilemanUploadRecipe::FROM_CHARSET);
+        $to = self::charsetEcho($payload, 'to_char', 'to_charset', FilemanUploadRecipe::TO_CHARSET);
         $this->oracle[$phase] = [
             'expected_bytes' => strlen($bytes),
             'expected_utf8_bytes' => strlen($expected),
             'returned_utf8_bytes' => is_string($content) ? strlen($content) : null,
             'content_exact' => $exact,
             'first_difference' => is_string($content) && !$exact ? self::firstDifference($content, $expected) : null,
-            'from_charset_exact' => $from,
-            'to_charset_exact' => $to,
+            'from_charset_echo' => $from,
+            'to_charset_echo' => $to,
         ];
         $matched = $this->last()['probe_outcome'] === 'passed' && $exact;
         if ($matched) {
             // Anything left unproven is not cleaned up individually; account removal takes it.
             $this->owned[$label] = true;
         }
-        if (!$matched || !$from || !$to) {
+        if (!$matched || $from === 'other' || $to === 'other') {
             $this->markFailed();
         }
 
@@ -597,15 +598,23 @@ final class FilemanUploadFixture
     }
 
     /**
-     * Compare the documented charset field, falling back to its schema-less twin only when absent.
+     * Classify the documented charset field, falling back to its schema-less twin only when absent.
      *
      * The source documents from_char/to_char as echoing the request; from_charset/to_charset have empty schemas.
+     * cPanel 11.138.0.19 omits the documented pair and returns the twins lowercased. Charset labels are
+     * case-insensitive, so exactly the requested label or its lowercase form shows the requested conversion.
+     * Anything else is 'other' and fails the run, because exact content alone does not show which conversion ran.
      *
      * @param array<mixed> $payload
+     * @return 'exact'|'lowercase'|'other'
      */
-    private static function charsetExact(array $payload, string $field, string $alternative, string $expected): bool
+    private static function charsetEcho(array $payload, string $field, string $alternative, string $expected): string
     {
-        return (array_key_exists($field, $payload) ? $payload[$field] : ($payload[$alternative] ?? null)) === $expected;
+        return match (array_key_exists($field, $payload) ? $payload[$field] : ($payload[$alternative] ?? null)) {
+            $expected => 'exact',
+            strtolower($expected) => 'lowercase',
+            default => 'other',
+        };
     }
 
     /** Locate the first differing offset of two unequal strings; only this number leaves memory. */
@@ -1230,7 +1239,7 @@ final class FilemanUploadFixture
         unset($record);
 
         return [
-            'scenario' => 'fileman-upload-disposable-v1',
+            'scenario' => 'fileman-upload-disposable-v2',
             'target_role' => 'disposable-test-account',
             'probes' => $records,
             'uploads' => $this->uploads,

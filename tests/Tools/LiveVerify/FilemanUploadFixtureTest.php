@@ -83,8 +83,8 @@ final class FilemanUploadFixtureTest extends TestCase
         self::assertSame(['cursor' => true, 'partial' => true], $scenario['borrowed_streams']);
         foreach ($scenario['byte_oracle'] as $outcome) {
             self::assertTrue($outcome['content_exact']);
-            self::assertTrue($outcome['from_charset_exact']);
-            self::assertTrue($outcome['to_charset_exact']);
+            self::assertSame('exact', $outcome['from_charset_echo']);
+            self::assertSame('exact', $outcome['to_charset_echo']);
             self::assertNull($outcome['first_difference']);
         }
         self::assertSame(
@@ -637,22 +637,22 @@ final class FilemanUploadFixtureTest extends TestCase
     }
 
     /**
-     * Exact content keeps ownership and the remaining phases; the differing echo still fails the run.
+     * Exact content keeps ownership and the remaining phases; a differing echo still fails the run.
      *
      * @param array<string, string> $echo
      */
     #[DataProvider('charsetEchoes')]
-    public function testReturnedCharsetsMustEchoTheRequestExactly(array $echo): void
+    public function testReturnedCharsetsMustEchoTheRequestOrItsLowercaseForm(array $echo): void
     {
         $http = new FilemanUploadServer();
         $http->charsetEcho = $echo;
         $scenario = self::scenario($http);
         self::assertSame('failed', $scenario['fixture']['status']);
         self::assertContains('expectation_failure', $scenario['fixture']['failures']);
-        self::assertFalse(
-            $scenario['byte_oracle']['read_bytes']['from_charset_exact']
-            && $scenario['byte_oracle']['read_bytes']['to_charset_exact'],
-        );
+        self::assertContains('other', [
+            $scenario['byte_oracle']['read_bytes']['from_charset_echo'],
+            $scenario['byte_oracle']['read_bytes']['to_charset_echo'],
+        ]);
         self::assertTrue($scenario['byte_oracle']['read_bytes']['content_exact']);
         self::assertSame(5, $http->counts[self::UPLOAD]);
         self::assertSame(['proven_owned' => 6, 'deleted' => 6], $scenario['fixture']['resources']['files']);
@@ -665,7 +665,38 @@ final class FilemanUploadFixtureTest extends TestCase
     {
         yield 'detected source' => [['from_char' => 'UTF-8']];
         yield 'locale target' => [['to_char' => 'ISO-8859-1']];
-        yield 'different case' => [['to_char' => 'utf-8']];
+        yield 'mixed case' => [['to_char' => 'Utf-8']];
+        yield 'trailing space' => [['from_char' => 'ISO-8859-1 ']];
+    }
+
+    /**
+     * The form observed on cPanel 11.138.0.19: only the twin fields appear, with lowercased labels.
+     *
+     * Charset labels are case-insensitive, so this still shows the requested conversion.
+     */
+    public function testLowercaseEchoInTheTwinFieldsPassesAndIsClassified(): void
+    {
+        $http = new FilemanUploadServer();
+        $http->documentedCharsetFields = false;
+        $http->charsetEcho = ['from_charset' => 'iso-8859-1', 'to_charset' => 'utf-8'];
+        $scenario = self::scenario($http);
+        self::assertSame('passed', $scenario['fixture']['status']);
+        foreach ($scenario['byte_oracle'] as $outcome) {
+            self::assertSame('lowercase', $outcome['from_charset_echo']);
+            self::assertSame('lowercase', $outcome['to_charset_echo']);
+            self::assertTrue($outcome['content_exact']);
+        }
+    }
+
+    public function testExactContentNeverExcusesAWrongTwinField(): void
+    {
+        $http = new FilemanUploadServer();
+        $http->documentedCharsetFields = false;
+        $http->charsetEcho = ['from_charset' => 'windows-1252'];
+        $scenario = self::scenario($http);
+        self::assertSame('failed', $scenario['fixture']['status']);
+        self::assertSame('other', $scenario['byte_oracle']['read_bytes']['from_charset_echo']);
+        self::assertSame('exact', $scenario['byte_oracle']['read_bytes']['to_charset_echo']);
     }
 
     public function testMissingCharsetFieldsFailRatherThanPass(): void
@@ -674,7 +705,7 @@ final class FilemanUploadFixtureTest extends TestCase
         $http->reportCharsets = false;
         $scenario = self::scenario($http);
         self::assertSame('failed', $scenario['fixture']['status']);
-        self::assertFalse($scenario['byte_oracle']['read_bytes']['from_charset_exact']);
+        self::assertSame('other', $scenario['byte_oracle']['read_bytes']['from_charset_echo']);
     }
 
     public function testSchemalessCharsetTwinIsReadOnlyWhenTheDocumentedFieldIsAbsent(): void
@@ -682,7 +713,7 @@ final class FilemanUploadFixtureTest extends TestCase
         $http = new FilemanUploadServer();
         $http->charsetEcho = ['from_charset' => 'other-value'];
         $scenario = self::scenario($http);
-        self::assertTrue($scenario['byte_oracle']['read_bytes']['from_charset_exact']);
+        self::assertSame('exact', $scenario['byte_oracle']['read_bytes']['from_charset_echo']);
         self::assertSame('passed', $scenario['fixture']['status']);
     }
 

@@ -78,6 +78,9 @@ final class FilemanUploadServer implements ClientInterface
 
     public bool $reportCharsets = true;
 
+    /** Whether the documented from_char and to_char fields appear; cPanel 11.138.0.19 omits them. */
+    public bool $documentedCharsetFields = true;
+
     /** @var array<string, string> Upstream charset echo overrides. */
     public array $charsetEcho = [];
 
@@ -414,9 +417,13 @@ final class FilemanUploadServer implements ClientInterface
         };
         $charsets = ['from_char' => 'ISO-8859-1', 'to_char' => 'UTF-8',
             'from_charset' => 'ISO-8859-1', 'to_charset' => 'UTF-8'];
+        $charsets = array_replace($charsets, $this->charsetEcho);
+        if (!$this->documentedCharsetFields) {
+            unset($charsets['from_char'], $charsets['to_char']);
+        }
 
         return ['content' => $content, 'dir' => $absolute, 'filename' => $file, 'path' => $absolute . '/' . $file]
-            + ($this->reportCharsets ? array_replace($charsets, $this->charsetEcho) : []);
+            + ($this->reportCharsets ? $charsets : []);
     }
 
     private static function direct(int $status, string $payload): ResponseInterface
