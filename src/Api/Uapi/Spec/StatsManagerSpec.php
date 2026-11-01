@@ -71,7 +71,7 @@ final class StatsManagerSpec
                                         'required' => ['name', 'enabled'],
                                     ],
                                 ],
-                                'domain' => ['type' => 'string'],
+                                'domain' => ['type' => 'string', 'nonempty' => true],
                             ],
                             'required' => ['domain', 'analyzers'],
                         ],
@@ -91,9 +91,8 @@ final class StatsManagerSpec
                         'items' => [
                             'type' => 'object',
                             'fields' => [
-                                'available' => ['type' => 'flag'],
                                 'enabled' => ['type' => 'flag'],
-                                'locked' => ['type' => 'flag'],
+                                'enabled_by_user' => ['type' => 'flag'],
                                 'name' => ['type' => 'string'],
                             ],
                         ],

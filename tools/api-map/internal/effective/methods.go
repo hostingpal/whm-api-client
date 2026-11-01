@@ -12,7 +12,7 @@ func (b *builder) additionalMethods(op model.Operation, v model.Variant, ov over
 	var methods []Method
 	sources := map[string]Param{}
 	for _, p := range canonical.Params {
-		sources[p.Wire] = p
+		sources[p.Source] = p
 	}
 	locators := map[string]model.Parameter{}
 	for _, p := range v.Parameters {
@@ -43,7 +43,7 @@ func (b *builder) additionalMethods(op model.Operation, v model.Variant, ov over
 			return p, true
 		}
 		for _, input := range m.Inputs {
-			if !IsMethodName(input.PHP) || reservedArguments[input.PHP] || names[input.PHP] {
+			if !IsMethodName(input.PHP) || input.PHP == "this" || names[input.PHP] {
 				fail("invalid or duplicated input name")
 			}
 			names[input.PHP] = true
@@ -103,7 +103,7 @@ func (b *builder) additionalMethods(op model.Operation, v model.Variant, ov over
 				if p.Sensitive && !*c.Sensitive {
 					fail("record sensitivity cannot discard source secrecy")
 				}
-				records.Fields = append(records.Fields, RecordField{PHP: f.PHP, Prefix: f.Prefix, Type: p.PHPType, Required: p.Required})
+				records.Fields = append(records.Fields, RecordField{PHP: f.PHP, Prefix: f.Prefix, Type: p.PHPType, Required: p.Required, Description: clean(text(locators[f.Source].Definition["description"]))})
 			}
 			p := Param{PHP: input.PHP, Wire: input.PHP, Encoding: "records", PHPType: "array", DocType: "non-empty-list<" + c.Alias + ">", Required: true, Sensitive: *c.Sensitive, Records: records, Description: "Records in input order; optional fields retain their original row index."}
 			method.Params = append(method.Params, p)
@@ -145,4 +145,17 @@ func (b *builder) additionalMethods(op model.Operation, v model.Variant, ov over
 }
 func containsRecordType(s string) bool {
 	return s == "string" || s == "int" || s == "bool" || s == "string|int"
+}
+
+// Field roots stay independent of the object-only whole-body execution policy.
+func inputHasNull(s InputSpec) bool {
+	if s.Nullable || s.Type == "null" {
+		return true
+	}
+	for _, alternative := range s.AnyOf {
+		if inputHasNull(alternative) {
+			return true
+		}
+	}
+	return false
 }

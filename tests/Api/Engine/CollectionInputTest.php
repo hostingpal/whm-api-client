@@ -164,6 +164,100 @@ final class CollectionInputTest extends TestCase
         }
     }
 
+    /** @return iterable<array{array<string, mixed>}> */
+    public static function collectionOverlaps(): iterable
+    {
+        foreach (
+            [
+            ['name' => 'domain-0', 'encoding' => 'scalar'],
+            ['name' => 'domain', 'encoding' => 'numbered'],
+            ['name' => 'domain-1', 'encoding' => 'repeat'],
+            ['name' => 'other', 'encoding' => 'collection',
+                'collection' => ['prefix' => 'domain', 'start' => 1] + self::INDEXED],
+            ] as $other
+        ) {
+            $params = ['domains' => ['name' => 'domains', 'encoding' => 'collection',
+                'collection' => self::INDEXED], 'other' => $other];
+            yield [$params];
+            yield [array_reverse($params, true)];
+        }
+    }
+
+    /** @param array<string, mixed> $params */
+    #[DataProvider('collectionOverlaps')]
+    public function testCollectionFamilyOverlapsFailEvenWhenAllArgumentsOmitted(array $params): void
+    {
+        try {
+            SpecChecker::check(self::spec($params));
+            self::fail('Declared overlaps must fail whole-spec lint.');
+        } catch (LogicException $error) {
+            self::assertSame(LogicException::class, $error::class);
+            self::assertStringContainsString('Overlapping wire names', $error->getMessage());
+        }
+    }
+
+    public function testCollectionSafeNumericSuffixLookalikesRemainUsable(): void
+    {
+        foreach (['domain-01', 'domain-0x', 'domain0', 'Domain-0', 'apiX', 'cpanel.userX'] as $name) {
+            $params = ['domains' => ['name' => 'domains', 'encoding' => 'collection',
+                'collection' => self::INDEXED], 'other' => ['name' => $name, 'encoding' => 'scalar']];
+            SpecChecker::check(['module' => 'DNSSEC'] + self::spec($params));
+            self::assertSame(
+                'domain-0=a&' . $name . '=literal',
+                ArgumentEncoder::encode($params, ['domains' => ['a'], 'other' => 'literal'])->encode(),
+            );
+        }
+    }
+
+    public function testCollectionDeclarationsRetainAllSharedRoutingReservations(): void
+    {
+        foreach (['api.', 'api.filter.enable', 'cpanel.user', 'cpanel.module', 'cpanel.function'] as $name) {
+            foreach (['indexed', 'repeat'] as $kind) {
+                $collection = $kind === 'indexed' ? self::INDEXED
+                    : ['kind' => 'repeat', 'item_type' => 'string', 'allow_scalar' => true, 'empty' => 'reject'];
+                try {
+                    SpecChecker::check(['module' => 'DNSSEC'] + self::spec([
+                        'domains' => ['name' => $name, 'encoding' => 'collection', 'collection' => $collection],
+                    ]));
+                    self::fail('Collection declarations cannot bypass shared routing reservations.');
+                } catch (LogicException $error) {
+                    self::assertSame(LogicException::class, $error::class);
+                    self::assertSame('Reserved wire name in the parameter specs.', $error->getMessage());
+                }
+            }
+        }
+    }
+
+    public function testDirectEncoderStillDefendsExpandedCollisionsAndRedactsTrace(): void
+    {
+        $previous = ini_set('zend.exception_ignore_args', '0');
+        try {
+            foreach ([false, true] as $reverse) {
+                $params = ['domains' => ['name' => 'domain', 'encoding' => 'collection',
+                    'collection' => self::INDEXED], 'fixed' => ['name' => 'domain-1', 'encoding' => 'scalar']];
+                try {
+                    // Exercise the defensive encoder boundary independently of spec lint.
+                    ArgumentEncoder::encode(
+                        $reverse ? array_reverse($params, true) : $params,
+                        ['domains' => ['first-secret', 'last-secret'], 'fixed' => 'last-secret'],
+                    );
+                    self::fail('The direct encoder must reject collisions.');
+                } catch (InvalidArgumentException $error) {
+                    self::assertSame(InvalidArgumentException::class, $error::class);
+                    self::assertStringNotContainsString('secret', $error->getMessage());
+                    foreach ($error->getTrace() as $frame) {
+                        if (str_starts_with($frame['class'] ?? '', 'HostingPal\\WhmApiClient\\Api\\Engine\\')) {
+                            self::assertStringNotContainsString('first-secret', print_r($frame['args'] ?? [], true));
+                            self::assertStringNotContainsString('last-secret', print_r($frame['args'] ?? [], true));
+                        }
+                    }
+                }
+            }
+        } finally {
+            ini_set('zend.exception_ignore_args', $previous === false ? '1' : $previous);
+        }
+    }
+
     /** @param array<mixed> $params
      * @return array<mixed>
      */

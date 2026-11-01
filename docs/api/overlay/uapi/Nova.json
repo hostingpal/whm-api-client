@@ -1,0 +1,464 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "Nova",
+  "accessor": "nova",
+  "operations": {
+    "uapi:Nova/account_exists": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Pinned x-readonly=true."
+        },
+        {
+          "kind": "documented",
+          "text": "Requires the AI App Builder feature in the selected account package."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Nova/account_exists: parameter requiredness, defaults and wire casing remain the source contract. x-readonly=true."
+        }
+      ]
+    },
+    "uapi:Nova/add_api_token": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "The pinned source omits x-readonly."
+        },
+        {
+          "kind": "policy",
+          "text": "Use conservative form POST; omission of x-readonly alone does not establish mutation. The reviewer report does not establish this generated HTTP method."
+        },
+        {
+          "kind": "documented",
+          "text": "Requires the AI App Builder feature in the selected account package. Disabling that feature disables this operation."
+        },
+        {
+          "kind": "policy",
+          "text": "The nullable opaque result preserves explicit null and unknown object fields; absent data is a mismatch."
+        },
+        {
+          "kind": "policy",
+          "text": "Token inputs and returned keys/tokens are sensitive; do not log them."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Nova/add_api_token: parameter requiredness, defaults and wire casing remain the source contract. x-readonly is absent; conservative POST is client policy, not a pinned declaration or live HTTP-method observation."
+        }
+      ],
+      "params": {
+        "api_token": {
+          "php": "apiToken",
+          "sensitive": true
+        }
+      }
+    },
+    "uapi:Nova/can_create_domains": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Pinned x-readonly=true."
+        },
+        {
+          "kind": "documented",
+          "text": "Requires the AI App Builder feature in the selected account package. Disabling that feature disables this operation."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Nova/can_create_domains: parameter requiredness, defaults and wire casing remain the source contract. x-readonly=true."
+        }
+      ]
+    },
+    "uapi:Nova/create_account": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "The pinned source omits x-readonly."
+        },
+        {
+          "kind": "policy",
+          "text": "Use conservative form POST; omission of x-readonly alone does not establish mutation. The reviewer report does not establish this generated HTTP method."
+        },
+        {
+          "kind": "documented",
+          "text": "Requires the AI App Builder feature in the selected account package. Disabling that feature disables this operation."
+        },
+        {
+          "kind": "policy",
+          "text": "Token inputs and returned keys/tokens are sensitive; do not log them."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Nova/create_account: parameter requiredness, defaults and wire casing remain the source contract. x-readonly is absent; conservative POST is client policy, not a pinned declaration or live HTTP-method observation."
+        }
+      ]
+    },
+    "uapi:Nova/disk_quota_check": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Pinned x-readonly=true."
+        },
+        {
+          "kind": "documented",
+          "text": "Requires the AI App Builder feature in the selected account package. Disabling that feature disables this operation."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Nova/disk_quota_check: parameter requiredness, defaults and wire casing remain the source contract. x-readonly=true."
+        }
+      ]
+    },
+    "uapi:Nova/ensure_account": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "The pinned source omits x-readonly."
+        },
+        {
+          "kind": "policy",
+          "text": "Use conservative form POST; omission of x-readonly alone does not establish mutation. The reviewer report does not establish this generated HTTP method."
+        },
+        {
+          "kind": "documented",
+          "text": "Requires the AI App Builder feature in the selected account package. Disabling that feature disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "return_url is required for regular accounts and rejected for standalone accounts; its pinned optionality is retained. It must be an HTTPS URL of at most 2048 characters, on the host receiving the request, with path /frontend/meridian/index.html (optionally prefixed by a cPanel session token) and the in-product route in the fragment."
+        },
+        {
+          "kind": "documented",
+          "text": "promptToken accepts valid standard or URL-safe base64, with at most 5000 characters after decoding. The system ignores empty or whitespace-only prompts."
+        },
+        {
+          "kind": "policy",
+          "text": "Prompt tokens are caller-encoded base64 forwarded once without local decoding or validation. Returned SSO URLs are not followed."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Nova/ensure_account: parameter requiredness, defaults and wire casing remain the source contract. x-readonly is absent; conservative POST is client policy, not a pinned declaration or live HTTP-method observation."
+        }
+      ],
+      "params": {
+        "promptToken": {
+          "sensitive": true
+        },
+        "return_url": {
+          "php": "returnUrl",
+          "sensitive": true
+        }
+      }
+    },
+    "uapi:Nova/get_all_user_nova_info": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Pinned x-readonly=true."
+        },
+        {
+          "kind": "documented",
+          "text": "Requires the AI App Builder feature in the selected account package. Disabling that feature disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Space is in MB; publication/session dates are integer Unix timestamps. A minted session is independent of website existence or publication."
+        },
+        {
+          "kind": "policy",
+          "text": "The bounded domain-record list repair preserves optional nested fields and documented wire spelling without speculative coercion."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Nova/get_all_user_nova_info: parameter requiredness, defaults and wire casing remain the source contract. x-readonly=true."
+        }
+      ],
+      "response": {
+        "": {
+          "replace": {
+            "type": "list",
+            "items": {
+              "type": "object",
+              "fields": {
+                "domain": {
+                  "type": "string"
+                },
+                "metadata": {
+                  "type": "object",
+                  "fields": {
+                    "company": {
+                      "type": "string"
+                    },
+                    "cpanelDomainGUID": {
+                      "type": "string"
+                    },
+                    "document_root": {
+                      "type": "string"
+                    },
+                    "fullcms": {
+                      "type": "flag"
+                    },
+                    "language": {
+                      "type": "string"
+                    },
+                    "latest_publish_date": {
+                      "type": "int"
+                    },
+                    "publish_status": {
+                      "type": "flag"
+                    },
+                    "session_minted_at": {
+                      "type": "int"
+                    },
+                    "websiteId": {
+                      "type": "int"
+                    }
+                  }
+                },
+                "quota": {
+                  "type": "object",
+                  "fields": {
+                    "available_space": {
+                      "type": "int"
+                    },
+                    "can_backup": {
+                      "type": "flag"
+                    },
+                    "is_docroot_empty": {
+                      "type": "flag"
+                    },
+                    "required_space": {
+                      "type": "int"
+                    }
+                  }
+                },
+                "redirection_enabled": {
+                  "type": "flag"
+                },
+                "shared_doc_root": {
+                  "type": "flag"
+                },
+                "status": {
+                  "type": "object",
+                  "fields": {
+                    "has_nova_published": {
+                      "type": "flag"
+                    },
+                    "has_nova_session": {
+                      "type": "flag"
+                    },
+                    "has_nova_website": {
+                      "type": "flag"
+                    },
+                    "is_nova": {
+                      "type": "flag"
+                    },
+                    "ssl_status": {
+                      "type": "flag"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /Nova/get_all_user_nova_info describes domain records and supplies items but omits the root array type. The explicit item properties, leaf types, integer 0/1 enums and examples establish this bounded list contract. Every field remains optional. Do not infer quoted numbers, booleans, extra keys or unlisted recursive shapes."
+            }
+          ]
+        }
+      }
+    },
+    "uapi:Nova/get_sso_link": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "The pinned source omits x-readonly."
+        },
+        {
+          "kind": "policy",
+          "text": "Use conservative form POST; omission of x-readonly alone does not establish mutation. The reviewer report does not establish this generated HTTP method."
+        },
+        {
+          "kind": "documented",
+          "text": "Requires the AI App Builder feature in the selected account package. Disabling that feature disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "return_url is required for regular accounts and rejected for standalone accounts; its pinned optionality is retained. It must be an HTTPS URL of at most 2048 characters, on the host receiving the request, with path /frontend/meridian/index.html (optionally prefixed by a cPanel session token) and the in-product route in the fragment."
+        },
+        {
+          "kind": "documented",
+          "text": "promptToken accepts valid standard or URL-safe base64, with at most 5000 characters after decoding. The system ignores empty or whitespace-only prompts."
+        },
+        {
+          "kind": "policy",
+          "text": "Prompt tokens are caller-encoded base64 forwarded once without local decoding or validation. Returned SSO URLs are not followed."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Nova/get_sso_link: parameter requiredness, defaults and wire casing remain the source contract. x-readonly is absent; conservative POST is client policy, not a pinned declaration or live HTTP-method observation."
+        }
+      ],
+      "params": {
+        "promptToken": {
+          "sensitive": true
+        },
+        "return_url": {
+          "php": "returnUrl",
+          "sensitive": true
+        }
+      }
+    },
+    "uapi:Nova/get_tier": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Pinned x-readonly=true."
+        },
+        {
+          "kind": "documented",
+          "text": "Requires the AI App Builder feature in the selected account package."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Nova/get_tier: parameter requiredness, defaults and wire casing remain the source contract. x-readonly=true."
+        }
+      ]
+    },
+    "uapi:Nova/poll_publish": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "The pinned source omits x-readonly."
+        },
+        {
+          "kind": "policy",
+          "text": "Use conservative form POST; omission of x-readonly alone does not establish mutation. The reviewer report does not establish this generated HTTP method."
+        },
+        {
+          "kind": "documented",
+          "text": "Requires the AI App Builder feature in the selected account package. Disabling that feature disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "pid must be positive upstream; is_running is 0 unless it belongs to a running process on this account."
+        },
+        {
+          "kind": "policy",
+          "text": "Log paths are forwarded unchanged; returned log lines are payload data and are not executed."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Nova/poll_publish: parameter requiredness, defaults and wire casing remain the source contract. x-readonly is absent; conservative POST is client policy, not a pinned declaration or live HTTP-method observation."
+        }
+      ],
+      "params": {
+        "file_name": {
+          "php": "fileName"
+        }
+      }
+    },
+    "uapi:Nova/publish": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "The pinned source omits x-readonly."
+        },
+        {
+          "kind": "policy",
+          "text": "Use conservative form POST; omission of x-readonly alone does not establish mutation. The reviewer report does not establish this generated HTTP method."
+        },
+        {
+          "kind": "documented",
+          "text": "Requires the AI App Builder feature in the selected account package. Disabling that feature disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitted cleanup retains the pinned default 0. cleanup=1 removes previous document-root files."
+        },
+        {
+          "kind": "policy",
+          "text": "cleanup uses nullable boolean encoding: null/omission omit, false sends 0 and true sends 1. Archive URLs and signatures remain sensitive; no local download, signature verification or extraction occurs."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Nova/publish: parameter requiredness, defaults and wire casing remain the source contract. x-readonly is absent; conservative POST is client policy, not a pinned declaration or live HTTP-method observation."
+        }
+      ],
+      "params": {
+        "archiveUrl": {
+          "sensitive": true
+        },
+        "signature": {
+          "sensitive": true
+        },
+        "cleanup": {
+          "encoding": "bool",
+          "description": "Whether to remove previous document-root files during publication. Omit or pass null to omit the field; false sends 0 and true sends 1 (destructive). The pinned Nova default is 0."
+        }
+      },
+      "name": "publish"
+    }
+  },
+  "description": "Pinned availability is cPanel 110+. Observed: Reviewer 5721328890 on cPanel 11.138.0.19 reports all six Nova reads they called failed on both routes because Cpanel::API::Nova could not load. Reviewer-source inspection found the module file absent. All eleven methods are unavailable for verification on this server. Write failures are expected from the missing module but were not executed. Every Nova response shape, including overlay repairs, remains unobserved. Policy: Each call makes one request without automatic retry, polling, rollback or undo. Returned tokens, SSO URLs and account metadata are sensitive payload data. The client does not fetch returned URLs or inspect website files. API success does not establish publication completion, rendering or interactive SSO login."
+}

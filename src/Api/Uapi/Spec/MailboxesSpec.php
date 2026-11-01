@@ -36,7 +36,7 @@ final class MailboxesSpec
             'mailboxGuid' => ['name' => 'mailbox_guid', 'encoding' => 'scalar'],
             'query' => ['name' => 'query', 'encoding' => 'scalar'],
         ],
-        'returns' => ['type' => 'map', 'values' => ['type' => 'mixed']],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
     ];
 
     public const GET_MAILBOX_STATUS_LIST = [
@@ -54,8 +54,8 @@ final class MailboxesSpec
                 'fields' => [
                     'guid' => ['type' => 'string'],
                     'mailbox' => ['type' => 'string'],
-                    'messages' => ['type' => 'int'],
-                    'vsize' => ['type' => 'int'],
+                    'messages' => ['type' => 'int', 'accept' => ['numeric-string']],
+                    'vsize' => ['type' => 'int', 'accept' => ['numeric-string']],
                 ],
             ],
         ],

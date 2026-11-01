@@ -153,7 +153,7 @@ final class UapiMarketReadTest extends TestCase
     public static function invalidPayloads(): iterable
     {
         $fields = [
-            'get_all_products' => ['[{"product_id":"7"}]', '[{"price":"1.25"}]', '[{"base_name":1}]',
+            'get_all_products' => ['[{"product_id":"seven"}]', '[{"price":"1.25"}]', '[{"base_name":1}]',
                 '[{"x_certificate_term":[1]}]', '[{"x_identity_verification":1}]',
                 '[{"x_identity_verification":[1]}]', '[{"x_identity_verification":{"label":null}}]',
                 '[{"x_identity_verification":[{"name":7}]}]', '[{"x_price_per_wildcard_domain":"free"}]',
@@ -173,11 +173,11 @@ final class UapiMarketReadTest extends TestCase
                 '[{"certificate_id":null}]', '[{"first_poll_time":false}]', '[{"parent_cert_expiry":"1"}]'],
             'get_product_info' => ['{"product_id":7}', '{"redirect_path":null}', '{"redirect_url_failure":false}'],
             'get_provider_specific_dcv_constraints' => ['{"dcv_max_redirects":"0"}',
-                '{"dcv_file_allowed_characters":[1]}', '{"dcv_file_random_character_count":null}'],
+                '{"dcv_file_allowed_characters":[true]}', '{"dcv_file_random_character_count":null}'],
             'get_providers_list' => ['[{"name":null}]', '[{"display_name":7}]'],
-            'get_ssl_certificate_if_available' => ['{"certificate_pem":7}', '{"encrypted_action_urls":null}',
+            'get_ssl_certificate_if_available' => ['{"certificate_pem":7}', '{"encrypted_action_urls":false}',
                 '{"encrypted_action_urls":{"evClickThroughStatus":false}}',
-                '{"encrypted_action_urls":{"ovCallbackStatus":[]}}', '{"status_code":1}', '{"status_message":null}'],
+                '{"encrypted_action_urls":{"ovCallbackStatus":[]}}', '{"status_code":1}', '{"status_message":false}'],
         ];
         foreach (self::routes() as [$route]) {
             foreach (self::operationCalls() as $function => $call) {

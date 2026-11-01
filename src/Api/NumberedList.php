@@ -8,9 +8,9 @@ namespace HostingPal\WhmApiClient\Api;
  * Mark a query value for WHM's numbered multi-value encoding.
  *
  * One string encodes as name=value; a list encodes as name, name-1, name-2, ...
- * in order. Contents are validated by AbstractApiClient::executeGet() after it
- * clears response metadata, so groups never validate parameters before the
- * request lifecycle starts. Repeated-key values are plain list<string> values or RepeatedList markers.
+ * in order. ParameterExpander validates contents before dispatch for generated
+ * and generic calls, after the handle clears response metadata. Repeated-key
+ * values are plain list<string> values or RepeatedList markers.
  *
  * @internal Built by operation groups for documented numbered parameters.
  */
