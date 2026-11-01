@@ -5,67 +5,305 @@
   "accessor": "accounts",
   "operations": {
     "whm1:accountsummary": {
-      "probe": {"phase": "read-only", "arguments": {"user": "npr"}, "routes": ["whm"], "expected": "success"},
+      "probe": {
+        "phase": "read-only",
+        "arguments": {
+          "user": "npr"
+        },
+        "routes": [
+          "whm"
+        ],
+        "expected": "success"
+      },
       "name": "accountSummary",
-      "notes": [{"kind": "documented", "text": "The pinned acct member is an array of account records, so the result is a list rather than a single record."}],
-      "order": ["user", "domain"],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "The pinned acct member is an array of account records, so the result is a list rather than a single record."
+        }
+      ],
+      "order": [
+        "user",
+        "domain"
+      ],
       "unwrap": "acct",
       "response": {
-        "acct[].has_backup": {"add": {"type": "flag"}, "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-13", "note": "Not in the pinned accountsummary record; the pinned listaccts record documents has_backup as 0|1 and the deleted hand-written accountSummary() (4d5088a) validated and returned it as part of the shared account record."}]},
-        "acct[].standalone_feature": {"add": {"type": "string"}, "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-14", "note": "accountsummary returned standalone_feature as an empty string (undocumented for accountsummary, documented as a string for listaccts); docs/api/source-audit.md#runtime-observations-2026-10-14"}]},
-        "acct[].standalone_feature_name": {"add": {"type": "string"}, "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-14", "note": "accountsummary returned standalone_feature_name as an empty string (undocumented for accountsummary, documented as a string for listaccts); docs/api/source-audit.md#runtime-observations-2026-10-14"}]},
-        "acct[].suspendtime": {"replace": {"type": "union", "nullable": true, "anyOf": [{"type": "string"}, {"type": "int"}]}, "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-14", "note": "accountsummary returned suspendtime as integer 0 for an unsuspended account, although the pinned schema declares a nullable string; docs/api/source-audit.md#runtime-observations-2026-10-14"}]},
-        "acct[].uid": {"accept": ["numeric-string"], "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-14", "note": "listaccts and accountsummary returned uid as a decimal string; docs/api/source-audit.md"}]}
+        "acct[].has_backup": {
+          "add": {
+            "type": "flag"
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-13",
+              "note": "Not in the pinned accountsummary record; the pinned listaccts record documents has_backup as 0|1 and the deleted hand-written accountSummary() (4d5088a) validated and returned it as part of the shared account record."
+            }
+          ]
+        },
+        "acct[].standalone_feature": {
+          "add": {
+            "type": "string"
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.15",
+              "date": "2026-10-14",
+              "note": "accountsummary returned standalone_feature as an empty string (undocumented for accountsummary, documented as a string for listaccts); docs/api/source-audit.md#runtime-observations-2026-10-14"
+            }
+          ]
+        },
+        "acct[].standalone_feature_name": {
+          "add": {
+            "type": "string"
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.15",
+              "date": "2026-10-14",
+              "note": "accountsummary returned standalone_feature_name as an empty string (undocumented for accountsummary, documented as a string for listaccts); docs/api/source-audit.md#runtime-observations-2026-10-14"
+            }
+          ]
+        },
+        "acct[].suspendtime": {
+          "replace": {
+            "type": "union",
+            "nullable": true,
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "int"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.15",
+              "date": "2026-10-14",
+              "note": "accountsummary returned suspendtime as integer 0 for an unsuspended account, although the pinned schema declares a nullable string; docs/api/source-audit.md#runtime-observations-2026-10-14"
+            }
+          ]
+        },
+        "acct[].uid": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.15",
+              "date": "2026-10-14",
+              "note": "listaccts and accountsummary returned uid as a decimal string; docs/api/source-audit.md"
+            }
+          ]
+        }
       }
     },
     "whm1:changepackage": {
       "name": "changePackage",
-      "order": ["user", "pkg"],
-      "params": {"pkg": {"php": "package"}}
+      "order": [
+        "user",
+        "pkg"
+      ],
+      "params": {
+        "pkg": {
+          "php": "package"
+        }
+      }
     },
     "whm1:createacct": {
       "name": "createAccount",
       "optional_payload": true,
-      "params": {"account_enhancements": {"php": "accountEnhancements", "encoding": "repeat"}},
-      "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-13", "note": "The pinned createacct response does not require data, and the deleted hand-written create() (4d5088a) returned an empty result when WHM sent no data or null data; the pinned account_enhancements schema is oneOf a string or a list of strings (single and multiple examples), which create() sent as repeated keys."}]
+      "params": {
+        "account_enhancements": {
+          "php": "accountEnhancements",
+          "encoding": "repeat"
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-13",
+          "note": "The pinned createacct response does not require data, and the deleted hand-written create() (4d5088a) returned an empty result when WHM sent no data or null data; the pinned account_enhancements schema is oneOf a string or a list of strings (single and multiple examples), which create() sent as repeated keys."
+        }
+      ]
     },
     "whm1:get_domain_info": {
-      "probe": {"phase": "read-only", "arguments": {}, "routes": ["whm"], "expected": "success"},
+      "probe": {
+        "phase": "read-only",
+        "arguments": {},
+        "routes": [
+          "whm"
+        ],
+        "expected": "success"
+      },
       "response": {
-        "domains[].port": {"accept": ["numeric-string"], "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-13", "note": "get_domain_info returned port and port_ssl as decimal strings (80, 443); docs/api/source-audit.md#runtime-observations-2026-10-13"}]},
-        "domains[].port_ssl": {"accept": ["numeric-string"], "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-13", "note": "get_domain_info returned port and port_ssl as decimal strings (80, 443); docs/api/source-audit.md#runtime-observations-2026-10-13"}]}
+        "domains[].port": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.15",
+              "date": "2026-10-13",
+              "note": "get_domain_info returned port and port_ssl as decimal strings (80, 443); docs/api/source-audit.md#runtime-observations-2026-10-13"
+            }
+          ]
+        },
+        "domains[].port_ssl": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.15",
+              "date": "2026-10-13",
+              "note": "get_domain_info returned port and port_ssl as decimal strings (80, 443); docs/api/source-audit.md#runtime-observations-2026-10-13"
+            }
+          ]
+        }
       }
     },
     "whm1:listaccts": {
-      "probe": {"phase": "read-only", "arguments": {"search": "npr", "searchtype": "user", "searchmethod": "exact"}, "routes": ["whm"], "expected": "success"},
+      "probe": {
+        "phase": "read-only",
+        "arguments": {
+          "search": "npr",
+          "searchtype": "user",
+          "searchmethod": "exact"
+        },
+        "routes": [
+          "whm"
+        ],
+        "expected": "success"
+      },
       "name": "listAccounts",
-      "order": ["search", "searchtype", "searchmethod", "want"],
+      "order": [
+        "search",
+        "searchtype",
+        "searchmethod",
+        "want"
+      ],
       "unwrap": "acct",
       "response": {
-        "acct[].suspendtime": {"replace": {"type": "union", "nullable": true, "anyOf": [{"type": "string"}, {"type": "int"}]}, "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-13", "note": "The pinned listaccts record declares suspendtime as a nullable integer timestamp, while the pinned accountsummary record declares the same field of the same account record as a nullable string and returned integer 0 live (whm1:accountsummary correction). Suspended accounts were never observed, so listaccts accepts the same string/integer/null union as accountsummary; docs/api/source-audit.md#runtime-observations-2026-10-15-generated-client-cutover"}]},
-        "acct[].uid": {"accept": ["numeric-string"], "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-14", "note": "listaccts and accountsummary returned uid as a decimal string; docs/api/source-audit.md"}]}
+        "acct[].suspendtime": {
+          "replace": {
+            "type": "union",
+            "nullable": true,
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "int"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-13",
+              "note": "The pinned listaccts record declares suspendtime as a nullable integer timestamp, while the pinned accountsummary record declares the same field of the same account record as a nullable string and returned integer 0 live (whm1:accountsummary correction). Suspended accounts were never observed, so listaccts accepts the same string/integer/null union as accountsummary; docs/api/source-audit.md#runtime-observations-2026-10-15-generated-client-cutover"
+            }
+          ]
+        },
+        "acct[].uid": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.15",
+              "date": "2026-10-14",
+              "note": "listaccts and accountsummary returned uid as a decimal string; docs/api/source-audit.md"
+            }
+          ]
+        }
       }
     },
     "whm1:modifyacct": {
       "name": "modifyAccount",
       "optional_payload": true,
       "params": {
-        "MXCHECK-*": {"omit": true},
-        "PUSHBULLET_ACCESS_TOKEN": {"sensitive": true}
+        "MXCHECK-*": {
+          "omit": true
+        },
+        "PUSHBULLET_ACCESS_TOKEN": {
+          "sensitive": true
+        }
       },
-      "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-13", "note": "The pinned modifyacct response does not require data, and the deleted hand-written modify() (4d5088a) returned an empty result when WHM sent no data or null data."}]
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-13",
+          "note": "The pinned modifyacct response does not require data, and the deleted hand-written modify() (4d5088a) returned an empty result when WHM sent no data or null data."
+        }
+      ]
     },
     "whm1:passwd": {
       "name": "changePassword",
-      "notes": [{"kind": "documented", "text": "Omitting dbPassUpdate applies the documented default 1, so the account's MySQL password changes as well; pass false to keep it."}],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Omitting dbPassUpdate applies the documented default 1, so the account's MySQL password changes as well; pass false to keep it."
+        }
+      ],
       "optional_payload": true,
-      "order": ["user", "password"],
-      "params": {"enabledigest": {"omit": true}},
-      "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-13", "note": "The pinned passwd response does not require data, and the deleted hand-written changePassword() (4d5088a) returned an empty result when WHM sent no data or null data."}]
+      "order": [
+        "user",
+        "password"
+      ],
+      "params": {
+        "enabledigest": {
+          "omit": true
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-13",
+          "note": "The pinned passwd response does not require data, and the deleted hand-written changePassword() (4d5088a) returned an empty result when WHM sent no data or null data."
+        }
+      ]
     },
-    "whm1:removeacct": {"name": "removeAccount", "params": {"user": {"omit": true}}},
-    "whm1:suspendacct": {"name": "suspendAccount", "notes": [{"kind": "documented", "text": "Omitting reason records the documented default reason Unknown; pass a reason."}], "order": ["user", "reason", "disallowun", "leave-ftp-accts-enabled"]},
-    "whm1:unsuspendacct": {"name": "unsuspendAccount"},
+    "whm1:removeacct": {
+      "name": "removeAccount",
+      "params": {
+        "user": {
+          "omit": true
+        }
+      }
+    },
+    "whm1:suspendacct": {
+      "name": "suspendAccount",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Omitting reason records the documented default reason Unknown; pass a reason."
+        }
+      ],
+      "order": [
+        "user",
+        "reason",
+        "disallowun",
+        "leave-ftp-accts-enabled"
+      ]
+    },
+    "whm1:unsuspendacct": {
+      "name": "unsuspendAccount"
+    },
     "whm1:assign_account_enhancement": {
       "name": "assignAccountEnhancement",
       "method": "POST",
@@ -174,7 +412,8 @@
             "allow_scalar": false,
             "empty": "allow",
             "prefix": "copymysqldb-"
-          }
+          },
+          "description": "Map from old database logical names to new database names. Keys omit the client-added copymysqldb- prefix. Purely numeric keys are rejected because PHP coerces them to integer keys and their original spelling cannot be recovered. Literal key bytes and insertion order are preserved, including names that themselves begin copymysqldb-. Null or [] copies no databases."
         },
         "movemysqldb": {
           "php": "moveMysqlDatabases",
@@ -882,7 +1121,7 @@
       ]
     },
     "whm1:massmodifyacct": {
-      "name": "massmodifyacct",
+      "name": "massModifyAccount",
       "method": "POST",
       "order": [
         "user"
@@ -901,14 +1140,7 @@
           }
         },
         "MXCHECK-*": {
-          "php": "mxPriorities",
-          "collection": {
-            "kind": "map",
-            "item_type": "int",
-            "allow_scalar": false,
-            "empty": "allow",
-            "prefix": "MXCHECK-"
-          }
+          "omit": true
         },
         "PUSHBULLET_ACCESS_TOKEN": {
           "sensitive": true
@@ -919,7 +1151,7 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
-          "note": "The pinned MXCHECK-* parameter encodes caller-chosen database/domain names in the key. No current typed encoding represents that keyed mapping. Dropping this parameter would hide a documented operation feature."
+          "note": "Pinned MXCHECK-* claims integer priorities, but its payload example contains word values. Omit this newly adopted parameter through the established exclusion mechanism rather than publishing an ineffective typed control. Existing modifyAccount arguments remain unchanged."
         },
         {
           "kind": "doc",
@@ -935,27 +1167,44 @@
           "date": "2026-10-31",
           "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
           "pointer": "/paths/~1massmodifyacct/get/parameters/26",
-          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594; #/paths/~1massmodifyacct/get/parameters/26. MXCHECK- followed by the primary domain carries integer priority, for example MXCHECK-example.com=10."
+          "note": "Pinned MXCHECK-* priority parameter is deliberately excluded. The reviewer on 11.138.0.19 sent remote, secondary, local, auto, 10, 1 and 0 through massmodifyacct and modifyacct; all calls succeeded while the inspected MXCHECK-domain remained 0. This is scoped evidence of no observed effect, not a universal version claim or a replacement word-valued contract. https://github.com/hostingpal/whm-api-client/pull/77#pullrequestreview-5723287220"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "One real and one missing account produced metadata.result=0 with per-user results [1,0], while the real account changed. user-1 numbering and populated extended payload passed. Reviewer report, not a local capture: https://github.com/hostingpal/whm-api-client/pull/77#pullrequestreview-5723287220"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Version-scoped reviewer observation, not a local run or capture: On reviewed 11.138.0.19, response rows can differ from request order. Match each row by its user field, not its position. https://github.com/hostingpal/whm-api-client/pull/77#pullrequestreview-5724345977"
         }
       ],
       "notes": [
         {
           "kind": "documented",
-          "text": "Uses form POST. Each call makes one attempt, with no automatic retry or rollback. Typed input support is source-backed and has no live mutation verification in this slice."
+          "text": "Uses form POST. Each call makes one attempt, with no automatic retry or rollback."
         },
         {
-          "kind": "documented",
-          "text": "All 51 case-sensitive source fields are retained. user accepts a scalar or nonempty sequential list with user-1/user-2 suffixes. mxPriorities adds literal MXCHECK- to domain suffix keys and preserves integer zero; null or [] sends no priorities."
+          "kind": "policy",
+          "text": "Retains 50 case-sensitive source fields. user accepts a scalar or nonempty sequential list with user-1/user-2 suffixes. MXCHECK-* is excluded after the reviewer observed successful calls with no effect; no replacement argument is inferred."
         },
         {
           "kind": "documented",
           "text": "Hosting-plan changes can overwrite custom account settings. Renaming database objects can move data and require application changes; restoration can fail, and successful renames can still warn about original database/grant deletion failures. Preserve root-only BACKUP and cross-reseller OWNER permissions and the Web Server role restriction on enabling CGI."
         },
         {
-          "kind": "documented",
-          "text": "Inspect every per-user payload result, reason, warnings and messages. Outer success does not establish every account succeeded. PUSHBULLET_ACCESS_TOKEN remains sensitive. Existing omission, unlimited and flag semantics are unchanged."
+          "kind": "observed",
+          "text": "Uses OutcomePolicy::Unchecked: metadata.result 0 can accompany partially applied changes. Inspect responseMeta() and every per-user payload result, reason, warnings and messages, including all-failed rows. Integer 0/1 envelope results and the required payload are still validated. A payload mismatch has outcomeConfirmed=false; do not retry or roll back automatically. PUSHBULLET_ACCESS_TOKEN remains sensitive."
+        },
+        {
+          "kind": "observed",
+          "text": "On reviewed 11.138.0.19, response rows can differ from request order. Match each row by its user field, not its position."
         }
-      ]
+      ],
+      "outcome": "unchecked"
     },
     "whm1:modify_account_enhancement": {
       "name": "modifyAccountEnhancement",
@@ -1209,7 +1458,7 @@
     },
     "whm1:personalization_get": {
       "exclude": {
-        "reason": "Requires a JSON request body; typed JSON-body machinery is available, while this endpoint adoption remains deferred under whm-api-client-8x0.1.18; remaining selection/source/route audit is tracked under whm-api-client-8x0.29.6. Raw callJson() supplies no typed contract and establishes no endpoint compatibility.",
+        "reason": "Requires a JSON request body; typed JSON-body support remains tracked under whm-api-client-8x0.1.18. Raw callJson() supplies no typed contract and establishes no endpoint compatibility.",
         "evidence": [
           {
             "kind": "doc",
@@ -1222,7 +1471,7 @@
     },
     "whm1:personalization_set": {
       "exclude": {
-        "reason": "Requires a JSON request body; typed JSON-body machinery is available, while this endpoint adoption remains deferred under whm-api-client-8x0.1.18; remaining selection/source/route audit is tracked under whm-api-client-8x0.29.6. Raw callJson() supplies no typed contract and establishes no endpoint compatibility.",
+        "reason": "Requires a JSON request body; typed JSON-body support remains tracked under whm-api-client-8x0.1.18. Raw callJson() supplies no typed contract and establishes no endpoint compatibility.",
         "evidence": [
           {
             "kind": "doc",

@@ -497,7 +497,7 @@
     },
     "whm1:php_fpm_config_get": {
       "exclude": {
-        "reason": "Requires an application/json request body; typed JSON-body machinery is available, while this endpoint adoption remains deferred under whm-api-client-8x0.1.18; remaining selection/source/route audit is tracked under whm-api-client-8x0.29.6. Raw callJson() supplies no typed contract and establishes no endpoint compatibility.",
+        "reason": "Requires an application/json request body; typed JSON-body support remains tracked under whm-api-client-8x0.1.18. Raw callJson() supplies no typed contract and establishes no endpoint compatibility.",
         "evidence": [
           {
             "kind": "doc",
@@ -510,7 +510,7 @@
     },
     "whm1:php_fpm_config_set": {
       "exclude": {
-        "reason": "Requires an application/json request body; typed JSON-body machinery is available, while this endpoint adoption remains deferred under whm-api-client-8x0.1.18; remaining selection/source/route audit is tracked under whm-api-client-8x0.29.6. Raw callJson() supplies no typed contract and establishes no endpoint compatibility.",
+        "reason": "Requires an application/json request body; typed JSON-body support remains tracked under whm-api-client-8x0.1.18. Raw callJson() supplies no typed contract and establishes no endpoint compatibility.",
         "evidence": [
           {
             "kind": "doc",

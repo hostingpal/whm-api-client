@@ -338,7 +338,7 @@ use SensitiveParameter;
  * @phpstan-type ListUsersResult array{
  *     users?: list<string>,
  * }
- * @phpstan-type MassmodifyacctResult array{
+ * @phpstan-type MassModifyAccountResult array{
  *     payload?: list<array{
  *         extended?: array{
  *             cpuser?: array<array-key, mixed>,
@@ -704,8 +704,10 @@ final readonly class Accounts
      *
      * @param string $domain The addon domain to convert into an account's main domain.
      * @param string $username The username for a specified account.
-     * @param array<string, string>|null $copyMysqlDatabases Copy a MySQL® database from the source account to the new
-     *     account with a new database name. Null omits it.
+     * @param array<string, string>|null $copyMysqlDatabases Map from old database logical names to new database names.
+     *     Keys omit the client-added copymysqldb- prefix. Purely numeric keys are rejected because PHP coerces them to
+     *     integer keys and their original spelling cannot be recovered. Literal key bytes and insertion order are
+     *     preserved, including names that themselves begin copymysqldb-. Null or [] copies no databases. Null omits it.
      * @param string|non-empty-list<string>|null $moveMysqlDatabases Move the specified MySQL database from the source
      *     account to the new account. Null omits it.
      * @param string|non-empty-list<string>|null $moveMysqlUsers Move the specified MySQL database user from the source
@@ -715,7 +717,8 @@ final readonly class Accounts
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
-     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
+     * @throws InvalidArgumentException If map keys, values, empty policy, or expanded names are invalid;
+     *     list inputs must be nonempty, sequential, and contain supported values.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/domain-information/convertaddon-convert_addon_initiate_conversion
      */
     public function convertAddonInitiateConversion(
@@ -1623,21 +1626,24 @@ final readonly class Accounts
      *
      * This function modifies multiple cPanel accounts.
      *
-     * Documented: Uses form POST. Each call makes one attempt, with no automatic retry or rollback. Typed input support
-     * is source-backed and has no live mutation verification in this slice.
+     * Documented: Uses form POST. Each call makes one attempt, with no automatic retry or rollback.
      *
-     * Documented: All 51 case-sensitive source fields are retained. user accepts a scalar or nonempty sequential list
-     * with user-1/user-2 suffixes. mxPriorities adds literal MXCHECK- to domain suffix keys and preserves integer zero;
-     * null or [] sends no priorities.
+     * Policy: Retains 50 case-sensitive source fields. user accepts a scalar or nonempty sequential list with
+     * user-1/user-2 suffixes. MXCHECK-* is excluded after the reviewer observed successful calls with no effect; no
+     * replacement argument is inferred.
      *
      * Documented: Hosting-plan changes can overwrite custom account settings. Renaming database objects can move data
      * and require application changes; restoration can fail, and successful renames can still warn about original
      * database/grant deletion failures. Preserve root-only BACKUP and cross-reseller OWNER permissions and the Web
      * Server role restriction on enabling CGI.
      *
-     * Documented: Inspect every per-user payload result, reason, warnings and messages. Outer success does not
-     * establish every account succeeded. PUSHBULLET_ACCESS_TOKEN remains sensitive. Existing omission, unlimited and
-     * flag semantics are unchanged.
+     * Observed: Uses OutcomePolicy::Unchecked: metadata.result 0 can accompany partially applied changes. Inspect
+     * responseMeta() and every per-user payload result, reason, warnings and messages, including all-failed rows.
+     * Integer 0/1 envelope results and the required payload are still validated. A payload mismatch has
+     * outcomeConfirmed=false; do not retry or roll back automatically. PUSHBULLET_ACCESS_TOKEN remains sensitive.
+     *
+     * Observed: On reviewed 11.138.0.19, response rows can differ from request order. Match each row by its user field,
+     * not its position.
      *
      * API-map identity: whm1:massmodifyacct#GET (wire name massmodifyacct; Account Management).
      *
@@ -1671,7 +1677,6 @@ final readonly class Accounts
      *     it creates an email account. Null omits it.
      * @param string|int|null $maxEmailPerHour The maximum number of emails that the account can send in one hour. Null
      *     omits it.
-     * @param array<string, int>|null $mxPriorities The priority of the account's primary mail exchanger. Null omits it.
      * @param bool|null $outgoingEmailSuspended Whether to suspend outgoing email on the account. Null omits it.
      * @param string|null $owner A new owner's username or the `root` user, to change the account's owner. Null omits
      *     it.
@@ -1714,14 +1719,14 @@ final readonly class Accounts
      * @param bool|null $reseller Whether to grant reseller privileges to the account. Null omits it.
      * @param string|null $shell The absolute file path to the shell's location. Null omits it.
      * @param bool|null $spamassassin Whether Apache SpamAssassin™ is enabled for the account. Null omits it.
-     * @return MassmodifyacctResult
+     * @return MassModifyAccountResult
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
-     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
-     *     the operation may already have changed state; do not retry automatically.
+     * @throws PayloadMismatchException If the envelope was accepted but the payload differs from the contract;
+     *     the outcome is not checked.
      * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-management/accounts-massmodifyacct
      */
-    public function massmodifyacct(
+    public function massModifyAccount(
         #[SensitiveParameter]
         string|array $user,
         ?bool $backup = null,
@@ -1748,8 +1753,6 @@ final readonly class Accounts
         string|int|null $maxDeferFailPercentage = null,
         string|int|null $maxEmailacctQuota = null,
         string|int|null $maxEmailPerHour = null,
-        #[SensitiveParameter]
-        ?array $mxPriorities = null,
         ?bool $outgoingEmailSuspended = null,
         ?string $owner = null,
         #[SensitiveParameter]
@@ -1777,7 +1780,7 @@ final readonly class Accounts
         ?string $shell = null,
         ?bool $spamassassin = null,
     ): array {
-        /** @var MassmodifyacctResult $result Validated against AccountsSpec::MASSMODIFYACCT. */
+        /** @var MassModifyAccountResult $result Validated against AccountsSpec::MASSMODIFYACCT. */
         $result = ($this->run)(AccountsSpec::MASSMODIFYACCT, [
             'user' => $user,
             'backup' => $backup,
@@ -1804,7 +1807,6 @@ final readonly class Accounts
             'maxDeferFailPercentage' => $maxDeferFailPercentage,
             'maxEmailacctQuota' => $maxEmailacctQuota,
             'maxEmailPerHour' => $maxEmailPerHour,
-            'mxPriorities' => $mxPriorities,
             'outgoingEmailSuspended' => $outgoingEmailSuspended,
             'owner' => $owner,
             'pushbulletAccessToken' => $pushbulletAccessToken,

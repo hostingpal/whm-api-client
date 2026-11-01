@@ -18,7 +18,10 @@ use WeakMap;
  * No read exceeds that declared length. Early EOF is returned as empty bytes for
  * the multipart body to reject; no extra-byte probe verifies asserted lengths.
  * Source mutation during an attempt and distinct wrappers around one underlying
- * resource are caller responsibilities. No source is buffered or spooled.
+ * resource are caller responsibilities. Supported path sources require stable,
+ * reliable byte-size metadata, and borrowed metadata must be truthful. Misleading
+ * virtual/generated file sizes cannot all be detected without reading; they are
+ * unsupported even when reported as regular files. No source is buffered or spooled.
  *
  * Sensitive state uses weak keys so exporting this internal handle is also safe.
  *

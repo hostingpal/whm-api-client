@@ -116,17 +116,27 @@ Operation entries (all keys optional):
   must be nonempty and sequential, preserving order, duplicates, empty strings,
   zero and false for the selected item type. Optional null still omits the whole
   argument. Native array/scalar unions and `non-empty-list<T>` PHPDoc are generated;
-  all collection arguments receive `SensitiveParameter` for trace protection,
+  source string/integer enum literals appear in both the scalar alternative and
+  the list item type, including resolved item references. `enum_doc: false`
+  retains its explicit documentation override; boolean flag conversion stays
+  `bool`. An evidenced `string|int` widening retains source literals for the
+  source kind and admits the other kind without inventing literals. Literal
+  schemas that cannot be represented truthfully fail generation with a parameter
+  diagnostic rather than silently widening. This adds no runtime enum validation.
+  All collection arguments receive `SensitiveParameter` for trace protection,
   independently of secret-bearing transport classification. Source/overlay secret
   decisions still require POST; ordinary read-only collection inputs retain GET.
   `kind: "map"` requires `allow_scalar: false`, `empty: "allow"` or `"reject"`,
   and a mandatory literal `prefix` (empty or `[A-Za-z_][A-Za-z0-9_-]*`); it forbids
   separator/start. For example `{"kind":"map","item_type":"bool",
   "allow_scalar":false,"empty":"allow","prefix":""}` accepts a feature map,
-  while prefix `MXCHECK-` appends caller keys literally. No prefix stripping or
+  while prefix `copymysqldb-` appends caller keys literally. No prefix stripping or
   wildcard inference occurs. The native type is `array` (`?array` when optional),
   with `array<string,T>` or `non-empty-array<string,T>` PHPDoc. An allowed empty map
   emits no dynamic fields, while fixed fields and the request still dispatch.
+  Optional `reject_prefixed_keys: true` requires a nonempty map prefix and
+  rejects caller keys already beginning with that prefix without rewriting. Only
+  the two AutoSSL provider descriptors declare it; other maps remain literal.
   Map values must match the declared strict scalar item type, backed by the
   source scalar schema and matching parameter evidence. Keys must be nonempty
   valid UTF-8 strings without U+0000–U+001F/U+007F; integer keys, including PHP's
@@ -136,10 +146,9 @@ Operation entries (all keys optional):
   emitted; use `php` to give placeholder parameters a meaningful public name.
   Actual map collisions with fixed, other map/list and route fields fail before
   dispatch in either order without exposing keys or values in diagnostics.
-  Collection descriptors
-  cannot combine with `encoding`, `type`, `wire`, `omit`, `omit_empty` or
-  `reject_empty`. Static indexed overlaps fail generation; expanded collisions
-  fail before dispatch, retaining the ordered-field engine's origin checks.
+  Collection descriptors cannot combine with `encoding`, `type`, `wire`, `omit`, `omit_empty` or
+  `reject_empty`. Static indexed overlaps fail generation and whole-spec lint;
+  expanded collisions fail before dispatch, retaining the ordered-field engine's origin checks.
   Each collection override needs operation-level `doc` evidence with
   `source_sha256` matching that source parameter's locator and `pointer` matching
   its parameter JSON pointer or that pointer plus `/description`. These structured
@@ -218,15 +227,17 @@ Operation entries (all keys optional):
   optional parameter before a required one, or an omitted parameter, is a problem.
 - Typed complete JSON bodies use the source-bound `body: "json"` / `json_body`
   grammar documented in [the input guidance](../../docs/api/README.md#typed-whole-json-body-grammar).
-  Native scalar signatures are retained: serializer strictness applies after PHP
-  argument binding. Call scalar-body methods from a file declaring
-  `strict_types=1` to prevent pre-entry scalar coercion; the generated file's
-  declaration does not control caller mode. Weak binding may convert scalars or
-  call `Stringable::__toString()` before validation/metadata reset. Signature
-  TypeErrors and conversion callbacks are outside the library's reset/redaction
-  lifecycle. Nested array fields stay strict in either mode, including StatsManager
-  bool flags. Source object names that become integer PHP array keys are refused
-  during lowering; string-preserving numeric lookalikes keep their exact spelling.
+  Whole-body execution requires a nonnullable object root, no query parameters,
+  exact application/json and direct routes. WHM adds root api.version:1 first;
+  direct UAPI retains the encoded object. WHM JSON specs must require the body to
+  retain API1 routing. On direct UAPI only, optional array/null means absent body,
+  while [] means a present empty object. Native array TypeErrors precede metadata
+  reset in strict and weak callers; nested array fields stay strict in either mode.
+  The shared input grammar still represents scalar/list/object values for field
+  JSON. Explicit boolean nonempty defaults off on lists/strings; true means
+  non-empty-list or non-empty-string, rejecting [] or the zero-byte string only.
+  The narrow StatsManager domain correction does not trim or validate hostnames.
+
 - `body` (`multipart`) selects reviewed inline string multipart encoding; `body_fields`
   maps explicitly corrected body property names to existing query parameter names.
   Both require operation-level evidence.
@@ -234,12 +245,27 @@ Operation entries (all keys optional):
   `void` (no payload) and `unwrap` (return one documented object field; exclusive
   with `void`). Read-only operations default to GET; mutating, unknown-risk and
   secret-bearing ones default to POST, and GET is refused for secret-bearing ones.
+- `rows`: a nonempty declared result-field name for an unchecked UAPI object
+  batch, or `$` selecting a nonnullable root list of nonnullable objects, without
+  void, optional_payload or unwrap. Root, list and object rows must
+  be nonnullable. Exact source hash/pointer evidence binds the selected row field
+  in the reviewed result/data response schema; other source layouts are unsupported.
+  Status 0 plus explicit null or a fully validated empty row list raises API error;
+  missing data/rows or malformed known fields remain payload mismatches. Status 1
+  keeps pinned optional fields. Fileman/upload_files selects its uploads field; ImageManager/create_thumbnails
+  selects the whole list with `$`.
+  For root lists, evidence must bind the exact selected source SHA and
+  `/responses/200/content/application~1json/schema/properties/result/properties/data`
+  pointer. `$` on object roots remains a literal declared field name with its
+  existing field evidence binding. Whole payload validation precedes empty-list
+  classification; other Unchecked operations do not inherit this policy.
+
 - `optional_payload`: an omitted or null `data` member is a valid response; the
   spec gains `'optional' => true`, the method's return type becomes nullable and
   it returns null in that case (other payloads are validated as usual). Needs a
   documented payload and is exclusive with `void`.
 - `evidence`: operation-level evidence, required when the entry sets `variant`, `method`,
-  `outcome`, `void` or `optional_payload`, changes a parameter `required` setting,
+  `outcome`, `rows`, `void` or `optional_payload`, changes a parameter `required` setting,
   suppresses its enum documentation (`enum_doc: false`), sets a parameter `encoding` (it
   changes the wire request), corrects a parameter `wire`, `type` or `description`, or marks
   a parameter `"sensitive": false`.
@@ -273,6 +299,17 @@ Operation entries (all keys optional):
   inferred from upstream enums and is invalid on other types. Only `replace` may
   address the payload root, with the empty path.
 
+A narrowly evidenced retrieval exception can restore an omitted payload contract:
+only WHM GET operations with `x-readonly=true`, a resolved plain 200 JSON object
+whose only property is `metadata`, and no payload issue or partial alternatives
+qualify. The overlay must supply exactly one root response replacement with an
+unadorned `mixed` spec and valid correction-level `live` evidence. `void`,
+`optional_payload`, `unwrap`, exclusions, compositions and payload siblings do
+not qualify. This preserves opaque observed data without inferring fields;
+missing data still fails in the existing runtime. Ordinary corrections to a
+documented payload remain unchanged. PR70 review 5721307565 supplies the
+attributed retrieval observation; it is separate from source-only corrections.
+
 The generator reads the pinned schemas as follows. `allOf` merges its parts and
 its sibling `properties`/`required`, skipping parts that carry only annotations.
 A `oneOf`/`anyOf` branch that admits only null makes the union nullable; two or
@@ -292,6 +329,112 @@ call are problems here too: every `required` name must be a declared field (also
 after `replace` or `add`), `unwrap` needs a non-nullable object payload, and a
 wire name may appear only once.
 
+Additional public input mappings use operation-level `additional_methods`:
+
+```json
+"additional_methods": [{
+  "name": "updateSettings",
+  "inputs": [{
+    "php": "settings",
+    "records": {
+      "alias": "ModSecuritySettingInput",
+      "start": 1,
+      "separator": "",
+      "sensitive": true,
+      "fields": [
+        {"source": "setting_id", "php": "settingId", "prefix": "setting_id"},
+        {"source": "state", "php": "state", "prefix": "state"},
+        {"source": "remove", "php": "remove", "prefix": "remove"}
+      ]
+    }
+  }]
+}]
+```
+
+Each additional method declares a valid, unique PHP `name` and nonempty `inputs`.
+Each input has `php` and exactly one of `source` or `records`. A scalar `source`
+retains its canonical encoding/type/requiredness/sensitivity under a new PHP name;
+it is the pinned parameter name, even when `params[source].wire` corrects its
+transmitted name. Every canonical source parameter must be mapped exactly once
+across scalar inputs and record fields; unknown, duplicate and missing mappings
+fail generation. Required inputs must precede optional inputs. Public method,
+spec constant and PHPStan alias collisions fail generation.
+
+A `records` descriptor requires every shown member: a unique PHPStan class-style
+`alias`, integer `start` from 0 through 2147483647, `separator` (`""` or `"-"`),
+explicit boolean `sensitive`, and nonempty ordered `fields`. Every field requires
+a unique valid PHP `php` name, a pinned `source` name and literal ASCII identifier
+`prefix` (`[A-Za-z_][A-Za-z0-9_]*`). Field types and requiredness derive from the
+canonical strict scalar source (`string`, `int`, `bool`, `string|int`); no field
+type, result, route or outcome can be declared independently. Guarded/omitted or
+collection source fields cannot become records. Complete selected-source field
+prose is preserved with the established Markdown conversion and PHPDoc escaping,
+including text beyond the first sentence; literal PHPStan shapes stay precise.
+
+Every scalar/record source mapping needs operation-level `kind: "doc"` evidence
+with `source_sha256` matching the selected parameter locator and `pointer` equal
+to its parameter JSON pointer or that pointer plus `/description`. Inspect all
+formal fields and prose before choosing prefixes/indexes; source-name lookup and
+evidence binding stay separate from corrected wire names. Evidence for a sibling
+operation, a schema pointer, or a different source hash cannot bind the mapping.
+
+The required record argument is `non-empty-list<Alias>`: each row is an associative
+array with only known fields, required keys present and strict values. Explicit
+null is rejected even for optional fields; omission skips only that field and
+never shifts later indexes. Expansion uses original row order and declared field
+order, preserving duplicates, empty strings, zero and false within the declared
+type. Server processing order or duplicate resolution is operation-specific.
+Static record/index/legacy overlaps fail whole-spec lint as `LogicException` before
+arguments or I/O; actual collisions with maps/routing fields remain invalid
+arguments. All record arguments are trace protected. `sensitive: true` is a
+separate secret classification requiring canonical POST; a false descriptor
+cannot downgrade a sensitive source field. Records require canonical form bodies.
+
+A source input can explicitly select `"json": {"alias": "ProviderDisplayInput"}`
+to expose its pinned `content.application/json.schema` as a structured PHP value
+in one ordinary form field. This requires a canonical form body and a query
+parameter with exactly that content media entry and no sibling schema. The same
+source hash/parameter-pointer evidence is required. The `Input` alias and strict
+request grammar derive from the selected schema, including scalar, list and object
+roots; they are independent of whole-body JSON's object-only/no-query policy.
+Required allowed null emits JSON `null`; optional nullable roots are unsupported,
+while optional nonnullable null omits the field. Unknown object keys, invalid types,
+integer object keys, nonsequential lists and invalid UTF-8 fail before dispatch.
+Empty object input `[]` becomes `{}`. Serialization occurs once before the existing
+form encoding, preserving strings and input order without default insertion or
+provider validation. The whole input is sensitive. The legacy canonical string
+mapping remains unchanged; selecting this companion does not add an operation or
+establish live compatibility.
+
+An additional method changes only inputs. Generated alias specs inherit the
+canonical route, method, selected variant, response shape/result alias,
+optional/unwrap rules and outcome, replacing only `params`. No separate response,
+`Unchecked` override or failure schema belongs in `additional_methods`. Both
+symbols appear in coverage while the canonical operation counts once. The
+ModSecurity alias is one extra public method across the current 1,154 canonical
+operations, 100 groups and 202 generated PHP files (203 outputs with coverage.md).
+It issues one request, without batching loops, automatic reads, retries or rollback.
+
+Query parameters with `content` support exactly one `application/json` media entry
+with a resolvable schema, no sibling `schema`, and absent or `scalar` encoding.
+They become native `string` arguments (`?string` when optional), carrying caller-serialized
+JSON text in the existing query/form field. Collection and type overrides, other or
+multiple media, unresolved/missing schemas, content on body fields and sibling schemas
+fail generation. This default mapping does not parse, validate or re-encode JSON
+or provide JSON request bodies. The explicit additional-method JSON-field selection above is the
+separate opt-in for structured PHP arguments. Null omission and one outer
+form/query encoding pass retain their existing behavior. Strict callers get native
+`TypeError` before the generated method or metadata reset; weak callers retain PHP coercion.
+Unlisted/excluded operations remain ungenerated.
+
+Format-only typeless `oneOf`/`anyOf` alternatives retain a concrete outer scalar type
+without format validation or general schema intersection. This shared lowering also
+applies to responses. A source refresh must review effective response-shape changes;
+input-type review alone is insufficient. Explicitly typed branches, richer constraints
+and competing compositions keep their existing lowering. Multipart mappings retain
+the source-bound query/body schema equality check below; JSON content does not establish
+an inline multipart string contract.
+
 The fields of a documented `application/x-www-form-urlencoded` request body
 become parameters after the query parameters (required only when the body and
 its schema require them) and force POST, which form-encodes every operation
@@ -304,8 +447,8 @@ body property name to an existing query parameter, such as `{"crt": "key"}`; unk
 sources, unknown targets, duplicate targets and omitted multipart fields fail generation.
 The runtime keeps routing fields in the query and sends binary-preserving string fields
 with a collision-checked multipart boundary. This routing capability is not evidence of
-live operation support. Generic `call()` stays form-only. JSON bodies, unreviewed
-multipart bodies, bodies without plain properties, and deprecated operations remain
+live operation support. Generic `call()` stays form-only. JSON bodies without an
+explicit reviewed selection, unreviewed multipart bodies, bodies without plain properties, and deprecated operations remain
 unsupported by generation. Evidence is `kind` (`doc` or `live`), `version`, `date`
 (`YYYY-MM-DD`), `note` and an optional `fingerprint`.
 

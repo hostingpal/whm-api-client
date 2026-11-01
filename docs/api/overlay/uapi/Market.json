@@ -23,6 +23,10 @@
         {
           "kind": "documented",
           "text": "Catalog rows merge all formal base and SSL product fields from anyOf/discriminator/allOf. Integer product_id, integer 0/1 flags, nullable base_name/max_users/prices, units and optional fields remain distinct. Identity verification preserves the formal object, documented list records and null, with optional string label/name and opaque extras. Only three wildcard-price fields additionally preserve exact numeric strings; no financial calculation or global normalization is added."
+        },
+        {
+          "kind": "observed",
+          "text": "Review 5725042192 on 9a32128, cPanel 11.138.0.19, direct UAPI and WHM bridge GET: license_term and product_id digit strings normalize losslessly to integers; requires_ip accepts exact quoted 0/1 as integer flags. Other fields retain strict types. The three wildcard-price numeric strings retain exact bytes without conversion."
         }
       ],
       "evidence": [
@@ -33,6 +37,14 @@
           "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1Market~1get_all_products/get: x-readonly=true selects GET with no request body. Availability is literally cPanel 56. Required scalar arguments retain source order and types. Response data follows responses/200/content/application~1json/schema/properties/result/properties/data with optional known fields; no example field becomes required.",
           "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
           "pointer": "/paths/~1Market~1get_all_products/get"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Attributed to seebeen review 5725042192 of exact 9a3212839ebd07f1caad02f99e674a91f877b98b (31ed8cf..9a32128): GET as npr through direct UAPI and WHM bridge, identical results. Catalog license_term arrived as a digit string on every call; accept only existing canonical bounded lossless numeric-string integer normalization. This integration performed no live call or capture.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/components/schemas/MarketProviderProductMetaData/properties/license_term"
         }
       ],
       "response": {
@@ -276,6 +288,75 @@
               "pointer": "/paths/~1Market~1get_all_products/get/responses/200/content/application~1json/examples/ssl_certificate/value/result/data/4/x_price_per_wildcard_domain_minimum"
             }
           ]
+        },
+        "[].license_term": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-10-31",
+              "note": "Formal license_term remains an optional nonnullable integer; source minimum is descriptive under the existing unenforced general-range policy.",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/components/schemas/MarketProviderProductMetaData/properties/license_term"
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Attributed to seebeen review 5725042192 of exact 9a3212839ebd07f1caad02f99e674a91f877b98b (31ed8cf..9a32128): GET as npr through direct UAPI and WHM bridge, identical results. Catalog license_term arrived as a digit string on every call; accept only existing canonical bounded lossless numeric-string integer normalization. This integration performed no live call or capture.",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/components/schemas/MarketProviderProductMetaData/properties/license_term"
+            }
+          ]
+        },
+        "[].product_id": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-10-31",
+              "note": "Formal product_id remains an optional nonnullable integer; source minimum is descriptive under the existing unenforced general-range policy.",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/components/schemas/MarketProviderProductMetaData/properties/product_id"
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Attributed to seebeen review 5725042192 of exact 9a3212839ebd07f1caad02f99e674a91f877b98b (31ed8cf..9a32128): GET as npr through direct UAPI and WHM bridge, identical results. Catalog product_id arrived as a digit string on every call; accept only existing canonical bounded lossless numeric-string integer normalization. This integration performed no live call or capture.",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/components/schemas/MarketProviderProductMetaData/properties/product_id"
+            }
+          ]
+        },
+        "[].requires_ip": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-10-31",
+              "note": "Formal requires_ip remains an optional nonnullable integer 0/1 flag.",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/components/schemas/MarketProviderProductMetaData/properties/requires_ip"
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Attributed to seebeen review 5725042192 of exact 9a3212839ebd07f1caad02f99e674a91f877b98b (31ed8cf..9a32128): GET as npr through direct UAPI and WHM bridge, identical results. Catalog requires_ip arrived as a digit string on every call; accept only exact quoted 0/1 with existing string-flag conversion. This integration performed no live call or capture.",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/components/schemas/MarketProviderProductMetaData/properties/requires_ip"
+            }
+          ]
         }
       }
     },
@@ -328,6 +409,10 @@
         {
           "kind": "policy",
           "text": "Returned URLs, security tokens, encrypted action URLs, PEM/CSR and identity verification values are sensitive payload data. Do not log them. The client does not follow URLs, log in, redirect, purchase, request or install certificates; each call makes one request without retry."
+        },
+        {
+          "kind": "observed",
+          "text": "Review 5725042192 on 9a32128, cPanel 11.138.0.19, token-authenticated direct UAPI and WHM bridge GET: URL construction failed because server information was unavailable from the environment. Reviewer source inspection of _build_url supports an environment dependency; this does not establish universal token or route incompatibility. No precheck, fallback or environment probing is added."
         }
       ],
       "evidence": [
@@ -336,6 +421,14 @@
           "version": "pinned 2026-10-13 (11.138.0.10)",
           "date": "2026-10-31",
           "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1Market~1get_completion_url/get: x-readonly=true selects GET with no request body. Availability is literally cPanel 62. Required scalar arguments retain source order and types. Response data follows responses/200/content/application~1json/schema/properties/result/properties/data with optional known fields; no example field becomes required.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Market~1get_completion_url/get"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Attributed to seebeen review 5725042192 of exact 9a3212839ebd07f1caad02f99e674a91f877b98b (31ed8cf..9a32128): GET as npr through direct UAPI and WHM bridge, identical results. Token-authenticated getCompletionUrl raised an environment-unavailable API error on both routes. Reviewer-reported _build_url source reads web request environment; this suggests an environment dependency, not universal token/route incompatibility. This integration performed no live call or capture.",
           "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
           "pointer": "/paths/~1Market~1get_completion_url/get"
         }
@@ -461,6 +554,10 @@
         {
           "kind": "policy",
           "text": "Returned URLs, security tokens, encrypted action URLs, PEM/CSR and identity verification values are sensitive payload data. Do not log them. The client does not follow URLs, log in, redirect, purchase, request or install certificates; each call makes one request without retry."
+        },
+        {
+          "kind": "observed",
+          "text": "Review 5725042192 on 9a32128, cPanel 11.138.0.19, direct UAPI and WHM bridge GET: allowed characters mix native integers and strings. Preserve item types, order and duplicates; no character enum or string conversion is inferred."
         }
       ],
       "evidence": [
@@ -471,11 +568,55 @@
           "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1Market~1get_provider_specific_dcv_constraints/get: x-readonly=true selects GET with no request body. Availability is literally cPanel 62. Required scalar arguments retain source order and types. Response data follows responses/200/content/application~1json/schema/properties/result/properties/data with optional known fields; no example field becomes required.",
           "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
           "pointer": "/paths/~1Market~1get_provider_specific_dcv_constraints/get"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Attributed to seebeen review 5725042192 of exact 9a3212839ebd07f1caad02f99e674a91f877b98b (31ed8cf..9a32128): GET as npr through direct UAPI and WHM bridge, identical results. DCV allowed-character list mixes native JSON integer digits and strings; preserve original types, order and duplicates without coercion or a closed character enum. This integration performed no live call or capture.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Market~1get_provider_specific_dcv_constraints/get/responses/200/content/application~1json/schema/properties/result/properties/data/properties/dcv_file_allowed_characters/items"
         }
       ],
       "order": [
         "provider"
-      ]
+      ],
+      "response": {
+        "dcv_file_allowed_characters": {
+          "replace": {
+            "type": "list",
+            "items": {
+              "type": "union",
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "int"
+                }
+              ]
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-10-31",
+              "note": "Formal list items are strings; field remains optional, list and nonnullable.",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Market~1get_provider_specific_dcv_constraints/get/responses/200/content/application~1json/schema/properties/result/properties/data/properties/dcv_file_allowed_characters/items"
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Attributed to seebeen review 5725042192 of exact 9a3212839ebd07f1caad02f99e674a91f877b98b (31ed8cf..9a32128): GET as npr through direct UAPI and WHM bridge, identical results. DCV allowed-character list mixes native JSON integer digits and strings; preserve original types, order and duplicates without coercion or a closed character enum. This integration performed no live call or capture.",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Market~1get_provider_specific_dcv_constraints/get/responses/200/content/application~1json/schema/properties/result/properties/data/properties/dcv_file_allowed_characters/items"
+            }
+          ]
+        }
+      }
     },
     "uapi:Market/get_providers_list": {
       "method": "GET",
@@ -522,6 +663,10 @@
         {
           "kind": "documented",
           "text": "orderItemId is a string. certificate_pem may be null when unavailable; null differs from omission. Known encrypted action URL fields are optional nullable strings; documented additional keys remain opaque."
+        },
+        {
+          "kind": "observed",
+          "text": "Review 5725042192 on 9a32128, cPanel 11.138.0.19, direct UAPI and WHM bridge GET: unavailable certificates can have null encrypted_action_urls and status_message, alongside nullable certificate_pem. All remain optional; status_code stays a nonnullable string. Only four fields are formally declared here. Reported null certificate_id and parent_cert_expiry remain untyped unknown fields and are filtered; null-only observations establish no additional field contract."
         }
       ],
       "evidence": [
@@ -532,6 +677,14 @@
           "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1Market~1get_ssl_certificate_if_available/get: x-readonly=true selects GET with no request body. Availability is literally cPanel 56. Required scalar arguments retain source order and types. Response data follows responses/200/content/application~1json/schema/properties/result/properties/data with optional known fields; no example field becomes required.",
           "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
           "pointer": "/paths/~1Market~1get_ssl_certificate_if_available/get"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Attributed to seebeen review 5725042192 of exact 9a3212839ebd07f1caad02f99e674a91f877b98b (31ed8cf..9a32128): GET as npr through direct UAPI and WHM bridge, identical results. Not-yet-available certificate response has null status_message; preserve null separately from omission and empty string. This integration performed no live call or capture.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Market~1get_ssl_certificate_if_available/get/responses/200/content/application~1json/schema/properties/result/properties/data/properties/status_message"
         }
       ],
       "order": [
@@ -554,7 +707,8 @@
             },
             "values": {
               "type": "mixed"
-            }
+            },
+            "nullable": true
           },
           "evidence": [
             {
@@ -564,6 +718,46 @@
               "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1Market~1get_ssl_certificate_if_available/get/responses/200/content/application~1json/schema/properties/result/properties/data/properties/encrypted_action_urls: Description explicitly permits additional key values. Preserve opaque extra values alongside optional nullable string evClickThroughStatus/ovCallbackStatus, without weakening these known fields or any sibling object.",
               "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
               "pointer": "/paths/~1Market~1get_ssl_certificate_if_available/get/responses/200/content/application~1json/schema/properties/result/properties/data/properties/encrypted_action_urls"
+            },
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-10-31",
+              "note": "Formal outer encrypted_action_urls is an optional nonnullable object; existing optional nullable string evClickThroughStatus/ovCallbackStatus and opaque extra values are retained.",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Market~1get_ssl_certificate_if_available/get/responses/200/content/application~1json/schema/properties/result/properties/data/properties/encrypted_action_urls"
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Attributed to seebeen review 5725042192 of exact 9a3212839ebd07f1caad02f99e674a91f877b98b (31ed8cf..9a32128): GET as npr through direct UAPI and WHM bridge, identical results. Not-yet-available certificate response has null encrypted_action_urls; add outer nullability only. This integration performed no live call or capture.",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Market~1get_ssl_certificate_if_available/get/responses/200/content/application~1json/schema/properties/result/properties/data/properties/encrypted_action_urls"
+            }
+          ]
+        },
+        "status_message": {
+          "replace": {
+            "type": "string",
+            "nullable": true
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-10-31",
+              "note": "Formal status_message is an optional nonnullable string; documentation describes empty string when no error exists.",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Market~1get_ssl_certificate_if_available/get/responses/200/content/application~1json/schema/properties/result/properties/data/properties/status_message"
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Attributed to seebeen review 5725042192 of exact 9a3212839ebd07f1caad02f99e674a91f877b98b (31ed8cf..9a32128): GET as npr through direct UAPI and WHM bridge, identical results. Not-yet-available certificate response has null status_message; preserve null separately from omission and empty string. This integration performed no live call or capture.",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Market~1get_ssl_certificate_if_available/get/responses/200/content/application~1json/schema/properties/result/properties/data/properties/status_message"
             }
           ]
         }

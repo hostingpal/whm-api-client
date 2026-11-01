@@ -3,13 +3,13 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 96 generated typed groups cover 1,137 documented operations (see
+The 104 generated typed groups cover 1,174 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, DNS zone and DNSSEC
 management, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
 features, domain management, directory access, the complete Email and SSL modules,
-disk quotas, 14 Fileman operations, the complete ImageManager module and the
-complete pinned MySQL, FTP, PostgreSQL and Mime sections, plus mail protection through BoxTrapper, EmailAuth, SpamAssassin
+disk quotas, 14 Fileman operations and the complete pinned MySQL, FTP, PostgreSQL
+and Mime sections, plus mail protection through BoxTrapper, EmailAuth, SpamAssassin
 and cPGreyList.
 Generic `call()` methods provide GET and form-encoded POST access without a typed
 group, subject to the operation's parameter, route and envelope requirements.
@@ -306,6 +306,41 @@ Generated coverage is separate from offline test results and live observations;
 an observation establishes only the route, server version and cases exercised.
 An empty live list does not verify the types of records it never returned.
 
+### WHM root-access restrictions
+
+`whm()->security()` exposes both pinned Security functions from cPanel 108.
+`restrictWhmRootAccess()` replaces the root password login allowlist: only listed
+sources may log in as root with a password. Include your own source and every
+existing pattern that must remain. Existing root sessions are not terminated and
+root resellers are not restricted. The API manages
+`/var/cpanel/authorized_whm_root_ips`; upstream warns that direct file modification
+with improper formatting can remove all cPanel and WHM root password access.
+
+Client policy accepts one CIDR string or a nonempty sequential string list and
+sends repeated `cidr` fields in a form POST body, encoded once without changing
+values or locally validating CIDRs. The pinned CLI/URL examples establish repeated
+keys only; the external reviewer reports repeated-form support in
+`Cpanel::Form::Param`.
+
+Source-based findings from the reviewer's inspection of
+`Whostmgr/API/1/RootIPAccess.pm` and `Utils.pm` on `11.138.0.19`: missing input
+raises `MissingParameter`; blank values, including list members, raise `Empty`.
+Each CIDR passes `Net::CIDR::cidrvalidate` before the file is written, so one invalid
+value leaves existing restrictions unchanged. Successful responses contain a
+reduced CIDR list; `Net::CIDR::cidradd` can merge ranges. These findings are
+reviewer-inspected implementation evidence, not locally pinned Perl or live
+verification. They do not specify exact serialized server error messages.
+
+The pinned/effective restriction payload remains an object with an optional
+`cidr` string list; absent/null data fails. Offline schema-compatibility fixtures
+for omitted fields and empty containers do not represent source-success examples.
+`allowAllWhmRootAccess()` removes the restrictions and returns void. Both methods
+send one request, with no automatic retry or rollback; a payload error after API
+success does not undo the change. No SSH/firewall behavior is inferred.
+
+No live root-access, allowlist, connectivity or session change ran. Both methods
+remain unobserved under `8x0.2.59`.
+
 ### WHM API 1
 
 | Handle and accessor | Methods |
@@ -315,8 +350,13 @@ An empty live list does not verify the types of records it never returned.
 | `whm()->webServer()` | `phpGetInstalledVersions()`, `phpGetSystemDefaultVersion()`, `phpGetHandlers()`, `phpGetDefaultAccountsToFpm()`, `phpGetOldFpmFlag()`, `isConversionInProgress()`, `phpGetVhostsByVersion()` |
 | `whm()->hostingPlans()` | `addOverrideFeaturesForUser()`, `addPackage()`, `addPackageExtension()`, `deleteFeaturelist()`, `deletePackage()`, `deletePackageExtension()`, `editPackage()`, `getAvailableApplications()`, `getFeatureMetadata()`, `getFeatureNames()`, `getFeaturelistData()`, `getFeaturelists()`, `getFeaturelistsByPackageTypes()`, `getPackageExtensionForm()`, `getPackageInfo()`, `getUsersFeaturesSettings()`, `listPackages()`, `matchPackages()`, `removeOverrideFeaturesForUser()`, `verifyUserHasFeature()` |
 | `whm()->dns()` | DNS zone inventory, DNSSEC keys, domains and server DNS administration (40); see [generated methods](src/Api/Whm/Dns.php). |
+| `whm()->security()` | Root password login allowlist replacement and removal (2); read the [root-access cautions](#whm-root-access-restrictions) before use. |
 | `whm()->authentication()` | SSH keys, providers, external-account links and two-factor authentication (30); see [generated methods](src/Api/Whm/Authentication.php). |
 | `whm()->ssl()` | WHM certificate, service SSL and AutoSSL operations (32); see [generated methods](src/Api/Whm/Ssl.php). |
+| `whm()->logs()` | `listAccountsRetention()`; see [log administration](#log-administration). |
+| `whm()->customizations()` | `retrieveCustomizations()`, `deleteCustomizations()`; see [interface data](#whm-interface-customization-and-scoped-data). |
+| `whm()->userData()` | `getScopedUserdata()`, `setScopedUserdata()`; see [interface data](#whm-interface-customization-and-scoped-data). |
+| `whm()->inProductSurvey()` | `getInProductSurveyUrl()`; see [interface data](#whm-interface-customization-and-scoped-data). |
 
 ### cPanel UAPI
 
@@ -337,8 +377,6 @@ An empty live list does not verify the types of records it never returned.
 | `uapi()->emailAuth()` | Complete DKIM, SPF, DMARC and PTR management/validation (12). |
 | `uapi()->spamAssassin()` | Complete preference, symbolic-test and Spam Box operations (4). |
 | `uapi()->cpGreyList()` | Complete account/domain Greylisting controls and inventory (6). |
-| `uapi()->cacheBuster()` | `read()` and `update()` browser resource version IDs (complete pinned module). |
-| `uapi()->nginxCaching()` | `clearCache()`, `disableCache()`, `enableCache()`, `resetCacheConfig()` for the selected account (complete pinned module). |
 | `uapi()->mime()` | Complete MIME types, handlers, redirects and hotlink configuration (14). |
 | `uapi()->domainInfo()` | All 5 operations: `domainsData()`, `singleDomainData()`, `listDomains()`, `primaryDomain()`, `mainDomainBuiltinSubdomainAliases()` |
 | `uapi()->langPhp()` | All 11 operations: installed/default/vhost PHP versions, domain handlers and impacted domains, INI paths/basic directives/content reads, and `phpIniSetUserBasicDirectives()`, `phpIniSetUserContent()`, `phpSetVhostVersions()` |
@@ -347,6 +385,9 @@ An empty live list does not verify the types of records it never returned.
 | `uapi()->email()` | All 96 pinned functions, including mailbox lifecycle, quotas and suspension, forwarders, filters, MX routing, autoresponders, spam settings and delivery diagnostics; see [generated methods](src/Api/Uapi/Email.php). |
 | `uapi()->ssl()` | All 49 nondeprecated functions, including certificate/key/CSR inventory and lifecycle, installation, AutoSSL, SNI and redirects; see [generated methods](src/Api/Uapi/Ssl.php). |
 | `uapi()->imageManager()` | `convertFile()`, `createThumbnails()`, `getDimensions()`, `resizeImage()` (complete pinned module). |
+| `uapi()->logManager()` | `deleteArchive()`, `getSettings()`, `listArchives()`, `listErrorLogs()`, `setSettings()`, `viewErrorLog()`; see [log administration](#log-administration). |
+| `uapi()->nova()` | All 11 pinned functions; see [Nova and Sitejet site builders](#nova-and-sitejet-site-builders). |
+| `uapi()->sitejet()` | All 12 nondeprecated pinned functions; see [Nova and Sitejet site builders](#nova-and-sitejet-site-builders). |
 | `uapi()->quota()` | `getQuotaInfo()`, `getLocalQuotaInfo()` |
 | `uapi()->ftp()` | `addFtp()`, `allowsAnonymousFtp()`, `allowsAnonymousFtpIncoming()`, `changePassword()`, `deleteFtp()`, `ftpExists()`, `getFtpDaemonInfo()`, `getPort()`, `getQuota()`, `getWelcomeMessage()`, `killSession()`, `listFtp()`, `listFtpWithDisk()`, `listSessions()`, `serverName()`, `setAnonymousFtp()`, `setAnonymousFtpIncoming()`, `setHomedir()`, `setQuota()`, `setWelcomeMessage()` |
 | `uapi()->mysql()` | `listDatabases()`, `listUsers()`, `getPrivilegesOnDatabase()`, `getRestrictions()`, `getServerInformation()`, `createDatabase()`, `createUser()`, `setPrivilegesOnDatabase()`, `deleteUser()`, `deleteDatabase()`, `addHost()`, `addHostNote()`, `checkDatabase()`, `deleteHost()`, `dumpDatabaseSchema()`, `getHostNotes()`, `listRoutines()`, `locateServer()`, `renameDatabase()`, `renameUser()`, `repairDatabase()`, `revokeAccessToDatabase()`, `setPassword()`, `setupDbAndUser()`, `updatePrivileges()` |
@@ -412,8 +453,14 @@ and source contradictions stay under `8x0.1.21`. The separate
 [2026-10-31 singleton-list capture](docs/api/evidence/2026-10-31-dnssec-indexed-input.json)
 at `5e0ea6b` on `11.138.0.19` passes three GETs and strict assessment with zero
 discrepancies. It confirms DS singleton-list acceptance on both routes; domain
-detail objects are empty. Multi-domain batches, populated DS fields and mutations
-remain unestablished; no DNS, key, registrar or preference state changed.
+detail objects are empty, and this capture changed no DNS, key, registrar or
+preference state. Separately, [review 5722987368](https://github.com/hostingpal/whm-api-client/pull/76#pullrequestreview-5722987368) of
+`ec0796271da96827835bb26d8fb38091cb882e94` on `11.138.0.19` reports direct and
+bridged multi-domain enable/fetch/disable, populated DS `keys` and `digests`,
+scalar/singleton fetch, an empty re-read after disable, and an unknown-domain
+`ApiErrorException` without a partial result. These are reviewer observations
+under `8x0.2.26`, distinct from the immutable singleton capture; DNS propagation,
+resolver validation and remaining variants are not established.
 Omitting `keySetup` retains `classic` even with `algoNum: 13`; choose `simple`
 explicitly for the documented combined-key setup above algorithm 8. Key removal
 is irreversible and can break validation while registrar DS records reference it.
@@ -472,17 +519,21 @@ is the first generated typed JSON-body operation. Generic `call()` remains form-
 
 `statsManager()->saveConfiguration($configuration)` replaces the account's analyzer
 configuration. Explicitly call `getConfiguration()` first and prepare the complete
-intended domain/analyzer set. A partial-looking input can reset other settings to
-defaults. The client makes no implicit read, merge, patch, retry, restore or rollback.
+intended domain/analyzer set. Round-trip `enabled_by_user` (the user choice) into
+input `enabled`, rather than the effective `enabled` returned by the read. Analyzers
+absent from the read receive defaults. A partial-looking input can reset other
+settings to defaults. The client makes no implicit read, merge, patch, retry, restore or rollback.
 The [PR73 reviewer](https://github.com/hostingpal/whm-api-client/pull/73#pullrequestreview-5722705880)
 reports that the 11.138.0.19 handler builds defaults for every domain/analyzer,
 applies changes, then saves; its POD says unspecified configurations are disabled.
 This is attributed upstream evidence, without a promise that every default is
 universally disabled.
 
-The required input is `array{changes: non-empty-list<array{domain: string,
+The required input is `array{changes: non-empty-list<array{domain: non-empty-string,
 analyzers: list<array{name: string, enabled: bool}>}>}`. Every listed field is
-required; `analyzers: []` remains valid. Native bools map to integer 0/1 wire flags.
+required; only the zero-byte domain string is rejected. `'0'`, `'00'` and whitespace
+are forwarded unchanged; this is not domain validation. `analyzers: []` and empty
+analyzer names remain valid inputs. Native bools map to integer 0/1 wire flags.
 Names remain strings without a closed analyzer enum. Unknown members, malformed
 lists, nulls and wrong scalar types fail locally before I/O. Requiredness is an
 operation-scoped correction to the formally optional pinned 11.138.0.10 input,
@@ -493,10 +544,14 @@ This method sends one direct-cPanel UAPI POST with exactly `Content-Type:
 application/json`. The WHM bridge rejects it locally after clearing metadata.
 Available from cPanel 90 with the WebServer role; root/reseller control can prevent
 user changes. Returned domain/analyzer fields remain optional, with native integer
-0/1 flags. The pinned save-response description says `locked=1` is user-manageable
-and `locked=0` is root/reseller-controlled. Inspect `responseMeta()` and warnings:
-the reviewer reports `raw_warning` for skipped `not_owned`, `not_available` and
-`unrecognized` entries even with status 1. No payload `raw_warning` field is invented;
+0/1 flags. On 11.138.0.19 the source uses the same row builder as `getConfiguration()`:
+`name`, `enabled`, `enabled_by_user`. `locked` and analyzer `available_for_user` belong
+to response metadata: `locked=1` is reseller/root-only and `locked=0` is user-manageable.
+Inspect `responseMeta()` warnings for skipped `not_owned`, `not_available` and
+`unrecognized` entries even with status 1. An empty analyzer name produces an
+`unrecognized` warning, while the handler silently skips an empty domain. The client
+rejects the empty string locally; it does not establish validity of other domains.
+No payload `raw_warning` field is invented;
 success does not prove every requested setting applied. Check persistence separately.
 
 The successful live-write gate in `8x0.1.18` remains **OPEN**. The reviewer's
@@ -511,7 +566,8 @@ selection/source/route audit is tracked under `8x0.29.6`.
 $statsManager = $client->uapi()->statsManager(); // Direct cPanel credentials.
 $currentConfiguration = $statsManager->getConfiguration();
 // The caller now prepares the complete intended domain/analyzer set from this
-// explicit read, accounting for server availability and converting choices to bool.
+// explicit read, accounting for server availability and converting each
+// enabled_by_user === 1 into input enabled. Do not round-trip effective enabled.
 /** @var StatsConfigurationInput $completeIntendedConfiguration */
 $savedConfiguration = $statsManager->saveConfiguration($completeIntendedConfiguration);
 $warnings = $client->uapi()->responseMeta()?->uapiWarnings();
@@ -574,8 +630,14 @@ them `x-readonly=false`.
 
 Repository `sourceRepository` is caller-supplied JSON text, sent once as a form
 parameter. The client does not JSON-encode a PHP object or decode/re-encode the
-string. The existing scalar parameter boundary is `string|int|null`; supply the
-documented serialized JSON string, or omit it. Clone URLs may contain credentials,
+string. The native parameter is `?string`; supply the documented serialized JSON
+string, or omit it. Explicit null omits the field. These scalar JSON-text inputs are not parsed, validated, re-encoded or repaired;
+malformed text and empty strings retain their supplied bytes before form encoding.
+Across the ten corrected string inputs, a strict caller's integer raises native
+`TypeError` before the generated method starts, retaining that handle's prior
+metadata and sending no request. Weak call sites retain normal PHP scalar coercion.
+This closes `8x0.1.23` for these inputs only; other release blockers and live gaps
+remain as documented. Clone URLs may contain credentials,
 so this argument stays sensitive. The pinned source warns that repository deletion
 permanently removes directory contents. The PR40 reviewer instead observed
 registration deletion leaving the directory on the test server; retain the
@@ -639,16 +701,22 @@ to that home, creates a missing directory, and describes antivirus scanning and
 permission warnings. These are source statements, not a client live guarantee.
 
 Typed upload explicitly uses `OutcomePolicy::Unchecked`: both integer UAPI flags
-`0` and `1` return the validated required data object, including optional counts,
-per-file status/reason/warnings and nullable stored size. Inspect
-`responseMeta()->uapiStatus()` and every row; either flag can include failed files.
-Missing/invalid status remains an envelope error. Missing, null, list or malformed
-data fails with `PayloadMismatchException`, retaining the snapshot and unvalidated
-payload with `outcomeConfirmed=false`. Decimal byte/infinity strings, int|string
+`0` and `1` preserve valid per-file rows, including counts, status/reason/warnings
+and nullable stored size. Inspect `responseMeta()->uapiStatus()` and every row;
+either flag can include failed files. Status `0` with explicit null data or a
+validated object containing `uploads: []` raises `ApiErrorException`, preserving
+the same response snapshot and `errors()`. The upstream "You must specify at least
+one file to upload." message can mean insufficient disk space: the form parser
+may discard all files before the upload handler sees them. A row-bearing partial
+or all-failed batch still returns normally. Missing/invalid status remains an
+envelope error. Missing data, status-0 missing rows, list roots and malformed known
+fields raise `PayloadMismatchException`, retaining the snapshot and unvalidated
+payload with `outcomeConfirmed=false`. Status `1` retains the documented optional
+fields; null data still mismatches. Decimal byte/infinity strings, int|string
 inode counts and additional string display values remain exact. The data root
 explicitly rejects empty JSON arrays; existing nested empty-object compatibility
 is unchanged. Absent diskinfo is not zero usage. Any failure may follow stored
-files; there is no retry, rollback or inferred ownership/cleanup.
+files; there is no retry, rollback, atomicity or inferred ownership/cleanup.
 
 ```php
 use HostingPal\WhmApiClient\Upload;
@@ -1066,9 +1134,15 @@ strings retain their exact precision and formatting. `updateUserPreference()` ac
 a string or nonempty sequential string list for `value`. Scalars retain `value`;
 arrays use zero-based `value-0`/`value-1`, including singleton arrays. Omission or
 null removes settings; `[]` is rejected before HTTP. Empty strings, string `0`,
-order and duplicates remain exact. One preference is updated per call; no live
-list-mutation compatibility is established. `clearSpamBox()` deletes all Spam Box
-contents across the selected account and has no individual-mailbox selector.
+order and duplicates remain exact. One preference is updated per call.
+[review 5722987368](https://github.com/hostingpal/whm-api-client/pull/76#pullrequestreview-5722987368) of `ec0796271da96827835bb26d8fb38091cb882e94`
+on `11.138.0.19` observed three ordered values including a duplicate, singleton
+and scalar values, and deletion with `value` omitted through direct UAPI and the
+WHM bridge. It also observed `[]`, sparse lists and integer items rejected before
+dispatch. These cases are recorded under `8x0.2.23.1`; they do not waive the
+historical failed `required_score` removal capture or establish mail filtering.
+`clearSpamBox()` deletes all Spam Box contents across the selected account and
+has no individual-mailbox selector.
 
 Greylisting selected-domain methods send repeated plural `domains` keys, following
 the declared parameter and prose despite singular examples. Status flags remain
@@ -1350,10 +1424,10 @@ an empty list. Missing-archive `ExtractInfo::start()` raises `ApiErrorException`
 These installation-specific observations preserve normal error handling.
 
 WordPressBackup `cancel()` and `start()` return an optional string `site`,
-preserving the pinned outer type across format-only alternatives. Their generated
-input currently accepts `string|int`; supply a string site as documented. Integer
-site semantics are not established. The generator limitation is tracked under
-`8x0.1.23`; it does not weaken the response contract.
+preserving the pinned outer type across format-only alternatives. Their native `site`
+input is `string`, preserving the same outer source type without URL/path format
+validation. The scalar input correction under `8x0.1.23` is complete for these
+two parameters; the installation-specific live gap remains.
 
 ### WHM database administration
 
@@ -1430,7 +1504,15 @@ remains required even with `remove: true`; explicit null and unknown row keys fa
 locally. Missing optional fields retain the original one-based row index, and
 input order and duplicate setting IDs are preserved. The entire collection is
 sensitive. Both methods share one canonical response contract and issue one form
-POST, with no retries, rollback or promise of atomic per-setting success.
+POST. Both prepare staged settings; explicitly call `deploySettingsChanges()` to
+activate them. On failure, some staged settings may already have changed.
+`ApiErrorException` does not expose `data.failures`; after **any** failure,
+explicitly re-read `getSettings()` to establish the current staged state before
+deciding what to do next. No automatic re-read, retry or rollback occurs.
+In the `11.138.0.19` handler source, success means every submitted row was accepted;
+it does not establish deployment. Duplicates retain emitted order, but server
+hash traversal provides no deterministic ordering or last-wins guarantee. Avoid
+conflicting repeated IDs.
 The source restricts batch setting IDs to 0 through 9; this change adds no
 client-side ID/range or state enum validation. Record input support is source-backed
 and tested offline only.
@@ -1453,8 +1535,8 @@ $client->whm()->modSecurity()->updateSettings(settings: [
 
 This emits `setting_id1=1&state1=On&setting_id2=2&state2=Off&remove2=0`;
 there is no `remove1`. Empty state strings, integer zero and string `'0'` remain
-values. The alias adds one public method, while canonical coverage is now 1,137
-operations (549 UAPI and 588 WHM), 96 groups and 195 generated files (194 PHP files plus the coverage document).
+values. The alias adds one public method, while canonical coverage remains 1,142
+operations (548 UAPI and 594 WHM), 99 groups and 200 generated PHP files.
 
 The twelve source-backed empty-result mutations accept an omitted or null payload
 while retaining any returned mixed data; they are not weakened to void. Omitted
@@ -1711,9 +1793,9 @@ additional properties through the existing object-values mechanism. Treat their
 results and service/configuration values as private payload data.
 
 Profile activation accepts documented serialized JSON text in its optional role
-argument, with one form-encoding pass. Its native `string|int` boundary does not
-establish integer semantics or automatic object encoding; supply a JSON string.
-The typing limitation remains under `8x0.1.23` before release. Available-tier
+argument, with one form-encoding pass. Its native argument is `?string`;
+explicit null omits the field. The scalar input correction under `8x0.1.23` is
+complete for this parameter. Available-tier
 maps preserve the five pinned named fields alongside dynamic values. Both
 service-configuration reads document `dovecot`; undocumented services are outside
 the contract, and null data from such a service can fail validation. Configuration
@@ -1805,9 +1887,16 @@ fetches no icon URL and opens no icon file. The source `icon_type` default
 contents. Input order is preserved. The complete value is serialized once into
 one `configurations` form field, then form-encoded once; `[]` sends
 `configurations=%7B%7D` (`{}`). This is a form POST, with no JSON request header.
-An empty object has no promised reset or no-op meaning. Configuration input is
-sensitive; one attempt has no automatic retry or rollback. This source/offline
-companion adds no canonical operation and establishes no new live provider-write
+On cPanel 11.138.0.19, both methods merge supplied keys over the
+current configuration; omitted keys retain their current values. Every call writes
+the full merged configuration, including an empty object. This pins current values
+and defaults for that provider/service, preventing later upstream default changes
+from applying. It is not a reset or a write-free no-op. The server requires `color`
+and `textcolor` to match `^[0-9a-fA-F]{3,6}$`, without a leading `#`. A key the
+provider does not support, such as `icon` on a provider without an icon, can pass
+local shape validation and still fail upstream. These upstream constraints are
+not additional local validators. Configuration input is sensitive; one attempt has
+no automatic retry or rollback. This source/offline companion adds no canonical operation and establishes no new live provider-write
 compatibility.
 
 TFA removal currently
@@ -1838,8 +1927,8 @@ arrays use documented numbered names; deferred installation uses repeated fields
 whose five lists callers must align by position, including each certificate and
 private key. Neither the client nor its type checks validate equal lengths or
 pairing. An empty bundle requests server-side bundle download. The metadata setter accepts caller-serialized JSON text encoded once as
-a form field; its current native `string|int` boundary does not establish integer
-semantics or automatic object encoding (`8x0.1.23`). This is not a JSON request body.
+a form field; its native argument is `string`. The scalar input correction under
+`8x0.1.23` is complete for this parameter; JSON request bodies remain separate work.
 
 Generation stores key/CSR material even when certificate generation is skipped.
 Service certificate installation requires a separate service restart; the client
@@ -1887,7 +1976,10 @@ Two record-write operations remain under `8x0.1.30`: `addzonerecord` and
 
 `massEditDnsZone(int $serial, string $zone, ?array $add = null, ?array $edit = null,
 ?array $remove = null): array` sends repeated literal form fields in one POST
-(cPanel 96+). Prepare the current SOA serial and record line indexes yourself:
+(cPanel 96+). **Both `remove` indices and `edit.line_index` are 0-based. Use
+`line_index` from `parseDnsZone()`.** Reviewed `dumpzone` `Line` values are 1-based;
+passing them directly can delete another record while the API reports success.
+Prepare the current SOA serial and record indexes yourself:
 
 ```php
 $result = $client->whm()->dns()->massEditDnsZone(
@@ -1904,17 +1996,30 @@ $result = $client->whm()->dns()->massEditDnsZone(
 `add`/`edit` require nonempty sequential string lists of caller-serialized JSON;
 `remove` requires a nonempty sequential integer list. Order, duplicates, zero and
 string bytes survive without parsing, joining or index conversion. Null or omitted
-families send no fields; omitting all three still sends serial/zone. Empty lists
-reject locally. Record fields and type-dependent data formats remain the caller's
+families send no fields; omitting all three still sends serial/zone once. On reviewed
+cPanel `11.138.0.19`, upstream rejects that empty change set with `ApiErrorException`
+and no zone change. The client adds no minimum-one-edit guard or local no-op. Empty
+lists reject locally. Record fields and type-dependent data formats remain the caller's
 responsibility; edit's `line_index` is zero-based. All three collection arguments
 receive the generator's existing trace redaction; add/edit may contain private data.
 
-A stale serial fails. Each surviving record retains its line count per the source;
-this does not promise unchanged offsets or safe index reuse. The result has optional
-integer `new_serial`; callers must track lines per record for later edits. Temporary
-domains are unsupported. No reread, retry, rollback, atomicity or DNS propagation
-guarantee is added. This adoption has offline evidence only; no live mutation or
-no-op probe ran.
+Stale serials and malformed `add` JSON also raise `ApiErrorException` without a zone
+change on reviewed `11.138.0.19`. Each surviving record retains its line count per
+the pinned source; this does not promise unchanged offsets or safe index reuse.
+Optional `new_serial` is returned as an integer: native integers and evidenced
+canonical in-range decimal strings normalize losslessly; omission stays absent.
+Callers must track lines per record for later edits. Temporary domains are
+unsupported. No reread, serial refresh, retry, rollback, atomicity or DNS propagation
+guarantee is added.
+
+`Flag` raises on `result=0` before payload validation, so unvalidated failure
+`data.by_line` details are not exposed. The reviewer identified the `InvalidZoneFile`
+detail path in server source but did not exercise it. The pinned operation gives
+`A` and `TXT` as examples without a complete record-type enum; reviewer inspection
+of the `11.138.0.19` handler found a fixed set excluding `SOA`. These observations
+are attributed in [the correction audit](docs/api/source-audit.md#whm-dns-mass-edit-review-correction-2026-11-01),
+separately from committed captures. Composed `addzonerecord`/`editzonerecord` forms
+remain deferred under `whm-api-client-8x0.1.30`.
 
 DNSSEC enable/disable uses repeated domain fields; other selectors retain their
 own scalar contracts. `addZoneKey()` and each `enableDnssecForDomains()` row return
@@ -1966,14 +2071,20 @@ calculation uses POST because its password input is sensitive.
 
 Typed JSON personalization calls remain under `8x0.1.18`. Conversion initiation accepts
 `copyMysqlDatabases` as an old-to-new string map with literal `copymysqldb-` prefix;
-null or [] copies no databases. `moveMysqlDatabases`/`moveMysqlUsers` preserve
-unsuffixed scalar fields and use one-based suffixes for nonempty lists.
-`massmodifyacct()` retains all 51 case-sensitive fields, accepts a scalar or
-one-based user list and optional integer `mxPriorities` with `MXCHECK-` prefix.
-Inspect each per-user result; outer success does not prove every account succeeded.
-These mutations have no live verification in this slice; the client adds no retry,
-polling, completion, cleanup or rollback. Conversion status supports
-one integer job ID; contradictory indexed examples remain in `8x0.1.21`.
+null or [] copies no databases. Purely numeric keys reject after PHP integer-key
+coercion. `moveMysqlDatabases`/`moveMysqlUsers` preserve unsuffixed scalars and use
+one-based suffixes for nonempty lists. `massModifyAccount()` retains 50 fields;
+MXCHECK-* is excluded after the reviewer's scoped no-effect observation. Its
+unchecked result policy returns validated partial/all-failed rows even when outer
+result is 0; callers inspect every per-user result and metadata. No retry,
+polling, completion, cleanup or rollback is added. Conversion remains unobserved.
+Conversion status supports one integer job ID. The pinned examples disagree about
+the first suffix, but [review 5722427592](https://github.com/hostingpal/whm-api-client/pull/72#pullrequestreview-5722427592)
+reports `_parse_job_ids` accepting `job_id` or numeric `job_id-N`, including zero-
+and one-based suffixes, on `11.138.0.19`. This source inspection lifts that
+numbering ambiguity for the reviewed handler/version; list adoption still needs
+an explicit pattern and integer input policy under `8x0.1.21`. It establishes
+neither a general arbitrary-pattern contract nor live conversion-list behavior.
 
 `getMaximumUsers()` preserves the pinned optional `users` integer and the
 separately observed optional `maximum_users`, normalizing bounded canonical
@@ -2034,12 +2145,15 @@ behavior is tracked in `8x0.2.41`; empty-container evidence ambiguity remains
 creation, editing, deletion, extension management, matching, application inventory
 and feature overrides. The original eight methods and two deprecated exclusions
 are retained, with a narrow team-limit response correction in `listPackages()`.
-`createFeaturelist()` and `updateFeaturelist()` require an explicit `features`
-bool map with literal keys. [] still dispatches: update disables every feature;
-empty create behavior is unspecified. Populated-update omission behavior is not
-inferred. Create requires reseller Add/Remove Package permission and overwrite
-can replace an existing list. Updated/invalid feature responses preserve dynamic
-feature keys and integer 0|1 values. Both new methods use form POST.
+`createFeaturelist()` and `updateFeaturelist()` require explicit `features` bool
+maps with literal keys. Empty update rejects locally; omitted update keys preserve
+state in the reviewer observation on 11.138.0.19. Empty create still sends the
+fixed request and created an all-disabled list in that version-scoped fixture.
+Create requires reseller Add/Remove Package permission; overwrite can replace a
+list. Updated flags accept native/quoted 0|1 and normalize to integers;
+`invalid_features` is a string list to inspect, without an atomicity guarantee.
+Both methods use form POST. Source contradictions and reviewer provenance are
+recorded separately in the source audit.
 
 Package options preserve exact wire casing, omission, false/zero and literal
 `unlimited` values. Quotas use the source's MB units. `editPackage()` changes
@@ -2051,9 +2165,8 @@ do not change existing mailboxes. A package in use cannot be deleted;
 `deletePackage()` returns no value. The client performs no retry or rollback.
 
 Feature overrides accept caller-serialized JSON text in form fields, encoded
-once, rather than a JSON body or automatically serialized PHP arrays. The scalar
-native `string|int` input limitation remains under `8x0.1.23`; integer JSON
-semantics are not established. Extension names and optional variables are
+once, rather than a JSON body or automatically serialized PHP arrays. Both native `features` arguments are `string`; the scalar
+input correction under `8x0.1.23` is complete for these two parameters. Extension names and optional variables are
 case-sensitive. `deletePackageExtension()` removes the named extensions and
 associated variables; the typed input does not invent arbitrary variable fields.
 
@@ -2465,6 +2578,201 @@ is failed despite zero schema discrepancies, with no waiver. SHA-256:
 It includes no private reads, writes, DAV access or synchronization proof.
 
 
+### Log administration
+
+`uapi()->logManager()` covers all six pinned functions for the selected account;
+`whm()->logs()->listAccountsRetention()` is WHM account-retention inventory.
+Five reads use GET and two mutations use form POST. LogManager requires cPanel
+82+, with deleteArchive() at 136+ and the error-log methods at 138+; the WHM
+retention inventory requires 136+. Reviewer 5721279104 inspected the server's
+`Cpanel/API/LogManager.pm` on `11.138.0.19`: shared `%API` requirements are the
+WebServer role and rawlog feature for all six UAPI operations. The pinned snapshots
+declare neither requirement, and disabled-role/feature behavior was not tested.
+
+The pinned settings text uses current `~/.cpanel-logs` flag values when present,
+with `cpanel.config` defaults when absent. Client policy omits null arguments and
+transmits explicit false as 0 and explicit zero unchanged. The reviewer stored
+and read back false/zero flags; omitted flags kept their current values after
+`setSettings(retentionDays: -1)`. Here -1 clears the per-user retention override,
+while zero retains indefinitely. The pinned schema supplies a minimum of -1;
+the reviewer observed a server bound of -1..999 and an API error for 1000.
+Native optional bool/int inputs and server-side range/cross-field validation stay
+unchanged, including rejection of a call without arguments. No local maximum
+check is added. These observations do not establish rotation or pruning.
+
+Integer 0|1 UAPI flags, boolean WHM using_default, optional fields and nullable
+retention/error-log metadata retain their contracts. The existing four capture-bound
+conversions remain scoped to WHM default_retention and UAPI get_settings
+archive_logs, prune_archive and retention_days. Separately, the reviewer observed
+empty direct viewErrorLog() returning `log_content: []` and `lines_read: "0"`;
+nonempty direct and bridged counts were native integers. Only lines_read additionally
+accepts canonical signed decimal strings within PHP integer bounds, normalizing
+to int. Native integer/omitted counts and strict sibling mtime/size/flags remain.
+Neither immutable log-administration capture contains viewErrorLog().
+
+Log contents are private payload data; do not log them or explicitly accessible
+PayloadMismatchException payloads. The client forwards paths/selectors unchanged,
+performs no local filesystem access, and makes one request with no retry or undo.
+Deletion/settings can permanently affect archives. Mutations retain unconstrained
+present JSON payloads, including null, and reject absent data. All seven methods
+have offline contracts, including both UAPI routes; the private-log mismatch test
+uses the shared trace suite with argument capture and positive controls.
+StatsManager/save_configuration is separately adopted as a direct typed JSON POST;
+its successful-write gate remains open under `8x0.1.18`.
+
+The fixed eight-GET catalog observes version, WHM retention and selected-account
+settings/archive/error-log metadata. It reads no log contents and makes no writes.
+The initial `e5476c1` artifact remains failed and immutable; the corrected
+`dd5e626` artifact on `11.138.0.19` passes all eight checks and strict assessment
+with zero discrepancies. Account/archive rows are populated; error-log lists are
+empty. Separate reviewer observations at `984c5c1` cover all seven methods on a
+disposable account, including reads, writes and API-error cases through both UAPI
+routes and the single WHM route. The reviewer revoked its token and removed the
+account/home. They establish no live verification of the current corrected head.
+Unreadable/symlink error rows with null size/mtime, php_fpm_error_log and actual
+rotation/pruning remain unobserved under `8x0.2.55`.
+
+### Nova and Sitejet site builders
+
+`uapi()->nova()` covers eleven pinned functions and `uapi()->sitejet()` twelve
+nondeprecated functions: six GETs and seventeen conservative form POSTs. Missing
+`x-readonly` is a source fact; choosing POST is client policy. The two deprecated
+Sitejet template operations remain excluded. Pinned availability is cPanel 110+,
+except Sitejet restore-point/restoration at 120+; Nova requires AI App Builder.
+Only nine Nova descriptions say disabling that feature disables the operation;
+`accountExists()` and `getTier()` retain the feature requirement alone.
+
+[Reviewer 5721328890](https://github.com/hostingpal/whm-api-client/pull/69#pullrequestreview-5721328890)
+on `11.138.0.19` reports all six Nova reads they called failing on both routes
+because `Cpanel::API::Nova` could not load, and its file was absent. All eleven
+methods are unavailable for verification there. Write failures are expected from
+the missing module but were not executed; every Nova response, including overlay
+repairs, remains unobserved.
+
+`createWebsite()` preserves a native integer ID or the pinned object with optional
+integer `websiteID`. The reviewer inspected `Cpanel/API/Sitejet.pm` and
+`Cpanel/Sitejet/Connector.pm`: Connector returns `$ret->{websiteId}` and the handler
+sets data to that bare ID. This is a source-based container correction; remote
+creation and its scalar type were not observed. The bounded integer type comes
+from pinned `websiteID` and inventory `websiteId`, without string, null or float
+coercion. `websiteId` is the request parameter for `getPreviewUrl()` (which returns
+a string) and an inventory metadata key. Contact details, tokens, signatures,
+credential URLs and metadata remain sensitive. Metadata is caller-supplied JSON
+text encoded once as a form field; the client does not decode it or fetch URLs.
+
+Both publication `cleanup` arguments are optional nullable booleans: omit/null
+omits the field, false sends 0 and true sends 1, deleting previous document-root
+files. Nova pins default 0. Sitejet pins no default; the reviewer inspected
+`get('cleanup') || 0`, making omission zero on that server version. Remote
+publication was not executed. Strict PHP callers reject non-null, nonboolean cleanup before
+I/O; this follows the existing API surface without stronger weak-call guarantees.
+
+`createRestorePoint()` is destructive and is not an automatically reversible
+backup. The reviewer inferred deletion from `_clean_up(document_root, exclusions)`
+in server source; live deletion was not witnessed. They observed creation success
+and `restoreDocumentRoot()` refusal on both routes for a never-published domain
+without its `<domain>-files` tracking file. The archive remains at
+`~/<domain>_<time>.gz`, requiring manual recovery. Successful restoration remains
+unobserved. Calls make one request without automatic retry, polling or undo;
+a confirmed write with an invalid payload still throws `PayloadMismatchException`
+with its explicit payload and metadata. Do not retry site creation after that
+confirmed outcome.
+
+The reviewer separately reports `getAllUserSitejetInfo()` with and without domain
+passing quota/status and empty metadata, plus `canCreateDomains()`,
+`isPublishInProgress()` and `getPreviewUrl()` on both routes. Published metadata
+remains unobserved. Local writes on disposable `wrvsite` returned null for
+`createRestorePoint()`/`addApiToken()` and a string for `getApiToken()` after a valid
+stored token; missing-token and foreign-domain cases raised API errors. They
+revoked the temporary token and confirmed account/home removal. These attributed
+observations establish no unreported HTTP method, route variant or private value.
+`addApiToken()` malformed input exposed a generic failure/Error ID; inspected
+source uses `/^[a-z0-9]{32}\z/` and logs specific Invalid token text server-side.
+No local token validator or log access is added.
+
+The historical five-GET capability capture remains failed and immutable: version
+and both Sitejet probes pass, both Nova probes are API failures with payload
+`not_checked`; zero schema discrepancies do not waive those failures. The catalog
+and recipe are unchanged. No new capture or corrected-head live acceptance ran.
+Remote `createAccount()`, `createWebsite()`, `getSsoLink()` and `startPublish()`,
+successful restoration, Nova and published variants remain open under
+`8x0.2.57`.
+
+
+```php
+$builder = $client->uapi('npr')->sitejet();
+$canCreate = $builder->canCreateDomains(); // integer 0|1
+$inventory = $builder->getAllUserSitejetInfo(); // Account metadata; handle privately.
+$publishing = $builder->isPublishInProgress(domain: 'example.test');
+// Destructive calls require a deliberate account/domain decision:
+// $builder->startPublish(domain: 'example.test', cleanup: true);
+```
+
+### WHM interface customization and scoped data
+
+`whm()->customizations()`, `whm()->userData()` and `whm()->inProductSurvey()`
+provide five methods. `retrieveCustomizations()` uses GET; the other four use
+form POST as client policy following pinned `x-readonly=false`. Customizations
+requires cPanel 100 and Jupiter; scoped data and survey functions require 86.
+Application and theme remain exact supplied strings.
+
+`retrieveCustomizations()` preserves present data as opaque `mixed`, without
+inventing a branding field schema. The pinned response omits a data contract.
+[Review 5721307565](https://github.com/hostingpal/whm-api-client/pull/70#pullrequestreview-5721307565)
+on `11.138.0.19` reports the raw retrieval map and the old typed void result;
+this is reviewer runtime evidence, with no new local call or capture. Explicit
+null and other JSON variants are compatibility at the opaque boundary, not
+universal observations. Absent data still raises `PayloadMismatchException`.
+
+`deleteCustomizations(application, theme, path)` requires an explicit nonnullable
+selective dot path and still returns void. Reviewer-inspected
+`Whostmgr/API/1/Customizations.pm` and `Whostmgr/Customizations.pm` show that omitted
+path, `''` and `'0'` select the entire default customization section. The existing
+client guard rejects trimmed blanks and trimmed zero before HTTP; rejecting
+whitespace variants is additional conservative policy. Valid paths are forwarded
+without trimming. Missing/null arguments fail before the group callback and
+retain prior metadata; runner guard failures clear it. Deliberate whole-section
+deletion remains available through generic form POST. Deletion has no rollback.
+
+Scoped data belongs to root for any WHM caller, according to reviewer-inspected
+`UserData.pm`. `getScopedUserdata()` creates scope directories under
+`/var/cpanel/userdata/root/scope/` when absent, so it is not a pure read. Its
+pinned string-valued map remains strict; the reviewer separately observed typed
+and raw reads of existing `inproductsurvey`, including digit-string `start_time`.
+`setScopedUserdata(scope, key, value, json)` returns an object map with opaque
+values: inspected source assigns arbitrary JSON and returns the in-memory map
+after saving. This is a source-based write correction, not observed execution.
+Null/missing roots, scalars and nonempty root lists remain invalid; existing
+empty-container compatibility remains.
+
+Scope, key, value and pre-serialized JSON arguments stay sensitive strings. JSON
+text is form-encoded once; no JSON request body or PHP object input is added.
+The client forwards exact supplied strings without new cross-field validation.
+Empty key, value or json, missing write input and combining json with key/value
+raise upstream API errors. Zero is forwarded without inferring server acceptance.
+
+Survey `display` and `new_user` retain exact native/quoted 0|1 normalization.
+Only `link`, `max_dismiss` and `submit_event` additionally preserve null, omission
+and exact strings. Reviewer-inspected `InProductSurvey.pm` and
+`Cpanel/InProductSurvey.pm` plus undefined configuration support those nulls;
+no survey call was made. The function saves `start_time` and a generated `uuid`
+in root's `inproductsurvey` scope, and `last_survey_link` only when a link exists.
+Other fields remain strict; URLs are private payload data and are never fetched.
+
+`update_customizations` remains excluded: required `data` is application/json
+content in a query parameter, not a JSON request body. Its serialization is
+tracked under `8x0.1.22`, with field-JSON design under `8x0.29`.
+All five methods have offline contracts and issue one request without retries,
+rollback or interface-rendering guarantees. The three mutating methods remain
+unobserved under `8x0.2.58`; reviewer reads do not establish corrected-head live
+acceptance or other scope/application/theme variants.
+
+```php
+// Retrieve Jupiter branding without changing configuration or fetching its URLs.
+$customizations = $client->whm()->customizations()
+    ->retrieveCustomizations('cpanel', 'jupiter');
+```
+
 ### Generic calls
 
 Use `call()` for functions whose parameters fit the supported GET query or
@@ -2526,8 +2834,8 @@ routes on 2026-10-14 with read-only functions.
 
 ### Raw JSON calls
 
-Use `whm()->callJson($operation, $json, $query = [], $outcome = OutcomePolicy::Flag)`
-or direct cPanel `uapi()->callJson($module, $operation, $json, $query = [], $outcome = OutcomePolicy::Flag)`
+Use `whm()->callJson($operation, $json, $outcome = OutcomePolicy::Flag)`
+or direct cPanel `uapi()->callJson($module, $operation, $json, $outcome = OutcomePolicy::Flag)`
 for an already serialized JSON document. Both always POST with
 `Content-Type: application/json`. Authentication, base URI and account come from the handle;
 WHM-bridged UAPI rejects JSON locally after clearing metadata, before I/O.
@@ -2539,19 +2847,23 @@ $result = $client->whm()->callJson($operation, $json);
 $result = $directClient->uapi()->callJson($module, $operation, $json);
 ```
 
-The syntax check accepts every JSON root kind, including scalars and `null`, with
-strict UTF-8 and native `json_validate(..., 512)` depth limits (at most 511 nested
-containers). Empty, malformed, BOM-prefixed and over-depth documents fail locally.
-Valid bytes stay exactly as supplied: whitespace, key order, ordinary duplicates,
-escapes and large numeric literals are retained. No endpoint request/response
-schema is applied. Callers must choose compatible operation, route and envelope
-contracts; raw syntax acceptance does not establish typed coverage or live support.
-WHM execution-wrapper names do not establish account-bound UAPI JSON compatibility.
+The body must be a JSON object with strict UTF-8 and native
+`json_validate(..., 512)` depth limits (at most 511 nested containers). Non-object,
+empty, malformed, BOM-prefixed and over-depth documents fail locally. Direct UAPI
+retains every caller byte. WHM inserts `"api.version":1` as the first root member,
+adding a comma only for a populated object, and preserves every caller byte
+otherwise: padding, key order, ordinary duplicates, escapes and numeric literals.
+WHM sends no version in the URL. No endpoint request/response schema is applied.
+Callers must choose compatible operation, route and envelope contracts; raw syntax
+acceptance does not establish typed coverage or live support. WHM execution-wrapper
+names do not establish account-bound UAPI JSON compatibility.
 
-`$query` uses the existing `Parameters` representation and stays in the URL, encoded
-once after required routing fields. Keep secrets in the body because servers may
-log query strings. These new entrypoints reject reserved routing names by presence
-in caller query fields, their marker expansions and decoded root JSON members,
+There is no separate query argument: cPanel 11.138.0.19 reads JSON arguments only
+from the body. Its parser removes root members beginning with `file-`. Flat direct
+UAPI arguments generally work; nested data requires the function's `requires_json`
+declaration. Flat bridge forms already suffice and the bridge rejects nested data,
+so this client deliberately refuses bridged JSON locally. The entrypoints reject
+reserved routing names by presence in decoded root JSON members,
 even when the value is null or the member name is escaped. Both routes reserve
 the entire case-sensitive `api.` prefix, including bare `api.` and future controls;
 direct UAPI also reserves exactly `cpanel.user`, `cpanel.module` and
@@ -2572,19 +2884,27 @@ the URL. Both values are sensitive. Paths, strings and lists are not accepted in
 place of `Upload`; use the explicit factories described below. Module choices
 are PHPDoc guidance under the existing scalar policy, without a new enum checker.
 
-This restores server-wide configuration. Unchanged backups do not rewrite the
-configuration file. The client adds no retry, rollback, transactional or restart
-guarantee. Its `void` result follows the normal WHM outcome and `responseMeta()`;
+This restores server-wide configuration. Reviewer source inspection on
+`11.138.0.19` found that invalid settings keep their old values and their reject
+details are discarded by the restore handler. Success does not mean every setting
+was applied; re-read the configuration of interest after the call. Unchanged
+backups do not rewrite the configuration file, but may surface as an error because
+the handler sets success metadata only after modifications. The compiled wrapper's
+no-change response remains unverified under `8x0.30.7.1`.
+
+The same source inspection indicates the server may retain a root-only backup in
+`/root/tmp/Cpanel_Form_file.upload.*`. Restore-specific retention is unverified;
+a separate read-only WHM file-part check observed a mode-0600 copy. Account for
+possible retention when uploading configuration secrets. The client adds no retry,
+rollback, transactional or restart guarantee. Its `void` result follows the normal WHM outcome and `responseMeta()`;
 it does not report a changed-files count. The source's multipart schema requires
 both fields even though `requestBody.required` is absent. The empty JSON HTTP
 sample and port 2083 do not override multipart or normal WHM routing.
 
-This implementation added exactly one canonical WHM operation. After Backup
-upload adoption, total coverage is 1,112 operations (525 UAPI, 587 WHM), 91 groups and 185 generated outputs. Tests
+This implementation adds exactly one canonical WHM operation: total coverage is
+1,149 operations (554 UAPI, 595 WHM), 99 groups and 201 generated outputs. Tests
 verify request bytes, routing, stream ownership, metadata and failures offline.
-No live configuration restore was run; Fileman fixture authorization does not
-cover a root configuration restore. The four Backup binary uploads are now typed;
-server-path query modes remain deferred.
+Four Backup uploads are now typed; server-path modes remain deferred.
 
 ### Raw multipart calls
 
@@ -2635,8 +2955,10 @@ Use stable ordinary files or supply explicit bytes/streams. `fromString()` retai
 exact bytes. `Upload::fromStream($filename, $stream, size: $remainingBytes)` borrows a
 PSR stream at its call-time cursor. Omit size only when `getSize() - tell()` gives
 a known valid remainder; an explicit size must agree with a derivable remainder.
-Unknown, invalid or overflowing lengths reject before reads/HTTP. An assertion
-covers the entire remainder; the library does not probe beyond it to detect excess.
+Missing, nonregular or unreadable sources and unknown, invalid or overflowing
+lengths reject before reads/HTTP with a static, unchained `InvalidArgumentException`;
+this attempt clears prior response metadata. Earlier opened owned files close,
+and borrowed cursors remain unchanged. An assertion covers the entire remainder; the library does not probe beyond it to detect excess.
 Do not advance or mutate sources during a call or alias one underlying resource
 through multiple wrappers. The same borrowed stream object cannot appear twice.
 Paths/strings can be reused; later borrowed calls use the then-current position.
@@ -2747,8 +3069,9 @@ strings so values returned by `phpGetHandlers()` can be supplied to
 
 INI content/directives and pool configuration inputs stay sensitive and are
 encoded once. Pool parameters accept caller-serialized JSON text; they do not
-introduce JSON bodies or automatic PHP-array serialization. The native
-string|int limitation remains under `8x0.1.23`.
+introduce JSON bodies or automatic PHP-array serialization. The native pool-parameter
+argument is `?string`, with explicit null omitting the field. The scalar input
+correction under `8x0.1.23` is complete for this parameter.
 
 Impacted-domain selectors are individually optional according to explicit
 either-or-both source prose, but callers must supply a domain or a true
@@ -3240,24 +3563,14 @@ gate. It validates deterministic output, the overlay, and that committed generat
 code is current. `composer check` remains PHP-only. See the
 [tool commands and artifact review workflow](tools/api-map/README.md).
 
-## License
-
-Project-authored code and documentation are licensed under the
-[MIT License](LICENSE). Copyright (c) 2026 HostingPal contributors.
-
-The bundled cPanel documentation snapshots retain their upstream terms and are
-not covered by the project's MIT license. See the
-[third-party documentation notice](docs/api/README.md#licensing).
-
 ### Named-map WHM inputs
 
-Seven additional source-backed WHM operations use typed maps: feature-list create/update,
-Greylisting provider configuration, AutoSSL provider reset/selection, addon conversion
-initiation and bulk account modification. Maps preserve literal suffix keys, strict scalar
-values and a single form-encoding pass; fixed/routing-field collisions, integer PHP keys
-and invalid late values reject before dispatch and clear stale metadata. No dynamic map
-is sent as a placeholder, JSON string or bracket syntax. Every collection argument is
-trace-redacted independently of whether it is semantically secret.
+Seven additional source-backed WHM operations add feature-list create/update,
+Greylisting provider configuration, AutoSSL provider reset/selection, addon
+conversion initiation and bulk account modification. Maps preserve literal keys,
+strict scalar values and a single form-encoding pass. Fixed/routing collisions,
+integer PHP keys and invalid late values reject before dispatch and clear stale
+metadata. Every collection argument is trace-redacted independently of secrecy.
 
 ```php
 $client->whm()->hostingPlans()->updateFeaturelist('custom', ['email' => true, 'ftp' => false]);
@@ -3266,19 +3579,29 @@ $client->whm()->mail()->cpgreylistSaveCommonMailProvidersConfig(
     providers: ['google' => false],
 );
 $client->whm()->ssl()->setAutoSslProvider('cPanel', parameters: []);
-$client->whm()->accounts()->massmodifyacct(
-    user: ['alice', 'bob'],
-    mxPriorities: ['alice.example' => 0, 'bob.example' => 10],
-);
+$result = $client->whm()->accounts()->massModifyAccount(user: ['alice', 'bob']);
+// Inspect each returned per-user result and responseMeta(), including outer result 0.
 ```
 
-Map prefixes are literal: supplying `x_name` to an AutoSSL map emits `x_x_name`.
-Feature maps are required, with no default []; all other maps are optional and nullable.
-Empty feature update disables all features, while empty create has no specified meaning.
-Empty optional maps still dispatch the fixed request. These seven form POST methods
-are offline-verified only; source contracts and typed coverage establish no successful
-live mutation, account conversion, provider registration or feature change.
+Logical provider keys omit `x_`; supplied keys already beginning `x_` reject
+before I/O without stripping or rewriting. This policy is specific to the two
+AutoSSL provider maps. Copy-database keys omit client-added `copymysqldb-`, but
+literal database names sharing that prefix remain data. Purely numeric names
+reject because PHP coerces their keys to integers.
 
+Feature maps are required with no [] default. Empty update rejects; omitted
+update keys preserved state in the reviewer's 11.138.0.19 observation. Empty
+create dispatches the fixed request and produced an all-disabled list in that
+fixture. Inspect `invalid_features`; no universal atomicity is promised. Other
+maps are optional/nullable and empty maps still dispatch. Bulk modification
+retains 50 source fields, excluding ineffective MXCHECK-* input, and uses
+Unchecked to return strict partial/all-failed rows with native integer 0/1 metadata.
+
+[The PR77 reviewer](https://github.com/hostingpal/whm-api-client/pull/77#pullrequestreview-5723287220)
+observed feature-list and bulk-account behavior on 11.138.0.19. Greylisting,
+AutoSSL writes and conversion were not run. These attributed observations are
+separate from immutable captures and do not establish corrected-head live
+acceptance. The client adds no retries, polling, rollback or implicit consent.
 
 ### Backup binary restore uploads (2026-10-31)
 
@@ -3289,7 +3612,7 @@ live mutation, account conversion, provider registration or feature change.
 ?int $timeout = null, ?bool $verbose = null)`. Arrays are precisely non-empty-list<Upload>.
 Every public value is sensitive. Scalars emit bare `file` for databases or `backup`
 for the other methods; lists emit `file-1`/`backup-1`, then `-2`, even for a singleton.
-Order and duplicate filenames survive one streaming POST; no path-string inference,
+Wire order and duplicate filenames survive one streaming POST; no path-string inference,
 sparse renumbering or Fileman-specific filename filter applies.
 
 These new binary methods initially require direct cPanel UAPI by client policy
@@ -3304,38 +3627,51 @@ no new runtime minimum validation. Files' omitted directory defaults to user hom
 supplied bytes are forwarded without an inferred relative-path base. Verbose
 selects extra information from each source's module-specific restore logs.
 
-Each returns `array{log_id?:string,log_path?:string,messages?:list<string>}` under
+Each returns `array{log_id?:string,log_path?:string}` under
 ordinary Flag outcome handling. An actual empty object is valid; missing, null,
 list or malformed data raises PayloadMismatchException, retaining metadata and
 outcomeConfirmed=true after status success. No message unwrapping, log fetching,
 completion, atomicity or per-file-success inference is added. Restoration changes
 server state with no rollback and no retry after API, payload or transport failure.
-No live restore ran; offline checks establish request/envelope/lifecycle behavior.
+No live restore ran during this implementation or integration; offline checks establish request/envelope/lifecycle behavior.
 
-Exactly four canonical UAPI operations are added: 1,112 total (525 UAPI, 587 WHM),
-91 groups and 185 generated outputs (184 PHP files and coverage). The new narrow
+[PR89 review5724752679](https://github.com/hostingpal/whm-api-client/pull/89#pullrequestreview-5724752679)
+reports 19 successful direct-UAPI restores on cPanel 11.138.0.19 with log_id/log_path
+in data and messages in the envelope. Read verbose/restore text through
+`responseMeta()->uapi['messages']`. Flag raises API errors before validating data,
+so unvalidated log_id/log_path are unavailable on failure; `errors()` retains text.
+The reviewer also found overlapping-archive results disagreed with list order in
+three of five permutations. Upstream application order is unreliable and overlapping
+archives have unpredictable results; restore one archive per call when a specific
+result is needed. This adds no completion, atomicity or rollback guarantee.
+
+Exactly four canonical UAPI operations are added: 1,149 total (554 UAPI, 595 WHM),
+99 groups and 201 generated outputs (200 PHP files and coverage). The new narrow
 `multipart_upload_family` descriptor `{php,source,routes:direct}` is mutually
 exclusive with Fileman's `multipart_uploads`, WHM's `multipart_upload` and JSON.
 Source-bound lowering preserves absent body/schema requiredness and uses prose's
 required upload alternative. Streaming, source preparation, transport, old generated
-operations and SSL bridge behavior remain unchanged. Inherited PR84/source and
-PR86 preparation-exception/metadata acceptance gates remain external-owned and
-unwaived; this adoption does not resolve them.
+operations and SSL bridge behavior remain unchanged. Approved parent source/preparation and Fileman/WHM corrections are integrated.
+Server-path modes (.30.9), owned Fileman evidence (.30.5) and native Windows
+verification (.30.10) remain separate open work.
 
 
 ### UAPI ImageManager (2026-10-31)
 
-`uapi()->imageManager()` exposes all four pinned functions, available from cPanel
-82 with the WebServer role. `getDimensions(imageFile)` uses GET and returns
-optional integer pixel `height` and `width` fields. `convertFile(imageFile, type)`,
-`createThumbnails(dir, heightPercentage, widthPercentage)` and
-`resizeImage(height, imageFile, width, saveOriginalAs: null)` use form POST.
-Paths are account-server paths sent unchanged and encoded once; the client does
-not access local files or normalize paths. Conversion's source describes its path
-as relative to the account `/home` directory; the other methods accept absolute
-or user-home-relative paths. Formats remain strings. Positive dimensions and
-thumbnail percentages 1 through 99 are documented requirements; integer forwarding
-adds no new range validation or promise that zero/negative values work upstream.
+`uapi()->imageManager()` exposes all four pinned functions, available from
+cPanel 82 with the WebServer role. `getDimensions(imageFile)` uses GET and
+returns optional integer pixel `height` and `width` fields.
+`convertFile(imageFile, type)`, `createThumbnails(dir, heightPercentage,
+widthPercentage)` and `resizeImage(height, imageFile, width, saveOriginalAs:
+null)` use form POST. Paths are account-server paths sent unchanged and encoded
+once; the client does not access local files or normalize paths. The pinned
+conversion prose describes account `/home` relative paths; reviewer cPanel
+11.138.0.19 calls also accepted absolute paths under that home. This is no
+universal confinement guarantee. The reviewed conversion handler
+character-checks `type` only: `nope` succeeded and wrote a `.nope` extension; no
+format enum is added. Positive dimensions and thumbnail percentages 1 through 99
+are documented requirements; integer forwarding adds no new range validation or
+promise that zero/negative values work upstream.
 
 ```php
 $images = $client->uapi('example')->imageManager();
@@ -3346,28 +3682,56 @@ $resizedPath = $images->resizeImage(height: 300, imageFile: 'images/photo.jpg', 
     saveOriginalAs: 'images/original.jpg');
 ```
 
-Conversion returns optional `converted_file`; resize returns the absolute resized
-image path as a string. Thumbnail rows retain optional integer `failed` and optional string
-`file`, `reason` and `thumbnail_file` fields, including partial failures under API status 1.
-The source documents `failed=1` only on failure; the existing integer contract does
-not enforce that singleton enum. Thumbnails go in a `thumbnails` subdirectory with
-`tn_` filenames. Inspect every row; success does not prove every thumbnail exists.
-Optional result fields preserve omission, and empty thumbnail lists stay empty.
-Missing/null payloads and wrong kinds or scalar types raise payload mismatches.
+Conversion returns optional `converted_file`; resize returns the absolute
+resized image path as a string. Thumbnail rows retain optional integer `failed`
+and optional string `file`, `reason` and `thumbnail_file` fields, including
+partial failures under API status 1. The source documents `failed=1` only on
+failure; the existing integer contract does not enforce that singleton enum.
+Thumbnails go in a `thumbnails` subdirectory with `tn_` filenames. Inspect every
+row; success does not prove every thumbnail exists. Optional result fields
+preserve omission, and empty thumbnail lists stay empty. Dimensions normalize
+evidenced canonical bounded integer strings to optional integers under the
+existing signed integer compatibility policy. Thumbnail status 0 returns every
+validated nonempty row, including all-failed reasons. Status 0 with an empty
+list or explicit null raises `ApiErrorException`; empty-directory failures can
+have `errors()` empty. Missing data, wrong roots and malformed known row fields
+remain payload mismatches with `outcomeConfirmed=false`. Status 1 permits an
+empty list and retains strict payload validation. Other operations retain Flag
+outcomes.
 
-Omitted/null `saveOriginalAs` sends no field and saves no original copy; an explicit
-empty string stays present. The source calls `save_original_as` a directory but
-uses the file-like example `images/original.jpg`; this discrepancy remains explicit.
-The client does no implicit read, backup, restore, cleanup, collision handling,
-retry or rollback, and promises no atomicity. Resize has a pinned clean rollback
-label, without a defined client restore protocol. No server calls or image mutations
-ran for this slice. Offline tests establish requests and payload handling; live
-transformations and HTTP image behavior remain open under `8x0.2.60`.
+Omitted/null `saveOriginalAs` sends no field and saves no original copy; an
+explicit empty string stays present. `saveOriginalAs` must be a NEW FILE path.
+The server rejects existing paths, including directories. The pinned parameter
+prose says directory, but reviewed source and both-route cPanel 11.138.0.19
+calls resolve it to a file: `img/orig.png` retained the original 10x5 image
+while existing directory `img` failed. The client performs no local filesystem
+existence check. The client does no implicit read, backup, restore, cleanup,
+collision handling, retry or rollback, and promises no atomicity. Resize has a
+pinned clean rollback label, without a defined client restore protocol. No
+server calls or image mutations ran for this slice. Offline tests establish
+requests and payload handling; live transformations and HTTP image behavior
+remain open under `8x0.2.60`.
 
-Exactly four canonical operations are added: 1,117 total (529 UAPI, 588 WHM),
-92 groups and 187 generated outputs (186 PHP files plus coverage). Source schemas,
-historical evidence, shared runtime and generator grammar are unchanged.
+Exactly four canonical operations are added: 1,154 total (558 UAPI, 596 WHM),
+100 groups and 203 generated outputs (202 PHP files plus coverage). The guarded
+root-list `rows: "$"` extension is explicit and source-bound; other Unchecked,
+generic and Fileman object-field policies keep their existing behavior. Pinned
+sources and historical evidence remain unchanged.
 
+Review corrections above are attributed to [PR93 review 5724933500](https://github.com/hostingpal/whm-api-client/pull/93#pullrequestreview-5724933500)
+of revision `0898b8b23929b57c233aa3065be8c460aa2f8d23`, submitted
+2026-10-31T21:07:45Z. The reviewer removed the disposable account/home and revoked
+temporary tokens after both runs. This correction made no server call or capture.
+
+
+## License
+
+Project-authored code and documentation are licensed under the
+[MIT License](LICENSE). Copyright (c) 2026 HostingPal contributors.
+
+The bundled cPanel documentation snapshots retain their upstream terms and are
+not covered by the project's MIT license. See the
+[third-party documentation notice](docs/api/README.md#licensing).
 
 ### UAPI CCS calendar delegation (2026-10-31)
 
@@ -3414,6 +3778,20 @@ files plus coverage). Existing generator/runtime machinery is unchanged. No live
 calls, plugin installation, calendar/contact reads or delegation mutations ran.
 Installed-plugin behavior, response compatibility and permission enforcement remain
 open under `whm-api-client-8x0.2.61`.
+
+Ordered integration with approved master `7d5099b` yields 1,159 canonical
+operations (563 UAPI, 596 WHM), 101 groups and 205 generated outputs (204 PHP
+files plus coverage). Earlier slice counts above remain historical. The original
+CCS delivery is closed under `whm-api-client-8x0.4.19`; installed-plugin runtime
+verification remains open under `whm-api-client-8x0.2.61`.
+
+[PR94 review 5724966468](https://github.com/hostingpal/whm-api-client/pull/94#pullrequestreview-5724966468)
+of `259c8d6` reported plugin-absent `ApiErrorException` responses for both reads
+through direct UAPI and the WHM bridge on cPanel 11.138.0.19. It saw no CCS handler
+source or installed-plugin successful payload. Populated `read_only` wire types
+remain unobserved: strict native integer 0|1 stays pinned, without speculative
+digit-string acceptance. The opaque `listUsers()` map remains unchanged. This
+integration performs no live call, plugin installation or calendar operation.
 
 
 ### UAPI account cache management (2026-10-31)
@@ -3467,6 +3845,42 @@ call or server change ran in this slice. Delivery is `whm-api-client-8x0.4.20`.
 This adds exactly six canonical UAPI operations and two groups over `259c8d6`:
 1,128 operations (540 UAPI, 588 WHM), 95 groups and 193 generated outputs (192 PHP
 files plus coverage). Historical slice totals above remain historical.
+
+
+### PR95 ordered approved-master integration (2026-11-01)
+
+Normal integration of original PR95 `31ed8cff3294ffcea2f8993c47da567cc0e4b2b7`
+with approved master `052662324e298a36adebf9b8f8d4b80f112c0b6d` preserves
+all six original CacheBuster/NginxCaching contracts, overlays, generated methods
+and independent tests. Current combined coverage is 1,165 canonical operations
+(569 UAPI, 596 WHM), 103 groups and 209 generated outputs (208 PHP files plus
+coverage). Earlier delivery and integration totals remain historical.
+
+[PR95 review 5724999867](https://github.com/hostingpal/whm-api-client/pull/95#pullrequestreview-5724999867)
+by `seebeen` covers only original `259c8d6..31ed8cf`, with no required findings;
+it is not approval or live validation of the combined revision. On cPanel
+`11.138.0.19`, the reviewer reports CacheBuster read/update/read returned native
+JSON integer `cache_id` through direct UAPI and the WHM bridge on disposable
+account `wrvchc`. The reviewer reports revoking its temporary token and confirming
+the account and home directory gone; this integration performs no new cleanup
+verification or live capture.
+
+All four NginxCaching calls returned `ApiErrorException` through both routes
+because `ea-nginx` was absent. Installed-plugin successful responses and cache
+effects remain unobserved. The reviewer's handler-source inspection predicts
+explicit null on success because handlers do not set data; that is source
+inference, not successful runtime evidence. Historical MySQL explicit-null
+observations do not establish NGINX behavior. The pinned NGINX schema remains
+untyped `{"properties":{}}`: preserve present `mixed` values, including null,
+without narrowing to null-only; absent data still mismatches. Callers inspect
+unconstrained results. No automatic cross-invalidation, reset defaults, retry,
+rollback, package installation or browser refetch guarantee is added.
+
+Delivery `whm-api-client-8x0.4.20` is closed; separate installed-plugin/runtime
+follow-up `whm-api-client-8x0.2.62` remains open. This integration is offline.
+Required PHP 8.3 CI, fresh combined-revision reviews and inherited acceptance
+work remain separate gates; historical source/evidence and review results are
+preserved without replay or new runtime claims.
 
 
 ### UAPI Market reads (2026-10-31)
@@ -3523,3 +3937,53 @@ files plus coverage). Existing runtime/generator, earlier overlays/generated
 contracts, pinned sources, map checksum, historical evidence and audit prefix are
 unchanged. Required PHP 8.3 CI and inherited acceptance work remain external-owned
 and unwaived.
+
+
+### UAPI Market read compatibility and ordered integration (2026-11-01)
+
+The preceding 2026-10-31 Market section records the original slice over `31ed8cf`.
+The combined candidate integrates approved master `14d9f9f09d36bbe887468863efb19a1bb80e54e6`
+with original Market head `9a3212839ebd07f1caad02f99e674a91f877b98b`:
+1,174 canonical operations (578 UAPI, 596 WHM), 104 groups and 211 generated
+outputs (210 PHP files plus coverage). The nine read signatures and request
+bodies remain unchanged; the ten Market mutations remain separate work.
+
+[Review 5725042192](https://github.com/hostingpal/whm-api-client/pull/96#pullrequestreview-5725042192)
+by seebeen applies to original `31ed8cf..9a32128`, dated 2026-10-31, on cPanel
+`11.138.0.19`, GET as `npr`, with identical direct UAPI and WHM bridge results.
+It identified three response families needing six narrow leaf corrections:
+catalog `license_term` and `product_id` canonical bounded digit strings normalize
+losslessly to integers; `requires_ip` accepts only exact quoted `0`/`1` in
+addition to native integer flags. No new minimum constraint is imposed. Other
+flags, prices and IDs remain strict. The three wildcard-price fields still
+preserve exact numeric strings without rounding or conversion, and identity
+verification object/list/null behavior and opaque extras are unchanged.
+
+DCV `dcv_file_allowed_characters` is an optional nonnullable list of `string|int`
+items, preserving native JSON types, order and duplicates without a closed
+character enum. Certificate availability now permits an outer null
+`encrypted_action_urls` and a null `status_message`, preserving omission and
+empty-string distinctions. The encrypted object still validates optional nullable
+string `evClickThroughStatus` and `ovCallbackStatus` and preserves opaque extras.
+The pinned availability schema declares only `certificate_pem`,
+`encrypted_action_urls`, `status_code` and `status_message`. `certificate_pem`
+remains nullable and `status_code` a strict nonnullable string. Reviewer-reported
+null `certificate_id` and `parent_cert_expiry` are unknown fields here; they remain
+filtered because null-only observations establish no additional field contract.
+
+The same review reports token-authenticated `getCompletionUrl()` failing through
+both routes because server information was unavailable from the environment.
+Reviewer inspection of `_build_url` supports an environment dependency, not a
+universal unsupported-token or unsupported-route claim. GET/signature/dispatch
+remain unchanged, with no precheck, fallback or environment probing.
+
+The review confirms provider rows, string login URL and empty pending list;
+product-info success, status-details success and populated pending rows remain
+unobserved. This integration is offline and adds independent literal regression
+fixtures with explicitly synthetic representative values, not live captures.
+Returned URLs, PEM/CSR, provider and order data remain inert sensitive payloads;
+no URL was followed and no provider, checkout, certificate or queue workflow ran.
+Runtime follow-up `whm-api-client-8x0.2.63`, the 55 inherited source diagnostics,
+PHP 8.3 CI, current-head review and all earlier acceptance work remain unwaived.
+Historical PR95 provenance finding I1 / `whm-api-client-qrk` remains open; the
+prospective PR96 recorder does not repair that missing history.

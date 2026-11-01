@@ -115,7 +115,7 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  *     redirect_url_success?: string,
  * }
  * @phpstan-type GetProviderSpecificDcvConstraintsResult array{
- *     dcv_file_allowed_characters?: list<string>,
+ *     dcv_file_allowed_characters?: list<string|int>,
  *     dcv_file_extension?: string,
  *     dcv_file_random_character_count?: int,
  *     dcv_file_relative_path?: string,
@@ -132,9 +132,9 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  *         evClickThroughStatus?: string|null,
  *         ovCallbackStatus?: string|null,
  *         ...<array-key, mixed>
- *     },
+ *     }|null,
  *     status_code?: string,
- *     status_message?: string,
+ *     status_message?: string|null,
  * }
  */
 final readonly class Market
@@ -169,6 +169,10 @@ final readonly class Market
      * Identity verification preserves the formal object, documented list records and null, with optional string
      * label/name and opaque extras. Only three wildcard-price fields additionally preserve exact numeric strings; no
      * financial calculation or global normalization is added.
+     *
+     * Observed: Review 5725042192 on 9a32128, cPanel 11.138.0.19, direct UAPI and WHM bridge GET: license_term and
+     * product_id digit strings normalize losslessly to integers; requires_ip accepts exact quoted 0/1 as integer flags.
+     * Other fields retain strict types. The three wildcard-price numeric strings retain exact bytes without conversion.
      *
      * API-map identity: uapi:Market/get_all_products#GET (wire name get_all_products).
      *
@@ -246,6 +250,11 @@ final readonly class Market
      * Policy: Returned URLs, security tokens, encrypted action URLs, PEM/CSR and identity verification values are
      * sensitive payload data. Do not log them. The client does not follow URLs, log in, redirect, purchase, request or
      * install certificates; each call makes one request without retry.
+     *
+     * Observed: Review 5725042192 on 9a32128, cPanel 11.138.0.19, token-authenticated direct UAPI and WHM bridge GET:
+     * URL construction failed because server information was unavailable from the environment. Reviewer source
+     * inspection of _build_url supports an environment dependency; this does not establish universal token or route
+     * incompatibility. No precheck, fallback or environment probing is added.
      *
      * API-map identity: uapi:Market/get_completion_url#GET (wire name get_completion_url).
      *
@@ -388,6 +397,10 @@ final readonly class Market
      * sensitive payload data. Do not log them. The client does not follow URLs, log in, redirect, purchase, request or
      * install certificates; each call makes one request without retry.
      *
+     * Observed: Review 5725042192 on 9a32128, cPanel 11.138.0.19, direct UAPI and WHM bridge GET: allowed characters
+     * mix native integers and strings. Preserve item types, order and duplicates; no character enum or string
+     * conversion is inferred.
+     *
      * API-map identity: uapi:Market/get_provider_specific_dcv_constraints#GET (wire name
      * get_provider_specific_dcv_constraints).
      *
@@ -457,6 +470,12 @@ final readonly class Market
      *
      * Documented: orderItemId is a string. certificate_pem may be null when unavailable; null differs from omission.
      * Known encrypted action URL fields are optional nullable strings; documented additional keys remain opaque.
+     *
+     * Observed: Review 5725042192 on 9a32128, cPanel 11.138.0.19, direct UAPI and WHM bridge GET: unavailable
+     * certificates can have null encrypted_action_urls and status_message, alongside nullable certificate_pem. All
+     * remain optional; status_code stays a nonnullable string. Only four fields are formally declared here. Reported
+     * null certificate_id and parent_cert_expiry remain untyped unknown fields and are filtered; null-only observations
+     * establish no additional field contract.
      *
      * API-map identity: uapi:Market/get_ssl_certificate_if_available#GET (wire name get_ssl_certificate_if_available).
      *
