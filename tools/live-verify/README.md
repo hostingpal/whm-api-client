@@ -1765,3 +1765,25 @@ A successful result establishes singleton-list wire acceptance only. It establis
 no multi-domain batch, populated DS field, mutation, propagation or DNSSEC resolver
 coverage. Existing artifacts and discrepancy policies are never changed by this
 catalog.
+
+## Webmail session and application inventory
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/webmail-inventory.php \
+  --output=docs/api/evidence/YYYY-MM-DD-webmail-inventory.json
+```
+
+`webmail-inventory-v1` has five fixed GETs: WHM version, then
+`ActiveSessions/list_active_sessions` and `WebmailApps/list_webmail_apps` through
+direct UAPI and the `npr` bridge. Neither call supplies an argument, so the server's
+default theme applies. Existing opt-in, committed-input, exact request guard, TLS
+and immutable structural-output rules apply.
+
+An empty session list proves nothing about session row fields, and upstream prose
+says it can also mean an unreadable session store. Application rows establish
+field types only: returned URLs may carry a session token, so they are neither
+persisted nor fetched, and they prove neither reachability nor login. No `Session/*`
+creator runs on any account: a reviewer's disposable-account test left four session
+files behind after the account was removed, and cleaning them needs filesystem
+access. The creators stay open under `8x0.2.69`.
