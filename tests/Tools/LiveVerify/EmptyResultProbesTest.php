@@ -295,6 +295,18 @@ final class EmptyResultProbesTest extends TestCase
             }
         }
         self::assertSame([$key => $failureKind], $deviated);
+        $lines = ReadOnlySectionRunner::deviations(
+            $probes,
+            $report['probes'],
+            EmptyResultProbes::matchesDeclaredOutcome(...),
+        );
+        self::assertCount(1, $lines);
+        [$operation, $route, $variant] = explode('|', $key);
+        self::assertStringStartsWith('Deviation: ' . $operation . ' ' . $route . ' ' . $variant . ': ', $lines[0]);
+        self::assertStringContainsString('failure_kind=' . ($failureKind ?? 'none'), $lines[0]);
+        foreach (['wzzemptyaudit', 'private-', 'synthetic', 'broken', 'https:', '$'] as $private) {
+            self::assertStringNotContainsString($private, $lines[0]);
+        }
     }
 
     public function testEveryDeclaredOutcomeRejectsEveryOtherOutcome(): void

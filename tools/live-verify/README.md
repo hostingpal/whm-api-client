@@ -1964,7 +1964,9 @@ Exit 0 and `status: passed` mean the run reproduced those forms on its server. E
 and `status: failed` mean at least one record deviated and needs review: a client
 exception, an API error on a probe declared empty, a success on a probe declared
 `api_failure`, a populated result, or a changed form. A failed run is a finding, not
-an expected result.
+an expected result. It also names each deviating probe on stdout, by operation, route,
+label and the record's fixed outcome values, with no URI, path or upstream text. The
+published report does not change.
 
 A `passed` report can hold records with `probe_outcome: failed`, because
 `accountsummary` must fail. Declaring the `listaccts` discrepancy does not waive it:

@@ -128,6 +128,37 @@ final readonly class ReadOnlySectionRunner
         return true;
     }
 
+    /**
+     * Describe each record that fails an outcome rule, for console output only.
+     *
+     * A line holds the reviewed catalog labels and the harness's fixed outcome values and a discrepancy count,
+     * never a URI, request argument, path or upstream text, and nothing here reaches the report. A run that
+     * failed only a provenance or label check names no probe, since every outcome then matched.
+     *
+     * @param list<Probe> $probes
+     * @param list<Record> $records
+     * @param Closure(Probe, array<mixed>): bool $outcome
+     * @return list<string>
+     */
+    public static function deviations(array $probes, array $records, Closure $outcome): array
+    {
+        $lines = [];
+        foreach ($probes as $index => $probe) {
+            $record = $records[$index] ?? null;
+            if ($record !== null && !$outcome($probe, $record)) {
+                $lines[] = 'Deviation: ' . $probe->operation . ' ' . $probe->route
+                    . ($probe->argumentVariant === null ? '' : ' ' . $probe->argumentVariant)
+                    . ': api_outcome=' . $record['api_outcome']
+                    . ' payload_validation=' . $record['payload_validation']
+                    . ' probe_outcome=' . $record['probe_outcome']
+                    . ' failure_kind=' . ($record['failure_kind'] ?? 'none')
+                    . ' discrepancies=' . count($record['discrepancies']);
+            }
+        }
+
+        return $lines;
+    }
+
     /** Require structural evidence, including a root, without revalidating the upstream payload. */
     private static function hasPaths(mixed $paths): bool
     {

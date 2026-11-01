@@ -194,6 +194,34 @@ final class ReadOnlySectionRunnerTest extends TestCase
         self::assertFalse(ReadOnlySectionRunner::passes($probes, [$report['probes'][0]], $context, $accept));
     }
 
+    public function testDeviationsNameOnlyFailingRecordsAndHoldNoUpstreamText(): void
+    {
+        $probes = self::probes();
+        $http = new Client();
+        $http->addResponse(new Response(200, [], '{"metadata":{"result":1},"data":{"version":"11.138.0.19"}}'));
+        $http->addResponse(new Response(200, [], '{"status":0,"data":null,"errors":["private upstream failure"]}'));
+        $report = (new ReadOnlySectionRunner($http, self::context()))->run(
+            $probes,
+            'synthetic-v1',
+            '1',
+            ['whm' => 'synthetic-whm', 'cpanel' => 'synthetic-cpanel'],
+        );
+        self::assertSame(
+            ['Deviation: uapi:DomainInfo/primary_domain direct-uapi: api_outcome=failure'
+                . ' payload_validation=not_checked probe_outcome=failed failure_kind=api_failure discrepancies=0'],
+            ReadOnlySectionRunner::deviations(
+                $probes,
+                $report['probes'],
+                static fn (Probe $probe, array $record): bool => $record['api_outcome'] === 'success',
+            ),
+        );
+        self::assertSame([], ReadOnlySectionRunner::deviations(
+            $probes,
+            $report['probes'],
+            static fn (Probe $probe, array $record): bool => true,
+        ));
+    }
+
     public function testArgumentVariantsCaptureDistinctRequestsAndRejectMisattribution(): void
     {
         $probes = [self::probes()[0]];
