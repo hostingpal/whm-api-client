@@ -8,7 +8,7 @@
   "operations": {
     "whm1:batch_create_cphulk_records": {
       "exclude": {
-        "reason": "Requires a JSON request body; typed JSON-body machinery is available, while this endpoint adoption remains deferred under whm-api-client-8x0.1.18; remaining selection/source/route audit is tracked under whm-api-client-8x0.29.6. Raw callJson() supplies no typed contract and establishes no endpoint compatibility.",
+        "reason": "Requires a JSON request body; typed JSON-body support remains tracked under whm-api-client-8x0.1.18. Raw callJson() supplies no typed contract and establishes no endpoint compatibility.",
         "evidence": [
           {
             "kind": "doc",
