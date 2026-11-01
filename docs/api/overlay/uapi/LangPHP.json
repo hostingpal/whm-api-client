@@ -323,6 +323,13 @@
           "version": "11.138.0.19",
           "date": "2026-11-01",
           "note": "One-off read-only name inspection on 2026-11-01 from revision 760ca68: one direct UAPI GET as npr printed only key names and structural types, never values. Request: type=home. Extra row key: cpanel_default on one of 15 rows. Its meaning is not established by this inspection."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-11-01",
+          "note": "The 67-probe read-only capture at revision 5f9b001 ran both direct UAPI and WHM-bridged GET observations with these corrections in the contract. directives[].cpanel_default appears as a named path. Both routes passed HTTP, API, payload and probe checks with no unknown_field at the formerly masked paths. Immutable artifact SHA-256 4138dbf1d083ddfe6d109c86bb8beb449abde6937e93b2452693d47b2b792b81. Structural evidence establishes no values or meaning.",
+          "fingerprint": "docs/api/evidence/2026-11-01-read-only-11.138.0.19.json"
         }
       ]
     },
@@ -390,6 +397,13 @@
           "version": "11.138.0.19",
           "date": "2026-11-01",
           "note": "One-off read-only name inspection on 2026-11-01 from revision 760ca68: one direct UAPI GET as npr printed only key names and structural types, never values. No request arguments. Extra row key: is_suspended on one of 2 rows. Its meaning is not established by this inspection."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-11-01",
+          "note": "The 67-probe read-only capture at revision 5f9b001 ran both direct UAPI and WHM-bridged GET observations with these corrections in the contract. paths[].is_suspended appears as a named path. Both routes passed HTTP, API, payload and probe checks with no unknown_field at the formerly masked paths. Immutable artifact SHA-256 4138dbf1d083ddfe6d109c86bb8beb449abde6937e93b2452693d47b2b792b81. Structural evidence establishes no values or meaning.",
+          "fingerprint": "docs/api/evidence/2026-11-01-read-only-11.138.0.19.json"
         }
       ]
     },

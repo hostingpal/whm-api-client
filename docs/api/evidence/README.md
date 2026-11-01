@@ -1264,3 +1264,20 @@ Sitejet/get_commerce GET and nullable commission IDs; see
 the Commerce/Market contract notes. All remaining methods/variants stay under
 `8x0.2.52`. SHA-256:
 `8b1b468eb3ab91072cd0a676ac7d9337c3359bbde80497703451b24ecda1ee7d`.
+
+## cPanel 11.138.0.19 default read-only capture
+
+The [default-catalog capture](2026-11-01-read-only-11.138.0.19.json) at
+`5f9b001466a30bc45828c4fb3dd8007f7f811ad0` on `11.138.0.19` passes all 67 GET
+HTTP/API/payload/probe observations across 37 operations. DomainInfo `domains_data`,
+`single_domain_data` and LangPHP `php_ini_get_user_basic_directives`,
+`php_ini_get_user_paths` report their typed fields as named paths with no discrepancy
+through both direct and bridged UAPI. The only discrepancies left are the two masked
+Quota `$.*` integer observations.
+
+Its embedded `discrepancy_review` says failed (0 acknowledged, 2 unexpected, 2 stale)
+because this run was assessed against the previous `11.138.0.15` reference. The review
+stays as captured. `DiscrepancyPolicy` now uses this file as its reference, which is a
+later code change and not a change to this artifact. Masked Quota keys establish neither
+names nor counts, and empty addon, parked and subdomain lists establish no row fields.
+SHA-256: `4138dbf1d083ddfe6d109c86bb8beb449abde6937e93b2452693d47b2b792b81`.
