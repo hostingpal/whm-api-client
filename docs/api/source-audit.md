@@ -7452,3 +7452,76 @@ coverage row/counts. Pinned sources, evidence, map checksum, schema copies and
 historical source-audit prefix are unchanged. All 55 inherited diagnostics remain
 unwaived. PHP 8.3 is the supported minimum; local validation uses PHP 8.4.26 and
 exact-head PHP 8.3 CI remains a publication gate.
+
+
+### Trash complete source-backed slice (2026-11-01)
+
+Delivery `whm-api-client-8x0.4.31` selects both complete Trash path objects from
+the original pinned `2026-10-13/cpanel.openapi.json.gz` (OpenAPI 11.138.0.10),
+decompressed SHA-256
+`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`.
+Evidence binds operation selection/naming/method policies to
+`/paths/~1Trash~1usage/get` and `/paths/~1Trash~1remove/post`, with path sensitivity
+and byte-preservation policy bound to the latter's `/parameters/0`. Both source
+operations declare cPanel 136 and plugin annotation Trash. The version alone
+establishes no plugin installation or enablement, role restriction or implicit
+availability probe. No source refresh, alias, exclusion, unwrap, optional_payload,
+void, requiredness override, response correction or new validation primitive is
+introduced.
+
+`getUsage(): array` maps usage to GET without parameters. Its required nonnullable
+known-field object has optional bytes, exists and items integers. The source
+measures apparent bytes by summing entry lstat sizes, excluding root-level
+.trash_restore bookkeeping; this is not allocated blocks or quota impact. The
+source's no-home-walk/no-outside-symlink statements describe upstream behavior,
+not client operations or live evidence. exists prose describes 0/1 while its
+formal integer has no enum. Preserve strict integers without finite-range,
+minimum, nonnegative or numeric-string assumptions.
+
+`removeItem(#[SensitiveParameter] string $path): array` maps the original POST
+variant to one form POST using established scalar encoding, despite the source
+query-parameter location. The required path stays path in PHP and on the wire.
+Exact leading/repeated slashes, dot/dotdot, backslashes, percent escapes, spaces,
+plus, Unicode and supplied empty string survive one form encoding; empty sends
+path=. The server owns its documented home-relative leading slash, resolved
+symlink/.. confinement strictly inside home/.trash and trash-root rejection.
+The client performs no local filesystem access, normalization or confinement.
+Synthetic fixtures provide no server confinement guarantee.
+
+Removal permanently and recursively deletes one item, including permission-locked
+entries unlike Fileman fileop unlink. Already-absent targets succeed and success
+prunes any stale restore-map line for that item. No actual fixture deletion or
+restore-map action ran. The optional alreadyGone and removed fields are native
+booleans. Source prose says removed is always true on success and alreadyGone is
+true when absent, otherwise omitted, yet the alreadyGone example is false.
+The formal bool contract accepts native false without guessing a truth-only
+restriction or coercing integer/quoted flags. Ordinary Flag API status remains
+authoritative even with false/zero payload fields.
+
+Both results are required nonnullable known-field objects with all fields
+optional, preserving omission and rejecting explicit null/missing data. Existing
+known-field filtering and inherited empty-array object compatibility remain;
+the decoder still distinguishes JSON object/array. No opaque widening is added.
+Independent literal HTTP-boundary fixtures cover account-cached selectors,
+signatures/named path, exact auth/method/routing/query/form/header bytes on direct
+and bridge routes, all optional-field combinations, empty object, strict scalar/
+container/null/missing-data rejection, native bool/int distinctions, large ints,
+known-field filtering, metadata reset/replacement/warnings, native pre-entry
+failure retention, one-attempt transport/HTTP/JSON/outer-WHM/API/payload error
+precedence, and actual nonzero library trace privacy with exception args enabled.
+
+Private paths and response/error values stay concealed in library-owned frames;
+explicit metadata/mismatch payload access remains sensitive caller-accessible
+data. No implicit inventory, readback, retry, restore or rollback is added.
+Success establishes no quota release, allocated-space change, cross-filesystem
+behavior or rollback. No live/API/SSH/network/credentials or returned-path/URL
+access occurred. Live follow-up `whm-api-client-8x0.2.73` remains OPEN and the
+full API goal remains OPEN.
+
+Generated coverage is 1,205 canonical operations (617 UAPI, 588 WHM), 107 groups
+and 217 outputs (216 PHP plus coverage). All prior generated methods/specs and
+overlays remain byte-identical; only the additive cached trash accessor and
+coverage change. Sources, evidence, map checksum, schema copies and historical
+audit text remain unchanged. All 55 inherited diagnostics stay unwaived. PHP 8.3
+is the supported minimum; local validation uses PHP 8.4.26 and exact-head PHP 8.3
+CI remains a publication gate.

@@ -1,0 +1,102 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "Trash",
+  "accessor": "trash",
+  "description": "Selected-account trash apparent usage and permanent item removal, available from cPanel 136 with source plugin annotation Trash. Paths and payloads are private remote data; the client forwards exact path bytes without local filesystem operations. Offline source-backed coverage only; live follow-up whm-api-client-8x0.2.73 remains open.",
+  "operations": {
+    "uapi:Trash/usage": {
+      "name": "getUsage",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 136 with source plugin annotation Trash. The version annotation alone does not establish that the plugin is installed or enabled; no role restriction or implicit availability probe is inferred."
+        },
+        {
+          "kind": "policy",
+          "text": "Account paths, response values, errors and raw metadata may be private. Do not log results, raw metadata or PayloadMismatchException::$payload indiscriminately. The client performs no local path access, implicit inventory, readback, retry, restore or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a required nonnullable known-field object with all fields optional. Omission remains distinct from explicit null; missing data and null fail. Existing known-field filtering and empty-array object-validator compatibility remain; decoding still distinguishes JSON objects from arrays."
+        },
+        {
+          "kind": "documented",
+          "text": "Apparent bytes sum each entry's lstat size, excluding the root-level .trash_restore bookkeeping file. This is not allocated disk blocks or quota impact. The source says the account home is not walked and symlinks outside trash are not followed; these are upstream claims, not client operations or live evidence."
+        },
+        {
+          "kind": "policy",
+          "text": "bytes, exists and items remain strict integers without inferred minimum, range or numeric-string coercion. Although exists prose describes 0/1, its formal integer schema has no enum. Payload zero does not replace the ordinary API status outcome."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "note": "Select the pinned no-parameter GET as getUsage. Preserve cPanel 136 and Trash plugin annotations, ordinary Flag outcome and optional strict-integer fields in a required nonnullable object; document apparent-byte semantics without schema corrections or inferred ranges.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Trash~1usage/get"
+        }
+      ]
+    },
+    "uapi:Trash/remove": {
+      "name": "removeItem",
+      "method": "POST",
+      "params": {
+        "path": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 136 with source plugin annotation Trash. The version annotation alone does not establish that the plugin is installed or enabled; no role restriction or implicit availability probe is inferred."
+        },
+        {
+          "kind": "policy",
+          "text": "Account paths, response values, errors and raw metadata may be private. Do not log results, raw metadata or PayloadMismatchException::$payload indiscriminately. The client performs no local path access, implicit inventory, readback, retry, restore or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a required nonnullable known-field object with all fields optional. Omission remains distinct from explicit null; missing data and null fail. Existing known-field filtering and empty-array object-validator compatibility remain; decoding still distinguishes JSON objects from arrays."
+        },
+        {
+          "kind": "documented",
+          "text": "Permanently and recursively deletes one item, including permission-locked entries, unlike Fileman fileop unlink. An already-absent target succeeds; on success a stale restore-map line for the item is pruned if present. This does not establish quota release, allocated-space change, cross-filesystem behavior or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "The server requires the resolved target strictly inside the selected account home/.trash, never the trash root. A leading slash is home-relative: /.trash/backup-7.14.2026_16-35-25 is the documented form. The source says the server resolves symlinks and .. before confinement; offline fixtures establish no server confinement guarantee."
+        },
+        {
+          "kind": "policy",
+          "text": "The required sensitive string path is forwarded unchanged with one form encoding. Empty string sends path=; leading/repeated slashes, dot/dotdot, backslashes, percent escapes, spaces, plus and Unicode stay exact remote data. No local normalization, symlink resolution, confinement, format, extension or range check is added."
+        },
+        {
+          "kind": "documented",
+          "text": "removed and alreadyGone use native booleans, including false under the existing type policy, without integer or quoted-flag coercion. The source says removed is always true on success and alreadyGone is true when absent and otherwise omitted, while its alreadyGone example is false. Preserve that prose/example distinction without truth-only narrowing; API status remains authoritative."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "note": "Select the pinned POST as removeItem and use one form POST under existing scalar parameter policy, despite the source query parameter. Preserve ordinary Flag outcome, cPanel 136 and Trash plugin annotations, permanent deletion/restore-map caveats and optional formal native-boolean fields without truth-only enforcement, response corrections, unwrap or optional_payload.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Trash~1remove/post"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "note": "Preserve required string path with its PHP and wire name and exact supplied bytes. Bind home-relative path and server-owned resolved confinement semantics to the original description. Mark the private account filesystem path sensitive as client privacy policy without client filesystem access, normalization or invented validation.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Trash~1remove/post/parameters/0"
+        }
+      ]
+    }
+  }
+}

@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 106 generated typed groups cover 1,203 documented operations (see
+The 107 generated typed groups cover 1,205 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, DNS zone and DNSSEC
 management, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -4098,3 +4098,58 @@ and 215 outputs (214 PHP files plus coverage). This delivery
 `whm-api-client-8x0.4.30` has independent synthetic offline coverage only; live
 follow-up `whm-api-client-8x0.2.72` remains OPEN. No queue entry, repository,
 process, account or server state was accessed or changed during implementation.
+
+
+### UAPI Trash apparent usage and permanent removal (2026-11-01)
+
+`uapi()->trash()` covers both pinned Trash functions from cPanel 136, with the
+source plugin annotation `Trash`. The version alone does not establish plugin
+installation or enablement; the client makes no availability probe.
+
+```php
+$trash = $client->uapi('example')->trash();
+$usage = $trash->getUsage(); // GET; optional integer bytes, exists and items.
+// Synthetic path: this explicit call permanently removes an item on the server.
+$removed = $trash->removeItem(path: '/.trash/backup-7.14.2026_16-35-25');
+```
+
+`getUsage()` reports apparent bytes by summing entry lstat sizes and excludes the
+root-level `.trash_restore` bookkeeping file. It measures neither allocated disk
+blocks nor quota impact. The source says it does not walk the account home or
+follow symlinks outside trash; these are upstream claims, not client operations
+or live evidence. `exists` prose describes 0/1, but its formal type has no enum:
+all three fields retain strict integers without range or numeric-string coercion.
+
+`removeItem(#[SensitiveParameter] string $path): array` sends one form POST.
+Removal is permanent and recursive, including permission-locked entries. An
+already-absent item succeeds, and success prunes its stale restore-map line if
+present. The source requires the resolved target strictly inside the selected
+account home/.trash, never the trash root. A leading slash is home-relative; the
+server resolves symlinks and `..` before checking confinement. The client forwards
+exact bytes once, including empty string as `path=`, repeated slashes, dot/dotdot,
+backslashes, percent escapes, spaces, plus and Unicode. It performs no local
+filesystem access, normalization or confinement check. Offline fixtures establish
+no server confinement guarantee.
+
+Both results require a nonnullable known-field object with every field optional;
+missing data and explicit null fail, and omission stays omission. Empty objects
+and inherited empty-array object compatibility remain; decoding distinguishes
+JSON objects from arrays. Removal fields `removed` and `alreadyGone` are native
+booleans. Source prose says removed is always true on success and alreadyGone is
+true when absent, otherwise omitted; its alreadyGone example is false. Preserve
+that distinction without truth-only validation or integer/quoted-flag coercion.
+Payload false/zero does not override the ordinary API envelope status.
+
+Selectors cache by account without I/O. Each call makes one attempt with no
+implicit inventory, readback, retry, restore or rollback. Success establishes no
+quota release, allocated-space change or cross-filesystem behavior. Paths,
+response/error values, raw metadata and explicit mismatch payloads may be private;
+do not log them indiscriminately. Library exception frames conceal sensitive path
+and response arguments, while deliberate `responseMeta()` and
+`PayloadMismatchException::$payload` access remains caller responsibility.
+Offline fixtures establish no live acceptance or filesystem effects. Live
+follow-up `whm-api-client-8x0.2.73` and the full API goal remain OPEN.
+
+Generated coverage is 1,205 canonical operations (617 UAPI, 588 WHM), 107 groups
+and 217 outputs (216 PHP plus coverage). Existing methods and contracts remain
+unchanged; PHP 8.3 remains the supported minimum.
