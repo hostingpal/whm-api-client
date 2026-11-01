@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 109 typed groups cover 1,212 documented operations:
+and cPanel UAPI surface. The 110 typed groups cover 1,214 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -4064,8 +4064,73 @@ clears before I/O and captures warnings/raw metadata before API or payload failu
 Native pre-entry argument errors retain the previous snapshot. No implicit
 read/merge/sort, retry, rollback or remote-data cache is added.
 
-Current generated coverage is 1,212 canonical operations (624 UAPI, 588 WHM),
+Generated coverage at the Branding delivery was 1,212 canonical operations (624 UAPI, 588 WHM),
 109 groups and 221 outputs (220 PHP plus coverage). Delivery
 `whm-api-client-8x0.4.33` establishes synthetic offline coverage only. Live follow-up
 `whm-api-client-8x0.2.75` remains OPEN; no live theme visibility, rendering,
 route compatibility or server persistence is established.
+
+
+## DCV checks (2026-11-01)
+
+The complete nondeprecated `uapi()->dcv()` group exposes two operations:
+`checkDomainsViaDns(domain)` (cPanel 74, source POST) and
+`checkDomainsViaHttp(domain, dcvFileAllowedCharacters, dcvFileExtension,
+dcvFileRandomCharacterCount, dcvFileRelativePath, dcvMaxRedirects,
+dcvUserAgentString)` (cPanel 60, source GET). Both have `x-readonly:false` and
+`x-rollback:none`; the existing mutation policy sends one immediate form POST on
+direct and bridged routes, including HTTP's deliberate source-GET/effective-POST
+difference. Successful live POST acceptance remains unestablished. Only standard
+routing stays in the URL. Do not describe DNS checking as passive inventory: the
+zone is altered and queried, and failure_reason can report a zone update failure.
+
+Domain inputs are strings or nonempty sequential string lists. Scalar uses
+`domain`; every DNS list uses `domain-0/domain-1/...`, every HTTP list uses
+`domain-1/domain-2/...`, including singleton lists. Ordinary PHP arrays hide the
+distinct source numbering. Preserve order, duplicates, empty strings and exact
+bytes without local syntax checks, lowercasing, sorting or deduplication.
+`dcvFileAllowedCharacters` is array-only, a nonempty sequential string list emitted
+as repeated literal `dcv_file_allowed_characters` fields under OpenAPI 3.0.2 query
+form/explode defaults; this is source/default-derived offline serialization, not
+server-observed acceptance. Preserve empty and multi-character strings without
+one-character/charset validation. Malformed collections reject after metadata
+reset before I/O; native scalar rejection occurs before entry/reset.
+
+Every optional null omits. Empty strings and integer zero are supplied. The server
+owns defaults: alphabet A-Z/0-9, empty extension, random count 100 (minimum 1),
+relative path .well-known/pki-validation relative to the DOMAIN DOCUMENT ROOT,
+max redirects null (minimum 0), and a changeable user-agent default. Zero max
+redirects means NO LIMIT ON REDIRECT RETURNS; N yields N+1 redirect records so
+excess failures are visible. No client-side defaults or new integer range guards.
+
+Both payloads are required nonnull possibly-empty lists in input order with
+optional row fields. DNS retains dcv_string/domain/failure_reason/zone as nonnull
+strings, query_results as a possibly-empty string list, succeeded as integer 0|1.
+API success can contain succeeded=0. HTTP has failure_reason string|null,
+redirects list and redirects_count int; no row domain field is pinned, so associate
+positionally. Redirect content/protocol/reason/url are strings, status is int and
+success is exactly ''|0|1, preserving empty string and rejecting quoted 0/1,
+whitespace, arbitrary strings, other ints, floats, booleans and null. This sole
+source-bound correction must not widen siblings or borrow unrelated observations.
+headers is an opaque object with arbitrary values; nested redirects is
+list<opaque object>|null, not a recursive model. Unknown fields survive only in
+those opaque nodes; other known objects retain filtering. Omission and null remain
+distinct. Missing/null roots fail. Retain the existing individual empty-array
+object compatibility under 8x0.2.50 without shared runtime changes.
+
+Use normal Flag outcome: row succeeded=0 or redirect success=0/'' is distinct
+from UAPI status 0. Envelope and outer WHM failures still throw. Keep warnings/raw
+metadata and mismatch payload access, with no hidden retry after failure. Domain
+and alphabet collections inherit SensitiveParameter; extension, relative path and
+user-agent text explicitly remain sensitive. Challenge strings, DNS values,
+content, headers, URLs, metadata and PayloadMismatchException::$payload can be
+private. Response frames retain protection; third-party traces are outside library
+guarantees. No implicit read, polling, merge, supplied-value normalization, local
+filesystem access, URL fetch, retry, cleanup or rollback is added.
+
+Coverage is 1,214 canonical operations (626 UAPI, 588 WHM), 110 groups and 223
+outputs (222 PHP plus coverage). The original deprecated
+ensure_domains_can_pass_dcv exclusion remains semantically identical and uncounted.
+Delivery 8x0.4.34 covers synthetic offline fixtures only; live follow-up 8x0.2.76
+remains OPEN. Do not claim live DCV compatibility, DNS propagation, certificate
+issuance or completed external delivery from these tests.

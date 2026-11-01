@@ -7688,3 +7688,89 @@ remain unwaived. Synthetic offline coverage establishes no live POST compatibili
 rendering, theme visibility or persistence. Live follow-up
 `whm-api-client-8x0.2.75` and the full API goal remain OPEN. PHP 8.3 remains the
 minimum; local gates use PHP 8.4.26 and exact-head PHP 8.3 CI is a controller gate.
+
+
+## DCV generated slice (2026-11-01)
+
+Delivery `whm-api-client-8x0.4.34` adds the complete two-operation nondeprecated
+DCV module. The original `ensure_domains_can_pass_dcv` exclusion remains
+semantically identical and uncounted. Source is the pinned 2026-10-13
+(11.138.0.10) cPanel OpenAPI 3.0.2 snapshot with decompressed SHA-256
+`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`.
+Every new operation, collection and response correction binds this exact SHA and
+an original JSON pointer; no source refresh or live observation is introduced.
+
+Canonical operations bind `/paths/~1DCV~1check_domains_via_dns/post` and
+`/paths/~1DCV~1check_domains_via_http/get`. Both have x-readonly:false and
+x-rollback:none. DNS remains POST; HTTP's source GET becomes effective form POST
+under the established mutation policy. Successful live POST acceptance remains
+unestablished on both routes. DNS is documented from cPanel 74, HTTP from 60;
+selected-account binding, ordinary Flag outcome, one request and no retry remain.
+No JSON requestBody or multipart adoption is inferred from query declarations.
+
+Each `/parameters/0` description/example establishes its own domain family:
+zero-based domain-0/domain-1 for DNS, one-based domain-1/domain-2 for HTTP. Scalars
+keep domain; singleton and larger ordinary string lists always use indexing.
+Preserve order, duplicate/empty/raw strings with no local domain normalization.
+HTTP `/parameters/1` formally declares array<string> without style/explode
+overrides. The strict ordinary repeat collection follows OpenAPI query
+form/explode defaults and emits repeated literal dcv_file_allowed_characters.
+Empty arrays and malformed lists reject before I/O after metadata reset; strings
+including empty or multi-character values remain exact. There is no native scalar
+alternative or character-set guard. Serialization is source/default-derived and
+offline, not server-observed. Null optional inputs omit; empty strings and integer
+zero remain supplied. HTTP source order is retained across all six optionals.
+
+HTTP parameter pointers `/parameters/2`, `/parameters/4`, `/parameters/6` bind the
+explicit sensitivity policy for extension, domain-document-root-relative path
+and user-agent text. Domain and allowed-character collections receive inherited
+SensitiveParameter; integers need no extra sensitivity. Server defaults remain
+unsent: alphabet A-Z/0-9, empty extension, random count 100/minimum 1, relative
+path .well-known/pki-validation, nullable max redirects/minimum 0, and a changeable
+user-agent. Zero max redirects means no limit on returned redirects; N yields
+N+1 records so excess failures are visible. Existing integer type validation
+remains, without new range guards or client defaults.
+
+The sole response replacement binds the HTTP source success node at
+`/paths/~1DCV~1check_domains_via_http/get/responses/200/content/application~1json/schema/properties/result/properties/data/items/properties/redirects/items/properties/success`.
+Its original oneOf string enum [''] and integer enum [0,1], prose and empty-string
+field example jointly establish exact ''|0|1. The existing flag primitive plus
+accept:[empty-string] preserves '' and rejects quoted 0/1, other strings/integers,
+floats, booleans and null. This is not inferred from DomainInfo or any live value;
+no whole-response examples are pinned. No sibling field or shared engine changes.
+
+Both result roots are required nonnull possibly-empty lists with ordered,
+optional-field objects. DNS nonnull failure_reason differs from HTTP nullable
+failure_reason. DNS query_results is a possibly-empty string list and succeeded
+is strict integer 0|1; the altered/queried zone and zone-update failure semantics
+remain explicit. HTTP associates domains by input position with no invented domain
+field. Redirect status/redirects_count remain strict ints, content/protocol/reason/
+url strict strings. headers and nested redirects objects retain arbitrary values
+only at their formally opaque boundaries; nested redirects also permits null.
+No recursive redirect model is inferred. Known-object filtering, null/omission
+and inherited empty-array object compatibility (8x0.2.50) remain unchanged.
+Per-row 0/empty outcomes do not override envelope status. Metadata/warnings/raw
+snapshots remain available after success or mismatch; UAPI status 0 and outer-WHM
+failure still precede payload validation. Privacy covers library-owned sensitive
+input/response frames, not caller-readable payloads or third-party traces.
+
+Independent synthetic transport fixtures cover exact direct/bridge POST URLs,
+body order, both indexing families, scalar/singleton/multiple/duplicate/empty
+domains, all HTTP options, omission versus empty/zero and percent/plus/ampersand/
+Unicode encoded once. They exercise zero-I/O malformed collections, native scalar
+rejection, accessor caching/account binding, all formal result fields, mixed ordered
+per-domain outcomes, optional/minimal/empty/null/missing data, narrow flag variants,
+strict sibling types, opaque preservation and known-field filtering. Lifecycle
+fixtures check one attempt, metadata reset at I/O, warnings/raw snapshots, API and
+outer-WHM precedence, transport/HTTP/JSON/status/payload failures and actual
+library trace redaction with zend.exception_ignore_args=0. No domain, URL, path,
+DNS, server, account, mail or certificate action occurred.
+
+Coverage is 1,214 canonical operations (626 UAPI, 588 WHM), 110 groups and 223
+outputs (222 PHP plus coverage). Original sources/evidence, map SHA and all 55
+inherited unwaived source diagnostics remain unchanged. This audit's prior bytes
+remain an unchanged prefix. No dependency, shared engine/generator or unrelated
+operation/spec changes are introduced. Offline coverage establishes no live POST
+acceptance, DCV behavior, DNS propagation or certificate issuance. Live follow-up
+`whm-api-client-8x0.2.76` remains OPEN. Local validation uses PHP 8.4.26; exact-head
+PHP 8.3 CI remains an external controller gate.

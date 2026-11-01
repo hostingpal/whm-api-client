@@ -3,6 +3,231 @@
   "family": "uapi",
   "group": "DCV",
   "operations": {
-    "uapi:DCV/ensure_domains_can_pass_dcv": {"exclude": {"reason": "Deprecated; use DCV/check_domains_via_http.", "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-13", "note": "Flagged deprecated: true; We deprecated this function."}]}}
-  }
+    "uapi:DCV/ensure_domains_can_pass_dcv": {
+      "exclude": {
+        "reason": "Deprecated; use DCV/check_domains_via_http.",
+        "evidence": [
+          {
+            "kind": "doc",
+            "version": "pinned 2026-10-13",
+            "date": "2026-10-13",
+            "note": "Flagged deprecated: true; We deprecated this function."
+          }
+        ]
+      }
+    },
+    "uapi:DCV/check_domains_via_dns": {
+      "name": "checkDomainsViaDns",
+      "method": "POST",
+      "order": [
+        "domain"
+      ],
+      "params": {
+        "domain": {
+          "collection": {
+            "kind": "indexed",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "prefix": "domain",
+            "separator": "-",
+            "start": 0
+          }
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1DCV~1check_domains_via_dns/post",
+          "note": "Select the complete pinned operation with source POST, x-readonly:false, x-rollback:none, cPanel 74 and ordinary Flag outcome. Effective form POST follows the existing mutation policy; successful live POST acceptance remains unestablished."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1DCV~1check_domains_via_dns/post/parameters/0",
+          "note": "The original domain parameter description and multiple example explicitly establish domain-0/domain-1. Accept scalar string as domain and a nonempty sequential string list as indexed fields starting at 0, including singleton lists. Preserve order, duplicates, empty strings and exact bytes; no local domain syntax checks or normalization."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 74; operates on the selected account. Source POST is classified x-readonly:false with x-rollback:none. The DNS zone is altered and queried; this is not passive inventory."
+        },
+        {
+          "kind": "policy",
+          "text": "Domain is a scalar string or nonempty sequential list<string>. Scalars use domain; every list, including singleton, uses domain-0/domain-1 starting at 0. Malformed lists reject after metadata reset before I/O. Preserve order, duplicates, empty strings and exact bytes; do not lowercase, sort, deduplicate or validate domain syntax."
+        },
+        {
+          "kind": "documented",
+          "text": "Results preserve input order. Optional dcv_string/domain/failure_reason/zone stay nonnull strings; query_results is an optional possibly-empty string list, succeeded is optional integer 0|1. UAPI success can include succeeded=0. failure_reason can report a DNS zone update failure; inspect each result separately."
+        },
+        {
+          "kind": "policy",
+          "text": "One invocation sends one immediate form POST on direct and WHM-bridged UAPI with ordinary Flag outcome. Routing stays in the URL; all supplied operation arguments stay in the body. No implicit read, polling, merge, supplied-value normalization, local filesystem access, URL fetch, retry, cleanup or rollback. Offline fixtures establish no live POST acceptance, DCV compatibility, DNS propagation or certificate issuance; live follow-up whm-api-client-8x0.2.76 remains open."
+        },
+        {
+          "kind": "policy",
+          "text": "Challenge strings, DNS values, content, headers, URLs and metadata can be private. Collection inputs and private filename/path/user-agent strings are sensitive in library frames; responses retain SensitiveParameter protection. Successful results and caller-accessible PayloadMismatchException::$payload can contain private data. Third-party transport traces are outside library guarantees."
+        },
+        {
+          "kind": "policy",
+          "text": "Result data is a required nonnull list of optional-field objects; empty lists are valid, null or missing data fails. Per-row outcomes remain separate from UAPI status; status 0 and outer WHM failures still throw. Inspect responseMeta() warnings and raw metadata even after payload mismatch. Existing individual empty-array-as-object compatibility remains under whm-api-client-8x0.2.50; no shared validation change."
+        }
+      ]
+    },
+    "uapi:DCV/check_domains_via_http": {
+      "name": "checkDomainsViaHttp",
+      "method": "POST",
+      "order": [
+        "domain",
+        "dcv_file_allowed_characters",
+        "dcv_file_extension",
+        "dcv_file_random_character_count",
+        "dcv_file_relative_path",
+        "dcv_max_redirects",
+        "dcv_user_agent_string"
+      ],
+      "params": {
+        "domain": {
+          "collection": {
+            "kind": "indexed",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "prefix": "domain",
+            "separator": "-",
+            "start": 1
+          }
+        },
+        "dcv_file_allowed_characters": {
+          "collection": {
+            "kind": "repeat",
+            "item_type": "string",
+            "allow_scalar": false,
+            "empty": "reject"
+          }
+        },
+        "dcv_file_extension": {
+          "sensitive": true
+        },
+        "dcv_file_relative_path": {
+          "sensitive": true
+        },
+        "dcv_user_agent_string": {
+          "sensitive": true
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1DCV~1check_domains_via_http/get",
+          "note": "Select the complete pinned operation with source GET, x-readonly:false, x-rollback:none, cPanel 60 and ordinary Flag outcome. Effective form POST follows the existing mutation policy; successful live POST acceptance remains unestablished."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1DCV~1check_domains_via_http/get/parameters/0",
+          "note": "The original domain parameter description and multiple example explicitly establish domain-1/domain-2. Accept scalar string as domain and a nonempty sequential string list as indexed fields starting at 1, including singleton lists. Preserve order, duplicates, empty strings and exact bytes; no local domain syntax checks or normalization."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1DCV~1check_domains_via_http/get/parameters/1",
+          "note": "The formal query parameter is array<string> without style/explode overrides. OpenAPI 3.0.2 query form/explode defaults imply repeated literal dcv_file_allowed_characters fields. The approved strict ordinary repeat collection rejects empty/nonsequential/nonstring lists, preserves empty string items and optional null omission, and accepts no native scalar alternative. This source/default-derived serialization is offline, not server-observed; no one-character or charset guard is added."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1DCV~1check_domains_via_http/get/parameters/2",
+          "note": "Client privacy policy treats supplied challenge filename extension, relative path and user-agent text as potentially private infrastructure/request data. Mark this source parameter sensitive in library trace frames; this does not promise secrecy in caller payloads or third-party transports."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1DCV~1check_domains_via_http/get/parameters/4",
+          "note": "Client privacy policy treats supplied challenge filename extension, relative path and user-agent text as potentially private infrastructure/request data. Mark this source parameter sensitive in library trace frames; this does not promise secrecy in caller payloads or third-party transports."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1DCV~1check_domains_via_http/get/parameters/6",
+          "note": "Client privacy policy treats supplied challenge filename extension, relative path and user-agent text as potentially private infrastructure/request data. Mark this source parameter sensitive in library trace frames; this does not promise secrecy in caller payloads or third-party transports."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 60; operates on the selected account. Source GET is classified x-readonly:false with x-rollback:none. The effective POST deliberately differs from source GET under the established mutation policy; successful live POST remains unestablished."
+        },
+        {
+          "kind": "policy",
+          "text": "Domain is a scalar string or nonempty sequential list<string>. Scalars use domain; every list, including singleton, uses domain-1/domain-2 starting at 1. Malformed lists reject after metadata reset before I/O. Preserve order, duplicates, empty strings and exact bytes; do not lowercase, sort, deduplicate or validate domain syntax."
+        },
+        {
+          "kind": "documented",
+          "text": "All six optional null arguments omit and retain server defaults; empty strings and integer zero are supplied. Allowed filename characters default to A-Z and 0-9, extension to empty, random count to 100 (documented minimum 1), relative path to .well-known/pki-validation relative to the DOMAIN DOCUMENT ROOT, max redirects to null (minimum 0), and the user-agent default can change. Zero max redirects means no limit on redirect returns; a supplied N yields N+1 redirect records so excess failures are visible. No client defaults or new integer minimum/range guards are sent."
+        },
+        {
+          "kind": "policy",
+          "text": "Allowed filename characters are a nonempty sequential list<string> serialized as repeated literal dcv_file_allowed_characters fields under OpenAPI query form/explode defaults. Null omits; empty/nonsequential/nonstring lists reject after metadata reset before I/O. String items, including empty or multi-character values, remain exact without one-character/charset checks. Serialization is source/default-derived and offline, not server-observed."
+        },
+        {
+          "kind": "documented",
+          "text": "Results preserve input order for positional domain association; no top-row domain field is pinned. Optional failure_reason is string|null, redirects is a possibly-empty list and redirects_count is int. Redirect fields remain optional: content/protocol/reason/url strings, status int and success exactly empty string|0|1; success 0 or empty string is not an envelope failure. headers is an opaque object with arbitrary values; nested redirects is list<opaque object>|null, not an inferred recursive model. Unknown fields survive only inside those opaque nodes; known objects retain existing filtering."
+        },
+        {
+          "kind": "policy",
+          "text": "One invocation sends one immediate form POST on direct and WHM-bridged UAPI with ordinary Flag outcome. Routing stays in the URL; all supplied operation arguments stay in the body. No implicit read, polling, merge, supplied-value normalization, local filesystem access, URL fetch, retry, cleanup or rollback. Offline fixtures establish no live POST acceptance, DCV compatibility, DNS propagation or certificate issuance; live follow-up whm-api-client-8x0.2.76 remains open."
+        },
+        {
+          "kind": "policy",
+          "text": "Challenge strings, DNS values, content, headers, URLs and metadata can be private. Collection inputs and private filename/path/user-agent strings are sensitive in library frames; responses retain SensitiveParameter protection. Successful results and caller-accessible PayloadMismatchException::$payload can contain private data. Third-party transport traces are outside library guarantees."
+        },
+        {
+          "kind": "policy",
+          "text": "Result data is a required nonnull list of optional-field objects; empty lists are valid, null or missing data fails. Per-row outcomes remain separate from UAPI status; status 0 and outer WHM failures still throw. Inspect responseMeta() warnings and raw metadata even after payload mismatch. Existing individual empty-array-as-object compatibility remains under whm-api-client-8x0.2.50; no shared validation change."
+        }
+      ],
+      "response": {
+        "[].redirects[].success": {
+          "replace": {
+            "type": "flag",
+            "accept": [
+              "empty-string"
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1DCV~1check_domains_via_http/get/responses/200/content/application~1json/schema/properties/result/properties/data/items/properties/redirects/items/properties/success",
+              "note": "The original success oneOf is string enum [empty string] or integer enum [0,1], corroborated by its prose and empty-string field example. Replace only this optional node with the existing exact flag plus empty-string variant, yielding empty-string|0|1 without coercion. Reject quoted 0/1, other strings/integers, floats, booleans and null. This is pinned source evidence, not unrelated endpoint observation or live evidence."
+            }
+          ]
+        }
+      }
+    }
+  },
+  "accessor": "dcv",
+  "description": "Complete two-operation nondeprecated DCV module for the selected account. Checks may affect server state; one immediate form POST per invocation. Offline coverage only; live follow-up whm-api-client-8x0.2.76 remains open."
 }

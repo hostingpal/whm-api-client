@@ -47,6 +47,8 @@ trait UapiGroups
 
     private ?Dav $davGroup = null;
 
+    private ?Dcv $dcvGroup = null;
+
     private ?DirectoryIndexes $directoryIndexesGroup = null;
 
     private ?DirectoryPrivacy $directoryPrivacyGroup = null;
@@ -355,6 +357,17 @@ trait UapiGroups
     public function dav(): Dav
     {
         return $this->davGroup ??= new Dav($this->run(...));
+    }
+
+    /**
+     * Select the DCV operations without making a request.
+     *
+     * Complete two-operation nondeprecated DCV module for the selected account. Checks may affect server state; one
+     * immediate form POST per invocation. Offline coverage only; live follow-up whm-api-client-8x0.2.76 remains open.
+     */
+    public function dcv(): Dcv
+    {
+        return $this->dcvGroup ??= new Dcv($this->run(...));
     }
 
     /**

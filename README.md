@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 109 generated typed groups cover 1,212 documented operations (see
+The 110 generated typed groups cover 1,214 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, DNS zone and DNSSEC
 management, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -4300,8 +4300,99 @@ clears before I/O and captures warnings/raw metadata before API or payload failu
 Native pre-entry argument errors retain the previous snapshot. No implicit
 read/merge/sort, retry, rollback or remote-data cache is added.
 
-Current generated coverage is 1,212 canonical operations (624 UAPI, 588 WHM),
+Generated coverage at the Branding delivery was 1,212 canonical operations (624 UAPI, 588 WHM),
 109 groups and 221 outputs (220 PHP plus coverage). Delivery
 `whm-api-client-8x0.4.33` establishes synthetic offline coverage only. Live follow-up
 `whm-api-client-8x0.2.75` remains OPEN; no live theme visibility, rendering,
 route compatibility or server persistence is established.
+
+
+## Domain control validation checks
+
+`uapi()->dcv()` exposes both nondeprecated pinned DCV operations for the selected
+account: `checkDomainsViaDns(domain)` from cPanel 74 and
+`checkDomainsViaHttp(domain, dcvFileAllowedCharacters, dcvFileExtension,
+dcvFileRandomCharacterCount, dcvFileRelativePath, dcvMaxRedirects,
+dcvUserAgentString)` from cPanel 60. Both execute one immediate form POST through
+direct cPanel UAPI or the WHM bridge. The DNS source is POST; the HTTP source is
+GET but declares `x-readonly:false`, so the established mutation policy selects
+POST. Successful live POST acceptance remains unestablished. Both declare
+`x-rollback:none`; these are checks that may affect server state. DNS alters and
+queries the zone and can report a zone update failure.
+
+```php
+// Synthetic inputs. These explicit calls execute checks that may affect server state.
+$dcv = $client->uapi('example')->dcv();
+$dnsResults = $dcv->checkDomainsViaDns(domain: ['one.example.test', 'two.example.test']);
+$httpResults = $dcv->checkDomainsViaHttp(
+    domain: ['one.example.test', 'two.example.test'],
+    dcvFileAllowedCharacters: ['A', 'B', '0'],
+    dcvFileExtension: 'txt',
+    dcvMaxRedirects: 2,
+);
+foreach ($dnsResults as $row) {
+    // Envelope success can still contain a failed per-domain check.
+    $passed = ($row['succeeded'] ?? null) === 1;
+}
+```
+
+Pass one string or an ordinary nonempty sequential string list as `domain`.
+Scalars send `domain`; lists always send `domain-0/domain-1/...` for DNS and
+`domain-1/domain-2/...` for HTTP, including singleton lists. PHP arrays hide these
+source-specific numbering conventions. Order, duplicate domains, empty strings,
+case and exact bytes are preserved without local domain validation. Malformed
+collections fail after metadata reset and before dispatch.
+
+`dcvFileAllowedCharacters` accepts only a nonempty sequential string list and
+emits repeated literal `dcv_file_allowed_characters` fields. This derives from the
+pinned OpenAPI 3.0.2 query form/explode defaults, with no explicit style override;
+it is offline serialization coverage, not server-observed acceptance. Strings,
+including empty and multi-character entries, remain exact. Empty arrays, sparse
+or associative lists and nonstring entries reject; there is no scalar, CSV or
+JSON-text alternative.
+
+Every optional null omits and keeps its server default. Supplied empty strings
+and integer zero are sent. Defaults stay server-owned: filename alphabet A-Z and
+0-9, extension empty, random character count 100 (documented minimum 1), relative
+path `.well-known/pki-validation` relative to the **domain document root**, max
+redirects null (minimum 0), and a user-agent default that can change. A zero
+`dcvMaxRedirects` means **no limit on redirect returns**. For N, the documented
+return includes N+1 redirect records so excess failures remain visible. The client
+adds no minimum/range guards or local filesystem access. All operation parameters
+stay in the form body, with only standard routing in the URL.
+
+Both results are required nonnull lists, may be empty, and preserve input order.
+Every row field is optional. DNS rows retain nonnull strings `dcv_string`,
+`domain`, `failure_reason`, `zone`, possibly-empty `query_results` string lists
+and integer `succeeded` 0|1. Inspect each row even after UAPI success. HTTP rows
+have optional `failure_reason` string|null, `redirects` list and `redirects_count`
+integer. HTTP domain association is positional; there is no pinned row `domain`.
+Redirects preserve string `content`, `protocol`, `reason`, `url`, integer `status`,
+and `success` exactly `''|0|1`. Empty success stays empty; quoted 0/1, whitespace,
+booleans, other integers, floats and null fail. Values 0 and '' indicate a
+non-2XX response and do not turn envelope status 1 into an API error.
+
+Redirect `headers` is an opaque object with arbitrary values; the redirect
+record's nested `redirects` is list<opaque object>|null. Those opaque nodes retain unknown fields;
+known rows and redirect objects retain existing unknown-field filtering. No
+recursive redirect model is inferred. Missing/null roots fail; omitted fields
+remain absent and nullable fields retain null. The inherited validator also
+accepts an empty JSON array as an individual empty object (follow-up
+`whm-api-client-8x0.2.50`); it still distinguishes list roots from object roots.
+
+Ordinary UAPI status 0 and outer WHM failures throw before payload validation.
+Inspect `responseMeta()` warnings and raw metadata, including after a mismatch.
+Native pre-entry type errors retain the prior metadata snapshot. Challenge
+strings, DNS values, content, headers and URLs can be private. Domain/alphabet
+collections and filename extension/path/user-agent inputs are sensitive in library
+trace frames, as are response arguments. Successful results, metadata and
+caller-accessible `PayloadMismatchException::$payload` remain private data;
+third-party transports control their own traces. The client adds no implicit
+read, polling, merge, normalization, URL fetch, retry, cleanup or rollback,
+including after transport, API or payload failures when effects may have occurred.
+
+Coverage is 1,214 canonical operations (626 UAPI, 588 WHM), 110 groups and 223
+outputs (222 PHP plus coverage). The deprecated `ensure_domains_can_pass_dcv`
+exclusion remains uncounted. Delivery `whm-api-client-8x0.4.34` is synthetic offline
+coverage only. Live follow-up `whm-api-client-8x0.2.76` remains OPEN; no live DCV,
+DNS propagation or certificate issuance is established.
