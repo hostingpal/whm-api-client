@@ -408,9 +408,12 @@ Observed on cPanel 11.138.0.19, the hash-format `main_domain` record and
 `singleDomainData()` also return `phpversion` and `status`, `main_domain` also returns
 `phpopenbasedirprotect`, and list-form `customlog` items in `singleDomainData()` return
 `format`. INI directive rows can carry `cpanel_default` and INI path rows `is_suspended`.
-All are optional. Except for `phpopenbasedirprotect`, upstream does not document them,
-so `phpversion`, `status`, `cpanel_default` and `is_suspended` have unknown meaning;
-`is_suspended` is a plain integer, not a documented suspension flag.
+All are optional. `phpversion`, `status`, `cpanel_default` and `is_suspended` have unknown
+meaning, and `domainsData()` does not promise `phpopenbasedirprotect`, so these are carried
+as `mixed` and deliberately unvalidated: any JSON value, including null, reaches the caller
+unchanged and cannot fail the read, so check the type before using one. A quoted `main_domain`
+`phpopenbasedirprotect` stays a string, unlike the pinned flag in `singleDomainData()`, and
+`is_suspended` is not a documented suspension flag.
 `phpGetVhostVersions()` returns a list, or a single record when `vhost` is supplied.
 INI setters and PHP version changes use form POST. INI content and directives are
 sensitive parameters; retain a configuration backup before overwriting content.
