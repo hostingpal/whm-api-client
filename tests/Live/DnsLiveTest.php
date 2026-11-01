@@ -29,6 +29,9 @@ use Throwable;
  * getzonerecord and the host for lookupnsip/lookupnsips are derived at runtime from
  * earlier read-only responses and bound to the guarded transport.
  *
+ * The test zone exists only locally, so resolvedomainname, which needs public
+ * resolution, targets a public name. Everything else stays on the test zone.
+ *
  * The WHM and UAPI zone-line and authority-record shapes are identical, so both
  * families share the UAPI aliases.
  *
@@ -39,6 +42,9 @@ use Throwable;
 final class DnsLiveTest extends TestCase
 {
     private const ZONE = 'npr.rs';
+
+    /** Reserved by RFC 2606 and resolvable, unlike the test zone, which is NXDOMAIN publicly. */
+    private const PUBLIC_DOMAIN = 'example.com';
 
     public function testWhmListZonesIncludesTheTestZone(): void
     {
@@ -106,7 +112,7 @@ final class DnsLiveTest extends TestCase
     public function testWhmResolveDomainName(): void
     {
         $whm = self::whm();
-        $result = self::safely(static fn (): array => $whm->dns()->resolveDomainName(self::ZONE));
+        $result = self::safely(static fn (): array => $whm->dns()->resolveDomainName(self::PUBLIC_DOMAIN));
 
         self::assertTrue(
             filter_var($result['ip'] ?? '', FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== false,

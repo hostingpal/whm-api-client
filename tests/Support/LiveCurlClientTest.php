@@ -195,6 +195,36 @@ final class LiveCurlClientTest extends TestCase
             'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1'
                 . '&cpanel.user=npr&cpanel.module=DNS&cpanel.function=parse_zone&zone=example.test',
         ];
+        yield 'public resolution of the local test zone' => [
+            'GET',
+            'https://test.oblak.host:2087/json-api/resolvedomainname?api.version=1&domain=npr.rs',
+        ];
+        yield 'direct lookup of the local test zone' => [
+            'GET',
+            'https://test.oblak.host:2083/execute/DNS/lookup?domain=npr.rs',
+        ];
+        yield 'bridged lookup of the local test zone' => [
+            'GET',
+            'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1'
+                . '&cpanel.user=npr&cpanel.module=DNS&cpanel.function=lookup&domain=npr.rs',
+        ];
+        yield 'public resolution of another name' => [
+            'GET',
+            'https://test.oblak.host:2087/json-api/resolvedomainname?api.version=1&domain=example.org',
+        ];
+        yield 'direct lookup of another name' => [
+            'GET',
+            'https://test.oblak.host:2083/execute/DNS/lookup?domain=example.org',
+        ];
+        yield 'bridged lookup of another name' => [
+            'GET',
+            'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1'
+                . '&cpanel.user=npr&cpanel.module=DNS&cpanel.function=lookup&domain=example.org',
+        ];
+        yield 'public name outside the resolver operations' => [
+            'GET',
+            'https://test.oblak.host:2087/json-api/parse_dns_zone?api.version=1&zone=example.com',
+        ];
         yield 'userinfo' => ['GET', 'https://root@test.oblak.host:2087/json-api/version?api.version=1'];
         yield 'fragment' => ['GET', 'https://test.oblak.host:2087/json-api/version?api.version=1#unexpected'];
     }
@@ -270,10 +300,10 @@ final class LiveCurlClientTest extends TestCase
             'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
                 . '&cpanel.module=Features&cpanel.function=list_features',
         ];
-        yield 'inventory 26' => ['https://test.oblak.host:2083/execute/DNS/lookup?domain=npr.rs'];
+        yield 'inventory 26' => ['https://test.oblak.host:2083/execute/DNS/lookup?domain=example.com'];
         yield 'inventory 27' => [
             'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
-                . '&cpanel.module=DNS&cpanel.function=lookup&domain=npr.rs',
+                . '&cpanel.module=DNS&cpanel.function=lookup&domain=example.com',
         ];
         yield 'inventory 28' => [
             'https://test.oblak.host:2083/execute/DNS/fetch_cpanel_generated_domains?domain=npr.rs',
@@ -319,7 +349,7 @@ final class LiveCurlClientTest extends TestCase
         yield 'WHM parsed zone' => ['https://test.oblak.host:2087/json-api/parse_dns_zone?api.version=1&zone=npr.rs'];
         yield 'WHM MX records' => ['https://test.oblak.host:2087/json-api/listmxs?api.version=1&domain=npr.rs'];
         yield 'WHM resolve domain' => [
-            'https://test.oblak.host:2087/json-api/resolvedomainname?api.version=1&domain=npr.rs',
+            'https://test.oblak.host:2087/json-api/resolvedomainname?api.version=1&domain=example.com',
         ];
         yield 'WHM nameserver config' => ['https://test.oblak.host:2087/json-api/get_nameserver_config?api.version=1'];
         yield 'WHM local authority' => [

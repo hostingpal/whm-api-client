@@ -22,6 +22,9 @@ use RuntimeException;
  * that account, without duplicate keys or the alias account key. Three
  * read-only DNS GETs are approved only for a zone line or nameserver host bound
  * at construction from an earlier read-only response.
+ *
+ * resolvedomainname and DNS/lookup need public resolution, so they name
+ * example.com: the account's npr.rs is a local zone that is NXDOMAIN publicly.
  */
 final readonly class LiveCurlClient implements ClientInterface
 {
@@ -59,8 +62,8 @@ final readonly class LiveCurlClient implements ClientInterface
         self::BRIDGE . '&cpanel.module=LangPHP&cpanel.function=php_get_impacted_domains&domain=npr.rs',
         self::CPANEL . 'Features/list_features',
         self::BRIDGE . '&cpanel.module=Features&cpanel.function=list_features',
-        self::CPANEL . 'DNS/lookup?domain=npr.rs',
-        self::BRIDGE . '&cpanel.module=DNS&cpanel.function=lookup&domain=npr.rs',
+        self::CPANEL . 'DNS/lookup?domain=example.com',
+        self::BRIDGE . '&cpanel.module=DNS&cpanel.function=lookup&domain=example.com',
         self::CPANEL . 'DNS/fetch_cpanel_generated_domains?domain=npr.rs',
         self::BRIDGE . '&cpanel.module=DNS&cpanel.function=fetch_cpanel_generated_domains&domain=npr.rs',
         self::WHM . 'version?api.version=1',
@@ -87,7 +90,7 @@ final readonly class LiveCurlClient implements ClientInterface
         self::WHM . 'listzones?api.version=1',
         self::WHM . 'parse_dns_zone?api.version=1&zone=npr.rs',
         self::WHM . 'listmxs?api.version=1&domain=npr.rs',
-        self::WHM . 'resolvedomainname?api.version=1&domain=npr.rs',
+        self::WHM . 'resolvedomainname?api.version=1&domain=example.com',
         self::WHM . 'get_nameserver_config?api.version=1',
         self::WHM . 'has_local_authority?api.version=1&domain=npr.rs',
         self::WHM . 'is_alias_available?api.version=1',
