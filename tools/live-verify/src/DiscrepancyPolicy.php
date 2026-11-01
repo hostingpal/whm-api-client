@@ -128,6 +128,18 @@ final readonly class DiscrepancyPolicy
     }
 
     /**
+     * Return the console label for a reviewed acknowledgment, or null for any other identifier.
+     *
+     * The identifiers live only in this class, so rebinding them to a new reference cannot leave
+     * the CLI with a stale copy that throws after live requests are spent. Null keeps an
+     * unreviewed identifier off the console.
+     */
+    public function acknowledgmentLabel(#[SensitiveParameter] string $id): ?string
+    {
+        return isset($this->expected[$id]) ? $id . ' ($.* unknown_field)' : null;
+    }
+
+    /**
      * Assess current sanitized observations without modifying them or suppressing discrepancies.
      *
      * All expected observations must occur exactly once and still match. API, payload and probe

@@ -505,6 +505,19 @@ final class DiscrepancyPolicyTest extends TestCase
         DiscrepancyPolicy::load($root)->assertOutputAllowed($root . '/docs/api/evidence/2026-10-16-quota-inventory.json');
     }
 
+    public function testEveryAssessedIdentifierHasAConsoleLabelAndNoOtherDoes(): void
+    {
+        $policy = DiscrepancyPolicy::load(dirname(__DIR__, 3));
+        $expected = [self::DIRECT . ' ($.* unknown_field)', self::BRIDGE . ' ($.* unknown_field)'];
+
+        self::assertSame($expected, array_map(
+            $policy->acknowledgmentLabel(...),
+            $policy->assess(self::quotaRecords())['acknowledged'],
+        ));
+        self::assertSame($expected, array_map($policy->acknowledgmentLabel(...), $policy->assess([])['stale']));
+        self::assertNull($policy->acknowledgmentLabel('quota-total-direct-11.138.0.15'));
+    }
+
     public function testNewPathsUnderTheEvidenceDirectoryAreAllowed(): void
     {
         $root = $this->fixture();
