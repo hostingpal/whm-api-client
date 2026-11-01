@@ -10,7 +10,7 @@ use HostingPal\WhmApiClient\Api\Uapi\Spec\FilemanSpec;
 use HostingPal\WhmApiClient\Api\Whm\Spec\ServerSpec;
 use HostingPal\WhmApiClient\Client;
 use HostingPal\WhmApiClient\Exception\ApiErrorException;
-use HostingPal\WhmApiClient\Exception\ApiException;
+use HostingPal\WhmApiClient\Exception\TransportException;
 use HostingPal\WhmApiClient\Http\HttpTransport;
 use HostingPal\WhmApiClient\UapiClient;
 use HostingPal\WhmApiClient\Upload;
@@ -911,8 +911,9 @@ final class FilemanUploadFixture
     /**
      * Read account ownership for a cleanup decision, surviving a transient failed request.
      *
-     * Only this read repeats, and only when the request itself failed: a returned inventory is final, so a foreign
-     * marker or unusable rows are never read twice. One lost read must not abandon an account and a writable token.
+     * Only this read repeats, and only when the request itself failed: anything the server returned is final, so a
+     * result-0, HTTP or unreadable reply, a foreign marker or unusable rows are never read twice. One lost read must
+     * not abandon an account and a writable token.
      *
      * @phpstan-impure
      */
@@ -921,7 +922,7 @@ final class FilemanUploadFixture
         for ($attempt = 1; $attempt < self::IDENTITY_READS; ++$attempt) {
             try {
                 return $this->accountExists();
-            } catch (ApiException) {
+            } catch (TransportException) {
                 usleep(self::REREAD_PAUSE_MICROSECONDS);
             }
         }

@@ -313,13 +313,39 @@ final class FilemanUploadFixtureTest extends TestCase
     {
         $http = new FilemanUploadServer();
         $http->failures['listaccts:4'] = 'throw_before';
-        $http->failures['listaccts:5'] = 'api_before';
+        $http->failures['listaccts:5'] = 'throw_before';
         $scenario = self::scenario($http);
         self::assertSame('passed', $scenario['fixture']['status']);
         self::assertFalse($http->account);
         self::assertSame([], $http->tokens);
         self::assertSame(1, $http->counts['removeacct']);
         self::assertSame(1, $http->counts['Tokens/revoke']);
+    }
+
+    /** Only a request that failed is read again: any reply the server returned is final, however unusable. */
+    #[DataProvider('finalIdentityReplies')]
+    public function testIdentityReplyThatIsNotALostRequestIsNeverReadAgain(string $mode): void
+    {
+        $http = new FilemanUploadServer();
+        $http->failures['listaccts:4'] = $mode;
+        $scenario = self::scenario($http);
+        // Three setup reads, the one final cleanup read, and the separate domain check.
+        self::assertSame(5, $http->counts['listaccts']);
+        self::assertContains('account_identity_unconfirmed', $scenario['fixture']['failures']);
+        self::assertSame('unconfirmed', $scenario['fixture']['resources']['account']['cleanup']);
+        self::assertArrayNotHasKey('removeacct', $http->counts);
+        self::assertArrayNotHasKey('Tokens/revoke', $http->counts);
+        self::assertArrayNotHasKey(self::DELETE, $http->counts);
+        self::assertTrue($http->account);
+        self::assertPrivate($scenario);
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function finalIdentityReplies(): iterable
+    {
+        yield 'result 0' => ['api_before'];
+        yield 'gateway error' => ['http_before'];
+        yield 'unreadable body' => ['invalid_before'];
     }
 
     /** Re-reads are bounded, and exhausting them stops every mutation with an accurate report. */
@@ -351,6 +377,7 @@ final class FilemanUploadFixtureTest extends TestCase
         $http->overrides['listaccts:4'] = '{"acct":[{"user":"wlupload","domain":"wlupload.example.com",'
             . '"email":"private-foreign@example.com"}]}';
         $scenario = self::scenario($http);
+        self::assertSame(5, $http->counts['listaccts']);
         self::assertArrayNotHasKey('removeacct', $http->counts);
         self::assertSame('unconfirmed', $scenario['fixture']['resources']['account']['cleanup']);
     }
