@@ -244,9 +244,21 @@ or duplicate observations fail the fixture. Each URI and generated callback bind
 the run's exact database/user names through the existing GET-only request guard.
 Original API, payload and discrepancy outcomes remain recorded when that fixture
 expectation fails. This verifies API-reported privileges, not SQL enforcement.
-An uncertain mutation outcome is reconciled without retrying the mutation.
-Cleanup continues for other owned resources after a failure and requires confirmed
-absence before reporting success. Preexisting resources are never removed.
+A creation the API accepts belongs to the run. A creation the API rejects never
+does, even if the name then exists: the resource stays in place, the report shows
+`creation: rejected` with `cleanup: present`, and the run fails with
+`ownership_unconfirmed`. A rejected create that did take effect is left behind the
+same way, because its response matches a competitor's. Any other uncertain mutation
+outcome, such as a transport failure, is reconciled against inventory without
+retrying the mutation. Cleanup continues for other owned resources after a failure
+and requires confirmed absence before reporting success. Resources found by the
+initial absence check are never removed.
+
+Supported concurrency is one run per suffix. Nothing enforces that across processes
+or machines: the server offers no lease, MySQL names carry no ownership marker, and
+the random suffix only makes a collision unlikely. One race remains. If another
+process creates the exact name while a create of ours has no API outcome,
+reconciliation cannot tell it from ours and deletes it.
 
 Evidence is written after cleanup and includes a separate `mysql_fixture` report
 with fixed lifecycle outcomes, without names, passwords or upstream error text.
@@ -268,7 +280,8 @@ If cleanup reports `present` or `unconfirmed`, inspect the `npr` account's MySQL
 inventory privately in cPanel. Fixture candidates follow `npr_wv<6 lowercase hex>d`
 and `e` for databases, and `npr_wv<6 lowercase hex>u` and `v` for users, sharing
 one suffix per run. Confirm ownership before manually removing exact resources;
-the pattern alone is not proof and must not be used for bulk deletion. A new
+the pattern alone is not proof and must not be used for bulk deletion, and a
+`rejected` resource may belong to another process. A new
 runner invocation uses new names and does not recover a previous run's leftovers.
 
 Quota recipes take no arguments and read account totals in MB and local usage in
@@ -1778,3 +1791,179 @@ A successful result establishes singleton-list wire acceptance only. It establis
 no multi-domain batch, populated DS field, mutation, propagation or DNSSEC resolver
 coverage. Existing artifacts and discrepancy policies are never changed by this
 catalog.
+
+## Webmail session and application inventory
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/webmail-inventory.php \
+  --output=docs/api/evidence/YYYY-MM-DD-webmail-inventory.json
+```
+
+`webmail-inventory-v1` has five fixed GETs: WHM version, then
+`ActiveSessions/list_active_sessions` and `WebmailApps/list_webmail_apps` through
+direct UAPI and the `npr` bridge. Neither call supplies an argument, so the server's
+default theme applies. Existing opt-in, committed-input, exact request guard, TLS
+and immutable structural-output rules apply.
+
+An empty session list proves nothing about session row fields, and upstream prose
+says it can also mean an unreadable session store. Application rows establish
+field types only: returned URLs may carry a session token, so they are neither
+persisted nor fetched, and they prove neither reachability nor login. No `Session/*`
+creator runs on any account: a reviewer's disposable-account test left four session
+files behind after the account was removed, and cleaning them needs filesystem
+access. The creators stay open under `8x0.2.69`.
+
+The [2026-11-01 capture](../../docs/api/evidence/2026-11-01-webmail-inventory.json)
+at `eba1711` on `11.138.0.19` passes all five GETs and strict assessment with zero
+discrepancies. Session inventory is empty on both routes, so all six session row
+fields stay unobserved. Application rows are populated. Do not repeat this capture
+for a populated result; session rows need a separately reviewed recipe.
+SHA-256: `37ee9760012a45c19100adc379ca59d7b87d46aebea8596a6c1f8e75dc201cd6`.
+
+## UAPI Market reads
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/market-reads.php \
+  --output=docs/api/evidence/YYYY-MM-DD-market-reads.json
+```
+
+`market-reads-v1` has eleven fixed GETs: WHM version, then five `x-readonly: true`
+reads through direct UAPI and the `npr` bridge: `get_providers_list`,
+`get_all_products`, `get_pending_ssl_certificates`,
+`get_provider_specific_dcv_constraints` and `get_login_url`. Existing opt-in,
+committed-input, exact request guard, TLS and immutable structural-output rules apply.
+
+Selectors are not guessed. A private direct-route read of the provider list, catalog
+and pending queue before this catalog was written showed `cPStore` as the only
+provider, three catalog rows and no pending certificates. `url_after_login` selects
+no server resource; the recipe sends the pinned parameter example, on a reserved
+domain, and the returned URL is never followed.
+
+Four of the nine reads in `8x0.2.63` are deliberately not run, and
+`MarketReadsProbes::NOT_RUN` records each reason:
+
+| Operation | Reason |
+| --- | --- |
+| `get_certificate_status_details` | No pending order, so no real `order_item_id` exists |
+| `get_ssl_certificate_if_available` | No pending order, so no real `order_item_id` exists |
+| `get_product_info` | No read enumerates a real `product_name` |
+| `get_completion_url` | No read enumerates a real `product_name` |
+
+The pinned `product_name` example, `cpanel-ssl`, is a store-page slug and appears
+nowhere in this server's catalog. The catalog's `product` values are display labels
+in a different form, and the pinned source states no mapping between them. Run
+these two only with a selector known to be real on the server, for example after
+private inspection of its store product files.
+
+Payloads can hold security tokens, action URLs, PEM, CSR and identity data; only
+structural paths and types are saved. No order, cart, checkout, certificate, queue
+or token action runs, no POST is sent, and no returned URL or credential is used.
+`get_license_info` and `get_build_cart_url` are not `x-readonly` and stay out of this
+catalog. A successful read establishes no purchase, payment, issuance, installation,
+trust or served TLS behavior.
+
+The [2026-11-01 capture](../../docs/api/evidence/2026-11-01-market-reads.json) at
+`eba1711` on `11.138.0.19` passes all eleven GETs and strict assessment with zero
+discrepancies. Provider, catalog and DCV payloads are populated, the login URL is a
+string, and the pending list is empty on both routes. Catalog prices, `max_users`
+and a non-empty `base_name` stay unobserved, as do the object identity branch and
+pending rows. Do not repeat this capture unchanged. The four unrun reads need a real
+selector and a new recipe. See the source audit for the observed types.
+SHA-256: `4a9ec4fffec130ee099b63cb2f86c24482b332a8101995828426745bdb70da51`.
+
+## Bounded no-match audit
+
+`empty-results-v1` is a separate opt-in catalog for bead `8x0.2.88`. It asks how a
+curated set of read-only collection operations answers when nothing can match. The
+selection was fixed and committed before execution. It follows pinned operation
+semantics and documented filters; a parameter name alone proves nothing.
+
+Twenty-seven GETs run once each, in catalog order: WHM `version` for provenance, then
+15 operations. Every request is a typed generated method. WHM routes use the root
+token; UAPI operations run direct as `npr` and bridged to `npr`. No request carries a
+live-derived value.
+
+| Operation | Routes | No-match criterion | Label | Why it belongs |
+| --- | --- | --- | --- | --- |
+| `listaccts` | WHM | `search=wzzemptyaudit`, `searchtype=user`, `searchmethod=exact` | `fixed-path-control` | PR123 control for the fixed result-0 form |
+| `showbw` | WHM | `search=wzzemptyaudit`, `searchtype=user` | `absent-user-pcre` | Documented PCRE filter over accounts |
+| `matchpkgs` | WHM | `FEATURELIST=wzzemptyaudit` | `absent-feature-list` | Documented criteria; see the correction under the results |
+| `emailtrack_search` | WHM | `defer`, `failure`, `inprogress`, `success` all `0`, `max_results_by_type=1` | `all-event-types-off` | Documented event selectors; typed method has no value filter |
+| `emailtrack_user_stats` | WHM | `sender=nobody@wzzemptyaudit.invalid`, one-second 2001 window | `absent-sender-past-window` | Documented sender filter and search window |
+| `get_unique_sender_recipient_count_per_user` | WHM | one-second 2001 window | `past-window` | Required time window over mail records |
+| `php_get_vhosts_by_version` | WHM | `version=ea-php00` | `absent-php-package` | Boundary: list keyed by a package that does not exist |
+| `accountsummary` | WHM | `user=wzzemptyaudit` | `entity-lookup-control` | Entity lookup, not a search; must still fail |
+| `Email/list_pops` | direct, bridged | `regex=wzzemptyaudit` | `absent-regex` | Documented PCRE filter over a list holding the main account |
+| `Email/list_pops_with_disk` | direct, bridged | `regex=wzzemptyaudit` | `absent-regex` | Same filter on the disk variant |
+| `Email/list_pops_with_disk` | direct, bridged | `domain=wzzemptyaudit.invalid` | `absent-domain` | Documented domain filter |
+| `SubDomain/listsubdomains` | direct, bridged | `regex=wzzemptyaudit` | `absent-regex` | Documented name filter; `npr` had no subdomains in earlier captures |
+| `Features/list_features_like` | direct, bridged | `pattern=wzzemptyaudit`, `is_regex=0` | `absent-substring` | Documented search with a pinned no-match example |
+| `Fileman/autocompletedir` | direct, bridged | `path=wzzemptyaudit` | `absent-prefix` | Documented prefix match |
+| `Bandwidth/query` | direct, bridged | `grouping=domain`, `domains=wzzemptyaudit.invalid` | `absent-domain` | Documented domain filter on a map result |
+| `Bandwidth/query` | direct, bridged | `grouping=domain`, one-second 2001 window | `past-window` | Documented report window on a map result |
+| `SSL/list_ssl_items` | direct, bridged | `domains=wzzemptyaudit.invalid` | `absent-domain` | Documented domain selection over SSL items |
+
+Each probe's guard allows only its exact URI, GET, no body and no extra parameter.
+`tests/Tools/LiveVerify/EmptyResultProbesTest.php` repeats the whole allowlist as
+literals, independent of the catalog constants. `wzzemptyaudit` was chosen so nothing
+on `npr` uses it, the `.invalid` TLD is reserved, and the window ends on 2001-09-09
+UTC, decades before this cPanel release line. `ea-php00` names no PHP package a real
+build provides. The audit changes no account, configuration or file.
+
+Excluded on purpose: parameterless inventories, which cannot be made empty safely;
+entity lookups other than the single control; `Park/listparkeddomains`,
+`AddonDomain/listaddondomains`, `Mime/list_redirects` and `Email/list_forwarders`,
+because `npr` already returned empty lists for them, so a filter could prove nothing;
+`Ftp/list_ftp`, whose empty form is already recorded in the FTP section;
+`DomainRecommendations/domain_suggestions`, which calls an external service.
+
+An operation is classified from its record as one of:
+
+- **empty collection**: the API reported success and the typed method returned an
+  empty result.
+- **API error**: the API reported failure and the typed method raised
+  `ApiErrorException`.
+- **client exception**: the API reported success and the typed method raised
+  `PayloadMismatchException` or another client failure.
+
+The section assessment stays strict. It passes only when every probe succeeds with
+no discrepancy, so the entity control and the `listaccts` control cannot pass it: the
+first must fail, and the second returns an empty list from a response that omits
+`data`. A `failed` status therefore records the audit, not a broken run. Exit 1 and
+`status: failed` are expected. Per-record outcomes carry the classification.
+
+Evidence keeps structure only. An API error's text is not retained, so a record cannot
+distinguish a no-match failure from any other failure by itself.
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+  php tools/live-verify/empty-results.php --output=docs/api/evidence/YYYY-MM-DD-empty-results.json
+```
+
+An empty result covers only that operation, route, criterion, version and account
+state. It establishes no other filter value, server or account, and no operation
+outside this table.
+
+### No-match audit results, 2026-11-01
+
+The capture ran once at `fc5264d97f0c9d90ebbf9148b714d69e4a288959` on `11.138.0.19`.
+It exited 1 with `status: failed`, as the recipe predicted. All 27 GETs returned
+HTTP 200. The artifact is
+[2026-11-01-empty-results.json](../../docs/api/evidence/2026-11-01-empty-results.json),
+SHA-256 `2ec7d60176b4354c01d1016849e0e3d62ae85a7182354010ab8d89e77a39894f`.
+
+No typed method threw a client exception. Twenty-three records returned an empty
+result and three raised `ApiErrorException`; the remaining record is WHM `version`.
+No client behavior changed. [The source audit](../../docs/api/source-audit.md#empty-result-audit-2026-11-01)
+holds the per-operation table and limits.
+
+`whm1:listaccts` carries the only discrepancy, `missing_required` at `$`. The client
+accepts that omission through `account_search_empty`, while the evidence tool still
+reports it, so the record passes and the strict assessment does not.
+
+Correction: the pre-execution row for `matchpkgs` called its plan list populated.
+That was a misreading of earlier path listings. The earlier selector-free read was
+already empty, and `matchPackages()` already documents that an empty match does not
+prove absence (`8x0.2.43`). Its empty result here is not a confirmed no-match.
