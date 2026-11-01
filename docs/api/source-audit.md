@@ -8848,3 +8848,89 @@ No live call, capture, source fetch, credential creation/use, login, session/mai
 write or server cleanup was performed for this integration. The completed owner
 165-call pass was not replayed. Combined offline validation is recorded separately
 with exact product-input attribution; it cannot prove new server or wire behavior.
+
+
+## Multipart compatibility audit and owned Fileman capture (2026-11-01)
+
+This section records `whm-api-client-8x0.30.5`. The audit read the delivered surface
+at `760ca68` against the [multipart design](../superpowers/specs/2026-10-31-multipart-inputs-design.md):
+PR84 source primitives, PR85 streaming body and transport, PR86 generic calls, PR87
+typed Fileman with the corrected parent acceptance, and PR88/PR89 adopters. Public
+factories, prepared sources, exact framing, the 8192-byte read bound, boundary
+look-behind, release on every exit, route and reservation checks, and the explicit
+`rows: 'uploads'` policy match the design. No production code changed.
+
+`git log --diff-filter=MDR` shows no pinned source, map checksum, annotation or
+committed evidence JSON was ever modified, renamed or deleted, and `sources verify`
+confirms all 23 pinned sources. One low-severity divergence stands: `Upload` rejects
+C0 controls and DEL but accepts C1 controls such as U+0085, though the design says
+controls are rejected. The bytes are multi-byte UTF-8 and cannot break header framing,
+and the pinned source says the server rejects control characters per file. It is
+recorded for a decision, not changed here.
+
+`CurlClient` casts its body to a string, so the fixture adds `StreamingCurlClient`
+and leaves every existing fixture unchanged. On local PHP 8.4.26 with libcurl 8.22.0,
+`CURLOPT_POST` with a read callback produced chunked framing. `CURLOPT_UPLOAD` with
+`CURLOPT_INFILESIZE` and a custom POST verb produced exact `Content-Length`, no
+`Transfer-Encoding`, and a local abort on a short or failing source. See the
+[fixture notes](../../tools/live-verify/README.md#disposable-account-fileman-upload-fixture).
+An independent pre-run review found no path to another account, no retry and no leak.
+It did find false-failure and emptiness-proof problems, which were corrected first.
+It suggested continuing mutation after a readback mismatch. That conflicts with the
+bead's stop rule, so capture order changed instead: the row batches run first.
+
+The single capture ran at `aa84150664d6e5c48e1668cc833bb9220e11a1bf` on `11.138.0.19`.
+The [artifact](evidence/2026-11-01-fileman-upload.json), SHA-256
+`34e31bfd989c84deee7568a5d8fca72b1b6c657346cf5d81dcd3f760c7f2f41a`, records a **failed
+run**, exit 1. It is kept unchanged and was not rerun. Its `fixture.status` and
+`discrepancy_review.status` are both `failed`, for one reason: all six readbacks failed
+the required exact charset echo. All other phases passed their expectations, with no
+structural discrepancy.
+
+Observed through the generated client on the direct route, for the disposable account:
+
+- Five multipart POSTs returned HTTP 200 with exact row and count expectations: status
+  1 with three stored rows and disk info; status 1 with one refused and one stored row;
+  status 0 with one refused row, returned normally under the rows-aware rule with one
+  envelope error; generic `callMultipart()` status 1 with one stored row; and status 1
+  with one stored empty file of integer size 0.
+- Each POST sent exact `Content-Length` over HTTP/1.1 with no `Transfer-Encoding` or
+  `Expect`, confirmed from the sent head, and the bytes sent equalled the declared
+  length. Bodies matched an independent expectation while streaming, were never
+  buffered or sought, and no read exceeded 8192 bytes. The largest request read 21,149
+  bytes in three blocks.
+- Borrowed streams with a nonzero cursor stayed open at their expected end positions.
+- `get_file_content` with `from_charset=ISO-8859-1`, `to_charset=UTF-8` and
+  `update_html_document_encoding=0` returned content exactly equal to the independent
+  Latin-1 mapping for all six files. That includes all 256 byte values with extra NUL
+  and CRLF bytes, a 20,000-byte file, and a true empty file returned as an empty string.
+  Every read followed both refused uploads, so the two refused names kept their
+  original bytes under `overwrite=0`.
+- Listings showed the exact file sets, sizes and owner-only permissions.
+- `delete_file` removed all six owned files and the emptied directory, which then
+  listed as absent.
+
+The failed check, stated precisely: `from_char` and `to_char` were absent from every
+response on this server, although the pinned source documents them as echoing the
+request. `from_charset` and `to_charset` were present as strings that were not exactly
+the requested `ISO-8859-1` and `UTF-8`. Their values were not retained, by design, so
+this capture cannot say how they differ; a case difference is possible but is not
+established. Exact content across all 256 byte values shows the requested conversion
+took place, but the required echo check still failed and this is not reclassified.
+This is an upstream response observation, not a client defect: both fields are outside
+any typed guarantee, and no schema changes here.
+
+Fixture cleanup reports token, account, domain and zone `confirmed_absent` through the
+API, with `cleanup: passed`. This is API absence only. `filesystem_cleanup` is
+`not_claimed`, as no trusted filesystem check exists. No mutation was repeated.
+
+This is a documented reversible-transcoding check, not a raw download or hash. It
+covers the observed names, sizes and one server version on the direct route. It
+establishes no null or empty status-0 live observation, antivirus or archive behavior,
+memory benchmark, WHM or bridged upload, or other Fileman coverage. The observed
+statuses for partial and all-failed batches are not a universal contract.
+
+Open for the owner to decide: whether to record the absent `from_char`/`to_char` as an
+overlay note; whether a later authorized capture should classify the charset echo, for
+example exact, case-variant or other, so the difference can be named; and whether
+filenames should reject C1 controls.

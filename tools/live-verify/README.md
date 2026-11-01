@@ -1871,3 +1871,13 @@ checks the account's home directory or the filesystem after removal. The evidenc
 covers the observed filenames, sizes and server version on the direct route. It
 establishes no raw-download identity, antivirus or archive behavior, null or empty
 status-0 observation, memory benchmark, or WHM or bridged upload coverage.
+
+The [committed capture](../../docs/api/evidence/2026-11-01-fileman-upload.json) at
+`aa84150` on `11.138.0.19` is a **failed run**: exit 1, kept unchanged and not rerun.
+Its only failure is the exact charset echo. `from_char`/`to_char` are absent on this
+server, and `from_charset`/`to_charset` differ from the requested spellings, with the
+values deliberately not retained. All five uploads passed their row, count and framing
+expectations, including the status-0 batch. Content matched the oracle exactly for all
+six files, and token, account, domain and zone cleanup are confirmed through the API.
+See the [source audit](../../docs/api/source-audit.md#multipart-compatibility-audit-and-owned-fileman-capture-2026-11-01)
+for what this does and does not establish. A rerun needs a separate decision.
