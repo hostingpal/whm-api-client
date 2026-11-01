@@ -16,12 +16,17 @@ use WeakMap;
  * Paths are anchored at factory time and opened only during preparation. Strings
  * retain arbitrary bytes. Streams are borrowed from their call-time cursor and
  * are never rewound, closed or detached by the library. Callers must not mutate
- * sources during a call. No MIME sniffing or filename rewriting occurs.
+ * sources during a call. Path sources require stable, reliable byte-size metadata;
+ * virtual/generated pseudo-files with misleading sizes are unsupported even if
+ * reported as regular files. The library cannot detect every such source. Borrowed
+ * stream size/cursor metadata must also be truthful. No MIME sniffing or filename
+ * rewriting occurs.
  *
  * Path syntax is POSIX-style: absolute slash-prefixed paths or relative paths
  * anchored to the factory working directory. URI schemes, double-slash network
  * paths, UNC paths and Windows drive paths are rejected. Native Windows path
- * support is deferred; Windows callers can supply bytes with fromString() or
+ * support is deferred; prefix relative POSIX names containing a colon with ./
+ * (for example ./report:2026.csv). Windows callers can supply bytes with fromString() or
  * borrow a PSR stream with fromStream() instead.
  *
  * Source data lives in a weak-key registry rather than instance properties:
@@ -49,7 +54,15 @@ final class Upload
      * Describe a local file without checking existence or opening it.
      *
      * Relative paths use the current working directory; symlinks to regular files
-     * are allowed at preparation. Omitted filename uses the path's basename.
+     * are allowed at preparation, including genuine empty files. Omitted filename
+     * uses the path's basename. Prefix colon-containing relative names with ./,
+     * for example ./report:2026.csv.
+     *
+     * Callers must supply sources with stable, reliable byte-size metadata.
+     * Virtual/generated pseudo-files with misleading sizes are unsupported even
+     * when reported as regular files; this prerequisite is not fully detectable.
+     * Unsupported sources can yield incorrect lengths or truncated content. Use
+     * fromString() for bytes the caller has materialized from such a source.
      *
      * @throws InvalidArgumentException For invalid local paths or metadata.
      */
@@ -102,6 +115,9 @@ final class Upload
      * Size asserts the entire remaining length at preparation, never a prefix.
      * Null requests call-time getSize()-tell() derivation. Unknown length requires
      * an explicit size; disagreement with a derivable length rejects locally.
+     * Callers must ensure getSize()/tell() metadata is truthful; an explicit size
+     * cannot override disagreement. Metadata reliability is a caller prerequisite,
+     * not a guarantee that the library detects every misleading source.
      *
      * @throws InvalidArgumentException For invalid metadata or negative size.
      */
