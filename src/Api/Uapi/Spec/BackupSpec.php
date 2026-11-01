@@ -105,4 +105,105 @@ final class BackupSpec
         'params' => [],
         'returns' => ['type' => 'list', 'items' => ['type' => 'string']],
     ];
+
+    public const RESTORE_DATABASES = [
+        'function' => 'restore_databases',
+        'module' => 'Backup',
+        'method' => 'POST',
+        'body' => 'multipart',
+        'outcome' => 'flag',
+        'multipart_upload_family' => [
+            'php' => 'files',
+            'source' => 'file',
+            'routes' => 'direct',
+        ],
+        'params' => [
+            'timeout' => ['name' => 'timeout', 'encoding' => 'scalar'],
+            'verbose' => ['name' => 'verbose', 'encoding' => 'bool'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'accept_empty_array' => false,
+            'fields' => [
+                'log_id' => ['type' => 'string'],
+                'log_path' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const RESTORE_EMAIL_FILTERS = [
+        'function' => 'restore_email_filters',
+        'module' => 'Backup',
+        'method' => 'POST',
+        'body' => 'multipart',
+        'outcome' => 'flag',
+        'multipart_upload_family' => [
+            'php' => 'backups',
+            'source' => 'backup',
+            'routes' => 'direct',
+        ],
+        'params' => [
+            'timeout' => ['name' => 'timeout', 'encoding' => 'scalar'],
+            'verbose' => ['name' => 'verbose', 'encoding' => 'bool'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'accept_empty_array' => false,
+            'fields' => [
+                'log_id' => ['type' => 'string'],
+                'log_path' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const RESTORE_EMAIL_FORWARDERS = [
+        'function' => 'restore_email_forwarders',
+        'module' => 'Backup',
+        'method' => 'POST',
+        'body' => 'multipart',
+        'outcome' => 'flag',
+        'multipart_upload_family' => [
+            'php' => 'backups',
+            'source' => 'backup',
+            'routes' => 'direct',
+        ],
+        'params' => [
+            'timeout' => ['name' => 'timeout', 'encoding' => 'scalar'],
+            'verbose' => ['name' => 'verbose', 'encoding' => 'bool'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'accept_empty_array' => false,
+            'fields' => [
+                'log_id' => ['type' => 'string'],
+                'log_path' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const RESTORE_FILES = [
+        'function' => 'restore_files',
+        'module' => 'Backup',
+        'method' => 'POST',
+        'body' => 'multipart',
+        'outcome' => 'flag',
+        'multipart_upload_family' => [
+            'php' => 'backups',
+            'source' => 'backup',
+            'routes' => 'direct',
+        ],
+        'params' => [
+            'directory' => ['name' => 'directory', 'encoding' => 'scalar'],
+            'timeout' => ['name' => 'timeout', 'encoding' => 'scalar'],
+            'verbose' => ['name' => 'verbose', 'encoding' => 'bool'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'accept_empty_array' => false,
+            'fields' => [
+                'log_id' => ['type' => 'string'],
+                'log_path' => ['type' => 'string'],
+            ],
+        ],
+    ];
 }

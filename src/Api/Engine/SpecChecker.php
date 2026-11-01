@@ -137,6 +137,9 @@ final class SpecChecker
         } elseif (array_key_exists('json_body', $spec)) {
             throw new LogicException('JSON body metadata requires JSON encoding.');
         }
+        if (array_key_exists('multipart_upload_family', $spec)) {
+            UploadFamily::descriptor($spec);
+        }
         if (array_key_exists('multipart_upload', $spec)) {
             ScalarUpload::descriptor($spec);
         }
@@ -146,6 +149,7 @@ final class SpecChecker
         if (
             OperationSpec::body($spec) === RequestBodyFormat::Multipart
             && !isset($spec['multipart_uploads']) && !isset($spec['multipart_upload'])
+            && !isset($spec['multipart_upload_family'])
         ) {
             if (($spec['method'] ?? null) !== 'POST' || !isset($spec['module'])) {
                 throw new LogicException('Multipart requires a UAPI POST operation.');

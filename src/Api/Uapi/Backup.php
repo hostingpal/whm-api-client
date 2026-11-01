@@ -8,6 +8,8 @@ use Closure;
 use HostingPal\WhmApiClient\Api\Uapi\Spec\BackupSpec;
 use HostingPal\WhmApiClient\Exception\ApiException;
 use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
+use HostingPal\WhmApiClient\Upload;
+use InvalidArgumentException;
 use SensitiveParameter;
 
 /**
@@ -32,6 +34,22 @@ use SensitiveParameter;
  *     pid?: string,
  * }
  * @phpstan-type ListBackupsResult list<string>
+ * @phpstan-type RestoreDatabasesResult array{
+ *     log_id?: string,
+ *     log_path?: string,
+ * }
+ * @phpstan-type RestoreEmailFiltersResult array{
+ *     log_id?: string,
+ *     log_path?: string,
+ * }
+ * @phpstan-type RestoreEmailForwardersResult array{
+ *     log_id?: string,
+ *     log_path?: string,
+ * }
+ * @phpstan-type RestoreFilesResult array{
+ *     log_id?: string,
+ *     log_path?: string,
+ * }
  */
 final readonly class Backup
 {
@@ -300,6 +318,257 @@ final readonly class Backup
     {
         /** @var ListBackupsResult $result Validated against BackupSpec::LIST_BACKUPS. */
         $result = ($this->run)(BackupSpec::LIST_BACKUPS, []);
+
+        return $result;
+    }
+
+    /**
+     * Restore databases.
+     *
+     * This function restores a database's backup files.
+     *
+     * Documented: Available from cPanel 84. Disabled when the MySQL Client role is disabled. Whether to return
+     * additional information from the `/usr/local/cpanel/logs/cpbackup` log file. * `1` - Return additional
+     * information. * `0` - Do **not** return additional information.
+     *
+     * Policy: Binary uploads initially require a direct cPanel UAPI handle by client policy pending evidence; this is
+     * not an upstream bridge prohibition. Upload scalar emits file; nonempty sequential lists emit file-1, file-2 even
+     * for a singleton. No source-path inference or mixed modes. Server-path query backup remains omitted and deferred
+     * under whm-api-client-8x0.30.9.
+     *
+     * Documented: The server declares no rollback. One request is sent without automatic retry or rollback. Optional
+     * strict string log_id and log_path remain an actual nonnullable object; empty object is valid, absent/null/list
+     * payloads mismatch. Log paths are sensitive payload data and are not fetched. Results do not establish atomicity,
+     * completion or per-file success.
+     *
+     * Documented: Restore and verbose messages are in responseMeta()->uapi['messages'], not the returned array. On API
+     * failure the Flag policy raises ApiErrorException before data validation, so unvalidated log_id/log_path are
+     * unavailable; errors() retains the upstream error text.
+     *
+     * Documented: The client preserves archive list order on the wire, but upstream application order is unreliable.
+     * PR89 reviewer observations on cPanel 11.138.0.19 found overlapping-archive results disagreeing with list order in
+     * three of five permutations. Overlapping archives have unpredictable results; callers needing a specific result
+     * should restore one archive per call. This adds no completion, atomicity or rollback guarantee.
+     *
+     * API-map identity: uapi:Backup/restore_databases#POST (wire name restore_databases).
+     *
+     * @param Upload|non-empty-list<Upload> $files An uploaded archive or a nonempty sequential list. Scalar uses the
+     *     bare part name; lists use one-based suffixes, including singleton lists.
+     * @param int|null $timeout Maximum restore seconds; 0 disables timeout. Omission retains 7200 seconds. Documented
+     *     minimum 0 is not enforced locally. Null omits it.
+     * @param bool|null $verbose Whether to return additional information from the `/usr/local/cpanel/logs/cpbackup` log
+     *     file. Null omits it.
+     * @return RestoreDatabasesResult
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If uploads are empty, keyed, invalid, or this handle uses the WHM bridge.
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/file-restoration/backup-restore_databases
+     */
+    public function restoreDatabases(
+        #[SensitiveParameter]
+        Upload|array $files,
+        #[SensitiveParameter]
+        ?int $timeout = null,
+        #[SensitiveParameter]
+        ?bool $verbose = null,
+    ): array {
+        /** @var RestoreDatabasesResult $result Validated against BackupSpec::RESTORE_DATABASES. */
+        $result = ($this->run)(BackupSpec::RESTORE_DATABASES, [
+            'files' => $files,
+            'timeout' => $timeout,
+            'verbose' => $verbose,
+        ]);
+
+        return $result;
+    }
+
+    /**
+     * Restore email filters.
+     *
+     * This function restores an account's email filters.
+     *
+     * Documented: Available from cPanel 86. Disabled when the Receive Mail role is disabled. Whether to return
+     * additional information from the `/home/cpuser/.cpanel/logs/restore-email-filters` log files. * `1` - Return
+     * additional information. * `0` - Do not return additional information.
+     *
+     * Policy: Binary uploads initially require a direct cPanel UAPI handle by client policy pending evidence; this is
+     * not an upstream bridge prohibition. Upload scalar emits backup; nonempty sequential lists emit backup-1, backup-2
+     * even for a singleton. No source-path inference or mixed modes. Server-path query backup remains omitted and
+     * deferred under whm-api-client-8x0.30.9.
+     *
+     * Documented: The server declares no rollback. One request is sent without automatic retry or rollback. Optional
+     * strict string log_id and log_path remain an actual nonnullable object; empty object is valid, absent/null/list
+     * payloads mismatch. Log paths are sensitive payload data and are not fetched. Results do not establish atomicity,
+     * completion or per-file success.
+     *
+     * Documented: Restore and verbose messages are in responseMeta()->uapi['messages'], not the returned array. On API
+     * failure the Flag policy raises ApiErrorException before data validation, so unvalidated log_id/log_path are
+     * unavailable; errors() retains the upstream error text.
+     *
+     * Documented: The client preserves archive list order on the wire, but upstream application order is unreliable.
+     * PR89 reviewer observations on cPanel 11.138.0.19 found overlapping-archive results disagreeing with list order in
+     * three of five permutations. Overlapping archives have unpredictable results; callers needing a specific result
+     * should restore one archive per call. This adds no completion, atomicity or rollback guarantee.
+     *
+     * API-map identity: uapi:Backup/restore_email_filters#POST (wire name restore_email_filters).
+     *
+     * @param Upload|non-empty-list<Upload> $backups An uploaded archive or a nonempty sequential list. Scalar uses the
+     *     bare part name; lists use one-based suffixes, including singleton lists.
+     * @param int|null $timeout Maximum restore seconds; 0 disables timeout. Omission retains 7200 seconds. Documented
+     *     minimum 0 is not enforced locally. Null omits it.
+     * @param bool|null $verbose Whether to return additional information from the
+     *     `/home/cpuser/.cpanel/logs/restore-email-filters` log files. Null omits it.
+     * @return RestoreEmailFiltersResult
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If uploads are empty, keyed, invalid, or this handle uses the WHM bridge.
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/file-restoration/backup-restore_email_filters
+     */
+    public function restoreEmailFilters(
+        #[SensitiveParameter]
+        Upload|array $backups,
+        #[SensitiveParameter]
+        ?int $timeout = null,
+        #[SensitiveParameter]
+        ?bool $verbose = null,
+    ): array {
+        /** @var RestoreEmailFiltersResult $result Validated against BackupSpec::RESTORE_EMAIL_FILTERS. */
+        $result = ($this->run)(BackupSpec::RESTORE_EMAIL_FILTERS, [
+            'backups' => $backups,
+            'timeout' => $timeout,
+            'verbose' => $verbose,
+        ]);
+
+        return $result;
+    }
+
+    /**
+     * Restore email forwarders.
+     *
+     * This function restores an account's email forwarders.
+     *
+     * Documented: Available from cPanel 86. Disabled when the Receive Mail role is disabled. Whether to return
+     * additional information from the `/home/cpuser/.cpanel/logs/restore-email-forwarders` log files. * `1` - Return
+     * additional information. * `0` - Do not return additional information.
+     *
+     * Policy: Binary uploads initially require a direct cPanel UAPI handle by client policy pending evidence; this is
+     * not an upstream bridge prohibition. Upload scalar emits backup; nonempty sequential lists emit backup-1, backup-2
+     * even for a singleton. No source-path inference or mixed modes. Server-path query backup remains omitted and
+     * deferred under whm-api-client-8x0.30.9.
+     *
+     * Documented: The server declares no rollback. One request is sent without automatic retry or rollback. Optional
+     * strict string log_id and log_path remain an actual nonnullable object; empty object is valid, absent/null/list
+     * payloads mismatch. Log paths are sensitive payload data and are not fetched. Results do not establish atomicity,
+     * completion or per-file success.
+     *
+     * Documented: Restore and verbose messages are in responseMeta()->uapi['messages'], not the returned array. On API
+     * failure the Flag policy raises ApiErrorException before data validation, so unvalidated log_id/log_path are
+     * unavailable; errors() retains the upstream error text.
+     *
+     * Documented: The client preserves archive list order on the wire, but upstream application order is unreliable.
+     * PR89 reviewer observations on cPanel 11.138.0.19 found overlapping-archive results disagreeing with list order in
+     * three of five permutations. Overlapping archives have unpredictable results; callers needing a specific result
+     * should restore one archive per call. This adds no completion, atomicity or rollback guarantee.
+     *
+     * API-map identity: uapi:Backup/restore_email_forwarders#POST (wire name restore_email_forwarders).
+     *
+     * @param Upload|non-empty-list<Upload> $backups An uploaded archive or a nonempty sequential list. Scalar uses the
+     *     bare part name; lists use one-based suffixes, including singleton lists.
+     * @param int|null $timeout Maximum restore seconds; 0 disables timeout. Omission retains 7200 seconds. Documented
+     *     minimum 0 is not enforced locally. Null omits it.
+     * @param bool|null $verbose Whether to return additional information from the
+     *     `/home/cpuser/.cpanel/logs/restore-email-forwarders` log files. Null omits it.
+     * @return RestoreEmailForwardersResult
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If uploads are empty, keyed, invalid, or this handle uses the WHM bridge.
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/file-restoration/backup-restore_email_forwarders
+     */
+    public function restoreEmailForwarders(
+        #[SensitiveParameter]
+        Upload|array $backups,
+        #[SensitiveParameter]
+        ?int $timeout = null,
+        #[SensitiveParameter]
+        ?bool $verbose = null,
+    ): array {
+        /** @var RestoreEmailForwardersResult $result Validated against BackupSpec::RESTORE_EMAIL_FORWARDERS. */
+        $result = ($this->run)(BackupSpec::RESTORE_EMAIL_FORWARDERS, [
+            'backups' => $backups,
+            'timeout' => $timeout,
+            'verbose' => $verbose,
+        ]);
+
+        return $result;
+    }
+
+    /**
+     * Restore files.
+     *
+     * This function restores an account's files.
+     *
+     * Documented: Available from cPanel 86. Disabled when the File Storage role is disabled. Whether to return
+     * additional information from the `/home/cptest/.cpanel/logs/restorefiles` log files. * `1` - Return additional
+     * information. * `0` - Do not return additional information.
+     *
+     * Policy: Binary uploads initially require a direct cPanel UAPI handle by client policy pending evidence; this is
+     * not an upstream bridge prohibition. Upload scalar emits backup; nonempty sequential lists emit backup-1, backup-2
+     * even for a singleton. No source-path inference or mixed modes. Server-path query backup remains omitted and
+     * deferred under whm-api-client-8x0.30.9.
+     *
+     * Documented: The server declares no rollback. One request is sent without automatic retry or rollback. Optional
+     * strict string log_id and log_path remain an actual nonnullable object; empty object is valid, absent/null/list
+     * payloads mismatch. Log paths are sensitive payload data and are not fetched. Results do not establish atomicity,
+     * completion or per-file success.
+     *
+     * Documented: Omitted directory defaults to the user home directory; supplied directory bytes are unchanged and the
+     * relative-path base is not further defined.
+     *
+     * Documented: Restore and verbose messages are in responseMeta()->uapi['messages'], not the returned array. On API
+     * failure the Flag policy raises ApiErrorException before data validation, so unvalidated log_id/log_path are
+     * unavailable; errors() retains the upstream error text.
+     *
+     * Documented: The client preserves archive list order on the wire, but upstream application order is unreliable.
+     * PR89 reviewer observations on cPanel 11.138.0.19 found overlapping-archive results disagreeing with list order in
+     * three of five permutations. Overlapping archives have unpredictable results; callers needing a specific result
+     * should restore one archive per call. This adds no completion, atomicity or rollback guarantee.
+     *
+     * API-map identity: uapi:Backup/restore_files#POST (wire name restore_files).
+     *
+     * @param Upload|non-empty-list<Upload> $backups An uploaded archive or a nonempty sequential list. Scalar uses the
+     *     bare part name; lists use one-based suffixes, including singleton lists.
+     * @param string|null $directory The directory to which to restore the file. Null omits it.
+     * @param int|null $timeout Maximum restore seconds; 0 disables timeout. Omission retains 172800 seconds. Documented
+     *     minimum 0 is not enforced locally. Null omits it.
+     * @param bool|null $verbose Whether to return additional information from the
+     *     `/home/cptest/.cpanel/logs/restorefiles` log files. Null omits it.
+     * @return RestoreFilesResult
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If uploads are empty, keyed, invalid, or this handle uses the WHM bridge.
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/file-restoration/backup-restore_files
+     */
+    public function restoreFiles(
+        #[SensitiveParameter]
+        Upload|array $backups,
+        #[SensitiveParameter]
+        ?string $directory = null,
+        #[SensitiveParameter]
+        ?int $timeout = null,
+        #[SensitiveParameter]
+        ?bool $verbose = null,
+    ): array {
+        /** @var RestoreFilesResult $result Validated against BackupSpec::RESTORE_FILES. */
+        $result = ($this->run)(BackupSpec::RESTORE_FILES, [
+            'backups' => $backups,
+            'directory' => $directory,
+            'timeout' => $timeout,
+            'verbose' => $verbose,
+        ]);
 
         return $result;
     }

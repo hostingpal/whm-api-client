@@ -26,6 +26,7 @@ final class UploadList
         $params = $spec['params'] ?? null;
         if (
             ($spec['body'] ?? null) !== 'multipart' || ($spec['method'] ?? null) !== 'POST'
+            || array_key_exists('multipart_upload_family', $spec)
             || !isset($spec['module']) || !is_array($body) || !is_array($params)
             || !is_string($body['php'] ?? null) || preg_match('/\A[a-z][A-Za-z0-9]*\z/', $body['php']) !== 1
             || !is_string($body['prefix'] ?? null)

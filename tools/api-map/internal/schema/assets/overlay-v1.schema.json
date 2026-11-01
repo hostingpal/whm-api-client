@@ -381,10 +381,34 @@
       ],
       "additionalProperties": false
     },
+    "multipartUploadFamily": {
+      "type": "object",
+      "properties": {
+        "php": {
+          "type": "string",
+          "pattern": "^[a-z][A-Za-z0-9]*$"
+        },
+        "source": {
+          "enum": [
+            "file",
+            "backup"
+          ]
+        },
+        "routes": {
+          "const": "direct"
+        }
+      },
+      "required": [
+        "php",
+        "source",
+        "routes"
+      ],
+      "additionalProperties": false
+    },
     "operation": {
       "type": "object",
-      "not": {"required": ["multipart_upload", "multipart_uploads"]},
       "properties": {
+        "multipart_upload_family": {"$ref": "#/$defs/multipartUploadFamily"},
         "multipart_upload": {"$ref": "#/$defs/multipartUpload"},
         "multipart_uploads": {"$ref": "#/$defs/multipartUploads"},
         "name": {"type": "string", "pattern": "^[a-z][A-Za-z0-9]*$"},
@@ -417,7 +441,11 @@
         "evidence": {"$ref": "#/$defs/evidenceList"}
       },
       "additionalProperties": false,
-      "allOf": [{
+      "allOf": [
+        {"not": {"required": ["multipart_upload", "multipart_uploads"]}},
+        {"not": {"required": ["multipart_upload", "multipart_upload_family"]}},
+        {"not": {"required": ["multipart_uploads", "multipart_upload_family"]}},
+        {
         "if": {"required": ["rows"]},
         "then": {
           "required": ["outcome"],

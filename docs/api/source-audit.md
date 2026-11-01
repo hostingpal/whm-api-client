@@ -7111,3 +7111,113 @@ rollback, transaction or restart guarantee is added. No live configuration resto
 invalid/no-op restore probe, server/SSH/credential access, new capture or source
 refresh was performed during this integration. Source-derived findings remain
 separate from the pinned 11.138.0.10 contract and historical runtime evidence.
+
+
+### Backup binary restore uploads (2026-10-31)
+
+`uapi()->backup()` generates `restoreDatabases(Upload|array $files, ?int $timeout = null,
+?bool $verbose = null)`, `restoreEmailFilters(Upload|array $backups, ?int $timeout = null,
+?bool $verbose = null)`, `restoreEmailForwarders(Upload|array $backups, ?int $timeout = null,
+?bool $verbose = null)` and `restoreFiles(Upload|array $backups, ?string $directory = null,
+?int $timeout = null, ?bool $verbose = null)`. Arrays are precisely non-empty-list<Upload>.
+Every public value is sensitive. Scalars emit bare `file` for databases or `backup`
+for the other methods; lists emit `file-1`/`backup-1`, then `-2`, even for a singleton.
+Order and duplicate filenames survive one streaming POST; no path-string inference,
+sparse renumbering or Fileman-specific filename filter applies.
+
+These new binary methods initially require direct cPanel UAPI by client policy
+pending route evidence, not an upstream bridge prohibition. Server-path query
+`backup` alternatives are separately bound, explicitly omitted and deferred under
+`8x0.30.9`; no mixed mode is accepted. Optional query values are encoded once;
+null omits, false/zero survive. Database restore requires cPanel 84 and the MySQL
+Client role; filters/forwarders require cPanel 86 and Receive Mail; file restore
+requires cPanel 86 and File Storage. Omission retains timeout 7200 seconds for the
+first three, 172800 for files; 0 disables timeout. The documented minimum 0 adds
+no new runtime minimum validation. Files' omitted directory defaults to user home;
+supplied bytes are forwarded without an inferred relative-path base. Verbose
+selects extra information from each source's module-specific restore logs.
+
+Each returns `array{log_id?:string,log_path?:string,messages?:list<string>}` under
+ordinary Flag outcome handling. An actual empty object is valid; missing, null,
+list or malformed data raises PayloadMismatchException, retaining metadata and
+outcomeConfirmed=true after status success. No message unwrapping, log fetching,
+completion, atomicity or per-file-success inference is added. Restoration changes
+server state with no rollback and no retry after API, payload or transport failure.
+No live restore ran; offline checks establish request/envelope/lifecycle behavior.
+
+Exactly four canonical UAPI operations are added: 1,112 total (525 UAPI, 587 WHM),
+91 groups and 185 generated outputs (184 PHP files and coverage). The new narrow
+`multipart_upload_family` descriptor `{php,source,routes:direct}` is mutually
+exclusive with Fileman's `multipart_uploads`, WHM's `multipart_upload` and JSON.
+Source-bound lowering preserves absent body/schema requiredness and uses prose's
+required upload alternative. Streaming, source preparation, transport, old generated
+operations and SSL bridge behavior remain unchanged. Inherited PR84/source and
+PR86 preparation-exception/metadata acceptance gates remain external-owned and
+unwaived; this adoption does not resolve them.
+
+Pinned source binding: decompressed cpanel.openapi.json.gz SHA-256
+`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`, source version
+11.138.0.10. Exact bases are `/paths/~1Backup~1restore_databases/post`,
+`/paths/~1Backup~1restore_email_filters/post`,
+`/paths/~1Backup~1restore_email_forwarders/post`, and
+`/paths/~1Backup~1restore_files/post`. Each overlay binds its operation description,
+requestBody description, literal binary body-property pointer, optional query
+`/parameters/0` omission, and required response data object. Neither requestBody.required
+nor the body schema required array is present. These source facts remain unchanged;
+the required native Upload|array argument expresses the selected upload mode.
+The JSON/zero-length HTTP stubs are attributed source inconsistencies and do not
+override formal multipart/prose contracts. All three result leaves are optional;
+strict object opt-in is deliberately limited to these four new roots.
+
+
+## PR89 parent integration and response/order correction (2026-11-01, offline)
+
+Approved master `ff87205cfa2783a8cbd2d8266b175800591b56cc` is integrated into
+original PR89 `d6d857bc0c8a57b00b0d2f89b6be15f387894a96` by a normal merge.
+Every byte of the approved master audit is retained, followed by the original
+Backup adoption history unchanged. That historical section describes the original
+pinned messages field and pending parent gates; the following correction supersedes
+those statements for the integrated result. Approved parent source/preparation,
+JSON no-query, Fileman result policy and WHM scalar/caller corrections remain.
+
+[PR89 review5724752679](https://github.com/hostingpal/whm-api-client/pull/89#pullrequestreview-5724752679)
+reports 19 successful direct-UAPI restores on disposable accounts on cPanel
+11.138.0.19. The reviewer reports `_expand_log_messages_into_results` uses
+`raw_message`, placing restore/verbose text in the UAPI envelope; successful data
+contained only `log_id` and `log_path`. These are attributed reviewer source and
+runtime findings, not a new implementation-owned capture. Each of the four
+restore operations uses the existing source-bound response root replacement to
+remove the pinned `data.messages` field. Evidence binds source SHA-256
+`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`
+and its exact `/paths/~1Backup~1<function>/post/responses/200/content/application~1json/schema/properties/result/properties/data`
+pointer. The optional strict strings `log_id`/`log_path` remain; actual empty
+objects are valid, while absent/null/list/malformed roots mismatch. No parser or
+correction grammar is added. Unknown fields continue to be dropped.
+
+Read messages through `responseMeta()->uapi['messages']`; text is preserved without
+newline/HTML normalization or log-path fetching. Flag is unchanged: failed restores
+raise API errors before validating data, so unvalidated log IDs/paths are unavailable,
+while `errors()` retains error text. No Fileman rows policy is applied here.
+
+The same reviewer tested five permutations of three overlapping file archives;
+three final results disagreed with submitted list order despite successful status.
+The client preserves wire order, scalar bare names and one-based list suffixes,
+including singleton lists. Public family parameter text now says nonempty sequential
+list. All four restore notes warn that upstream application order is unreliable and
+overlapping results unpredictable; use one archive per call when a specific result
+is needed. No ordering cause was traced, and no async completion, atomicity, rollback
+or cross-call completion guarantee is inferred.
+
+The Backup preparation oracle now requires the inherited exact static, unchained
+InvalidArgumentException, with metadata reset, zero extra HTTP/reads, unchanged
+borrowed cursor/ownership and sensitive enabled-argument traces. Independent literal
+fixtures cover all four typed log results, envelope messages, unknown data.messages,
+known-field mismatches and Flag failures. Original scalar/singleton/multiple literal
+multipart bytes remain covered. No runtime/source/transport behavior changes.
+
+Combined generation covers 1,149 canonical operations (554 UAPI, 595 WHM), 99 groups
+and 201 outputs (200 PHP files plus coverage). This integration makes no new live
+restore, replay, server/SSH/credential call, capture or source refresh. It does not
+establish all-archive completion, permissions, cleanup or bridged restore behavior.
+Server-path modes (.30.9), owned Fileman evidence (.30.5), native Windows (.30.10)
+and other deferred work remain open; the 55 inherited diagnostics are unwaived.

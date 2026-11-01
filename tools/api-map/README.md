@@ -504,3 +504,14 @@ and absent requestBody.required. Both generated arguments are required and
 sensitive. This explicit adoption does not change formal requiredness defaults,
 ordinary scalar enum enforcement, Fileman list lowering or SSL string bodies.
 The runtime emits text followed by one Upload through the shared streaming stack.
+
+
+Backup's reviewed `multipart_upload_family: {php, source, routes: direct}` lowers
+one required sensitive `Upload|array` argument (`Upload|non-empty-list<Upload>`).
+Only literal binary `file`/`backup` sources with exact operation/body prose and
+property evidence, absent body/schema requiredness and separately evidenced optional
+server-path query omission are supported. Bare scalars and one-based list names
+(including singleton lists) remain distinct. Ordinary optional query options stay
+query fields, all sensitive. The descriptor is disjoint from Fileman's zero-based
+list and WHM's literal-text/scalar descriptors; all are mutually exclusive in the
+schema, lowering and runtime. No runtime enum/minimum enforcement is introduced.
