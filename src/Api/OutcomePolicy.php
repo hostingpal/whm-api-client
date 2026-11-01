@@ -18,6 +18,7 @@ namespace HostingPal\WhmApiClient\Api;
  * UAPI call ran and is checked under both policies. HTTP failures are reported
  * under both policies, and both still require a usable envelope. Typed UAPI
  * operations using Unchecked additionally require an integer 0 or 1 status;
+ * native typed WHM operations likewise require integer 0 or 1 result;
  * generic calls leave status validation to the caller.
  */
 enum OutcomePolicy

@@ -51,6 +51,16 @@ final class LiveCurlClientTest extends TestCase
             'https://test.oblak.host:2087/json-api/listaccts?api.version=1',
             'search=root&searchmethod=exact&searchtype=user',
         ];
+        yield 'another absent domain' => [
+            'GET',
+            'https://test.oblak.host:2087/json-api/listaccts?api.version=1'
+                . '&search=another.example&searchtype=domain&searchmethod=exact',
+        ];
+        yield 'other missing-user want' => [
+            'GET',
+            'https://test.oblak.host:2087/json-api/listaccts?api.version=1'
+                . '&search=nosuchacct9dy&searchtype=user&searchmethod=exact&want=domain',
+        ];
         yield 'other method' => ['PUT', 'https://test.oblak.host:2087/json-api/version?api.version=1'];
         yield 'read with body' => ['GET', 'https://test.oblak.host:2087/json-api/version?api.version=1', 'x=1'];
         yield 'mutation without lifecycle account' => [
@@ -291,6 +301,14 @@ final class LiveCurlClientTest extends TestCase
         yield 'WHM filtered accounts' => [
             'https://test.oblak.host:2087/json-api/listaccts?api.version=1'
                 . '&search=npr&searchtype=user&searchmethod=exact',
+        ];
+        yield 'WHM absent exact user with want' => [
+            'https://test.oblak.host:2087/json-api/listaccts?api.version=1'
+                . '&search=nosuchacct9dy&searchtype=user&searchmethod=exact&want=user',
+        ];
+        yield 'WHM absent exact domain' => [
+            'https://test.oblak.host:2087/json-api/listaccts?api.version=1'
+                . '&search=nosuchacct9dy.example&searchtype=domain&searchmethod=exact',
         ];
         yield 'WHM account summary' => ['https://test.oblak.host:2087/json-api/accountsummary?api.version=1&user=npr'];
         yield 'WHM packages' => ['https://test.oblak.host:2087/json-api/listpkgs?api.version=1'];
