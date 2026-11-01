@@ -29,6 +29,8 @@ trait UapiGroups
 
     private ?BoxTrapper $boxTrapperGroup = null;
 
+    private ?Branding $brandingGroup = null;
+
     private ?CacheBuster $cacheBusterGroup = null;
 
     private ?Ccs $ccsGroup = null;
@@ -261,6 +263,18 @@ trait UapiGroups
     public function boxTrapper(): BoxTrapper
     {
         return $this->boxTrapperGroup ??= new BoxTrapper($this->run(...));
+    }
+
+    /**
+     * Select the Branding operations without making a request.
+     *
+     * Complete five-operation pinned Branding module: account-scoped application/theme inventory and server-rendered
+     * include content. Preserve source-specific response types and inert strings; offline coverage only with live
+     * follow-up whm-api-client-8x0.2.75 open.
+     */
+    public function branding(): Branding
+    {
+        return $this->brandingGroup ??= new Branding($this->run(...));
     }
 
     /**

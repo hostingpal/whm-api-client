@@ -1,0 +1,585 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "Branding",
+  "accessor": "branding",
+  "description": "Complete five-operation pinned Branding module: account-scoped application/theme inventory and server-rendered include content. Preserve source-specific response types and inert strings; offline coverage only with live follow-up whm-api-client-8x0.2.75 open.",
+  "operations": {
+    "uapi:Branding/get_application_information": {
+      "name": "getApplicationInformation",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 11.42. No pinned role or plugin restriction. One immediate account-scoped request uses the ordinary UAPI Flag outcome on direct and WHM-bridged routes."
+        },
+        {
+          "kind": "documented",
+          "text": "appKey is the required feature app_key in dynamicui.conf. Return a required nonnullable object with all fourteen formal fields optional; height/itemorder/width remain strict integers. Strings including conditional expressions and URL/path values stay open and inert."
+        },
+        {
+          "kind": "policy",
+          "text": "Returned HTML, JavaScript, conditional expressions, URLs, paths and image strings are inert payload. The client never renders, executes, fetches, decodes or locally reads them. No implicit read, merge, sort, retry, rollback or cache of server data is added. Offline fixtures establish no live theme, rendering, visibility or POST acceptance; live follow-up whm-api-client-8x0.2.75 remains open."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "note": "Select the complete pinned operation as getApplicationInformation with original requiredness and Flag outcome; preserve cPanel 11.42, source GET classification and response optionality. Retain read-only GET.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Branding~1get_application_information/get"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "note": "The documented app_key is a noncredential application feature/group selector, not an authentication key or secret. Explicit sensitive:false preserves its raw public selector contract.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Branding~1get_application_information/get/parameters/0"
+        }
+      ],
+      "params": {
+        "app_key": {
+          "sensitive": false
+        }
+      }
+    },
+    "uapi:Branding/get_applications": {
+      "name": "getApplications",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 11.52. No pinned role or plugin restriction. One immediate account-scoped request uses the ordinary UAPI Flag outcome on direct and WHM-bridged routes."
+        },
+        {
+          "kind": "documented",
+          "text": "Optional appKeys is a raw comma-separated feature selector; null omits and requests all applications, empty string is supplied. Return a required nonnullable dynamic application map. Three keyed examples quote formal integer height/itemorder/width; only these fields accept canonical in-range integer strings and normalize to int. The same examples establish optional string acontent/base64_png_image/key/onclick/plainitemdesc/target missing from formal properties; no additional plainitemdesc meaning is inferred."
+        },
+        {
+          "kind": "policy",
+          "text": "Returned HTML, JavaScript, conditional expressions, URLs, paths and image strings are inert payload. The client never renders, executes, fetches, decodes or locally reads them. No implicit read, merge, sort, retry, rollback or cache of server data is added. Offline fixtures establish no live theme, rendering, visibility or POST acceptance; live follow-up whm-api-client-8x0.2.75 remains open."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "note": "Select the complete pinned operation as getApplications with original requiredness and Flag outcome; preserve cPanel 11.52, source GET classification and response optionality. Retain read-only GET.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Branding~1get_applications/get"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "note": "The documented app_keys is a noncredential application feature/group selector, not an authentication key or secret. Explicit sensitive:false preserves its raw public selector contract.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Branding~1get_applications/get/parameters/0"
+        }
+      ],
+      "response": {
+        "{}.height": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-11-01",
+              "note": "This keyed example quotes formal integer height; all three keyed examples corroborate canonical integer-string input for this operation only, preserving int output and rejecting noncanonical/overflow strings.",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Branding~1get_applications/get/responses/200/content/application~1json/schema/properties/result/properties/data/example/addon_domains/height"
+            },
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-11-01",
+              "note": "This keyed example quotes formal integer height; all three keyed examples corroborate canonical integer-string input for this operation only, preserving int output and rejecting noncanonical/overflow strings.",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Branding~1get_applications/get/responses/200/content/application~1json/schema/properties/result/properties/data/example/anonymous_ftp/height"
+            },
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-11-01",
+              "note": "This keyed example quotes formal integer height; all three keyed examples corroborate canonical integer-string input for this operation only, preserving int output and rejecting noncanonical/overflow strings.",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Branding~1get_applications/get/responses/200/content/application~1json/schema/properties/result/properties/data/example/ftp_accounts/height"
+            }
+          ]
+        },
+        "{}.itemorder": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-11-01",
+              "note": "This keyed example quotes formal integer itemorder; all three keyed examples corroborate canonical integer-string input for this operation only, preserving int output and rejecting noncanonical/overflow strings.",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Branding~1get_applications/get/responses/200/content/application~1json/schema/properties/result/properties/data/example/addon_domains/itemorder"
+            },
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-11-01",
+              "note": "This keyed example quotes formal integer itemorder; all three keyed examples corroborate canonical integer-string input for this operation only, preserving int output and rejecting noncanonical/overflow strings.",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Branding~1get_applications/get/responses/200/content/application~1json/schema/properties/result/properties/data/example/anonymous_ftp/itemorder"
+            },
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-11-01",
+              "note": "This keyed example quotes formal integer itemorder; all three keyed examples corroborate canonical integer-string input for this operation only, preserving int output and rejecting noncanonical/overflow strings.",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Branding~1get_applications/get/responses/200/content/application~1json/schema/properties/result/properties/data/example/ftp_accounts/itemorder"
+            }
+          ]
+        },
+        "{}.width": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-11-01",
+              "note": "This keyed example quotes formal integer width; all three keyed examples corroborate canonical integer-string input for this operation only, preserving int output and rejecting noncanonical/overflow strings.",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Branding~1get_applications/get/responses/200/content/application~1json/schema/properties/result/properties/data/example/addon_domains/width"
+            },
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-11-01",
+              "note": "This keyed example quotes formal integer width; all three keyed examples corroborate canonical integer-string input for this operation only, preserving int output and rejecting noncanonical/overflow strings.",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Branding~1get_applications/get/responses/200/content/application~1json/schema/properties/result/properties/data/example/anonymous_ftp/width"
+            },
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-11-01",
+              "note": "This keyed example quotes formal integer width; all three keyed examples corroborate canonical integer-string input for this operation only, preserving int output and rejecting noncanonical/overflow strings.",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Branding~1get_applications/get/responses/200/content/application~1json/schema/properties/result/properties/data/example/ftp_accounts/width"
+            }
+          ]
+        },
+        "{}.acontent": {
+          "add": {
+            "type": "string"
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-11-01",
+              "note": "Example value establishes an optional string acontent omitted from formal properties; all three keyed examples corroborate string type. No nullability, requiredness, semantics or sibling inference is added.",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Branding~1get_applications/get/responses/200/content/application~1json/schema/properties/result/properties/data/example/addon_domains/acontent"
+            },
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-11-01",
+              "note": "Example value establishes an optional string acontent omitted from formal properties; all three keyed examples corroborate string type. No nullability, requiredness, semantics or sibling inference is added.",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Branding~1get_applications/get/responses/200/content/application~1json/schema/properties/result/properties/data/example/anonymous_ftp/acontent"
+            },
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-11-01",
+              "note": "Example value establishes an optional string acontent omitted from formal properties; all three keyed examples corroborate string type. No nullability, requiredness, semantics or sibling inference is added.",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Branding~1get_applications/get/responses/200/content/application~1json/schema/properties/result/properties/data/example/ftp_accounts/acontent"
+            }
+          ]
+        },
+        "{}.base64_png_image": {
+          "add": {
+            "type": "string"
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-11-01",
+              "note": "Example value establishes an optional string base64_png_image omitted from formal properties; all three keyed examples corroborate string type. No nullability, requiredness, semantics or sibling inference is added.",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Branding~1get_applications/get/responses/200/content/application~1json/schema/properties/result/properties/data/example/addon_domains/base64_png_image"
+            },
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-11-01",
+              "note": "Example value establishes an optional string base64_png_image omitted from formal properties; all three keyed examples corroborate string type. No nullability, requiredness, semantics or sibling inference is added.",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Branding~1get_applications/get/responses/200/content/application~1json/schema/properties/result/properties/data/example/anonymous_ftp/base64_png_image"
+            },
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-11-01",
+              "note": "Example value establishes an optional string base64_png_image omitted from formal properties; all three keyed examples corroborate string type. No nullability, requiredness, semantics or sibling inference is added.",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Branding~1get_applications/get/responses/200/content/application~1json/schema/properties/result/properties/data/example/ftp_accounts/base64_png_image"
+            }
+          ]
+        },
+        "{}.key": {
+          "add": {
+            "type": "string"
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-11-01",
+              "note": "Example value establishes an optional string key omitted from formal properties; all three keyed examples corroborate string type. No nullability, requiredness, semantics or sibling inference is added.",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Branding~1get_applications/get/responses/200/content/application~1json/schema/properties/result/properties/data/example/addon_domains/key"
+            },
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-11-01",
+              "note": "Example value establishes an optional string key omitted from formal properties; all three keyed examples corroborate string type. No nullability, requiredness, semantics or sibling inference is added.",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Branding~1get_applications/get/responses/200/content/application~1json/schema/properties/result/properties/data/example/anonymous_ftp/key"
+            },
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-11-01",
+              "note": "Example value establishes an optional string key omitted from formal properties; all three keyed examples corroborate string type. No nullability, requiredness, semantics or sibling inference is added.",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Branding~1get_applications/get/responses/200/content/application~1json/schema/properties/result/properties/data/example/ftp_accounts/key"
+            }
+          ]
+        },
+        "{}.onclick": {
+          "add": {
+            "type": "string"
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-11-01",
+              "note": "Example value establishes an optional string onclick omitted from formal properties; all three keyed examples corroborate string type. No nullability, requiredness, semantics or sibling inference is added.",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Branding~1get_applications/get/responses/200/content/application~1json/schema/properties/result/properties/data/example/addon_domains/onclick"
+            },
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-11-01",
+              "note": "Example value establishes an optional string onclick omitted from formal properties; all three keyed examples corroborate string type. No nullability, requiredness, semantics or sibling inference is added.",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Branding~1get_applications/get/responses/200/content/application~1json/schema/properties/result/properties/data/example/anonymous_ftp/onclick"
+            },
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-11-01",
+              "note": "Example value establishes an optional string onclick omitted from formal properties; all three keyed examples corroborate string type. No nullability, requiredness, semantics or sibling inference is added.",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Branding~1get_applications/get/responses/200/content/application~1json/schema/properties/result/properties/data/example/ftp_accounts/onclick"
+            }
+          ]
+        },
+        "{}.plainitemdesc": {
+          "add": {
+            "type": "string"
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-11-01",
+              "note": "Example value establishes an optional string plainitemdesc omitted from formal properties; all three keyed examples corroborate string type. No nullability, requiredness, semantics or sibling inference is added.",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Branding~1get_applications/get/responses/200/content/application~1json/schema/properties/result/properties/data/example/addon_domains/plainitemdesc"
+            },
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-11-01",
+              "note": "Example value establishes an optional string plainitemdesc omitted from formal properties; all three keyed examples corroborate string type. No nullability, requiredness, semantics or sibling inference is added.",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Branding~1get_applications/get/responses/200/content/application~1json/schema/properties/result/properties/data/example/anonymous_ftp/plainitemdesc"
+            },
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-11-01",
+              "note": "Example value establishes an optional string plainitemdesc omitted from formal properties; all three keyed examples corroborate string type. No nullability, requiredness, semantics or sibling inference is added.",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Branding~1get_applications/get/responses/200/content/application~1json/schema/properties/result/properties/data/example/ftp_accounts/plainitemdesc"
+            }
+          ]
+        },
+        "{}.target": {
+          "add": {
+            "type": "string"
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-11-01",
+              "note": "Example value establishes an optional string target omitted from formal properties; all three keyed examples corroborate string type. No nullability, requiredness, semantics or sibling inference is added.",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Branding~1get_applications/get/responses/200/content/application~1json/schema/properties/result/properties/data/example/addon_domains/target"
+            },
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-11-01",
+              "note": "Example value establishes an optional string target omitted from formal properties; all three keyed examples corroborate string type. No nullability, requiredness, semantics or sibling inference is added.",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Branding~1get_applications/get/responses/200/content/application~1json/schema/properties/result/properties/data/example/anonymous_ftp/target"
+            },
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-11-01",
+              "note": "Example value establishes an optional string target omitted from formal properties; all three keyed examples corroborate string type. No nullability, requiredness, semantics or sibling inference is added.",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Branding~1get_applications/get/responses/200/content/application~1json/schema/properties/result/properties/data/example/ftp_accounts/target"
+            }
+          ]
+        }
+      },
+      "params": {
+        "app_keys": {
+          "sensitive": false
+        }
+      }
+    },
+    "uapi:Branding/get_available_applications": {
+      "name": "getAvailableApplications",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 54. No pinned role or plugin restriction. One immediate account-scoped request uses the ordinary UAPI Flag outcome on direct and WHM-bridged routes."
+        },
+        {
+          "kind": "documented",
+          "text": "nvarglist is a raw pipe-separated group ordering selector; omission requests no sorting. Source arglist is an alias, not a second public argument. Preserve default_group_order integer map, ordered grouporder/groups/items lists, implements string map and index integer-list map. Index prose describes zero-based group/item positions, but does not establish fixed tuple length. Item height/itemorder/width remain strings. Example-only key/plainitemdesc are optional strings; preserve empty lists/maps and dynamic keys."
+        },
+        {
+          "kind": "policy",
+          "text": "Returned HTML, JavaScript, conditional expressions, URLs, paths and image strings are inert payload. The client never renders, executes, fetches, decodes or locally reads them. No implicit read, merge, sort, retry, rollback or cache of server data is added. Offline fixtures establish no live theme, rendering, visibility or POST acceptance; live follow-up whm-api-client-8x0.2.75 remains open."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "note": "Select the complete pinned operation as getAvailableApplications with original requiredness and Flag outcome; preserve cPanel 54, source GET classification and response optionality. Retain read-only GET.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Branding~1get_available_applications/get"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "note": "The documented nvarglist is a noncredential application feature/group selector, not an authentication key or secret. Explicit sensitive:false preserves its raw public selector contract.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Branding~1get_available_applications/get/parameters/0"
+        }
+      ],
+      "response": {
+        "groups[].items[].key": {
+          "add": {
+            "type": "string"
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-11-01",
+              "note": "The nested application item example contains this string field omitted from formal item properties. Add optional string only; no additional semantics, requiredness or sibling inference.",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Branding~1get_available_applications/get/responses/200/content/application~1json/schema/properties/result/properties/data/properties/groups/items/properties/items/items/example/key"
+            }
+          ]
+        },
+        "groups[].items[].plainitemdesc": {
+          "add": {
+            "type": "string"
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-11-01",
+              "note": "The nested application item example contains this string field omitted from formal item properties. Add optional string only; no additional semantics, requiredness or sibling inference.",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Branding~1get_available_applications/get/responses/200/content/application~1json/schema/properties/result/properties/data/properties/groups/items/properties/items/items/example/plainitemdesc"
+            }
+          ]
+        }
+      },
+      "params": {
+        "nvarglist": {
+          "sensitive": false
+        }
+      }
+    },
+    "uapi:Branding/get_information_for_applications": {
+      "name": "getInformationForApplications",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 11.52. No pinned role or plugin restriction. One immediate account-scoped request uses the ordinary UAPI Flag outcome on direct and WHM-bridged routes."
+        },
+        {
+          "kind": "documented",
+          "text": "docroot is the absolute server theme directory containing sitemap.json; optional appKeys is a comma-separated raw selector and omission requests all applications. The pinned source uses GET; effective form POST keeps the private noncredential docroot path out of URLs. docroot stays sensitive for library traces. Live POST acceptance is unverified. The client never accesses or validates the path locally. Required nonnullable dynamic map retains optional condition/icon/other formal fields with strict integer dimensions/order. terms is an optional ordered string list supported by formal items:string and array example; null is invalid and omission stays absent."
+        },
+        {
+          "kind": "policy",
+          "text": "Returned HTML, JavaScript, conditional expressions, URLs, paths and image strings are inert payload. The client never renders, executes, fetches, decodes or locally reads them. No implicit read, merge, sort, retry, rollback or cache of server data is added. Offline fixtures establish no live theme, rendering, visibility or POST acceptance; live follow-up whm-api-client-8x0.2.75 remains open."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "note": "Select the complete pinned operation as getInformationForApplications with original requiredness and Flag outcome; preserve cPanel 11.52, source GET classification and response optionality. The source is read-only GET; effective form POST protects the private docroot path while retaining source classification. No live POST route acceptance is established.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Branding~1get_information_for_applications/get"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "note": "Required absolute theme docroot containing sitemap.json is forwarded verbatim as form POST field under privacy policy. Mark private server path sensitive in library traces; do not normalize/access the path. The pinned source GET is retained as provenance; effective POST avoids placing this private path in URLs, without claiming live acceptance.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Branding~1get_information_for_applications/get/parameters/0"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "note": "The documented app_keys is a noncredential application feature/group selector, not an authentication key or secret. Explicit sensitive:false preserves its raw public selector contract.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Branding~1get_information_for_applications/get/parameters/1"
+        }
+      ],
+      "params": {
+        "docroot": {
+          "sensitive": true
+        },
+        "app_keys": {
+          "sensitive": false
+        }
+      },
+      "response": {
+        "{}.terms": {
+          "replace": {
+            "type": "list",
+            "items": {
+              "type": "string"
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-11-01",
+              "note": "Formal terms items:string establishes string list elements despite missing array type; replace only this field with list<string>, preserving optionality and nonnullability.",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Branding~1get_information_for_applications/get/responses/200/content/application~1json/schema/properties/result/properties/data/additionalProperties/properties/terms/items"
+            },
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-11-01",
+              "note": "The email/filter/filters array example corroborates ordered string-list container and element type. No fixed size or global array inference.",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Branding~1get_information_for_applications/get/responses/200/content/application~1json/schema/properties/result/properties/data/additionalProperties/properties/terms/example"
+            }
+          ]
+        }
+      }
+    },
+    "uapi:Branding/include": {
+      "name": "includeFile",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 11.42. No pinned role or plugin restriction. One immediate account-scoped request uses the ordinary UAPI Flag outcome on direct and WHM-bridged routes."
+        },
+        {
+          "kind": "documented",
+          "text": "file is relative to the active theme. Server processes .tt templates; data supplies JSON-encoded template variables only for .tt and raw has no effect for .tt. skipDefault=true skips default fallback except accounts without a branding package always use theme fallback. Null optional values omit; supplied empty strings remain and bool false/true send 0/1. Return exact string content (including empty/HTML/Unicode/zero-like text) or explicit null; missing data is a mismatch."
+        },
+        {
+          "kind": "policy",
+          "text": "The source GET is x-readonly=true; effective form POST keeps arbitrary potentially private data out of URLs. data remains an unparsed raw string, including malformed, scalar, list or duplicate-key JSON-like text. No JSON serialization, input mode selection, filename-based omission, conflict guards, local templates, sanitization or HTML encoding/decoding occurs."
+        },
+        {
+          "kind": "policy",
+          "text": "file/data and returned content are private. SensitiveParameter conceals specified inputs and library-owned response/error trace arguments; third-party transports own their traces. responseMeta() and caller-accessible PayloadMismatchException::$payload may expose private content. No live server rendering or POST compatibility is established."
+        },
+        {
+          "kind": "policy",
+          "text": "Returned HTML, JavaScript, conditional expressions, URLs, paths and image strings are inert payload. The client never renders, executes, fetches, decodes or locally reads them. No implicit read, merge, sort, retry, rollback or cache of server data is added. Offline fixtures establish no live theme, rendering, visibility or POST acceptance; live follow-up whm-api-client-8x0.2.75 remains open."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "note": "Select the complete pinned operation as includeFile with original requiredness and Flag outcome; preserve cPanel 11.42, source GET classification and response optionality. Effective form POST protects potentially private template-variable text although source GET declares x-readonly=true.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Branding~1include/get"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "note": "Retain file string requiredness and exact bytes; mark potentially private theme path/template variables sensitive in library traces. Form POST is privacy policy, not JSON-body encoding.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Branding~1include/get/parameters/0"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "note": "Retain data string requiredness and exact bytes; mark potentially private theme path/template variables sensitive in library traces. Form POST is privacy policy, not JSON-body encoding.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Branding~1include/get/parameters/1"
+        }
+      ],
+      "params": {
+        "file": {
+          "sensitive": true
+        },
+        "data": {
+          "sensitive": true
+        }
+      }
+    }
+  }
+}

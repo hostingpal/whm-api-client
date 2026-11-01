@@ -7601,3 +7601,90 @@ transport, envelope and response normalization remain unchanged; this audit's
 historical text remains an unchanged prefix. All 55 inherited source diagnostics
 remain unwaived. PHP 8.3 remains the supported minimum; local validation uses
 PHP 8.4.26 and exact-head PHP 8.3 CI remains a controller publication gate.
+
+
+## 2026-11-01 — complete UAPI Branding module (offline)
+
+Delivery `whm-api-client-8x0.4.33` selects all five pinned Branding operations
+through `branding()`: get_application_information, get_applications,
+get_available_applications, get_information_for_applications and include. Source
+is unchanged `docs/api/sources/2026-10-13/cpanel.openapi.json.gz`, decompressed
+SHA-256 `172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`.
+The overlay's doc evidence uses version `pinned 2026-10-13 (11.138.0.10)`,
+date `2026-11-01`, exact source SHA and JSON pointers. Selection pointers are
+`/paths/~1Branding~1<function>/get`; parameter decisions bind their source array
+positions. There are five selections, twelve response corrections, and 43 exact
+source bindings: 12 operation/parameter bindings and 31 correction bindings.
+
+Every formal operation uses GET. The first three retain GET; the sitemap method
+and include use effective form POST as privacy policy. The original brief's
+GET plus SensitiveParameter docroot combination was incompatible with the existing
+rule that sensitive parameters require POST. The controller ruled to preserve
+docroot sensitivity and use POST, keeping source GET provenance and live POST
+acceptance unverified. No generator/runtime exception was introduced. include's
+source GET declares x-readonly=true; its effective POST keeps arbitrary private
+template variables out of URLs. Appkey/group selectors are explicitly nonsecret.
+Versions remain cPanel 11.42 for single application/include, 11.52 for keyed
+applications/sitemap and 54 for available applications; no role/plugin restriction
+is invented. Original requiredness and ordinary Flag outcome remain intact.
+
+Correction pointer suffixes below follow
+`/responses/200/content/application~1json/schema/properties/result/properties/data`:
+
+* get_applications `{}.height`, `{}.itemorder`, `{}.width` accept numeric-string
+  while retaining int output. Each binds all three exact
+  `/example/{addon_domains,anonymous_ftp,ftp_accounts}/<field>` string values.
+  Canonical in-range integer normalization is narrow and local to these paths;
+  single-application/sitemap integers and available-item strings stay strict.
+* Six optional string additions on get_applications retain `{}.acontent`,
+  `{}.base64_png_image`, `{}.key`, `{}.onclick`, `{}.plainitemdesc`, `{}.target`.
+  Each binds all three keyed example string values at those same suffixes.
+  Missing formal fields are supplemented without inferring nullability,
+  requiredness, further plainitemdesc semantics or sibling fields.
+* get_available_applications adds optional string `groups[].items[].key` and
+  `groups[].items[].plainitemdesc`, bound to
+  `/properties/groups/items/properties/items/items/example/{key,plainitemdesc}`.
+* get_information_for_applications replaces only `{}.terms` with list<string>,
+  binding `/additionalProperties/properties/terms/items` and `/example` under
+  that terms property. Formal string items and the email/filter/filters array
+  corroborate the list; no global missing-type inference or fixed length is added.
+
+The generated public surface preserves all formal single-application fields,
+keyed application maps and useful example fields, available nested maps/lists,
+sitemap conditions/icons and ordered terms, and nullable include string data.
+All four inventories reject missing/null roots. Optional nested fields remain
+optional and nonnullable; empty containers, arbitrary map keys, PHP numeric-key
+conversion and inherited empty-array object/map compatibility remain. Index
+prose describes zero-based group/item indices but formal list<int> is not narrowed
+to a tuple. Further unknown fields retain the existing validator behavior.
+
+Raw comma/pipe selectors and server theme paths remain exact strings. Null optional
+arguments omit; supplied empty/percent/plus/Unicode stays encoded once. include
+forwards file/data/raw/skip_default in source order with nullable bool flags as
+0/1. The source data field is raw JSON-looking form text, never JSON-body content:
+malformed/scalar/list/duplicate-key text is neither parsed nor reserialized.
+Template mode, filename effects and conflicts remain server decisions. data
+applies to .tt; raw has no effect there. skip_default cannot prevent theme fallback
+for accounts without a branding package. Exact empty/HTML/Unicode/zero-like strings
+and explicit null are returned; absent include data is a mismatch. No rendering,
+sanitization, encoding/decoding, image use, URL fetch or local path read occurs.
+
+Independent local PSR transport fixtures exercise literal direct/bridge routes,
+GET query versus POST body, all five native interfaces, selectors/flags and raw
+bytes, populated/empty/invalid nested shapes, correction locality, every added
+field, API/outer-WHM precedence, bare/wrapped direct and bridged envelopes,
+warnings/raw metadata, reset at I/O, native pre-entry failure snapshots and
+one-attempt transport/HTTP/JSON/status/API/payload failures. Actual nonzero library
+trace frames with zend.exception_ignore_args=0 conceal private docroot/file/data
+and response/error contents. Results, raw metadata and mismatch payloads remain
+caller-accessible private data; third-party traces are outside library guarantees.
+
+Coverage is 1,212 canonical operations (624 UAPI, 588 WHM), 109 groups and
+221 outputs (220 PHP plus coverage). Nine files form this additive module slice.
+No shared runtime/generator, dependency, original source, historical evidence,
+map checksum, source diagnostics or unrelated generated method/spec is changed;
+this audit's historical text is an unchanged prefix. All 55 inherited diagnostics
+remain unwaived. Synthetic offline coverage establishes no live POST compatibility,
+rendering, theme visibility or persistence. Live follow-up
+`whm-api-client-8x0.2.75` and the full API goal remain OPEN. PHP 8.3 remains the
+minimum; local gates use PHP 8.4.26 and exact-head PHP 8.3 CI is a controller gate.
