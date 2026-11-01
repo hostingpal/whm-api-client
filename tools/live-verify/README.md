@@ -417,10 +417,16 @@ A passing assessment with acknowledgments is **not a discrepancy-free run**.
 ### Reviewed structural acknowledgments
 
 `DiscrepancyPolicy` contains only the two reviewed Quota total observations from
-`docs/api/evidence/2026-10-16-quota-inventory.json`. It verifies that file's fixed
-SHA-256 before any network request and refuses it (including filesystem aliases)
+`docs/api/evidence/2026-11-01-read-only-11.138.0.19.json`. It verifies that file's
+fixed SHA-256 before any network request and refuses it (including filesystem aliases)
 as an output destination. There is no command-line option to create acknowledgments.
 Policy changes require code review and independent tests.
+
+Until 2026-11-01 the same two observations were bound to cPanel `11.138.0.15` through
+`docs/api/evidence/2026-10-16-quota-inventory.json`, SHA-256
+`5f65d66acc36673ee37be1b4e024dad3ac725e5313d45c208abb489d5c9f6811`. That file is
+unchanged. A server version change leaves acknowledgments stale by design; moving
+them requires a new reviewed artifact and a code change, not a broader match.
 
 Each acknowledgment requires exactly one matching operation, HTTP variant, route,
 actual method, server version, pinned source hash and effective generated contract
@@ -627,6 +633,13 @@ unexpected observations, zero acknowledgments and two stale Quota acknowledgment
 Historical artifacts remain unchanged; findings are not waived or retried away.
 This run includes no PHP mutation. INI write/read behavior and the omitted
 empty-string userdirprotect variant retain their offline/documentation limits.
+
+The [2026-11-01 capture](../../docs/api/evidence/2026-11-01-read-only-11.138.0.19.json)
+ran the same catalog once at committed code `5f9b001`, after a name inspection allowed
+the DomainInfo and INI fields to be typed. All 67 observations pass and the only
+remaining discrepancies are the two masked Quota observations. Its embedded review
+reports failed because it was assessed against the previous `11.138.0.15` reference;
+the policy could only move to this artifact after the artifact existed.
 
 ## Owned Email mailbox recipe
 

@@ -9136,3 +9136,116 @@ These observations cover one server, version, capture, root token and designated
 account. They establish nothing about reseller-scoped results, other filter values,
 other versions or unaudited operations, and no parameter name proves search semantics
 elsewhere. No server state, configuration or account changed.
+
+## Default read-only gate on cPanel 11.138.0.19 (2026-11-01)
+
+Bead `whm-api-client-8x0.2.15` and the field-name part of `whm-api-client-8x0.2.17`.
+The default `composer live:verify` catalog passed every probe on `11.138.0.19`, yet
+its discrepancy review failed: two Quota acknowledgments were stale because they were
+bound to `11.138.0.15`, and ten observations were unexpected. Eight of those were
+DomainInfo and LangPHP `unknown_field` wildcards. This section records how those were
+resolved. The three PHP mutations stay open under `8x0.2.17`.
+
+The owner ruled on 2026-11-01 that the live server wins documentation contradictions
+and that observed responses are recorded with version, route and revision. Those
+recorded facts stay scoped to what was observed; they do not rewrite the pinned sources.
+
+### Name inspection
+
+A one-off read-only script outside the repository sent eight GETs on `npr` from
+revision `760ca68`, one per operation per route, and printed only key names and
+structural types. No value, raw body or upstream message was printed or saved.
+
+The script read the four bridged responses from `$.result` instead of the WHM bridge
+envelope `$.data.uapi`, so those four HTTP 200 bodies were discarded without being
+inspected. They were not sent again, because each request gets one attempt. Key names
+therefore come from the direct route. The bridged route is confirmed by the capture
+below, where typed names appear as named paths and no wildcard remains. That shows
+no other undeclared key exists at those locations in the bridged responses.
+
+None of the keys looked dynamic or sensitive, so none was declined.
+
+### Typed fields
+
+| Operation and path | Effective type | Observed | Pinned status |
+| --- | --- | --- | --- |
+| `domains_data` `main_domain.phpopenbasedirprotect` | `0\|1`, quoted form accepted | numeric string | Undeclared here; declared 0/1 on `single_domain_data` |
+| `domains_data` `main_domain.phpversion` | optional string | string | Undeclared; meaning unknown |
+| `domains_data` `main_domain.status` | optional string | string | Undeclared; meaning unknown |
+| `single_domain_data` `phpversion` | optional string | string | Undeclared; meaning unknown |
+| `single_domain_data` `status` | optional string | string | Undeclared; meaning unknown |
+| `single_domain_data` `customlog[].format` | optional string | string, both items | Undeclared here; pinned `domain` absent live |
+| `php_ini_get_user_basic_directives` `directives[].cpanel_default` | optional `string\|bool\|int\|number`, deliberately wider than observed | string, 1 of 15 rows | Undeclared; meaning unknown |
+| `php_ini_get_user_paths` `paths[].is_suspended` | optional int | int, 1 of 2 rows | Undeclared; meaning unknown |
+
+All corrections are overlay entries with `live` evidence for `11.138.0.19`, dated
+2026-11-01, and generated methods carry `Observed:` notes. Offline expectations are
+hand-written in `tests/Api/DomainPhpObservedFieldsTest.php`, using synthetic values.
+
+`cpanel_default` was first typed `string` from its one observation, then corrected in
+review before publication. It now accepts string, bool, int and number, in the same
+overlay union form that `default_value` uses. String is the only form observed, on 1 of
+15 rows through the direct route. The wider acceptance is a deliberate client decision:
+values on these rows are polymorphic, so a single string observation cannot justify
+rejecting the others, and one server's observations do not define a universal contract.
+This states no relationship between the two fields. `cpanel_default` stays optional and
+of unknown meaning. Null, lists and objects still fail validation.
+
+`status` here is a payload field and has no connection to the UAPI envelope `status`.
+`is_suspended` is typed `int` rather than a 0/1 flag because no value was inspected,
+and no suspension meaning is claimed. `phpopenbasedirprotect` reuses the pinned
+`single_domain_data` flag, which already passes live validation in quoted form for
+the same account domain, and pinned prose gives both functions the same userdata file.
+
+`customlog` is a documentation contradiction. Pinned `single_domain_data` describes
+`domain` and `target`, while pinned `domains_data` examples and the live list items use
+`format` and `target`. Only the list form gains `format`. Pinned `domain` stays optional,
+and the object form, which was not observed, is unchanged.
+
+### Scope limits
+
+- Addon, parked and subdomain rows were empty on `npr`, and `format=list` was not
+  requested. Those records and the `main_domain` list form keep their documented shape,
+  so the same keys there are still dropped and still reported as unknown.
+- Typing is stricter than the previous drop. A different wire type at one of these
+  paths, for example a string `is_suspended` on another server, now raises
+  `PayloadMismatchException` rather than being discarded. The fields other than
+  `cpanel_default` accept only their observed form, plus the reviewed quoted flag on
+  `phpopenbasedirprotect`.
+- Validation rules, `Fingerprint` and the wildcard masking of other keys are unchanged.
+  Any other undeclared key at these locations still reports `unknown_field`.
+
+### Capture and acknowledgment rebinding
+
+The [capture](evidence/2026-11-01-read-only-11.138.0.19.json), SHA-256
+`4138dbf1d083ddfe6d109c86bb8beb449abde6937e93b2452693d47b2b792b81`, ran once at
+committed code `5f9b001466a30bc45828c4fb3dd8007f7f811ad0`: 67 GETs across 37 operations
+(30 direct, 30 bridged, 7 WHM), all HTTP 200 with API, payload and probe checks passing.
+All four corrected operations report their fields as named paths with no discrepancy on
+both routes. Its embedded review reports 0 acknowledged, 2 unexpected and 2 stale,
+as expected: the policy still pointed at the `11.138.0.15` reference during that run.
+The file stays as captured.
+
+`DiscrepancyPolicy` then moved to that artifact, with identifiers
+`quota-total-direct-11.138.0.19` and `quota-total-bridge-11.138.0.19`. The earlier
+reference was `evidence/2026-10-16-quota-inventory.json`, SHA-256
+`5f65d66acc36673ee37be1b4e024dad3ac725e5313d45c208abb489d5c9f6811`, with identifiers
+ending in `11.138.0.15`. That file is unchanged and remains the record of those
+observations. No entry was added, and fingerprint, version, source and effective-contract
+matching are unchanged. The reference schema check moved from 1 to 2 because the new
+artifact is schema 2. `tools/live-verify/verify.php` labels follow the new identifiers.
+
+Quota stays out of typed results under the owner's 2026-10-17 acceptance. The two extra
+keys were not re-inspected on `11.138.0.19`. The fingerprint still shows `$.*` as integer,
+which does not establish their names or count on this version.
+
+Later overlay evidence entries cite this artifact without changing any effective
+contract, with one exception. Widening `cpanel_default` happened after the capture, so
+the artifact's `effective_contract_sha256` for `php_ini_get_user_basic_directives` records
+the string-only contract. The artifact was neither edited nor recaptured: its recorded
+`string` observation is still true, its other recorded contract hashes still match, and
+the Quota acknowledgments keep binding it because the Quota contract did not change.
+The non-string forms remain offline-tested only: this server has not been observed
+sending them, and a passing gate does not establish them. The final gate result is
+reported with the change rather than here, because a commit cannot contain the outcome
+of a run against itself.
