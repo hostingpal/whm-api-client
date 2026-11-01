@@ -2,6 +2,7 @@ package effective
 
 import (
 	"encoding/json"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -382,5 +383,123 @@ func TestNamedMapPlaceholderUsesExplicitPHPNameAndLiteralPrefix(t *testing.T) {
 	p := groupByClass(t, result, "Accounts").Operations[0].Params[0]
 	if p.PHP != "mailExchangers" || !p.Required || p.PHPType != "array" || p.DocType != "array<string, string>" {
 		t.Fatalf("map name/requiredness lost: %+v", p)
+	}
+}
+
+func TestCollectionPreservesSourceEnumDocs(t *testing.T) {
+	for _, tc := range []struct {
+		name, schema, item, settings, doc string
+		scalar                            bool
+	}{
+		{"string scalar and list", `{"type":"string","enum":["alpha","beta"]}`, "string", "", "'alpha'|'beta'|non-empty-list<'alpha'|'beta'>", true},
+		{"integer scalar and list", `{"type":"integer","enum":[2,7]}`, "int", "", "2|7|non-empty-list<2|7>", true},
+		{"string list only", `{"type":"string","enum":["alpha","beta"]}`, "string", "", "non-empty-list<'alpha'|'beta'>", false},
+		{"integer source list", `{"type":"array","items":{"type":"integer","enum":[2,7]}}`, "int", "", "non-empty-list<2|7>", false},
+		{"escaped source item ref", `{"type":"array","items":{"$ref":"#/components/schemas/CollectionItem"}}`, "string", "", `'a\'b'|'c\\d'|non-empty-list<'a\'b'|'c\\d'>`, true},
+		{"schema ref", `{"$ref":"#/components/schemas/CollectionItem"}`, "string", "", `'a\'b'|'c\\d'|non-empty-list<'a\'b'|'c\\d'>`, true},
+		{"explicit enum doc override", `{"type":"array","items":{"type":"integer","enum":[2,7]}}`, "int", `,"enum_doc":false`, "non-empty-list<int>", false},
+		{"widen string with integer compatibility", `{"type":"string","enum":["alpha","beta"]}`, "string|int", "", "'alpha'|'beta'|int|non-empty-list<'alpha'|'beta'|int>", true},
+		{"widen integer with string compatibility", `{"type":"integer","enum":[2,7]}`, "string|int", "", "string|2|7|non-empty-list<string|2|7>", true},
+		{"union branches", `{"anyOf":[{"type":"string","enum":["alpha"]},{"type":"integer","enum":[2,7]}]}`, "string|int", "", "'alpha'|2|7|non-empty-list<'alpha'|2|7>", true},
+		{"nullable enum union", `{"anyOf":[{"type":"string","enum":["alpha"]},{"type":"null"}]}`, "string", "", "'alpha'|non-empty-list<'alpha'>", true},
+		{"single contributing allOf", `{"allOf":[{"type":"string","enum":["alpha"]},{"description":"annotation only"}]}`, "string", "", "'alpha'|non-empty-list<'alpha'>", true},
+		{"comment terminator explicit override", `{"type":"string","enum":["a*/b"]}`, "string", `,"enum_doc":false`, "string|non-empty-list<string>", true},
+		{"bool flag conversion", `{"type":"array","items":{"type":"integer","enum":[0,1]}}`, "bool", "", "bool|non-empty-list<bool>", true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			m := fixtureMap(t)
+			m.Documents["whm-openapi"]["components"] = map[string]any{"schemas": map[string]any{"CollectionItem": map[string]any{"type": "string", "enum": []any{"a'b", `c\d`}}}}
+			var schema any
+			decoder := json.NewDecoder(strings.NewReader(tc.schema))
+			decoder.UseNumber()
+			if err := decoder.Decode(&schema); err != nil {
+				t.Fatal(err)
+			}
+			for _, op := range m.Operations {
+				if op.ID == "whm1:createacct" {
+					op.Variants[0].Parameters[0].Definition["schema"] = schema
+				}
+			}
+			var op overlay.Operation
+			raw := `{"name":"createAccount","params":{"username":{"collection":{"kind":"repeat","item_type":"` + tc.item + `","allow_scalar":` + strconv.FormatBool(tc.scalar) + `,"empty":"reject"}` + tc.settings + `}},"evidence":[{"kind":"doc","version":"synthetic fixture only","date":"2026-10-31","note":"Fixture collection enum contract","source_sha256":"y","pointer":"/paths/~1createacct/get/parameters/0"}]}`
+			if err := json.Unmarshal([]byte(raw), &op); err != nil {
+				t.Fatal(err)
+			}
+			set := fixtureOverlay("listed")
+			set.Files[1].Operations["whm1:createacct"] = op
+			result, problems := buildProblems(t, m, set)
+			if problems != "" {
+				t.Fatal(problems)
+			}
+			got := groupByClass(t, result, "Accounts").Operations[0].Params[0].DocType
+			if got != tc.doc {
+				t.Fatalf("collection enum doc: got %q, want %q", got, tc.doc)
+			}
+		})
+	}
+}
+
+func TestCollectionRejectsUnrepresentableEnumDocs(t *testing.T) {
+	for _, schema := range []string{
+		`{"type":"string","enum":["alpha",true]}`,
+		`{"type":"integer","enum":[2,2.5]}`,
+		`{"type":"array","items":{"type":"string"},"enum":[["alpha"]]}`,
+		`{"allOf":[{"type":"string","enum":["alpha"]},{"type":"string"}]}`,
+	} {
+		m := fixtureMap(t)
+		var node any
+		decoder := json.NewDecoder(strings.NewReader(schema))
+		decoder.UseNumber()
+		if err := decoder.Decode(&node); err != nil {
+			t.Fatal(err)
+		}
+		item := "string"
+		if strings.Contains(schema, `"type":"integer"`) {
+			item = "int"
+		}
+		for _, op := range m.Operations {
+			if op.ID == "whm1:createacct" {
+				op.Variants[0].Parameters[0].Definition["schema"] = node
+			}
+		}
+		var op overlay.Operation
+		if err := json.Unmarshal([]byte(`{"name":"createAccount","params":{"username":{"collection":{"kind":"repeat","item_type":"`+item+`","allow_scalar":true,"empty":"reject"}}},"evidence":[{"kind":"doc","version":"synthetic fixture only","date":"2026-10-31","note":"Fixture enum diagnostic","source_sha256":"y","pointer":"/paths/~1createacct/get/parameters/0"}]}`), &op); err != nil {
+			t.Fatal(err)
+		}
+		set := fixtureOverlay("listed")
+		set.Files[1].Operations["whm1:createacct"] = op
+		_, problems := buildProblems(t, m, set)
+		if !strings.Contains(problems, "parameter username: collection enum documentation cannot represent") {
+			t.Fatalf("unrepresentable enum silently broadened: %s: %s", schema, problems)
+		}
+	}
+}
+
+func TestCollectionRejectsCommentTerminatorEnum(t *testing.T) {
+	for _, schema := range []string{`{"type":"string","enum":["a*/b"]}`, `{"type":"array","items":{"type":"string","enum":["a*/b"]}}`} {
+		for _, scalar := range []bool{true, false} {
+			m := fixtureMap(t)
+			var node any
+			if err := json.Unmarshal([]byte(schema), &node); err != nil {
+				t.Fatal(err)
+			}
+			for _, op := range m.Operations {
+				if op.ID == "whm1:createacct" {
+					op.Variants[0].Parameters[0].Definition["schema"] = node
+				}
+			}
+			var op overlay.Operation
+			raw := `{"name":"createAccount","params":{"username":{"collection":{"kind":"repeat","item_type":"string","allow_scalar":` + strconv.FormatBool(scalar) + `,"empty":"reject"}}},"evidence":[{"kind":"doc","version":"synthetic fixture only","date":"2026-10-31","note":"Fixture comment terminator boundary","source_sha256":"y","pointer":"/paths/~1createacct/get/parameters/0"}]}`
+			if err := json.Unmarshal([]byte(raw), &op); err != nil {
+				t.Fatal(err)
+			}
+			set := fixtureOverlay("listed")
+			set.Files[1].Operations["whm1:createacct"] = op
+			_, problems := buildProblems(t, m, set)
+			want := "whm1:createacct: parameter username: collection enum documentation cannot represent a string literal containing a PHPDoc comment terminator"
+			if problems != want {
+				t.Fatalf("comment terminator must fail precisely (scalar=%v, source=%s): got %q, want %q", scalar, schema, problems, want)
+			}
+		}
 	}
 }

@@ -54,7 +54,10 @@ final readonly class ImageManager
      *
      * Documented: image_file is relative to the cPanel account home directory according to the pinned /home wording.
      * type remains a string without a closed format enum. The optional converted_file field is the new absolute image
-     * path; omission remains absent and explicit null is invalid.
+     * path; omission remains absent and explicit null is invalid. On reviewed cPanel 11.138.0.19 absolute paths under
+     * the account home also worked; this does not establish a universal confinement guarantee. The reviewed handler
+     * checks type characters only: type nope succeeded and wrote a .nope extension. This is no validated format list or
+     * conversion-quality guarantee.
      *
      * Documented: Changes account image files through form POST. The pinned source declares no rollback. The client
      * makes one attempt with no automatic retry, restore, cleanup, backup, collision handling or atomicity guarantee.
@@ -94,7 +97,11 @@ final readonly class ImageManager
      * Documented: The result is a list with optional failed, file, reason and thumbnail_file fields. failed is
      * documented as the integer 1, returned only when a thumbnail was not created; the existing integer policy does not
      * enforce that singleton enum. reason is failure information and file and thumbnail_file are absolute paths. API
-     * status 1 does not establish that every thumbnail was created; inspect each row. Empty lists remain empty.
+     * status 1 does not establish that every thumbnail was created; inspect each row. Status 1 accepts empty lists.
+     * Reviewed all-failed batches report status 0 with row reasons: valid nonempty row lists are returned in full.
+     * Status 0 with no rows raises ApiErrorException; an empty directory can have errors() empty because upstream
+     * errors is null. Missing data, malformed roots or known row fields remain payload mismatches with
+     * outcomeConfirmed=false; integer status validation and outer WHM failure precedence remain strict.
      *
      * Documented: Changes account image files through form POST. The pinned source declares no rollback. The client
      * makes one attempt with no automatic retry, restore, cleanup, backup, collision handling or atomicity guarantee.
@@ -106,8 +113,8 @@ final readonly class ImageManager
      * @param int $widthPercentage The percentage by which to reduce the thumbnails' width.
      * @return CreateThumbnailsResult
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
-     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
-     *     the operation may already have changed state; do not retry automatically.
+     * @throws PayloadMismatchException If the envelope was accepted but the payload differs from the contract;
+     *     the outcome is not checked.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/image-tools/imagemanager-create_thumbnails
      */
     public function createThumbnails(string $dir, int $heightPercentage, int $widthPercentage): array
@@ -132,7 +139,9 @@ final readonly class ImageManager
      *
      * Documented: image_file accepts an absolute path or a path relative to the user home directory. This read uses
      * GET. Optional height and width are integer pixel dimensions, documented as positive. Omission remains absent and
-     * explicit null is invalid; the existing scalar policy adds no response range validation.
+     * explicit null is invalid; the existing scalar policy adds no response range validation. Reviewed cPanel
+     * 11.138.0.19 returns digit strings; evidenced canonical in-range integer strings normalize losslessly to integers
+     * under the existing signed integer policy.
      *
      * API-map identity: uapi:ImageManager/get_dimensions#GET (wire name get_dimensions).
      *
@@ -164,9 +173,11 @@ final readonly class ImageManager
      * validation. The result is the absolute resized image path as a string.
      *
      * Documented: Omitting saveOriginalAs (including null) omits save_original_as and the server does not save a copy
-     * of the original. Explicit empty string is sent. The pinned save_original_as description calls it a directory,
-     * while its example images/original.jpg looks file-like; the client forwards it unchanged without resolving that
-     * discrepancy or performing a local filesystem operation.
+     * of the original. Explicit empty string is sent unchanged. saveOriginalAs must name a NEW FILE path: an existing
+     * path, including a directory, is rejected by the server. The pinned parameter prose says directory, but reviewed
+     * _get_safe_image_file source and both-route cPanel 11.138.0.19 behavior resolve it to a new file path:
+     * img/orig.png retained the original 10x5 image, while existing directory img was rejected. No local filesystem
+     * check is performed.
      *
      * Documented: Changes account image files through form POST. The pinned source labels rollback clean but defines no
      * client restore protocol. The client makes one attempt with no automatic retry, restore, cleanup, backup,
