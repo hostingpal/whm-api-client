@@ -9370,9 +9370,14 @@ and `whm-api-client-9yu` decides whether filenames should reject C1 controls.
 
 A post-merge review of the fixture at `bc8069e` led to the corrections below. They follow
 the v2 capture and do not alter what it recorded: both artifacts, their hashes and their
-results stand as captured. No correction ran live, so no capture exists under these rules.
-A passing run sends the same requests in the same order, and the label stays
-`fileman-upload-disposable-v2` because the report keeps its fields and values.
+results stand as captured, and the v2 artifact stays the valid record of what ran at
+`1c8bbce`.
+
+A passing run still sends the same requests in the same order. It no longer records the
+same values, though, and the assessment no longer accepts what the artifacts recorded. Two
+artifacts under one label must not disagree, so the scenario is now
+`fileman-upload-disposable-v3` and the policy `fileman-upload-no-acknowledgments-v2`. No
+correction ran live, and **no v3 capture exists yet**.
 
 - Only an explicit API refusal is a known `createacct` outcome. A 502 or an unreadable body
   could previously report `confirmed_absent` and `cleanup: passed` while creation was still
@@ -9392,4 +9397,6 @@ A passing run sends the same requests in the same order, and the label stays
   because generic calls run no `ShapeValidator`. Both artifacts say `passed` on those records
   and are kept: read it there as "the call returned". Their structural discrepancy lists
   are empty and their expectations passed, and the `upload_raw` rows were checked exactly.
-  A new run at this label would differ from the committed artifact on these three records.
+  Policy v2 requires `not_checked` on these three records, so it would report findings on
+  either artifact. Both were assessed under policy v1: their recorded results stand, and
+  policy v2 does not judge them retroactively.

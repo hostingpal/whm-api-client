@@ -93,7 +93,7 @@ use Throwable;
  *     domain_cleanup: CleanupOutcome, zone_cleanup: CleanupOutcome, filesystem_cleanup: 'not_claimed'
  * }
  * @phpstan-type Scenario array{
- *     scenario: 'fileman-upload-disposable-v2', target_role: 'disposable-test-account', probes: list<Observation>,
+ *     scenario: 'fileman-upload-disposable-v3', target_role: 'disposable-test-account', probes: list<Observation>,
  *     uploads: array<string, UploadSummary>, byte_oracle: array<string, OracleResult>,
  *     borrowed_streams: array<string, bool>, discrepancy_review: Assessment, fixture: Report, limitations: list<string>
  * }
@@ -1294,7 +1294,7 @@ final class FilemanUploadFixture
         unset($record);
 
         return [
-            'scenario' => 'fileman-upload-disposable-v2',
+            'scenario' => 'fileman-upload-disposable-v3',
             'target_role' => 'disposable-test-account',
             'probes' => $records,
             'uploads' => $this->uploads,

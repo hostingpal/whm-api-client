@@ -2098,6 +2098,11 @@ covers the observed filenames, sizes and server version on the direct route. It
 establishes no raw-download identity, antivirus or archive behavior, null or empty
 status-0 observation, memory benchmark, or WHM or bridged upload coverage.
 
+The current scenario is `fileman-upload-disposable-v3`, assessed under policy
+`fileman-upload-no-acknowledgments-v2`, and **no v3 capture exists yet**. A passing run
+sends the same requests as v2, but it records and accepts different values, so it has its
+own version. The committed v2 artifact stays the valid record of what ran at `1c8bbce`.
+
 The [corrected capture](../../docs/api/evidence/2026-11-01-fileman-upload-v2.json) at
 `1c8bbce` on `11.138.0.19` is a **passed run**, exit 0. All five uploads passed their
 row, count and framing expectations, including the status-0 batch. Content matched the

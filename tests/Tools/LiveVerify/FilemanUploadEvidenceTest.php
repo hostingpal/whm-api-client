@@ -21,7 +21,7 @@ final class FilemanUploadEvidenceTest extends TestCase
     {
         $assessment = self::assess(self::records());
         self::assertSame('passed', $assessment['status']);
-        self::assertSame('fileman-upload-no-acknowledgments-v1', $assessment['policy']);
+        self::assertSame('fileman-upload-no-acknowledgments-v2', $assessment['policy']);
         self::assertSame([], $assessment['findings']);
     }
 

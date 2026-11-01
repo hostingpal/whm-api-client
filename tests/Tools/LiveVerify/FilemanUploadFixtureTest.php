@@ -58,6 +58,8 @@ final class FilemanUploadFixtureTest extends TestCase
         $fixture = $scenario['fixture'];
 
         self::assertSame('passed', $fixture['status'], (string) json_encode($fixture['failures']));
+        self::assertSame('fileman-upload-disposable-v3', $scenario['scenario']);
+        self::assertSame('fileman-upload-no-acknowledgments-v2', $scenario['discrepancy_review']['policy']);
         self::assertSame([], $scenario['discrepancy_review']['findings']);
         self::assertSame('passed', $scenario['discrepancy_review']['status']);
         self::assertSame([], $fixture['failures']);

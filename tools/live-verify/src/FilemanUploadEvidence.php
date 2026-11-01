@@ -19,7 +19,7 @@ use HostingPal\WhmApiClient\Api\Whm\Spec\ServerSpec;
  * @phpstan-import-type Context from EvidenceRunner
  * @phpstan-import-type Observation from FilemanUploadFixture
  * @phpstan-type Assessment array{
- *     policy: 'fileman-upload-no-acknowledgments-v1', status: 'passed'|'failed', findings: list<string>
+ *     policy: 'fileman-upload-no-acknowledgments-v2', status: 'passed'|'failed', findings: list<string>
  * }
  */
 final class FilemanUploadEvidence
@@ -123,7 +123,7 @@ final class FilemanUploadEvidence
         $findings = array_values(array_unique($findings));
 
         return [
-            'policy' => 'fileman-upload-no-acknowledgments-v1',
+            'policy' => 'fileman-upload-no-acknowledgments-v2',
             'status' => $findings === [] ? 'passed' : 'failed',
             'findings' => $findings,
         ];
