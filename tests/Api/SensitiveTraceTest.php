@@ -525,21 +525,23 @@ final class SensitiveTraceTest extends TestCase
             new HttpTransport($http, $factory, $factory),
         );
 
+        $caught = null;
         try {
             $client->whm()->call('passwd', ['user' => 'bob', 'password' => self::SECRET], $method);
-            self::fail('Expected the client failure to propagate.');
-        } catch (RuntimeException $exception) {
-            $frames = $exception->getTrace();
-            self::assertSame([$http::class, 'sendRequest'], [$frames[0]['class'] ?? null, $frames[0]['function']]);
-            self::assertSame([HttpTransport::class, 'send'], [$frames[1]['class'] ?? null, $frames[1]['function']]);
-
-            // The client's own frame necessarily holds the request it was handed; the
-            // library cannot redact it, so only that argument is left out of the search.
-            unset($frames[0]['args']);
-            $seen = [];
-            self::assertFalse(self::contains($frames, $seen), 'A library frame argument contains the secret.');
-            self::assertStringNotContainsString(self::SECRET, $exception->getTraceAsString());
+        } catch (RuntimeException $error) {
+            $caught = $error;
         }
+        self::assertInstanceOf(RuntimeException::class, $caught, 'Expected the client failure to propagate.');
+        $frames = $caught->getTrace();
+        self::assertSame([$http::class, 'sendRequest'], [$frames[0]['class'] ?? null, $frames[0]['function']]);
+        self::assertSame([HttpTransport::class, 'send'], [$frames[1]['class'] ?? null, $frames[1]['function']]);
+
+        // The client's own frame necessarily holds the request it was handed; the
+        // library cannot redact it, so only that argument is left out of the search.
+        unset($frames[0]['args']);
+        $seen = [];
+        self::assertFalse(self::contains($frames, $seen), 'A library frame argument contains the secret.');
+        self::assertStringNotContainsString(self::SECRET, $caught->getTraceAsString());
     }
 
     public function testRawJsonTransportFramesStayRedactedWhenClientThrows(): void
@@ -555,6 +557,7 @@ final class SensitiveTraceTest extends TestCase
             $client = new Client([
                 'host' => 'api.example.test', 'authType' => $type, 'username' => 'npr', 'token' => 'fixture-token',
             ], new HttpTransport($http, $factory, $factory));
+            $caught = null;
             try {
                 if ($type === 'whm') {
                     $client->whm()->callJson(
@@ -568,17 +571,18 @@ final class SensitiveTraceTest extends TestCase
                         '{"secret":"' . self::SECRET . '"}',
                     );
                 }
-                self::fail('Expected client failure.');
-            } catch (RuntimeException $exception) {
-                $frames = $exception->getTrace();
-                self::assertSame([$http::class, 'sendRequest'], [$frames[0]['class'] ?? null, $frames[0]['function']]);
-                unset($frames[0]['args']);
-                $seen = [];
-                self::assertFalse(
-                    self::contains($frames, $seen),
-                    'A library frame contains raw JSON secrets.',
-                );
+            } catch (RuntimeException $error) {
+                $caught = $error;
             }
+            self::assertInstanceOf(RuntimeException::class, $caught, 'Expected client failure.');
+            $frames = $caught->getTrace();
+            self::assertSame([$http::class, 'sendRequest'], [$frames[0]['class'] ?? null, $frames[0]['function']]);
+            unset($frames[0]['args']);
+            $seen = [];
+            self::assertFalse(
+                self::contains($frames, $seen),
+                'A library frame contains raw JSON secrets.',
+            );
         }
     }
 
@@ -709,14 +713,15 @@ final class SensitiveTraceTest extends TestCase
     ): void {
         [$client, $http] = self::client($direct);
         $http->addResponse(new Response($status, [], str_replace('returned-password', self::SECRET, $body)));
+        $caught = null;
         try {
             $client->uapi($direct ? null : 'npr')->mysql()->setupDbAndUser(prefix: 'app');
-            self::fail('Expected the returned-password response to fail.');
-        } catch (Throwable $exception) {
-            self::assertInstanceOf($expected, $exception);
-            self::assertCount(1, $http->getRequests());
-            self::assertSecretAbsent($exception);
+        } catch (Throwable $error) {
+            $caught = $error;
         }
+        self::assertInstanceOf($expected, $caught, 'Expected the returned-password response to fail.');
+        self::assertCount(1, $http->getRequests());
+        self::assertSecretAbsent($caught);
     }
 
     /** @return iterable<string, array{bool, int, string, class-string<Throwable>}> */
@@ -907,28 +912,33 @@ final class SensitiveTraceTest extends TestCase
         };
         $http->addResponse(new Response(200, [], $body));
 
+        $caught = null;
         try {
             $client->uapi($route === 'bridged' ? 'npr' : null)->postgresql()->createUser('npr_writer', self::SECRET);
-            self::fail('Expected the malformed or failed PostgreSQL envelope to be rejected.');
-        } catch (Throwable $exception) {
-            self::assertInstanceOf($expected, $exception);
-            self::assertCount(1, $http->getRequests());
-            foreach ($exception->getTrace() as $frame) {
-                $class = $frame['class'] ?? '';
-                if (
-                    !str_starts_with($class, 'HostingPal\\WhmApiClient\\')
-                    || str_starts_with($class, 'HostingPal\\WhmApiClient\\Tests\\')
-                ) {
-                    continue;
-                }
-                $seen = [];
-                self::assertFalse(
-                    self::containsResponse($frame['args'] ?? [], $seen),
-                    $class . '::' . $frame['function'] . ' retains a raw HTTP response in its trace arguments.',
-                );
-            }
-            self::assertSecretAbsent($exception);
+        } catch (Throwable $error) {
+            $caught = $error;
         }
+        self::assertInstanceOf(
+            $expected,
+            $caught,
+            'Expected the malformed or failed PostgreSQL envelope to be rejected.',
+        );
+        self::assertCount(1, $http->getRequests());
+        foreach ($caught->getTrace() as $frame) {
+            $class = $frame['class'] ?? '';
+            if (
+                !str_starts_with($class, 'HostingPal\\WhmApiClient\\')
+                || str_starts_with($class, 'HostingPal\\WhmApiClient\\Tests\\')
+            ) {
+                continue;
+            }
+            $seen = [];
+            self::assertFalse(
+                self::containsResponse($frame['args'] ?? [], $seen),
+                $class . '::' . $frame['function'] . ' retains a raw HTTP response in its trace arguments.',
+            );
+        }
+        self::assertSecretAbsent($caught);
     }
 
     /** @return iterable<string, array{string, string, class-string<Throwable>}> */
@@ -1049,28 +1059,29 @@ final class SensitiveTraceTest extends TestCase
         };
         $http->addResponse(new Response(200, [], $body));
 
+        $caught = null;
         try {
             $client->uapi($route === 'bridged' ? 'npr' : null)->langPhp()->phpIniGetUserContent(type: 'home');
-            self::fail('Expected the malformed or failed INI envelope to be rejected.');
-        } catch (Throwable $exception) {
-            self::assertInstanceOf($expected, $exception);
-            self::assertCount(1, $http->getRequests());
-            foreach ($exception->getTrace() as $frame) {
-                $class = $frame['class'] ?? '';
-                if (
-                    !str_starts_with($class, 'HostingPal\\WhmApiClient\\')
-                    || str_starts_with($class, 'HostingPal\\WhmApiClient\\Tests\\')
-                ) {
-                    continue;
-                }
-                $seen = [];
-                self::assertFalse(
-                    self::containsResponse($frame['args'] ?? [], $seen),
-                    $class . '::' . $frame['function'] . ' retains a raw HTTP response in its trace arguments.',
-                );
-            }
-            self::assertSecretAbsent($exception);
+        } catch (Throwable $error) {
+            $caught = $error;
         }
+        self::assertInstanceOf($expected, $caught, 'Expected the malformed or failed INI envelope to be rejected.');
+        self::assertCount(1, $http->getRequests());
+        foreach ($caught->getTrace() as $frame) {
+            $class = $frame['class'] ?? '';
+            if (
+                !str_starts_with($class, 'HostingPal\\WhmApiClient\\')
+                || str_starts_with($class, 'HostingPal\\WhmApiClient\\Tests\\')
+            ) {
+                continue;
+            }
+            $seen = [];
+            self::assertFalse(
+                self::containsResponse($frame['args'] ?? [], $seen),
+                $class . '::' . $frame['function'] . ' retains a raw HTTP response in its trace arguments.',
+            );
+        }
+        self::assertSecretAbsent($caught);
     }
 
     /** @return iterable<string, array{string, string, class-string<Throwable>}> */
