@@ -3518,8 +3518,9 @@ exclusive with Fileman's `multipart_uploads`, WHM's `multipart_upload` and JSON.
 Source-bound lowering preserves absent body/schema requiredness and uses prose's
 required upload alternative. Streaming, source preparation, transport, old generated
 operations and SSL bridge behavior remain unchanged. Approved parent source/preparation and Fileman/WHM corrections are integrated.
-Server-path modes (.30.9), owned Fileman evidence (.30.5) and native Windows
-verification (.30.10) remain separate open work.
+Server-path modes (.30.9) and native Windows verification (.30.10) remain separate
+open work. Owned Fileman evidence (.30.5) is closed; its passing capture is
+`docs/api/evidence/2026-11-01-fileman-upload-v2.json`.
 
 
 ### UAPI ImageManager (2026-10-31)
