@@ -1879,8 +1879,8 @@ SHA-256: `4a9ec4fffec130ee099b63cb2f86c24482b332a8101995828426745bdb70da51`.
 curated set of read-only collection operations answers when nothing can match. The
 selection was fixed and committed before execution. It follows pinned operation
 semantics and documented filters; a parameter name alone proves nothing. The requests
-have not changed since `empty-results-v1`, which is the only capture; see
-[Assessment](#assessment-of-declared-outcomes).
+have not changed since `empty-results-v1`; only the
+[assessment](#assessment-of-declared-outcomes) differs.
 
 Twenty-seven GETs run once each, in catalog order: WHM `version` for provenance, then
 15 operations. Every request is a typed generated method. WHM routes use the root
@@ -1979,11 +1979,10 @@ match cannot show why a call failed, because no upstream text is kept. If a late
 version legitimately changes a form, review it and change the declaration under a new
 label.
 
-**No capture exists for `empty-results-v2`.** Only its assessment differs from
-`empty-results-v1`, so no run has exercised this rule live. The offline test checks
-the v1 artifact against the declarations by identity, outcome, capture revision and
-SHA-256. It compares no contract hash, so that artifact stays a valid historical
-record when a spec later changes.
+`empty-results-v2` has [one capture](#no-match-audit-v2-capture-2026-11-01), which
+passed. The offline test checks both artifacts against the declarations by identity,
+outcome, capture revision and SHA-256. It compares no contract hash, so each artifact
+stays a valid historical record when a spec later changes.
 
 ```sh
 WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
@@ -2044,6 +2043,30 @@ review with two plans returned one of them without selectors and the matching pl
 for `MAXSQL=5`, but none for `QUOTA=100`, that plan's real quota. The cause is unknown
 and stays open under `8x0.2.43`, and `matchPackages()` documents that an empty match
 does not prove absence. Its empty result here is not a confirmed no-match.
+
+### No-match audit v2 capture, 2026-11-01
+
+`empty-results-v2` ran once at `e8021d20d859efc84b6532c6b78a4e4471a6ba0d` on
+`11.138.0.19`, with no retry. It exited 0 with `status: passed`. All 27 GETs returned
+HTTP 200, and all 27 records match their declared outcomes: one `value`, one
+`fixed_path_empty`, 22 `empty` and three `api_failure`. The artifact is
+[2026-11-01-empty-results-v2.json](../../docs/api/evidence/2026-11-01-empty-results-v2.json),
+SHA-256 `e1258f73d56221a60dee6fdab3d7fee6b2a3036ee062f8a5935449134b2fce15`.
+
+Unlike v1, every outcome here was declared and committed before the run, at `0e0262f`,
+and all of them held. The three `api_failure` records still show
+`probe_outcome: failed`, and `listaccts` keeps its `missing_required` discrepancy. That
+is what a pass means under this recipe. Every record's outcome fields, payload paths,
+response paths and discrepancies are identical to the v1 capture, about three hours
+earlier.
+
+This shows the rule passes on the real server, and no more. The declarations came from
+the v1 capture of the same version, so this is a repeat, not independent evidence, and
+it establishes nothing about another cPanel version. No live run has produced a
+deviation, so the failure path and the deviation lines are proven offline only. It
+confirms no no-match: `matchpkgs` and `listsubdomains` stay unconfirmed, the cause of
+the `Bandwidth/query` absent-domain error stays unestablished, and the record still
+cannot separate the two `listaccts` result forms.
 
 ## Disposable-account Fileman upload fixture
 

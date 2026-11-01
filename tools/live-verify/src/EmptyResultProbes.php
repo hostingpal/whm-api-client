@@ -38,7 +38,7 @@ final class EmptyResultProbes
 {
     /**
      * Recipe label. v2 changed the assessment, not the requests: v1 applied the strict rule, which the catalog
-     * cannot pass. No capture exists for v2.
+     * cannot pass. Each label has one committed capture under docs/api/evidence.
      */
     public const RECIPE = 'empty-results-v2';
 

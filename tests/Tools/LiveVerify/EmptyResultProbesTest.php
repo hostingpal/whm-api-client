@@ -38,13 +38,6 @@ final class EmptyResultProbesTest extends TestCase
 
     private const BRIDGED = 'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr';
 
-    /** The immutable capture; fixtures and declarations are held to it, and it is never rewritten. */
-    private const ARTIFACT = 'docs/api/evidence/2026-11-01-empty-results.json';
-
-    private const ARTIFACT_SHA256 = '2ec7d60176b4354c01d1016849e0e3d62ae85a7182354010ab8d89e77a39894f';
-
-    private const ARTIFACT_REVISION = 'fc5264d97f0c9d90ebbf9148b714d69e4a288959';
-
     public function testCatalogIsTheReviewedBoundedAllowlist(): void
     {
         $probes = EmptyResultProbes::load();
@@ -177,11 +170,12 @@ final class EmptyResultProbesTest extends TestCase
      * Running a fixture through the evidence tool would derive its paths from the current spec, so an ordinary
      * contract change would fail this. Recorded `missing` entries name absent fields, which a body cannot show.
      */
-    public function testSyntheticBodiesReproduceTheCommittedStructure(): void
+    #[DataProvider('committedFiles')]
+    public function testSyntheticBodiesReproduceTheCommittedStructure(string $path, string $sha256): void
     {
         $probes = EmptyResultProbes::load();
         $bodies = self::noMatchBodies();
-        $captured = self::artifact()['probes'];
+        $captured = self::artifact($path, $sha256)['probes'];
         self::assertCount(count($probes), $captured);
         foreach ($probes as $index => $probe) {
             $recorded = $captured[$index]['response_paths'] ?? null;
@@ -197,27 +191,64 @@ final class EmptyResultProbesTest extends TestCase
     }
 
     /**
-     * Bind the immutable capture to this catalog by identity and declared outcome.
+     * The immutable captures, each with its published hash, revision, recipe and recorded status.
+     *
+     * @return iterable<string, array{string, string, string, string, string}>
+     */
+    public static function committedCaptures(): iterable
+    {
+        yield 'v1, failed under the strict rule' => [
+            'docs/api/evidence/2026-11-01-empty-results.json',
+            '2ec7d60176b4354c01d1016849e0e3d62ae85a7182354010ab8d89e77a39894f',
+            'fc5264d97f0c9d90ebbf9148b714d69e4a288959',
+            'empty-results-v1',
+            'failed',
+        ];
+        yield 'v2, passed its declared outcomes' => [
+            'docs/api/evidence/2026-11-01-empty-results-v2.json',
+            'e1258f73d56221a60dee6fdab3d7fee6b2a3036ee062f8a5935449134b2fce15',
+            'e8021d20d859efc84b6532c6b78a4e4471a6ba0d',
+            'empty-results-v2',
+            'passed',
+        ];
+    }
+
+    /** @return iterable<string, array{string, string}> */
+    public static function committedFiles(): iterable
+    {
+        foreach (self::committedCaptures() as $name => [$path, $sha256]) {
+            yield $name => [$path, $sha256];
+        }
+    }
+
+    /**
+     * Bind an immutable capture to this catalog by identity and declared outcome.
      *
      * The binding is the operation, source variant, argument label, route and method, each record's outcome, the
      * capture revision and the SHA-256 the docs publish. Contract hashes stay out of it, and passes() is not
-     * called, because both read the current spec. The artifact stays a valid historical record when a spec later
+     * called, because both read the current spec. An artifact stays a valid historical record when a spec later
      * changes, so an ordinary offline contract change must never fail this test or require a live capture.
      */
-    public function testCommittedArtifactMatchesTheDeclaredOutcomes(): void
-    {
+    #[DataProvider('committedCaptures')]
+    public function testCommittedArtifactMatchesTheDeclaredOutcomes(
+        string $path,
+        string $sha256,
+        string $revision,
+        string $recipe,
+        string $status,
+    ): void {
         $probes = EmptyResultProbes::load();
         $expected = self::allowlist();
-        $artifact = self::artifact();
-        self::assertSame('empty-results-v1', $artifact['recipe']);
-        self::assertSame('failed', $artifact['status']);
+        $artifact = self::artifact($path, $sha256);
+        self::assertSame($recipe, $artifact['recipe']);
+        self::assertSame($status, $artifact['status']);
         self::assertCount(count($probes), $artifact['probes']);
         $root = dirname(__DIR__, 3);
-        foreach (['docs/api/evidence/README.md', 'docs/api/source-audit.md', 'tools/live-verify/README.md'] as $path) {
-            $document = file_get_contents($root . '/' . $path);
+        foreach (['docs/api/evidence/README.md', 'docs/api/source-audit.md', 'tools/live-verify/README.md'] as $doc) {
+            $document = file_get_contents($root . '/' . $doc);
             self::assertIsString($document);
-            self::assertStringContainsString(self::ARTIFACT_SHA256, $document, $path);
-            self::assertStringContainsString(self::ARTIFACT_REVISION, $document, $path);
+            self::assertStringContainsString($sha256, $document, $doc);
+            self::assertStringContainsString($revision, $document, $doc);
         }
         $counts = ['value' => 0, 'fixed_path_empty' => 0, 'empty' => 0, 'api_failure' => 0];
         foreach ($probes as $index => $probe) {
@@ -228,7 +259,7 @@ final class EmptyResultProbesTest extends TestCase
             self::assertSame($probe->argumentVariant, $record['argument_variant'] ?? null, $label);
             self::assertSame($probe->route, $record['route'] ?? null, $label);
             self::assertSame('GET', $record['method'] ?? null, $label);
-            self::assertSame(self::ARTIFACT_REVISION, $record['revision'] ?? null, $label);
+            self::assertSame($revision, $record['revision'] ?? null, $label);
             self::assertTrue(EmptyResultProbes::matchesDeclaredOutcome($probe, $record), $label);
             $outcome = self::classification($record);
             self::assertSame($expected[$index][4], $outcome, $label);
@@ -643,15 +674,15 @@ final class EmptyResultProbesTest extends TestCase
     }
 
     /**
-     * Read the committed capture; only its structural record fields are used.
+     * Read a committed capture after checking its hash; only its structural record fields are used.
      *
      * @return array{recipe: mixed, status: mixed, probes: list<array<mixed>>}
      */
-    private static function artifact(): array
+    private static function artifact(string $path, string $sha256): array
     {
-        $raw = file_get_contents(dirname(__DIR__, 3) . '/' . self::ARTIFACT);
+        $raw = file_get_contents(dirname(__DIR__, 3) . '/' . $path);
         self::assertIsString($raw);
-        self::assertSame(self::ARTIFACT_SHA256, hash('sha256', $raw));
+        self::assertSame($sha256, hash('sha256', $raw));
         $document = json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
         self::assertIsArray($document);
         $section = $document['read_only_section'] ?? null;

@@ -9156,10 +9156,23 @@ and all earlier evidence are unchanged.
 `empty-results-v1` could never pass, so its status carried no signal: a client
 exception on a rerun would have looked like this capture. Recipe `empty-results-v2`
 keeps the same requests and declares each probe's recorded outcome, so such a deviation
-now fails the run. No capture exists for `empty-results-v2`. Offline tests hold this
-artifact to those declarations by operation, variant, route, method, outcome, revision
-and SHA-256. They compare no contract hash, so the artifact stays a valid historical
-record when a spec later changes. A declaration is a recorded form, not a contract.
+now fails the run.
+
+Its one [capture](evidence/2026-11-01-empty-results-v2.json) ran at
+`e8021d20d859efc84b6532c6b78a4e4471a6ba0d` on `11.138.0.19`, with no retry, and exited
+0 with `status: passed`, SHA-256
+`e1258f73d56221a60dee6fdab3d7fee6b2a3036ee062f8a5935449134b2fce15`. All 27 GETs returned
+HTTP 200, all 27 records match outcomes committed before the run, and every outcome,
+path and discrepancy field is identical to the v1 capture about three hours earlier.
+That repeats one version from declarations drawn from v1, so it is not independent
+evidence and establishes no other version. No live run has produced a deviation, so the
+rule's failure path is proven offline only. Nothing in the classification table above
+changes.
+
+Offline tests hold both artifacts to the declarations by operation, variant, route,
+method, outcome, revision and SHA-256. They compare no contract hash, so each artifact
+stays a valid historical record when a spec later changes. A declaration is a recorded
+form, not a contract.
 
 These observations cover one server, version, capture, root token and designated
 account. They establish nothing about reseller-scoped results, other filter values,

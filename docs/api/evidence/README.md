@@ -1303,11 +1303,20 @@ only: `accountsummary` fails, and `listaccts` omits `data`. The two `Bandwidth/q
 absent-domain API errors, which also failed that assessment, were not predicted. They
 and the other 23 records were only observed.
 
-Recipe `empty-results-v2` now assesses a declared outcome per probe. No capture exists
-for it. This artifact keeps its recipe and `failed` status unchanged, and its records
-match those declarations. Empty results establish no item fields, and several have no
-populated baseline; see the [source audit](../source-audit.md#empty-result-audit-2026-11-01).
+Recipe `empty-results-v2` assesses a declared outcome per probe. This artifact keeps its
+recipe and `failed` status unchanged, and its records match those declarations. Empty
+results establish no item fields, and several have no populated baseline; see the
+[source audit](../source-audit.md#empty-result-audit-2026-11-01).
 SHA-256: `2ec7d60176b4354c01d1016849e0e3d62ae85a7182354010ab8d89e77a39894f`.
+
+The [v2 capture](2026-11-01-empty-results-v2.json) at
+`e8021d20d859efc84b6532c6b78a4e4471a6ba0d` on `11.138.0.19` passes recipe
+`empty-results-v2`, exit 0: all 27 GETs returned HTTP 200 and all 27 records match the
+outcomes committed before the run. Three records still raise API errors and `listaccts`
+keeps its discrepancy, as declared, and every structural field matches the v1 capture.
+It repeats one server version from declarations drawn from v1, so it is not independent
+evidence and establishes no other version. No live run has produced a deviation.
+SHA-256: `e1258f73d56221a60dee6fdab3d7fee6b2a3036ee062f8a5935449134b2fce15`.
 
 ## cPanel 11.138.0.19 default read-only capture
 
