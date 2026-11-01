@@ -7,6 +7,7 @@ namespace HostingPal\WhmApiClient\Api\Engine;
 use HostingPal\WhmApiClient\Api\OutcomePolicy;
 use HostingPal\WhmApiClient\Api\RequestBodyFormat;
 use HostingPal\WhmApiClient\Api\RequestMethod;
+use HostingPal\WhmApiClient\Response\WhmPayloadProjection;
 use LogicException;
 
 /**
@@ -76,6 +77,9 @@ use LogicException;
  *   content-type or root routing guard applies inside this field. Required null
  *   is present JSON null when allowed. Optional nonnullable null means absence;
  *   optional nullable roots are unsupported. Malformed descriptors fail before I/O.
+ * - response_fields: optional nonempty list of documented WHM envelope siblings;
+ *   only for a nonnullable object result declaring exactly those fields. Metadata
+ *   and data are reserved; optional payloads and root extra values are forbidden.
  * - returns: required key; a type spec (see ShapeValidator for the grammar), or
  *   an explicit null for a void operation.
  * - unwrap: optional string naming a field declared in an object "returns";
@@ -93,6 +97,36 @@ use LogicException;
  */
 final class OperationSpec
 {
+    /**
+     * Read an explicit WHM projection; absence keeps data-only extraction.
+     *
+     * SpecChecker separately validates the complete return grammar before I/O.
+     *
+     * @param array<mixed> $spec
+     */
+    public static function responseProjection(array $spec): ?WhmPayloadProjection
+    {
+        if (!array_key_exists('response_fields', $spec)) {
+            return null;
+        }
+        $projection = WhmPayloadProjection::from($spec['response_fields']);
+        $returns = $spec['returns'] ?? null;
+        $fields = is_array($returns) ? ($returns['fields'] ?? null) : null;
+        if (
+            array_key_exists('module', $spec) || !is_array($returns)
+            || ($returns['type'] ?? null) !== 'object'
+            || (array_key_exists('nullable', $returns) && $returns['nullable'] !== false)
+            || (array_key_exists('optional', $spec) && $spec['optional'] !== false)
+            || array_key_exists('values', $returns)
+            || !is_array($fields) || count($fields) !== count($projection->fields)
+            || array_diff($projection->fields, array_keys($fields)) !== []
+        ) {
+            throw new LogicException('WHM response fields require an exact nonnullable object result.');
+        }
+
+        return $projection;
+    }
+
     /**
      * Map the spec's HTTP method to the request method.
      *

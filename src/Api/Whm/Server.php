@@ -400,6 +400,17 @@ use SensitiveParameter;
  * @phpstan-type StartProfileActivationResult array{
  *     log_id?: string,
  * }
+ * @phpstan-type SystemNeedsRebootResult array{
+ *     details?: array{
+ *         kernel?: array{
+ *             boot_version?: string,
+ *             running_version?: string,
+ *         },
+ *         quota?: int,
+ *         updates?: array<array-key, mixed>,
+ *     },
+ *     needs_reboot?: 0|1,
+ * }
  * @phpstan-type UnlinkServerNodeResult array{
  *     alias?: string,
  *     enabled_services?: list<string>,
@@ -2492,6 +2503,51 @@ final readonly class Server
     ): array {
         /** @var StartProfileActivationResult $result Validated against ServerSpec::START_PROFILE_ACTIVATION. */
         $result = ($this->run)(ServerSpec::START_PROFILE_ACTIVATION, ['code' => $code, 'optional' => $optional]);
+
+        return $result;
+    }
+
+    /**
+     * Return whether system needs reboot.
+     *
+     * This function determines if your system requires a reboot to apply quotas, software package updates, or kernel
+     * updates.
+     *
+     * Documented: Available from cPanel 64. This function cannot detect whether the system needs a reboot inside a
+     * Linux Container (LXC).
+     *
+     * Documented: details contains reasons for reboot. kernel is returned only if the kernel updates and requires a
+     * reboot; boot_version is the version the kernel updated to, and running_version is the version the server
+     * currently runs.
+     *
+     * Documented: quota describes whether a reboot is required to enable quotas, with documented value 1. The pinned
+     * quota note says: The function only returns this value if the kernel updates and requires a reboot.
+     *
+     * Documented: updates lists software packages requiring an update and their most recent versions, and is returned
+     * only if software packages on the server require updates.
+     *
+     * Policy: Select the documented details and needs_reboot envelope siblings after ordinary WHM outcome checks. All
+     * selected fields are optional and nonnullable; absence does not establish no reboot. needs_reboot is a strict
+     * integer 0|1, quota remains int, and updates preserves opaque object contents.
+     *
+     * Policy: The sole documented variant is GET, but x-readonly is false, so the established method policy sends one
+     * empty form POST. POST acceptance is unverified; offline coverage only, live follow-up 8x0.2.87.
+     *
+     * Policy: No reboot, update, command, polling, retry or implicit follow-up read is performed. Generic call(),
+     * callJson() and callMultipart() keep their existing data-only extraction and do not expose these sibling fields.
+     *
+     * API-map identity: whm1:system_needs_reboot#GET (wire name system_needs_reboot; System Information).
+     *
+     * @return SystemNeedsRebootResult
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/system-information/applicationversions-system_needs_reboot
+     */
+    public function systemNeedsReboot(): array
+    {
+        /** @var SystemNeedsRebootResult $result Validated against ServerSpec::SYSTEM_NEEDS_REBOOT. */
+        $result = ($this->run)(ServerSpec::SYSTEM_NEEDS_REBOOT, []);
 
         return $result;
     }

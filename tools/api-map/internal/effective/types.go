@@ -74,6 +74,7 @@ type Param struct {
 
 // Operation owns one canonical response/route contract and its public input mappings.
 type Operation struct {
+	ResponseFields        []string
 	MultipartUploadFamily *overlay.MultipartUploadFamily `json:",omitempty"`
 	MultipartUpload       *overlay.MultipartUpload       `json:",omitempty"`
 	MultipartUploads      *overlay.MultipartUploads      `json:",omitempty"`

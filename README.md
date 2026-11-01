@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 119 generated typed groups cover 1,234 documented operations (see
+The 119 generated typed groups cover 1,235 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, DNS zone and DNSSEC
 management, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -1809,18 +1809,18 @@ variants and lifecycle behavior.
 
 ### Expanded WHM server administration
 
-`whm()->server()` now exposes 76 of the 79 pinned Server Administration functions,
-including 72 additions for services, profiles, updates, configuration, linked nodes,
-notifications, licensing and inventory. The new calls use 23 GET requests and 49
-form POST requests. The four existing server methods retain their contracts.
+`whm()->server()` now exposes 78 of the 79 pinned Server Administration functions.
+The original 72 additions for services, profiles, updates, configuration, linked
+nodes, notifications, licensing and inventory use 23 GET requests and 49 form POST
+requests. Configuration upload and reboot status add two further form/body POST
+methods. The four original server methods retain their contracts.
 Missing read-only declarations remain conservative POST calls, including the
 three namespaced EcosystemFeatures functions.
 
-JSON connected-application saving remains under `8x0.1.18`, binary configuration
-upload under `8x0.1.19`, and `system_needs_reboot` under `8x0.1.27`. The latter's
-result fields are envelope siblings outside `data`; neither the typed runner nor
-the generic call currently preserves that result. No misleading void method is
-provided. Connected-application reads preserve declared typed fields and opaque
+JSON connected-application saving remains under `8x0.1.18`. Configuration upload
+is described below. `systemNeedsReboot()` now preserves the documented envelope
+siblings through an explicit source-bound projection; generic calls keep their
+existing data-only extraction. Connected-application reads preserve declared typed fields and opaque
 additional properties through the existing object-values mechanism. Treat their
 results and service/configuration values as private payload data.
 
@@ -5116,3 +5116,35 @@ Historical scalar captures do not establish PHP-list live acceptance. Live follo
 `8x0.2.86`, wider adoption `8x0.28.8`, the separate monthly-date source gate
 `8x0.28.8.6` and all existing module gaps remain OPEN. Totals stay 1,234 canonical
 operations, 119 groups and 241 generated outputs.
+
+
+### WHM reboot status and source-bound envelope projection
+
+`whm()->server()->systemNeedsReboot(): array` exposes the cPanel 64+ reboot-status
+operation. It determines whether quotas, software package updates or kernel
+updates require a reboot; upstream says detection cannot work inside LXC.
+The pinned schema puts `details` and `needs_reboot` beside `metadata`, without
+`data`. An explicit generated `response_fields` descriptor selects only these
+siblings after the existing HTTP/API outcome checks. Metadata remains separate;
+unselected siblings and an unexpected `data` wrapper are discarded. Generic
+`call()`, `callJson()` and `callMultipart()` retain data-only extraction.
+
+Every result field is optional and nonnullable. Missing fields stay missing;
+metadata-only success returns `[]`, which does not establish no reboot. An
+explicit `needs_reboot: 0` remains the integer zero, and only native integers
+`0|1` satisfy that flag. `details.kernel` has optional string `boot_version`
+(the version the kernel updated to) and `running_version` (the version currently
+running). The kernel object appears only if the kernel updates and requires a
+reboot. `quota` stays an ordinary integer under the existing singleton-enum
+policy; its pinned note says the function only returns this value if the kernel
+updates and requires a reboot. `updates` preserves an opaque object, including
+unknown nested values; an example package/version pair creates no string-only
+map contract. The source says it appears only if software packages require
+updates. Existing empty-array object compatibility remains unchanged.
+
+The documented variant/example uses GET, while `x-readonly: false` selects one
+empty form POST under the existing client policy. The request uses
+`/json-api/system_needs_reboot?api.version=1`; POST acceptance remains unverified.
+No reboot, update, polling, command, retry or implicit follow-up read occurs.
+Coverage is offline only; live follow-up `8x0.2.87` remains OPEN. Current totals
+are 1,235 canonical operations (636 UAPI, 599 WHM), 119 groups and 241 outputs.

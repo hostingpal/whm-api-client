@@ -17,6 +17,7 @@ use Nyholm\Psr7\Response;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
+use ReflectionClass;
 use ReflectionMethod;
 use SensitiveParameter;
 
@@ -1119,9 +1120,9 @@ final class WhmServerAdministrationTest extends TestCase
                 }
             }
         }
-        // Unsupported transports and the outside-data reboot result must not masquerade as usable typed methods.
-        foreach (['saveConnectedApplication', 'systemNeedsReboot'] as $method) {
-            self::assertFalse(method_exists(Server::class, $method));
+        // Connected-application JSON adoption remains deferred.
+        foreach (['saveConnectedApplication'] as $method) {
+            self::assertFalse((new ReflectionClass(Server::class))->hasMethod($method));
         }
     }
 

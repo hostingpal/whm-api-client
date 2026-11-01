@@ -2454,17 +2454,51 @@
       ]
     },
     "whm1:system_needs_reboot": {
-      "exclude": {
-        "reason": "Pinned 200 JSON schema places needs_reboot and details beside metadata with no data member. Current typed WHM runner returns only data, so void would silently discard the documented result and a fabricated data wrapper would not match the source. Dedicated envelope/payload follow-up required; no runtime widening in this slice.",
-        "evidence": [
-          {
-            "kind": "doc",
-            "version": "pinned 2026-10-13",
-            "date": "2026-10-31",
-            "note": "Pinned /system_needs_reboot source contract: Pinned 200 JSON schema places needs_reboot and details beside metadata with no data member. Current typed WHM runner returns only data, so void would silently discard the documented result and a fabricated data wrapper would not match the source. Dedicated envelope/payload follow-up required; no runtime widening in this slice. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
-          }
-        ]
-      }
+      "name": "systemNeedsReboot",
+      "response_fields": [
+        "details",
+        "needs_reboot"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 64. This function cannot detect whether the system needs a reboot inside a Linux Container (LXC)."
+        },
+        {
+          "kind": "documented",
+          "text": "details contains reasons for reboot. kernel is returned only if the kernel updates and requires a reboot; boot_version is the version the kernel updated to, and running_version is the version the server currently runs."
+        },
+        {
+          "kind": "documented",
+          "text": "quota describes whether a reboot is required to enable quotas, with documented value 1. The pinned quota note says: The function only returns this value if the kernel updates and requires a reboot."
+        },
+        {
+          "kind": "documented",
+          "text": "updates lists software packages requiring an update and their most recent versions, and is returned only if software packages on the server require updates."
+        },
+        {
+          "kind": "policy",
+          "text": "Select the documented details and needs_reboot envelope siblings after ordinary WHM outcome checks. All selected fields are optional and nonnullable; absence does not establish no reboot. needs_reboot is a strict integer 0|1, quota remains int, and updates preserves opaque object contents."
+        },
+        {
+          "kind": "policy",
+          "text": "The sole documented variant is GET, but x-readonly is false, so the established method policy sends one empty form POST. POST acceptance is unverified; offline coverage only, live follow-up 8x0.2.87."
+        },
+        {
+          "kind": "policy",
+          "text": "No reboot, update, command, polling, retry or implicit follow-up read is performed. Generic call(), callJson() and callMultipart() keep their existing data-only extraction and do not expose these sibling fields."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-01",
+          "note": "The exact 200 schema declares optional nonnullable details and needs_reboot beside ordinary metadata, without data. Select every documented nonmetadata sibling; retain nested types and requiredness. The source x-readonly:false remains the POST policy input despite the documented GET example.",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1system_needs_reboot/get/responses/200/content/application~1json/schema"
+        }
+      ]
     }
   }
 }

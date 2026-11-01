@@ -176,6 +176,8 @@ final class SpecChecker
             throw new LogicException('Invalid optional spec.');
         }
 
+        OperationSpec::responseProjection($spec);
+
         $unwrap = $spec['unwrap'] ?? null;
         if ($unwrap === null) {
             return;

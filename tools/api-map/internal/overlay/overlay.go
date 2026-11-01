@@ -96,6 +96,7 @@ type MultipartUploadFamily struct {
 }
 
 type Operation struct {
+	ResponseFields        []string               `json:"response_fields,omitempty"`
 	MultipartUploadFamily *MultipartUploadFamily `json:"multipart_upload_family,omitempty"`
 	MultipartUpload       *MultipartUpload       `json:"multipart_upload,omitempty"`
 	MultipartUploads      *MultipartUploads      `json:"multipart_uploads,omitempty"`

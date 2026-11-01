@@ -606,6 +606,13 @@ func specClass(g effective.Group) string {
 			w.line("        ],")
 		}
 		if canonical == "" {
+			if op.ResponseFields != nil {
+				names := make([]string, len(op.ResponseFields))
+				for i, name := range op.ResponseFields {
+					names[i] = phpString(name)
+				}
+				w.line("        'response_fields' => [" + strings.Join(names, ", ") + "],")
+			}
 			if op.Returns == nil {
 				w.line("        'returns' => null,")
 			} else {

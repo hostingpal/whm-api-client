@@ -20,6 +20,7 @@ use HostingPal\WhmApiClient\Http\HttpTransport;
 use HostingPal\WhmApiClient\Response\ApiResponse;
 use HostingPal\WhmApiClient\Response\CallResult;
 use HostingPal\WhmApiClient\Response\ResponseRoute;
+use HostingPal\WhmApiClient\Response\WhmPayloadProjection;
 use InvalidArgumentException;
 use LogicException;
 use SensitiveParameter;
@@ -232,6 +233,7 @@ final class WhmClient extends AbstractApiClient
                 $body,
                 ResponseRoute::Whm,
                 OperationSpec::outcome($spec),
+                OperationSpec::responseProjection($spec),
             );
         }
         if ($body !== null) {
@@ -243,6 +245,7 @@ final class WhmClient extends AbstractApiClient
                 $body,
                 ResponseRoute::Whm,
                 OperationSpec::outcome($spec),
+                OperationSpec::responseProjection($spec),
             );
         }
         return $this->request(
@@ -250,6 +253,7 @@ final class WhmClient extends AbstractApiClient
             $parameters,
             OperationSpec::method($spec),
             OperationSpec::outcome($spec),
+            OperationSpec::responseProjection($spec),
         );
     }
 
@@ -269,6 +273,7 @@ final class WhmClient extends AbstractApiClient
         array|OrderedFields $parameters,
         RequestMethod $method,
         OutcomePolicy $outcome = OutcomePolicy::Flag,
+        ?WhmPayloadProjection $projection = null,
     ): ApiResponse {
         $path = '/json-api/' . $operation;
         if ($parameters instanceof OrderedFields) {
@@ -280,7 +285,14 @@ final class WhmClient extends AbstractApiClient
         }
 
         return $method === RequestMethod::Post
-            ? $this->executePost($path, self::RESERVED, $parameters, ResponseRoute::Whm, $outcome)
-            : $this->executeGet($path, $query, ResponseRoute::Whm, $outcome);
+            ? $this->executePost(
+                $path,
+                self::RESERVED,
+                $parameters,
+                ResponseRoute::Whm,
+                $outcome,
+                projection: $projection,
+            )
+            : $this->executeGet($path, $query, ResponseRoute::Whm, $outcome, $projection);
     }
 }

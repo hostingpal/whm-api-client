@@ -10,6 +10,7 @@ use HostingPal\WhmApiClient\Exception\HttpException;
 use HostingPal\WhmApiClient\Exception\InvalidResponseException;
 use InvalidArgumentException;
 use JsonException;
+use LogicException;
 use Psr\Http\Message\ResponseInterface;
 use RuntimeException;
 use SensitiveParameter;
@@ -54,7 +55,11 @@ final class EnvelopeReader
         #[SensitiveParameter] ResponseInterface $response,
         ResponseRoute $route,
         OutcomePolicy $outcome = OutcomePolicy::Flag,
+        ?WhmPayloadProjection $projection = null,
     ): ApiResponse {
+        if ($projection !== null && $route !== ResponseRoute::Whm) {
+            throw new LogicException('WHM response projection requires a WHM route.');
+        }
         $status = $response->getStatusCode();
 
         try {
@@ -113,6 +118,10 @@ final class EnvelopeReader
         // A usable envelope necessarily came from at least one metadata object.
         if ($metadata === null) {
             throw new InvalidResponseException('Missing API response metadata.');
+        }
+
+        if ($projection !== null) {
+            return new ApiResponse($projection->select($document), $metadata, true);
         }
 
         return new ApiResponse(

@@ -163,6 +163,9 @@ func (b *builder) operation(op model.Operation, v model.Variant, ov overlay.Oper
 		b.problem(err.Error())
 		return Operation{}, "", false
 	}
+	if ov.ResponseFields != nil {
+		payload = b.responseFields(op, v, ov)
+	}
 	returns := payload.spec
 	// Query parameters and form-encoded body fields are generated; any other
 	// documented body (multipart or JSON, possibly carrying secrets) must
@@ -175,18 +178,19 @@ func (b *builder) operation(op model.Operation, v model.Variant, ov overlay.Oper
 		b.problem(op.ID + ": flagged deprecated upstream; exclude it")
 	}
 	result := Operation{
-		ID:          op.ID,
-		VariantID:   v.ID,
-		Family:      op.Family,
-		Function:    b.wireFunction(op, ov),
-		Outcome:     firstNonEmpty(ov.Outcome, "flag"),
-		Body:        ov.Body,
-		Summary:     sentence(text(node["summary"])),
-		Description: firstParagraph(text(node["description"])),
-		Subcategory: subcategory(op.Family, node),
-		SeeURL:      b.seeURL(op, v, node),
-		Notes:       notes(ov.Notes),
-		Unwrap:      ov.Unwrap,
+		ID:             op.ID,
+		VariantID:      v.ID,
+		Family:         op.Family,
+		Function:       b.wireFunction(op, ov),
+		Outcome:        firstNonEmpty(ov.Outcome, "flag"),
+		Body:           ov.Body,
+		Summary:        sentence(text(node["summary"])),
+		Description:    firstParagraph(text(node["description"])),
+		Subcategory:    subcategory(op.Family, node),
+		SeeURL:         b.seeURL(op, v, node),
+		Notes:          notes(ov.Notes),
+		Unwrap:         ov.Unwrap,
+		ResponseFields: ov.ResponseFields,
 
 		OptionalPayload: ov.OptionalPayload,
 	}
@@ -248,6 +252,9 @@ func (b *builder) operation(op model.Operation, v model.Variant, ov overlay.Oper
 	}
 	if ov.OptionalPayload && returns == nil {
 		b.problem(op.ID + ": optional_payload needs a documented payload")
+	}
+	if ov.ResponseFields != nil && !projectionMatches(returns, ov.ResponseFields) {
+		b.problem(op.ID + ": response_fields corrections must preserve the exact nonnullable selected object")
 	}
 	result.Returns = returns
 	result.AdditionalMethods = b.additionalMethods(op, v, ov, result)
