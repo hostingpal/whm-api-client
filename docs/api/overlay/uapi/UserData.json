@@ -1,0 +1,156 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "UserData",
+  "accessor": "userData",
+  "description": "Selected-account scoped userdata settings from cPanel 11.32. Both pinned GET variants declare non-read-only behavior and use form POST under repository policy. Preserve raw scalar inputs and dynamic private string-map results; offline coverage only, with live follow-up whm-api-client-8x0.2.74 open.",
+  "operations": {
+    "uapi:UserData/get_scoped_userdata": {
+      "name": "getScopedUserdata",
+      "method": "POST",
+      "params": {
+        "scope": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 11.32 with no pinned role or plugin restriction. Both formal source variants are GET and declare x-readonly=false and x-rollback=none. These annotations do not establish a hidden side effect, live POST acceptance or immutability."
+        },
+        {
+          "kind": "documented",
+          "text": "The getter prose says it returns all userdata key/value pairs for the given scope, while the formal source classifies it as non-read-only. Preserve that distinction without guessing a hidden side effect or claiming live immutability."
+        },
+        {
+          "kind": "policy",
+          "text": "Use one form POST under repository policy for non-read-only operations and private input fields. scope, json, key and value remain exact scalar strings encoded once; the json field is not an application/json request body. No local JSON parsing, reserialization, format validation or normalization occurs."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a required nonnullable dynamic map of string values, preserving arbitrary keys and values including empty strings and zero-like strings. Missing data, explicit null, nonempty list roots and nonstring entries fail. Existing empty-array map compatibility and PHP numeric-string object-key conversion remain unchanged; decoding distinguishes objects from arrays."
+        },
+        {
+          "kind": "policy",
+          "text": "Scope names, keys, values, raw results, responseMeta() and PayloadMismatchException::$payload can expose private account settings. All input parameters are sensitive as privacy policy, without assuming they are authentication tokens. Library-owned exception frames conceal inputs and response/error arguments; third-party transports control their own traces. Deliberate payload and metadata inspection remains caller responsibility."
+        },
+        {
+          "kind": "policy",
+          "text": "The client adds no implicit read, merge, key deletion, readback, retry, rollback, cache of server settings, returned-path access or URL fetch. Offline fixtures establish no live acceptance or server settings behavior; live follow-up whm-api-client-8x0.2.74 remains open."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "note": "Select the complete pinned get_scoped_userdata GET variant as getScopedUserdata with ordinary Flag outcome and effective form POST because x-readonly=false and x-rollback=none, preserving source GET classification, cPanel 11.32, parameter optionality and the required nonnullable additionalProperties string map. No source correction, alias, unwrap, optional_payload or body override is introduced.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1UserData~1get_scoped_userdata/get"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "note": "Preserve required string scope and its PHP/wire name without requiredness or encoding changes. Mark this private account-setting scope identity sensitive as client privacy policy. Exact supplied bytes are forwarded once without normalization or added cross-field validation.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1UserData~1get_scoped_userdata/get/parameters/0"
+        }
+      ]
+    },
+    "uapi:UserData/set_scoped_userdata": {
+      "name": "setScopedUserdata",
+      "method": "POST",
+      "params": {
+        "scope": {
+          "sensitive": true
+        },
+        "json": {
+          "sensitive": true
+        },
+        "key": {
+          "sensitive": true
+        },
+        "value": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 11.32 with no pinned role or plugin restriction. Both formal source variants are GET and declare x-readonly=false and x-rollback=none. These annotations do not establish a hidden side effect, live POST acceptance or immutability."
+        },
+        {
+          "kind": "documented",
+          "text": "Creates or updates scoped userdata and returns the full updated mapping. The source does not establish merge-versus-replace behavior, atomicity, persistence, transactionality, key deletion or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "scope is required; json, key and value are optional strings. Null optional arguments omit and empty strings remain supplied. Source prose forbids json with key or value, but this canonical method forwards every supplied string and leaves conflicts, key/value pairing and scope-only validity to server validation. No input mode is chosen implicitly."
+        },
+        {
+          "kind": "policy",
+          "text": "json has a string schema with an object-shaped string example, not a formal application/json content schema. Forward whitespace, duplicate keys, percent/plus/Unicode, empty or malformed text and scalar/list text verbatim. Callers may encode their desired JSON; no structured alias or local parsing is added."
+        },
+        {
+          "kind": "policy",
+          "text": "Use one form POST under repository policy for non-read-only operations and private input fields. scope, json, key and value remain exact scalar strings encoded once; the json field is not an application/json request body. No local JSON parsing, reserialization, format validation or normalization occurs."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a required nonnullable dynamic map of string values, preserving arbitrary keys and values including empty strings and zero-like strings. Missing data, explicit null, nonempty list roots and nonstring entries fail. Existing empty-array map compatibility and PHP numeric-string object-key conversion remain unchanged; decoding distinguishes objects from arrays."
+        },
+        {
+          "kind": "policy",
+          "text": "Scope names, keys, values, raw results, responseMeta() and PayloadMismatchException::$payload can expose private account settings. All input parameters are sensitive as privacy policy, without assuming they are authentication tokens. Library-owned exception frames conceal inputs and response/error arguments; third-party transports control their own traces. Deliberate payload and metadata inspection remains caller responsibility."
+        },
+        {
+          "kind": "policy",
+          "text": "The client adds no implicit read, merge, key deletion, readback, retry, rollback, cache of server settings, returned-path access or URL fetch. Offline fixtures establish no live acceptance or server settings behavior; live follow-up whm-api-client-8x0.2.74 remains open."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "note": "Select the complete pinned set_scoped_userdata GET variant as setScopedUserdata with ordinary Flag outcome and effective form POST because x-readonly=false and x-rollback=none, preserving source GET classification, cPanel 11.32, parameter optionality and the required nonnullable additionalProperties string map. No source correction, alias, unwrap, optional_payload or body override is introduced.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1UserData~1set_scoped_userdata/get"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "note": "Preserve required string scope and its PHP/wire name without requiredness or encoding changes. Mark this private account-setting scope identity sensitive as client privacy policy. Exact supplied bytes are forwarded once without normalization or added cross-field validation.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1UserData~1set_scoped_userdata/get/parameters/0"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "note": "Preserve optional string json and its PHP/wire name without requiredness or encoding changes. Mark this private account-setting input sensitive as client privacy policy. Null omits and supplied empty strings remain present; raw json text is not parsed or reserialized.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1UserData~1set_scoped_userdata/get/parameters/1"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "note": "Preserve optional string key and its PHP/wire name without requiredness or encoding changes. Mark this private account-setting input sensitive as client privacy policy. Exact supplied bytes are forwarded once without normalization or added cross-field validation.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1UserData~1set_scoped_userdata/get/parameters/2"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "note": "Preserve optional string value and its PHP/wire name without requiredness or encoding changes. Mark this private account-setting input sensitive as client privacy policy. Exact supplied bytes are forwarded once without normalization or added cross-field validation.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1UserData~1set_scoped_userdata/get/parameters/3"
+        }
+      ]
+    }
+  }
+}

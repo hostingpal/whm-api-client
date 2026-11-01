@@ -153,6 +153,8 @@ trait UapiGroups
 
     private ?TwoFactorAuth $twoFactorAuthGroup = null;
 
+    private ?UserData $userDataGroup = null;
+
     private ?UserManager $userManagerGroup = null;
 
     private ?UserTasks $userTasksGroup = null;
@@ -893,6 +895,18 @@ trait UapiGroups
     public function twoFactorAuth(): TwoFactorAuth
     {
         return $this->twoFactorAuthGroup ??= new TwoFactorAuth($this->run(...));
+    }
+
+    /**
+     * Select the UserData operations without making a request.
+     *
+     * Selected-account scoped userdata settings from cPanel 11.32. Both pinned GET variants declare non-read-only
+     * behavior and use form POST under repository policy. Preserve raw scalar inputs and dynamic private string-map
+     * results; offline coverage only, with live follow-up whm-api-client-8x0.2.74 open.
+     */
+    public function userData(): UserData
+    {
+        return $this->userDataGroup ??= new UserData($this->run(...));
     }
 
     /**

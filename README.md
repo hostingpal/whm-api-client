@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 107 generated typed groups cover 1,205 documented operations (see
+The 108 generated typed groups cover 1,207 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, DNS zone and DNSSEC
 management, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -4153,3 +4153,64 @@ follow-up `whm-api-client-8x0.2.73` and the full API goal remain OPEN.
 Generated coverage is 1,205 canonical operations (617 UAPI, 588 WHM), 107 groups
 and 217 outputs (216 PHP plus coverage). Existing methods and contracts remain
 unchanged; PHP 8.3 remains the supported minimum.
+
+
+### UAPI scoped userdata settings (2026-11-01)
+
+`uapi()->userData()` covers both pinned UserData functions from cPanel 11.32,
+with no pinned role or plugin restriction. Both formal source variants are GET
+and declare `x-readonly: false` / `x-rollback: none`. The getter prose describes
+returning all key/value pairs for a scope; preserve that non-read-only source
+classification without inferring a hidden side effect or live immutability.
+Both generated methods send one form POST under repository policy. Offline
+fixtures establish no live POST acceptance or account-settings behavior.
+
+```php
+$settings = $client->uapi('example')->userData();
+$mapping = $settings->getScopedUserdata(scope: 'prefs');
+// Synthetic inputs: each explicit setter call changes scoped data on the server.
+$mapping = $settings->setScopedUserdata(scope: 'prefs', key: 'theme', value: 'dark');
+$mapping = $settings->setScopedUserdata(scope: 'prefs', json: '{"theme":"dark"}');
+```
+
+The getter returns all scoped key/value pairs; the setter creates or updates data
+and returns the full updated mapping. Both results are required nonnullable
+`array<array-key, string>` maps. Arbitrary empty, whitespace, Unicode, dotted,
+reserved-looking and numeric-looking keys survive; canonical numeric object keys
+can become PHP integer keys under existing decoding. Values such as `"0"`, `"50"`
+and `""` stay strings. Missing/null data, nonempty list roots and nonstring entries
+fail. Empty objects and inherited empty-array map compatibility remain, while
+the decoder still distinguishes JSON objects and arrays internally.
+
+Scope is a required string. Setter `json`, `key` and `value` are optional strings:
+null omits, empty sends. The source forbids combining json with key or value;
+the canonical method forwards all supplied strings and leaves conflicts,
+key/value pairing and scope-only validity to server validation. No mode is
+selected implicitly and no requirement or default is invented. `json` is a raw
+scalar form field, encoded once, rather than an application/json request body.
+Whitespace, duplicate keys, percent/plus/Unicode, empty or malformed JSON text,
+and scalar/list text pass through without parsing or reserialization. Callers
+may encode their desired JSON; the source establishes no structured-input schema.
+
+Scope identities, keys, values, results, errors and raw metadata can expose private
+account settings. All four inputs use `SensitiveParameter` as privacy policy,
+without claiming every setting is an authentication token. Library-owned trace
+arguments conceal private inputs and responses; third-party transports control
+their own traces. Deliberate `responseMeta()` and
+`PayloadMismatchException::$payload` access remains private caller-accessible data.
+Do not log these indiscriminately or fetch returned URLs/paths.
+
+Accessors cache by account without I/O; server settings are not cached. Every
+explicit operation makes at most one request, with no implicit read, merge,
+key deletion, readback, retry or rollback. No merge-versus-replace, atomicity,
+persistence, transactionality or rollback guarantee is inferred. API/outer-WHM
+failures precede payload validation; a mismatch after success may follow a state
+change, so do not retry automatically. Metadata clears on entry and records the
+new envelope before API/payload failure; native argument errors before entry
+retain the previous snapshot.
+
+Generated coverage is 1,207 canonical operations (619 UAPI, 588 WHM), 108 groups
+and 219 outputs (218 PHP plus coverage). Delivery `whm-api-client-8x0.4.32`
+uses independent synthetic offline fixtures only. Live follow-up
+`whm-api-client-8x0.2.74` and the full API goal remain OPEN. No real account
+settings, remote paths, URLs or server state were accessed or changed.

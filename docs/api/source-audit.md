@@ -7525,3 +7525,79 @@ coverage change. Sources, evidence, map checksum, schema copies and historical
 audit text remain unchanged. All 55 inherited diagnostics stay unwaived. PHP 8.3
 is the supported minimum; local validation uses PHP 8.4.26 and exact-head PHP 8.3
 CI remains a publication gate.
+
+
+### UserData complete source-backed slice (2026-11-01)
+
+Delivery `whm-api-client-8x0.4.32` selects both complete UserData path objects from
+the original pinned `2026-10-13/cpanel.openapi.json.gz` (OpenAPI 11.138.0.10),
+decompressed SHA-256
+`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`.
+The independently checked `/tmp/next-UserData-source.json` export equals both
+original path objects. Evidence binds selection, naming and POST policy to
+`/paths/~1UserData~1get_scoped_userdata/get` and
+`/paths/~1UserData~1set_scoped_userdata/get`, getter scope sensitivity to its
+`/parameters/0`, and setter scope/json/key/value sensitivity to its
+`/parameters/0` through `/parameters/3`. Both source functions are available from
+cPanel 11.32 without pinned role/plugin restrictions. No source refresh, alias,
+exclusion, unwrap, void, optional_payload, body/body_fields override, parameter
+requiredness/encoding change, response correction or runtime primitive is added.
+
+`getScopedUserdata(#[SensitiveParameter] string $scope): array` retains the getter
+prose returning all scoped key/value pairs alongside its formal non-read-only
+classification. Both formal variants are GET with x-readonly=false and
+x-rollback=none; both effective methods use one form POST under repository policy.
+No hidden getter side effect, live POST acceptance or immutability is inferred.
+`setScopedUserdata(scope, ?string $json = null, ?string $key = null,
+?string $value = null): array` creates/updates data and returns the full updated
+mapping. Every input uses SensitiveParameter. scope/json/key/value wire names and
+order remain unchanged. Required scope and optional strings preserve exact
+supplied bytes; null omits and empty strings remain supplied. The source forbids
+json with key or value; this canonical method forwards all supplied strings and
+leaves conflicts, scope-only validity and key/value pairing to the server.
+
+The json parameter is a scalar string with an object-shaped string example, not
+a formal application/json content schema. Whitespace, duplicate keys, percent,
+plus, Unicode, empty/malformed JSON, scalar and list text remain verbatim through
+one form encoding. No local parsing, reserialization, structured alias, inferred
+mode, cross-field guard, key deletion or normalization is added. Callers may
+encode their desired JSON; source-permitted string inputs are not narrowed.
+No merge-versus-replace, atomicity, transactionality, persistence or rollback
+promise is inferred.
+
+Both required nonnullable result objects have additionalProperties of type string,
+lowered through existing map<string> validation to `array<array-key, string>`.
+Arbitrary keys and exact string values survive, including empty, zero-like,
+whitespace, Unicode, dotted, reserved-looking and numeric-string keys. Canonical
+numeric object keys can become PHP integers under existing decoding. Empty object
+and inherited empty-array map compatibility stay; decoder object/array identity
+remains distinct. Missing data, null, scalar/nonempty-list roots and numeric,
+boolean, null or nested entry values reject. No opaque widening, filtering to a
+fixed field set or response normalization is introduced.
+
+Independent literal HTTP-boundary fixtures exercise cached account accessors,
+native/named signatures, auth, direct/bridge URLs, routing query versus form body,
+Content-Type, every source argument-presence combination and null/empty values,
+conflicting supplied arguments, exact raw-string encoding, strict dynamic maps,
+required payloads, native pre-entry failures retaining metadata, snapshot
+replacement, warning retention, metadata clearing at actual I/O, one-attempt
+transport/HTTP/JSON/status/API/outer-WHM/payload failure precedence and actual
+nonzero library exception frames with argument collection enabled. Explicit
+metadata and mismatch payloads remain accessible private settings data.
+
+Scope identities, keys, values, response/error data and metadata are private
+account settings, not necessarily authentication tokens. Library trace frames
+conceal these arguments; third-party transport traces remain its responsibility.
+No live/API/SSH/network/credentials, account settings, returned paths or URLs were
+accessed. There is no implicit read, merge, deletion, readback, retry, rollback or
+cache of remote settings. Live follow-up `whm-api-client-8x0.2.74` and the full API
+goal remain OPEN; this delivery establishes synthetic offline coverage only.
+
+Generated coverage is 1,207 canonical operations (619 UAPI, 588 WHM), 108 groups
+and 219 outputs (218 PHP plus coverage). Prior generated methods/specs and overlays
+stay byte-identical, except the additive cached userData accessor and coverage.
+Pinned sources/evidence, map checksum, runtime, generator, schema copies,
+transport, envelope and response normalization remain unchanged; this audit's
+historical text remains an unchanged prefix. All 55 inherited source diagnostics
+remain unwaived. PHP 8.3 remains the supported minimum; local validation uses
+PHP 8.4.26 and exact-head PHP 8.3 CI remains a controller publication gate.
