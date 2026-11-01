@@ -4237,9 +4237,9 @@ request with ordinary UAPI status handling; the cached accessor performs no I/O.
 | Method | Effective request | Available from |
 | --- | --- | --- |
 | `getApplicationInformation(string $appKey): array` | GET | cPanel 11.42 |
-| `getApplications(?string $appKeys = null): array` | GET | cPanel 11.52 |
-| `getAvailableApplications(?string $nvarglist = null): array` | GET | cPanel 54 |
-| `getInformationForApplications(string $docroot, ?string $appKeys = null): array` | Form POST | cPanel 11.52 |
+| `getApplications(string\|array\|null $appKeys = null): array` | GET | cPanel 11.52 |
+| `getAvailableApplications(string\|array\|null $nvarglist = null): array` | GET | cPanel 54 |
+| `getInformationForApplications(string $docroot, string\|array\|null $appKeys = null): array` | Form POST | cPanel 11.52 |
 | `includeFile(string $file, ?string $data = null, ?bool $raw = null, ?bool $skipDefault = null): ?string` | Form POST | cPanel 11.42 |
 
 The source specifies GET for every method, including `include` with
