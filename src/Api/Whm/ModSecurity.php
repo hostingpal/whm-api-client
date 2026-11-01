@@ -1145,26 +1145,36 @@ final readonly class ModSecurity
      * Documented: Reviewed Chunk.pm defines a returned vendor_id as a string, including an empty string when not
      * applicable. Keep that string contract; null is not inferred.
      *
+     * Policy: Client list convenience: accept a nonempty sequential list of strict strings and join once with a comma
+     * into the original field. Preserve order, duplicates, empty items and all other bytes; reject embedded commas and
+     * malformed or empty lists after metadata reset before I/O. Raw scalars remain unparsed and encoded once.
+     * Collection arguments have trace protection without changing transport. Offline coverage only; historical scalar
+     * captures do not establish PHP-list execution. Live follow-up whm-api-client-8x0.2.86 and wider adoption
+     * whm-api-client-8x0.28.8 remain open.
+     *
      * API-map identity: whm1:modsec_get_rules#GET (wire name modsec_get_rules; Rule Settings).
      *
-     * @param string|null $config The file path to the configuration file, relative to the `/usr/local/apache/conf`
-     *     directory. Null omits it.
+     * @param string|non-empty-list<string>|null $config The file path to the configuration file, relative to the
+     *     `/usr/local/apache/conf` directory. Null omits it.
      * @param bool|null $excludeBareComments Whether to exclude comments that are not associated with any directives.
      *     Null omits it.
      * @param bool|null $excludeOtherDirectives Whether the function only returns the `SecRule` and `SecAction`
      *     directives from the configuration file, and comments that are not associated with a rule. Null omits it.
-     * @param string|null $vendorId The vendor's unique short name. Null omits it.
+     * @param string|non-empty-list<string>|null $vendorId The vendor's unique short name. Null omits it.
      * @return GetRulesResult
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/rule-settings/modsecurity-modsec_get_rules
      */
     public function getRules(
-        ?string $config = null,
+        #[SensitiveParameter]
+        string|array|null $config = null,
         ?bool $excludeBareComments = null,
         ?bool $excludeOtherDirectives = null,
-        ?string $vendorId = null,
+        #[SensitiveParameter]
+        string|array|null $vendorId = null,
     ): array {
         /** @var GetRulesResult $result Validated against ModSecuritySpec::MODSEC_GET_RULES. */
         $result = ($this->run)(ModSecuritySpec::MODSEC_GET_RULES, [

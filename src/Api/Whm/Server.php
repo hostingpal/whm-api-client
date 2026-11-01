@@ -580,24 +580,34 @@ final readonly class Server
      * or rollback.
      *
      * Documented: With only the clustering ACL, only named may be configured. Never disable cpsrvd. Omitting enabled or
-     * monitored leaves that status unchanged; explicit false sends 0. eximAltportnum is comma-separated port text used
-     * only for exim-altport. Changes service availability or monitoring immediately.
+     * monitored leaves that status unchanged; explicit false sends 0. eximAltportnum accepts raw comma-separated port
+     * text or a nonempty sequential string list, used only for exim-altport. Omission retains the documented 26
+     * default; list items are strings without integer coercion. Changes service availability or monitoring immediately.
+     *
+     * Policy: Client list convenience: accept a nonempty sequential list of strict strings and join once with a comma
+     * into the original field. Preserve order, duplicates, empty items and all other bytes; reject embedded commas and
+     * malformed or empty lists after metadata reset before I/O. Raw scalars remain unparsed and encoded once.
+     * Collection arguments have trace protection without changing transport. Offline coverage only; historical scalar
+     * captures do not establish PHP-list execution. Live follow-up whm-api-client-8x0.2.86 and wider adoption
+     * whm-api-client-8x0.28.8 remain open.
      *
      * API-map identity: whm1:configureservice#GET (wire name configureservice; Services).
      *
      * @param string $service The service to configure.
      * @param bool|null $enabled Whether to enable the service. Null omits it.
-     * @param string|null $eximAltportnum A port or list of comma-separated ports on which Exim will listen for inbound
-     *     connections. Null omits it.
+     * @param string|non-empty-list<string>|null $eximAltportnum A port or list of comma-separated ports on which Exim
+     *     will listen for inbound connections. Null omits it.
      * @param bool|null $monitored Whether to monitor the service in WHM's *Service Status* interface (*WHM >> Home >>
      *     Server Status >> Service Status*). Null omits it.
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/services/services-configureservice
      */
     public function configureService(
         string $service,
         ?bool $enabled = null,
-        ?string $eximAltportnum = null,
+        #[SensitiveParameter]
+        string|array|null $eximAltportnum = null,
         ?bool $monitored = null,
     ): void {
         ($this->run)(ServerSpec::CONFIGURESERVICE, [

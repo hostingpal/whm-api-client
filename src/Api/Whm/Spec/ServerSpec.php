@@ -51,7 +51,17 @@ final class ServerSpec
         'params' => [
             'service' => ['name' => 'service', 'encoding' => 'scalar'],
             'enabled' => ['name' => 'enabled', 'encoding' => 'bool'],
-            'eximAltportnum' => ['name' => 'exim-altportnum', 'encoding' => 'scalar'],
+            'eximAltportnum' => [
+                'name' => 'exim-altportnum',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => ',',
+                ],
+            ],
             'monitored' => ['name' => 'monitored', 'encoding' => 'bool'],
         ],
         'returns' => null,

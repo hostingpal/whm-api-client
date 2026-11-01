@@ -705,7 +705,11 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available in cPanel & WHM 11 and later, according to the pinned operation. Omitting ips clears the delegated IP list; a comma-separated string allocates multiple IPs. The pinned documentation and reviewed source default delegate to 1, restricting the reseller to its dedicated IP; explicit false sends 0 and permits dedicating any available IP to owned accounts. The pinned setter schema declares optional all=1 only with delegate=0. Reviewed source re-reads and returns getresellerips() data after applying the change; the existing setter payload contract is retained. This source-backed behavior has no observed successful write. Main shared IP assignment is a separate operation."
+          "text": "Available in cPanel & WHM 11 and later, according to the pinned operation. Omitting ips clears the delegated IP list; a raw comma-separated string or a nonempty sequential string list allocates multiple IPs. The pinned documentation and reviewed source default delegate to 1, restricting the reseller to its dedicated IP; explicit false sends 0 and permits dedicating any available IP to owned accounts. The pinned setter schema declares optional all=1 only with delegate=0. Reviewed source re-reads and returns getresellerips() data after applying the change; the existing setter payload contract is retained. This source-backed behavior has no observed successful write. Main shared IP assignment is a separate operation."
+        },
+        {
+          "kind": "policy",
+          "text": "Client list convenience: accept a nonempty sequential list of strict strings and join once with a comma into the original field. Preserve order, duplicates, empty items and all other bytes; reject embedded commas and malformed or empty lists after metadata reset before I/O. Raw scalars remain unparsed and encoded once. Collection arguments have trace protection without changing transport. Offline coverage only; historical scalar captures do not establish PHP-list execution. Live follow-up whm-api-client-8x0.2.86 and wider adoption whm-api-client-8x0.28.8 remain open."
         }
       ],
       "evidence": [
@@ -720,8 +724,27 @@
           "version": "11.138.0.19",
           "date": "2026-10-31",
           "note": "Review https://github.com/hostingpal/whm-api-client/pull/49#pullrequestreview-5720544221: Whostmgr/API/1/Resellers.pm defaults omitted delegate to 1 and returns getresellerips() after setting delegation. Preserve the pinned ips-omission clearing behavior and the existing optional all/ip payload rather than treating it as void or optional payload. The setter pins all as integer enum[1], whereas the getter uses enum[0,1]; no new leaf narrowing is introduced without write evidence. This returned-getter path and default are source-only findings: all fourteen reseller writes remain unobserved. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1setresellerips/get/parameters/2",
+          "note": "Pinned ips is a concrete nonnullable string with explicit comma-separated or comma-delimited prose. Adopt the established client delimited descriptor at existing public ips position 2, preserving requiredness, aliases, transport, outcome and response contracts. Client list convenience: accept a nonempty sequential list of strict strings and join once with a comma into the original field. Preserve order, duplicates, empty items and all other bytes; reject embedded commas and malformed or empty lists after metadata reset before I/O. Raw scalars remain unparsed and encoded once. Collection arguments have trace protection without changing transport. Offline coverage only; historical scalar captures do not establish PHP-list execution. Live follow-up whm-api-client-8x0.2.86 and wider adoption whm-api-client-8x0.28.8 remain open."
         }
-      ]
+      ],
+      "params": {
+        "ips": {
+          "collection": {
+            "kind": "delimited",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "delimiter": ","
+          }
+        }
+      }
     },
     "whm1:setresellerlimits": {
       "name": "setResellerLimits",
@@ -792,7 +815,11 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available in cPanel & WHM 11 and later, according to the pinned operation. Omitting nameservers resets them to the server default. Multiple nameserver domains use one comma-separated string; an explicit empty string remains supplied."
+          "text": "Available in cPanel & WHM 11 and later, according to the pinned operation. Omitting nameservers resets them to the server default. Multiple nameserver domains accept a raw comma-separated string or a nonempty sequential string list; an explicit empty string or singleton empty-string list remains supplied."
+        },
+        {
+          "kind": "policy",
+          "text": "Client list convenience: accept a nonempty sequential list of strict strings and join once with a comma into the original field. Preserve order, duplicates, empty items and all other bytes; reject embedded commas and malformed or empty lists after metadata reset before I/O. Raw scalars remain unparsed and encoded once. Collection arguments have trace protection without changing transport. Offline coverage only; historical scalar captures do not establish PHP-list execution. Live follow-up whm-api-client-8x0.2.86 and wider adoption whm-api-client-8x0.28.8 remain open."
         }
       ],
       "evidence": [
@@ -807,8 +834,27 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /setresellernameservers nameservers parameter explicitly says omitting it resets nameservers to the server default. Retain this operation-specific omission caveat, without generalizing it to other reseller setters. No write was observed. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1setresellernameservers/get/parameters/1",
+          "note": "Pinned nameservers is a concrete nonnullable string with explicit comma-separated or comma-delimited prose. Adopt the established client delimited descriptor at existing public nameservers position 1, preserving requiredness, aliases, transport, outcome and response contracts. Client list convenience: accept a nonempty sequential list of strict strings and join once with a comma into the original field. Preserve order, duplicates, empty items and all other bytes; reject embedded commas and malformed or empty lists after metadata reset before I/O. Raw scalars remain unparsed and encoded once. Collection arguments have trace protection without changing transport. Offline coverage only; historical scalar captures do not establish PHP-list execution. Live follow-up whm-api-client-8x0.2.86 and wider adoption whm-api-client-8x0.28.8 remain open."
         }
-      ]
+      ],
+      "params": {
+        "nameservers": {
+          "collection": {
+            "kind": "delimited",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "delimiter": ","
+          }
+        }
+      }
     },
     "whm1:setresellerpackagelimit": {
       "name": "setResellerPackageLimit",

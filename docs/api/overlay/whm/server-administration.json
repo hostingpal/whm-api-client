@@ -277,7 +277,14 @@
       "method": "POST",
       "params": {
         "exim-altportnum": {
-          "php": "eximAltportnum"
+          "php": "eximAltportnum",
+          "collection": {
+            "kind": "delimited",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "delimiter": ","
+          }
         }
       },
       "notes": [
@@ -287,7 +294,11 @@
         },
         {
           "kind": "documented",
-          "text": "With only the clustering ACL, only named may be configured. Never disable cpsrvd. Omitting enabled or monitored leaves that status unchanged; explicit false sends 0. eximAltportnum is comma-separated port text used only for exim-altport. Changes service availability or monitoring immediately."
+          "text": "With only the clustering ACL, only named may be configured. Never disable cpsrvd. Omitting enabled or monitored leaves that status unchanged; explicit false sends 0. eximAltportnum accepts raw comma-separated port text or a nonempty sequential string list, used only for exim-altport. Omission retains the documented 26 default; list items are strings without integer coercion. Changes service availability or monitoring immediately."
+        },
+        {
+          "kind": "policy",
+          "text": "Client list convenience: accept a nonempty sequential list of strict strings and join once with a comma into the original field. Preserve order, duplicates, empty items and all other bytes; reject embedded commas and malformed or empty lists after metadata reset before I/O. Raw scalars remain unparsed and encoded once. Collection arguments have trace protection without changing transport. Offline coverage only; historical scalar captures do not establish PHP-list execution. Live follow-up whm-api-client-8x0.2.86 and wider adoption whm-api-client-8x0.28.8 remain open."
         }
       ],
       "evidence": [
@@ -296,6 +307,14 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /configureservice parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1configureservice/get/parameters/2",
+          "note": "Pinned exim-altportnum is a concrete nonnullable string with explicit comma-separated or comma-delimited prose. Adopt the established client delimited descriptor at existing public eximAltportnum position 2, preserving requiredness, aliases, transport, outcome and response contracts. Client list convenience: accept a nonempty sequential list of strict strings and join once with a comma into the original field. Preserve order, duplicates, empty items and all other bytes; reject embedded commas and malformed or empty lists after metadata reset before I/O. Raw scalars remain unparsed and encoded once. Collection arguments have trace protection without changing transport. Offline coverage only; historical scalar captures do not establish PHP-list execution. Live follow-up whm-api-client-8x0.2.86 and wider adoption whm-api-client-8x0.28.8 remain open."
         }
       ]
     },

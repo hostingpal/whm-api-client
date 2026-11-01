@@ -8502,3 +8502,94 @@ Historical scalar observations cannot establish PHP-list acceptance or behavior.
 Live `8x0.2.85` remains OPEN, wider `8x0.28.8` remains OPEN, and all existing
 module live/source gaps retain their status. Local PHP 8.4 gates do not establish
 exact-HEAD PHP 8.3 CI.
+
+## WHM administration comma-separated inputs (2026-11-01)
+
+Delivery `8x0.28.8.5` explicitly adopts the existing delimited descriptor for eleven
+inputs across ten operations in seven WHM groups. The pinned source is
+`docs/api/sources/2026-10-13/whm.openapi.json.gz`, decompressed SHA-256
+`6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594`.
+Each parameter has one new `kind: doc`, `date: 2026-11-01`,
+`version: pinned 2026-10-13` binding with that `source_sha256` and the original
+source pointer below. Source and public positions are zero-based and identical
+for this slice.
+
+| Operation | Parameter pointer | Public → wire / requiredness |
+| --- | --- | --- |
+| addips | `/paths/~1addips/get/parameters/2` | `excludes` → `excludes`, optional |
+| authorizesshkey | `/paths/~1authorizesshkey/get/parameters/3` | `options` → `options`, optional |
+| backup_config_set | `/paths/~1backup_config_set/get/parameters/10` | `backupdays` → `backupdays`, optional |
+| configureservice | `/paths/~1configureservice/get/parameters/2` | `eximAltportnum` → `exim-altportnum`, optional |
+| ipv6_disable_account | `/paths/~1ipv6_disable_account/get/parameters/0` | `user` → `user`, required |
+| ipv6_enable_account | `/paths/~1ipv6_enable_account/get/parameters/1` | `user` → `user`, required |
+| modsec_get_rules | `/paths/~1modsec_get_rules/get/parameters/0` | `config` → `config`, optional |
+| modsec_get_rules | `/paths/~1modsec_get_rules/get/parameters/3` | `vendorId` → `vendor_id`, optional |
+| save_spamd_config | `/paths/~1save_spamd_config/get/parameters/0` | `allowedIps` → `allowedips`, optional |
+| setresellerips | `/paths/~1setresellerips/get/parameters/2` | `ips` → `ips`, optional |
+| setresellernameservers | `/paths/~1setresellernameservers/get/parameters/1` | `nameservers` → `nameservers`, optional |
+
+All eleven source parameters are concrete nonnullable strings with explicit
+comma-separated or comma-delimited prose. The PHP list alternative is client
+convenience, not a pinned array schema or live observation. The descriptor is
+exactly `kind: delimited`, `item_type: string`, `allow_scalar: true`,
+`empty: reject`, `delimiter: ,`. Nine positions retain optional null omission;
+two IPv6 user arguments remain required. Source/public aliases, order, transports,
+outcomes and responses remain unchanged. `getRules()` remains GET with either or
+both fields; the other nine operations remain form POST. Every collection position
+has generated SensitiveParameter without semantic sensitive flags. Existing SSH
+text protection and file/text precedence remain intact.
+
+Lists join once into one original field. Scalars remain unparsed, including
+quoted commas and percent escapes. Order, duplicates, empty items, whitespace,
+Unicode, binary, pipes and all other bytes are preserved. Embedded commas and
+empty/sparse/keyed/nonstring/nested lists reject after metadata reset before I/O;
+old snapshots stay intact. Native wrong types fail before entry/reset. All nine
+omission matrices distinguish omitted/null from empty scalar/`['']` and rejected
+`[]`; no defaults or empty-array omission are inserted. SSH quoted commas require
+scalar form; integer backup day and port items reject without coercion. Existing
+backupMonthlyDates string|int|null is untouched under separate source gate 28.8.6;
+backupWeeklyDay remains integer.
+
+Operation caveats remain in the overlays and generated PHPDoc: addips interface/IP
+pool effects, CIDR mask 24..30, inconsistent excludes= source example and void
+metadata.output.messages; root/root-enabled SSH authorization and options default
+none; backup configuration persistence, days 0,2,4,6 default, restoration/timeouts/
+false/zero/strict-prune and unresolved keeplocal meanings; service default 26,
+exim-altport-only usage, clustering-ACL named-only and never-disable-cpsrvd;
+IPv6 role/listening/configured-range prerequisites, address loss/reassignment,
+optional per-account failures with mixed disable reasons and keyed enable maps;
+ModSecurity relative server paths, config-or-vendor prose with optional selectors,
+exclusion defaults 1/false0 and reviewed nonnullable vendor_id including empty;
+spamd role, any-IP omission, server-required loopback, zero timeouts, unspecified
+units and systemd PIDFile; reseller IP clearing, nameserver default reset,
+delegate default 1/false 0, source-returned getter data with setter enum[1] versus
+getter[0,1] and no new leaf narrowing. Original historical scalar observations,
+no-selector errors and unobserved populated configurations are unchanged.
+
+Synthetic public-method tests use literal expected request bytes, normal WHM
+routing/auth/control query/content type, one dispatch per call, both ModSecurity
+selectors together and separately, named/positional IPv6 and SSH, adjacent
+false/zero/scalar/null handling, byte preservation, all 11 late-item failures and
+actual SensitiveParameterValue library traces with exception arguments enabled
+and restored. List-call responses retain metadata-only void behavior for five
+methods, SSH authorized 0/file and missing/null mismatch, optional absent/null
+IPv6 disable success and mixed-reason failure data, strict enable maps/counts,
+ModSecurity chunks/flags/IDs/multiline rule/empty vendor_id, reseller all/ip shapes
+and absent/null errors. WHM result 0 wins over valid data without retry.
+The one existing Authentication sensitivity-name expectation now includes options.
+
+All 276 generated return specs/method bodies and 266 nontarget contracts in the
+seven groups stay unchanged; all other generated outputs and coverage stay
+unchanged. Totals remain 1,234 canonical operations, 119 groups, 241 outputs. Original
+sources, annotations, checksums and historical evidence remain immutable; all 55
+inherited diagnostics stay visible/unwaived. There is no new runtime/generator/
+schema/dependency rule, implicit read/merge/retry/rollback, local key/path access,
+daemon restart or network/DNS contact. Argument trace protection covers library
+frames only; callers/transports, memory, returned configuration/rules, metadata
+and mismatch payloads remain outside that guarantee.
+
+No live API/SSH/credentials/browser/network or server/account/mail/authentication
+change ran. Historical scalar captures cannot establish PHP-list acceptance or
+persistence. Live follow-up `8x0.2.86`, wider `8x0.28.8`, monthly-date gate
+`8x0.28.8.6` and all existing module live/source gaps remain OPEN. Local PHP 8.4
+verification does not establish exact-HEAD PHP 8.3 CI or external acceptance.

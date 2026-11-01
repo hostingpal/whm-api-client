@@ -5032,3 +5032,87 @@ no mailbox/list/team/settings/database/server change, activation/welcome/configu
 message or mail delivery ran. Historical scalar captures cannot establish live
 PHP-list acceptance. Live follow-up `8x0.2.85`, the wider `8x0.28.8` adopter audit
 and existing module live/source follow-ups remain OPEN.
+
+### WHM administration comma-separated inputs
+
+Eleven existing arguments accept raw strings or nonempty sequential string lists.
+Each list joins once with a comma into its original field; this adds no endpoints.
+
+| Group and method | PHP argument → wire field | Required |
+| --- | --- | --- |
+| `whm()->ipAddresses()->addIps()` | `excludes` → `excludes` | no |
+| `whm()->authentication()->authorizeSshKey()` | `options` → `options` | no |
+| `whm()->backups()->backupConfigSet()` | `backupdays` → `backupdays` | no |
+| `whm()->server()->configureService()` | `eximAltportnum` → `exim-altportnum` | no |
+| `whm()->ipAddresses()->disableIpv6Account()` | `user` → `user` | yes |
+| `whm()->ipAddresses()->enableIpv6Account()` | `user` → `user` | yes |
+| `whm()->modSecurity()->getRules()` | `config` → `config` | no |
+| `whm()->modSecurity()->getRules()` | `vendorId` → `vendor_id` | no |
+| `whm()->mail()->saveSpamdConfig()` | `allowedIps` → `allowedips` | no |
+| `whm()->resellers()->setResellerIps()` | `ips` → `ips` | no |
+| `whm()->resellers()->setResellerNameservers()` | `nameservers` → `nameservers` | no |
+
+```php
+// Synthetic inputs. The first explicit call reads configuration; the second changes backup settings.
+$rules = $client->whm()->modSecurity()->getRules(
+    config: ['vendor-a/rules.conf', 'vendor-b/rules.conf'],
+    excludeBareComments: false,
+    vendorId: ['VendorA', 'VendorB'],
+);
+$client->whm()->backups()->backupConfigSet(backupdays: ['0', '2', '6']);
+// This explicit call changes the selected accounts' IPv6 assignments; range comes first.
+$client->whm()->ipAddresses()->enableIpv6Account('SHARED', ['fixture-one', 'fixture-two']);
+```
+
+Order, duplicates, empty items, whitespace, Unicode, binary, pipes and percent
+bytes remain exact. `['']` supplies empty and `['', 'a', '']` supplies `,a,`.
+Empty, sparse, keyed, nested or nonstring lists and items containing commas reject
+before I/O after metadata reset; old metadata snapshots remain intact. Scalar
+commas, quotes, `%2C` and empty strings stay unparsed and serialize once. SSH
+options with quoted commas require the raw scalar form: quotes do not escape a
+comma inside a list item. Backup days and Exim ports require string list items;
+`['0', '2', '6']` works, while `[0, 2, 6]` rejects. No trimming, splitting,
+coercion, sorting, deduplication, enum/network/port/SSH validation or defaults are
+added. Native wrong-type failures occur before entry and retain prior metadata.
+The two IPv6 `user` arguments remain required; the other nine retain
+`string|array|null = null`. `backupMonthlyDates` stays `string|int|null` and
+`backupWeeklyDay` stays integer.
+
+Omission retains each server's documented meaning: `excludes` excludes none, SSH
+`options` supplies none, `backupdays` retains `0,2,4,6`, and `eximAltportnum`
+retains `26` for `exim-altport`. Both ModSecurity selectors stay optional although
+the source requires config or vendor; the client adds no cross-field guard.
+Omitted exclusion flags retain 1; explicit false sends 0. Omitted `allowedIps`
+allows any IP; supplied values must include `127.0.0.1` server-side, without client
+insertion. Omitted reseller `ips` clears its delegated list; omitted `nameservers`
+resets the server default. `[]` rejects for all nine, never becoming omission.
+Explicit empty values remain supplied without claiming equivalent server behavior.
+
+The ten methods preserve role/version and state-change caveats in generated
+PHPDoc. IPv4 additions alter interface aliases and the IP pool; `addIps()` remains
+void with per-address output in `responseMeta()->whm['output']['messages']`.
+IPv6 disable loses the address and re-enable can assign a different one; configured
+ranges, the Web Server role and cpsrvd IPv6 listening remain prerequisites. Inspect
+per-account failures independently of envelope success. Root SSH key authorization
+retains required `file`, optional sensitive `text` precedence and root/root-enabled
+reseller restrictions. Backup settings persist server-wide; timeout, restoration,
+strict-prune and unresolved `keeplocal` semantics remain unchanged. Service changes
+retain the clustering-ACL named-only caveat and never-disable-cpsrvd warning.
+Spamd keeps its Spam Filter role, zero-timeout and systemd PIDFile caveats. Reseller
+`delegate: false` still sends 0; main/shared IP assignment remains separate.
+
+ModSecurity retains GET, including supplied selector fields in the query; the
+other nine methods retain one form POST. All eleven collection arguments have
+`SensitiveParameter` without semantic secret flags or transport changes. Protection
+covers library argument frames; caller/transport traces, memory, rule/configuration
+responses, metadata and mismatch payloads can contain private data. Existing
+response contracts, strict flags/maps, absent/null distinctions and API-error
+precedence remain unchanged. Inspect warnings and raw metadata. No implicit read,
+merge, retry, rollback, key/path access, daemon restart or destination contact is
+added.
+
+This is offline synthetic coverage only, with no server or account changes.
+Historical scalar captures do not establish PHP-list live acceptance. Live follow-up
+`8x0.2.86`, wider adoption `8x0.28.8`, the separate monthly-date source gate
+`8x0.28.8.6` and all existing module gaps remain OPEN. Totals stay 1,234 canonical
+operations, 119 groups and 241 generated outputs.

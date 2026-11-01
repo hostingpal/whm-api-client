@@ -522,10 +522,30 @@ final class ModSecuritySpec
         'method' => 'GET',
         'outcome' => 'flag',
         'params' => [
-            'config' => ['name' => 'config', 'encoding' => 'scalar'],
+            'config' => [
+                'name' => 'config',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => ',',
+                ],
+            ],
             'excludeBareComments' => ['name' => 'exclude_bare_comments', 'encoding' => 'bool'],
             'excludeOtherDirectives' => ['name' => 'exclude_other_directives', 'encoding' => 'bool'],
-            'vendorId' => ['name' => 'vendor_id', 'encoding' => 'scalar'],
+            'vendorId' => [
+                'name' => 'vendor_id',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => ',',
+                ],
+            ],
         ],
         'returns' => [
             'type' => 'object',

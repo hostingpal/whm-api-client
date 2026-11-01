@@ -139,6 +139,15 @@
       "params": {
         "backup_monthly_dates": {
           "type": "string|int"
+        },
+        "backupdays": {
+          "collection": {
+            "kind": "delimited",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "delimiter": ","
+          }
         }
       },
       "evidence": [
@@ -147,6 +156,14 @@
           "version": "pinned 2026-10-13; 11.138.0.19 upstream source inspected by reviewer",
           "date": "2026-10-31",
           "note": "The pinned backup_config_set/get backup_monthly_dates schema is integer, but its parameter description explicitly permits a comma-delimited list; backup_config_get documents the string example 1,15,22. PR42 review https://github.com/hostingpal/whm-api-client/pull/42#pullrequestreview-5720277974 additionally reports that the upstream validator splits on commas. Accept string|int for this parameter only, retaining optional omission and form POST. backup_weekly_day remains a single integer. No server-wide configuration write was run by the reviewer."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1backup_config_set/get/parameters/10",
+          "note": "Pinned backupdays is a concrete nonnullable string with explicit comma-separated or comma-delimited prose. Adopt the established client delimited descriptor at existing public backupdays position 10, preserving requiredness, aliases, transport, outcome and response contracts. Client list convenience: accept a nonempty sequential list of strict strings and join once with a comma into the original field. Preserve order, duplicates, empty items and all other bytes; reject embedded commas and malformed or empty lists after metadata reset before I/O. Raw scalars remain unparsed and encoded once. Collection arguments have trace protection without changing transport. Offline coverage only; historical scalar captures do not establish PHP-list execution. Live follow-up whm-api-client-8x0.2.86 and wider adoption whm-api-client-8x0.28.8 remain open."
         }
       ],
       "notes": [
@@ -165,6 +182,14 @@
         {
           "kind": "documented",
           "text": "The pinned keeplocal parameter prose says 1 deletes local backups and 0 does not, but backup_config_get documents the opposite return meanings (1 retains, 0 deletes). The client forwards this flag without inversion; deletion semantics require source clarification and live verification under whm-api-client-8x0.2.29."
+        },
+        {
+          "kind": "policy",
+          "text": "backupdays accepts a raw comma-delimited string or a nonempty sequential string list, including string '0'; integers in a list are rejected without coercion. Null omits it and retains the documented 0,2,4,6 default. backupMonthlyDates remains string|int|null under separate source gate whm-api-client-8x0.28.8.6; backupWeeklyDay remains integer."
+        },
+        {
+          "kind": "policy",
+          "text": "Client list convenience: accept a nonempty sequential list of strict strings and join once with a comma into the original field. Preserve order, duplicates, empty items and all other bytes; reject embedded commas and malformed or empty lists after metadata reset before I/O. Raw scalars remain unparsed and encoded once. Collection arguments have trace protection without changing transport. Offline coverage only; historical scalar captures do not establish PHP-list execution. Live follow-up whm-api-client-8x0.2.86 and wider adoption whm-api-client-8x0.28.8 remain open."
         }
       ]
     },

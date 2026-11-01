@@ -8,6 +8,7 @@ use Closure;
 use HostingPal\WhmApiClient\Api\Whm\Spec\ResellersSpec;
 use HostingPal\WhmApiClient\Exception\ApiException;
 use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
+use InvalidArgumentException;
 use SensitiveParameter;
 
 /**
@@ -919,26 +920,39 @@ final readonly class Resellers
      * This function adds IP addresses to a reseller's account.
      *
      * Documented: Available in cPanel & WHM 11 and later, according to the pinned operation. Omitting ips clears the
-     * delegated IP list; a comma-separated string allocates multiple IPs. The pinned documentation and reviewed source
-     * default delegate to 1, restricting the reseller to its dedicated IP; explicit false sends 0 and permits
-     * dedicating any available IP to owned accounts. The pinned setter schema declares optional all=1 only with
-     * delegate=0. Reviewed source re-reads and returns getresellerips() data after applying the change; the existing
-     * setter payload contract is retained. This source-backed behavior has no observed successful write. Main shared IP
-     * assignment is a separate operation.
+     * delegated IP list; a raw comma-separated string or a nonempty sequential string list allocates multiple IPs. The
+     * pinned documentation and reviewed source default delegate to 1, restricting the reseller to its dedicated IP;
+     * explicit false sends 0 and permits dedicating any available IP to owned accounts. The pinned setter schema
+     * declares optional all=1 only with delegate=0. Reviewed source re-reads and returns getresellerips() data after
+     * applying the change; the existing setter payload contract is retained. This source-backed behavior has no
+     * observed successful write. Main shared IP assignment is a separate operation.
+     *
+     * Policy: Client list convenience: accept a nonempty sequential list of strict strings and join once with a comma
+     * into the original field. Preserve order, duplicates, empty items and all other bytes; reject embedded commas and
+     * malformed or empty lists after metadata reset before I/O. Raw scalars remain unparsed and encoded once.
+     * Collection arguments have trace protection without changing transport. Offline coverage only; historical scalar
+     * captures do not establish PHP-list execution. Live follow-up whm-api-client-8x0.2.86 and wider adoption
+     * whm-api-client-8x0.28.8 remain open.
      *
      * API-map identity: whm1:setresellerips#GET (wire name setresellerips; Account Settings).
      *
      * @param string $user The reseller's username.
      * @param bool|null $delegate Whether to allocate the reseller a dedicated IP address. Null omits it.
-     * @param string|null $ips The IP addresses to allocate to the reseller's account. Null omits it.
+     * @param string|non-empty-list<string>|null $ips The IP addresses to allocate to the reseller's account. Null omits
+     *     it.
      * @return SetResellerIpsResult
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-settings/resellers-setresellerips
      */
-    public function setResellerIps(string $user, ?bool $delegate = null, ?string $ips = null): array
-    {
+    public function setResellerIps(
+        string $user,
+        ?bool $delegate = null,
+        #[SensitiveParameter]
+        string|array|null $ips = null,
+    ): array {
         /** @var SetResellerIpsResult $result Validated against ResellersSpec::SETRESELLERIPS. */
         $result = ($this->run)(ResellersSpec::SETRESELLERIPS, [
             'user' => $user,
@@ -1033,19 +1047,30 @@ final readonly class Resellers
      * This function assigns nameservers to a reseller's account.
      *
      * Documented: Available in cPanel & WHM 11 and later, according to the pinned operation. Omitting nameservers
-     * resets them to the server default. Multiple nameserver domains use one comma-separated string; an explicit empty
-     * string remains supplied.
+     * resets them to the server default. Multiple nameserver domains accept a raw comma-separated string or a nonempty
+     * sequential string list; an explicit empty string or singleton empty-string list remains supplied.
+     *
+     * Policy: Client list convenience: accept a nonempty sequential list of strict strings and join once with a comma
+     * into the original field. Preserve order, duplicates, empty items and all other bytes; reject embedded commas and
+     * malformed or empty lists after metadata reset before I/O. Raw scalars remain unparsed and encoded once.
+     * Collection arguments have trace protection without changing transport. Offline coverage only; historical scalar
+     * captures do not establish PHP-list execution. Live follow-up whm-api-client-8x0.2.86 and wider adoption
+     * whm-api-client-8x0.28.8 remain open.
      *
      * API-map identity: whm1:setresellernameservers#GET (wire name setresellernameservers; Account Settings).
      *
      * @param string $user The reseller's username.
-     * @param string|null $nameservers A comma-separated list of the nameserver domains to assign to the reseller's
-     *     account. Null omits it.
+     * @param string|non-empty-list<string>|null $nameservers A comma-separated list of the nameserver domains to assign
+     *     to the reseller's account. Null omits it.
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-settings/resellers-setresellernameservers
      */
-    public function setResellerNameservers(string $user, ?string $nameservers = null): void
-    {
+    public function setResellerNameservers(
+        string $user,
+        #[SensitiveParameter]
+        string|array|null $nameservers = null,
+    ): void {
         ($this->run)(ResellersSpec::SETRESELLERNAMESERVERS, ['user' => $user, 'nameservers' => $nameservers]);
     }
 

@@ -666,6 +666,10 @@
         {
           "kind": "documented",
           "text": "Reviewed Chunk.pm defines a returned vendor_id as a string, including an empty string when not applicable. Keep that string contract; null is not inferred."
+        },
+        {
+          "kind": "policy",
+          "text": "Client list convenience: accept a nonempty sequential list of strict strings and join once with a comma into the original field. Preserve order, duplicates, empty items and all other bytes; reject embedded commas and malformed or empty lists after metadata reset before I/O. Raw scalars remain unparsed and encoded once. Collection arguments have trace protection without changing transport. Offline coverage only; historical scalar captures do not establish PHP-list execution. Live follow-up whm-api-client-8x0.2.86 and wider adoption whm-api-client-8x0.28.8 remain open."
         }
       ],
       "evidence": [
@@ -680,8 +684,44 @@
           "version": "11.138.0.19",
           "date": "2026-10-31",
           "note": "Review https://github.com/hostingpal/whm-api-client/pull/47#pullrequestreview-5720447657: Whostmgr/ModSecurity/Chunk.pm describes vendor_id as a string, or empty string if not applicable. The existing returned string type is retained without adding null."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1modsec_get_rules/get/parameters/0",
+          "note": "Pinned config is a concrete nonnullable string with explicit comma-separated or comma-delimited prose. Adopt the established client delimited descriptor at existing public config position 0, preserving requiredness, aliases, transport, outcome and response contracts. Client list convenience: accept a nonempty sequential list of strict strings and join once with a comma into the original field. Preserve order, duplicates, empty items and all other bytes; reject embedded commas and malformed or empty lists after metadata reset before I/O. Raw scalars remain unparsed and encoded once. Collection arguments have trace protection without changing transport. Offline coverage only; historical scalar captures do not establish PHP-list execution. Live follow-up whm-api-client-8x0.2.86 and wider adoption whm-api-client-8x0.28.8 remain open."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1modsec_get_rules/get/parameters/3",
+          "note": "Pinned vendor_id is a concrete nonnullable string with explicit comma-separated or comma-delimited prose. Adopt the established client delimited descriptor at existing public vendorId position 3, preserving requiredness, aliases, transport, outcome and response contracts. Client list convenience: accept a nonempty sequential list of strict strings and join once with a comma into the original field. Preserve order, duplicates, empty items and all other bytes; reject embedded commas and malformed or empty lists after metadata reset before I/O. Raw scalars remain unparsed and encoded once. Collection arguments have trace protection without changing transport. Offline coverage only; historical scalar captures do not establish PHP-list execution. Live follow-up whm-api-client-8x0.2.86 and wider adoption whm-api-client-8x0.28.8 remain open."
         }
-      ]
+      ],
+      "params": {
+        "config": {
+          "collection": {
+            "kind": "delimited",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "delimiter": ","
+          }
+        },
+        "vendor_id": {
+          "collection": {
+            "kind": "delimited",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "delimiter": ","
+          }
+        }
+      }
     },
     "whm1:modsec_get_settings": {
       "name": "getSettings",

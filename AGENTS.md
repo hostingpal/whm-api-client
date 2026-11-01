@@ -4677,3 +4677,69 @@ no mailbox/list/team/settings/database/server change, activation/welcome/configu
 message or mail delivery ran. Historical scalar captures cannot establish live
 PHP-list acceptance. Live follow-up `8x0.2.85`, the wider `8x0.28.8` adopter audit
 and existing module live/source follow-ups remain OPEN.
+
+## WHM administration delimited inputs (2026-11-01)
+
+Eleven generated positions use the accepted comma descriptor without a semantic
+`sensitive:true` flag. Exact public → wire mappings are:
+
+| Group/method | Public → wire | Position | Required |
+| --- | --- | --- | --- |
+| IpAddresses/addIps | `excludes` → `excludes` | 2 | no |
+| Authentication/authorizeSshKey | `options` → `options` | 3 | no |
+| Backups/backupConfigSet | `backupdays` → `backupdays` | 10 | no |
+| Server/configureService | `eximAltportnum` → `exim-altportnum` | 2 | no |
+| IpAddresses/disableIpv6Account | `user` → `user` | 0 | yes |
+| IpAddresses/enableIpv6Account | `user` → `user` | 1 | yes |
+| ModSecurity/getRules | `config` → `config` | 0 | no |
+| ModSecurity/getRules | `vendorId` → `vendor_id` | 3 | no |
+| Mail/saveSpamdConfig | `allowedIps` → `allowedips` | 0 | no |
+| Resellers/setResellerIps | `ips` → `ips` | 2 | no |
+| Resellers/setResellerNameservers | `nameservers` → `nameservers` | 1 | no |
+
+```php
+// Synthetic inputs; these explicit calls change server settings or account assignments.
+$client->whm()->backups()->backupConfigSet(backupdays: ['0', '2', '6']);
+$client->whm()->ipAddresses()->enableIpv6Account('SHARED', ['fixture-one', 'fixture-two']);
+```
+
+Required users remain `string|array`; nine optional positions remain
+`string|array|null = null`. Nonempty sequential strict-string lists join once into
+one original field, preserving order, duplicates, empty items and every other
+byte. Reject embedded commas, empty/sparse/keyed lists and null/int/bool/float/
+nested/object items after metadata reset before I/O. Raw commas, quoted commas,
+percent escapes, pipes and empty scalars remain unparsed. Null omits; `['']`
+supplies empty, `['', 'a', '']` supplies `,a,`, and `[]` never omits. Old captured
+metadata remains intact. Native wrong types precede entry/reset. Add no coercion,
+trim, sorting, parsing, enum/network/port/SSH syntax validation or cross-field guard.
+Quoted SSH commas require scalar input; quotes cannot escape a list-item comma.
+Days and ports remain strict strings in lists. Keep `backupdays` spelling,
+`backupMonthlyDates` string|int|null, `backupWeeklyDay` integer and all aliases/order.
+
+Omission excludes no IPv4 addresses, adds no SSH options, retains backup days
+0,2,4,6 and Exim alternate port 26. ModSecurity selectors remain optional despite
+source config-or-vendor prose; omission retains exclusion flag defaults 1 while
+false sends 0. Omitted spamd allowedIps allows any IP; supplied loopback inclusion
+is server validation without client insertion. Reseller ips omission clears the
+list; nameservers omission resets defaults. Explicit empty stays supplied without
+an inferred server meaning. Preserve root SSH file/text precedence, required file
+and sensitive text; IPv4 network effects and metadata.output.messages; IPv6
+role/listening/range prerequisites, address loss/reassignment and per-account
+failures; backup persistence, false/zero/timeouts/strict-prune/keeplocal caveats;
+service clustering-ACL named-only and never-disable-cpsrvd caveats; spamd role,
+zero-timeout/systemd PIDFile caveats; reseller delegate default 1/false 0, existing
+all:int/ip:list<string> and separate main/shared IP assignment. Existing version
+floors and all returned optional/null/mixed/strict fields remain in the overlays.
+
+ModSecurity stays GET with both selected fields; the other nine methods stay form
+POST. Generated SensitiveParameter covers all 11 collection positions and existing
+SSH text without changing transport policy. Library frames conceal arguments;
+caller/transport frames, memory and response/mismatch payloads remain outside that
+guarantee. All 276 generated return specs and method bodies in these seven groups
+and 266 nontarget contracts remain unchanged. No endpoint-count change: 1,234
+canonical operations, 119 groups, 241 outputs. No implicit read/merge/retry/rollback,
+local key/path access, DNS/network contact or restart is added. This convenience
+has offline evidence only; historical scalar captures cannot prove PHP-list
+acceptance. Live 2.86, wider 28.8, monthly-date gate 28.8.6 and existing module gaps
+remain OPEN. Original source/checksum/evidence and 55 inherited diagnostics remain
+unchanged. Exact-HEAD PHP 8.3 CI and external acceptance are separate gates.

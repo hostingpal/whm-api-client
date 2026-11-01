@@ -24,11 +24,15 @@
         },
         {
           "kind": "documented",
-          "text": "Supply excludes as a comma-delimited address string. Omission excludes no addresses; the multiple-address example includes an inconsistent excludes= prefix, while the parameter description specifies the address list itself. The client forwards the supplied string once without adding a prefix or validating network syntax."
+          "text": "Supply excludes as a raw comma-delimited address string or a nonempty sequential string list. Omission excludes no addresses; the multiple-address example includes an inconsistent excludes= prefix, while the parameter description specifies the address list itself. The client forwards the supplied value once without adding a prefix or validating network syntax."
         },
         {
           "kind": "documented",
           "text": "This void method leaves the pinned metadata.output.messages string list in responseMeta()->whm['output']['messages']; inspect that metadata for per-address output after envelope success."
+        },
+        {
+          "kind": "policy",
+          "text": "Client list convenience: accept a nonempty sequential list of strict strings and join once with a comma into the original field. Preserve order, duplicates, empty items and all other bytes; reject embedded commas and malformed or empty lists after metadata reset before I/O. Raw scalars remain unparsed and encoded once. Collection arguments have trace protection without changing transport. Offline coverage only; historical scalar captures do not establish PHP-list execution. Live follow-up whm-api-client-8x0.2.86 and wider adoption whm-api-client-8x0.28.8 remain open."
         }
       ],
       "evidence": [
@@ -43,8 +47,27 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /addips/get documents metadata.output.messages as a string list and no data payload. The metadata is retained by the shared response lifecycle; this note does not infer a new return schema."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1addips/get/parameters/2",
+          "note": "Pinned excludes is a concrete nonnullable string with explicit comma-separated or comma-delimited prose. Adopt the established client delimited descriptor at existing public excludes position 2, preserving requiredness, aliases, transport, outcome and response contracts. Client list convenience: accept a nonempty sequential list of strict strings and join once with a comma into the original field. Preserve order, duplicates, empty items and all other bytes; reject embedded commas and malformed or empty lists after metadata reset before I/O. Raw scalars remain unparsed and encoded once. Collection arguments have trace protection without changing transport. Offline coverage only; historical scalar captures do not establish PHP-list execution. Live follow-up whm-api-client-8x0.2.86 and wider adoption whm-api-client-8x0.28.8 remain open."
         }
-      ]
+      ],
+      "params": {
+        "excludes": {
+          "collection": {
+            "kind": "delimited",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "delimiter": ","
+          }
+        }
+      }
     },
     "whm1:delip": {
       "name": "deleteIp",
@@ -158,7 +181,7 @@
         },
         {
           "kind": "documented",
-          "text": "Supply user as a comma-delimited account-name string. Disabling IPv6 unbinds the address from the server and the account loses it; enabling it again assigns a different address. The optional fail_cnt and failures list report account failures separately from the WHM result. Inspect them even after envelope success."
+          "text": "Supply user as a raw comma-delimited account-name string or a nonempty sequential string list. Disabling IPv6 unbinds the address from the server and the account loses it; enabling it again assigns a different address. The optional fail_cnt and failures list report account failures separately from the WHM result. Inspect them even after envelope success."
         },
         {
           "kind": "documented",
@@ -167,6 +190,10 @@
         {
           "kind": "documented",
           "text": "The reviewed upstream implementation returns no data on clean success. Absent or null data therefore returns null; when data is present, the documented failure fields remain validated. The clean-success form is source-backed and offline-tested, not live-observed. Do not retry a completed disable to recover a response."
+        },
+        {
+          "kind": "policy",
+          "text": "Client list convenience: accept a nonempty sequential list of strict strings and join once with a comma into the original field. Preserve order, duplicates, empty items and all other bytes; reject embedded commas and malformed or empty lists after metadata reset before I/O. Raw scalars remain unparsed and encoded once. Collection arguments have trace protection without changing transport. Offline coverage only; historical scalar captures do not establish PHP-list execution. Live follow-up whm-api-client-8x0.2.86 and wider adoption whm-api-client-8x0.28.8 remain open."
         }
       ],
       "evidence": [
@@ -181,9 +208,28 @@
           "version": "cPanel 11.138.0.19 source reviewed 2026-10-31",
           "date": "2026-10-31",
           "note": "Claude review https://github.com/hostingpal/whm-api-client/pull/50#pullrequestreview-5720554070 inspected Whostmgr/API/1/IPv6.pm: ipv6_disable_account sets metadata.result=1 and returns without data on clean success. The pinned schema describes fail_cnt/failures only when failures occur. This supports optional_payload while retaining the complete object contract, including mixed failure reasons, when present. No IPv6 write ran during review."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1ipv6_disable_account/get/parameters/0",
+          "note": "Pinned user is a concrete nonnullable string with explicit comma-separated or comma-delimited prose. Adopt the established client delimited descriptor at existing public user position 0, preserving requiredness, aliases, transport, outcome and response contracts. Client list convenience: accept a nonempty sequential list of strict strings and join once with a comma into the original field. Preserve order, duplicates, empty items and all other bytes; reject embedded commas and malformed or empty lists after metadata reset before I/O. Raw scalars remain unparsed and encoded once. Collection arguments have trace protection without changing transport. Offline coverage only; historical scalar captures do not establish PHP-list execution. Live follow-up whm-api-client-8x0.2.86 and wider adoption whm-api-client-8x0.28.8 remain open."
         }
       ],
-      "optional_payload": true
+      "optional_payload": true,
+      "params": {
+        "user": {
+          "collection": {
+            "kind": "delimited",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "delimiter": ","
+          }
+        }
+      }
     },
     "whm1:ipv6_enable_account": {
       "name": "enableIpv6Account",
@@ -199,11 +245,15 @@
         },
         {
           "kind": "documented",
-          "text": "Supply user as a comma-delimited account-name string and range as a configured range name. SHARED selects the server shared IPv6 address. Configure dedicated ranges with ipv6_range_add or the IPv6 Ranges interface, or configure a shared address in Basic WebHost Manager Setup or /etc/wwwacct.conf, before assignment. This operation changes account address assignments."
+          "text": "Supply user as a raw comma-delimited account-name string or a nonempty sequential string list, and range as a configured range name. SHARED selects the server shared IPv6 address. Configure dedicated ranges with ipv6_range_add or the IPv6 Ranges interface, or configure a shared address in Basic WebHost Manager Setup or /etc/wwwacct.conf, before assignment. This operation changes account address assignments."
         },
         {
           "kind": "documented",
           "text": "The optional fail_cnt and account-keyed failures/ipv6 maps report per-account results separately from the WHM envelope. Inspect failures even after envelope success; map keys and IPv6 address strings are retained."
+        },
+        {
+          "kind": "policy",
+          "text": "Client list convenience: accept a nonempty sequential list of strict strings and join once with a comma into the original field. Preserve order, duplicates, empty items and all other bytes; reject embedded commas and malformed or empty lists after metadata reset before I/O. Raw scalars remain unparsed and encoded once. Collection arguments have trace protection without changing transport. Offline coverage only; historical scalar captures do not establish PHP-list execution. Live follow-up whm-api-client-8x0.2.86 and wider adoption whm-api-client-8x0.28.8 remain open."
         }
       ],
       "evidence": [
@@ -212,8 +262,27 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned WHM /ipv6_enable_account/get declares x-readonly=false and x-cpanel-available-version=11.40; selected transport is POST. Canonical x-tagGroups identity is IP Address Management, covering IPv4 Address Settings, IPv6 Address Settings and Network Address Translation rather than the first IP Addresses tag. Response properties and requiredness are preserved without normalization. Source decompressed SHA-256: 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1ipv6_enable_account/get/parameters/1",
+          "note": "Pinned user is a concrete nonnullable string with explicit comma-separated or comma-delimited prose. Adopt the established client delimited descriptor at existing public user position 1, preserving requiredness, aliases, transport, outcome and response contracts. Client list convenience: accept a nonempty sequential list of strict strings and join once with a comma into the original field. Preserve order, duplicates, empty items and all other bytes; reject embedded commas and malformed or empty lists after metadata reset before I/O. Raw scalars remain unparsed and encoded once. Collection arguments have trace protection without changing transport. Offline coverage only; historical scalar captures do not establish PHP-list execution. Live follow-up whm-api-client-8x0.2.86 and wider adoption whm-api-client-8x0.28.8 remain open."
         }
-      ]
+      ],
+      "params": {
+        "user": {
+          "collection": {
+            "kind": "delimited",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "delimiter": ","
+          }
+        }
+      }
     },
     "whm1:ipv6_range_add": {
       "name": "addIpv6Range",

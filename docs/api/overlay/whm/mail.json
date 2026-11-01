@@ -2031,6 +2031,14 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /save_spamd_config x-readonly=false; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 11.44. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1save_spamd_config/get/parameters/0",
+          "note": "Pinned allowedips is a concrete nonnullable string with explicit comma-separated or comma-delimited prose. Adopt the established client delimited descriptor at existing public allowedIps position 0, preserving requiredness, aliases, transport, outcome and response contracts. Client list convenience: accept a nonempty sequential list of strict strings and join once with a comma into the original field. Preserve order, duplicates, empty items and all other bytes; reject embedded commas and malformed or empty lists after metadata reset before I/O. Raw scalars remain unparsed and encoded once. Collection arguments have trace protection without changing transport. Offline coverage only; historical scalar captures do not establish PHP-list execution. Live follow-up whm-api-client-8x0.2.86 and wider adoption whm-api-client-8x0.28.8 remain open."
         }
       ],
       "notes": [
@@ -2040,7 +2048,11 @@
         },
         {
           "kind": "documented",
-          "text": "Requires Spam Filter role. allowedIps is a comma-separated string; omission allows connections from any IP, while a supplied list must include 127.0.0.1 for chkservd. Child and TCP timeout values of 0 mean never abandon the TCP connection. maxChildren and maxConnPerChild are process/connection limits. The pinned source does not state timeout units, so the client does not invent units. Changing pidFile on systemd requires matching PIDFile in spamd.service or the daemon fails. Options are omitted when not supplied; no client retry or restart is provided."
+          "text": "Requires Spam Filter role. allowedIps accepts a raw comma-separated string or a nonempty sequential string list; omission allows connections from any IP, while a supplied list must include 127.0.0.1 for chkservd. Child and TCP timeout values of 0 mean never abandon the TCP connection. maxChildren and maxConnPerChild are process/connection limits. The pinned source does not state timeout units, so the client does not invent units. Changing pidFile on systemd requires matching PIDFile in spamd.service or the daemon fails. Options are omitted when not supplied; no client retry or restart is provided."
+        },
+        {
+          "kind": "policy",
+          "text": "Client list convenience: accept a nonempty sequential list of strict strings and join once with a comma into the original field. Preserve order, duplicates, empty items and all other bytes; reject embedded commas and malformed or empty lists after metadata reset before I/O. Raw scalars remain unparsed and encoded once. Collection arguments have trace protection without changing transport. Offline coverage only; historical scalar captures do not establish PHP-list execution. Live follow-up whm-api-client-8x0.2.86 and wider adoption whm-api-client-8x0.28.8 remain open."
         }
       ],
       "order": [
@@ -2053,7 +2065,14 @@
       ],
       "params": {
         "allowedips": {
-          "php": "allowedIps"
+          "php": "allowedIps",
+          "collection": {
+            "kind": "delimited",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "delimiter": ","
+          }
         },
         "maxchildren": {
           "php": "maxChildren"
