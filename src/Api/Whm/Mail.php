@@ -435,6 +435,11 @@ use SensitiveParameter;
  *         srs?: 0|1,
  *     },
  * }
+ *
+ * @phpstan-type SpfRecordInput array{
+ *     domain: string,
+ *     record: string,
+ * }
  */
 final readonly class Mail
 {
@@ -1650,16 +1655,30 @@ final readonly class Mail
      * Documented: Available in cPanel & WHM 78 and later.
      *
      * Documented: Installs the supplied complete SPF record on the DNS server; supply the desired full record rather
-     * than a patch. This typed method supports the documented single domain/record pair. The pinned source documents
-     * incremented domain names and requires a corresponding record for each domain, but does not establish the repeated
-     * record field spelling or positional serialization. Both arguments remain scalar strings; multi-record
-     * serialization is deferred under whm-api-client-8x0.1.21. No numbered or repeated record encoder is inferred. Pass
-     * raw SPF text and let the client form-encode it once; do not pre-encode the source example. Inspect per-domain
-     * status and message separately from API status.
+     * than a patch. installSpfRecords(domain, record) retains one scalar domain/record pair.
+     * installSpfRecordBatch(records) accepts a nonempty sequential list of complete domain/record string rows and emits
+     * domain-1, record-1, domain-2, record-2 in row order, including a suffixed singleton. Both fields are required;
+     * empty strings and all supplied bytes are forwarded unchanged before one form encoding. Those byte rules do not
+     * promise clearing or preservation semantics. No SPF syntax/domain validation or DNS lookup is added. Inspect
+     * per-domain status and message separately from API status; status 0 under API result 1 remains returned data.
+     *
+     * Documented: The pinned domain prose documents numbered fields, but record only requires a value for every domain
+     * and omits its numbered spelling. Review
+     * https://github.com/hostingpal/whm-api-client/pull/72#pullrequestreview-5722427592 reports sorted-position
+     * domain/record family pairing in validate_domain_value_pairs_or_die through
+     * map_length_required_multiple_to_key_values and numeric family collection in Cpanel::Form::Param on 11.138.0.19.
+     * The companion is source-based; no live batch list was observed. Duplicate domains retain wire order without
+     * establishing server duplicate resolution, DNS propagation or applied state.
      *
      * Policy: OutcomePolicy::Flag is unchanged. On API result=0, ApiErrorException retains metadata but discards
      * per-domain data rows; the source does not define partial-failure result semantics. Do not retry automatically.
      * Re-read affected domain state before deciding further action.
+     *
+     * Policy: The sensitive records argument rejects empty or nonsequential lists, incomplete rows, unknown keys, nulls
+     * and wrong native types before I/O after metadata reset. One form POST uses the canonical response and outcome
+     * without unwrapping. Returned messages/configuration are private payload data. The client adds no read/merge, URL
+     * fetch, retry or rollback and promises no persistence or atomicity. Live follow-up remains
+     * whm-api-client-8x0.2.48.
      *
      * API-map identity: whm1:install_spf_records#GET (wire name install_spf_records; Mail DNS Settings).
      *
@@ -1675,6 +1694,64 @@ final readonly class Mail
     {
         /** @var InstallSpfRecordsResult $result Validated against MailSpec::INSTALL_SPF_RECORDS. */
         $result = ($this->run)(MailSpec::INSTALL_SPF_RECORDS, ['domain' => $domain, 'record' => $record]);
+
+        return $result;
+    }
+
+    /**
+     * Install domain SPF record.
+     *
+     * This function installs a Sender Policy Framework (SPF) record for a domain on the DNS server.
+     *
+     * Documented: Available in cPanel & WHM 78 and later.
+     *
+     * Documented: Installs the supplied complete SPF record on the DNS server; supply the desired full record rather
+     * than a patch. installSpfRecords(domain, record) retains one scalar domain/record pair.
+     * installSpfRecordBatch(records) accepts a nonempty sequential list of complete domain/record string rows and emits
+     * domain-1, record-1, domain-2, record-2 in row order, including a suffixed singleton. Both fields are required;
+     * empty strings and all supplied bytes are forwarded unchanged before one form encoding. Those byte rules do not
+     * promise clearing or preservation semantics. No SPF syntax/domain validation or DNS lookup is added. Inspect
+     * per-domain status and message separately from API status; status 0 under API result 1 remains returned data.
+     *
+     * Documented: The pinned domain prose documents numbered fields, but record only requires a value for every domain
+     * and omits its numbered spelling. Review
+     * https://github.com/hostingpal/whm-api-client/pull/72#pullrequestreview-5722427592 reports sorted-position
+     * domain/record family pairing in validate_domain_value_pairs_or_die through
+     * map_length_required_multiple_to_key_values and numeric family collection in Cpanel::Form::Param on 11.138.0.19.
+     * The companion is source-based; no live batch list was observed. Duplicate domains retain wire order without
+     * establishing server duplicate resolution, DNS propagation or applied state.
+     *
+     * Policy: OutcomePolicy::Flag is unchanged. On API result=0, ApiErrorException retains metadata but discards
+     * per-domain data rows; the source does not define partial-failure result semantics. Do not retry automatically.
+     * Re-read affected domain state before deciding further action.
+     *
+     * Policy: The sensitive records argument rejects empty or nonsequential lists, incomplete rows, unknown keys, nulls
+     * and wrong native types before I/O after metadata reset. One form POST uses the canonical response and outcome
+     * without unwrapping. Returned messages/configuration are private payload data. The client adds no read/merge, URL
+     * fetch, retry or rollback and promises no persistence or atomicity. Live follow-up remains
+     * whm-api-client-8x0.2.48.
+     *
+     * API-map identity: whm1:install_spf_records#GET (wire name install_spf_records; Mail DNS Settings).
+     *
+     * @param non-empty-list<SpfRecordInput> $records Records in input order; optional fields retain their original row
+     *     index. domain: The domain for which to install an SPF record on the DNS server. Note: To install multiple SPF
+     *     records, increment the parameter name. For example, use the `domain-1=example-1.com`,
+     *     `domain-2=example-2.com`, and `domain-3=example3.com` parameters. record: An SPF record. You must provide
+     *     this parameter for every `domain` parameter.
+     * @return InstallSpfRecordsResult
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If records are empty, nonsequential, contain unknown or missing fields,
+     *     invalid field types or expanded names; other list/map inputs retain their declared validation rules.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/mail-dns-settings/emailauth-install_spf_records
+     */
+    public function installSpfRecordBatch(
+        #[SensitiveParameter]
+        array $records,
+    ): array {
+        /** @var InstallSpfRecordsResult $result Validated against MailSpec::INSTALL_SPF_RECORD_BATCH. */
+        $result = ($this->run)(MailSpec::INSTALL_SPF_RECORD_BATCH, ['records' => $records]);
 
         return $result;
     }

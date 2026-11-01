@@ -853,12 +853,12 @@ final class WhmMailManagementTest extends TestCase
         }
     }
 
-    public function testSpfMultipleRecordSerializationIsNotGuessed(): void
+    public function testScalarSpfMethodStillRejectsParallelArrays(): void
     {
         [$client, $http] = self::client();
         $http->addResponse(new Response(200, [], self::envelope('install_spf_records', '{"payload":[]}')));
         $this->expectException(\TypeError::class);
-        // Multiple record field names are not specified by the pinned source.
+        // Paired lists belong to installSpfRecordBatch; the scalar method stays scalar.
         (new ReflectionMethod(Mail::class, 'installSpfRecords'))->invoke(
             $client->whm()->mail(),
             ['a.example.test', 'b.example.test'],
