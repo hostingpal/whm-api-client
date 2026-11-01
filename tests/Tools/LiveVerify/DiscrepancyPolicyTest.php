@@ -459,6 +459,64 @@ final class DiscrepancyPolicyTest extends TestCase
         self::assertSame(self::EVIDENCE_HASH, hash_file('sha256', $existing));
     }
 
+    #[DataProvider('protectedTargets')]
+    public function testEvidenceOutputCannotOverwriteAnyExistingEvidenceFile(string $kind): void
+    {
+        $root = $this->fixture();
+        $evidence = $root . '/docs/api/evidence';
+        mkdir($evidence . '/nested');
+        file_put_contents($evidence . '/history.json', 'history');
+        file_put_contents($evidence . '/nested/history.json', 'history');
+        $policy = DiscrepancyPolicy::load($root);
+        symlink($evidence, $root . '/private-directory-alias');
+        foreach ([basename(self::EVIDENCE), 'history.json', 'nested/history.json'] as $index => $name) {
+            $alias = $root . '/output-private-alias-' . $index . '.json';
+            $target = match ($kind) {
+                'normalized' => $evidence . '/../evidence/' . $name,
+                'symlink' => $alias,
+                'directory-symlink' => $root . '/private-directory-alias/' . $name,
+                'hardlink' => $alias,
+                default => $evidence . '/' . $name,
+            };
+            if ($kind === 'symlink') {
+                symlink($evidence . '/' . $name, $alias);
+            } elseif ($kind === 'hardlink') {
+                link($evidence . '/' . $name, $alias);
+            }
+            // PHPUnit failures are RuntimeExceptions, so fail() inside the try would be swallowed.
+            $refusal = null;
+            try {
+                $policy->assertOutputAllowed($target);
+            } catch (RuntimeException $error) {
+                $refusal = $error;
+            }
+            self::assertNotNull($refusal, $name . ' must never be an output.');
+            self::assertStringNotContainsString($root, $refusal->getMessage());
+            self::assertStringNotContainsString('private-alias', $refusal->getMessage());
+            self::assertNull($refusal->getPrevious());
+        }
+    }
+
+    public function testHistoricalArtifactIsRefusedAsAnOutput(): void
+    {
+        $root = dirname(__DIR__, 3);
+
+        $this->expectException(RuntimeException::class);
+        DiscrepancyPolicy::load($root)->assertOutputAllowed($root . '/docs/api/evidence/2026-10-16-quota-inventory.json');
+    }
+
+    public function testNewPathsUnderTheEvidenceDirectoryAreAllowed(): void
+    {
+        $root = $this->fixture();
+        $policy = DiscrepancyPolicy::load($root);
+
+        $policy->assertOutputAllowed($root . '/docs/api/evidence/new-capture.json');
+        $policy->assertOutputAllowed($root . '/docs/api/evidence/new-directory/new-capture.json');
+
+        self::assertFileDoesNotExist($root . '/docs/api/evidence/new-capture.json');
+        self::assertDirectoryDoesNotExist($root . '/docs/api/evidence/new-directory');
+    }
+
     private function fixture(): string
     {
         $this->fixtureRoot = sys_get_temp_dir() . '/whm-policy-private-' . bin2hex(random_bytes(8));

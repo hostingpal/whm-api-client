@@ -418,8 +418,10 @@ A passing assessment with acknowledgments is **not a discrepancy-free run**.
 
 `DiscrepancyPolicy` contains only the two reviewed Quota total observations from
 `docs/api/evidence/2026-11-01-read-only-11.138.0.19.json`. It verifies that file's
-fixed SHA-256 before any network request and refuses it (including filesystem aliases)
-as an output destination. There is no command-line option to create acknowledgments.
+fixed SHA-256 and, also before any network request, refuses every existing file under
+`docs/api/evidence/` (including filesystem aliases) as an output destination, so history
+stays protected after the reference moves. New paths there and files elsewhere stay
+allowed. There is no command-line option to create acknowledgments.
 Policy changes require code review and independent tests.
 
 Until 2026-11-01 the same two observations were bound to cPanel `11.138.0.15` through
