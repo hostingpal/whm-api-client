@@ -1765,3 +1765,76 @@ A successful result establishes singleton-list wire acceptance only. It establis
 no multi-domain batch, populated DS field, mutation, propagation or DNSSEC resolver
 coverage. Existing artifacts and discrepancy policies are never changed by this
 catalog.
+
+## Bounded no-match audit
+
+`empty-results-v1` is a separate opt-in catalog for bead `8x0.2.88`. It asks how a
+curated set of read-only collection operations answers when nothing can match. The
+selection was fixed and committed before execution. It follows pinned operation
+semantics and documented filters; a parameter name alone proves nothing.
+
+Twenty-seven GETs run once each, in catalog order: WHM `version` for provenance, then
+15 operations. Every request is a typed generated method. WHM routes use the root
+token; UAPI operations run direct as `npr` and bridged to `npr`. No request carries a
+live-derived value.
+
+| Operation | Routes | No-match criterion | Label | Why it belongs |
+| --- | --- | --- | --- | --- |
+| `listaccts` | WHM | `search=wzzemptyaudit`, `searchtype=user`, `searchmethod=exact` | `fixed-path-control` | PR123 control for the fixed result-0 form |
+| `showbw` | WHM | `search=wzzemptyaudit`, `searchtype=user` | `absent-user-pcre` | Documented PCRE filter over accounts |
+| `matchpkgs` | WHM | `FEATURELIST=wzzemptyaudit` | `absent-feature-list` | Documented criteria over the populated plan list |
+| `emailtrack_search` | WHM | `defer`, `failure`, `inprogress`, `success` all `0`, `max_results_by_type=1` | `all-event-types-off` | Documented event selectors; typed method has no value filter |
+| `emailtrack_user_stats` | WHM | `sender=nobody@wzzemptyaudit.invalid`, one-second 2001 window | `absent-sender-past-window` | Documented sender filter and search window |
+| `get_unique_sender_recipient_count_per_user` | WHM | one-second 2001 window | `past-window` | Required time window over mail records |
+| `php_get_vhosts_by_version` | WHM | `version=ea-php00` | `absent-php-package` | Boundary: list keyed by a package that does not exist |
+| `accountsummary` | WHM | `user=wzzemptyaudit` | `entity-lookup-control` | Entity lookup, not a search; must still fail |
+| `Email/list_pops` | direct, bridged | `regex=wzzemptyaudit` | `absent-regex` | Documented PCRE filter over a list holding the main account |
+| `Email/list_pops_with_disk` | direct, bridged | `regex=wzzemptyaudit` | `absent-regex` | Same filter on the disk variant |
+| `Email/list_pops_with_disk` | direct, bridged | `domain=wzzemptyaudit.invalid` | `absent-domain` | Documented domain filter |
+| `SubDomain/listsubdomains` | direct, bridged | `regex=wzzemptyaudit` | `absent-regex` | Documented name filter; `npr` had no subdomains in earlier captures |
+| `Features/list_features_like` | direct, bridged | `pattern=wzzemptyaudit`, `is_regex=0` | `absent-substring` | Documented search with a pinned no-match example |
+| `Fileman/autocompletedir` | direct, bridged | `path=wzzemptyaudit` | `absent-prefix` | Documented prefix match |
+| `Bandwidth/query` | direct, bridged | `grouping=domain`, `domains=wzzemptyaudit.invalid` | `absent-domain` | Documented domain filter on a map result |
+| `Bandwidth/query` | direct, bridged | `grouping=domain`, one-second 2001 window | `past-window` | Documented report window on a map result |
+| `SSL/list_ssl_items` | direct, bridged | `domains=wzzemptyaudit.invalid` | `absent-domain` | Documented domain selection over SSL items |
+
+Each probe's guard allows only its exact URI, GET, no body and no extra parameter.
+`tests/Tools/LiveVerify/EmptyResultProbesTest.php` repeats the whole allowlist as
+literals, independent of the catalog constants. `wzzemptyaudit` was chosen so nothing
+on `npr` uses it, the `.invalid` TLD is reserved, and the window ends on 2001-09-09
+UTC, decades before this cPanel release line. `ea-php00` names no PHP package a real
+build provides. The audit changes no account, configuration or file.
+
+Excluded on purpose: parameterless inventories, which cannot be made empty safely;
+entity lookups other than the single control; `Park/listparkeddomains`,
+`AddonDomain/listaddondomains`, `Mime/list_redirects` and `Email/list_forwarders`,
+because `npr` already returned empty lists for them, so a filter could prove nothing;
+`Ftp/list_ftp`, whose empty form is already recorded in the FTP section;
+`DomainRecommendations/domain_suggestions`, which calls an external service.
+
+An operation is classified from its record as one of:
+
+- **empty collection**: the API reported success and the typed method returned an
+  empty result.
+- **API error**: the API reported failure and the typed method raised
+  `ApiErrorException`.
+- **client exception**: the API reported success and the typed method raised
+  `PayloadMismatchException` or another client failure.
+
+The section assessment stays strict. It passes only when every probe succeeds with
+no discrepancy, so the entity control and the `listaccts` control cannot pass it: the
+first must fail, and the second returns an empty list from a response that omits
+`data`. A `failed` status therefore records the audit, not a broken run. Exit 1 and
+`status: failed` are expected. Per-record outcomes carry the classification.
+
+Evidence keeps structure only. An API error's text is not retained, so a record cannot
+distinguish a no-match failure from any other failure by itself.
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+  php tools/live-verify/empty-results.php --output=docs/api/evidence/YYYY-MM-DD-empty-results.json
+```
+
+An empty result covers only that operation, route, criterion, version and account
+state. It establishes no other filter value, server or account, and no operation
+outside this table.
