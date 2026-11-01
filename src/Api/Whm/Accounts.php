@@ -663,22 +663,38 @@ final readonly class Accounts
      *
      * Documented: Available from cPanel 58.
      *
-     * Documented: Requires the Web Server role. This method accepts one native integer job_id. The pinned multiple-job
-     * prose starts job_id-0 while its example starts job_id-1; the contradictory indexed family remains excluded from
-     * this signature under whm-api-client-8x0.1.21. Job statuses are separate from API success and are not polled.
+     * Documented: Requires the Web Server role. The pinned multiple-job prose starts job_id-0 while its example starts
+     * job_id-1. The source documents a minimum job ID of 1. Dynamic result keys, string payload job_id and each
+     * job_status remain separate from API success.
+     *
+     * Policy: Scalars retain native integer job_id; nonempty sequential native integer lists use job_id-0,job_id-1,
+     * including singleton lists. No numeric coercion or new local range policy is added. One GET adds no polling,
+     * conversion initiation, retry or rollback.
+     *
+     * Documented: Reviewer source inspection on 11.138.0.19 reports _parse_job_ids accepting job_id or numeric job_id-N
+     * at either base (https://github.com/hostingpal/whm-api-client/pull/72#pullrequestreview-5722427592). This supports
+     * the explicit zero-based choice without resolving the pinned prose/example contradiction generally. No multi-job
+     * list was observed live; list support remains source/offline coverage.
      *
      * API-map identity: whm1:convert_addon_get_conversion_status#GET (wire name convert_addon_get_conversion_status;
      * Domain Information).
      *
-     * @param int $jobId The conversion's job identification number.
+     * @param int|non-empty-list<int> $jobId The conversion job identification number as a native integer, or a nonempty
+     *     sequential native integer list. Scalars retain job_id; lists always use job_id-0,job_id-1, including a
+     *     singleton. Numeric strings, floats, booleans and null list items are rejected without coercion. The source
+     *     documents a minimum of 1; this extension adds no local range validation or server acceptance guarantee for
+     *     invalid IDs.
      * @return ConvertAddonGetConversionStatusResult
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/domain-information/convertaddon-convert_addon_get_conversion_status
      */
-    public function convertAddonGetConversionStatus(int $jobId): array
-    {
+    public function convertAddonGetConversionStatus(
+        #[SensitiveParameter]
+        int|array $jobId,
+    ): array {
         /**
          * @var ConvertAddonGetConversionStatusResult $result
          * Validated against AccountsSpec::CONVERT_ADDON_GET_CONVERSION_STATUS.

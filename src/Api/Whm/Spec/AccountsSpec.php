@@ -281,7 +281,19 @@ final class AccountsSpec
         'method' => 'GET',
         'outcome' => 'flag',
         'params' => [
-            'jobId' => ['name' => 'job_id', 'encoding' => 'scalar'],
+            'jobId' => [
+                'name' => 'job_id',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'indexed',
+                    'item_type' => 'int',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'prefix' => 'job_id',
+                    'separator' => '-',
+                    'start' => 0,
+                ],
+            ],
         ],
         'returns' => [
             'type' => 'map',

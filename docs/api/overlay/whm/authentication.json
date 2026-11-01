@@ -956,6 +956,21 @@
     "whm1:twofactorauth_remove_user_config": {
       "name": "twoFactorAuthRemoveUserConfig",
       "method": "POST",
+      "params": {
+        "user": {
+          "php": "user",
+          "collection": {
+            "kind": "indexed",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "prefix": "user",
+            "separator": "-",
+            "start": 1
+          },
+          "description": "The account username as a string, or a nonempty sequential string list. Scalars use user; lists always use user-1,user-2, including a singleton. Preserve order, duplicates and supplied string bytes. Empty, sparse, associative or nonstring lists fail locally before I/O."
+        }
+      },
       "notes": [
         {
           "kind": "documented",
@@ -967,7 +982,7 @@
         },
         {
           "kind": "policy",
-          "text": "Client policy supports the documented scalar user form. The existing numbered encoder starts user,user-1, so the different indexed variant remains unsupported under whm-api-client-8x0.1.21. Inspect failed independently of envelope success. Client policy: send one request without automatic retry or rollback."
+          "text": "Scalars retain user; nonempty sequential string lists use user-1,user-2, including singleton lists. Inspect failed independently of envelope success. One request adds no implicit prior-configuration read, retry or rollback; batch atomicity and persistence are not established. List support is documentation/offline coverage, not a live removal observation."
         }
       ],
       "evidence": [
@@ -976,6 +991,14 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned whm.openapi.json SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, /twofactorauth_remove_user_config declares x-readonly=false; use form POST."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1twofactorauth_remove_user_config/get/parameters/0",
+          "note": "Pinned whm.openapi.json SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, /paths/~1twofactorauth_remove_user_config/get/parameters/0: required string user; documented multiple-user names user-1,user-2,user-3 support the explicit one-based collection. Existing form POST and response schema remain unchanged."
         }
       ]
     },

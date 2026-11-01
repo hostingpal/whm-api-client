@@ -1193,22 +1193,28 @@ final readonly class Authentication
      * Documented: The pinned multiple-user example starts user-1,user-2. Removal requires user setup again.
      * users_modified includes accounts without prior 2FA configuration, so it does not prove an actual removal.
      *
-     * Policy: Client policy supports the documented scalar user form. The existing numbered encoder starts user,user-1,
-     * so the different indexed variant remains unsupported under whm-api-client-8x0.1.21. Inspect failed independently
-     * of envelope success. Client policy: send one request without automatic retry or rollback.
+     * Policy: Scalars retain user; nonempty sequential string lists use user-1,user-2, including singleton lists.
+     * Inspect failed independently of envelope success. One request adds no implicit prior-configuration read, retry or
+     * rollback; batch atomicity and persistence are not established. List support is documentation/offline coverage,
+     * not a live removal observation.
      *
      * API-map identity: whm1:twofactorauth_remove_user_config#GET (wire name twofactorauth_remove_user_config;
      * Two-Factor Authentication).
      *
-     * @param string $user The account's username.
+     * @param string|non-empty-list<string> $user The account username as a string, or a nonempty sequential string
+     *     list. Scalars use user; lists always use user-1,user-2, including a singleton. Preserve order, duplicates and
+     *     supplied string bytes. Empty, sparse, associative or nonstring lists fail locally before I/O.
      * @return TwoFactorAuthRemoveUserConfigResult
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/two-factor-authentication/twofactorauth-twofactorauth_remove_user_config
      */
-    public function twoFactorAuthRemoveUserConfig(string $user): array
-    {
+    public function twoFactorAuthRemoveUserConfig(
+        #[SensitiveParameter]
+        string|array $user,
+    ): array {
         /**
          * @var TwoFactorAuthRemoveUserConfigResult $result
          * Validated against AuthenticationSpec::TWOFACTORAUTH_REMOVE_USER_CONFIG.

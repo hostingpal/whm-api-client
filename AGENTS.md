@@ -1610,11 +1610,15 @@ including empty input, pinning current values/defaults for that provider/service
 The version-scoped source note covers upstream color and provider-key constraints;
 do not add local enum/regex/provider validators. The legacy string method preserves
 its supplied serialized bytes without object encoding or JSON syntax validation.
-TFA removal currently
-supports scalar `user`; the separately documented `user-1`/`user-2` family remains
-under `8x0.1.21`, without assuming equivalence to another numbered encoding.
-A user listed as modified may have had no TFA settings; it does not prove removal
-changed a configured account.
+`twoFactorAuthRemoveUserConfig(user: 'alice')` retains scalar `user`;
+`user: ['alice', 'bob']` sends `user-1`/`user-2`, including suffix 1 for a
+singleton list. Lists must be nonempty, sequential and string-only; order,
+duplicates and exact string bytes are preserved. Invalid collections fail before
+I/O after metadata reset. This remains one form POST with no implicit prior-state
+read, retry or rollback. Inspect the `failed` map separately from API success.
+A user listed in `users_modified` may have had no TFA settings; it does not prove
+an actual removal. Users must set up TFA again after removal. Batch atomicity,
+persistence and live list compatibility are not established by offline tests.
 
 All 30 methods have independent offline contracts. The fixed three-GET catalog
 reads WHM version, issuer names and policy status only. It retrieves no keys, TFA
@@ -1803,13 +1807,20 @@ MXCHECK-* is excluded after the reviewer's scoped no-effect observation. Its
 unchecked result policy returns validated partial/all-failed rows even when outer
 result is 0; callers inspect every per-user result and metadata. No retry,
 polling, completion, cleanup or rollback is added. Conversion remains unobserved.
-Conversion status supports one integer job ID. The pinned examples disagree about
-the first suffix, but [review 5722427592](https://github.com/hostingpal/whm-api-client/pull/72#pullrequestreview-5722427592)
-reports `_parse_job_ids` accepting `job_id` or numeric `job_id-N`, including zero-
-and one-based suffixes, on `11.138.0.19`. This source inspection lifts that
-numbering ambiguity for the reviewed handler/version; list adoption still needs
-an explicit pattern and integer input policy under `8x0.1.21`. It establishes
-neither a general arbitrary-pattern contract nor live conversion-list behavior.
+`convertAddonGetConversionStatus(jobId: 12)` retains native integer `job_id`;
+`jobId: [33, 10, 33]` sends `job_id-0=33&job_id-1=10&job_id-2=33`, including
+suffix 0 for singleton lists. Lists must be nonempty, sequential and native
+integer-only; numeric strings, floats, booleans and null items fail without
+coercion before I/O after metadata reset. The pinned minimum is 1; no new local
+range policy or acceptance guarantee for invalid IDs is added. Order and
+duplicates remain intact in one GET with an empty body. The pinned prose starts
+at 0 and its example at 1; [review 5722427592](https://github.com/hostingpal/whm-api-client/pull/72#pullrequestreview-5722427592)
+reports `_parse_job_ids` accepting either numeric base on `11.138.0.19`.
+That attributed source inspection supports the explicit zero-based choice;
+no multi-job list was observed live. Dynamic job-map keys, string payload
+`job_id` and per-job status remain unchanged and separate from API success.
+No polling or conversion initiation is added. The cPanel 58+ and Web Server role
+requirements remain in generated PHPDoc.
 
 `getMaximumUsers()` preserves the pinned optional `users` integer and the
 separately observed optional `maximum_users`, normalizing bounded canonical
