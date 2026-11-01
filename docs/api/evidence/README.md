@@ -1291,3 +1291,12 @@ this server. Their absence is a recorded decision, not a failure or a pass. No
 purchase, payment, issuance, installation, trust or served TLS behavior is
 established. SHA-256:
 `4a9ec4fffec130ee099b63cb2f86c24482b332a8101995828426745bdb70da51`.
+
+The [no-match audit capture](2026-11-01-empty-results.json) at
+`fc5264d97f0c9d90ebbf9148b714d69e4a288959` on `11.138.0.19` records 27 GET observations
+across WHM version and 15 curated operations. Twenty-three return empty results and three
+raise API errors, including the required entity-lookup control. No typed method threw a
+client exception. Its `failed` status and exit 1 are expected because the controls cannot
+pass the strict assessment. Empty results establish no item fields, and several have no
+populated baseline; see the [source audit](../source-audit.md#empty-result-audit-2026-11-01).
+SHA-256: `2ec7d60176b4354c01d1016849e0e3d62ae85a7182354010ab8d89e77a39894f`.
