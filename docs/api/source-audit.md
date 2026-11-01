@@ -9061,13 +9061,21 @@ at `fc5264d97f0c9d90ebbf9148b714d69e4a288959`. That catalog, `empty-results-v1`,
 once on `test.oblak.host`, cPanel `11.138.0.19`, with no retry. All 27 GETs used typed
 generated methods and returned HTTP 200. The sanitized artifact is
 [2026-11-01-empty-results.json](evidence/2026-11-01-empty-results.json), SHA-256
-`2ec7d60176b4354c01d1016849e0e3d62ae85a7182354010ab8d89e77a39894f`. Its `failed`
-status and exit 1 were expected, because the two controls cannot pass the strict
-assessment.
+`2ec7d60176b4354c01d1016849e0e3d62ae85a7182354010ab8d89e77a39894f`.
+
+Its `failed` status and exit 1 were predicted at that revision, but only from the two
+controls. The README said `accountsummary` would fail and `listaccts` would return an
+empty list from a response that omits `data`. Both held. The two `Bandwidth/query`
+absent-domain API errors also failed the strict assessment, and they were not
+predicted: no document stated them, and the `fc5264d` test fixture assumed a status-1
+`{}` success on both routes, which the capture contradicted. The other 23 records,
+WHM `version` and 22 empty results, had no stated outcome and were only observed. The
+controls forced `failed` whatever those 25 records did, so that status confirmed
+nothing about them.
 
 | Operation | Routes | Filter style | Observed structural form | Classification | Filter attributable |
 | --- | --- | --- | --- | --- | --- |
-| `listaccts` (control) | WHM | exact user search | `data` omitted | empty collection through the fixed path | yes, `npr` matched earlier |
+| `listaccts` (control) | WHM | exact user search | `data` omitted | empty collection through the fixed path | no, the record cannot separate result 0 from result 1 |
 | `showbw` | WHM | PCRE on user | `acct: []` with report fields | empty collection | no baseline |
 | `matchpkgs` | WHM | attribute criterion | `pkg: []` | empty collection, not a confirmed no-match | no, see below |
 | `emailtrack_search` | WHM | event selectors all off | `records: []` | empty collection | no baseline |
@@ -9089,7 +9097,10 @@ assessment.
 criterion, so the empty result here can be credited to the filter. Those baselines
 come from earlier artifacts, not from this run, so account state could differ. "No
 baseline" means no earlier capture exists for that operation, and the empty result
-shows only how this request was answered.
+shows only how this request was answered. The `listaccts` control gets no such credit
+even though `npr` matched in earlier captures: its record shows the fixed path was
+taken, not that this filter produced the absence, as the `listaccts` paragraph below
+explains.
 
 No typed method threw a client exception, and no audited operation is a new real
 case. Direct and bridged routes agreed on every UAPI request. The pinned
@@ -9105,12 +9116,17 @@ both forms as an overlay note is deferred to `whm-api-client-0hf`, because it
 conflicts with the open delimited-list branches that rewrite this operation's notes.
 The API error remains unchanged.
 
-`matchpkgs` is not a confirmed no-match. An earlier selector-free read on this
-server was already empty while `listPackages()` returned a plan, and the generated
-`matchPackages()` PHPDoc already says an empty match does not prove absence
-(`whm-api-client-8x0.2.43`). This capture adds no evidence about that open question.
-The pre-execution catalog row called the plan list populated, which was a misreading
-of earlier path listings. The README records that correction.
+`matchpkgs` is not a confirmed no-match. Earlier results on this server
+[conflict](#expanded-whm-hosting-plans), and that contradiction stays open under
+`whm-api-client-8x0.2.43`. One selector-free read returned an empty
+`pkg` list while `listPackages()` returned a plan. A later review with two plans
+returned one of them without selectors and the matching plan for `MAXSQL=5`, but none
+for `QUOTA=100`, that plan's real quota, or for `QUOTA=99999`. The cause is unknown, so
+this operation has both returned rows and missed a plan holding the requested value.
+An empty `pkg` here cannot be credited to the absent feature list. The generated
+`matchPackages()` PHPDoc says an empty match does not prove absence, and this capture
+adds no evidence about the open question. The pre-execution catalog row called the
+plan list populated, which implied that credit. The README records that correction.
 
 Absence is not uniform across operations. An absent PHP package and absent domains on
 `list_pops_with_disk` and `list_ssl_items` returned empty results, while `Bandwidth/query`
@@ -9123,14 +9139,27 @@ that policy explicitly excludes. This covers only the audited requests. Removal 
 a separate follow-up, and this branch leaves the policy in place.
 
 The `listaccts` record shows `api_outcome: success` because the typed method returned
-normally. Its envelope result is retained only as a type, so this artifact cannot
-separate the result-0 and result-1 omission forms recorded in the
-[2026-11-01 empty account results](#runtime-observations-2026-11-01-empty-account-results).
-It also carries the capture's only discrepancy, `missing_required` at `$`.
+normally. That field reports the harness's view of the call, not an upstream value.
+The fixed path returns `[]` on result 0 with the exact `No accounts found.` diagnostic
+and on result 1, and this artifact retains the envelope result as a type only and no
+reason. It therefore cannot separate the result-0 and result-1 omission forms recorded
+in the [2026-11-01 empty account results](#runtime-observations-2026-11-01-empty-account-results),
+or show that this criterion produced the absence. It also carries the capture's only
+discrepancy, `missing_required` at `$`.
 
-`tests/Api/EmptySearchResultsTest.php` pins these forms offline with synthetic values,
-including both API-error boundaries. Generated code, contracts, the runtime and all
-earlier evidence are unchanged.
+`tests/Api/EmptySearchResultsTest.php` pins these forms offline with synthetic values
+on the routes that returned them, including the `accountsummary` error and the status-0
+`Bandwidth/query` form through both the direct bare object and the bridge. Those are
+regressions over recorded forms, not contracts. Generated code, contracts, the runtime
+and all earlier evidence are unchanged.
+
+`empty-results-v1` could never pass, so its status carried no signal: a client
+exception on a rerun would have looked like this capture. Recipe `empty-results-v2`
+keeps the same requests and declares each probe's recorded outcome, so such a deviation
+now fails the run. No capture exists for `empty-results-v2`. Offline tests hold this
+artifact to those declarations by operation, variant, route, method, outcome, revision
+and SHA-256. They compare no contract hash, so the artifact stays a valid historical
+record when a spec later changes. A declaration is a recorded form, not a contract.
 
 These observations cover one server, version, capture, root token and designated
 account. They establish nothing about reseller-scoped results, other filter values,
