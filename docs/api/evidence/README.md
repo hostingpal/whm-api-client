@@ -1316,6 +1316,9 @@ because this run was assessed against the previous `11.138.0.15` reference. The 
 stays as captured. `DiscrepancyPolicy` now uses this file as its reference, which is a
 later code change and not a change to this artifact. Masked Quota keys establish neither
 names nor counts, and empty addon, parked and subdomain lists establish no row fields.
+Seven of those fields became `mixed` after this capture, so its contract hashes for those
+four operations record the earlier contract; see the
+[source audit](../source-audit.md#correction-carried-not-typed).
 SHA-256: `4138dbf1d083ddfe6d109c86bb8beb449abde6937e93b2452693d47b2b792b81`.
 
 ## Disposable-account Fileman upload evidence

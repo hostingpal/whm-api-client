@@ -630,7 +630,7 @@ The [reviewed integrated capture](../../docs/api/evidence/2026-10-30-domain-feat
 ran the exact 67-probe GET-only catalog once at committed code `27abfe6` after
 normal integration of the reviewed MySQL, FTP and PostgreSQL sections. All 67
 HTTP/API/payload observations pass on `11.138.0.19`, including both mailbox counts.
-The command exits 1 for strict review: 12 unknown-field entries across 10
+That command exited 1 for its strict review: 12 unknown-field entries across 10
 unexpected observations, zero acknowledgments and two stale Quota acknowledgments.
 Historical artifacts remain unchanged; findings are not waived or retried away.
 This run includes no PHP mutation. INI write/read behavior and the omitted
@@ -642,6 +642,9 @@ the DomainInfo and INI fields to be typed. All 67 observations pass and the only
 remaining discrepancies are the two masked Quota observations. Its embedded review
 reports failed because it was assessed against the previous `11.138.0.15` reference;
 the policy could only move to this artifact after the artifact existed.
+Seven of those fields became `mixed` after this capture, so its contract hashes for
+`domains_data`, `single_domain_data`, `php_ini_get_user_basic_directives` and
+`php_ini_get_user_paths` record the earlier contract. The Quota records still match.
 
 ## Owned Email mailbox recipe
 

@@ -1010,14 +1010,16 @@ PostgreSQL 13.23 at the owner's request and enabled its role and monitored servi
 The [reviewed integrated capture](docs/api/evidence/2026-10-30-domain-features-php-reviewed.json)
 at `27abfe6` observed all ten new reads through both routes on cPanel 11.138.0.19.
 All 67 GET-only catalog API/payload checks pass, including both normalized mailbox
-counts. Strict review remains failed: 12 unknown-field entries across 10 observations,
+counts. Its strict review failed: 12 unknown-field entries across 10 observations,
 zero acknowledgments and two stale Quota acknowledgments. No mutation ran.
 The empty-string `userdirprotect` variant remains documentation/offline coverage
 because the live responses omit that field. PHP setters and the INI write/read
 round trip remain offline-only; see the [source audit](docs/api/source-audit.md).
 The later [default-catalog capture](docs/api/evidence/2026-11-01-read-only-11.138.0.19.json)
-at `5f9b001` passes the same 67 GETs with those DomainInfo and INI fields typed. Its only
+at `5f9b001` passes the same 67 GETs with those DomainInfo and INI fields declared. Its only
 discrepancies are the two masked Quota observations, which stay outside typed results.
+Seven of those fields became `mixed` after this capture, so its contract hashes for the four
+operations involved record the earlier contract; see the [source audit](docs/api/source-audit.md).
 
 
 The Email module uses POST for mutations and secret-bearing requests. Passwords,
