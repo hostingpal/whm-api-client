@@ -94,6 +94,11 @@ use LogicException;
  *   that unwraps a nonnullable list, without optional or rows. An omitted data
  *   member on a confirmed success returns an empty list; every present payload,
  *   including explicit null, is validated as usual. Overlay evidence must be live.
+ * - account_search_empty: optional literal true exclusively for WHM listaccts
+ *   GET/form with Flag outcome and nonnullable acct object-list unwrap. Accepts
+ *   success with omitted/null data and result 0 with the exact No accounts found.
+ *   reason and omitted data. Other failures and all present failure payloads throw.
+ *   Mutually exclusive with optional, rows and empty_without_data.
  * - optional: optional boolean (only with a non-null "returns"). When true, an
  *   omitted or null data member is a valid response and the operation returns
  *   null; any other payload is validated as usual.
@@ -107,6 +112,16 @@ use LogicException;
  */
 final class OperationSpec
 {
+    /**
+     * Defer only the checked account-search policy until its complete response is available.
+     *
+     * @param array<mixed> $spec A spec already validated by SpecChecker.
+     */
+    public static function dispatchOutcome(array $spec): OutcomePolicy
+    {
+        return ($spec['account_search_empty'] ?? false) === true ? OutcomePolicy::Unchecked : self::outcome($spec);
+    }
+
     /**
      * Map the spec's HTTP method to the request method.
      *

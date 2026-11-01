@@ -125,18 +125,36 @@ final class AccountsLiveTest extends TestCase
         }
     }
 
-    /** WHM reports result 0 for this exact user lookup, so it stays an API error. */
-    public function testExactUserSearchWithoutMatchesStaysAnApiError(): void
+    /** The evidenced no-match result returns [] while retaining the server's result 0. */
+    public function testExactUserSearchWithoutMatchesReturnsAnEmptyList(): void
     {
         $whm = $this->whm->whm();
-        self::assertApiError(
-            static fn (): array => $whm->accounts()->listAccounts(
+        foreach ([null, 'user'] as $want) {
+            $accounts = self::safeOperation(static fn (): array => $whm->accounts()->listAccounts(
                 search: self::MISSING_ACCOUNT,
                 searchtype: 'user',
                 searchmethod: 'exact',
-            ),
-            'No accounts found.',
-        );
+                want: $want,
+            ));
+            self::assertTrue($accounts === [], 'An absent exact-user search must return an empty list.');
+            self::assertTrue($whm->responseMeta()?->whmResult() === 0, 'Expected the original failed WHM result.');
+            self::assertTrue(
+                ($whm->responseMeta()?->whm['reason'] ?? null) === 'No accounts found.',
+                'Expected the reviewed absence reason.',
+            );
+        }
+    }
+
+    public function testExactDomainSearchWithoutMatchesReturnsAnEmptyList(): void
+    {
+        $whm = $this->whm->whm();
+        $accounts = self::safeOperation(static fn (): array => $whm->accounts()->listAccounts(
+            search: self::MISSING_ACCOUNT . '.example',
+            searchtype: 'domain',
+            searchmethod: 'exact',
+        ));
+        self::assertTrue($accounts === [], 'An absent exact-domain search must return an empty list.');
+        self::assertWhmMetadata($whm->responseMeta(), 'listaccts');
     }
 
     public function testAccountSummaryOfAMissingAccountStaysAnApiError(): void

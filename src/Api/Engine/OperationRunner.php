@@ -116,6 +116,10 @@ final class OperationRunner
      * only. It reaches this point only after the flag outcome confirmed success, and
      * every present payload, including explicit null, keeps ordinary validation.
      *
+     * The checked "account_search_empty" policy restores strict WHM Flag semantics
+     * after internal outcome deferral, accepting only its evidenced absence forms.
+     * It preserves original metadata and rejects all other failures before payload validation.
+     *
      * An explicit "rows" policy preserves valid row-bearing status-0 batches, but
      * classifies explicit null or a fully validated payload with an empty selected row list
      * as ApiErrorException. Missing data or rows and malformed known fields remain
@@ -137,6 +141,9 @@ final class OperationRunner
     public static function result(array $spec, #[SensitiveParameter] ApiResponse $response): mixed
     {
         $returns = self::returns($spec);
+        if (($spec['account_search_empty'] ?? false) === true && AccountSearchEmpty::isEmpty($response)) {
+            return [];
+        }
         if (OperationSpec::outcome($spec) === OutcomePolicy::Unchecked) {
             $uapi = isset($spec['module']);
             $status = $uapi ? $response->metadata->uapiStatus() : $response->metadata->whmResult();

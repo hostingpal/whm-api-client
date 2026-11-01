@@ -245,7 +245,7 @@ final class WhmClient extends AbstractApiClient
             OperationSpec::text($spec, 'function'),
             $parameters,
             OperationSpec::method($spec),
-            OperationSpec::outcome($spec),
+            OperationSpec::dispatchOutcome($spec),
         );
     }
 

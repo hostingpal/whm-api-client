@@ -1164,11 +1164,16 @@ access log.
 - `listAccounts(search, searchtype, searchmethod, want)` and `accountSummary()` return
   the `acct` record list; `accountSummary()` does not require exactly one record.
   `hostingPlans()->listPackages()` returns the `pkg` list.
-- A `listAccounts()` search that matches nothing returns `[]` when WHM reports success
-  without data. WHM reports other misses as failures, and those raise
-  `ApiErrorException`: `searchmethod: 'exact'` with `searchtype: 'user'`
-  (`No accounts found.`) and `accountSummary()` for a missing user or domain
-  (`Account does not exist.`).
+- `listAccounts()` returns `[]` for the evidenced no-match forms: WHM success with
+  omitted or explicit null data, or integer result 0 with the exact reason
+  `No accounts found.` and omitted data. The original result and reason remain in
+  `responseMeta()` (including result 0 and its diagnostic). Any other failure,
+  present data on a failed response, or malformed nonnull success payload still throws.
+  `accountSummary()` and account mutations fail for absent accounts/domains;
+  `listPackages()` keeps its existing payload contract. Generic calls retain Flag errors.
+  These WHM GET forms were observed on 11.138.0.19 (omission) and recorded on
+  11.138.0.15 (successful exact-domain null; structural diagnostics only). See the
+  [reconciliation](docs/api/source-audit.md#account-search-absence-reconciliation-2026-11-01).
 - `createAccount()`, `changePassword()` and `modifyAccount()` return `null` when the
   server sends no data, and the documented array otherwise.
 - `suspendAccount()`, `unsuspendAccount()`, `removeAccount()` and `changePackage()`

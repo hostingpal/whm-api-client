@@ -105,6 +105,8 @@ type Operation struct {
 	OptionalPayload bool
 	// EmptyWithoutData makes an omitted data member an empty unwrapped list.
 	EmptyWithoutData bool
+	// AccountSearchEmpty restores strict outcomes around evidenced listaccts absence.
+	AccountSearchEmpty bool
 }
 
 // Method owns only input mapping and public symbols, never a second response contract.
