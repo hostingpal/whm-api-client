@@ -1,0 +1,285 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "DomainRecommendations",
+  "class": "DomainRecommendations",
+  "accessor": "domainRecommendations",
+  "description": "Configured-store domain availability, suggestions, pricing, configuration, enablement, checkout URLs and supported TLDs.",
+  "operations": {
+    "uapi:DomainRecommendations/domain_availability": {
+      "name": "domainAvailability",
+      "method": "GET",
+      "order": [
+        "domain",
+        "use_cache"
+      ],
+      "notes": [
+        {
+          "kind": "policy",
+          "text": "All six operations require the domain_recommendation feature. Supplied strings retain their bytes and are encoded once; optional null inputs omit, while false, zero and empty strings stay supplied. No local domain, IDN, TLD, enum or range normalization. One request only; no implicit cache, fallback, pagination, store lookup, merge, retry, rollback or returned-URL fetch. Live and configured-store behavior remain unverified under whm-api-client-8x0.2.68."
+        },
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 134. The source expects an FQDN including TLD. The server caches availability per domain. Explicit null availability is preserved without inferring its reason. Availability, premium and TLD flags remain strict native booleans; suggestion premium boolean compatibility does not apply here. Its nullable premium_cost_pricing remains opaque; no sibling premium structure is inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "The server caches results for up to two minutes. Omitted useCache retains server default 1; explicit false bypasses server cache and may contact the configured store. The client adds no cache. Availability and price are not guaranteed at actual checkout."
+        },
+        {
+          "kind": "documented",
+          "text": "Currency code, display_value, prefix, suffix and value stay exact strings, including formatting and whitespace. PricingPeriod fields are optional; null, empty price objects and omission remain distinct. No currency conversion, parsing, rounding or float coercion."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1DomainRecommendations~1domain_availability/get/description",
+          "note": "Selected formal GET variant and ordinary Flag outcome; no response or requiredness correction. x-readonly=true retains effective GET."
+        }
+      ]
+    },
+    "uapi:DomainRecommendations/domain_suggestions": {
+      "name": "domainSuggestions",
+      "method": "GET",
+      "order": [
+        "search_field",
+        "page",
+        "page_size",
+        "use_cache"
+      ],
+      "notes": [
+        {
+          "kind": "policy",
+          "text": "All six operations require the domain_recommendation feature. Supplied strings retain their bytes and are encoded once; optional null inputs omit, while false, zero and empty strings stay supplied. No local domain, IDN, TLD, enum or range normalization. One request only; no implicit cache, fallback, pagination, store lookup, merge, retry, rollback or returned-URL fetch. Live and configured-store behavior remain unverified under whm-api-client-8x0.2.68."
+        },
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 134. searchField is free text, normally the base name without a TLD; full-domain searches are also supported by the reviewed 11.138.0.19 source and may add the available searched domain on the first page. Page numbers are one-based; omitted page/pageSize retain store defaults. Pinned documentation omits a TLD input despite cache-key prose. Reviewed handler source reads get_multiple('tld') and its POD shows tld-0=com&tld-1=net. This source-only finding does not add a typed argument or hidden parameter; the pinned interface stays unchanged under whm-api-client-8x0.2.68."
+        },
+        {
+          "kind": "documented",
+          "text": "The server caches results for up to two minutes. Omitted useCache retains server default 1; explicit false bypasses server cache and may contact the configured store. The client adds no cache. Availability and price are not guaranteed at actual checkout."
+        },
+        {
+          "kind": "documented",
+          "text": "Currency code, display_value, prefix, suffix and value stay exact strings, including formatting and whitespace. PricingPeriod fields are optional; null, empty price objects and omission remain distinct. No currency conversion, parsing, rounding or float coercion."
+        },
+        {
+          "kind": "documented",
+          "text": "Returned domain and registration-term keys remain dynamic; empty maps are valid. Metadata permits unknown members. Every suggestion row requires pricing, integer 0|1 is_premium and nullable premium_cost_pricing. Only is_premium additionally accepts native false/true and normalizes to 0/1, based on reviewed 11.138.0.19 injection and serializer evidence. Optional is_searched_term is a strict native integer 0|1 identifying the injected own-search row when 1; ordinary rows can omit it. No string, float or null flag conversion. Formal requiredness is retained despite prose calling premium details optional; omission remains a visible mismatch pending evidence. No conditional premium-field inference. Actual configured-store success remains unobserved."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1DomainRecommendations~1domain_suggestions/get/description",
+          "note": "Selected formal GET variant and ordinary Flag outcome; no response or requiredness correction. x-readonly=true retains effective GET."
+        },
+        {
+          "kind": "doc",
+          "version": "reviewed source 11.138.0.19; pinned documentation 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1DomainRecommendations~1domain_suggestions/get/responses/200/content/application~1json/schema/properties/result/properties/data/properties/suggestions/additionalProperties/properties/is_premium",
+          "note": "PR101 review 5725434119 of 99f3c83b99eaad926c6c9ac308e771c47c641430; existing local WHMCS.pm SHA-256 cc6966b1a643132ce7538532e98f3cfcd9a839424d789db0c8917d6e10cff233. Source-only evidence, not a configured-store success response or combined-revision runtime verification. WHMCS.pm:180-194 copies availability is_premium unchanged into an available full-domain search row on the first page. Existing reviewer serializer output record 17925 (output SHA-256 33a2ce7546b2c713b1dd8b594134159fa7e2850228f2c6dbb0275233b0a801a9) preserves native false through Cpanel::JSON and AdminBin serialization. Accept native boolean only on this existing flag and normalize false/true to 0/1; retain native integer 0/1 and all row requiredness. Availability flags remain strict native booleans."
+        },
+        {
+          "kind": "doc",
+          "version": "reviewed source 11.138.0.19; pinned documentation 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1DomainRecommendations~1domain_suggestions/get/description",
+          "note": "PR101 review 5725434119 of 99f3c83b99eaad926c6c9ac308e771c47c641430; existing local WHMCS.pm SHA-256 cc6966b1a643132ce7538532e98f3cfcd9a839424d789db0c8917d6e10cff233. Source-only evidence, not a configured-store success response or combined-revision runtime verification. WHMCS.pm:180-194 adds literal is_searched_term => 1 to the injected own-search row. The pinned operation description anchors the operation only: it does not declare this leaf. Add only an optional strict native integer 0|1 flag; ordinary store rows can omit it. No boolean, string or null acceptance."
+        },
+        {
+          "kind": "doc",
+          "version": "reviewed source 11.138.0.19; pinned documentation 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1DomainRecommendations~1domain_suggestions/get/description",
+          "note": "PR101 review 5725434119 of 99f3c83b99eaad926c6c9ac308e771c47c641430; existing local WHMCS.pm SHA-256 cc6966b1a643132ce7538532e98f3cfcd9a839424d789db0c8917d6e10cff233. Source-only evidence, not a configured-store success response or combined-revision runtime verification. Existing reviewer API-handler output record 17884, output SHA-256 9cd1c9ad841aeff3e751fea47e6f1396c877bc34be669235388dd429245878a0, reads get_multiple('tld') and documents numbered TLD forms. Preserve the original typed signature."
+        }
+      ],
+      "response": {
+        "suggestions{}.is_premium": {
+          "accept": [
+            "bool"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "reviewed source 11.138.0.19; pinned documentation 2026-10-13",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1DomainRecommendations~1domain_suggestions/get/responses/200/content/application~1json/schema/properties/result/properties/data/properties/suggestions/additionalProperties/properties/is_premium",
+              "note": "PR101 review 5725434119 of 99f3c83b99eaad926c6c9ac308e771c47c641430; existing local WHMCS.pm SHA-256 cc6966b1a643132ce7538532e98f3cfcd9a839424d789db0c8917d6e10cff233. Source-only evidence, not a configured-store success response or combined-revision runtime verification. WHMCS.pm:180-194 copies availability is_premium unchanged into an available full-domain search row on the first page. Existing reviewer serializer output record 17925 (output SHA-256 33a2ce7546b2c713b1dd8b594134159fa7e2850228f2c6dbb0275233b0a801a9) preserves native false through Cpanel::JSON and AdminBin serialization. Accept native boolean only on this existing flag and normalize false/true to 0/1; retain native integer 0/1 and all row requiredness. Availability flags remain strict native booleans."
+            }
+          ]
+        },
+        "suggestions{}.is_searched_term": {
+          "add": {
+            "type": "flag"
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "reviewed source 11.138.0.19; pinned documentation 2026-10-13",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1DomainRecommendations~1domain_suggestions/get/description",
+              "note": "PR101 review 5725434119 of 99f3c83b99eaad926c6c9ac308e771c47c641430; existing local WHMCS.pm SHA-256 cc6966b1a643132ce7538532e98f3cfcd9a839424d789db0c8917d6e10cff233. Source-only evidence, not a configured-store success response or combined-revision runtime verification. WHMCS.pm:180-194 adds literal is_searched_term => 1 to the injected own-search row. The pinned operation description anchors the operation only: it does not declare this leaf. Add only an optional strict native integer 0|1 flag; ordinary store rows can omit it. No boolean, string or null acceptance."
+            }
+          ]
+        }
+      }
+    },
+    "uapi:DomainRecommendations/get_store_config": {
+      "name": "getStoreConfig",
+      "method": "GET",
+      "order": [],
+      "notes": [
+        {
+          "kind": "policy",
+          "text": "All six operations require the domain_recommendation feature. Supplied strings retain their bytes and are encoded once; optional null inputs omit, while false, zero and empty strings stay supplied. No local domain, IDN, TLD, enum or range normalization. One request only; no implicit cache, fallback, pagination, store lookup, merge, retry, rollback or returned-URL fetch. Live and configured-store behavior remain unverified under whm-api-client-8x0.2.68."
+        },
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 134. Exposes only allowlisted store_type; unknown credentials, URLs and future keys are filtered. An empty object can mean no configured store. WHMCS remains an open string, not a closed enum."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1DomainRecommendations~1get_store_config/get/description",
+          "note": "Selected formal GET variant and ordinary Flag outcome; no response or requiredness correction. x-readonly=true retains effective GET."
+        }
+      ]
+    },
+    "uapi:DomainRecommendations/is_enabled": {
+      "name": "isEnabled",
+      "method": "GET",
+      "order": [],
+      "notes": [
+        {
+          "kind": "policy",
+          "text": "All six operations require the domain_recommendation feature. Supplied strings retain their bytes and are encoded once; optional null inputs omit, while false, zero and empty strings stay supplied. No local domain, IDN, TLD, enum or range normalization. One request only; no implicit cache, fallback, pagination, store lookup, merge, retry, rollback or returned-URL fetch. Live and configured-store behavior remain unverified under whm-api-client-8x0.2.68."
+        },
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 134. Returns an object with optional strict integer 0|1 is_enabled, not a PHP boolean. Payload is_enabled=0 may succeed under envelope status 1; lack of the account feature remains an API error."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1DomainRecommendations~1is_enabled/get/description",
+          "note": "Selected formal GET variant and ordinary Flag outcome; no response or requiredness correction. x-readonly=true retains effective GET."
+        }
+      ]
+    },
+    "uapi:DomainRecommendations/purchase_domain": {
+      "name": "purchaseDomain",
+      "method": "POST",
+      "order": [
+        "domain",
+        "period"
+      ],
+      "notes": [
+        {
+          "kind": "policy",
+          "text": "All six operations require the domain_recommendation feature. Supplied strings retain their bytes and are encoded once; optional null inputs omit, while false, zero and empty strings stay supplied. No local domain, IDN, TLD, enum or range normalization. One request only; no implicit cache, fallback, pagination, store lookup, merge, retry, rollback or returned-URL fetch. Live and configured-store behavior remain unverified under whm-api-client-8x0.2.68."
+        },
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 138. The source expects an FQDN including TLD and a registration period in years. Returns a private checkout URL for caller-controlled use. The method does not fetch the URL, navigate, register a domain, make payment or establish ownership."
+        },
+        {
+          "kind": "documented",
+          "text": "Selected formal GET is classified x-readonly=false with x-rollback=none, so mutation policy uses form POST. No retries or rollback. Live POST acceptance is unverified: a server accepting only documented GET can fail until route-specific evidence resolves transport. Returning a checkout URL does not prove completion of a commercial transaction."
+        },
+        {
+          "kind": "policy",
+          "text": "Reviewed 11.138.0.19 source creates a real upstream store cart, adds a domain item and requests checkout after refusing an unavailable domain. The backend emits Domain-Purchase-Initiated analytics with the domain by default; analytics can precede cart validation and occur despite a later failure. This is source-only evidence, not transaction or route verification. Do not assume atomicity or retry automatically. No skip_backend_track input is added. purchaseDomain was never called: the reviewer permission check refused it and no alternate route or retry was attempted; live POST/store/cart/analytics behavior remains unobserved."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1DomainRecommendations~1purchase_domain/get/description",
+          "note": "Selected formal GET variant and ordinary Flag outcome; no response or requiredness correction. x-readonly=false and x-rollback=none select effective form POST under mutation policy; checkout URL alone establishes no completed registration or payment. Live POST acceptance remains unverified."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1DomainRecommendations~1purchase_domain/get/x-readonly",
+          "note": "Pinned mutation classification supports form POST without changing the selected source variant or response schema."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1DomainRecommendations~1purchase_domain/get/x-rollback",
+          "note": "Pinned mutation classification supports form POST without changing the selected source variant or response schema."
+        },
+        {
+          "kind": "doc",
+          "version": "reviewed source 11.138.0.19; pinned documentation 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1DomainRecommendations~1purchase_domain/get/description",
+          "note": "PR101 review 5725434119 of 99f3c83b99eaad926c6c9ac308e771c47c641430; existing local WHMCS.pm SHA-256 cc6966b1a643132ce7538532e98f3cfcd9a839424d789db0c8917d6e10cff233. Source-only evidence, not a configured-store success response or combined-revision runtime verification. WHMCS.pm:55-94 refuses unavailable domains, creates a cart, adds a domain item and requests checkout. Existing API-handler output record 17884, SHA-256 9cd1c9ad841aeff3e751fea47e6f1396c877bc34be669235388dd429245878a0, emits Domain-Purchase-Initiated with the domain by default before the admin cart call. Analytics may occur despite later failure. No purchase call or POST/store/cart runtime success is established."
+        }
+      ]
+    },
+    "uapi:DomainRecommendations/supported_tlds": {
+      "name": "supportedTlds",
+      "method": "GET",
+      "order": [
+        "use_cache"
+      ],
+      "notes": [
+        {
+          "kind": "policy",
+          "text": "All six operations require the domain_recommendation feature. Supplied strings retain their bytes and are encoded once; optional null inputs omit, while false, zero and empty strings stay supplied. No local domain, IDN, TLD, enum or range normalization. One request only; no implicit cache, fallback, pagination, store lookup, merge, retry, rollback or returned-URL fetch. Live and configured-store behavior remain unverified under whm-api-client-8x0.2.68."
+        },
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 138. Returns optional TLD string list without local normalization."
+        },
+        {
+          "kind": "documented",
+          "text": "The server caches results for up to two minutes. Omitted useCache retains server default 1; explicit false bypasses server cache and may contact the configured store. The client adds no cache. Availability and price are not guaranteed at actual checkout."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1DomainRecommendations~1supported_tlds/get/description",
+          "note": "Selected formal GET variant and ordinary Flag outcome; no response or requiredness correction. x-readonly=true retains effective GET."
+        }
+      ]
+    }
+  }
+}

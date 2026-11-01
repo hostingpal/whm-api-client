@@ -139,3 +139,42 @@ func TestSpecForMarksDynamicKeysBesideProperties(t *testing.T) {
 		t.Fatalf("plain map: %+v", spec)
 	}
 }
+
+func TestSpecForExplicitBooleanOpenPropertiesPreservesKnownContract(t *testing.T) {
+	for _, tc := range []struct {
+		name  string
+		extra string
+		open  bool
+		issue bool
+	}{
+		{"true", `, "additionalProperties": true`, true, false},
+		{"false", `, "additionalProperties": false`, false, false},
+		{"omitted", ``, false, false},
+		{"schema", `, "additionalProperties": {"type":"integer"}`, false, true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			spec := specOf(t, `{"type":"object", "nullable":true, "required":["known"], "properties":{
+				"known":{"type":"integer"}, "optional":{"type":"string", "nullable":true}
+			}`+tc.extra+`}`)
+			if spec.Type != "object" || !spec.Nullable || fieldNames(spec) != "known,optional" || !reflect.DeepEqual(spec.Required, []string{"known"}) {
+				t.Fatalf("known object contract changed: %+v", spec)
+			}
+			if known := fieldSpec(t, spec, "known"); known.Type != "int" || known.Nullable {
+				t.Fatalf("known scalar contract changed: %+v", known)
+			}
+			if optional := fieldSpec(t, spec, "optional"); optional.Type != "string" || !optional.Nullable {
+				t.Fatalf("optional scalar contract changed: %+v", optional)
+			}
+			if (spec.Issue != "") != tc.issue {
+				t.Fatalf("typed additional-properties diagnostic changed: %+v", spec)
+			}
+			if tc.open {
+				if spec.Values == nil || !reflect.DeepEqual(*spec.Values, TypeSpec{Type: "mixed"}) {
+					t.Fatalf("explicit open object lost mixed extras: %+v", spec)
+				}
+			} else if spec.Values != nil {
+				t.Fatalf("unreviewed extras were enabled: %+v", spec)
+			}
+		})
+	}
+}

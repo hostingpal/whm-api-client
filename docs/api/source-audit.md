@@ -8483,3 +8483,131 @@ Combined generation is 1,214 canonical operations (618 UAPI, 596 WHM), 107 group
 217 outputs including 216 PHP files and coverage. The 55 inherited diagnostics
 remain visible and unwaived. No new committed capture, source, evidence artifact,
 schema mirror, annotation, map checksum, runtime or tooling change is made.
+
+
+### 2026-11-01: complete generated UAPI DomainRecommendations module
+
+Added all six pinned DomainRecommendations operations through
+`DomainRecommendations` / `uapi()->domainRecommendations()`. Authoritative source
+is `docs/api/sources/2026-10-13/cpanel.openapi.json.gz`, decompressed SHA-256
+`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`, pinned version
+11.138.0.10. Overlay evidence binds every selected GET variant's description at
+`/paths/~1DomainRecommendations~1<function>/get/description`. The checkout entry
+also binds `/paths/~1DomainRecommendations~1purchase_domain/get/x-readonly` and
+`/paths/~1DomainRecommendations~1purchase_domain/get/x-rollback`.
+The five `x-readonly=true` operations retain GET; `purchase_domain` has
+`x-readonly=false`, `x-rollback=none`, so effective transport is form POST despite
+formal GET. Ordinary Flag outcomes apply to all six. No response, requiredness,
+body metadata or parameter correction is introduced. Live POST acceptance remains
+unverified; documented-GET-only servers can fail until route evidence resolves it.
+
+All six require `domain_recommendation`. Availability, suggestions, store config
+and enablement are cPanel 134; checkout and supported TLDs are cPanel 138.
+Availability/checkout source inputs expect FQDNs. Suggestions are free text,
+normally base names without TLDs; pagination is one-based and omission retains
+store defaults. No local normalization, enum or range restrictions are inferred.
+Values retain bytes and encode once; optional null omits, false/true encode 0/1,
+and explicit zero/empty strings remain supplied.
+
+Server cache duration is up to two minutes: availability per domain, suggestions
+by search/page/page-size/requested-TLD combination, and supported TLDs.
+Omitted useCache retains default 1; false can contact the configured store.
+No TLD parameter is invented from the cache-key prose because pinned parameters
+and examples lack its wire contract. No client cache, fallback, pagination, store
+lookup, merge, retry or rollback is added.
+
+Availability is a nullable object; missing payload still fails. Its three flags
+are booleans, unlike strict integer 0|1 suggestion premium and enablement flags.
+Nullable availability premium data remains opaque. Shared PricingPeriod refs in
+availability pricing, shortest_period allOf and suggestion pricing preserve
+optional integer period, optional nullable register/renew/transfer objects, and
+optional string code/display_value/prefix/suffix/value. Currency precision and
+formatting remain exact; null, omission and empty objects remain distinct.
+No current checkout availability or price is promised.
+
+Suggestion domain and premium registration-term maps retain returned keys and
+empty maps. Every row requires pricing, is_premium and nullable
+premium_cost_pricing, retaining the formal contract despite optional-field prose.
+No flag-dependent fields or domain/term semantic correspondence is inferred.
+Metadata is formally open with additionalProperties:true; declared pagination
+fields still require native integers. Store config is explicitly closed with
+additionalProperties:false; only optional store_type is exposed and an empty
+object can mean unconfigured. WHMCS is not a closed enum. is_enabled=0 is a
+successful payload under status 1, while feature denial stays an API error.
+
+Checkout returns a private URL for caller-controlled use. The method does not
+fetch URLs, navigate, register domains, pay or establish ownership. No commercial
+transaction, configuration change, live/API/SSH call or returned-URL fetch ran in
+this implementation lane. Live/store/purchase behavior and source gaps remain
+open under `whm-api-client-8x0.2.68`; delivery is `whm-api-client-8x0.4.26`.
+
+Compared with baseline `a4d31458ec2763fc1b2261adff47b6fa9a79441d`, generated coverage
+adds exactly six operations: 1,183 total (595 UAPI, 588 WHM), 100 groups and 203
+outputs (202 PHP files plus coverage). Old source evidence, annotations and map
+checksum are preserved. The 55 inherited map diagnostics remain visible and
+unwaived. PHP 8.4 offline validation does not substitute for PHP 8.3 CI.
+
+A controller-authorized generator correction preserves explicit boolean
+`additionalProperties:true` beside named properties as an object with mixed
+extra values, using existing TypeSpec, renderer and runtime support. This fixes
+open suggestion metadata while retaining known-field validation, requiredness
+and nullability. False, omission and schema-valued additionalProperties retain
+their earlier lowering and diagnostic behavior. The pinned scan finds this exact
+boolean-true-plus-properties construct only in the new module; inherited
+generated PHP remains byte-identical apart from the additive cached accessor.
+Focused Go RED/GREEN covers that lowering and rendering. Existing engine
+compatibility accepts empty JSON arrays as empty objects/maps where no required
+members prevent it; this change does not alter that shared behavior.
+
+
+### PR101 ordered master integration and source-only response correction (2026-11-01)
+
+Normal merge of approved master `922a095b1a852b3537107945c2ecd8a75c96eefb`
+preserves its complete audit prefix and the whole original DomainRecommendations
+appendix above. That appendix and its original offline reviews are historical,
+not acceptance of this combined candidate. Current generated coverage is 1,220
+operations (624 UAPI, 596 WHM), 108 groups, 219 outputs (218 PHP plus coverage).
+
+PR101 review 5725434119 covers original `a4d3145..99f3c83`. Existing local reviewer
+source on 11.138.0.19 shows WHMCS.pm:180-194 injecting an available full-domain
+search into first-page suggestions, copying availability is_premium unchanged
+and adding literal is_searched_term=1. Existing reviewer output record 17925
+shows native false surviving Cpanel::JSON and AdminBin serialization. Only
+suggestion-row is_premium accepts bool and normalizes false/true to 0/1; pinned
+integer 0/1 remains. New optional is_searched_term is strict native integer 0|1.
+Availability's three flags remain strict bool. Required pricing/is_premium/nullable
+premium_cost_pricing, exact string prices, dynamic maps, open meta and ordinary
+unknown-field filtering remain unchanged. The new leaf is not pinned: its binding
+anchors the pinned operation description and attributes the addition to source.
+
+The existing local complete WHMCS helper SHA-256 is cc6966b1a643132ce7538532e98f3cfcd9a839424d789db0c8917d6e10cff233.
+Selected complete helper ranges are purchase 55-94 and suggestions/availability
+136-239. Existing API-handler/POD output record 17884 SHA-256 is
+9cd1c9ad841aeff3e751fea47e6f1396c877bc34be669235388dd429245878a0; helper excerpt
+record 17907 SHA-256 is 32472e556c6be6a8ec1432108abe692560de22debd19c38350cbca7fd6bdd500;
+serializer record 17925 output SHA-256 is
+33a2ce7546b2c713b1dd8b594134159fa7e2850228f2c6dbb0275233b0a801a9. Original
+local transcript UUID/time/id provenance is retained in the execution export.
+Some historical grep lines are truncated; no missing source tails are inferred.
+These are existing source/serializer records, not configured-store success,
+current combined-revision runtime evidence or a new server/source capture.
+
+Pinned documentation omits the suggestion TLD input; reviewed API handler reads
+get_multiple('tld') and its POD documents tld-0=com&tld-1=net. No typed or hidden
+input is added. Normally-basename prose is not a full-domain restriction. Reviewed
+purchase source refuses unavailable domains, creates a real upstream cart, adds
+a domain item and requests checkout. Backend Domain-Purchase-Initiated analytics
+includes the domain by default and precedes the admin cart call; it may occur
+despite later cart validation/failure. No atomicity, registration, payment or
+ownership proof follows, and no skip_backend_track argument is added. Formal GET
+selection/effective form POST and private caller-controlled URL behavior remain.
+
+The reviewer never called purchaseDomain: a permission check refused it and no
+alternate route or retry was attempted. This integration performs no live/API,
+server/source fetch, SSH, store, cart, analytics, purchase or URL call. Actual
+configured-store success and POST acceptance remain unobserved under 8x0.2.68.
+Delivery 8x0.4.26 stays closed; correction/integration acceptance is tracked by
+0s9.71/0s9.71.1. Independent literal offline fixtures cover both routes; the
+complete original eight evidence bindings are preserved. No historical evidence,
+pinned source, schema asset, annotation or map hash is changed. The original
+four-line explicit-open-object lowering and both focused Go tests survive.
