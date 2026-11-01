@@ -1782,7 +1782,7 @@ live-derived value.
 | --- | --- | --- | --- | --- |
 | `listaccts` | WHM | `search=wzzemptyaudit`, `searchtype=user`, `searchmethod=exact` | `fixed-path-control` | PR123 control for the fixed result-0 form |
 | `showbw` | WHM | `search=wzzemptyaudit`, `searchtype=user` | `absent-user-pcre` | Documented PCRE filter over accounts |
-| `matchpkgs` | WHM | `FEATURELIST=wzzemptyaudit` | `absent-feature-list` | Documented criteria over the populated plan list |
+| `matchpkgs` | WHM | `FEATURELIST=wzzemptyaudit` | `absent-feature-list` | Documented criteria; see the correction under the results |
 | `emailtrack_search` | WHM | `defer`, `failure`, `inprogress`, `success` all `0`, `max_results_by_type=1` | `all-event-types-off` | Documented event selectors; typed method has no value filter |
 | `emailtrack_user_stats` | WHM | `sender=nobody@wzzemptyaudit.invalid`, one-second 2001 window | `absent-sender-past-window` | Documented sender filter and search window |
 | `get_unique_sender_recipient_count_per_user` | WHM | one-second 2001 window | `past-window` | Required time window over mail records |
@@ -1838,3 +1838,25 @@ WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
 An empty result covers only that operation, route, criterion, version and account
 state. It establishes no other filter value, server or account, and no operation
 outside this table.
+
+### No-match audit results, 2026-11-01
+
+The capture ran once at `fc5264d97f0c9d90ebbf9148b714d69e4a288959` on `11.138.0.19`.
+It exited 1 with `status: failed`, as the recipe predicted. All 27 GETs returned
+HTTP 200. The artifact is
+[2026-11-01-empty-results.json](../../docs/api/evidence/2026-11-01-empty-results.json),
+SHA-256 `2ec7d60176b4354c01d1016849e0e3d62ae85a7182354010ab8d89e77a39894f`.
+
+No typed method threw a client exception. Twenty-three records returned an empty
+result and three raised `ApiErrorException`; the remaining record is WHM `version`.
+No client behavior changed. [The source audit](../../docs/api/source-audit.md#empty-result-audit-2026-11-01)
+holds the per-operation table and limits.
+
+`whm1:listaccts` carries the only discrepancy, `missing_required` at `$`. The client
+accepts that omission through `account_search_empty`, while the evidence tool still
+reports it, so the record passes and the strict assessment does not.
+
+Correction: the pre-execution row for `matchpkgs` called its plan list populated.
+That was a misreading of earlier path listings. The earlier selector-free read was
+already empty, and `matchPackages()` already documents that an empty match does not
+prove absence (`8x0.2.43`). Its empty result here is not a confirmed no-match.

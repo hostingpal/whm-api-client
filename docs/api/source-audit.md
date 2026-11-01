@@ -8848,3 +8848,93 @@ No live call, capture, source fetch, credential creation/use, login, session/mai
 write or server cleanup was performed for this integration. The completed owner
 165-call pass was not replayed. Combined offline validation is recorded separately
 with exact product-input attribution; it cannot prove new server or wire behavior.
+
+
+## Empty-result audit 2026-11-01
+
+Bead `whm-api-client-8x0.2.88`, a follow-up to `whm-api-client-9dy` and
+`whm-api-client-8x0.2.8`. The owner's standing decision is that a confirmed no-result
+search returns an empty collection and an operation on a nonexistent entity fails.
+This audit asks how a bounded set of operations answers when nothing can match. It
+applies no global error suppression.
+
+The selection and request allowlist were committed before execution, in the
+[no-match audit section](../../tools/live-verify/README.md#bounded-no-match-audit)
+at `fc5264d97f0c9d90ebbf9148b714d69e4a288959`. That catalog, `empty-results-v1`, ran
+once on `test.oblak.host`, cPanel `11.138.0.19`, with no retry. All 27 GETs used typed
+generated methods and returned HTTP 200. The sanitized artifact is
+[2026-11-01-empty-results.json](evidence/2026-11-01-empty-results.json), SHA-256
+`2ec7d60176b4354c01d1016849e0e3d62ae85a7182354010ab8d89e77a39894f`. Its `failed`
+status and exit 1 were expected, because the two controls cannot pass the strict
+assessment.
+
+| Operation | Routes | Filter style | Observed structural form | Classification | Filter attributable |
+| --- | --- | --- | --- | --- | --- |
+| `listaccts` (control) | WHM | exact user search | `data` omitted | empty collection through the fixed path | yes, `npr` matched earlier |
+| `showbw` | WHM | PCRE on user | `acct: []` with report fields | empty collection | no baseline |
+| `matchpkgs` | WHM | attribute criterion | `pkg: []` | empty collection, not a confirmed no-match | no, see below |
+| `emailtrack_search` | WHM | event selectors all off | `records: []` | empty collection | no baseline |
+| `emailtrack_user_stats` | WHM | sender and past window | `records: []` | empty collection | no baseline |
+| `get_unique_sender_recipient_count_per_user` | WHM | past window | `payload: []` | empty collection | no baseline |
+| `php_get_vhosts_by_version` | WHM | absent package key | `vhosts: []` | empty collection | no baseline |
+| `accountsummary` (control) | WHM | entity lookup | failure, `acct: null` | API error, as required | not applicable |
+| `Email/list_pops` | direct, bridged | PCRE | `[]` | empty collection | yes, default read lists rows |
+| `Email/list_pops_with_disk` | direct, bridged | PCRE | `[]` | empty collection | no baseline |
+| `Email/list_pops_with_disk` | direct, bridged | absent domain | `[]` | empty collection | no baseline |
+| `SubDomain/listsubdomains` | direct, bridged | regex | `[]` | empty collection | no, inventory was already empty |
+| `Features/list_features_like` | direct, bridged | substring | `[]` | empty collection | yes, `mail` lists rows |
+| `Fileman/autocompletedir` | direct, bridged | path prefix | `[]` | empty collection | yes, `public` lists rows |
+| `Bandwidth/query` | direct, bridged | past window | `{}` | empty collection | yes, a 2026 window lists rows |
+| `Bandwidth/query` | direct, bridged | absent domain | status 0, `data: null`, `errors[]` strings | API error | not applicable |
+| `SSL/list_ssl_items` | direct, bridged | absent domain | `[]` | empty collection | no baseline |
+
+"Filter attributable" means an earlier capture on `npr` returned rows without this
+criterion, so the empty result here can be credited to the filter. Those baselines
+come from earlier artifacts, not from this run, so account state could differ. "No
+baseline" means no earlier capture exists for that operation, and the empty result
+shows only how this request was answered.
+
+No typed method threw a client exception, and no audited operation is a new real
+case. Direct and bridged routes agreed on every UAPI request. The pinned
+`list_features_like` no-match example, `data: []`, matches both routes.
+
+`Bandwidth/query` with an absent domain is the one search-shaped API error. It is not
+classified as a confirmed no-match. A `domains=npr.rs` query succeeded in earlier
+captures and the past-window query returned `{}` here, so the same operation has a
+real empty form. Only the domain outside the account failed. That is consistent with
+rejecting an unknown selector, which the owner's decision keeps as a failure. The
+artifact keeps no upstream error text, so the cause is not established. An overlay
+`observed` note records both forms in the generated PHPDoc. The API error remains
+unchanged.
+
+`matchpkgs` is not a confirmed no-match. An earlier selector-free read on this
+server was already empty while `listPackages()` returned a plan, and the generated
+`matchPackages()` PHPDoc already says an empty match does not prove absence
+(`whm-api-client-8x0.2.43`). This capture adds no evidence about that open question.
+The pre-execution catalog row called the plan list populated, which was a misreading
+of earlier path listings. The README records that correction.
+
+Absence is not uniform across operations. An absent PHP package and absent domains on
+`list_pops_with_disk` and `list_ssl_items` returned empty results, while `Bandwidth/query`
+failed. An empty result from those three does not prove that the package or domain
+exists. Their PHPDoc is unchanged.
+
+The `empty_without_data` policy found no use. No audited success omitted `data`
+except the `listaccts` control, which `account_search_empty` already handles and which
+that policy explicitly excludes. This covers only the audited requests. Removal stays
+a separate follow-up, and this branch leaves the policy in place.
+
+The `listaccts` record shows `api_outcome: success` because the typed method returned
+normally. Its envelope result is retained only as a type, so this artifact cannot
+separate the result-0 and result-1 omission forms recorded in the
+[2026-11-01 empty account results](#runtime-observations-2026-11-01-empty-account-results).
+It also carries the capture's only discrepancy, `missing_required` at `$`.
+
+`tests/Api/EmptySearchResultsTest.php` pins these forms offline with synthetic values,
+including both API-error boundaries. Generated contracts, the runtime and all earlier
+evidence are unchanged; the only generated change is the Bandwidth PHPDoc note.
+
+These observations cover one server, version, capture, root token and designated
+account. They establish nothing about reseller-scoped results, other filter values,
+other versions or unaudited operations, and no parameter name proves search semantics
+elsewhere. No server state, configuration or account changed.
