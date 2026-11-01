@@ -707,6 +707,51 @@ request arguments or credentials. The evidence/audit commit changes no executabl
 code or contracts from the recorded revision.
 
 
+## Runtime observations 2026-11-01 (empty account results)
+
+Bead `whm-api-client-9dy`. Read-only generic `whm()->call(..., RequestMethod::Get)`
+requests on `test.oblak.host`, cPanel 11.138.0.19, with the WHM root token through
+the GET-only `CurlClient`. No server state was changed. The pinned documentation
+does not describe the empty wire form of these operations.
+
+| Function and input | `result` | `reason` | `data` member | Typed result |
+| --- | --- | --- | --- | --- |
+| `listaccts` regex/user, no match, with and without `want` | 1 | `OK` | omitted | `[]` |
+| `listaccts` exact/domain, owner, ip or package, no match | 1 | `OK` | omitted | `[]` |
+| `listaccts` exact/user, no match, with and without `want` | 0 | `No accounts found.` | omitted | `ApiErrorException` |
+| `listaccts` exact/user `npr`, with and without `want` | 1 | `OK` | `acct` list of one | one record |
+| `accountsummary` missing user | 0 | `Account does not exist.` | `{"acct":null}` | `ApiErrorException` |
+| `accountsummary` missing domain | 0 | `Account does not exist.` | `{"acct":[]}` | `ApiErrorException` |
+| `accountsummary` search parameters only, match or no match | 0 | `API failure: You must specify a user or domain to get a summary of.` | omitted | `ApiErrorException` |
+| `accountsummary` no parameters | 0 | same as above | omitted | `ApiErrorException` |
+| `listpkgs` no parameter, `want` all, creatable, editable, viewable and an undocumented value | 1 | `OK` | `pkg` list of one | one record |
+
+`listAccounts()` selects overlay `empty_without_data`, so the omitted member on a
+confirmed success returns an empty list. Only that wire form qualifies: `optional_payload`
+would have changed the return type to nullable and accepted an unobserved explicit
+null. Result 0 stays an error because the server reports it as one. Treating
+`No accounts found.` as empty would need matching an upstream reason string, which
+would turn a server-reported failure into a success. A caller that needs one
+outcome for every search should catch `ApiErrorException` for exact user lookups.
+
+`accountSummary()` and `listPackages()` are unchanged. Every missing-account summary
+is result 0 and already raises `ApiErrorException`. An empty `listpkgs` response
+could not be reproduced read-only: the root token sees the server's one package
+for every `want`, the `npr` cPanel token cannot authenticate to WHM, and creating a
+reseller or removing the package would change the server. An omitted `data` member
+on `listPackages()` therefore remains a payload mismatch and is unobserved.
+
+These observations cover one server, version and root token with one hosted account.
+`listaccts` with no search on a server without accounts, reseller-scoped results,
+explicit `data: null` and `data: {}` on a success remain unobserved; the latter two
+stay payload mismatches. Separately, `listaccts` with `search` and no `searchtype`
+returned the server's account for a name that does not exist, so that input was not
+observed to filter. Reason strings are recorded as observed, not as a closed set.
+`tests/Live/AccountsLiveTest.php` repeats the regex, exact user and missing summary
+cases through the typed groups, and `tests/Api/WhmAccountsTest.php` replays the
+verbatim bodies offline.
+
+
 ## Runtime observations (2026-10-16, Quota inventory)
 
 The two documented UAPI Quota operations are generated as

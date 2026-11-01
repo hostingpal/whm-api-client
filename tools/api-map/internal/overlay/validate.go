@@ -123,6 +123,7 @@ func Validate(set Set) []string {
 			if observedWithoutLive(op) {
 				problems = append(problems, id+": an observed note needs live evidence")
 			}
+			problems = append(problems, emptyWithoutDataProblems(id, file.Family, op)...)
 		}
 	}
 	sort.Strings(problems)

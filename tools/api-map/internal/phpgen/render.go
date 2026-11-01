@@ -313,6 +313,10 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 		w.line(indent + " *")
 		w.doc(indent, "Returns null when the server sends no data.")
 	}
+	if op.EmptyWithoutData {
+		w.line(indent + " *")
+		w.doc(indent, "Returns an empty list when the server reports success and omits data.")
+	}
 	w.line(indent + " *")
 	identity := "API-map identity: " + op.VariantID + " (wire name " + op.Function
 	if op.Subcategory != "" {
@@ -628,6 +632,9 @@ func specClass(g effective.Group) string {
 			}
 			if op.OptionalPayload && op.Returns != nil {
 				w.line("        'optional' => true,")
+			}
+			if op.EmptyWithoutData {
+				w.line("        'empty_without_data' => true,")
 			}
 		}
 		w.line("    ];")

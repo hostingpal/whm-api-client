@@ -112,6 +112,10 @@ final class OperationRunner
      * captured metadata, outside payload mismatch classification. An
      * unwrapped field must be present in the validated object.
      *
+     * An "empty_without_data" spec returns an empty list for an omitted data member
+     * only. It reaches this point only after the flag outcome confirmed success, and
+     * every present payload, including explicit null, keeps ordinary validation.
+     *
      * An explicit "rows" policy preserves valid row-bearing status-0 batches, but
      * classifies explicit null or a fully validated payload with an empty selected row list
      * as ApiErrorException. Missing data or rows and malformed known fields remain
@@ -157,6 +161,10 @@ final class OperationRunner
 
         if (($spec['optional'] ?? false) === true && (!$response->hasData || $response->data === null)) {
             return null;
+        }
+
+        if (($spec['empty_without_data'] ?? false) === true && !$response->hasData) {
+            return [];
         }
 
         $confirmed = OperationSpec::outcome($spec) === OutcomePolicy::Flag;

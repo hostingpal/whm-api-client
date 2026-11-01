@@ -90,6 +90,10 @@ use LogicException;
  *   Nonempty valid rows return normally. Status 1 preserves schema optionality.
  * - unwrap: optional string naming a field declared in an object "returns";
  *   that field of the validated object is returned.
+ * - empty_without_data: optional literal true for a WHM flag-outcome operation
+ *   that unwraps a nonnullable list, without optional or rows. An omitted data
+ *   member on a confirmed success returns an empty list; every present payload,
+ *   including explicit null, is validated as usual. Overlay evidence must be live.
  * - optional: optional boolean (only with a non-null "returns"). When true, an
  *   omitted or null data member is a valid response and the operation returns
  *   null; any other payload is validated as usual.

@@ -1164,6 +1164,11 @@ access log.
 - `listAccounts(search, searchtype, searchmethod, want)` and `accountSummary()` return
   the `acct` record list; `accountSummary()` does not require exactly one record.
   `hostingPlans()->listPackages()` returns the `pkg` list.
+- A `listAccounts()` search that matches nothing returns `[]` when WHM reports success
+  without data. WHM reports other misses as failures, and those raise
+  `ApiErrorException`: `searchmethod: 'exact'` with `searchtype: 'user'`
+  (`No accounts found.`) and `accountSummary()` for a missing user or domain
+  (`Account does not exist.`).
 - `createAccount()`, `changePassword()` and `modifyAccount()` return `null` when the
   server sends no data, and the documented array otherwise.
 - `suspendAccount()`, `unsuspendAccount()`, `removeAccount()` and `changePackage()`

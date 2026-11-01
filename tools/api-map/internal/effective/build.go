@@ -256,6 +256,7 @@ func (b *builder) operation(op model.Operation, v model.Variant, ov overlay.Oper
 		b.problem(op.ID + ": optional_payload needs a documented payload")
 	}
 	b.rowsPolicy(op, v, ov, returns)
+	result.EmptyWithoutData = b.emptyWithoutData(op, ov, returns)
 	result.Returns = returns
 	result.AdditionalMethods = b.additionalMethods(op, v, ov, result)
 	return result, b.groupOf(op, v, node), true

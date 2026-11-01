@@ -128,6 +128,9 @@ type Operation struct {
 	// parameter, parameter requiredness, scalar type/description corrections or
 	// suppressed enum documentation.
 	Evidence []Evidence `json:"evidence,omitempty"`
+	// EmptyWithoutData reads an omitted data member on a confirmed WHM success
+	// as an empty unwrapped list. It needs live evidence of that wire form.
+	EmptyWithoutData bool `json:"empty_without_data,omitempty"`
 }
 
 // JSONBody selects one whole application/json body; source schemas remain immutable.
