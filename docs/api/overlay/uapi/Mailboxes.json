@@ -1,0 +1,301 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "Mailboxes",
+  "accessor": "mailboxes",
+  "description": "Mailbox inventory, selected-message expunge and Roundcube mailbox-name encoding settings.",
+  "operations": {
+    "uapi:Mailboxes/expunge_mailbox_messages": {
+      "method": "POST",
+      "params": {
+        "query": {
+          "sensitive": true
+        }
+      },
+      "order": [
+        "account",
+        "mailbox",
+        "query"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 64."
+        },
+        {
+          "kind": "observed",
+          "text": "A successful outcome can delete nothing: review 5725223473 on original 9e47d95, cPanel 11.138.0.19, observed a nonmatching query and a nonexistent GUID succeeding through both routes. Separately verify the intended inventory with getMailboxStatusList(account). The client makes no extra verification request and supplies no ownership protection, retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Marks selected messages as deleted; rollback is none. Use getMailboxStatusList(account) separately to inventory mailbox names and GUIDs."
+        },
+        {
+          "kind": "policy",
+          "text": "The required search query is sensitive and forwarded unchanged. The client does not parse, narrow or escape it, establish mailbox ownership, protect arbitrary mail from deletion, retry or roll back. Later live fixtures require separate ownership and cleanup."
+        },
+        {
+          "kind": "documented",
+          "text": "Mailbox wildcard characters such as * cannot be escaped; upstream recommends expungeMessagesForMailboxGuid() instead."
+        },
+        {
+          "kind": "documented",
+          "text": "The data member has an empty schema: any present JSON value, including null, is preserved as mixed. Missing data is a mismatch; no deletion count or per-message outcome is inferred."
+        },
+        {
+          "kind": "policy",
+          "text": "Scalar identifiers and names are forwarded and form-encoded once without email, domain, path, UUID or search-query validation, trimming or UTF-8 name conversion. Optional and absent known fields remain distinct from explicit null. No universal live compatibility is established; attributed observations are limited to the stated revision, build, arguments and routes."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Mailboxes~1expunge_mailbox_messages/get",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1Mailboxes~1expunge_mailbox_messages/get x-readonly=false selects POST. Formal parameters, requiredness, order and response data schema at responses/200/content/application~1json/schema/properties/result/properties/data are preserved without replacement or normalization. Account anyOf email/username remains string. Source GET variant selection is independent from runtime form POST. Query sensitivity protects arbitrary private mail-search text."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Mailboxes~1expunge_mailbox_messages/get",
+          "note": "Attributed to seebeen review 5725223473 (https://github.com/hostingpal/whm-api-client/pull/98#pullrequestreview-5725223473) of exact original head 9e47d959cbf562bf91bd1b32944360297acfbcaf (3872d38..9e47d95), cPanel 11.138.0.19, direct UAPI and WHM bridge. This integration performed no live call, capture or independent server-source inspection. Name-based expunge with a nonmatching query returned success without deleting messages. Its pinned data schema remains any present mixed value, including null; missing data remains a mismatch. Success alone does not prove intended deletion."
+        }
+      ]
+    },
+    "uapi:Mailboxes/expunge_messages_for_mailbox_guid": {
+      "method": "POST",
+      "params": {
+        "query": {
+          "sensitive": true
+        }
+      },
+      "order": [
+        "account",
+        "mailbox_guid",
+        "query"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 64."
+        },
+        {
+          "kind": "observed",
+          "text": "A successful outcome can delete nothing: review 5725223473 on original 9e47d95, cPanel 11.138.0.19, observed a nonmatching query and a nonexistent GUID succeeding through both routes. Separately verify the intended inventory with getMailboxStatusList(account). The client makes no extra verification request and supplies no ownership protection, retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Marks selected messages as deleted; rollback is none. Use getMailboxStatusList(account) separately to inventory mailbox names and GUIDs."
+        },
+        {
+          "kind": "policy",
+          "text": "The required search query is sensitive and forwarded unchanged. The client does not parse, narrow or escape it, establish mailbox ownership, protect arbitrary mail from deletion, retry or roll back. Later live fixtures require separate ownership and cleanup."
+        },
+        {
+          "kind": "observed",
+          "text": "The pinned response declares a nonnullable object, but review 5725223473 observed explicit null after GUID expunge on original 9e47d95 through both routes. The effective payload is a required nullable opaque map: explicit null and opaque object fields are preserved, including inherited empty-array compatibility; missing data still mismatches. No deletion count or per-message outcome is inferred."
+        },
+        {
+          "kind": "policy",
+          "text": "Scalar identifiers and names are forwarded and form-encoded once without email, domain, path, UUID or search-query validation, trimming or UTF-8 name conversion. Optional and absent known fields remain distinct from explicit null. No universal live compatibility is established; attributed observations are limited to the stated revision, build, arguments and routes."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Mailboxes~1expunge_messages_for_mailbox_guid/get",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1Mailboxes~1expunge_messages_for_mailbox_guid/get x-readonly=false selects POST. Formal parameters, requiredness, order and response data schema at responses/200/content/application~1json/schema/properties/result/properties/data are preserved without replacement or normalization. Account anyOf email/username remains string. Source GET variant selection is independent from runtime form POST. Query sensitivity protects arbitrary private mail-search text."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Mailboxes~1expunge_messages_for_mailbox_guid/get",
+          "note": "Attributed to seebeen review 5725223473 (https://github.com/hostingpal/whm-api-client/pull/98#pullrequestreview-5725223473) of exact original head 9e47d959cbf562bf91bd1b32944360297acfbcaf (3872d38..9e47d95), cPanel 11.138.0.19, direct UAPI and WHM bridge. This integration performed no live call, capture or independent server-source inspection. GUID expunge reduced seeded INBOX count from 3 to 2 but raised PayloadMismatchException with outcomeConfirmed=true and payload null; the name method reduced 4 to 3 and returned null. Reviewer source inspection reports both share _expunge_mailbox_messages, which does not set data. A nonexistent GUID also reported success without deletion. Accept explicit null alongside the existing opaque object; do not infer absent-data compatibility, counts, atomicity or rollback."
+        }
+      ],
+      "response": {
+        "": {
+          "replace": {
+            "type": "map",
+            "values": {
+              "type": "mixed"
+            },
+            "nullable": true
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Mailboxes~1expunge_messages_for_mailbox_guid/get/responses/200/content/application~1json/schema/properties/result/properties/data",
+              "note": "The immutable pinned data schema is type object with empty properties and no nullable marker, distinct from the name-based expunge empty schema {}. Preserve the opaque map and its unknown values; this correction adds explicit null without changing the formal source, required payload presence or request."
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Mailboxes~1expunge_messages_for_mailbox_guid/get/responses/200/content/application~1json/schema/properties/result/properties/data",
+              "note": "Attributed to seebeen review 5725223473 (https://github.com/hostingpal/whm-api-client/pull/98#pullrequestreview-5725223473) of exact original head 9e47d959cbf562bf91bd1b32944360297acfbcaf (3872d38..9e47d95), cPanel 11.138.0.19, direct UAPI and WHM bridge. This integration performed no live call, capture or independent server-source inspection. GUID expunge reduced seeded INBOX count from 3 to 2 but raised PayloadMismatchException with outcomeConfirmed=true and payload null; the name method reduced 4 to 3 and returned null. Reviewer source inspection reports both share _expunge_mailbox_messages, which does not set data. A nonexistent GUID also reported success without deletion. Accept explicit null alongside the existing opaque object; do not infer absent-data compatibility, counts, atomicity or rollback."
+            }
+          ]
+        }
+      }
+    },
+    "uapi:Mailboxes/get_mailbox_status_list": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 64."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a list with optional string guid/mailbox and integer messages/vsize fields; vsize is bytes. Native integers, zero, omitted fields and empty lists retain their meaning. Only messages and vsize additionally accept canonical decimal integer strings within the platform integer range, normalized losslessly to int. Source minimum 0 remains descriptive under the existing range policy."
+        },
+        {
+          "kind": "observed",
+          "text": "Review 5725223473 on original 9e47d95, cPanel 11.138.0.19, reported messages and vsize as digit strings in every observed row for a mailbox and cPanel username through direct UAPI and WHM bridge. Other fields and UTF-8 status flags retain their strict types; this is bounded compatibility evidence."
+        },
+        {
+          "kind": "policy",
+          "text": "Scalar identifiers and names are forwarded and form-encoded once without email, domain, path, UUID or search-query validation, trimming or UTF-8 name conversion. Optional and absent known fields remain distinct from explicit null. No universal live compatibility is established; attributed observations are limited to the stated revision, build, arguments and routes."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Mailboxes~1get_mailbox_status_list/get",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1Mailboxes~1get_mailbox_status_list/get x-readonly=true selects GET. Formal parameters, requiredness, order and response data schema at responses/200/content/application~1json/schema/properties/result/properties/data are preserved without replacement or normalization. The sole parameter account is a required plain string and is sent in the GET query. There is no account anyOf schema or search-query parameter for this operation."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Mailboxes~1get_mailbox_status_list/get",
+          "note": "Attributed to seebeen review 5725223473 (https://github.com/hostingpal/whm-api-client/pull/98#pullrequestreview-5725223473) of exact original head 9e47d959cbf562bf91bd1b32944360297acfbcaf (3872d38..9e47d95), cPanel 11.138.0.19, direct UAPI and WHM bridge. This integration performed no live call, capture or independent server-source inspection. Both messages and vsize were reported as a digit string in every observed status-list row, for both a mailbox and the cPanel username, via GET through both routes. These two leaf corrections does not transfer to guid/mailbox strings, flags or any other operation."
+        }
+      ],
+      "response": {
+        "[].messages": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Mailboxes~1get_mailbox_status_list/get/responses/200/content/application~1json/schema/properties/result/properties/data/items/properties/messages",
+              "note": "The immutable pinned leaf is an optional integer with minimum 0; The formal pin is unchanged. Keep native integers and omission; minimum remains descriptive. Add only the existing canonical bounded lossless numeric-string integer normalization, without accepting null, floats or malformed spellings."
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Mailboxes~1get_mailbox_status_list/get/responses/200/content/application~1json/schema/properties/result/properties/data/items/properties/messages",
+              "note": "Attributed to seebeen review 5725223473 (https://github.com/hostingpal/whm-api-client/pull/98#pullrequestreview-5725223473) of exact original head 9e47d959cbf562bf91bd1b32944360297acfbcaf (3872d38..9e47d95), cPanel 11.138.0.19, direct UAPI and WHM bridge. This integration performed no live call, capture or independent server-source inspection. messages was reported as a digit string in every observed status-list row, for both a mailbox and the cPanel username, via GET through both routes. This leaf correction does not transfer to guid/mailbox strings, flags or any other operation."
+            }
+          ]
+        },
+        "[].vsize": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Mailboxes~1get_mailbox_status_list/get/responses/200/content/application~1json/schema/properties/result/properties/data/items/properties/vsize",
+              "note": "The immutable pinned leaf is an optional integer with minimum 0; vsize is bytes. The formal pin is unchanged. Keep native integers and omission; minimum remains descriptive. Add only the existing canonical bounded lossless numeric-string integer normalization, without accepting null, floats or malformed spellings."
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Mailboxes~1get_mailbox_status_list/get/responses/200/content/application~1json/schema/properties/result/properties/data/items/properties/vsize",
+              "note": "Attributed to seebeen review 5725223473 (https://github.com/hostingpal/whm-api-client/pull/98#pullrequestreview-5725223473) of exact original head 9e47d959cbf562bf91bd1b32944360297acfbcaf (3872d38..9e47d95), cPanel 11.138.0.19, direct UAPI and WHM bridge. This integration performed no live call, capture or independent server-source inspection. vsize was reported as a digit string in every observed status-list row, for both a mailbox and the cPanel username, via GET through both routes. This leaf correction does not transfer to guid/mailbox strings, flags or any other operation."
+            }
+          ]
+        }
+      }
+    },
+    "uapi:Mailboxes/has_utf8_mailbox_names": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 78."
+        },
+        {
+          "kind": "documented",
+          "text": "The user argument is a cPanel username, not a mailbox address. Omitted user defaults to the currently logged-in user. Null omits the optional user; an empty string remains supplied unchanged. No local validation or normalization is added. The object contains optional integer enabled (0/1), distinct from UAPI status; mailbox-name encoding does not describe message-content charset."
+        },
+        {
+          "kind": "policy",
+          "text": "Scalar identifiers and names are forwarded and form-encoded once without email, domain, path, UUID or search-query validation, trimming or UTF-8 name conversion. Optional and absent known fields remain distinct from explicit null. No universal live compatibility is established; attributed observations are limited to the stated revision, build, arguments and routes."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Mailboxes~1has_utf8_mailbox_names/get",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1Mailboxes~1has_utf8_mailbox_names/get x-readonly=true selects GET. Formal parameters, requiredness, order and response data schema at responses/200/content/application~1json/schema/properties/result/properties/data are preserved without replacement or normalization. The sole parameter user is an optional string with username format, defaulting to the currently logged-in user. Runtime GET omits null user and preserves an explicitly supplied empty string in the query. There is no account or search-query parameter for this operation."
+        }
+      ]
+    },
+    "uapi:Mailboxes/set_utf8_mailbox_names": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 78."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes Roundcube mailbox-name UTF-8 encoding for the selected cPanel account email accounts; it does not change message-content charset. Native bool enabled sends integer 0/1."
+        },
+        {
+          "kind": "policy",
+          "text": "Inspect optional integer success (0/1) independently of UAPI status. A successful envelope does not establish mail-client behavior. No automatic inventory lookup, retry or rollback occurs."
+        },
+        {
+          "kind": "policy",
+          "text": "Scalar identifiers and names are forwarded and form-encoded once without email, domain, path, UUID or search-query validation, trimming or UTF-8 name conversion. Optional and absent known fields remain distinct from explicit null. No universal live compatibility is established; attributed observations are limited to the stated revision, build, arguments and routes."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Mailboxes~1set_utf8_mailbox_names/get",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1Mailboxes~1set_utf8_mailbox_names/get x-readonly=false selects POST. Formal parameters, requiredness, order and response data schema at responses/200/content/application~1json/schema/properties/result/properties/data are preserved without replacement or normalization. The sole parameter enabled is a required integer enum [0, 1], lowered to native bool and encoded as integer 0/1 in the form POST body. The selected source GET variant has x-readonly=false, so runtime uses form POST. There is no account or search-query parameter for this operation."
+        }
+      ]
+    }
+  }
+}

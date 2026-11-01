@@ -8053,3 +8053,107 @@ The three original source contradictions and `whm-api-client-8x0.2.64` remain
 open; the 55 inherited diagnostics, PHP 8.3 CI, source/runtime/stress/platform/
 metadata/release gaps and deferred consumer integration remain unwaived.
 Historical PR95 provenance finding I1 / `whm-api-client-qrk` remains open.
+
+
+### 2026-10-31 — UAPI Mailboxes complete generated module
+
+Delivery `whm-api-client-8x0.4.23` adds all five Mailboxes operations. Independent
+inspection of immutable `cpanel.openapi.json.gz` confirmed decompressed SHA-256
+`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`
+(compressed SHA-256
+`ba2ba938969c2e98f9bdb259f4072d182af215ba8a44402846de077ba6b85358`).
+Overlay evidence binds each `/paths/~1Mailboxes~1<function>/get` locator. All five
+selected source variants are GET; x-readonly=true selects runtime GET for
+get_mailbox_status_list and has_utf8_mailbox_names. x-readonly=false and
+x-rollback=none select form POST for both expunge operations and
+set_utf8_mailbox_names. Version floors are cPanel 64 and cPanel 78 respectively.
+
+Formal parameters and response data are retained from each operation's
+`/parameters` and `/responses/200/content/application~1json/schema/properties/result/properties/data`.
+Expunge account anyOf email/username branches are both strings; no format validator
+is added. Explicit query sensitivity protects arbitrary mail-search expressions.
+The mailbox-name parameter documents unescapable `*` wildcards and recommends GUID
+methods, with separate status inventory. Required queries are forwarded unchanged;
+no client query-safety or ownership claim, parsing, retry or rollback is introduced.
+
+The mailbox-name expunge data schema is literally `{}`, yielding mixed with a
+required present data member; all JSON roots including null remain accepted.
+GUID expunge data is literally type object/properties {}, yielding a required opaque
+object preserving provider fields and existing empty-array compatibility; null and
+absence fail. Status-list rows contain only optional string guid/mailbox and integer
+messages/vsize, the latter in bytes. Source minimum 0 remains documentation under
+the existing runtime, without new range validation. Optional enabled and success
+remain strict native integer 0|1 object fields, separate from API status. Required
+input enabled becomes native bool and is encoded 0/1. Optional user null omits while
+empty string is supplied. No response correction, normalization, unwrap, void or
+optional_payload override is introduced; no source contradiction requires one.
+
+Real-client/mock-HTTP fixtures cover each method on direct and bridge routes,
+literal paths/auth/method/query/body/content type and argument order, exact wildcard,
+account/GUID/UTF-8/search bytes, both boolean encodings, optional user omission/null/
+empty, mixed roots, opaque provider fields, empty/populated lists and objects,
+strict known fields, null/absent/wrong-root distinctions and zero flags independent
+of API status. API/outer-WHM/HTTP/JSON/transport/payload failures assert metadata
+ordering and one attempt. Strict native wrong types preserve prior metadata.
+Sensitive query reflection and actual-runner failures with exception args enabled
+verify library trace redaction without swallowing assertion failures.
+
+Baseline `3872d384a2e4f83a348758085808452230459d8c` contains 1,145 operations
+(557 UAPI, 588 WHM), 96 groups and 195 outputs. This adds exactly five operations,
+one group and two PHP outputs: 1,150 operations (562 UAPI, 588 WHM), 97 groups,
+197 outputs (196 PHP files plus coverage). Prior overlays/specs/methods, immutable
+source/evidence/map/checksum/runtime/generator files and this audit's prefix remain
+unchanged. No live API or URL call, mailbox creation, mail delivery, expunge or
+encoding change ran. Separate `whm-api-client-8x0.2.65` remains OPEN for owned live
+fixtures and cleanup; offline success establishes no mail-client or destructive
+operation compatibility. Required PHP 8.3 CI and 55 inherited diagnostics remain
+external-owned and unwaived.
+
+
+### UAPI Mailboxes compatibility correction (2026-11-01)
+
+The dated 2026-10-31 Mailboxes section above records the original offline
+implementation and its then-effective contract. This correction integrates
+approved master `3b81970c2d13c6f8f336a592eb12a9e4510a1d49` with original
+`9e47d959cbf562bf91bd1b32944360297acfbcaf`: 1,187 canonical operations
+(591 UAPI, 596 WHM), 105 groups and 213 generated outputs (212 PHP plus coverage).
+Original evidence records, including their corrected provenance notes, remain
+historical; the pinned source has not changed.
+
+[Review 5725223473](https://github.com/hostingpal/whm-api-client/pull/98#pullrequestreview-5725223473)
+of original `3872d38..9e47d95` reports cPanel `11.138.0.19` results through direct
+UAPI and the WHM bridge. The effective GUID expunge result now preserves explicit
+null alongside opaque object fields and inherited empty-array compatibility;
+missing data, scalars and nonempty lists still fail. The formal pin declares a
+nonnullable object, so this is an evidenced correction rather than a source
+refresh. Name-based expunge still accepts any present JSON value, including null,
+and rejects missing data.
+
+Only status-list `messages` and `vsize` additionally normalize canonical decimal
+integer strings losslessly within the platform integer range. Native integers,
+zero, omitted fields and empty lists retain their meaning; `vsize` remains bytes.
+Malformed spellings, overflow, booleans, native floats and null reject. Existing
+negative-value behavior and the descriptive minimum/range policy are unchanged.
+Unknown row fields continue to be filtered; GUID/mailbox strings and native UTF-8
+0|1 flags remain strict. `hasUtf8MailboxNames(user)` takes a cPanel username, not a
+mailbox address; omitted/null user selects the current user and an explicit empty
+string is forwarded unchanged.
+
+Both expunge methods can report success while deleting nothing: the reviewer
+observed a nonmatching query and a nonexistent GUID succeed. Separately verify
+the intended inventory with `getMailboxStatusList(account)`. Required sensitive
+queries and exact name/GUID bytes are still forwarded unchanged; wildcard escaping
+limits, no deletion count, no ownership protection, one request, no retry and no
+rollback remain. No automatic verification, concurrency, atomicity or recovery
+guarantee follows.
+
+The reviewer reports seeded-message counts of 4 to 3 for name expunge and 3 to 2
+for GUID expunge, with the latter throwing on explicit null at the original head.
+Quoted status integers, strict native UTF-8 flags/settings readback, invalid-query
+and unknown-account API errors, account/home removal and token revocation are
+reviewer-attributed observations, not checks by this integration. This integration
+made no live request, mailbox/message/settings change, source fetch or new capture.
+Synthetic local responses verify the bounded contract only. Runtime follow-up
+`whm-api-client-8x0.2.65`, the 55 inherited diagnostics, platform/stress/metadata/
+release/full-parity gaps and deferred consumer integration remain open and
+unwaived. Historical PR95 provenance finding I1 / `whm-api-client-qrk` remains open.
