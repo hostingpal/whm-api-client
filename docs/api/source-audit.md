@@ -8974,6 +8974,79 @@ is not replayed and does not establish current combined-HEAD ServiceProxy proof.
 Existing 55 source diagnostics and the separate runtime/transport/source gaps
 remain open and unwaived.
 
+## Webmail inventory and Market read evidence (2026-11-01)
+
+Two independent read-only sections were captured once each at committed code
+`eba1711a62e71d614a50cb5eeb2259aa00adbbea` on cPanel `11.138.0.19`, as `npr` through
+direct UAPI and the WHM bridge. Contracts come from the pinned UAPI source
+`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`. All 16 GET
+observations pass HTTP, API, payload and probe checks with zero discrepancies, and
+both strict assessments pass with no acknowledgments. Direct and bridged payload
+structures are identical for every operation. No client contract changed.
+
+| Section | Artifact | GETs | SHA-256 |
+| --- | --- | ---: | --- |
+| `webmail-inventory-v1` | [Webmail inventory](evidence/2026-11-01-webmail-inventory.json) | 5 | `37ee9760012a45c19100adc379ca59d7b87d46aebea8596a6c1f8e75dc201cd6` |
+| `market-reads-v1` | [Market reads](evidence/2026-11-01-market-reads.json) | 11 | `4a9ec4fffec130ee099b63cb2f86c24482b332a8101995828426745bdb70da51` |
+
+Webmail inventory reads WHM version, `ActiveSessions/list_active_sessions` and
+`WebmailApps/list_webmail_apps`, with `theme` omitted. Session inventory returned an
+empty list on both routes. That proves nothing about session row fields, and it
+cannot separate no unexpired sessions from an unreadable session store. All six
+documented row fields stay unobserved in committed evidence; the PR102 reviewer's
+populated rows remain a separate report. Webmail application rows are populated with
+string `displayname`, `icon`, `id` and `url`. Returned URLs may carry a session
+token, so they were neither saved nor fetched, and they establish neither
+reachability nor login. No `Session/*` creator ran on any account, because the PR102
+review found that removing a disposable account left four session files behind and
+cleaning them needs filesystem access. The creators stay open under `8x0.2.69`.
+
+Market reads covers five of the nine reads in `8x0.2.63`. All nine are
+`x-readonly: true` at their `/paths/~1Market~1<function>/get` pointers. That includes
+`get_login_url` and `get_completion_url`, so neither is excluded as a possible token
+or URL source. Selector availability decides instead:
+
+| Operation | Outcome | Selector basis |
+| --- | --- | --- |
+| `get_providers_list` | Passed; populated rows | None required |
+| `get_all_products` | Passed; populated rows | None required |
+| `get_pending_ssl_certificates` | Passed; empty list | Real provider `cPStore` |
+| `get_provider_specific_dcv_constraints` | Passed; populated object | Real provider `cPStore` |
+| `get_login_url` | Passed; string payload | Real provider plus the pinned `url_after_login` example |
+| `get_certificate_status_details` | Not run | No pending order, so no real `order_item_id` |
+| `get_ssl_certificate_if_available` | Not run | No pending order, so no real `order_item_id` |
+| `get_product_info` | Not run | No read enumerates a real `product_name` |
+| `get_completion_url` | Not run | No read enumerates a real `product_name` |
+
+`url_after_login` selects no server resource. The recipe sends the pinned parameter
+example on a reserved domain, and the returned URL was not followed. The pinned
+`product_name` example, `cpanel-ssl`, does not appear in this server's catalog, and
+the pinned source states no mapping from the catalog's `product` display labels to
+`product_name`. Trying either value would be a guess, and a failure could not
+separate a wrong selector from the reviewer-reported missing local product files.
+`MarketReadsProbes::NOT_RUN` records each reason. The section runner fails any
+catalog that holds a skipped probe, so the artifact lists only observations made.
+
+Selectors came from one private direct-route read before the catalog was written:
+`get_providers_list`, `get_all_products` and `get_pending_ssl_certificates` for
+`cPStore`, one GET each. It printed only provider names, catalog labels and the
+pending count, stored nothing, and is not evidence. Both capture routes then
+returned an empty pending list, so the no-order finding held at capture time.
+
+The catalog shows `license_term`, `product_id` and `requires_ip` as numeric strings,
+the three wildcard prices as numeric strings or omitted, identity verification as
+list or null, and `dcv_file_allowed_characters` mixing integers and strings. This
+adds committed evidence for the PR96 corrections. Catalog `base_name` was an empty
+string in every row, and `max_users` and all three price fields were null, so
+non-null values remain unobserved. So do the object identity branch, populated
+pending rows, and both certificate-status payloads.
+
+These reads establish no purchase, payment, issuance, installation, trust or served
+TLS behavior. No POST, order, cart, checkout, queue, certificate or token action ran,
+`validate_login_token` was not called, and no returned URL or credential was used.
+Both artifacts hold structural paths and types only: a review of every scalar and a
+search for URLs, PEM markers, session tokens and server hostnames found none.
+
 ## Empty-result audit 2026-11-01
 
 Bead `whm-api-client-8x0.2.88`, a follow-up to `whm-api-client-9dy` and

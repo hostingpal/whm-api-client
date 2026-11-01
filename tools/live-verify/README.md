@@ -244,9 +244,21 @@ or duplicate observations fail the fixture. Each URI and generated callback bind
 the run's exact database/user names through the existing GET-only request guard.
 Original API, payload and discrepancy outcomes remain recorded when that fixture
 expectation fails. This verifies API-reported privileges, not SQL enforcement.
-An uncertain mutation outcome is reconciled without retrying the mutation.
-Cleanup continues for other owned resources after a failure and requires confirmed
-absence before reporting success. Preexisting resources are never removed.
+A creation the API accepts belongs to the run. A creation the API rejects never
+does, even if the name then exists: the resource stays in place, the report shows
+`creation: rejected` with `cleanup: present`, and the run fails with
+`ownership_unconfirmed`. A rejected create that did take effect is left behind the
+same way, because its response matches a competitor's. Any other uncertain mutation
+outcome, such as a transport failure, is reconciled against inventory without
+retrying the mutation. Cleanup continues for other owned resources after a failure
+and requires confirmed absence before reporting success. Resources found by the
+initial absence check are never removed.
+
+Supported concurrency is one run per suffix. Nothing enforces that across processes
+or machines: the server offers no lease, MySQL names carry no ownership marker, and
+the random suffix only makes a collision unlikely. One race remains. If another
+process creates the exact name while a create of ours has no API outcome,
+reconciliation cannot tell it from ours and deletes it.
 
 Evidence is written after cleanup and includes a separate `mysql_fixture` report
 with fixed lifecycle outcomes, without names, passwords or upstream error text.
@@ -268,7 +280,8 @@ If cleanup reports `present` or `unconfirmed`, inspect the `npr` account's MySQL
 inventory privately in cPanel. Fixture candidates follow `npr_wv<6 lowercase hex>d`
 and `e` for databases, and `npr_wv<6 lowercase hex>u` and `v` for users, sharing
 one suffix per run. Confirm ownership before manually removing exact resources;
-the pattern alone is not proof and must not be used for bulk deletion. A new
+the pattern alone is not proof and must not be used for bulk deletion, and a
+`rejected` resource may belong to another process. A new
 runner invocation uses new names and does not recover a previous run's leftovers.
 
 Quota recipes take no arguments and read account totals in MB and local usage in
@@ -1765,6 +1778,87 @@ A successful result establishes singleton-list wire acceptance only. It establis
 no multi-domain batch, populated DS field, mutation, propagation or DNSSEC resolver
 coverage. Existing artifacts and discrepancy policies are never changed by this
 catalog.
+
+## Webmail session and application inventory
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/webmail-inventory.php \
+  --output=docs/api/evidence/YYYY-MM-DD-webmail-inventory.json
+```
+
+`webmail-inventory-v1` has five fixed GETs: WHM version, then
+`ActiveSessions/list_active_sessions` and `WebmailApps/list_webmail_apps` through
+direct UAPI and the `npr` bridge. Neither call supplies an argument, so the server's
+default theme applies. Existing opt-in, committed-input, exact request guard, TLS
+and immutable structural-output rules apply.
+
+An empty session list proves nothing about session row fields, and upstream prose
+says it can also mean an unreadable session store. Application rows establish
+field types only: returned URLs may carry a session token, so they are neither
+persisted nor fetched, and they prove neither reachability nor login. No `Session/*`
+creator runs on any account: a reviewer's disposable-account test left four session
+files behind after the account was removed, and cleaning them needs filesystem
+access. The creators stay open under `8x0.2.69`.
+
+The [2026-11-01 capture](../../docs/api/evidence/2026-11-01-webmail-inventory.json)
+at `eba1711` on `11.138.0.19` passes all five GETs and strict assessment with zero
+discrepancies. Session inventory is empty on both routes, so all six session row
+fields stay unobserved. Application rows are populated. Do not repeat this capture
+for a populated result; session rows need a separately reviewed recipe.
+SHA-256: `37ee9760012a45c19100adc379ca59d7b87d46aebea8596a6c1f8e75dc201cd6`.
+
+## UAPI Market reads
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/market-reads.php \
+  --output=docs/api/evidence/YYYY-MM-DD-market-reads.json
+```
+
+`market-reads-v1` has eleven fixed GETs: WHM version, then five `x-readonly: true`
+reads through direct UAPI and the `npr` bridge: `get_providers_list`,
+`get_all_products`, `get_pending_ssl_certificates`,
+`get_provider_specific_dcv_constraints` and `get_login_url`. Existing opt-in,
+committed-input, exact request guard, TLS and immutable structural-output rules apply.
+
+Selectors are not guessed. A private direct-route read of the provider list, catalog
+and pending queue before this catalog was written showed `cPStore` as the only
+provider, three catalog rows and no pending certificates. `url_after_login` selects
+no server resource; the recipe sends the pinned parameter example, on a reserved
+domain, and the returned URL is never followed.
+
+Four of the nine reads in `8x0.2.63` are deliberately not run, and
+`MarketReadsProbes::NOT_RUN` records each reason:
+
+| Operation | Reason |
+| --- | --- |
+| `get_certificate_status_details` | No pending order, so no real `order_item_id` exists |
+| `get_ssl_certificate_if_available` | No pending order, so no real `order_item_id` exists |
+| `get_product_info` | No read enumerates a real `product_name` |
+| `get_completion_url` | No read enumerates a real `product_name` |
+
+The pinned `product_name` example, `cpanel-ssl`, is a store-page slug and appears
+nowhere in this server's catalog. The catalog's `product` values are display labels
+in a different form, and the pinned source states no mapping between them. Run
+these two only with a selector known to be real on the server, for example after
+private inspection of its store product files.
+
+Payloads can hold security tokens, action URLs, PEM, CSR and identity data; only
+structural paths and types are saved. No order, cart, checkout, certificate, queue
+or token action runs, no POST is sent, and no returned URL or credential is used.
+`get_license_info` and `get_build_cart_url` are not `x-readonly` and stay out of this
+catalog. A successful read establishes no purchase, payment, issuance, installation,
+trust or served TLS behavior.
+
+The [2026-11-01 capture](../../docs/api/evidence/2026-11-01-market-reads.json) at
+`eba1711` on `11.138.0.19` passes all eleven GETs and strict assessment with zero
+discrepancies. Provider, catalog and DCV payloads are populated, the login URL is a
+string, and the pending list is empty on both routes. Catalog prices, `max_users`
+and a non-empty `base_name` stay unobserved, as do the object identity branch and
+pending rows. Do not repeat this capture unchanged. The four unrun reads need a real
+selector and a new recipe. See the source audit for the observed types.
+SHA-256: `4a9ec4fffec130ee099b63cb2f86c24482b332a8101995828426745bdb70da51`.
 
 ## Bounded no-match audit
 
