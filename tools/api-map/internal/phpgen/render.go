@@ -27,10 +27,11 @@ func (w *writer) doc(indent, text string) {
 }
 
 // paramDoc writes one "@param <type> $name" tag. The tag head always stays on a
-// single line: when it would exceed lineWidth the literal doc type is replaced
-// by the parameter's plain type (string|list<string> for list encodings). Only
-// the description wraps, with continuation lines indented four spaces after
-// the asterisk.
+// single line. Legacy heads exceeding lineWidth use the parameter's plain type
+// (string|list<string> for list encodings). Collection heads retain precise literal
+// types even when overlong: preserving their enum contract takes precedence over
+// the plain-type fallback. Only the description wraps, with continuation lines
+// indented four spaces after the asterisk.
 func (w *writer) paramDoc(indent string, p effective.Param, description string) {
 	// Enum literals come from the pinned documents and could contain "*/".
 	docType := escapeDoc(paramDocType(p))
@@ -184,7 +185,7 @@ func groupClass(g effective.Group) string {
 			uses = append(uses, rootNamespace+`\Exception\PayloadMismatchException`)
 		}
 		for _, p := range op.Params {
-			if isMultiple(p.Encoding) || p.Input != nil {
+			if isMultiple(p.Encoding) || p.RejectEmpty || p.Input != nil {
 				uses = append(uses, "InvalidArgumentException")
 			}
 			if redactArgument(p) {
@@ -312,6 +313,10 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 		w.line(indent + " *")
 		w.doc(indent, "Returns null when the server sends no data.")
 	}
+	if op.EmptyWithoutData {
+		w.line(indent + " *")
+		w.doc(indent, "Returns an empty list when the server reports success and omits data.")
+	}
 	w.line(indent + " *")
 	identity := "API-map identity: " + op.VariantID + " (wire name " + op.Function
 	if op.Subcategory != "" {
@@ -321,6 +326,8 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 	w.line(indent + " *")
 	multi := false
 	scalarMulti := false
+	namedMap := false
+	records := false
 	omitEmpty := false
 	rejectEmpty := false
 	for _, p := range op.Params {
@@ -337,10 +344,17 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 		if p.OmitEmpty {
 			description = strings.TrimSpace(description + " Empty list omits it.")
 		}
+		if p.Records != nil {
+			for _, f := range p.Records.Fields {
+				description += " " + f.PHP + ": " + f.Description
+			}
+		}
 		w.paramDoc(indent, p, description)
+		records = records || p.Records != nil
 		omitEmpty = omitEmpty || p.OmitEmpty
 		rejectEmpty = rejectEmpty || p.RejectEmpty
 		multi = multi || isMultiple(p.Encoding)
+		namedMap = namedMap || (p.Collection != nil && p.Collection.Kind == "map")
 		scalarMulti = scalarMulti || p.Encoding == "suffix-numbered-scalar" || p.Collection != nil || p.Records != nil
 	}
 	if ret != nil {
@@ -361,7 +375,7 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 	if jsonField {
 		w.line(indent + " * @throws InvalidArgumentException If a structured JSON field is invalid; no request is sent.")
 	} else if op.JSONBody != nil {
-		w.line(indent + " * @throws InvalidArgumentException If the whole JSON body is invalid, query/root routing names are reserved,")
+		w.line(indent + " * @throws InvalidArgumentException If the whole JSON body is invalid, root routing names are reserved,")
 		w.line(indent + " *     or this account handle uses the unsupported WHM bridge.")
 	} else if op.MultipartUpload != nil {
 		w.line(indent + " * @throws InvalidArgumentException If the upload or multipart fields are invalid; no retry occurs.")
@@ -370,7 +384,13 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 	} else if rejectEmpty {
 		w.line(indent + " * @throws InvalidArgumentException If an explicit target is absent, blank, zero, or an invalid string list.")
 	} else if multi {
-		if omitEmpty {
+		if records {
+			w.line(indent + " * @throws InvalidArgumentException If records are empty, nonsequential, contain unknown or missing fields,")
+			w.line(indent + " *     invalid field types or expanded names; other list/map inputs retain their declared validation rules.")
+		} else if namedMap {
+			w.line(indent + " * @throws InvalidArgumentException If map keys, values, empty policy, or expanded names are invalid;")
+			w.line(indent + " *     list inputs must be nonempty, sequential, and contain supported values.")
+		} else if omitEmpty {
 			w.line(indent + " * @throws InvalidArgumentException If a non-omittable list argument is empty,")
 			w.line(indent + " *     or any list is keyed or contains non-strings.")
 		} else if scalarMulti {
@@ -576,6 +596,9 @@ func specClass(g effective.Group) string {
 					w.line("                    'item_type' => " + phpString(c.ItemType) + ",")
 					w.line(fmt.Sprintf("                    'allow_scalar' => %t,", *c.AllowScalar))
 					w.line("                    'empty' => " + phpString(c.Empty) + ",")
+					if c.RejectPrefixedKeys != nil {
+						w.line("                    'reject_prefixed_keys' => true,")
+					}
 					if c.Kind == "indexed" || c.Kind == "map" {
 						w.line("                    'prefix' => " + phpString(*c.Prefix) + ",")
 					}
@@ -601,11 +624,17 @@ func specClass(g effective.Group) string {
 			} else {
 				w.line("        'returns' => " + specLiteralAt(*op.Returns, "        ", len("        'returns' => ")) + ",")
 			}
+			if op.Rows != "" {
+				w.line("        'rows' => " + phpString(op.Rows) + ",")
+			}
 			if op.Unwrap != "" {
 				w.line("        'unwrap' => " + phpString(op.Unwrap) + ",")
 			}
 			if op.OptionalPayload && op.Returns != nil {
 				w.line("        'optional' => true,")
+			}
+			if op.EmptyWithoutData {
+				w.line("        'empty_without_data' => true,")
 			}
 		}
 		w.line("    ];")

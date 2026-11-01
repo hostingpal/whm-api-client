@@ -34,7 +34,7 @@ final class ImageManagerSpec
         'function' => 'create_thumbnails',
         'module' => 'ImageManager',
         'method' => 'POST',
-        'outcome' => 'flag',
+        'outcome' => 'unchecked',
         'params' => [
             'dir' => ['name' => 'dir', 'encoding' => 'scalar'],
             'heightPercentage' => ['name' => 'height_percentage', 'encoding' => 'scalar'],
@@ -52,6 +52,7 @@ final class ImageManagerSpec
                 ],
             ],
         ],
+        'rows' => '$',
     ];
 
     public const GET_DIMENSIONS = [
@@ -65,8 +66,8 @@ final class ImageManagerSpec
         'returns' => [
             'type' => 'object',
             'fields' => [
-                'height' => ['type' => 'int'],
-                'width' => ['type' => 'int'],
+                'height' => ['type' => 'int', 'accept' => ['numeric-string']],
+                'width' => ['type' => 'int', 'accept' => ['numeric-string']],
             ],
         ],
     ];

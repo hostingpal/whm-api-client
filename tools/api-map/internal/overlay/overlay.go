@@ -110,8 +110,10 @@ type Operation struct {
 	Body       string            `json:"body,omitempty"`
 	BodyFields map[string]string `json:"body_fields,omitempty"`
 	Outcome    string            `json:"outcome,omitempty"`
-	Unwrap     string            `json:"unwrap,omitempty"`
-	Void       bool              `json:"void,omitempty"`
+	// Rows opts an unchecked UAPI object batch into no-row API failure classification.
+	Rows   string `json:"rows,omitempty"`
+	Unwrap string `json:"unwrap,omitempty"`
+	Void   bool   `json:"void,omitempty"`
 	// OptionalPayload makes an omitted or null data member a valid response
 	// that the generated method returns as null.
 	OptionalPayload bool                  `json:"optional_payload,omitempty"`
@@ -126,6 +128,9 @@ type Operation struct {
 	// parameter, parameter requiredness, scalar type/description corrections or
 	// suppressed enum documentation.
 	Evidence []Evidence `json:"evidence,omitempty"`
+	// EmptyWithoutData reads an omitted data member on a confirmed WHM success
+	// as an empty unwrapped list. It needs live evidence of that wire form.
+	EmptyWithoutData bool `json:"empty_without_data,omitempty"`
 }
 
 // JSONBody selects one whole application/json body; source schemas remain immutable.
@@ -161,13 +166,14 @@ var NoteKinds = map[string]string{"documented": "Documented", "observed": "Obser
 // Empty lists always reject; maps explicitly allow/reject empty input.
 // Optional top-level null still omits the parameter.
 type Collection struct {
-	Kind        string  `json:"kind"`
-	ItemType    string  `json:"item_type"`
-	AllowScalar *bool   `json:"allow_scalar"`
-	Empty       string  `json:"empty"`
-	Prefix      *string `json:"prefix,omitempty"`
-	Separator   *string `json:"separator,omitempty"`
-	Start       *int    `json:"start,omitempty"`
+	RejectPrefixedKeys *bool   `json:"reject_prefixed_keys,omitempty"`
+	Kind               string  `json:"kind"`
+	ItemType           string  `json:"item_type"`
+	AllowScalar        *bool   `json:"allow_scalar"`
+	Empty              string  `json:"empty"`
+	Prefix             *string `json:"prefix,omitempty"`
+	Separator          *string `json:"separator,omitempty"`
+	Start              *int    `json:"start,omitempty"`
 }
 
 // Param renames, re-encodes or omits one documented parameter, keyed by wire
