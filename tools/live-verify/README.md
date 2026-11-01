@@ -1846,16 +1846,32 @@ Four of the nine reads in `8x0.2.63` are deliberately not run, and
 
 | Operation | Reason |
 | --- | --- |
-| `get_certificate_status_details` | No pending order, so no real `order_item_id` exists |
-| `get_ssl_certificate_if_available` | No pending order, so no real `order_item_id` exists |
-| `get_product_info` | No read enumerates a real `product_name` |
-| `get_completion_url` | No read enumerates a real `product_name` |
+| `get_certificate_status_details` | No read available here enumerated a real `order_item_id` |
+| `get_ssl_certificate_if_available` | No read available here enumerated a real `order_item_id` |
+| `get_product_info` | No read enumerates a real `product_name`, and local product files are reported missing |
+| `get_completion_url` | No read enumerates a real `product_name`, and URL construction is reported to fail on token authentication |
 
-The pinned `product_name` example, `cpanel-ssl`, is a store-page slug and appears
-nowhere in this server's catalog. The catalog's `product` values are display labels
-in a different form, and the pinned source states no mapping between them. Run
-these two only with a selector known to be real on the server, for example after
-private inspection of its store product files.
+The only pinned read that returns `order_item_id` is
+`get_pending_ssl_certificates`. It lists only certificates the system currently
+polls, so its empty list does not show that no order exists: a completed or expired
+order could hold a real ID.
+
+The pinned `product_name` example is `cpanel-ssl`. It was not among the catalog
+labels the private read printed, but that read printed no other catalog field and
+the artifact stores types only, so this was not a search of the whole catalog. The
+labels are in a different form, and the pinned source states no mapping between them
+and `product_name`.
+
+A real selector is necessary for these two, but review 5725042192 reports that it is
+not enough on this server:
+
+- `get_product_info`: upstream reads `/var/cpanel/market/product_info/<name>`, which
+  does not exist here, so both real IDs the reviewer tried raised an API error.
+  Inspecting store product files therefore offers no selector.
+- `get_completion_url`: on token authentication, through both routes, URL
+  construction failed because server information was unavailable from the
+  environment, as the generated `Market::getCompletionUrl()` PHPDoc records. That
+  does not establish universal token or route incompatibility.
 
 Payloads can hold security tokens, action URLs, PEM, CSR and identity data; only
 structural paths and types are saved. No order, cart, checkout, certificate, queue
@@ -1867,10 +1883,14 @@ trust or served TLS behavior.
 The [2026-11-01 capture](../../docs/api/evidence/2026-11-01-market-reads.json) at
 `eba1711` on `11.138.0.19` passes all eleven GETs and strict assessment with zero
 discrepancies. Provider, catalog and DCV payloads are populated, the login URL is a
-string, and the pending list is empty on both routes. Catalog prices, `max_users`
-and a non-empty `base_name` stay unobserved, as do the object identity branch and
-pending rows. Do not repeat this capture unchanged. The four unrun reads need a real
-selector and a new recipe. See the source audit for the observed types.
+string, and the pending list is empty on both routes. Catalog prices are partly
+observed: `x_price_per_domain*` are integers and `x_price_per_wildcard_domain*` are
+numeric strings or omitted. `price`, `maximum_server_price`, `minimum_server_price`
+and `max_users` are null in every row and `base_name` is empty, so other values of
+those fields stay unobserved, as do the object identity branch and pending rows. Do
+not repeat this capture unchanged. The four unrun reads need a real selector and a
+new recipe, and `get_product_info` and `get_completion_url` also need their reported
+blockers cleared. See the source audit for the observed types.
 SHA-256: `4a9ec4fffec130ee099b63cb2f86c24482b332a8101995828426745bdb70da51`.
 
 ## Bounded no-match audit

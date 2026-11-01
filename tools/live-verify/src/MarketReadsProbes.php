@@ -28,18 +28,25 @@ final class MarketReadsProbes
     public const URL_AFTER_LOGIN = 'http://hostname.example.com/redirectionlocation.cgi?state';
 
     /**
-     * Pinned read-only operations left out because running them would require a guessed selector.
+     * Pinned read-only operations left out of this catalog, with the reason for each.
      *
-     * The provider had no pending order, so no real order item identifier exists. The catalog's `product` values
-     * are display labels, the pinned `product_name` example is a different form, and no read enumerates that name.
+     * Two take an `order_item_id`. The only pinned read that returns one is `get_pending_ssl_certificates`, which
+     * lists only certificates the system currently polls and came back empty, so no read available here enumerated
+     * an order item. That does not show that no order exists: a completed or expired order could hold a real ID.
+     *
+     * Two take a `product_name`. The catalog's `product` values are display labels, the pinned `product_name` example
+     * is a different form, and no read enumerates that name. Review 5725042192 also reports a blocker for each that a
+     * real name would not clear: `/var/cpanel/market/product_info/<name>` does not exist on this server, and
+     * completion URL construction failed on token authentication because server information was unavailable from the
+     * environment. The latter does not establish universal token or route incompatibility.
      *
      * @var array<string, string>
      */
     public const NOT_RUN = [
-        'uapi:Market/get_certificate_status_details' => 'no-pending-order',
-        'uapi:Market/get_completion_url' => 'no-known-product-name',
-        'uapi:Market/get_product_info' => 'no-known-product-name',
-        'uapi:Market/get_ssl_certificate_if_available' => 'no-pending-order',
+        'uapi:Market/get_certificate_status_details' => 'no-enumerated-order-item',
+        'uapi:Market/get_completion_url' => 'no-known-product-name-and-reported-token-url-failure',
+        'uapi:Market/get_product_info' => 'no-known-product-name-and-reported-missing-product-files',
+        'uapi:Market/get_ssl_certificate_if_available' => 'no-enumerated-order-item',
     ];
 
     /** @return list<Probe> */

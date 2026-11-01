@@ -129,10 +129,10 @@ final class MarketReadsProbesTest extends TestCase
             'uapi:Market/get_providers_list',
         ], self::sorted(array_keys($captured)));
         self::assertSame([
-            'uapi:Market/get_certificate_status_details' => 'no-pending-order',
-            'uapi:Market/get_completion_url' => 'no-known-product-name',
-            'uapi:Market/get_product_info' => 'no-known-product-name',
-            'uapi:Market/get_ssl_certificate_if_available' => 'no-pending-order',
+            'uapi:Market/get_certificate_status_details' => 'no-enumerated-order-item',
+            'uapi:Market/get_completion_url' => 'no-known-product-name-and-reported-token-url-failure',
+            'uapi:Market/get_product_info' => 'no-known-product-name-and-reported-missing-product-files',
+            'uapi:Market/get_ssl_certificate_if_available' => 'no-enumerated-order-item',
         ], MarketReadsProbes::NOT_RUN);
         self::assertSame([], array_intersect_key($captured, MarketReadsProbes::NOT_RUN));
     }
