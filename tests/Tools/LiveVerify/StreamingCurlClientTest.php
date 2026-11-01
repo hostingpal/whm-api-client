@@ -11,6 +11,7 @@ use LogicException;
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Stream;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
 
@@ -42,6 +43,7 @@ final class StreamingCurlClientTest extends TestCase
         }
     }
 
+    #[RequiresPhpExtension('curl')]
     public function testSendsExactLengthPostIncrementallyWithoutChunkingOrExpect(): void
     {
         $source = random_bytes(3000000);
@@ -76,6 +78,7 @@ final class StreamingCurlClientTest extends TestCase
 
     /** @param 'short'|'throwing' $mode */
     #[DataProvider('failingSources')]
+    #[RequiresPhpExtension('curl')]
     public function testSourceFailureAbortsOnceWithoutRetryAndWithoutPrivateDetail(string $mode): void
     {
         $result = self::exchange($mode, 200000, random_bytes(200000));
@@ -98,6 +101,7 @@ final class StreamingCurlClientTest extends TestCase
     }
 
     /** The whole upload path at once: typed client, exact guard, body check, real libcurl, real socket. */
+    #[RequiresPhpExtension('curl')]
     public function testGuardBodyCheckAndClientCooperateOnARealUpload(): void
     {
         $result = self::exchange('guarded', 0, '');
