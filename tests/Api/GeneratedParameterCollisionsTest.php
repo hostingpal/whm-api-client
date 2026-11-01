@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace HostingPal\WhmApiClient\Tests\Api;
 
-use HostingPal\WhmApiClient\Api\Engine\ArgumentEncoder;
+use HostingPal\WhmApiClient\Api\Engine\OrderedFields;
+use HostingPal\WhmApiClient\Api\Engine\SpecChecker;
 use HostingPal\WhmApiClient\Api\NumberedList;
+use HostingPal\WhmApiClient\Api\RequestMethod;
 use HostingPal\WhmApiClient\Client;
 use HostingPal\WhmApiClient\Http\HttpTransport;
 use HostingPal\WhmApiClient\UapiClient;
@@ -53,27 +55,30 @@ final class GeneratedParameterCollisionsTest extends TestCase
                 ['users' => ['first-secret', 'equal-secret'], 'other' => 'equal-secret'],
             );
             self::fail('Expanded names from separate arguments must not overlap.');
-        } catch (InvalidArgumentException $error) {
+        } catch (LogicException $error) {
+            self::assertSame(LogicException::class, $error::class);
             self::assertStringNotContainsString('secret', $error->getMessage());
             self::assertNull($handle->responseMeta());
             self::assertCount(1, $http->getRequests());
         }
     }
 
-    public function testDuplicateDeclaredNamesCannotBeOverwrittenByArgumentEncoder(): void
-    {
-        $this->expectException(LogicException::class);
-        ArgumentEncoder::encode(['first' => ['name' => 'same', 'encoding' => 'scalar'],
-            'second' => ['name' => 'same', 'encoding' => 'scalar']], ['first' => 'equal', 'second' => 'equal']);
-    }
-
     /** @return iterable<string, array{string, string, string}> */
     public static function reservations(): iterable
     {
         foreach (['GET', 'POST'] as $method) {
-            yield 'whm ' . $method => ['whm', $method, 'api.version'];
-            foreach (['api.version', 'cpanel.user', 'cpanel.module', 'cpanel.function'] as $name) {
-                yield $name . $method => ['bridge', $method, $name];
+            foreach (['whm', 'direct', 'bridge'] as $route) {
+                foreach (
+                    ['api.', 'api.version', 'api.filter.enable', 'api.sort.enable',
+                    'api.chunk.enable', 'api.columns.enable'] as $name
+                ) {
+                    yield $route . $name . $method => [$route, $method, $name];
+                }
+                if ($route !== 'whm') {
+                    foreach (['cpanel.user', 'cpanel.module', 'cpanel.function'] as $name) {
+                        yield $route . $name . $method => [$route, $method, $name];
+                    }
+                }
             }
         }
     }
@@ -81,21 +86,68 @@ final class GeneratedParameterCollisionsTest extends TestCase
     #[DataProvider('reservations')]
     public function testGeneratedReservedFieldsFailBeforeFiltering(string $route, string $method, string $name): void
     {
-        [$handle, $http] = $this->client($route);
-        $handle instanceof WhmClient ? $handle->call('probe') : $handle->call('Email', 'probe');
-        try {
-            $this->invoke(
-                $handle,
-                $method,
-                ['target' => ['name' => $name, 'encoding' => 'repeat']],
-                ['target' => ['same-secret', 'same-secret']],
-            );
-            self::fail('Generated fields must not be silently discarded by routing.');
-        } catch (InvalidArgumentException $error) {
-            self::assertStringNotContainsString('same-secret', $error->getMessage());
-            self::assertNull($handle->responseMeta());
-            self::assertCount(1, $http->getRequests());
+        $spec = ['function' => 'probe', 'method' => $method, 'outcome' => 'flag', 'returns' => null,
+            'params' => ['target' => ['name' => $name, 'encoding' => 'repeat']]];
+        if ($route !== 'whm') {
+            $spec['module'] = 'Email';
         }
+        try {
+            SpecChecker::check($spec);
+            self::fail('Reserved declarations must fail the offline lint.');
+        } catch (LogicException $error) {
+            self::assertSame(LogicException::class, $error::class);
+        }
+        foreach (
+            [
+            [], ['target' => null], ['target' => ['same-secret']],
+            ['target' => ['same-secret', 'same-secret']]] as $arguments
+        ) {
+            [$handle, $http] = $this->client($route);
+            $handle instanceof WhmClient ? $handle->call('probe') : $handle->call('Email', 'probe');
+            try {
+                $this->invoke($handle, $method, $spec['params'], $arguments);
+                self::fail('Reserved declarations are malformed even when omitted or singleton.');
+            } catch (LogicException $error) {
+                self::assertSame(LogicException::class, $error::class);
+                self::assertStringNotContainsString('same-secret', $error->getMessage());
+                self::assertNull($handle->responseMeta());
+                self::assertCount(1, $http->getRequests());
+            }
+        }
+    }
+
+    #[DataProvider('reservations')]
+    public function testRuntimeReservationsDefendExpandedFields(string $route, string $method, string $name): void
+    {
+        [$handle, $http] = $this->client($route);
+        if ($route === 'direct' && str_starts_with($name, 'cpanel.')) {
+            $this->expectNotToPerformAssertions();
+            return; // Shared-spec lint rejects these; direct runtime ownership stays route-aware.
+        }
+        $fields = new OrderedFields();
+        $fields->append('future collection', $name, 'private');
+        $spec = ['function' => 'probe', 'module' => 'Email', 'method' => $method, 'outcome' => 'flag'];
+        try {
+            (new ReflectionMethod($handle, 'dispatch'))->getClosure($handle)($spec, $fields);
+            self::fail('Expanded API controls must fail before request encoding.');
+        } catch (InvalidArgumentException $error) {
+            self::assertSame(InvalidArgumentException::class, $error::class);
+            self::assertCount(0, $http->getRequests());
+        }
+    }
+
+    public function testDirectRuntimeAllowsExactBridgeControls(): void
+    {
+        [$handle, $http] = $this->client('direct');
+        $fields = new OrderedFields();
+        $fields->append('fixture', 'cpanel.user', 'literal');
+        (new ReflectionMethod($handle, 'dispatch'))->getClosure($handle)(
+            ['function' => 'probe', 'module' => 'Email', 'method' => 'POST', 'outcome' => 'flag'],
+            $fields,
+        );
+        $request = $http->getLastRequest();
+        self::assertInstanceOf(RequestInterface::class, $request);
+        self::assertSame('cpanel.user=literal', (string) $request->getBody());
     }
 
     #[DataProvider('routesAndMethods')]
@@ -163,28 +215,119 @@ final class GeneratedParameterCollisionsTest extends TestCase
         try {
             (new ReflectionMethod($handle, 'run'))->invoke($handle, $spec, ['key' => 'private-key-secret']);
             self::fail('Multipart fields cannot override bridge routing.');
-        } catch (InvalidArgumentException $error) {
+        } catch (LogicException $error) {
+            self::assertSame(LogicException::class, $error::class);
             self::assertStringNotContainsString('private-key-secret', $error->getMessage());
             self::assertNull($handle->responseMeta());
             self::assertCount(1, $http->getRequests());
         }
     }
 
-    public function testDirectGeneratedFieldsKeepDirectRoutingSemantics(): void
+    /** @return iterable<string, array{string, string}> */
+    public static function allowedNames(): iterable
     {
-        [$handle, $http] = $this->client('direct');
+        foreach (['whm', 'direct', 'bridge'] as $route) {
+            foreach (['api', 'Api.x', 'xapi.foo', 'apiX', 'cpanel.userX'] as $name) {
+                yield $route . $name => [$route, $name];
+            }
+        }
+        yield 'WHM bridge control is ordinary data' => ['whm', 'cpanel.user'];
+    }
+
+    #[DataProvider('allowedNames')]
+    public function testUnreservedLookalikesStayLiteral(string $route, string $name): void
+    {
+        [$handle, $http] = $this->client($route);
         $this->invoke(
             $handle,
-            'GET',
-            ['target' => ['name' => 'cpanel.user', 'encoding' => 'scalar']],
-            ['target' => 'literal%20'],
+            'POST',
+            ['value' => ['name' => $name, 'encoding' => 'scalar']],
+            ['value' => 'literal%20'],
         );
         $request = $http->getLastRequest();
         self::assertInstanceOf(RequestInterface::class, $request);
-        self::assertSame(
-            'https://api.example.test:2083/execute/Email/probe?cpanel.user=literal%2520',
-            (string) $request->getUri(),
-        );
+        self::assertSame($name . '=literal%2520', (string) $request->getBody());
+        self::assertCount(1, $http->getRequests());
+    }
+
+    /** @return iterable<string, array{array<string, array{name: string, encoding: string}>}> */
+    public static function staticOverlaps(): iterable
+    {
+        foreach (
+            [
+            ['user', 'numbered', 'user-1', 'scalar'],
+            ['user', 'numbered', 'user-99', 'repeat'],
+            ['user', 'numbered', 'user-1', 'numbered'],
+            ['user', 'numbered', 'user', 'repeat'],
+            ['user*', 'suffix-numbered', 'user12', 'numbered'],
+            ['user12*', 'suffix-numbered', 'user123', 'numbered'],
+            ['user*', 'suffix-numbered', 'user1*', 'suffix-numbered'],
+            ['user', 'scalar', 'user', 'scalar']] as [$first, $encoding, $second, $otherEncoding]
+        ) {
+            $params = ['first' => ['name' => $first, 'encoding' => $encoding],
+                'second' => ['name' => $second, 'encoding' => $otherEncoding]];
+            yield $first . $encoding . $second . $otherEncoding => [$params];
+            yield 'reverse ' . $first . $encoding . $second . $otherEncoding => [array_reverse($params, true)];
+        }
+    }
+
+    /** @param array<string, array{name: string, encoding: string}> $params */
+    #[DataProvider('staticOverlaps')]
+    public function testStaticCollisionsFailBeforeArgumentsCanHideThem(array $params): void
+    {
+        $spec = ['function' => 'probe', 'method' => 'POST', 'outcome' => 'flag',
+            'params' => $params, 'returns' => null];
+        try {
+            SpecChecker::check($spec);
+            self::fail('Static collisions must fail the offline lint.');
+        } catch (LogicException $error) {
+            self::assertSame(LogicException::class, $error::class);
+        }
+        foreach (['whm', 'direct', 'bridge'] as $route) {
+            foreach ([[], ['first' => null, 'second' => null], ['first' => ['one'], 'second' => 'one']] as $arguments) {
+                [$handle, $http] = $this->client($route);
+                $handle instanceof WhmClient ? $handle->call('probe') : $handle->call('Email', 'probe');
+                try {
+                    $this->invoke($handle, 'POST', $params, $arguments);
+                    self::fail('Omission and first values cannot hide malformed specs.');
+                } catch (LogicException $error) {
+                    self::assertSame(LogicException::class, $error::class);
+                    self::assertNull($handle->responseMeta());
+                    self::assertCount(1, $http->getRequests());
+                }
+            }
+        }
+    }
+
+    public function testNumberedSafeSuffixLookalikesPassLint(): void
+    {
+        foreach (['user-0', 'user-01', 'user-1x', 'user1*', 'user*'] as $name) {
+            SpecChecker::check(['function' => 'probe', 'method' => 'POST', 'outcome' => 'flag', 'returns' => null,
+                'params' => ['users' => ['name' => 'user', 'encoding' => 'numbered'],
+                    'other' => ['name' => $name, 'encoding' => str_ends_with($name, '*')
+                        ? 'suffix-numbered' : 'numbered']]]);
+        }
+        $this->expectNotToPerformAssertions();
+    }
+
+    #[DataProvider('routesAndMethods')]
+    public function testGenericControlFilteringRetainsItsExactLegacyBoundary(
+        string $route,
+        string $method,
+        bool $reverse,
+    ): void {
+        [$handle, $http] = $this->client($route);
+        $params = ['api.version' => 9, 'api.filter.enable' => 'yes', 'cpanel.user' => 'literal'];
+        $params = $reverse ? array_reverse($params, true) : $params;
+        $requestMethod = RequestMethod::from($method);
+        $handle instanceof WhmClient ? $handle->call('probe', $params, $requestMethod)
+            : $handle->call('Email', 'probe', $params, $requestMethod);
+        $request = $http->getLastRequest();
+        self::assertInstanceOf(RequestInterface::class, $request);
+        $fields = $method === 'POST' ? (string) $request->getBody() : $request->getUri()->getQuery();
+        self::assertStringContainsString('api.filter.enable=yes', $fields);
+        self::assertSame($route !== 'bridge', str_contains($fields, 'cpanel.user=literal'));
+        self::assertSame($route === 'direct', str_contains($fields, 'api.version=9'));
     }
 
     public function testGenericNumberedOverlapRetainsItsLegacyWireBytes(): void
