@@ -19,7 +19,11 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Fields typed from the 2026-11-01 name inspection on cPanel 11.138.0.19.
+ * Fields added from the 2026-11-01 name inspection on cPanel 11.138.0.19.
+ *
+ * Seven paths are carried as optional `mixed` because their meaning, or their presence on that
+ * operation, is not established: a read must never fail on them, whatever JSON type a server
+ * sends. `customlog[].format` stays a string because pinned domains_data examples document it.
  *
  * Payloads and expectations are written by hand and every value is synthetic. The live
  * inspection recorded names and structural types only, so nothing here restates a server value.
@@ -61,20 +65,10 @@ final class DomainPhpObservedFieldsTest extends TestCase
         $directives = static fn (UapiClient $u): array => $u->langPhp()->phpIniGetUserBasicDirectives(type: 'home');
         $paths = static fn (UapiClient $u): array => $u->langPhp()->phpIniGetUserPaths();
 
-        yield 'main domain quoted flag and strings' => [
+        yield 'main domain carries the observed forms unchanged' => [
             $domains,
             '{"main_domain":{"phpopenbasedirprotect":"1","phpversion":"fixture-a","status":"fixture-b"}}',
-            ['main_domain' => ['phpopenbasedirprotect' => 1, 'phpversion' => 'fixture-a', 'status' => 'fixture-b']],
-        ];
-        yield 'main domain quoted zero and empty strings' => [
-            $domains,
-            '{"main_domain":{"phpopenbasedirprotect":"0","phpversion":"","status":""}}',
-            ['main_domain' => ['phpopenbasedirprotect' => 0, 'phpversion' => '', 'status' => '']],
-        ];
-        yield 'main domain integer flag' => [
-            $domains,
-            '{"main_domain":{"phpopenbasedirprotect":0}}',
-            ['main_domain' => ['phpopenbasedirprotect' => 0]],
+            ['main_domain' => ['phpopenbasedirprotect' => '1', 'phpversion' => 'fixture-a', 'status' => 'fixture-b']],
         ];
         yield 'main domain omitted fields stay absent' => [
             $domains,
@@ -90,6 +84,11 @@ final class DomainPhpObservedFieldsTest extends TestCase
             $single,
             '{"domain":"example.test"}',
             ['domain' => 'example.test'],
+        ];
+        yield 'single domain keeps normalizing its pinned flag' => [
+            $single,
+            '{"phpopenbasedirprotect":"1"}',
+            ['phpopenbasedirprotect' => 1],
         ];
         yield 'customlog list item carries format instead of the pinned domain' => [
             $single,
@@ -109,43 +108,118 @@ final class DomainPhpObservedFieldsTest extends TestCase
             '{"customlog":{"domain":"fixture-a","target":"/fixture/one"}}',
             ['customlog' => ['domain' => 'fixture-a', 'target' => '/fixture/one']],
         ];
-        yield 'directive rows carry the field independently' => [
+        yield 'directive rows mix every JSON type, omission and null' => [
             $directives,
-            '{"directives":[{"cpanel_default":"fixture-a","key":"first"},{"key":"second"},'
-                . '{"cpanel_default":"","key":"third"}]}',
+            '{"directives":[{"key":"omitted"},{"cpanel_default":null,"key":"null"},{"cpanel_default":"fixture-a"},'
+                . '{"cpanel_default":0},{"cpanel_default":1.5},{"cpanel_default":false},{"cpanel_default":[]},'
+                . '{"cpanel_default":{"a":"fixture-a"}}]}',
             ['directives' => [
-                ['cpanel_default' => 'fixture-a', 'key' => 'first'],
-                ['key' => 'second'],
-                ['cpanel_default' => '', 'key' => 'third'],
-            ]],
-        ];
-        yield 'directive rows keep every accepted scalar form side by side' => [
-            $directives,
-            '{"directives":[{"cpanel_default":"fixture-a"},{"cpanel_default":"0"},{"cpanel_default":0},'
-                . '{"cpanel_default":7},{"cpanel_default":-3},{"cpanel_default":1.5},{"cpanel_default":true},'
-                . '{"cpanel_default":false}]}',
-            ['directives' => [
+                ['key' => 'omitted'],
+                ['cpanel_default' => null, 'key' => 'null'],
                 ['cpanel_default' => 'fixture-a'],
-                ['cpanel_default' => '0'],
                 ['cpanel_default' => 0],
-                ['cpanel_default' => 7],
-                ['cpanel_default' => -3],
                 ['cpanel_default' => 1.5],
-                ['cpanel_default' => true],
                 ['cpanel_default' => false],
+                ['cpanel_default' => []],
+                ['cpanel_default' => ['a' => 'fixture-a']],
             ]],
         ];
-        yield 'path rows keep any integer without a flag restriction' => [
+        yield 'path rows mix every JSON type, omission and null' => [
             $paths,
-            '{"paths":[{"is_suspended":0,"type":"home"},{"type":"vhost"},{"is_suspended":1,"type":"vhost"},'
-                . '{"is_suspended":7,"type":"vhost"}]}',
+            '{"paths":[{"type":"omitted"},{"is_suspended":null,"type":"null"},{"is_suspended":1,"type":"vhost"},'
+                . '{"is_suspended":"1"},{"is_suspended":true},{"is_suspended":1.5},{"is_suspended":["fixture-a"]}]}',
             ['paths' => [
-                ['is_suspended' => 0, 'type' => 'home'],
-                ['type' => 'vhost'],
+                ['type' => 'omitted'],
+                ['is_suspended' => null, 'type' => 'null'],
                 ['is_suspended' => 1, 'type' => 'vhost'],
-                ['is_suspended' => 7, 'type' => 'vhost'],
+                ['is_suspended' => '1'],
+                ['is_suspended' => true],
+                ['is_suspended' => 1.5],
+                ['is_suspended' => ['fixture-a']],
             ]],
         ];
+    }
+
+    /** @param Operation $call */
+    #[DataProvider('carried')]
+    public function testCarriedFieldsPassEveryJsonTypeThroughUnchanged(
+        string $route,
+        Closure $call,
+        string $payload,
+        mixed $expected,
+    ): void {
+        [$client, $http] = self::client($route);
+        $http->addResponse(new Response(200, [], self::envelope($route, $payload)));
+
+        self::assertSame($expected, $call($client->uapi('npr')));
+        self::assertCount(1, $http->getRequests());
+    }
+
+    /** @return iterable<string, array{string, Operation, string, mixed}> */
+    public static function carried(): iterable
+    {
+        foreach (['wrapped', 'bare', 'bridge'] as $route) {
+            foreach (self::carriedFields() as $field => [$call, $template, $place]) {
+                foreach (self::jsonValues() as $name => [$json, $value]) {
+                    yield $route . ' ' . $field . ' ' . $name => [
+                        $route, $call, sprintf($template, $json), $place($value),
+                    ];
+                }
+            }
+        }
+    }
+
+    /** @return iterable<string, array{Operation, string, Closure(mixed): mixed}> */
+    private static function carriedFields(): iterable
+    {
+        $domains = static fn (UapiClient $u): array => $u->domainInfo()->domainsData();
+        $single = static fn (UapiClient $u): array => $u->domainInfo()->singleDomainData(domain: 'example.test');
+        $directives = static fn (UapiClient $u): array => $u->langPhp()->phpIniGetUserBasicDirectives(type: 'home');
+        $paths = static fn (UapiClient $u): array => $u->langPhp()->phpIniGetUserPaths();
+
+        foreach (['phpopenbasedirprotect', 'phpversion', 'status'] as $name) {
+            yield 'main domain ' . $name => [
+                $domains,
+                '{"main_domain":{"' . $name . '":%s}}',
+                static fn (mixed $value): array => ['main_domain' => [$name => $value]],
+            ];
+        }
+        foreach (['phpversion', 'status'] as $name) {
+            yield 'single domain ' . $name => [
+                $single,
+                '{"' . $name . '":%s}',
+                static fn (mixed $value): array => [$name => $value],
+            ];
+        }
+        yield 'directive cpanel_default' => [
+            $directives,
+            '{"directives":[{"cpanel_default":%s}]}',
+            static fn (mixed $value): array => ['directives' => [['cpanel_default' => $value]]],
+        ];
+        yield 'path is_suspended' => [
+            $paths,
+            '{"paths":[{"is_suspended":%s}]}',
+            static fn (mixed $value): array => ['paths' => [['is_suspended' => $value]]],
+        ];
+    }
+
+    /** @return iterable<string, array{string, mixed}> */
+    private static function jsonValues(): iterable
+    {
+        yield 'string' => ['"fixture-a"', 'fixture-a'];
+        yield 'empty string' => ['""', ''];
+        yield 'quoted one' => ['"1"', '1'];
+        yield 'zero' => ['0', 0];
+        yield 'integer outside a flag' => ['7', 7];
+        yield 'negative integer' => ['-3', -3];
+        yield 'float' => ['1.5', 1.5];
+        yield 'true' => ['true', true];
+        yield 'false' => ['false', false];
+        yield 'null' => ['null', null];
+        yield 'empty list' => ['[]', []];
+        yield 'list' => ['["fixture-a",1,null]', ['fixture-a', 1, null]];
+        yield 'empty object' => ['{}', []];
+        yield 'object' => ['{"a":"fixture-a","b":{"c":null}}', ['a' => 'fixture-a', 'b' => ['c' => null]]];
     }
 
     /** @param Operation $call */
@@ -191,8 +265,8 @@ final class DomainPhpObservedFieldsTest extends TestCase
     }
 
     /** @param Operation $call */
-    #[DataProvider('rejected')]
-    public function testObservedFieldsKeepTheirExactTypes(string $route, Closure $call, string $payload): void
+    #[DataProvider('invalidCustomlogFormats')]
+    public function testCustomlogFormatStaysAString(string $route, Closure $call, string $payload): void
     {
         [$client, $http] = self::client($route);
         $account = $client->uapi('npr');
@@ -208,45 +282,12 @@ final class DomainPhpObservedFieldsTest extends TestCase
     }
 
     /** @return iterable<string, array{string, Operation, string}> */
-    public static function rejected(): iterable
+    public static function invalidCustomlogFormats(): iterable
     {
-        $domains = static fn (UapiClient $u): array => $u->domainInfo()->domainsData();
         $single = static fn (UapiClient $u): array => $u->domainInfo()->singleDomainData(domain: 'example.test');
-        $directives = static fn (UapiClient $u): array => $u->langPhp()->phpIniGetUserBasicDirectives(type: 'home');
-        $paths = static fn (UapiClient $u): array => $u->langPhp()->phpIniGetUserPaths();
-        $cases = [
-            'main flag two' => [$domains, '{"main_domain":{"phpopenbasedirprotect":2}}'],
-            'main quoted flag two' => [$domains, '{"main_domain":{"phpopenbasedirprotect":"2"}}'],
-            'main empty flag' => [$domains, '{"main_domain":{"phpopenbasedirprotect":""}}'],
-            'main null flag' => [$domains, '{"main_domain":{"phpopenbasedirprotect":null}}'],
-            'main integer phpversion' => [$domains, '{"main_domain":{"phpversion":84}}'],
-            'main null phpversion' => [$domains, '{"main_domain":{"phpversion":null}}'],
-            'main boolean status' => [$domains, '{"main_domain":{"status":false}}'],
-            'main null status' => [$domains, '{"main_domain":{"status":null}}'],
-            'single integer phpversion' => [$single, '{"phpversion":84}'],
-            'single null phpversion' => [$single, '{"phpversion":null}'],
-            'single integer status' => [$single, '{"status":1}'],
-            'single list status' => [$single, '{"status":[]}'],
-            'customlog integer format' => [$single, '{"customlog":[{"format":7}]}'],
-            'customlog null format' => [$single, '{"customlog":[{"format":null}]}'],
-            'directive null default' => [$directives, '{"directives":[{"cpanel_default":null}]}'],
-            'directive empty list default' => [$directives, '{"directives":[{"cpanel_default":[]}]}'],
-            'directive list default' => [$directives, '{"directives":[{"cpanel_default":["fixture-a"]}]}'],
-            'directive empty object default' => [$directives, '{"directives":[{"cpanel_default":{}}]}'],
-            'directive object default' => [$directives, '{"directives":[{"cpanel_default":{"a":"fixture-a"}}]}'],
-            'directive one bad row fails the list' => [
-                $directives,
-                '{"directives":[{"cpanel_default":"fixture-a"},{"cpanel_default":["fixture-b"]}]}',
-            ],
-            'path string integer' => [$paths, '{"paths":[{"is_suspended":"1"}]}'],
-            'path boolean' => [$paths, '{"paths":[{"is_suspended":true}]}'],
-            'path fraction' => [$paths, '{"paths":[{"is_suspended":1.5}]}'],
-            'path null' => [$paths, '{"paths":[{"is_suspended":null}]}'],
-        ];
         foreach (['wrapped', 'bare', 'bridge'] as $route) {
-            foreach ($cases as $name => [$call, $payload]) {
-                yield $route . ' ' . $name => [$route, $call, $payload];
-            }
+            yield $route . ' integer' => [$route, $single, '{"customlog":[{"format":7}]}'];
+            yield $route . ' null' => [$route, $single, '{"customlog":[{"format":null}]}'];
         }
     }
 
@@ -254,8 +295,8 @@ final class DomainPhpObservedFieldsTest extends TestCase
      * @param array<mixed> $returns
      * @param array<string, list<string>> $expected
      */
-    #[DataProvider('typedEvidence')]
-    public function testTypedFieldsAreNamedInEvidenceWithoutDiscrepancies(
+    #[DataProvider('namedEvidence')]
+    public function testFieldsAreNamedInEvidenceWithoutDiscrepancies(
         array $returns,
         string $payload,
         array $expected,
@@ -269,7 +310,7 @@ final class DomainPhpObservedFieldsTest extends TestCase
     }
 
     /** @return iterable<string, array{array<mixed>, string, array<string, list<string>>}> */
-    public static function typedEvidence(): iterable
+    public static function namedEvidence(): iterable
     {
         yield 'main domain' => [
             DomainInfoSpec::DOMAINS_DATA['returns'],
@@ -295,11 +336,14 @@ final class DomainPhpObservedFieldsTest extends TestCase
             '{"directives":[{"cpanel_default":"fixture-a"},{"key":"fixture-b"}]}',
             ['$.directives[].cpanel_default' => ['missing', 'string']],
         ];
-        yield 'directives with every accepted scalar form' => [
+        yield 'directives with every JSON type' => [
             LangPhpSpec::PHP_INI_GET_USER_BASIC_DIRECTIVES['returns'],
             '{"directives":[{"cpanel_default":"fixture-a"},{"cpanel_default":1},{"cpanel_default":1.5},'
-                . '{"cpanel_default":true},{"key":"fixture-b"}]}',
-            ['$.directives[].cpanel_default' => ['bool', 'float', 'int', 'missing', 'string']],
+                . '{"cpanel_default":true},{"cpanel_default":null},{"cpanel_default":["fixture-b"]},'
+                . '{"cpanel_default":{"a":"fixture-c"}},{"key":"fixture-d"}]}',
+            ['$.directives[].cpanel_default' => [
+                'bool', 'float', 'int', 'list', 'missing', 'null', 'object', 'string',
+            ]],
         ];
         yield 'paths' => [
             LangPhpSpec::PHP_INI_GET_USER_PATHS['returns'],
@@ -308,27 +352,46 @@ final class DomainPhpObservedFieldsTest extends TestCase
         ];
     }
 
-    #[DataProvider('outsideTheDirectiveUnion')]
-    public function testDirectiveValuesOutsideTheUnionRemainATypeMismatchInEvidence(string $value): void
-    {
-        $analysis = Fingerprint::analyze(
-            json_decode('{"directives":[{"cpanel_default":' . $value . '}]}', false, 512, JSON_THROW_ON_ERROR),
-            true,
-            LangPhpSpec::PHP_INI_GET_USER_BASIC_DIRECTIVES['returns'],
-        );
+    /** @param array<mixed> $returns */
+    #[DataProvider('carriedEvidence')]
+    public function testCarriedValuesRaiseNoDiscrepancyAndKeepNestedKeysMasked(
+        array $returns,
+        string $template,
+        string $path,
+    ): void {
+        $payload = sprintf($template, '{"private_key":{"private_child":"fixture-a"}}');
+        $analysis = Fingerprint::analyze(json_decode($payload, false, 512, JSON_THROW_ON_ERROR), true, $returns);
 
-        self::assertSame(
-            [['path' => '$.directives[].cpanel_default', 'kind' => 'type_mismatch']],
-            $analysis['discrepancies'],
-        );
+        self::assertSame([], $analysis['discrepancies']);
+        self::assertSame(['object'], $analysis['paths'][$path] ?? null);
+        self::assertSame(['object'], $analysis['paths'][$path . '.*'] ?? null);
+        self::assertSame(['string'], $analysis['paths'][$path . '.*.*'] ?? null);
+        self::assertStringNotContainsString('private', json_encode($analysis, JSON_THROW_ON_ERROR));
     }
 
-    /** @return iterable<string, array{string}> */
-    public static function outsideTheDirectiveUnion(): iterable
+    /** @return iterable<string, array{array<mixed>, string, string}> */
+    public static function carriedEvidence(): iterable
     {
-        yield 'null' => ['null'];
-        yield 'list' => ['["fixture-a"]'];
-        yield 'object' => ['{"a":"fixture-a"}'];
+        $domains = DomainInfoSpec::DOMAINS_DATA['returns'];
+        $single = DomainInfoSpec::SINGLE_DOMAIN_DATA['returns'];
+        foreach (['phpopenbasedirprotect', 'phpversion', 'status'] as $name) {
+            yield 'main domain ' . $name => [
+                $domains, '{"main_domain":{"' . $name . '":%s}}', '$.main_domain.' . $name,
+            ];
+        }
+        foreach (['phpversion', 'status'] as $name) {
+            yield 'single domain ' . $name => [$single, '{"' . $name . '":%s}', '$.' . $name];
+        }
+        yield 'directive cpanel_default' => [
+            LangPhpSpec::PHP_INI_GET_USER_BASIC_DIRECTIVES['returns'],
+            '{"directives":[{"cpanel_default":%s}]}',
+            '$.directives[].cpanel_default',
+        ];
+        yield 'path is_suspended' => [
+            LangPhpSpec::PHP_INI_GET_USER_PATHS['returns'],
+            '{"paths":[{"is_suspended":%s}]}',
+            '$.paths[].is_suspended',
+        ];
     }
 
     /** @param array<mixed> $returns */

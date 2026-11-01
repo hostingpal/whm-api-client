@@ -418,8 +418,10 @@ A passing assessment with acknowledgments is **not a discrepancy-free run**.
 
 `DiscrepancyPolicy` contains only the two reviewed Quota total observations from
 `docs/api/evidence/2026-11-01-read-only-11.138.0.19.json`. It verifies that file's
-fixed SHA-256 before any network request and refuses it (including filesystem aliases)
-as an output destination. There is no command-line option to create acknowledgments.
+fixed SHA-256 and, also before any network request, refuses every existing file under
+`docs/api/evidence/` (including filesystem aliases) as an output destination, so history
+stays protected after the reference moves. New paths there and files elsewhere stay
+allowed. There is no command-line option to create acknowledgments.
 Policy changes require code review and independent tests.
 
 Until 2026-11-01 the same two observations were bound to cPanel `11.138.0.15` through
@@ -628,7 +630,7 @@ The [reviewed integrated capture](../../docs/api/evidence/2026-10-30-domain-feat
 ran the exact 67-probe GET-only catalog once at committed code `27abfe6` after
 normal integration of the reviewed MySQL, FTP and PostgreSQL sections. All 67
 HTTP/API/payload observations pass on `11.138.0.19`, including both mailbox counts.
-The command exits 1 for strict review: 12 unknown-field entries across 10
+That command exited 1 for its strict review: 12 unknown-field entries across 10
 unexpected observations, zero acknowledgments and two stale Quota acknowledgments.
 Historical artifacts remain unchanged; findings are not waived or retried away.
 This run includes no PHP mutation. INI write/read behavior and the omitted
@@ -640,6 +642,9 @@ the DomainInfo and INI fields to be typed. All 67 observations pass and the only
 remaining discrepancies are the two masked Quota observations. Its embedded review
 reports failed because it was assessed against the previous `11.138.0.15` reference;
 the policy could only move to this artifact after the artifact existed.
+Seven of those fields became `mixed` after this capture, so its contract hashes for
+`domains_data`, `single_domain_data`, `php_ini_get_user_basic_directives` and
+`php_ini_get_user_paths` record the earlier contract. The Quota records still match.
 
 ## Owned Email mailbox recipe
 

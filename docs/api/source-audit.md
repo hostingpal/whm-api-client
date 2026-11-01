@@ -9165,37 +9165,36 @@ no other undeclared key exists at those locations in the bridged responses.
 
 None of the keys looked dynamic or sensitive, so none was declined.
 
-### Typed fields
+### Added fields
+
+The effective types below are the current contract. The capture further down ran under
+an earlier one; see [the correction](#correction-carried-not-typed).
 
 | Operation and path | Effective type | Observed | Pinned status |
 | --- | --- | --- | --- |
-| `domains_data` `main_domain.phpopenbasedirprotect` | `0\|1`, quoted form accepted | numeric string | Undeclared here; declared 0/1 on `single_domain_data` |
-| `domains_data` `main_domain.phpversion` | optional string | string | Undeclared; meaning unknown |
-| `domains_data` `main_domain.status` | optional string | string | Undeclared; meaning unknown |
-| `single_domain_data` `phpversion` | optional string | string | Undeclared; meaning unknown |
-| `single_domain_data` `status` | optional string | string | Undeclared; meaning unknown |
+| `domains_data` `main_domain.phpopenbasedirprotect` | optional `mixed` | numeric string | Undeclared here; declared 0/1 on `single_domain_data` |
+| `domains_data` `main_domain.phpversion` | optional `mixed` | string | Undeclared; meaning unknown |
+| `domains_data` `main_domain.status` | optional `mixed` | string | Undeclared; meaning unknown |
+| `single_domain_data` `phpversion` | optional `mixed` | string | Undeclared; meaning unknown |
+| `single_domain_data` `status` | optional `mixed` | string | Undeclared; meaning unknown |
 | `single_domain_data` `customlog[].format` | optional string | string, both items | Undeclared here; pinned `domain` absent live |
-| `php_ini_get_user_basic_directives` `directives[].cpanel_default` | optional `string\|bool\|int\|number`, deliberately wider than observed | string, 1 of 15 rows | Undeclared; meaning unknown |
-| `php_ini_get_user_paths` `paths[].is_suspended` | optional int | int, 1 of 2 rows | Undeclared; meaning unknown |
+| `php_ini_get_user_basic_directives` `directives[].cpanel_default` | optional `mixed` | string, 1 of 15 rows | Undeclared; meaning unknown |
+| `php_ini_get_user_paths` `paths[].is_suspended` | optional `mixed` | int, 1 of 2 rows | Undeclared; meaning unknown |
 
 All corrections are overlay entries with `live` evidence for `11.138.0.19`, dated
-2026-11-01, and generated methods carry `Observed:` notes. Offline expectations are
-hand-written in `tests/Api/DomainPhpObservedFieldsTest.php`, using synthetic values.
+2026-11-01, and generated methods carry `Observed:` and `Policy:` notes. Offline
+expectations are hand-written in `tests/Api/DomainPhpObservedFieldsTest.php`, using
+synthetic values.
 
-`cpanel_default` was first typed `string` from its one observation, then corrected in
-review before publication. It now accepts string, bool, int and number, in the same
-overlay union form that `default_value` uses. String is the only form observed, on 1 of
-15 rows through the direct route. The wider acceptance is a deliberate client decision:
-values on these rows are polymorphic, so a single string observation cannot justify
-rejecting the others, and one server's observations do not define a universal contract.
-This states no relationship between the two fields. `cpanel_default` stays optional and
-of unknown meaning. Null, lists and objects still fail validation.
+`cpanel_default` was first typed `string` from its one observation, then widened in
+review to the scalar union that `default_value` uses, and is now `mixed`. String is the
+only form observed, on 1 of 15 rows through the direct route. This states no relationship
+between the two fields.
 
 `status` here is a payload field and has no connection to the UAPI envelope `status`.
-`is_suspended` is typed `int` rather than a 0/1 flag because no value was inspected,
-and no suspension meaning is claimed. `phpopenbasedirprotect` reuses the pinned
-`single_domain_data` flag, which already passes live validation in quoted form for
-the same account domain, and pinned prose gives both functions the same userdata file.
+`is_suspended` claims no suspension meaning, because no value was inspected. Pinned prose
+gives `domains_data` and `single_domain_data` the same userdata file, but only
+`single_domain_data` declares `phpopenbasedirprotect`.
 
 `customlog` is a documentation contradiction. Pinned `single_domain_data` describes
 `domain` and `target`, while pinned `domains_data` examples and the live list items use
@@ -9207,11 +9206,9 @@ and the object form, which was not observed, is unchanged.
 - Addon, parked and subdomain rows were empty on `npr`, and `format=list` was not
   requested. Those records and the `main_domain` list form keep their documented shape,
   so the same keys there are still dropped and still reported as unknown.
-- Typing is stricter than the previous drop. A different wire type at one of these
-  paths, for example a string `is_suspended` on another server, now raises
-  `PayloadMismatchException` rather than being discarded. The fields other than
-  `cpanel_default` accept only their observed form, plus the reviewed quoted flag on
-  `phpopenbasedirprotect`.
+- Carrying a field replaces the previous drop: callers now receive these values, and no
+  value at a `mixed` path can fail a read. `customlog[].format` is the one strict
+  addition, so a non-string list-item `format` raises `PayloadMismatchException`.
 - Validation rules, `Fingerprint` and the wildcard masking of other keys are unchanged.
   Any other undeclared key at these locations still reports `unknown_field`.
 
@@ -9233,22 +9230,49 @@ reference was `evidence/2026-10-16-quota-inventory.json`, SHA-256
 ending in `11.138.0.15`. That file is unchanged and remains the record of those
 observations. No entry was added, and fingerprint, version, source and effective-contract
 matching are unchanged. The reference schema check moved from 1 to 2 because the new
-artifact is schema 2. `tools/live-verify/verify.php` labels follow the new identifiers.
+artifact is schema 2. `tools/live-verify/verify.php` now takes its console labels from
+the policy, so the identifiers live in one place. The output guard covers every existing
+file under `evidence/`, so the earlier reference stays protected after the move.
 
 Quota stays out of typed results under the owner's 2026-10-17 acceptance. The two extra
 keys were not re-inspected on `11.138.0.19`. The fingerprint still shows `$.*` as integer,
 which does not establish their names or count on this version.
 
-Later overlay evidence entries cite this artifact without changing any effective
-contract, with one exception. Widening `cpanel_default` happened after the capture, so
-the artifact's `effective_contract_sha256` for `php_ini_get_user_basic_directives` records
-the string-only contract. The artifact was neither edited nor recaptured: its recorded
-`string` observation is still true, its other recorded contract hashes still match, and
-the Quota acknowledgments keep binding it because the Quota contract did not change.
-The non-string forms remain offline-tested only: this server has not been observed
-sending them, and a passing gate does not establish them. The final gate result is
-reported with the change rather than here, because a commit cannot contain the outcome
-of a run against itself.
+### Correction: carried, not typed
+
+Review after merge found that typing these fields from one observation could fail a whole
+read where the value used to be dropped. Seven paths are now optional `mixed`, as the table
+above shows. Any JSON value, including null, reaches the caller unchanged, an omitted field
+stays omitted, and `Fingerprint` still reports the named path with nested keys masked. This
+is a decision not to validate, not a finding about the values: claiming a type from one
+observation invents a contract, and a wider union is equally unevidenced.
+
+`main_domain.phpopenbasedirprotect` needed its own check, because its meaning is pinned
+elsewhere. `domains_data` declares it in neither its schema nor its examples, and the sibling
+forms do not bound it. `single_domain_data` accepts `0`, `1`, `"0"` and `"1"`,
+`userdirprotect` adds only the empty string, and pinned WHM `domainuserdata` documents
+`userdirprotect` itself as `On` or `Off`. Those forms would still fail on null, `2`, booleans
+or other strings, so `mixed` was chosen over extending the flag. `single_domain_data` keeps
+its pinned flag, and `customlog[].format` stays a string because pinned `domains_data`
+examples document it.
+
+**The 2026-11-01 artifact records the earlier contract for four operations.** Its
+`effective_contract_sha256` for `domains_data`, `single_domain_data`,
+`php_ini_get_user_basic_directives` and `php_ini_get_user_paths`, eight records across both
+routes, describes these fields as they stood at `5f9b001` (a flag, strings, an integer and a
+string-only `cpanel_default`) and no longer matches the shipped specs. The artifact was
+neither edited nor recaptured. Its structural observations stay true, and the overlay
+evidence entries that cite it now say which contract they ran under. The other 59 records
+still match, including both Quota records, so the acknowledgments keep binding it.
+
+**This correction relaxes validation only.** It adds no field, changes no request and tightens
+no check, so every payload that passed under the recorded contract still passes. One visible
+effect follows from not validating: a quoted `main_domain.phpopenbasedirprotect` is returned
+as sent instead of normalized to an integer. The other six paths return the observed forms as
+before. Forms other than those observed remain offline-tested only: this server has not been
+observed sending them, and a passing gate does not establish them. The final gate result is
+reported with the change rather than here, because a commit cannot contain the outcome of a
+run against itself.
 
 ## Multipart compatibility audit and owned Fileman capture (2026-11-01)
 

@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace HostingPal\WhmApiClient\Tools\LiveVerify;
 
+use FilesystemIterator;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 use RuntimeException;
 use SensitiveParameter;
+use SplFileInfo;
 use Throwable;
 
 /**
@@ -94,24 +98,45 @@ final readonly class DiscrepancyPolicy
     }
 
     /**
-     * Refuse overwriting the historical reference, including symlink and hard-link aliases.
+     * Refuse overwriting any existing evidence file, including symlink and hard-link aliases.
      *
-     * Call before preparing an output file or sending a request. The CLI also rejects symlink
-     * destinations generally. This protects the reviewed artifact independently of its filename.
+     * Everything under docs/api/evidence/ is immutable history, and the current reference is only
+     * one file there. Call before preparing an output file or sending a request. The CLI also
+     * rejects symlink destinations generally. Comparing device and inode protects each file
+     * independently of its name. New paths and files elsewhere stay allowed.
      *
-     * @throws RuntimeException If the output identifies the reference artifact.
+     * @throws RuntimeException If the output identifies an existing evidence file.
      */
     public function assertOutputAllowed(#[SensitiveParameter] string $output): void
     {
-        $reference = @stat($this->reference);
         $destination = @stat($output);
-        if (
-            realpath($output) === realpath($this->reference)
-            || ($reference !== false && $destination !== false
-                && $reference['dev'] === $destination['dev'] && $reference['ino'] === $destination['ino'])
-        ) {
-            throw new RuntimeException('Evidence output cannot replace the discrepancy reference.');
+        if ($destination === false) {
+            return;
         }
+        $files = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator(dirname($this->reference), FilesystemIterator::SKIP_DOTS),
+        );
+        foreach ($files as $file) {
+            $evidence = $file instanceof SplFileInfo ? @stat($file->getPathname()) : false;
+            if (
+                $evidence !== false
+                && $evidence['dev'] === $destination['dev'] && $evidence['ino'] === $destination['ino']
+            ) {
+                throw new RuntimeException('Evidence output cannot replace an existing evidence file.');
+            }
+        }
+    }
+
+    /**
+     * Return the console label for a reviewed acknowledgment, or null for any other identifier.
+     *
+     * The identifiers live only in this class, so rebinding them to a new reference cannot leave
+     * the CLI with a stale copy that throws after live requests are spent. Null keeps an
+     * unreviewed identifier off the console.
+     */
+    public function acknowledgmentLabel(#[SensitiveParameter] string $id): ?string
+    {
+        return isset($this->expected[$id]) ? $id . ' ($.* unknown_field)' : null;
     }
 
     /**
