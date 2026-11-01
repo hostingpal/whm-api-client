@@ -15,6 +15,8 @@ trait UapiGroups
 {
     private ?AccountEnhancements $accountEnhancementsGroup = null;
 
+    private ?ActiveSessions $activeSessionsGroup = null;
+
     private ?AddonDomain $addonDomainGroup = null;
 
     private ?Backup $backupGroup = null;
@@ -125,6 +127,8 @@ trait UapiGroups
 
     private ?ServerInformation $serverInformationGroup = null;
 
+    private ?Session $sessionGroup = null;
+
     private ?Sitejet $sitejetGroup = null;
 
     private ?SpamAssassin $spamAssassinGroup = null;
@@ -165,6 +169,8 @@ trait UapiGroups
 
     private ?WebVhosts $webVhostsGroup = null;
 
+    private ?WebmailApps $webmailAppsGroup = null;
+
     private ?WebsiteBackup $websiteBackupGroup = null;
 
     private ?WordPressBackup $wordPressBackupGroup = null;
@@ -181,6 +187,16 @@ trait UapiGroups
     public function accountEnhancements(): AccountEnhancements
     {
         return $this->accountEnhancementsGroup ??= new AccountEnhancements($this->run(...));
+    }
+
+    /**
+     * Select the ActiveSessions operations without making a request.
+     *
+     * Active cPanel session inventory for the selected account.
+     */
+    public function activeSessions(): ActiveSessions
+    {
+        return $this->activeSessionsGroup ??= new ActiveSessions($this->run(...));
     }
 
     /**
@@ -747,6 +763,17 @@ trait UapiGroups
     }
 
     /**
+     * Select the Session operations without making a request.
+     *
+     * Temporary Webmail session credentials (three of four pinned Session operations). Session-URL create_temp_user
+     * remains deferred under whm-api-client-8x0.1.33.
+     */
+    public function session(): Session
+    {
+        return $this->sessionGroup ??= new Session($this->run(...));
+    }
+
+    /**
      * Select the Sitejet operations without making a request.
      *
      * Policy: Each call makes one request without automatic retry, polling, rollback or undo. Returned tokens, SSO URLs
@@ -946,6 +973,16 @@ trait UapiGroups
     public function webVhosts(): WebVhosts
     {
         return $this->webVhostsGroup ??= new WebVhosts($this->run(...));
+    }
+
+    /**
+     * Select the WebmailApps operations without making a request.
+     *
+     * Available Webmail application inventory.
+     */
+    public function webmailApps(): WebmailApps
+    {
+        return $this->webmailAppsGroup ??= new WebmailApps($this->run(...));
     }
 
     /**
