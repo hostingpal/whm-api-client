@@ -157,6 +157,43 @@ final class ReadOnlySectionRunnerTest extends TestCase
         ));
     }
 
+    public function testOutcomeRuleReplacesOnlyTheOutcomeChecks(): void
+    {
+        $probes = self::probes();
+        $http = new Client();
+        $http->addResponse(new Response(200, [], '{"metadata":{"result":1},"data":{"version":"11.138.0.19"}}'));
+        $http->addResponse(new Response(200, [], '{"status":0,"data":null,"errors":["synthetic failure"]}'));
+        $context = self::context();
+        $accept = static fn (Probe $probe, array $record): bool => $record['operation'] === $probe->operation;
+        $report = (new ReadOnlySectionRunner($http, $context))->run(
+            $probes,
+            'synthetic-v1',
+            '1',
+            ['whm' => 'synthetic-whm', 'cpanel' => 'synthetic-cpanel'],
+            $accept,
+        );
+        self::assertSame('passed', $report['status']);
+        self::assertSame('api_failure', $report['probes'][1]['failure_kind']);
+        self::assertFalse(ReadOnlySectionRunner::passes($probes, $report['probes'], $context));
+        self::assertFalse(ReadOnlySectionRunner::passes(
+            $probes,
+            $report['probes'],
+            $context,
+            static fn (Probe $probe, array $record): bool => false,
+        ));
+        $bound = ['variant', 'route', 'method', 'revision', 'source_sha256', 'map_sha256', 'generator_tree',
+            'overlay_sha256', 'effective_contract_sha256', 'server_version'];
+        foreach ($bound as $field) {
+            $records = $report['probes'];
+            $records[1][$field] = 'incorrect';
+            self::assertFalse(ReadOnlySectionRunner::passes($probes, $records, $context, $accept), $field);
+        }
+        $records = $report['probes'];
+        $records[1]['http_status'] = 500;
+        self::assertFalse(ReadOnlySectionRunner::passes($probes, $records, $context, $accept));
+        self::assertFalse(ReadOnlySectionRunner::passes($probes, [$report['probes'][0]], $context, $accept));
+    }
+
     public function testArgumentVariantsCaptureDistinctRequestsAndRejectMisattribution(): void
     {
         $probes = [self::probes()[0]];

@@ -15,15 +15,18 @@ final class ReadOnlySectionCommand
 {
     /**
      * Entrypoints bind their reviewed recipe and catalog; command arguments select only a new output path.
+     * Omitting $outcome keeps the strict assessment; see ReadOnlySectionRunner::passes().
      *
      * @param list<string> $arguments
      * @param Closure(): list<Probe> $catalog
+     * @param (Closure(Probe, array<mixed>): bool)|null $outcome
      */
     public static function run(
         #[SensitiveParameter] array $arguments,
         string $root,
         string $recipe,
         Closure $catalog,
+        ?Closure $outcome = null,
     ): int {
         $temporary = null;
         $recovery = null;
@@ -75,6 +78,7 @@ final class ReadOnlySectionCommand
                 $recipe,
                 $optIn,
                 ['whm' => $whm, 'cpanel' => $cpanel],
+                $outcome,
             );
             $json = json_encode(
                 ['schema_version' => 1, 'read_only_section' => $report],
