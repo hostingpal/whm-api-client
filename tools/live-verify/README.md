@@ -220,9 +220,13 @@ linked pair, for 69 read observations across 38 operations. It then removes only
 and verifies their absence. It requires an additional mutation opt-in:
 
 ```sh
-WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 composer live:verify -- \
+WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 php tools/live-verify/verify.php \
   --mysql-fixture --output=docs/api/evidence/mysql-populated.json
 ```
+
+Run fixtures with `php` directly, never through `composer live:verify`. Composer stops
+a script after 300 seconds by default, and that limit can end a mutation run between
+creating its resources and removing them.
 
 The recipe uses the existing cPanel token for `npr`; it never creates or deletes
 the cPanel account. Proposed resource names must be absent before any mutation.
@@ -307,9 +311,12 @@ must be explicitly selected, with both live opt-ins:
 ```sh
 WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 \
   WHM_API_LIVE_ACCOUNT=wqfinite WHM_API_LIVE_DOMAIN=wqfinite.example.com \
-  composer live:verify -- --finite-quota-fixture \
+  php tools/live-verify/verify.php --finite-quota-fixture \
   --output=docs/api/evidence/finite-quota.json
 ```
+
+This runs the 67-probe baseline before the fixture, which is why it goes straight to `php`:
+Composer's 300-second script limit could otherwise end it with the account still in place.
 
 The account, domain and DNS zone must be absent before creation. The recipe
 creates an account with a finite 64 MB disk quota, no shell or dedicated IP,
@@ -323,7 +330,7 @@ in memory. Exact guards restrict every request to this recipe and its targets.
 The 67 baseline catalog probes use their existing discrepancy policy.
 Five additional observations—one WHM version request for provenance, plus both
 Quota operations on both routes—are stored under `finite_quota`, with the fixed
-scenario `finite-quota-disposable-v2` and a separate assessment. Historical `npr`
+scenario `finite-quota-disposable-v3` and a separate assessment. Historical `npr`
 acknowledgments never apply to that section. Its initial assessment accepts no
 discrepancies: unresolved unknown fields remain visible and cause exit 1 even
 when the lifecycle and finite-limit checks pass. No policy is widened
@@ -349,11 +356,13 @@ Evidence is written only after cleanup; `finite_quota.fixture` reports each outc
 using fixed labels without credentials, names or raw values. Exit 0 requires the
 baseline assessment, finite assessment and fixture lifecycle all to pass.
 
-Scenario `finite-quota-disposable-v2` replaces v1 because the report means something
-different. It adds the filesystem fields, and a lost `createacct` is no longer
-`confirmed_absent`. Its report is not comparable with the
-[v1 artifact](../../docs/api/evidence/2026-10-17-finite-quota.json), which stands as the
-record of what ran then.
+The current scenario is `finite-quota-disposable-v3`, and **no v3 capture exists**. Each
+version's report means something different. v2 moved onto the shared lifecycle, added the
+filesystem fields, and stopped calling a lost `createacct` `confirmed_absent`. v3 keeps the
+domain, zone and files `unconfirmed` after one, adds the filesystem control, and takes
+`status`, `setup` and `failures` from the lifecycle. The
+[v1 artifact](../../docs/api/evidence/2026-10-17-finite-quota.json) stands as the record of
+what ran then.
 
 The [v2 capture](../../docs/api/evidence/2026-11-01-finite-quota-v2.json) at `b3bfc14` on
 `11.138.0.19` is a **failed run**, exit 1, kept unchanged. Its setup, capture, finite
@@ -2110,7 +2119,9 @@ $account = DisposableAccount::fresh(
     tokenLifetime: 900,
     readOnlyToken: false,
 );
-// Admit $account->controlPosts() and $account->controlReads(), plus the recipe's own requests.
+// On every request: $account->requireLiveOptIn(), then admit only $account->controlPosts() and
+// controlReads() plus the recipe's own requests, consuming each mutation once. FiniteQuotaGuard
+// is the smallest example.
 $guard = new ExampleGuard($http, $whmToken, $account);
 $capture = new CaptureClient($guard);
 $factory = new Psr17Factory();
@@ -2127,7 +2138,8 @@ $outcome = (new DisposableAccountLifecycle(
 ))->run(
     function (#[SensitiveParameter] string $token) use ($guard): void {
         $guard->bindToken($token);
-        // Build a direct client from $token and run the recipe's probes.
+        // Build a direct client from $token and run the recipe's probes. On any failure,
+        // record what the report needs, then throw new ExerciseFailure(['your_label']).
     },
     // Optional: remove what the recipe made inside the account, returning failure labels.
     fn (): array => $this->removeOwnFiles(),
@@ -2136,36 +2148,46 @@ $outcome = (new DisposableAccountLifecycle(
 
 The account must be disposable and designated, and both live opt-ins and exact
 `WHM_API_LIVE_ACCOUNT` and `WHM_API_LIVE_DOMAIN` values are required. Accounts are
-created with a 64 MB quota, no shell and no dedicated IP. A second `run()`, or a missing
-opt-in, throws `LogicException` before any request. The recipe's guard still re-checks
-every request.
+created with a 64 MB quota, no shell and no dedicated IP. `fresh()` draws the 128-bit
+marker. A token's life is capped at an hour, and the binding enforces that however it is
+built. A second `run()`, or a missing opt-in, throws `LogicException` before any request,
+so a fixture needs no check of its own. The recipe's guard still re-checks every request.
 
-`$outcome['status']` is `passed` only if setup, the exercise and cleanup all passed, and a
-recipe's own expectations go on top of that. A recipe should copy every outcome field
-into its report. `failures` holds fixed labels, in order: `setup_failure`,
-`exercise_failure`, then cleanup. An exception from either callback is reported and stops
-nothing, so a test must not assert inside a callback: PHPUnit failures are `Throwable`,
-and one raised there would be swallowed. Assert after `run()` returns.
+`$outcome` is the only truth about a run. `status` is `passed` only if setup, the exercise
+and cleanup all passed. A recipe copies `status`, `setup`, `failures` and the rest into its
+report and never computes its own. So an exercise never swallows a failure: it records the
+detail its report needs, then throws, even for a failed expectation in a capture that
+finished. `ExerciseFailure` names the failure with the recipe's own labels, and anything
+else that escapes is `exercise_failure`. Binding the token is the exercise's first step, so
+a token that cannot be bound fails the exercise, not setup.
+
+`failures` holds fixed labels, in order: `setup_failure`, the exercise's, then cleanup. An
+exception from either callback stops nothing, so a test must not assert inside a callback:
+PHPUnit failures are `Throwable`, and one raised there would be swallowed. Assert after
+`run()` returns.
 
 **Identity.** Account, manual-domain and zone inventories must first prove absence. The
 server always hosts others, so an empty list proves nothing, and neither does `{}`. An
-existing account is never adopted. A rerun refuses preexisting resources and is not a
-cleanup mechanism.
+existing account is never adopted.
 
 **Ownership.** The random contact-email marker, held only in memory, is the sole proof
 that an account is this run's. It is read again at every gate, and nothing is mutated on
 an account it does not prove. Only an explicit API refusal is a known `createacct`
 outcome. After a lost response, gateway error or unreadable body, an absent read cannot
-rule out a creation still in flight, so the account stays `unconfirmed`, is never
-reported absent, and fails with `account_creation_outcome_unknown`.
+rule out a creation still in flight, so the account stays `unconfirmed` and fails with
+`account_creation_outcome_unknown`. Its domain, zone and files would arrive with it, so they
+stay `unconfirmed` too, unless a list shows them `present`. The marker settles the outcome:
+once it proves the account, its removal can be proven as usual.
 
 **Token.** A short-lived token lives in memory only and is confirmed before the recipe
 sees it, with its requested access and exact expiry. Its name is fixed, so it proves
 nothing alone. A revoke needs the marker, read again at that moment, plus a listing that
 shows the token or this run's own confirmed creation: setup read the name absent just
 before its one create. An unreadable listing therefore cannot withhold the revoke of a
-token this run created, which matters if account removal then fails too. A lost creation
-that no listing can show is never revoked and is reported.
+token this run created, which matters if account removal then fails too. As with the
+account, only an explicit refusal is a known outcome, so a lost creation that no listing
+can show is never revoked and never reported absent: it stays `unconfirmed` and fails with
+`token_creation_outcome_unknown`.
 
 **Cleanup.** No mutation repeats. The ownership read that gates a cleanup decision is the
 only request ever repeated, at most three reads per decision and only after a
@@ -2175,48 +2197,63 @@ Failure at one resource never stops the next. The recipe's cleanup runs first, o
 account the marker proves and while the token still works, then the token is revoked and
 the account removed, and token, account, domain and zone absence are each read
 independently. A failed or uncertain step fails `cleanup`; the resource fields still say
-what each one showed.
+what each one showed. If cleanup remains unconfirmed, inspect the explicitly selected test
+account and domain privately and confirm ownership before manual recovery. A rerun refuses
+preexisting resources and is not a cleanup mechanism.
 
-**Filesystem proof.** `WHM_API_LIVE_FS_CHECK=1` adds a read-only check after API cleanup.
-It runs one fixed script over the `oblak.test` SSH alias:
+**Filesystem proof.** `WHM_API_LIVE_FS_CHECK=1` adds a read-only check, run twice: once
+after setup as a positive control, and once after API cleanup. It runs one fixed script
+over the `oblak.test` SSH alias:
 
 ```sh
 ssh -T -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=10 \
-  -o UpdateHostKeys=no oblak.test sh -s -- <user> <domain>
+  -o UpdateHostKeys=no -o ControlMaster=no -o ControlPath=none \
+  oblak.test sh -s -- <user> <domain>
 ```
 
 The script arrives on standard input and is constant. It only counts, so it prints no
 contents, filenames, tokens or values, and it holds no name: the account and domain are
 positional arguments, used only after strict validation, and an invalid one starts no
 process. Strict checking refuses an unknown or changed host key and key updates are off,
-so the check never accepts or changes one. It checks `/home/<user>`,
+so the check never accepts or changes one. Connection sharing is off too, as a shared
+master can outlive the session and hold its output open. It checks `/home/<user>`,
 `/var/cpanel/users/<user>`, `/var/cpanel/userdata/<user>`, `/etc/userdomains`,
 `/etc/passwd`, zone files under `/var/named`, and any file whose name contains the account
 name under `/var/cpanel/sessions`. That match is deliberately wide, because nothing has
 shown how session files are named.
 
-Each location also reports its inventory, because an empty or unreadable place cannot
-show absence, just as an empty identity list cannot. `filesystem_cleanup` is `not_claimed`
-unless the check ran:
+A search that fails prints no count, and the strict parser refuses a report with a blank
+one, so an unreadable place can never read as absent. That reaches subtrees no top-level
+count can see, and it refuses the whole report, so a failed search also hides residue
+elsewhere: the result is `unconfirmed`, never `present`. Each location also reports its
+inventory, because an empty place cannot show absence, just as an empty identity list
+cannot.
+
+Nothing else ties `oblak.test` to the server the API changed, so the control runs right
+after setup, before the exercise. It must show the account in `home`, `users`, `userdata`,
+`userdomains`, `passwd` and `zones`. Sessions are excepted, because nothing has shown how
+they are named. `filesystem_control` records its `status`, `not_run`, `passed` or `failed`,
+and its `counts` by fixed label. A failed control fails with `filesystem_control_failed` but
+costs only the filesystem claim: the exercise still runs and API cleanup stays exact.
+
+`filesystem_cleanup` is `not_claimed` unless the final check ran:
 
 | Value | Meaning |
 | --- | --- |
 | `not_claimed` | No opt-in, or nothing was attempted, so no connection was made. |
-| `confirmed_absent` | Every inventory is usable and no location matches. |
+| `confirmed_absent` | The control passed, every inventory is usable and no location matches. |
 | `present` | A location matches; `filesystem_residue` holds its count by fixed label. |
-| `unconfirmed` | Anything else: an SSH failure, bad exit, timeout, unexpected report or unusable inventory. |
+| `unconfirmed` | Anything else: an SSH failure, bad exit, timeout, unexpected report, failed search or unusable inventory, a control that failed or never ran, or an unknown `createacct`. |
 
-It runs once, last, and only reports. `present` or `unconfirmed` fails `cleanup` and the
-run, as the claim the run opted into was not proven, but neither ever causes a mutation or
-a retry, and the API fields keep what the API showed. It also runs after a failed API
-cleanup, where it shows what really remains. Credentials stay out of the SSH process's
-environment, and its standard error is discarded.
+The proof only reports. `present` or `unconfirmed` fails `cleanup` and the run, as the claim
+the run opted into was not proven, but neither ever causes a mutation or a retry, and the
+API fields keep what the API showed. The final check also runs after a failed API cleanup,
+where it shows what really remains. Credentials stay out of the SSH process's environment,
+and its standard error is discarded.
 
-The proof covers those locations at one moment. Inventories show that each place can be
-read, not that a name is spelled as checked. A read-only run of this proof while `wlupload`
-existed reported every location but sessions present, which is the positive control for
-those spellings. Session files read 0 there and in both captures, so nothing has shown
-their real names. The proof does not cover other paths, backups, logs or mail queues.
+The proof covers those locations at one moment. A passed control shows that each spelling
+but sessions found this run's account on this server. It does not cover other paths,
+backups, logs or mail queues.
 
 ## Disposable-account Fileman upload fixture
 
@@ -2324,19 +2361,19 @@ requires exactly that. Their structural discrepancies still reach the review, an
 `upload_raw` rows are checked exactly. The committed captures predate this and are kept:
 see the [source audit](../../docs/api/source-audit.md#fixture-corrections-after-the-corrected-capture).
 
-Without the proof, claim API absence only: `filesystem_cleanup` stays `not_claimed`, and
-the `api_absence_only_no_filesystem_or_home_directory_cleanup_claim` limitation says so.
-With it, that limitation becomes `filesystem_proof_covers_fixed_locations_at_one_moment`.
+Claim API absence only, unless the proof confirmed more. The
+`api_absence_only_no_filesystem_or_home_directory_cleanup_claim` limitation stays for
+every other outcome, including a proof that failed. Only `filesystem_cleanup:
+confirmed_absent` replaces it, with `filesystem_proof_covers_fixed_locations_at_one_moment`.
 The evidence covers the observed filenames, sizes and server version on the direct route.
 It establishes no raw-download identity, antivirus or archive behavior, null or empty
 status-0 observation, memory benchmark, or WHM or bridged upload coverage.
 
-The current scenario is `fileman-upload-disposable-v3`, assessed under policy
-`fileman-upload-no-acknowledgments-v2`. A passing run sends the same requests as v2, but it
-records and accepts different values, so it has its own version. Moving onto the shared
-lifecycle kept that version, because no capture carried it yet, so nothing recorded under
-it could be misread. The committed v2 artifact stays the valid record of what ran at
-`1c8bbce`.
+The current scenario is `fileman-upload-disposable-v4`, assessed under policy
+`fileman-upload-no-acknowledgments-v2`. A v3 capture exists, and v4's report means something
+different: it adds `filesystem_control`, a proof without one is never `confirmed_absent`,
+`status` and `setup` come from the lifecycle, and a failed proof keeps the API-only
+limitation. Earlier artifacts stay the valid record of what ran at their revisions.
 
 The [v3 capture](../../docs/api/evidence/2026-11-01-fileman-upload-v3.json) at `b3bfc14` on
 `11.138.0.19` is a **passed run**, exit 0, through the shared lifecycle with the filesystem
