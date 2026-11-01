@@ -127,6 +127,8 @@ trait UapiGroups
 
     private ?ServerInformation $serverInformationGroup = null;
 
+    private ?ServiceProxy $serviceProxyGroup = null;
+
     private ?Session $sessionGroup = null;
 
     private ?Sitejet $sitejetGroup = null;
@@ -760,6 +762,21 @@ trait UapiGroups
     public function serverInformation(): ServerInformation
     {
         return $this->serverInformationGroup ??= new ServerInformation($this->run(...));
+    }
+
+    /**
+     * Select the ServiceProxy operations without making a request.
+     *
+     * Selected-account service proxy backend inventory and configuration. Backend/general address inputs and paired
+     * records are sensitive; read results reveal infrastructure information. Writes may rebuild vhosts and restart the
+     * web server, with API-success rebuild warnings retained in responseMeta(). No backend contact, DNS/IP validation,
+     * retry or rollback is performed. Review 5725574081 at original 4462b68 reports direct UAPI success and WHM bridge
+     * module-load failure on 11.138.0.19; this build-scoped reviewer observation does not restrict supported routes.
+     * Live follow-up whm-api-client-8x0.2.70 remains open.
+     */
+    public function serviceProxy(): ServiceProxy
+    {
+        return $this->serviceProxyGroup ??= new ServiceProxy($this->run(...));
     }
 
     /**
