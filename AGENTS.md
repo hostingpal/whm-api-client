@@ -4274,14 +4274,23 @@ existing unknown-risk POST policy, without live acceptance claims.
 
 Registration can create an external account and configure the local agent;
 credentials remain server-side. Already-registered no-op/idempotency is source
-prose, not observed behavior. Polling retains source-order optional scalar
-arguments `(globalSections, interval, maxDataSpan, pluginSections)` and literal
-comma strings. Do not parse/rejoin filters, infer defaults or introduce indexed
-lists. Null omits; empty strings and zero remain supplied. Interval or maxDataSpan
-is required server-side; filters apply with interval, interval without filters
+prose, not observed behavior. Polling retains source-order optional arguments
+`(globalSections, interval, maxDataSpan, pluginSections)`. Both section filters
+accept literal comma strings or nonempty sequential strict-string lists through
+explicit shared delimited descriptors. Strings preserve every byte without
+parsing/rejoining; arrays join once to the original field with a comma, preserving
+item bytes, order, duplicates, spaces and empty strings. Reject commas inside list
+items, empty lists, nonsequential lists and nonstring items before I/O after
+metadata reset. Null omits; [''] sends empty and ['', 'cpu', ''] sends ,cpu,.
+Collection arguments receive SensitiveParameter for library trace protection;
+section lists do not alter transport sensitivity or the original POST policy.
+Do not infer defaults or introduce indexed lists. Empty scalar strings and zero
+remain supplied. Interval or maxDataSpan is required server-side; positive timing,
+documented section choices and filter/interval relationships remain server
+validation without local enum/range/cross-field guards. Interval without filters
 updates all core/default plugin sections, and maxDataSpan controls batched
 metrics. Source matching-values no-restart behavior is unverified; other changes
-may restart agent360. Delimited array convenience remains under 8x0.28.7.
+may restart agent360. Ftp and other delimited adopters remain under 8x0.28.8.
 
 Callback is a required sensitive raw string in one form `json` field, encoded
 once, never URL query data or callJson. Preserve JSON bytes/whitespace, unknown
@@ -4329,4 +4338,7 @@ agent/settings, persistence, sign-out or POST acceptance behavior. Live follow-u
 8x0.2.79 remains OPEN; delivery 8x0.4.37 adds seven canonical operations once.
 Current totals are 1,228 operations (633 UAPI, 595 WHM), 117 groups and 237 outputs
 (236 PHP plus coverage). Original sources/evidence and previous endpoints remain
-unchanged; no shared runtime, generator, dependency or schema correction is added.
+unchanged. The original Monitoring delivery changed no shared runtime or
+generator policy. This subsequent filter adoption uses the accepted explicit
+shared delimited descriptor convention; it adds no further shared runtime,
+generator, dependency or source-schema correction.

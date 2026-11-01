@@ -14,6 +14,7 @@ use HostingPal\WhmApiClient\Exception\TransportException;
 use HostingPal\WhmApiClient\Http\HttpTransport;
 use Http\Client\Exception\NetworkException;
 use Http\Mock\Client as MockClient;
+use InvalidArgumentException;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7\Request;
 use Nyholm\Psr7\Response;
@@ -90,6 +91,30 @@ final class WhmMonitoringTest extends TestCase
             'interval=300', '{}'];
         yield 'poll filters without interval forwarded for server validation' => ['set_360_agent_polling',
             'set360AgentPolling', ['pluginSections' => 'cpu'], 'plugin_sections=cpu', '{}'];
+        yield 'poll both lists in source order' => ['set_360_agent_polling', 'set360AgentPolling',
+            [['global', 'agent'], 300, 120, ['cpu', 'network']],
+            'global_sections=global%2Cagent&interval=300&max_data_span=120&plugin_sections=cpu%2Cnetwork',
+            '{"status":1}'];
+        yield 'poll named arguments retain source wire order' => ['set_360_agent_polling', 'set360AgentPolling',
+            ['pluginSections' => ['network', 'cpu'], 'maxDataSpan' => 0,
+                'globalSections' => ['agent', 'global'], 'interval' => -1],
+            'global_sections=agent%2Cglobal&interval=-1&max_data_span=0&plugin_sections=network%2Ccpu', '{}'];
+        yield 'poll global singleton list independently' => ['set_360_agent_polling', 'set360AgentPolling',
+            ['globalSections' => ['global']], 'global_sections=global', '{}'];
+        yield 'poll plugin singleton list independently' => ['set_360_agent_polling', 'set360AgentPolling',
+            ['pluginSections' => ['cpu']], 'plugin_sections=cpu', '{}'];
+        yield 'poll global list plugin scalar' => ['set_360_agent_polling', 'set360AgentPolling',
+            ['globalSections' => ['global', 'global'], 'pluginSections' => 'cpu, network,cpu'],
+            'global_sections=global%2Cglobal&plugin_sections=cpu%2C%20network%2Ccpu', '{}'];
+        yield 'poll global scalar plugin list' => ['set_360_agent_polling', 'set360AgentPolling',
+            ['globalSections' => 'global, agent,global', 'pluginSections' => ['network', 'network']],
+            'global_sections=global%2C%20agent%2Cglobal&plugin_sections=network%2Cnetwork', '{}'];
+        yield 'poll empty list items remain supplied' => ['set_360_agent_polling', 'set360AgentPolling',
+            ['globalSections' => [''], 'pluginSections' => ['', 'cpu', '']],
+            'global_sections=&plugin_sections=%2Ccpu%2C', '{}'];
+        yield 'poll list bytes form encoded exactly once' => ['set_360_agent_polling', 'set360AgentPolling',
+            ['globalSections' => [' +&=%雪', "\x00\xff"], 'pluginSections' => ['a%20', ' /|']],
+            'global_sections=%20%2B%26%3D%25%E9%9B%AA%2C%00%FF&plugin_sections=a%2520%2C%20%2F%7C', '{}'];
         yield 'callback nested summary' => ['webpros_auth_callback', 'webProsAuthCallback', ['{"code":"synthetic"}'],
             'json=%7B%22code%22%3A%22synthetic%22%7D',
             '{"success":1,"token_data":{"email":"user@example.test","expires_in":900}}'];
@@ -293,9 +318,13 @@ final class WhmMonitoringTest extends TestCase
             array_map(static fn (ReflectionParameter $p): string => $p->getName(), $polling),
         );
         self::assertSame(
-            ['?string', '?int', '?int', '?string'],
+            ['array|string|null', '?int', '?int', 'array|string|null'],
             array_map(static fn (ReflectionParameter $p): string => (string) $p->getType(), $polling),
         );
+        foreach (['globalSections', 'pluginSections'] as $name) {
+            self::assertCount(1, (new ReflectionParameter([$group, 'set360AgentPolling'], $name))
+                ->getAttributes(SensitiveParameter::class));
+        }
         foreach ($polling as $parameter) {
             self::assertNull($parameter->getDefaultValue());
         }
@@ -318,7 +347,7 @@ final class WhmMonitoringTest extends TestCase
         yield 'session integer' => ['webProsAuthStart', [123]];
         yield 'poll interval string' => ['set360AgentPolling', ['interval' => '300']];
         yield 'poll span float' => ['set360AgentPolling', ['maxDataSpan' => 1.5]];
-        yield 'poll global array' => ['set360AgentPolling', ['globalSections' => ['global']]];
+        yield 'poll global integer' => ['set360AgentPolling', ['globalSections' => 1]];
         yield 'poll plugin boolean' => ['set360AgentPolling', ['pluginSections' => false]];
     }
 
@@ -335,6 +364,76 @@ final class WhmMonitoringTest extends TestCase
             self::fail('Native argument failure expected.');
         } catch (TypeError) {
             self::assertSame($snapshot, $client->whm()->responseMeta());
+        }
+        self::assertCount(1, $http->getRequests());
+    }
+
+    /** @return iterable<string, array{string, string, array<array-key, mixed>}> */
+    public static function invalidSectionLists(): iterable
+    {
+        $invalid = [
+            'empty' => [],
+            'sparse' => [1 => 'synthetic-private-section'],
+            'associative' => ['synthetic-private-key' => 'synthetic-private-section'],
+            'null item' => ['synthetic-private-section', null],
+            'integer item' => ['synthetic-private-section', 1],
+            'boolean item' => ['synthetic-private-section', false],
+            'nested item' => ['synthetic-private-section', ['synthetic-private-nested']],
+            'comma item' => ['synthetic-private,section'],
+            'late comma item' => ['synthetic-private-first', 'synthetic-private-second', 'synthetic-private,late'],
+        ];
+        foreach (['globalSections', 'pluginSections'] as $parameter) {
+            foreach ($invalid as $name => $value) {
+                yield "$parameter $name" => ['set360AgentPolling', $parameter, $value];
+            }
+        }
+    }
+
+    /** @param array<array-key, mixed> $value */
+    #[DataProvider('invalidSectionLists')]
+    public function testInvalidSectionListClearsMetadataWithoutRequestAndConcealsValues(
+        string $method,
+        string $parameter,
+        array $value,
+    ): void {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope('webpros_auth_status', '{"valid":0}')));
+        $client->whm()->monitoring()->webProsAuthStatus();
+        self::assertNotNull($client->whm()->responseMeta());
+        $previous = ini_get('zend.exception_ignore_args');
+        ini_set('zend.exception_ignore_args', '0');
+        try {
+            try {
+                $client->whm()->monitoring()->{$method}(...[$parameter => $value]);
+                self::fail('Invalid section list must fail before dispatch.');
+            } catch (InvalidArgumentException $error) {
+                self::assertStringNotContainsString('synthetic-private-', $error->getMessage());
+                self::assertNull($client->whm()->responseMeta());
+                $seen = 0;
+                $seenMethod = false;
+                foreach ($error->getTrace() as $frame) {
+                    $class = $frame['class'] ?? '';
+                    if (
+                        str_starts_with($class, 'HostingPal\\WhmApiClient\\')
+                        && !str_contains($class, '\\Tests\\')
+                    ) {
+                        $seen++;
+                        self::assertPrivateValueAbsent($frame['args'] ?? []);
+                        if ($class === Monitoring::class && $frame['function'] === 'set360AgentPolling') {
+                            $seenMethod = true;
+                            $traceArguments = $frame['args'] ?? [];
+                            self::assertInstanceOf(
+                                SensitiveParameterValue::class,
+                                $traceArguments[$parameter === 'globalSections' ? 0 : 3] ?? null,
+                            );
+                        }
+                    }
+                }
+                self::assertGreaterThan(0, $seen);
+                self::assertTrue($seenMethod);
+            }
+        } finally {
+            ini_set('zend.exception_ignore_args', $previous === false ? '1' : $previous);
         }
         self::assertCount(1, $http->getRequests());
     }

@@ -8046,3 +8046,51 @@ agent/registration/settings/OAuth/login action ran. Offline fixtures establish n
 live POST, account, authentication/replay/expiry/session/persistence/sign-out or
 agent behavior. Local PHP8.4.26 is not PHP8.3 evidence; exact-head external CI is a
 separate controller gate.
+
+
+## 2026-11-01 — Monitoring comma-list input adoption (8x0.28.7)
+
+This adoption uses the reviewed shared explicit delimited collection convention
+accepted at `810aafeec4950a0dc6e46b48c026ce967e7f124a`. It changes only the two
+filters of `whm1:360Monitoring/set_360_agent_polling`; the original seven-operation
+Monitoring audit above remains historical delivery evidence.
+
+The original decompressed WHM source SHA256 is
+`6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594`.
+The exact bindings `/paths/~1360Monitoring~1set_360_agent_polling/get/parameters/0`
+(`global_sections`) and `/paths/~1360Monitoring~1set_360_agent_polling/get/parameters/3`
+(`plugin_sections`) each explicitly describe a comma-separated list with optional
+string schema. The overlay retains this source contract and adds client array
+convenience via `kind: delimited`, `item_type: string`, `allow_scalar: true`,
+`empty: reject`, `delimiter: ','`. No source refresh or parameter-schema rewrite
+is involved. Full section-choice, loaded-plugin, interval-only and positive
+interval/max_data_span requirements remain documented and server-validated;
+no local enum, range, cross-field or inferred-default guard is added.
+
+Native filter arguments become `string|array|null = null`, with
+`string|non-empty-list<string>|null` PHPDoc. Nonempty sequential strict-string
+lists join once with comma into the original field; order, duplicates, empty
+items and all other item bytes remain intact. Commas within list items reject.
+Scalar comma strings remain byte-for-byte unchanged. Whole null omits, [] rejects,
+[''] supplies empty and ['', 'cpu', ''] supplies ,cpu,. Both generated collection
+arguments have SensitiveParameter for library trace protection; section filters
+are not newly marked semantically secret and do not select POST. Source order,
+optionality, integer timing types and the original form POST policy remain.
+
+Synthetic PSR transport cases cover both arrays together and independently,
+reverse named-argument order, mixed strings/lists, duplicates, empty items and
+Unicode/punctuation/percent/binary bytes encoded once. Actual method rejection
+cases cover empty, sparse/associative, null/int/bool/nested items and early/late
+embedded commas, after warming metadata. They verify reset before failure, no
+new request, value-free diagnostics and protected library trace arguments with
+exception arguments enabled. Strict wrong-native-type failures remain before
+entry/reset. Existing scalar, callback JSON/session, auth, transport, response,
+root, outcome and metadata tests remain intact.
+
+Only Monitoring.php and MonitoringSpec.php are regenerated. Coverage stays
+1,228 operations, 117 groups and 237 outputs; coverage.md is unchanged. No shared
+core/generator, other adopter, dependency, pinned source or historical evidence
+changes. Source diagnostics remain visible and unwaived. This is offline input
+coverage only: no live/API/SSH/browser/DNS/credential, account/authentication,
+agent/settings, implicit polling, retry or URL action ran. Live 8x0.2.79 stays
+OPEN; remaining delimited adopters, including Ftp, stay under 8x0.28.8.

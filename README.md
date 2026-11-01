@@ -4575,19 +4575,24 @@ per source; other settings may restart the agent.
 $monitoring = $client->whm()->monitoring(); // Lazy, cached; no I/O.
 $registration = $monitoring->registerServerWith360Monitoring();
 $polling = $monitoring->set360AgentPolling(
-    globalSections: 'global,agent',
+    globalSections: ['global', 'agent'],
     interval: 300,
     maxDataSpan: 120,
-    pluginSections: 'cpu,network',
+    pluginSections: ['cpu', 'network'],
 );
 ```
 
-Polling filters are canonical comma-separated strings; their bytes, order,
-duplicates and spaces pass through unchanged. Null omits an optional argument;
-empty strings and integer zero remain supplied. Positive timing values and the
-interval/filter relationship are upstream requirements, without local range or
-cross-field guards. Delimited array convenience remains tracked in
-`whm-api-client-8x0.28.7`.
+Polling filters accept compatible comma-separated strings or nonempty sequential
+string lists. Strings pass through byte-for-byte, including commas. Lists join
+once with a comma in the original field, preserving item bytes, order, duplicates,
+spaces and empty strings; a comma inside any list item is rejected before I/O.
+`[]` is rejected, `['']` sends an explicit empty field, and `['', 'cpu', '']` sends
+`,cpu,`. Null omits an optional argument; empty scalar strings and integer zero
+remain supplied. Positive timing values, documented section choices and the
+interval/filter relationship are server requirements, without local enum, range
+or cross-field guards. Array support here covers only these two Monitoring
+filters; Ftp and other delimited adopters remain separate work under
+`whm-api-client-8x0.28.8`.
 
 Auth start needs an existing intended WHM session for callers outside browser
 sessions, notably API-token and Basic callers. This client has no browser-session
