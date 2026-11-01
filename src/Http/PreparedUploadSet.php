@@ -6,6 +6,7 @@ namespace HostingPal\WhmApiClient\Http;
 
 use HostingPal\WhmApiClient\Upload;
 use InvalidArgumentException;
+use LogicException;
 use Psr\Http\Message\StreamInterface;
 use SensitiveParameter;
 use Throwable;
@@ -22,9 +23,13 @@ use Throwable;
  */
 final class PreparedUploadSet
 {
+    /** @var list<PreparedUploadSource> */
+    private array $sources = [];
+
     /** @param list<PreparedUploadSource> $sources */
-    private function __construct(private array $sources)
+    private function __construct(array $sources)
     {
+        $this->sources = $sources;
     }
 
     private function __clone()
@@ -86,6 +91,24 @@ final class PreparedUploadSet
             $source->release();
         }
         $this->sources = [];
+    }
+
+    /**
+     * @return array<string, mixed>
+     * @throws LogicException Always.
+     */
+    public function __serialize(): array
+    {
+        throw new LogicException('Prepared upload sets cannot be serialized.');
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     * @throws LogicException Always.
+     */
+    public function __unserialize(#[SensitiveParameter] array $data): void
+    {
+        throw new LogicException('Prepared upload sets cannot be unserialized.');
     }
 
     public function __destruct()

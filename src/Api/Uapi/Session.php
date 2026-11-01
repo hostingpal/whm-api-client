@@ -60,22 +60,33 @@ final readonly class Session
      *
      * Documented: Available from cPanel 86. Creates temporary credentials, not a Webmail login, session activity or
      * mail access. Formal GET has x-readonly=false and x-rollback=none; effective transport is form POST on direct UAPI
-     * and WHM bridge. Live POST acceptance remains unverified. Login and remoteAddress are private inputs; password is
-     * sensitive where present.
+     * and WHM bridge. Login and remoteAddress are private inputs; password is sensitive where present.
      *
      * Documented: The calling cPanel account must own the Webmail account. This authorized-owner operation does not
      * verify the mailbox password; it is distinct from checkPassword and is never an automatic fallback after a
      * password failure.
      *
-     * Documented: Lowercase locale is a server requirement; omitted locale uses the account locale. remote_address
-     * defaults to the API caller IP and is required for command-line use; this HTTP library retains optionality. Direct
-     * and bridged routes need not infer the same remote address.
+     * Documented: Lowercase locale is a server requirement; omitted locale uses the account locale. The pinned
+     * documentation describes remote_address as defaulting to the API caller IP and required for command-line use. That
+     * default does not establish WHM bridge inference; see the reviewed-build guidance below. The optional signature
+     * and null omission remain unchanged.
      *
      * Documented: The source recipe requires a separate caller-controlled POST to https://<hostname>:2096<token>/login
      * with session=<session> in the body. Null hostname means the server that answered the API; missing hostname
      * remains omitted. This library does not construct, fetch or log in to that destination. Hostname/token/session
      * combinations and returned Webmail URLs are private data. Optional hostname:string|null, session:string and
      * token:string preserve omission, null hostname and empty or opaque credential bytes.
+     *
+     * Observed: Reviewer seebeen reported on 2026-10-31 (review5725475353, original 5b005fb, cPanel 11.138.0.19) that
+     * all three Session creators succeeded as form POST on direct UAPI and WHM bridge with an explicit remoteAddress.
+     * Returned credentials were not used for login or access; non-null hostname remains unobserved. On that reviewed
+     * build, this method succeeded with remoteAddress omitted on direct UAPI but failed with an API error on WHM
+     * bridge; supply an explicit remoteAddress for the bridge on that build. This is scoped runtime evidence, not a
+     * universal route or authentication prohibition.
+     *
+     * Observed: In the same reviewer suspended-mailbox case on 11.138.0.19, this non-password method still issued
+     * credentials on both routes while checkPassword refused. Login and access with those credentials were not tested;
+     * credential issuance establishes no suspension-enforcement or availability guarantee.
      *
      * API-map identity: uapi:Session/create_webmail_session_for_mail_user#GET (wire name
      * create_webmail_session_for_mail_user).
@@ -124,21 +135,28 @@ final readonly class Session
      *
      * Documented: Available from cPanel 86. Creates temporary credentials, not a Webmail login, session activity or
      * mail access. Formal GET has x-readonly=false and x-rollback=none; effective transport is form POST on direct UAPI
-     * and WHM bridge. Live POST acceptance remains unverified. Login and remoteAddress are private inputs; password is
-     * sensitive where present.
+     * and WHM bridge. Login and remoteAddress are private inputs; password is sensitive where present.
      *
      * Documented: The calling cPanel account must own the Webmail account and supply the correct password. Wrong
      * passwords and suspended accounts fail. No automatic retry using the operation without password verification.
      *
-     * Documented: Lowercase locale is a server requirement; omitted locale uses the account locale. remote_address
-     * defaults to the API caller IP and is required for command-line use; this HTTP library retains optionality. Direct
-     * and bridged routes need not infer the same remote address.
+     * Documented: Lowercase locale is a server requirement; omitted locale uses the account locale. The pinned
+     * documentation describes remote_address as defaulting to the API caller IP and required for command-line use. That
+     * default does not establish WHM bridge inference; see the reviewed-build guidance below. The optional signature
+     * and null omission remain unchanged.
      *
      * Documented: The source recipe requires a separate caller-controlled POST to https://<hostname>:2096<token>/login
      * with session=<session> in the body. Null hostname means the server that answered the API; missing hostname
      * remains omitted. This library does not construct, fetch or log in to that destination. Hostname/token/session
      * combinations and returned Webmail URLs are private data. Optional hostname:string|null, session:string and
      * token:string preserve omission, null hostname and empty or opaque credential bytes.
+     *
+     * Observed: Reviewer seebeen reported on 2026-10-31 (review5725475353, original 5b005fb, cPanel 11.138.0.19) that
+     * all three Session creators succeeded as form POST on direct UAPI and WHM bridge with an explicit remoteAddress.
+     * Returned credentials were not used for login or access; non-null hostname remains unobserved. On that reviewed
+     * build, supply remoteAddress for the bridge: the reviewer source inspection found the shared _create_session()
+     * REMOTE_ADDR fallback fails when empty. Password-variant omission is source-derived, not runtime-observed by the
+     * reviewer; no universal route or authentication prohibition is inferred.
      *
      * API-map identity: uapi:Session/create_webmail_session_for_mail_user_check_password#GET (wire name
      * create_webmail_session_for_mail_user_check_password).
@@ -191,20 +209,27 @@ final readonly class Session
      *
      * Documented: Available from cPanel 86. Creates temporary credentials, not a Webmail login, session activity or
      * mail access. Formal GET has x-readonly=false and x-rollback=none; effective transport is form POST on direct UAPI
-     * and WHM bridge. Live POST acceptance remains unverified. Login and remoteAddress are private inputs; password is
-     * sensitive where present.
+     * and WHM bridge. Login and remoteAddress are private inputs; password is sensitive where present.
      *
      * Documented: Targets the authenticated cPanel user, not an arbitrary mailbox.
      *
-     * Documented: Lowercase locale is a server requirement; omitted locale uses the account locale. remote_address
-     * defaults to the API caller IP and is required for command-line use; this HTTP library retains optionality. Direct
-     * and bridged routes need not infer the same remote address.
+     * Documented: Lowercase locale is a server requirement; omitted locale uses the account locale. The pinned
+     * documentation describes remote_address as defaulting to the API caller IP and required for command-line use. That
+     * default does not establish WHM bridge inference; see the reviewed-build guidance below. The optional signature
+     * and null omission remain unchanged.
      *
      * Documented: The source recipe requires a separate caller-controlled POST to https://<hostname>:2096<token>/login
      * with session=<session> in the body. Null hostname means the server that answered the API; missing hostname
      * remains omitted. This library does not construct, fetch or log in to that destination. Hostname/token/session
      * combinations and returned Webmail URLs are private data. Optional hostname:string|null, session:string and
      * token:string preserve omission, null hostname and empty or opaque credential bytes.
+     *
+     * Observed: Reviewer seebeen reported on 2026-10-31 (review5725475353, original 5b005fb, cPanel 11.138.0.19) that
+     * all three Session creators succeeded as form POST on direct UAPI and WHM bridge with an explicit remoteAddress.
+     * Returned credentials were not used for login or access; non-null hostname remains unobserved. On that reviewed
+     * build, this method succeeded with remoteAddress omitted on direct UAPI but failed with an API error on WHM
+     * bridge; supply an explicit remoteAddress for the bridge on that build. This is scoped runtime evidence, not a
+     * universal route or authentication prohibition.
      *
      * API-map identity: uapi:Session/create_webmail_session_for_self#GET (wire name create_webmail_session_for_self).
      *

@@ -47,7 +47,14 @@ final class WpxSpec
         'returns' => [
             'type' => 'object',
             'fields' => [
+                'blocked_by' => ['type' => 'list', 'items' => ['type' => 'string']],
+                'compatible' => ['type' => 'flag'],
                 'domain' => ['type' => 'string'],
+                'domain_package' => ['type' => 'string', 'nullable' => true],
+                'domain_version' => ['type' => 'string', 'nullable' => true],
+                'domain_version_source' => ['type' => 'string', 'nullable' => true],
+                'domain_version_vhost' => ['type' => 'string', 'nullable' => true],
+                'effective_version' => ['type' => 'string', 'nullable' => true],
                 'existing_installations' => [
                     'type' => 'list',
                     'items' => [
@@ -58,8 +65,12 @@ final class WpxSpec
                         ],
                     ],
                 ],
+                'is_fallback' => ['type' => 'flag'],
                 'magic_link' => ['type' => 'string'],
+                'required_version' => ['type' => 'string'],
                 'status' => ['type' => 'string'],
+                'system_default_package' => ['type' => 'string', 'nullable' => true],
+                'system_default_version' => ['type' => 'string', 'nullable' => true],
             ],
         ],
     ];
@@ -76,7 +87,14 @@ final class WpxSpec
         'returns' => [
             'type' => 'object',
             'fields' => [
+                'blocked_by' => ['type' => 'list', 'items' => ['type' => 'string']],
+                'compatible' => ['type' => 'flag'],
                 'domain' => ['type' => 'string'],
+                'domain_package' => ['type' => 'string', 'nullable' => true],
+                'domain_version' => ['type' => 'string', 'nullable' => true],
+                'domain_version_source' => ['type' => 'string', 'nullable' => true],
+                'domain_version_vhost' => ['type' => 'string', 'nullable' => true],
+                'effective_version' => ['type' => 'string', 'nullable' => true],
                 'existing_installations' => [
                     'type' => 'list',
                     'items' => [
@@ -88,8 +106,12 @@ final class WpxSpec
                     ],
                 ],
                 'install_id' => ['type' => 'string'],
+                'is_fallback' => ['type' => 'flag'],
+                'required_version' => ['type' => 'string'],
                 'sse_url' => ['type' => 'string'],
                 'status' => ['type' => 'string'],
+                'system_default_package' => ['type' => 'string', 'nullable' => true],
+                'system_default_version' => ['type' => 'string', 'nullable' => true],
                 'task_id' => ['type' => 'string'],
             ],
         ],
@@ -168,7 +190,7 @@ final class WpxSpec
             'type' => 'object',
             'fields' => [
                 'message' => ['type' => 'string'],
-                'percentage' => ['type' => 'int'],
+                'percentage' => ['type' => 'int', 'accept' => ['numeric-string']],
                 'status' => ['type' => 'string'],
             ],
         ],
@@ -251,7 +273,14 @@ final class WpxSpec
         'returns' => [
             'type' => 'object',
             'fields' => [
+                'blocked_by' => ['type' => 'list', 'items' => ['type' => 'string']],
+                'compatible' => ['type' => 'flag'],
                 'domain' => ['type' => 'string'],
+                'domain_package' => ['type' => 'string', 'nullable' => true],
+                'domain_version' => ['type' => 'string', 'nullable' => true],
+                'domain_version_source' => ['type' => 'string', 'nullable' => true],
+                'domain_version_vhost' => ['type' => 'string', 'nullable' => true],
+                'effective_version' => ['type' => 'string', 'nullable' => true],
                 'existing_installations' => [
                     'type' => 'list',
                     'items' => [
@@ -263,8 +292,12 @@ final class WpxSpec
                     ],
                 ],
                 'install_id' => ['type' => 'string'],
+                'is_fallback' => ['type' => 'flag'],
+                'required_version' => ['type' => 'string'],
                 'sse_url' => ['type' => 'string'],
                 'status' => ['type' => 'string'],
+                'system_default_package' => ['type' => 'string', 'nullable' => true],
+                'system_default_version' => ['type' => 'string', 'nullable' => true],
                 'task_id' => ['type' => 'string'],
             ],
         ],
