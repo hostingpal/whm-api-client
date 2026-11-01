@@ -507,6 +507,10 @@ final readonly class WebServer
      * explicit empty stays supplied. A nonempty local domain selects its configuration. Source get naming/read-only
      * metadata does not change the required JSON POST.
      *
+     * Documented: Warning: The pinned source strongly recommends activating Apache PHP-FPM only when the server has at
+     * least 2 GB of RAM available or at least 30 MB of RAM per domain. Enabling PHP-FPM with less than the required RAM
+     * may cause severe performance issues.
+     *
      * Documented: The pinned HTTP samples use port 2083/cpsess cookies and place quoted api.version in the body despite
      * WHM identity. Retain the configured WHM route/authentication, query routing and reserved body controls; samples
      * are not live evidence.
@@ -553,6 +557,10 @@ final readonly class WebServer
      * Validation-only is the documented mode, not proof of no side effects. config: [] is formally valid client input
      * without a server acceptance, no-op or reset guarantee. Each row requires all three fields; trinary_admin_value
      * remains a strict integer, with no enum/range enforcement or coercion.
+     *
+     * Documented: Warning: The pinned source strongly recommends activating Apache PHP-FPM only when the server has at
+     * least 2 GB of RAM available or at least 30 MB of RAM per domain. Enabling PHP-FPM with less than the required RAM
+     * may cause severe performance issues.
      *
      * Documented: The pinned HTTP samples use port 2083/cpsess cookies and place quoted api.version in the body despite
      * WHM identity. Retain the configured WHM route/authentication, query routing and reserved body controls; samples

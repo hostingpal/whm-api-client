@@ -8323,3 +8323,10 @@ server change, INI/SQL evaluation or returned path/URL contact ran. Nothing here
 establishes live acceptance, configuration application/persistence, no-op/reset,
 atomicity or side-effect-free validation. All 55 inherited diagnostics remain
 visible and unwaived; local PHP 8.4 gates do not establish PHP 8.3 CI.
+
+
+Final review correction M1: Both PHP-FPM operation overlay notes now retain the
+pinned recommendation to activate Apache PHP-FPM only with at least 2 GB of RAM
+available or at least 30 MB per domain, and the severe-performance warning below
+that level. Regeneration includes this guidance in both methods' PHPDoc. This
+documentation correction adds no runtime RAM guard, server probe or live evidence.

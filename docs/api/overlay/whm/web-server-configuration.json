@@ -529,6 +529,10 @@
         },
         {
           "kind": "documented",
+          "text": "Warning: The pinned source strongly recommends activating Apache PHP-FPM only when the server has at least 2 GB of RAM available or at least 30 MB of RAM per domain. Enabling PHP-FPM with less than the required RAM may cause severe performance issues."
+        },
+        {
+          "kind": "documented",
           "text": "The pinned HTTP samples use port 2083/cpsess cookies and place quoted api.version in the body despite WHM identity. Retain the configured WHM route/authentication, query routing and reserved body controls; samples are not live evidence."
         },
         {
@@ -569,6 +573,10 @@
         {
           "kind": "documented",
           "text": "Available in cPanel 78 and later; requires the Web Server role. This updates system or domain PHP-FPM configuration and can affect applications. Omitted domain retains the source empty/system default, and explicit empty stays supplied. Omitted validate_only retains false; explicit false/true remain native JSON booleans. Validation-only is the documented mode, not proof of no side effects. config: [] is formally valid client input without a server acceptance, no-op or reset guarantee. Each row requires all three fields; trinary_admin_value remains a strict integer, with no enum/range enforcement or coercion."
+        },
+        {
+          "kind": "documented",
+          "text": "Warning: The pinned source strongly recommends activating Apache PHP-FPM only when the server has at least 2 GB of RAM available or at least 30 MB of RAM per domain. Enabling PHP-FPM with less than the required RAM may cause severe performance issues."
         },
         {
           "kind": "documented",
