@@ -123,6 +123,8 @@ trait UapiGroups
 
     private ?ServerInformation $serverInformationGroup = null;
 
+    private ?ServiceProxy $serviceProxyGroup = null;
+
     private ?Session $sessionGroup = null;
 
     private ?SpamAssassin $spamAssassinGroup = null;
@@ -723,6 +725,20 @@ trait UapiGroups
     public function serverInformation(): ServerInformation
     {
         return $this->serverInformationGroup ??= new ServerInformation($this->run(...));
+    }
+
+    /**
+     * Select the ServiceProxy operations without making a request.
+     *
+     * Selected-account service proxy backend inventory and configuration. Backend/general address inputs and paired
+     * records are sensitive; read results reveal infrastructure information. Writes may rebuild vhosts and restart the
+     * web server, with API-success rebuild warnings retained in responseMeta(). No backend contact, DNS/IP validation,
+     * retry or rollback is performed. Offline source-backed coverage only; live follow-up whm-api-client-8x0.2.70
+     * remains open.
+     */
+    public function serviceProxy(): ServiceProxy
+    {
+        return $this->serviceProxyGroup ??= new ServiceProxy($this->run(...));
     }
 
     /**

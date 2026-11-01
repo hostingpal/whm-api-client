@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 103 typed groups cover 1,188 documented operations:
+and cPanel UAPI surface. The 104 typed groups cover 1,191 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -313,6 +313,55 @@ reads and normalized countPops() through both routes. Strict review remains fail
 unchanged. Empty-string userdirprotect remains documentation/offline coverage because
 the live field is omitted. Three PHP setters and their INI write/read round trip
 remain offline-only; follow-up 8x0.2.17 owns the remaining live work.
+The complete `uapi()->serviceProxy()` group exposes all three pinned ServiceProxy
+operations from cPanel 96: GET inventory and form POST set/unset calls for the
+selected account. `getServiceProxyBackends()` returns a list with optional string
+`backend` and optional nullable string `service_group`; null denotes the general
+backend, while omission remains distinct. Treat returned addresses and configuration
+as private infrastructure information.
+
+`setServiceProxyBackends(?string $general = null, ?string $serviceGroup = null,
+?string $serviceGroupBackend = null)` preserves the source optionality. Omitted
+settings retain existing configuration; null omits and empty strings are sent.
+Supplying a service group or its backend requires the counterpart on the server;
+the canonical method adds no cross-field guard. General-only updates remain valid
+client input. The pinned source names `Mail`; strings remain open in the interface,
+without promising server acceptance of other groups or doing local DNS/IP checks.
+The server requires routable backends and rejects its documented non-routable
+address classes and obfuscated encodings.
+
+The additional generated `setBackends(array $backends, ?string $general = null)`
+accepts a nonempty sequential list of complete string pairs. Both row fields are
+required; partial pairs, nulls, unknown fields and wrong types fail before I/O.
+For example, these synthetic inputs execute one request when called:
+
+```php
+$account->serviceProxy()->setBackends(backends: [
+    ['serviceGroup' => 'Mail', 'backend' => 'mx1.example.test'],
+    ['serviceGroup' => 'Mail', 'backend' => 'mx2.example.test'],
+], general: 'proxy.example.test');
+```
+
+Rows emit `service_group`/`service_group_backend`, then `service_group-1`/
+`service_group_backend-1`, retaining exact values, row order and duplicate groups;
+optional `general` follows. This does not promise upstream duplicate resolution.
+The formal names and naming prose use underscores, while one pinned multiple-group
+example uses `service-group-1/-2`; the overlay records that contradiction without
+claiming live acceptance. Supplied backend/general addresses and the whole paired
+collection are sensitive parameters. Avoid logging returned configuration or
+`PayloadMismatchException::$payload`; library frames conceal sensitive inputs and
+responses, but third-party transports control their own traces.
+
+`unsetAllServiceProxyBackends()` removes all service proxy configuration for the
+selected account. Both mutations preserve nullable opaque object results, including
+unknown fields and explicit null; missing data is a mismatch. Existing empty-array
+object-validator compatibility is retained. With the Web Server role active, writes
+rebuild vhosts and restart the web server. A rebuild failure can still return API
+success with a failure warning in metadata: inspect `responseMeta()` warnings and
+raw metadata. Success does not guarantee application or persistence. The client
+adds no implicit read, merge, save, restore, retry, rollback or backend contact.
+Delivery `8x0.4.28` is offline coverage; live follow-up `8x0.2.70` remains open.
+
 The domain-management groups cover all 22 pinned functions. Inventory and lookup
 methods use GET; nine mutations use form POST. Most new domain endpoints require
 cPanel 138; generated PHPDoc records the different floors and role restrictions.

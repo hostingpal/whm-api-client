@@ -1,0 +1,204 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "ServiceProxy",
+  "accessor": "serviceProxy",
+  "description": "Selected-account service proxy backend inventory and configuration. Backend/general address inputs and paired records are sensitive; read results reveal infrastructure information. Writes may rebuild vhosts and restart the web server, with API-success rebuild warnings retained in responseMeta(). No backend contact, DNS/IP validation, retry or rollback is performed. Offline source-backed coverage only; live follow-up whm-api-client-8x0.2.70 remains open.",
+  "operations": {
+    "uapi:ServiceProxy/get_service_proxy_backends": {
+      "name": "getServiceProxyBackends",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 96 and later; operates on the selected cPanel account. Returned backend addresses and configuration can expose infrastructure information; treat results as sensitive and avoid logging them."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a nonnullable list in server order. backend is an optional string; service_group is an optional nullable string. Explicit null service_group denotes the general backend; omission remains distinct. Empty inventory remains an empty list."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "2026-10-13 pinned UAPI OpenAPI 11.138.0.10",
+          "date": "2026-11-01",
+          "note": "Pinned read-only inventory uses GET; preserve the formal response list, optional backend and nullable optional service_group without response corrections.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1ServiceProxy~1get_service_proxy_backends/get/x-readonly"
+        }
+      ]
+    },
+    "uapi:ServiceProxy/set_service_proxy_backends": {
+      "name": "setServiceProxyBackends",
+      "method": "POST",
+      "order": [
+        "general",
+        "service_group",
+        "service_group_backend"
+      ],
+      "params": {
+        "general": {
+          "sensitive": true
+        },
+        "service_group_backend": {
+          "sensitive": true
+        },
+        "service_group": {
+          "enum_doc": false
+        }
+      },
+      "additional_methods": [
+        {
+          "name": "setBackends",
+          "inputs": [
+            {
+              "php": "backends",
+              "records": {
+                "alias": "ServiceProxyBackendInput",
+                "start": 0,
+                "separator": "-",
+                "first_unsuffixed": true,
+                "sensitive": true,
+                "fields": [
+                  {
+                    "source": "service_group",
+                    "php": "serviceGroup",
+                    "prefix": "service_group",
+                    "required": true
+                  },
+                  {
+                    "source": "service_group_backend",
+                    "php": "backend",
+                    "prefix": "service_group_backend",
+                    "required": true
+                  }
+                ]
+              }
+            },
+            {
+              "php": "general",
+              "source": "general"
+            }
+          ]
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 96 and later; operates on the selected cPanel account. Returned backend addresses and configuration can expose infrastructure information; treat results as sensitive and avoid logging them."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitted settings preserve the existing configuration. The canonical optional general, serviceGroup and serviceGroupBackend arguments retain source optionality. Supplying either service-group field requires its counterpart on the server, as documented; the canonical scalar method does not add a cross-field guard. Null optional scalars omit; empty strings remain values."
+        },
+        {
+          "kind": "policy",
+          "text": "setBackends() accepts a nonempty sequential list of complete serviceGroup/backend string pairs, with optional general after the rows. Both fields are required per convenience row as a collection policy supported by the source conditional requirements; canonical requiredness is unchanged. First fields are service_group and service_group_backend; later rows use -1, -2. Preserve duplicates, input order, case and bytes without promising upstream duplicate resolution. Unknown members, null fields, partial pairs and wrong scalar types fail locally before I/O."
+        },
+        {
+          "kind": "policy",
+          "text": "The formal service_group name and explicit incrementing prose use underscores. The multiple service-group example contradicts them with service-group-1/service-group-2. This mapping chooses the formal names and naming prose, preserves that source conflict and makes no live acceptance claim."
+        },
+        {
+          "kind": "policy",
+          "text": "The pinned parameter names Mail as the documented service group. serviceGroup remains a plain string in PHP and PHPDoc; the client does not enforce a closed set or claim that another service group is accepted by the server."
+        },
+        {
+          "kind": "documented",
+          "text": "The server requires a routable hostname or IP backend and rejects documented non-routable IP literals (loopback, RFC 1918, CGNAT and cloud-metadata addresses) and obfuscated encodings. The client performs no local IP-format coercion, DNS lookup or closed Mail enum enforcement. Treat supplied general/backend addresses and the entire backends collection as sensitive."
+        },
+        {
+          "kind": "documented",
+          "text": "With the Web Server role active, the server rebuilds the account vhosts and restarts the web server. A rebuild failure can still return API success with a failure warning in metadata. Inspect responseMeta(), including warnings and raw metadata; success does not guarantee application or persistence. The source declares no rollback; the client performs no implicit read, merge, retry, save, restore or rollback, and never contacts the backend."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a nullable object without pinned fields. Preserve opaque object fields and explicit null; an absent data member is a payload mismatch. No success or warning payload field is inferred."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "2026-10-13 pinned UAPI OpenAPI 11.138.0.10",
+          "date": "2026-11-01",
+          "note": "The selected formal GET variant declares x-readonly=false and x-rollback=none; this mutation uses form POST. No transport, envelope or response correction is added.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1ServiceProxy~1set_service_proxy_backends/get/x-readonly"
+        },
+        {
+          "kind": "doc",
+          "version": "2026-10-13 pinned UAPI OpenAPI 11.138.0.10",
+          "date": "2026-11-01",
+          "note": "general is an optional hostname/IP string with existing-configuration default. Preserve canonical general and pass through the same optional source input as the second setBackends argument; supplied infrastructure addresses are sensitive. Null omits, empty strings remain values.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1ServiceProxy~1set_service_proxy_backends/get/parameters/0"
+        },
+        {
+          "kind": "doc",
+          "version": "2026-10-13 pinned UAPI OpenAPI 11.138.0.10",
+          "date": "2026-11-01",
+          "note": "Formal service_group and its naming prose specify service_group, service_group-1 and service_group-2. Bind serviceGroup to this prefix, start 0, separator -, first_unsuffixed true. The required service_group_backend counterpart in the description supports required:true for this field in complete convenience pairs only; canonical required:false is unchanged. The multiple example uses contradictory service-group-1/-2, retained without source edits or a live acceptance claim. Do not enforce the example Mail enum as a closed input set. The plain-string PHPDoc deliberately omits the closed Mail literal via the existing enum_doc:false policy, while retaining Mail in descriptive notes. This changes no source schema or runtime validation.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1ServiceProxy~1set_service_proxy_backends/get/parameters/1"
+        },
+        {
+          "kind": "doc",
+          "version": "2026-10-13 pinned UAPI OpenAPI 11.138.0.10",
+          "date": "2026-11-01",
+          "note": "service_group_backend and naming prose specify the unnumbered first field followed by -1/-2. Bind backend to this prefix at the same original row position. The required service_group counterpart supports required:true in complete convenience pairs only; canonical required:false is unchanged. Preserve string bytes and mark the source address input and entire record collection sensitive.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1ServiceProxy~1set_service_proxy_backends/get/parameters/2"
+        },
+        {
+          "kind": "doc",
+          "version": "2026-10-13 pinned UAPI OpenAPI 11.138.0.10",
+          "date": "2026-11-01",
+          "note": "With Web Server role active, writes rebuild vhosts and restart the web server; rebuild failure can return API success with a failure warning in metadata. Retain ordinary Flag envelope outcome and responseMeta; no payload warning schema or successful application guarantee is invented.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1ServiceProxy~1set_service_proxy_backends/get/description"
+        }
+      ]
+    },
+    "uapi:ServiceProxy/unset_all_service_proxy_backends": {
+      "name": "unsetAllServiceProxyBackends",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 96 and later; operates on the selected cPanel account. Returned backend addresses and configuration can expose infrastructure information; treat results as sensitive and avoid logging them."
+        },
+        {
+          "kind": "documented",
+          "text": "Removes all service proxy configuration for the selected account."
+        },
+        {
+          "kind": "documented",
+          "text": "With the Web Server role active, the server rebuilds the account vhosts and restarts the web server. A rebuild failure can still return API success with a failure warning in metadata. Inspect responseMeta(), including warnings and raw metadata; success does not guarantee application or persistence. The source declares no rollback; the client performs no implicit read, merge, retry, save, restore or rollback, and never contacts the backend."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a nullable object without pinned fields. Preserve opaque object fields and explicit null; an absent data member is a payload mismatch. No success or warning payload field is inferred."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "2026-10-13 pinned UAPI OpenAPI 11.138.0.10",
+          "date": "2026-11-01",
+          "note": "The selected formal GET variant declares x-readonly=false and x-rollback=none; removing all selected-account service-proxy configuration uses form POST.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1ServiceProxy~1unset_all_service_proxy_backends/get/x-readonly"
+        },
+        {
+          "kind": "doc",
+          "version": "2026-10-13 pinned UAPI OpenAPI 11.138.0.10",
+          "date": "2026-11-01",
+          "note": "Retain Web Server role rebuild/restart side effects and success-with-warning caveat in responseMeta, without a payload correction or implicit restore.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1ServiceProxy~1unset_all_service_proxy_backends/get/description"
+        }
+      ]
+    }
+  }
+}
