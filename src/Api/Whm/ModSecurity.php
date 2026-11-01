@@ -1480,9 +1480,12 @@ final readonly class ModSecurity
      * Documented: Available in cPanel & WHM 11.48 and later.
      *
      * Documented: send=true submits event data, message and contact email to a remote receiver; send=false prepares the
-     * report without sending. The formal row_ids schema is integer despite comma-separated multi-ID prose and examples,
-     * so this typed method accepts one row ID only (whm-api-client-8x0.1.24). Report content may contain sensitive
-     * request data. Report hits preserve their string timezone and nullable message separately from getLog().
+     * report without sending. The formal row_ids schema is integer, contradicting its comma-separated multi-ID prose
+     * and examples. rowIds accepts an integer single ID or literal comma-separated string; all IDs must correspond to
+     * the same ModSecurity rule. String bytes are preserved without parsing, trimming, sorting or deduplication.
+     * Callers must supply valid IDs from the same rule; the client does not validate that relationship. Report content
+     * may contain sensitive request data. Report hits preserve their string timezone and nullable message separately
+     * from getLog().
      *
      * Documented: Report hits preserve nullable meta_msg and meta_offset. The offset correction follows pinned
      * unavailable-field wording shared with getLog(); it is verified offline only. No report operation was exercised in
@@ -1492,8 +1495,9 @@ final readonly class ModSecurity
      *
      * @param string $email The contact email address to send with the error report.
      * @param string $message A short message that explains the reason for the report.
-     * @param int $rowIds The MySQL® row IDs from the `hits` table in the `modsec` database for the audit log event to
-     *     report.
+     * @param string|int $rowIds An integer single audit-log row ID or a caller-provided comma-separated string of row
+     *     IDs from the modsec hits table. All IDs must correspond to the same ModSecurity rule; strings are forwarded
+     *     unchanged.
      * @param bool $send Whether the function sends the report to the rule's vendor.
      * @param string $type The report's type.
      * @return ReportRuleResult
@@ -1507,7 +1511,7 @@ final readonly class ModSecurity
         string $email,
         #[SensitiveParameter]
         string $message,
-        int $rowIds,
+        string|int $rowIds,
         bool $send,
         #[SensitiveParameter]
         string $type,

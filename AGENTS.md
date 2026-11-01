@@ -1195,10 +1195,18 @@ re-read getSettings() after any failure. Success in the inspected 11.138.0.19
 handler means every row was accepted, not deployment. Server hash traversal gives
 no deterministic ordering or last-wins guarantee for conflicting repeated IDs.
 No automatic read, retry or rollback occurs.
-`reportRule()` retains the formal integer row-ID input; the contradictory prose's
-comma-separated multi-ID form remains under `8x0.1.24`. The source restricts batch
-setting IDs to 0 through 9; this change adds no client-side ID/range or state enum
-validation. Record input support is source-backed and tested offline only.
+The source restricts batch setting IDs to 0 through 9; this change adds no
+client-side ID/range or state enum validation. Record input support is source-backed
+and tested offline only.
+
+`reportRule(string $email, string $message, string|int $rowIds, bool $send, string $type)`
+accepts an integer single row ID or a comma-separated string. The pinned formal
+integer schema contradicts its multi-ID prose and example; the source-backed
+union preserves both. All IDs must correspond to the same ModSecurity rule.
+Strings retain their exact bytes, including spaces, leading zeros and duplicates;
+the client adds no parsing or ID/same-rule validation. `send: false` prepares the
+report; `send: true` sends it to a third-party vendor. This input correction is
+verified offline only; no report was submitted.
 The twelve source-backed empty-result mutations accept an omitted or null payload
 while retaining any returned mixed data; they are not weakened to void. Omitted
 wire payloads on those writes remain unobserved.
