@@ -496,30 +496,93 @@
       ]
     },
     "whm1:php_fpm_config_get": {
-      "exclude": {
-        "reason": "Requires an application/json request body; typed JSON-body machinery is available, while this endpoint adoption remains deferred under whm-api-client-8x0.1.18; remaining selection/source/route audit is tracked under whm-api-client-8x0.29.6. Raw callJson() supplies no typed contract and establishes no endpoint compatibility.",
-        "evidence": [
-          {
-            "kind": "doc",
-            "version": "pinned 2026-10-13",
-            "date": "2026-10-31",
-            "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /php_fpm_config_get: requestBody is required and declares application/json. Domain selectors and PHP INI/pool configuration remain JSON-body fields, not form parameters."
-          }
-        ]
-      }
+      "name": "phpFpmConfigGet",
+      "variant": "POST",
+      "body": "json",
+      "json_body": {
+        "php": "configuration",
+        "alias": "PhpFpmConfigGetInput",
+        "routes": "direct"
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1php_fpm_config_get/post/requestBody",
+          "note": "Required inline application/json object with optional string domain. The documented variant is POST despite the get function name and x-readonly=true. No effective input correction is applied."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1php_fpm_config_get/post/responses/200/content/application~1json/schema/properties/data",
+          "note": "Required nonnull data object; optional config list, optional string base_flag_name/value and optional integer trinary_admin_value. Enum 0/1/2 stays integer, not a binary flag; preserve unknown-field filtering and existing empty-array object compatibility."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 78 and later; requires the Web Server role. The required empty array configuration sends a present {}. Omitted domain keeps the source empty default for system configuration; explicit empty stays supplied. A nonempty local domain selects its configuration. Source get naming/read-only metadata does not change the required JSON POST."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned HTTP samples use port 2083/cpsess cookies and place quoted api.version in the body despite WHM identity. Retain the configured WHM route/authentication, query routing and reserved body controls; samples are not live evidence."
+        },
+        {
+          "kind": "documented",
+          "text": "The required configuration argument is one sensitive JSON object, with source member names, insertion/list order, duplicates and string bytes preserved. No body field enters the query or form. All api. root controls remain reserved; the configured WHM route/authentication and api.version=1 query remain in force. Invalid arrays fail after metadata reset before I/O; native PHP signature errors occur before entry. The client makes one explicit request, without implicit read, retry, merge, polling, restore, rollback or evaluation/contact of configuration values. Inspect responseMeta() warnings and raw metadata; API success alone does not establish application or persistence. Payloads, mismatch payloads and third-party transport traces can expose private configuration. Offline fixtures establish no live execution or setting behavior; live follow-up 8x0.2.83 remains open."
+        }
+      ]
     },
     "whm1:php_fpm_config_set": {
-      "exclude": {
-        "reason": "Requires an application/json request body; typed JSON-body machinery is available, while this endpoint adoption remains deferred under whm-api-client-8x0.1.18; remaining selection/source/route audit is tracked under whm-api-client-8x0.29.6. Raw callJson() supplies no typed contract and establishes no endpoint compatibility.",
-        "evidence": [
-          {
-            "kind": "doc",
-            "version": "pinned 2026-10-13",
-            "date": "2026-10-31",
-            "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /php_fpm_config_set: requestBody is required and declares application/json. Domain selectors and PHP INI/pool configuration remain JSON-body fields, not form parameters."
-          }
-        ]
-      }
+      "name": "phpFpmConfigSet",
+      "variant": "POST",
+      "body": "json",
+      "json_body": {
+        "php": "configuration",
+        "alias": "PhpFpmConfigSetInput",
+        "routes": "direct"
+      },
+      "void": true,
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1php_fpm_config_set/post/requestBody",
+          "note": "Required inline application/json object; config is required and is a list whose object rows require base_flag_name, trinary_admin_value and value. Optional domain is string and optional validate_only is native boolean. The formal schema permits empty config, and defaults are not inserted. No effective input correction is applied."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1php_fpm_config_set/post/responses/200/content/application~1json/schema/properties",
+          "note": "The formal response envelope declares metadata only and no data/payload schema. Apply the established void policy and check the WHM Flag outcome instead of inventing a payload."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 78 and later; requires the Web Server role. This updates system or domain PHP-FPM configuration and can affect applications. Omitted domain retains the source empty/system default, and explicit empty stays supplied. Omitted validate_only retains false; explicit false/true remain native JSON booleans. Validation-only is the documented mode, not proof of no side effects. config: [] is formally valid client input without a server acceptance, no-op or reset guarantee. Each row requires all three fields; trinary_admin_value remains a strict integer, with no enum/range enforcement or coercion."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned HTTP samples use port 2083/cpsess cookies and place quoted api.version in the body despite WHM identity. Retain the configured WHM route/authentication, query routing and reserved body controls; samples are not live evidence. Set samples quote trinary values while the formal schema requires integers. Follow the formal integer schema, without string coercion or a claim of live acceptance."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned response contains metadata only: this method returns void, checks the WHM outcome and ignores any unspecified data under the existing void policy."
+        },
+        {
+          "kind": "documented",
+          "text": "The required configuration argument is one sensitive JSON object, with source member names, insertion/list order, duplicates and string bytes preserved. No body field enters the query or form. All api. root controls remain reserved; the configured WHM route/authentication and api.version=1 query remain in force. Invalid arrays fail after metadata reset before I/O; native PHP signature errors occur before entry. The client makes one explicit request, without implicit read, retry, merge, polling, restore, rollback or evaluation/contact of configuration values. Inspect responseMeta() warnings and raw metadata; API success alone does not establish application or persistence. Payloads, mismatch payloads and third-party transport traces can expose private configuration. Offline fixtures establish no live execution or setting behavior; live follow-up 8x0.2.83 remains open."
+        }
+      ]
     },
     "whm1:php_get_default_accounts_to_fpm": {
       "unwrap": "default_accounts_to_fpm",

@@ -139,3 +139,29 @@ func TestJSONBodyNotesLeadSourceDocumentationOnlyForJSON(t *testing.T) {
 		}
 	}
 }
+
+func TestJSONBodyExceptionDocumentationFollowsFamily(t *testing.T) {
+	schema := effective.InputSpec{Type: "object"}
+	for _, family := range []string{"uapi", "whm1"} {
+		t.Run(family, func(t *testing.T) {
+			g := effective.Group{Family: family, Name: "Examples", Class: "Examples", Accessor: "examples", Operations: []effective.Operation{{ID: family + ":save", Function: "save", PHPName: "save", Constant: "SAVE", Method: "POST", Body: "json", Outcome: "flag", JSONBody: &effective.JSONBody{PHP: "configuration", Alias: "ConfigurationInput", Routes: "direct", Required: true, Schema: schema}, Params: []effective.Param{{PHP: "configuration", PHPType: "array", DocType: "ConfigurationInput", Required: true, Sensitive: true, Input: &schema}}, Returns: nil}}}
+			folder := "Whm"
+			if family == "uapi" {
+				folder = "Uapi"
+			}
+			class := string(Render(effective.Result{Groups: []effective.Group{g}})["src/Api/"+folder+"/Examples.php"])
+			doc := methodDoc(t, class, "save")
+			if family == "uapi" {
+				want := "@throws InvalidArgumentException If the whole JSON body is invalid, query/root routing names are reserved,\n     *     or this account handle uses the unsupported WHM bridge."
+				if !strings.Contains(doc, want) {
+					t.Fatalf("UAPI JSON exception text changed: %s", doc)
+				}
+			} else {
+				want := "@throws InvalidArgumentException If the whole JSON body is invalid or query/root routing names are reserved."
+				if !strings.Contains(doc, want) || strings.Contains(doc, "account handle") || strings.Contains(doc, "WHM bridge") {
+					t.Fatalf("WHM JSON exception text must describe its own route: %s", doc)
+				}
+			}
+		})
+	}
+}

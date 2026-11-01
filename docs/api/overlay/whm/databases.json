@@ -1122,17 +1122,47 @@
       }
     },
     "whm1:update_sql_config": {
-      "exclude": {
-        "reason": "Requires an application/json request body; typed JSON-body machinery is available, while this endpoint adoption remains deferred under whm-api-client-8x0.1.18; remaining selection/source/route audit is tracked under whm-api-client-8x0.29.6. Raw callJson() supplies no typed contract and establishes no endpoint compatibility.",
-        "evidence": [
-          {
-            "kind": "doc",
-            "version": "pinned 2026-10-13",
-            "date": "2026-10-31",
-            "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /update_sql_config POST requestBody/content/application~1json specifies a JSON database configuration body; form encoding cannot represent the documented transport."
-          }
-        ]
-      }
+      "name": "updateSqlConfig",
+      "variant": "POST",
+      "body": "json",
+      "json_body": {
+        "php": "configuration",
+        "alias": "UpdateSqlConfigInput",
+        "routes": "direct"
+      },
+      "void": true,
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1update_sql_config/post/requestBody",
+          "note": "Required inline application/json object with required data list. Its object rows declare optional string name/section/value and optional native boolean remove; no row fields are required. Preserve empty lists versus empty row objects. No effective input correction is applied."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1update_sql_config/post/responses/200/content/application~1json/schema/properties",
+          "note": "The formal response envelope declares metadata only and no data/payload schema. Apply the established void policy and check the WHM Flag outcome instead of inventing a payload."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.100 and later. Disabled when the MySQL/MariaDB role is disabled and remote MySQL is not configured. The required data list may be empty and every row field is optional: data: [] sends [], while data: [[]] sends [{}]. These shapes imply no server acceptance, no-op or atomicity guarantee. remove stays a native JSON boolean and zero-looking name/section/value values remain strings. No defaults are inserted."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned response contains metadata only: this method returns void, checks the WHM outcome and ignores any unspecified data under the existing void policy."
+        },
+        {
+          "kind": "documented",
+          "text": "The required configuration argument is one sensitive JSON object, with source member names, insertion/list order, duplicates and string bytes preserved. No body field enters the query or form. All api. root controls remain reserved; the configured WHM route/authentication and api.version=1 query remain in force. Invalid arrays fail after metadata reset before I/O; native PHP signature errors occur before entry. The client makes one explicit request, without implicit read, retry, merge, polling, restore, rollback or evaluation/contact of configuration values. Inspect responseMeta() warnings and raw metadata; API success alone does not establish application or persistence. Payloads, mismatch payloads and third-party transport traces can expose private configuration. Offline fixtures establish no live execution or setting behavior; live follow-up 8x0.2.83 remains open."
+        }
+      ]
     }
   }
 }

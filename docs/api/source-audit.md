@@ -8261,3 +8261,65 @@ Coverage is 1,231 canonical operations (636 UAPI in 95 groups; 595 WHM in 24),
 119 groups and 241 generated outputs including coverage. All 55 inherited source
 diagnostics remain visible and unwaived. Local PHP 8.4 offline gates do not
 establish exact-head PHP 8.3 CI or successful live compatibility.
+
+
+## 2026-11-01 — WHM JSON configuration adoption (8x0.4.39)
+
+Adopted exactly three original POST operations from the immutable 2026-10-13
+WHM snapshot: `/php_fpm_config_get`, `/php_fpm_config_set`, `/update_sql_config`.
+Decompressed SHA-256 remains
+`6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594`.
+Every overlay binds the original `/paths/~1<function>/post/requestBody` pointer
+and source hash; no effective requiredness, native type, enum or schema correction
+is needed. All three have required application/json object bodies. The get
+operation's source POST overrides neither its get name nor its x-readonly=true
+classification; it remains a JSON POST.
+
+Get has optional string domain, whose omitted/empty source default selects system
+configuration; `[]` is a required present `{}`. Get's required nonnull object
+payload has optional config list rows, each with optional string base_flag_name,
+integer trinary_admin_value and string value. Existing object-empty-array
+compatibility and known-field filtering remain. Set requires config list rows
+with all three fields required; its optional domain and validate_only retain
+empty/system and false defaults without insertion. The formal empty config list
+is permitted without a server no-op/reset guarantee. Source version 78,
+Web Server role and RAM warnings remain. SQL update requires data list rows whose
+name/remove/section/value fields are optional; native remove is boolean and the
+other fields are strings. Empty data and an empty object row keep distinct wire
+shapes. Version 11.100 and MySQL/MariaDB-role/remote-MySQL restrictions remain.
+Both mutation response schemas declare only metadata, supporting evidence-bound
+void:true; the existing void policy ignores unspecified data and checks the WHM
+Flag outcome, without inventing an opaque result or persistence guarantee.
+
+PHP-FPM samples contradict WHM transport identity with port 2083/cpsess cookies
+and a quoted api.version body field. Set samples also quote trinary values while
+the formal schema declares integers. The implementation retains configured WHM
+routing/authentication, controlled api.version=1 query, the api. root reservation
+and strict formal integers. Native validate_only/remove booleans remain booleans,
+not integer flags. No general enum/range enforcement, no coercion or invented
+server acceptance is added. Whole input bodies use SensitiveParameter; ordered
+members, duplicate rows, omission, false, zero and exact string bytes are preserved.
+
+Only the three exclusions changed in the two WHM overlays. The existing JSON
+compiler/encoder/runner are reused, without a new runtime grammar. A narrow
+family-aware generator PHPDoc branch removes UAPI account-bridge wording from
+WHM JSON methods; UAPI and non-JSON documentation behavior remains unchanged.
+Independent literal fixtures cover exact single POST path/query/header/auth/body,
+empty kinds/default omission, native bool versus int, all required fields and
+strict responses, malformed/late values before I/O, reserved names, privacy,
+metadata/native signature boundaries, API/HTTP/transport/JSON/mismatch failures
+and no retries. Sources, annotations, map checksums and historical evidence stay
+unchanged; this section appends to the existing audit without rewriting it.
+
+Coverage is 1,234 canonical operations (636 UAPI in 95 groups; 598 WHM in 24),
+119 groups and 241 outputs including coverage. WebServer grows 28 to 30 and
+Databases 26 to 27; the 54 prior operation specs/method bodies are preserved.
+Four of thirteen JSON-body operations are typed and nine remain deferred.
+StatsManager remains direct-only and its successful-live-write gates 8x0.1.18 /
+8x0.1.19 stay open; broader selection/source/route audit 8x0.29.6 remains open.
+Separate WHM configuration live follow-up 8x0.2.83 stays OPEN. This is offline
+synthetic evidence only: no live/API/validation-only request, credential, browser,
+server change, INI/SQL evaluation or returned path/URL contact ran. Nothing here
+establishes live acceptance, configuration application/persistence, no-op/reset,
+atomicity or side-effect-free validation. All 55 inherited diagnostics remain
+visible and unwaived; local PHP 8.4 gates do not establish PHP 8.3 CI.

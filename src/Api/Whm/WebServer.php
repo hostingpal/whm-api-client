@@ -86,6 +86,13 @@ use SensitiveParameter;
  *     show_warning?: 0|1,
  *     total_domains?: int,
  * }
+ * @phpstan-type PhpFpmConfigGetResult array{
+ *     config?: list<array{
+ *         base_flag_name?: string,
+ *         trinary_admin_value?: int,
+ *         value?: string,
+ *     }>,
+ * }
  * @phpstan-type PhpGetHandlersResult list<array{
  *     available_handlers?: list<string>,
  *     current_handler?: string,
@@ -129,6 +136,20 @@ use SensitiveParameter;
  * @phpstan-type PhpIniSetDirectivesResult array<array-key, mixed>
  * @phpstan-type PhpSetOldFpmFlagResult array{
  *     success?: 0|1,
+ * }
+ *
+ * @phpstan-type PhpFpmConfigGetInput array{
+ *     domain?: string,
+ * }
+ *
+ * @phpstan-type PhpFpmConfigSetInput array{
+ *     config: list<array{
+ *         base_flag_name: string,
+ *         trinary_admin_value: int,
+ *         value: string,
+ *     }>,
+ *     domain?: string,
+ *     validate_only?: bool,
  * }
  */
 final readonly class WebServer
@@ -478,6 +499,97 @@ final readonly class WebServer
         $result = ($this->run)(WebServerSpec::IS_CONVERSION_IN_PROGRESS, []);
 
         return $result;
+    }
+
+    /**
+     * Documented: Available in cPanel 78 and later; requires the Web Server role. The required empty array
+     * configuration sends a present {}. Omitted domain keeps the source empty default for system configuration;
+     * explicit empty stays supplied. A nonempty local domain selects its configuration. Source get naming/read-only
+     * metadata does not change the required JSON POST.
+     *
+     * Documented: The pinned HTTP samples use port 2083/cpsess cookies and place quoted api.version in the body despite
+     * WHM identity. Retain the configured WHM route/authentication, query routing and reserved body controls; samples
+     * are not live evidence.
+     *
+     * Documented: The required configuration argument is one sensitive JSON object, with source member names,
+     * insertion/list order, duplicates and string bytes preserved. No body field enters the query or form. All api.
+     * root controls remain reserved; the configured WHM route/authentication and api.version=1 query remain in force.
+     * Invalid arrays fail after metadata reset before I/O; native PHP signature errors occur before entry. The client
+     * makes one explicit request, without implicit read, retry, merge, polling, restore, rollback or evaluation/contact
+     * of configuration values. Inspect responseMeta() warnings and raw metadata; API success alone does not establish
+     * application or persistence. Payloads, mismatch payloads and third-party transport traces can expose private
+     * configuration. Offline fixtures establish no live execution or setting behavior; live follow-up 8x0.2.83 remains
+     * open.
+     *
+     * Return PHP-FPM directives and pool options.
+     *
+     * This function retrieves the PHP INI directives and pool options for a system's or domain's PHP-FPM configuration.
+     *
+     * API-map identity: whm1:php_fpm_config_get#POST (wire name php_fpm_config_get; PHP-FPM).
+     *
+     * @param PhpFpmConfigGetInput $configuration Validated whole JSON body. Secrets belong in the body, not URL query
+     *     fields. Direct routes only.
+     * @return PhpFpmConfigGetResult
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If the whole JSON body is invalid or query/root routing names are reserved.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/php-fpm/php-php_fpm_config_get
+     */
+    public function phpFpmConfigGet(
+        #[SensitiveParameter]
+        array $configuration,
+    ): array {
+        /** @var PhpFpmConfigGetResult $result Validated against WebServerSpec::PHP_FPM_CONFIG_GET. */
+        $result = ($this->run)(WebServerSpec::PHP_FPM_CONFIG_GET, ['configuration' => $configuration]);
+
+        return $result;
+    }
+
+    /**
+     * Documented: Available in cPanel 78 and later; requires the Web Server role. This updates system or domain PHP-FPM
+     * configuration and can affect applications. Omitted domain retains the source empty/system default, and explicit
+     * empty stays supplied. Omitted validate_only retains false; explicit false/true remain native JSON booleans.
+     * Validation-only is the documented mode, not proof of no side effects. config: [] is formally valid client input
+     * without a server acceptance, no-op or reset guarantee. Each row requires all three fields; trinary_admin_value
+     * remains a strict integer, with no enum/range enforcement or coercion.
+     *
+     * Documented: The pinned HTTP samples use port 2083/cpsess cookies and place quoted api.version in the body despite
+     * WHM identity. Retain the configured WHM route/authentication, query routing and reserved body controls; samples
+     * are not live evidence. Set samples quote trinary values while the formal schema requires integers. Follow the
+     * formal integer schema, without string coercion or a claim of live acceptance.
+     *
+     * Documented: The pinned response contains metadata only: this method returns void, checks the WHM outcome and
+     * ignores any unspecified data under the existing void policy.
+     *
+     * Documented: The required configuration argument is one sensitive JSON object, with source member names,
+     * insertion/list order, duplicates and string bytes preserved. No body field enters the query or form. All api.
+     * root controls remain reserved; the configured WHM route/authentication and api.version=1 query remain in force.
+     * Invalid arrays fail after metadata reset before I/O; native PHP signature errors occur before entry. The client
+     * makes one explicit request, without implicit read, retry, merge, polling, restore, rollback or evaluation/contact
+     * of configuration values. Inspect responseMeta() warnings and raw metadata; API success alone does not establish
+     * application or persistence. Payloads, mismatch payloads and third-party transport traces can expose private
+     * configuration. Offline fixtures establish no live execution or setting behavior; live follow-up 8x0.2.83 remains
+     * open.
+     *
+     * Update PHP-FPM directives and pool options.
+     *
+     * This function configures the PHP INI directives and pool options for a system's or domain's PHP-FPM
+     * configuration.
+     *
+     * API-map identity: whm1:php_fpm_config_set#POST (wire name php_fpm_config_set; PHP-FPM).
+     *
+     * @param PhpFpmConfigSetInput $configuration Validated whole JSON body. Secrets belong in the body, not URL query
+     *     fields. Direct routes only.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws InvalidArgumentException If the whole JSON body is invalid or query/root routing names are reserved.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/php-fpm/php-php_fpm_config_set
+     */
+    public function phpFpmConfigSet(
+        #[SensitiveParameter]
+        array $configuration,
+    ): void {
+        ($this->run)(WebServerSpec::PHP_FPM_CONFIG_SET, ['configuration' => $configuration]);
     }
 
     /**

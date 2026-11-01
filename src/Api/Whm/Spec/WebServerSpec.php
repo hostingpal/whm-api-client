@@ -272,6 +272,75 @@ final class WebServerSpec
         'unwrap' => 'inProgress',
     ];
 
+    public const PHP_FPM_CONFIG_GET = [
+        'function' => 'php_fpm_config_get',
+        'method' => 'POST',
+        'body' => 'json',
+        'outcome' => 'flag',
+        'json_body' => [
+            'php' => 'configuration',
+            'required' => true,
+            'routes' => 'direct',
+            'schema' => [
+                'type' => 'object',
+                'fields' => [
+                    'domain' => ['type' => 'string'],
+                ],
+            ],
+        ],
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'config' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'base_flag_name' => ['type' => 'string'],
+                            'trinary_admin_value' => ['type' => 'int'],
+                            'value' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const PHP_FPM_CONFIG_SET = [
+        'function' => 'php_fpm_config_set',
+        'method' => 'POST',
+        'body' => 'json',
+        'outcome' => 'flag',
+        'json_body' => [
+            'php' => 'configuration',
+            'required' => true,
+            'routes' => 'direct',
+            'schema' => [
+                'type' => 'object',
+                'fields' => [
+                    'config' => [
+                        'type' => 'list',
+                        'items' => [
+                            'type' => 'object',
+                            'fields' => [
+                                'base_flag_name' => ['type' => 'string'],
+                                'trinary_admin_value' => ['type' => 'int'],
+                                'value' => ['type' => 'string'],
+                            ],
+                            'required' => ['base_flag_name', 'trinary_admin_value', 'value'],
+                        ],
+                    ],
+                    'domain' => ['type' => 'string'],
+                    'validate_only' => ['type' => 'bool'],
+                ],
+                'required' => ['config'],
+            ],
+        ],
+        'params' => [],
+        'returns' => null,
+    ];
+
     public const PHP_GET_DEFAULT_ACCOUNTS_TO_FPM = [
         'function' => 'php_get_default_accounts_to_fpm',
         'method' => 'GET',

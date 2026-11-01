@@ -8,6 +8,7 @@ use Closure;
 use HostingPal\WhmApiClient\Api\Whm\Spec\DatabasesSpec;
 use HostingPal\WhmApiClient\Exception\ApiException;
 use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
+use InvalidArgumentException;
 use SensitiveParameter;
 
 /**
@@ -179,6 +180,15 @@ use SensitiveParameter;
  * }
  * @phpstan-type StartBackgroundMysqlUpgradeResult array{
  *     upgrade_id?: string,
+ * }
+ *
+ * @phpstan-type UpdateSqlConfigInput array{
+ *     data: list<array{
+ *         name?: string,
+ *         remove?: bool,
+ *         section?: string,
+ *         value?: string,
+ *     }>,
  * }
  */
 final readonly class Databases
@@ -1219,5 +1229,43 @@ final readonly class Databases
         $result = ($this->run)(DatabasesSpec::START_BACKGROUND_MYSQL_UPGRADE, ['version' => $version]);
 
         return $result;
+    }
+
+    /**
+     * Documented: Available in cPanel 11.100 and later. Disabled when the MySQL/MariaDB role is disabled and remote
+     * MySQL is not configured. The required data list may be empty and every row field is optional: data: [] sends [],
+     * while data: [[]] sends [{}]. These shapes imply no server acceptance, no-op or atomicity guarantee. remove stays
+     * a native JSON boolean and zero-looking name/section/value values remain strings. No defaults are inserted.
+     *
+     * Documented: The pinned response contains metadata only: this method returns void, checks the WHM outcome and
+     * ignores any unspecified data under the existing void policy.
+     *
+     * Documented: The required configuration argument is one sensitive JSON object, with source member names,
+     * insertion/list order, duplicates and string bytes preserved. No body field enters the query or form. All api.
+     * root controls remain reserved; the configured WHM route/authentication and api.version=1 query remain in force.
+     * Invalid arrays fail after metadata reset before I/O; native PHP signature errors occur before entry. The client
+     * makes one explicit request, without implicit read, retry, merge, polling, restore, rollback or evaluation/contact
+     * of configuration values. Inspect responseMeta() warnings and raw metadata; API success alone does not establish
+     * application or persistence. Payloads, mismatch payloads and third-party transport traces can expose private
+     * configuration. Offline fixtures establish no live execution or setting behavior; live follow-up 8x0.2.83 remains
+     * open.
+     *
+     * Update the servers SQL configuration.
+     *
+     * This function updates the database configuration file for MySQL® or MariaDB®.
+     *
+     * API-map identity: whm1:update_sql_config#POST (wire name update_sql_config; Manage MySQL Server).
+     *
+     * @param UpdateSqlConfigInput $configuration Validated whole JSON body. Secrets belong in the body, not URL query
+     *     fields. Direct routes only.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws InvalidArgumentException If the whole JSON body is invalid or query/root routing names are reserved.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/manage-mysql-server/mysql-update_sql_config
+     */
+    public function updateSqlConfig(
+        #[SensitiveParameter]
+        array $configuration,
+    ): void {
+        ($this->run)(DatabasesSpec::UPDATE_SQL_CONFIG, ['configuration' => $configuration]);
     }
 }

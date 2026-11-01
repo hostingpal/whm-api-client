@@ -361,8 +361,12 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 	if jsonField {
 		w.line(indent + " * @throws InvalidArgumentException If a structured JSON field is invalid; no request is sent.")
 	} else if op.JSONBody != nil {
-		w.line(indent + " * @throws InvalidArgumentException If the whole JSON body is invalid, query/root routing names are reserved,")
-		w.line(indent + " *     or this account handle uses the unsupported WHM bridge.")
+		if g.Family == "uapi" {
+			w.line(indent + " * @throws InvalidArgumentException If the whole JSON body is invalid, query/root routing names are reserved,")
+			w.line(indent + " *     or this account handle uses the unsupported WHM bridge.")
+		} else {
+			w.line(indent + " * @throws InvalidArgumentException If the whole JSON body is invalid or query/root routing names are reserved.")
+		}
 	} else if op.MultipartUpload != nil {
 		w.line(indent + " * @throws InvalidArgumentException If the upload or multipart fields are invalid; no retry occurs.")
 	} else if op.MultipartUploads != nil || op.MultipartUploadFamily != nil {

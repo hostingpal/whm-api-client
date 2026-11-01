@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 119 typed groups cover 1,231 documented operations:
+and cPanel UAPI surface. The 119 typed groups cover 1,234 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -230,8 +230,9 @@ and direct cPanel UAPI; bridged UAPI rejects JSON locally after metadata reset.
 Separate callMultipart() entrypoints stream ordered text/file parts through WHM
 and direct cPanel UAPI; generic bridged multipart rejects before source I/O. The
 pinned inventory includes 13 JSON operations (8 WHM, 5 UAPI) and 9 multipart
-operations (1 WHM, 8 UAPI). StatsManager/save_configuration is the first typed
-JSON-body adopter; the other 12 JSON endpoints remain deferred, with remaining
+operations (1 WHM, 8 UAPI). Four of thirteen JSON-body operations are typed:
+StatsManager/save_configuration and WHM php_fpm_config_get, php_fpm_config_set and
+update_sql_config. The other nine JSON endpoints remain deferred, with remaining
 selection/source/route audit under `whm-api-client-8x0.29.6`. Selected
 implementations and the StatsManager successful-live-write gate remain open under
 `whm-api-client-8x0.1.18` and `whm-api-client-8x0.1.19`. Generic access is not
@@ -567,7 +568,7 @@ well-formed raw direct-JSON requests bypassed this client and were blocked by
 `_can_self_manage` on 11.138.0.19: “You may not modify the weblog analyzer
 configuration”. Passing the gate requires a root/reseller server-wide statistics
 setting change; this work authorizes no such change and ran no live calls.
-Twelve other pinned JSON-body operations remain deferred; remaining
+Nine other pinned JSON-body operations remain deferred; remaining
 selection/source/route audit is tracked under `8x0.29.6`.
 
 Bandwidth grouping remains a pipe-separated scalar string. Domain, protocol
@@ -1186,9 +1187,9 @@ plugin availability and lifecycle behavior. No repeat capture was run merely to
 seek a passing status. SHA-256:
 `c06b329f50f2ebd16ae43d52a7be4afb8b37d0267956d2d557287113209956f3`.
 
-`whm()->databases()` exposes 26 compatible database-administration methods: nine
-explicit reads use GET and seventeen operations use form POST. The JSON
-`update_sql_config` endpoint remains excluded under `8x0.1.18`. Remote profile reads
+`whm()->databases()` exposes all 27 pinned database-administration methods: nine
+explicit reads use GET, seventeen operations use form POST, and `updateSqlConfig()`
+uses a typed JSON POST (see WHM JSON configuration below). Remote profile reads
 marked non-readonly in the pinned source also use POST, and their returned password
 fields remain sensitive payload data.
 
@@ -2380,10 +2381,11 @@ Artifact SHA-256:
 
 ### WHM web-server configuration
 
-`whm()->webServer()` exposes 28 of 30 pinned functions: eighteen GET reads and
-ten form POST operations for EasyApache profiles, PHP/FPM configuration, INI
-content/directives and PHP versions. The two typed FPM JSON-body operations remain
-excluded under `8x0.1.18`.
+`whm()->webServer()` exposes all 30 pinned functions: eighteen GET reads, ten
+form POST operations and two typed JSON POST methods for EasyApache profiles,
+PHP/FPM configuration, INI content/directives and PHP versions.
+`phpFpmConfigGet()` and `phpFpmConfigSet()` use the required JSON body contracts
+in WHM JSON configuration below.
 
 Package, tag and directive lists use repeated wire fields; virtual hosts use the
 reviewed numbered family. `ea4SaveProfile()` omits an explicitly empty optional
@@ -4271,7 +4273,7 @@ raw metadata, including after a mismatch; exception snapshots retain their data
 after later calls. Existing library response-frame protections do not conceal
 caller-readable values, mismatch payloads or third-party transport traces.
 
-Current coverage is 1,221 canonical operations (633 UAPI, 588 WHM), 116 groups
+At LinkedNode delivery, coverage was 1,221 canonical operations (633 UAPI, 588 WHM), 116 groups
 and 235 outputs (234 PHP plus coverage). Delivery `whm-api-client-8x0.4.36` is
 offline synthetic coverage only. Live follow-up `whm-api-client-8x0.2.78` remains
 OPEN; no live POST acceptance, authentication/link changes, login, MCP connectivity
@@ -4354,7 +4356,7 @@ tokens/state or fetch authorization URLs automatically. Synthetic offline tests
 establish no external account/authentication, session/replay/expiry, registration,
 agent/settings, persistence, sign-out or POST acceptance behavior. Live follow-up
 8x0.2.79 remains OPEN; delivery 8x0.4.37 adds seven canonical operations once.
-Current totals are 1,228 operations (633 UAPI, 595 WHM), 117 groups and 237 outputs
+At Monitoring delivery, totals were 1,228 operations (633 UAPI, 595 WHM), 117 groups and 237 outputs
 (236 PHP plus coverage). Original sources/evidence and previous endpoints remain
 unchanged. The original Monitoring delivery changed no shared runtime or
 generator policy. This subsequent filter adoption uses the accepted explicit
@@ -4419,6 +4421,96 @@ payload-field redaction. No implicit login, account switching, probe, URL fetch,
 file access, retry, listening/reachability/TLS/email guarantee or permission check
 is added. These are offline synthetic contracts; live `8x0.2.82` stays OPEN.
 
-Current totals are 1,231 operations (636 UAPI, 595 WHM), 119 groups and 241 outputs
+Current totals are 1,234 operations (636 UAPI, 598 WHM), 119 groups and 241 outputs
 including coverage. All 55 inherited source diagnostics remain visible/unwaived;
 runtime/generator/schema/dependencies/source and historical evidence are unchanged.
+
+
+## WHM JSON configuration
+
+Three generated methods send one JSON POST through the configured WHM route:
+`whm()->webServer()->phpFpmConfigGet(array $configuration): array`,
+`phpFpmConfigSet(array $configuration): void`, and
+`whm()->databases()->updateSqlConfig(array $configuration): void`. Each required
+whole-body array has `SensitiveParameter`, no default and no nullable alternative.
+The input aliases are `PhpFpmConfigGetInput`, `PhpFpmConfigSetInput` and
+`UpdateSqlConfigInput`. Selectors are lazy and cached. The request has exactly
+`Content-Type: application/json` and controlled query `api.version=1`; body fields
+never become query/form fields. All `api.` root controls remain reserved.
+
+PHP-FPM methods require cPanel 78 and the Web Server role. The get method remains
+POST despite its name and source `x-readonly: true`. Its root has only optional
+`domain: string`; `[]` sends the required present `{}`. Omitted domain keeps the
+source empty/system default; an explicit empty string stays supplied. A nonempty
+local domain selects that domain's configuration. The response requires nonnull
+object data with optional `config`, a list of objects with optional string
+`base_flag_name`, integer `trinary_admin_value` and string `value`. Omitted fields,
+empty lists and empty objects remain distinct; existing empty-array object
+compatibility and unknown-field filtering remain. Null or missing root data fails.
+
+The setter requires `config`, a list of objects requiring all three fields:
+`base_flag_name: string`, `trinary_admin_value: int`, `value: string`. Optional
+`domain` is a string and optional `validate_only` is a native bool. Omitted domain
+retains the empty/system default; omitted `validate_only` retains false. Explicit
+false/true encode as JSON booleans, while trinary 0 (pool), 1 (INI ADMIN) and
+2 (INI) remain integers. General enum/range enforcement is unchanged, so other
+integers are type-valid without a server-acceptance promise. `config: []` is
+formally permitted; no no-op or reset behavior is inferred. Setting configuration
+can affect applications. The source recommends at least 2 GB RAM available or
+30 MB per domain before enabling Apache PHP-FPM, to avoid severe performance
+issues. Validation-only is a documented mode, not proof of no side effects.
+
+SQL configuration requires cPanel 11.100; it is disabled when the MySQL/MariaDB
+role is disabled and remote MySQL is not configured. Root `data` is a required
+list whose object rows have only optional `name: string`, `remove: bool`,
+`section: string` and `value: string`. `data: []` sends `[]`, whereas `data: [[]]`
+sends `[{}]`. Native false stays false and zero-looking values remain strings.
+Empty rows/lists imply no server acceptance, no-op or atomicity guarantee.
+
+```php
+// These explicit calls send requests; all values shown are synthetic.
+$system = $client->whm()->webServer()->phpFpmConfigGet(configuration: []);
+$client->whm()->webServer()->phpFpmConfigSet(configuration: [
+    'domain' => 'example.test',
+    'config' => [
+        ['base_flag_name' => 'pm_max_children', 'trinary_admin_value' => 0, 'value' => '10'],
+    ],
+    'validate_only' => true,
+]);
+$client->whm()->databases()->updateSqlConfig(configuration: ['data' => [
+    ['name' => 'max_allowed_packet', 'section' => 'mysqld', 'value' => '268435456', 'remove' => false],
+]]);
+// Inspect responseMeta() warnings and raw metadata after each call.
+```
+
+Both setters return void because the formal responses declare metadata only.
+The existing void policy ignores unspecified data if present and checks normal
+WHM Flag outcomes. Metadata result 0 wins over invalid payload data. Success
+alone does not establish application or persistence. Get payload mismatches after
+result 1 retain confirmed-outcome metadata; callers inspect warnings and snapshots.
+
+The pinned PHP-FPM HTTP samples use port 2083/cpsess cookies and include quoted
+`api.version` in the body despite WHM identity. The client retains its configured
+WHM route/authentication and reserved body controls. Set samples also quote trinary
+values, contradicting the formal integer schema; strict formal integers govern,
+without coercion. Samples are source evidence, not live observations.
+
+Source names, array insertion order, row order/duplicates and string bytes are
+preserved. Unknown members, nulls, wrong native types, non-list/sparse collections,
+objects/resources/JsonSerializable and malformed UTF-8 reject before I/O after
+metadata reset; an invalid last row sends no partial request. PHP signature errors
+occur before method entry and retain the previous snapshot. Whole bodies are
+private. Existing library frames hide sensitive arguments/responses; returned
+configuration, mismatch payloads, raw metadata and caller/third-party transport
+traces still require care. The client evaluates no INI/SQL/path/URL values and adds
+no implicit read, polling, auth/account change, retry, merge, restore or rollback.
+
+Coverage is 1,234 canonical operations (636 UAPI, 598 WHM), 119 groups and
+241 generated outputs. Four of thirteen pinned JSON-body operations now have
+typed methods; nine remain deferred under the broader `8x0.29.6` audit.
+StatsManager stays direct-UAPI-only with its independent successful-live-write
+gates `8x0.1.18`/`8x0.1.19` open. WHM configuration delivery is `8x0.4.39`;
+its separate live follow-up `8x0.2.83` stays OPEN. All fixtures are offline and
+synthetic: no request, validation-only call, server setting or credential access
+ran. No persistent configuration, role enforcement or live acceptance is established.
+All 55 inherited source diagnostics remain visible and unwaived.
