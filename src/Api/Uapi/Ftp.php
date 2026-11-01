@@ -8,6 +8,7 @@ use Closure;
 use HostingPal\WhmApiClient\Api\Uapi\Spec\FtpSpec;
 use HostingPal\WhmApiClient\Exception\ApiException;
 use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
+use InvalidArgumentException;
 use SensitiveParameter;
 
 /**
@@ -442,23 +443,30 @@ final readonly class Ftp
      *
      * Documented: Available in cPanel 11.42 and later. Disabling the FTP role disables this operation.
      *
-     * Documented: Filters are pipe-delimited strings, not arrays. Omitted includeAcctTypes includes all account types;
-     * omitted skipAcctTypes excludes none. Row fields remain optional.
+     * Documented: Filters accept raw pipe-delimited strings or nonempty sequential string lists joined once with |.
+     * List items may be empty but must not contain |; null omits and an empty list rejects. Omitted includeAcctTypes
+     * includes all account types; omitted skipAcctTypes excludes none. Account types remain server-validated; supply
+     * ordinary values without URL pre-encoding. Row fields remain optional.
      *
      * API-map identity: uapi:Ftp/list_ftp#GET (wire name list_ftp).
      *
-     * @param string|null $includeAcctTypes A list of the FTP account types to include in the function's results. Null
-     *     omits it.
-     * @param string|null $skipAcctTypes A list of the FTP account types to exclude from the function's results. Null
-     *     omits it.
+     * @param string|non-empty-list<string>|null $includeAcctTypes A list of the FTP account types to include in the
+     *     function's results. Null omits it.
+     * @param string|non-empty-list<string>|null $skipAcctTypes A list of the FTP account types to exclude from the
+     *     function's results. Null omits it.
      * @return ListFtpResult
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/ftp-accounts/ftp-list_ftp
      */
-    public function listFtp(?string $includeAcctTypes = null, ?string $skipAcctTypes = null): array
-    {
+    public function listFtp(
+        #[SensitiveParameter]
+        string|array|null $includeAcctTypes = null,
+        #[SensitiveParameter]
+        string|array|null $skipAcctTypes = null,
+    ): array {
         /** @var ListFtpResult $result Validated against FtpSpec::LIST_FTP. */
         $result = ($this->run)(FtpSpec::LIST_FTP, [
             'includeAcctTypes' => $includeAcctTypes,
@@ -475,24 +483,32 @@ final readonly class Ftp
      *
      * Documented: Available in cPanel 11.42 and later. Disabling the FTP role disables this operation.
      *
-     * Documented: Filters are pipe-delimited strings. Disk amounts are decimal strings in MB: _diskquota uses 0.00 for
+     * Documented: Filters accept raw pipe-delimited strings or nonempty sequential string lists joined once with |.
+     * List items may be empty but must not contain |; null omits and an empty list rejects. Omitted includeAcctTypes
+     * includes all account types; omitted skipAcctTypes excludes none. Account types remain server-validated; supply
+     * ordinary values without URL pre-encoding. Disk amounts are decimal strings in MB: _diskquota uses 0.00 for
      * unlimited, while diskquota uses unlimited. Preserve optional fields and the nullable htmldir field; zero, empty
      * strings, null and omission are distinct.
      *
      * API-map identity: uapi:Ftp/list_ftp_with_disk#GET (wire name list_ftp_with_disk).
      *
-     * @param string|null $includeAcctTypes A pipe-delimited list of the FTP account types to include in the function's
-     *     results. Null omits it.
-     * @param string|null $skipAcctTypes A pipe-delimited list of the FTP account types to exclude from the function's
-     *     results. Null omits it.
+     * @param string|non-empty-list<string>|null $includeAcctTypes A pipe-delimited list of the FTP account types to
+     *     include in the function's results. Null omits it.
+     * @param string|non-empty-list<string>|null $skipAcctTypes A pipe-delimited list of the FTP account types to
+     *     exclude from the function's results. Null omits it.
      * @return ListFtpWithDiskResult
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/ftp-accounts/ftp-list_ftp_with_disk
      */
-    public function listFtpWithDisk(?string $includeAcctTypes = null, ?string $skipAcctTypes = null): array
-    {
+    public function listFtpWithDisk(
+        #[SensitiveParameter]
+        string|array|null $includeAcctTypes = null,
+        #[SensitiveParameter]
+        string|array|null $skipAcctTypes = null,
+    ): array {
         /** @var ListFtpWithDiskResult $result Validated against FtpSpec::LIST_FTP_WITH_DISK. */
         $result = ($this->run)(FtpSpec::LIST_FTP_WITH_DISK, [
             'includeAcctTypes' => $includeAcctTypes,

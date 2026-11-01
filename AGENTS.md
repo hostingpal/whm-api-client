@@ -188,6 +188,20 @@ grants. Preserve per-method role/version caveats in overlay notes and regenerate
 Mutations use form POST; addFtp password/passHash map to pass/pass_hash and are
 sensitive. Preserve omitted defaults, false/zero, pipe-delimited filters, decimal
 string disk amounts, quota unlimited semantics and optional nullable htmldir.
+Both listFtp() and listFtpWithDisk() accept raw strings or nonempty sequential
+string lists for includeAcctTypes and skipAcctTypes. Lists join once with | into
+the original GET field; preserve order, duplicates, empty items and all other
+bytes. Reject embedded pipes and malformed/empty lists locally after metadata
+reset; null omits, [''] sends empty and ['', 'sub', ''] sends |sub|. Raw scalar
+pipes, %7C and empty strings stay unparsed; query serialization encodes once.
+Omitted include returns all account types; omitted skip excludes none. Do not
+infer an enum, defaults or cross-field validation. All four generated collection
+positions have SensitiveParameter for trace protection without a semantic
+secret flag or POST override. Both direct and bridged calls remain GET; responses,
+counts and all other FTP operations are unchanged. This list convenience has
+only offline evidence. Filter live follow-up 8x0.2.80 remains open, as do existing
+unknown-field/settings follow-ups 8x0.2.10/8x0.2.11 and wider adopter audit 8x0.28.8.
+Historical scalar captures do not establish execution with PHP lists.
 getQuota preserves documented strings and observed finite JSON integers as int|string;
 its evidence-bound root union accepts no float/boolean/null coercion.
 ftpExists returns a nullable opaque payload or API error, not a boolean.
@@ -4290,7 +4304,8 @@ documented section choices and filter/interval relationships remain server
 validation without local enum/range/cross-field guards. Interval without filters
 updates all core/default plugin sections, and maxDataSpan controls batched
 metrics. Source matching-values no-restart behavior is unverified; other changes
-may restart agent360. Ftp and other delimited adopters remain under 8x0.28.8.
+may restart agent360. The four FTP inventory filters also adopt the shared
+delimiter convention; other delimited adopters remain under 8x0.28.8.
 
 Callback is a required sensitive raw string in one form `json` field, encoded
 once, never URL query data or callJson. Preserve JSON bytes/whitespace, unknown

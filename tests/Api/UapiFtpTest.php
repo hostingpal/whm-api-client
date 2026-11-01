@@ -12,11 +12,17 @@ use HostingPal\WhmApiClient\Exception\HttpException;
 use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
 use HostingPal\WhmApiClient\Http\HttpTransport;
 use Http\Mock\Client as MockClient;
+use InvalidArgumentException;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7\Response;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
+use ReflectionMethod;
+use ReflectionParameter;
+use SensitiveParameter;
+use SensitiveParameterValue;
+use TypeError;
 
 /**
  * Independent literal expectations from the pinned Ftp contracts, never generated specs.
@@ -60,6 +66,9 @@ final class UapiFtpTest extends TestCase
                 yield $route . ' ' . $name => [$route, ...$operation];
             }
             foreach (self::optionalArguments() as $name => $operation) {
+                yield $route . ' ' . $name => [$route, ...$operation];
+            }
+            foreach (self::inventoryFilters() as $name => $operation) {
                 yield $route . ' ' . $name => [$route, ...$operation];
             }
             foreach (self::operations() as $name => [$function, $method, $call, $parameters, $payload]) {
@@ -422,6 +431,213 @@ final class UapiFtpTest extends TestCase
             (string) $request->getUri(),
         );
         self::assertCount(2, $http->getRequests());
+    }
+
+    /** @return iterable<string, Operation> */
+    public static function inventoryFilters(): iterable
+    {
+        $cases = [
+            'both lists in reverse named order' => [
+                ['skipAcctTypes' => ['anonymous', 'logaccess'], 'includeAcctTypes' => ['main', 'sub']],
+                'include_acct_types=main%7Csub&skip_acct_types=anonymous%7Clogaccess',
+            ],
+            'include list alone preserves duplicate and empty items' => [
+                ['includeAcctTypes' => ['', 'sub', 'sub', '']], 'include_acct_types=%7Csub%7Csub%7C',
+            ],
+            'skip list alone preserves duplicate and empty items' => [
+                ['skipAcctTypes' => ['', 'sub', 'sub', '']], 'skip_acct_types=%7Csub%7Csub%7C',
+            ],
+            'include list and raw skip string' => [
+                ['includeAcctTypes' => ['main', 'sub'], 'skipAcctTypes' => 'anonymous|logaccess'],
+                'include_acct_types=main%7Csub&skip_acct_types=anonymous%7Clogaccess',
+            ],
+            'raw include string and skip list' => [
+                ['includeAcctTypes' => 'main|sub', 'skipAcctTypes' => ['anonymous', 'logaccess']],
+                'include_acct_types=main%7Csub&skip_acct_types=anonymous%7Clogaccess',
+            ],
+            'include special bytes and null skip' => [
+                ['includeAcctTypes' => [" a+&=%7C/雪\0\xFF", ''], 'skipAcctTypes' => null],
+                'include_acct_types=%20a%2B%26%3D%257C%2F%E9%9B%AA%00%FF%7C',
+            ],
+            'skip special bytes and null include' => [
+                ['includeAcctTypes' => null, 'skipAcctTypes' => [" a+&=%7C/雪\0\xFF", '']],
+                'skip_acct_types=%20a%2B%26%3D%257C%2F%E9%9B%AA%00%FF%7C',
+            ],
+            'leading and trailing empty items for both' => [
+                ['includeAcctTypes' => ['', 'sub', ''], 'skipAcctTypes' => ['', 'sub', '']],
+                'include_acct_types=%7Csub%7C&skip_acct_types=%7Csub%7C',
+            ],
+            'single empty item is supplied for both' => [
+                ['includeAcctTypes' => [''], 'skipAcctTypes' => ['']],
+                'include_acct_types=&skip_acct_types=',
+            ],
+            'both null omit' => [['includeAcctTypes' => null, 'skipAcctTypes' => null], ''],
+            'raw scalar bytes remain unparsed' => [
+                ['skipAcctTypes' => " |%7C+&雪\0\xFF", 'includeAcctTypes' => " |%7C+&雪\0\xFF"],
+                'include_acct_types=%20%7C%257C%2B%26%E9%9B%AA%00%FF'
+                    . '&skip_acct_types=%20%7C%257C%2B%26%E9%9B%AA%00%FF',
+            ],
+            'raw empty scalars are supplied for both' => [
+                ['includeAcctTypes' => '', 'skipAcctTypes' => ''], 'include_acct_types=&skip_acct_types=',
+            ],
+        ];
+        foreach (['listFtp' => 'list_ftp', 'listFtpWithDisk' => 'list_ftp_with_disk'] as $method => $function) {
+            foreach ($cases as $name => [$arguments, $parameters]) {
+                yield "$method $name" => [
+                    $function, 'GET', static fn (Ftp $ftp): mixed => $ftp->{$method}(...$arguments),
+                    $parameters, '[]', [],
+                ];
+            }
+        }
+    }
+
+    /** @return iterable<string, array{string, string, string, array<array-key, mixed>}> */
+    public static function invalidInventoryFilters(): iterable
+    {
+        $positions = [
+            ['listFtp', 'includeAcctTypes'], ['listFtp', 'skipAcctTypes'],
+            ['listFtpWithDisk', 'includeAcctTypes'], ['listFtpWithDisk', 'skipAcctTypes'],
+        ];
+        foreach (['direct', 'bridge'] as $route) {
+            foreach ($positions as [$method, $parameter]) {
+                foreach (['empty' => [], 'embedded pipe' => ['synthetic-private-|item']] as $name => $value) {
+                    yield "$route $method $parameter $name" => [$route, $method, $parameter, $value];
+                }
+            }
+            $representative = [
+                'sparse' => [1 => 'synthetic-private-item'],
+                'keyed' => ['synthetic-private-key' => 'synthetic-private-item'],
+                'null item' => ['synthetic-private-item', null],
+                'integer item' => ['synthetic-private-item', 1],
+                'boolean item' => ['synthetic-private-item', false],
+                'nested item' => ['synthetic-private-item', ['synthetic-private-nested']],
+                'late pipe' => ['synthetic-private-first', 'synthetic-private-second', 'synthetic-private-|last'],
+            ];
+            foreach (array_values($representative) as $index => $value) {
+                [$method, $parameter] = $positions[$index % count($positions)];
+                yield "$route representative $index" => [$route, $method, $parameter, $value];
+            }
+        }
+    }
+
+    /** @param array<array-key, mixed> $value */
+    #[DataProvider('invalidInventoryFilters')]
+    public function testInvalidInventoryFilterResetsMetadataBeforeIoAndProtectsActualMethodArguments(
+        string $route,
+        string $method,
+        string $parameter,
+        array $value,
+    ): void {
+        [$client, $http] = self::client($route);
+        $account = $client->uapi('exampleuser');
+        $http->addResponse(new Response(200, [], self::envelope($route, 'list_ftp', '[]')));
+        $account->ftp()->listFtp();
+        self::assertNotNull($account->responseMeta());
+        $arguments = ['includeAcctTypes' => ['synthetic-private-include'],
+            'skipAcctTypes' => ['synthetic-private-skip']];
+        $arguments[$parameter] = $value;
+        $previous = ini_get('zend.exception_ignore_args');
+        ini_set('zend.exception_ignore_args', '0');
+        try {
+            try {
+                $account->ftp()->{$method}(...$arguments);
+                self::fail('An invalid inventory filter must fail locally.');
+            } catch (InvalidArgumentException $error) {
+                self::assertNull($account->responseMeta());
+                self::assertStringNotContainsString('synthetic-private-', $error->getMessage());
+                $seenMethod = false;
+                foreach ($error->getTrace() as $frame) {
+                    $class = $frame['class'] ?? '';
+                    if (
+                        str_starts_with($class, 'HostingPal\\WhmApiClient\\')
+                        && !str_contains($class, '\\Tests\\')
+                    ) {
+                        self::assertPrivateValueAbsent($frame['args'] ?? []);
+                        if ($class === Ftp::class && $frame['function'] === $method) {
+                            $seenMethod = true;
+                            self::assertInstanceOf(SensitiveParameterValue::class, ($frame['args'] ?? [])[0] ?? null);
+                            self::assertInstanceOf(SensitiveParameterValue::class, ($frame['args'] ?? [])[1] ?? null);
+                        }
+                    }
+                }
+                self::assertTrue($seenMethod, 'The real generated FTP method frame must be present.');
+            }
+        } finally {
+            ini_set('zend.exception_ignore_args', $previous === false ? '1' : $previous);
+        }
+        self::assertCount(1, $http->getRequests());
+    }
+
+    /** @return iterable<string, array{string, string, array<string, mixed>}> */
+    public static function wrongNativeInventoryFilters(): iterable
+    {
+        foreach (['direct', 'bridge'] as $route) {
+            foreach (['listFtp', 'listFtpWithDisk'] as $method) {
+                foreach (['includeAcctTypes' => 1, 'skipAcctTypes' => false] as $parameter => $value) {
+                    yield "$route $method $parameter" => [$route, $method, [$parameter => $value]];
+                }
+            }
+        }
+    }
+
+    /** @param array<string, mixed> $arguments */
+    #[DataProvider('wrongNativeInventoryFilters')]
+    public function testWrongNativeInventoryFilterFailsBeforeEntryAndMetadataReset(
+        string $route,
+        string $method,
+        array $arguments,
+    ): void {
+        [$client, $http] = self::client($route);
+        $account = $client->uapi('exampleuser');
+        $http->addResponse(new Response(200, [], self::envelope($route, 'list_ftp', '[]')));
+        $account->ftp()->listFtp();
+        $previous = $account->responseMeta();
+        self::assertNotNull($previous);
+        try {
+            $account->ftp()->{$method}(...$arguments);
+            self::fail('A wrong native filter type must fail before entry.');
+        } catch (TypeError) {
+            self::assertSame($previous, $account->responseMeta());
+        }
+        self::assertCount(1, $http->getRequests());
+    }
+
+    public function testInventoryFilterSignaturesRetainOrderDefaultsAndCollectionTraceProtection(): void
+    {
+        foreach (['listFtp', 'listFtpWithDisk'] as $name) {
+            $method = new ReflectionMethod(Ftp::class, $name);
+            self::assertSame('array', (string) $method->getReturnType());
+            self::assertSame(0, $method->getNumberOfRequiredParameters());
+            self::assertSame(['includeAcctTypes', 'skipAcctTypes'], array_map(
+                static fn (ReflectionParameter $parameter): string => $parameter->getName(),
+                $method->getParameters(),
+            ));
+            foreach ($method->getParameters() as $parameter) {
+                self::assertSame('array|string|null', (string) $parameter->getType());
+                self::assertNull($parameter->getDefaultValue());
+                self::assertCount(1, $parameter->getAttributes(SensitiveParameter::class));
+                self::assertStringContainsString(
+                    '@param string|non-empty-list<string>|null $' . $parameter->getName(),
+                    (string) $method->getDocComment(),
+                );
+            }
+        }
+    }
+
+    private static function assertPrivateValueAbsent(mixed $value): void
+    {
+        if ($value instanceof SensitiveParameterValue) {
+            return;
+        }
+        if (is_array($value)) {
+            foreach ($value as $key => $item) {
+                self::assertPrivateValueAbsent($key);
+                self::assertPrivateValueAbsent($item);
+            }
+        }
+        if (is_string($value)) {
+            self::assertStringNotContainsString('synthetic-private-', $value);
+        }
     }
 
     private static function assertRequest(

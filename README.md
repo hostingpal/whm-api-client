@@ -170,8 +170,8 @@ $underQuota = $quota['under_quota_overall'] ?? null; // 0|1, or absent.
 
 // FTP account inventory, daemon capabilities and quota values.
 $ftp = $account->ftp();
-$ftpAccounts = $ftp->listFtp(includeAcctTypes: 'sub');
-$ftpDiskUsage = $ftp->listFtpWithDisk(includeAcctTypes: 'main|sub');
+$ftpAccounts = $ftp->listFtp(includeAcctTypes: ['sub'], skipAcctTypes: ['anonymous']);
+$ftpDiskUsage = $ftp->listFtpWithDisk(includeAcctTypes: ['main', 'sub'], skipAcctTypes: ['logaccess']);
 $ftpDaemon = $ftp->getFtpDaemonInfo(); // cPanel 54+; enabled and supports flags are 0|1.
 $ftpQuota = $ftp->getQuota(account: 'deploy', domain: 'example.com'); // int|string
 
@@ -255,6 +255,17 @@ account's primary domain, and an omitted `homedir` defaults to a directory with
 the same name as the FTP account. `getQuota()` preserves documented strings and
 observed finite integers; inventory disk amounts are decimal strings in MB, and `_diskquota` uses `0.00` for unlimited while
 `diskquota` uses `unlimited`. Optional fields and explicit `htmldir: null` stay distinct.
+
+`listFtp()` and `listFtpWithDisk()` accept ordinary nonempty string lists for
+both `includeAcctTypes` and `skipAcctTypes`, joining each list with `|` into its
+original query field. Raw strings such as `'main|sub'` remain compatible and
+unparsed; supply ordinary values without URL pre-encoding. List order, duplicates,
+spaces and empty items are preserved; sparse/keyed lists, non-string items and
+items containing `|` reject locally. Null omits a filter, `[]` rejects, `['']`
+sends an empty value and `['', 'sub', '']` sends `|sub|`. Omitted include returns
+all account types; omitted skip excludes none. Type names remain server-validated.
+Both methods retain one GET on direct UAPI and the WHM bridge. The new list
+convenience is offline-tested; live follow-up `whm-api-client-8x0.2.80` stays open.
 
 ```php
 $ftp->addFtp(user: 'deploy', password: $ftpPassword, domain: 'example.com',
@@ -4590,9 +4601,9 @@ spaces and empty strings; a comma inside any list item is rejected before I/O.
 `,cpu,`. Null omits an optional argument; empty scalar strings and integer zero
 remain supplied. Positive timing values, documented section choices and the
 interval/filter relationship are server requirements, without local enum, range
-or cross-field guards. Array support here covers only these two Monitoring
-filters; Ftp and other delimited adopters remain separate work under
-`whm-api-client-8x0.28.8`.
+or cross-field guards. These two Monitoring filters use the shared delimiter
+convention also adopted by the four FTP inventory filters described above. Other
+delimited adopters remain separate work under `whm-api-client-8x0.28.8`.
 
 Auth start needs an existing intended WHM session for callers outside browser
 sessions, notably API-token and Basic callers. This client has no browser-session

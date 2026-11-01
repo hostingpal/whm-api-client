@@ -8094,3 +8094,67 @@ changes. Source diagnostics remain visible and unwaived. This is offline input
 coverage only: no live/API/SSH/browser/DNS/credential, account/authentication,
 agent/settings, implicit polling, retry or URL action ran. Live 8x0.2.79 stays
 OPEN; remaining delimited adopters, including Ftp, stay under 8x0.28.8.
+
+
+## 2026-11-01 — FTP pipe-list inventory filter adoption (8x0.28.8.1)
+
+The complete four-field slice adopts the accepted explicit delimited collection
+convention from PR #113 at `9d840cd1ee9c0565dcfc024002a72a879c943186` for both
+`includeAcctTypes` and `skipAcctTypes` on `listFtp()` and `listFtpWithDisk()`.
+The original decompressed cPanel source SHA256 was independently verified as
+`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`.
+Exact source bindings are:
+
+- `/paths/~1Ftp~1list_ftp/get/parameters/0` (`include_acct_types`).
+- `/paths/~1Ftp~1list_ftp/get/parameters/1` (`skip_acct_types`).
+- `/paths/~1Ftp~1list_ftp_with_disk/get/parameters/0` (`include_acct_types`).
+- `/paths/~1Ftp~1list_ftp_with_disk/get/parameters/1` (`skip_acct_types`).
+
+Each is an optional concrete nonnullable string with explicit pipe-separated
+prose. Four doc evidence entries retain those source schemas and add only client
+array convenience: `kind: delimited`, `item_type: string`, `allow_scalar: true`,
+`empty: reject`, `delimiter: '|'`. Omitted include includes all account types;
+omitted skip excludes none. The documented anonymous/logaccess/main/sub names
+remain server-validated strings. Browser `%7C` prose does not request caller
+pre-encoding; ordinary query serialization encodes once.
+
+Generated arguments are `string|array|null = null`, with
+`string|non-empty-list<string>|null` PHPDoc and SensitiveParameter on all four
+positions. Lists must be nonempty/sequential strict strings. They join once into
+the original field, preserving order, duplicates, spaces, empty strings, Unicode,
+binary and URL-special bytes; embedded pipes reject. Scalar strings retain all
+bytes, including existing pipes, literal `%7C` and empty strings. Whole null omits,
+`[]` rejects, `['']` supplies empty and `['', 'sub', '']` supplies `|sub|`.
+There is no enum/range/cross-field/default inference, sorting, trimming,
+deduplication, splitting or pre-encoding. Trace protection does not classify
+inventory filters as secret-bearing and adds no transport override.
+
+Both inventory methods retain exactly one read-only GET on direct UAPI and the
+WHM bridge, the selected account route, metadata behavior, cPanel 11.42 floor and
+FTP-role caveat. All response contracts remain unchanged, including optional row
+fields, decimal-string MB disk amounts, unlimited rules and nullable htmldir.
+The other 18 Ftp operation overlays and specs remain unchanged. Only Ftp.php and
+FtpSpec.php are regenerated; coverage.md stays byte-identical at 1,228 canonical
+operations, 117 groups and 237 outputs. No shared runtime/generator/schema,
+dependency, pinned source or historical capture changes.
+
+Synthetic PSR transport tests cover both methods/all four positions, independent
+and combined lists, mixed scalar/list calls, named-argument order, duplicates,
+empty items, exact encoded bytes, null omission and raw scalar compatibility on
+direct/bare/bridged envelopes. They assert GET, original query fields, empty body,
+authentication/account routing and one request. Invalid cases cover empty lists
+and embedded pipes for every position/route, with representative sparse/keyed,
+null/int/bool/nested and late-invalid items. Warmed metadata clears before local
+InvalidArgumentException, with no second request; native scalar type failures
+retain pre-entry metadata. Reflection checks actual generated signatures,
+defaults/order/PHPDoc/attributes, while enabled exception arguments demonstrate
+protected actual generated frames without a vacuous trace assertion.
+
+This is offline-only input coverage. Historical FTP captures remain immutable;
+their scalar/source acceptance is not relabeled as PHP-list execution. No live
+API, SSH, credential, browser, DNS, URL, FTP connection, account/session or server
+action ran. Filter-specific live follow-up `whm-api-client-8x0.2.80` remains OPEN.
+Existing unknown-field/settings live gaps `8x0.2.10` and `8x0.2.11` remain OPEN and
+unchanged; parent `8x0.28.8` remains OPEN for the wider remaining-adopter audit.
+All 55 inherited source diagnostics remain visible and unwaived. Local PHP8.4.26
+gates do not establish exact-head PHP8.3 CI or successful live compatibility.
