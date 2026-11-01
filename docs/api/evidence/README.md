@@ -1286,10 +1286,13 @@ catalog, pending certificates, DCV constraints and login URL. The pending list i
 empty and observes no row fields. The login URL was not followed.
 
 Certificate status details, certificate availability, product information and
-completion URL did not run, because no real order or product-name selector exists on
-this server. Their absence is a recorded decision, not a failure or a pass. No
-purchase, payment, issuance, installation, trust or served TLS behavior is
-established. SHA-256:
+completion URL did not run, because no read available here enumerated an order item
+or a product name. The empty pending list covers only certificates the system
+currently polls, so it does not show that no order exists. Review 5725042192 also
+reports missing local product files and a completion URL failure on token
+authentication, so a real selector may not be enough for those two. Their absence is
+a recorded decision, not a failure or a pass. No purchase, payment, issuance,
+installation, trust or served TLS behavior is established. SHA-256:
 `4a9ec4fffec130ee099b63cb2f86c24482b332a8101995828426745bdb70da51`.
 
 The [no-match audit capture](2026-11-01-empty-results.json) at

@@ -21,6 +21,12 @@ use Psr\Http\Message\RequestInterface;
 /** @phpstan-import-type Context from EvidenceRunner */
 final class MarketReadsProbesTest extends TestCase
 {
+    private const ROOT = __DIR__ . '/../../..';
+
+    private const ARTIFACT = '2026-11-01-market-reads.json';
+
+    private const CAPTURE_REVISION = 'eba1711a62e71d614a50cb5eeb2259aa00adbbea';
+
     private const LOGIN_QUERY = 'provider=cPStore'
         . '&url_after_login=http%3A%2F%2Fhostname.example.com%2Fredirectionlocation.cgi%3Fstate';
 
@@ -39,6 +45,9 @@ final class MarketReadsProbesTest extends TestCase
         . '"dcv_max_redirects":0,"dcv_user_agent_string":"Synthetic DCV"}';
 
     private const LOGIN_URL = '"https://synthetic.example/login?access_token=PRIVATETOKEN"';
+
+    /** @var array<mixed>|null */
+    private static ?array $uapi = null;
 
     public function testCatalogExecutesOnlyElevenExactAccountBoundGetRequests(): void
     {
@@ -101,15 +110,41 @@ final class MarketReadsProbesTest extends TestCase
 
     public function testLoginRedirectIsThePinnedExampleEncodedOnce(): void
     {
+        self::assertSame(
+            'url_after_login',
+            self::pinned('paths', '/Market/get_login_url', 'get', 'parameters', 1, 'name'),
+        );
+        $example = self::pinned('paths', '/Market/get_login_url', 'get', 'parameters', 1, 'schema', 'example');
         $query = [];
         parse_str(self::LOGIN_QUERY, $query);
 
-        self::assertSame([
-            'provider' => 'cPStore',
-            'url_after_login' => 'http://hostname.example.com/redirectionlocation.cgi?state',
-        ], $query);
-        self::assertSame($query['url_after_login'], MarketReadsProbes::URL_AFTER_LOGIN);
-        self::assertSame($query['provider'], MarketReadsProbes::PROVIDER);
+        self::assertSame(['provider' => MarketReadsProbes::PROVIDER, 'url_after_login' => $example], $query);
+        self::assertSame($example, MarketReadsProbes::URL_AFTER_LOGIN);
+    }
+
+    public function testPinnedReadOnlyMarketOperationsAreExactlyTheCapturedAndNotRunOperations(): void
+    {
+        $paths = self::pinned('paths');
+        self::assertIsArray($paths);
+        $readOnly = [];
+        foreach (array_keys($paths) as $path) {
+            self::assertIsString($path);
+            if (str_starts_with($path, '/Market/') && self::pinned('paths', $path, 'get', 'x-readonly') === true) {
+                $readOnly[] = 'uapi:Market/' . substr($path, strlen('/Market/'));
+            }
+        }
+
+        $catalogued = array_keys(MarketReadsProbes::NOT_RUN);
+        foreach (MarketReadsProbes::load() as $probe) {
+            if ($probe->operation !== 'whm1:version') {
+                $catalogued[] = $probe->operation;
+            }
+        }
+        self::assertCount(9, $readOnly);
+        self::assertSame(self::sorted($readOnly), self::sorted(array_values(array_unique($catalogued))));
+        foreach (['get_build_cart_url', 'get_license_info'] as $function) {
+            self::assertFalse(self::pinned('paths', '/Market/' . $function, 'get', 'x-readonly'));
+        }
     }
 
     public function testBeadReadsPartitionIntoCapturedAndNotRunOperations(): void
@@ -129,10 +164,10 @@ final class MarketReadsProbesTest extends TestCase
             'uapi:Market/get_providers_list',
         ], self::sorted(array_keys($captured)));
         self::assertSame([
-            'uapi:Market/get_certificate_status_details' => 'no-pending-order',
-            'uapi:Market/get_completion_url' => 'no-known-product-name',
-            'uapi:Market/get_product_info' => 'no-known-product-name',
-            'uapi:Market/get_ssl_certificate_if_available' => 'no-pending-order',
+            'uapi:Market/get_certificate_status_details' => 'no-enumerated-order-item',
+            'uapi:Market/get_completion_url' => 'no-known-product-name-and-reported-token-url-failure',
+            'uapi:Market/get_product_info' => 'no-known-product-name-and-reported-missing-product-files',
+            'uapi:Market/get_ssl_certificate_if_available' => 'no-enumerated-order-item',
         ], MarketReadsProbes::NOT_RUN);
         self::assertSame([], array_intersect_key($captured, MarketReadsProbes::NOT_RUN));
     }
@@ -168,11 +203,76 @@ final class MarketReadsProbesTest extends TestCase
         $privateValues = [
             'PRIVATETOKEN', 'PRIVATECSR', 'BEGIN CERTIFICATE', 'synthetic.example', 'private-identity-value',
             'private-extra-key', 'private-identity-key', 'private-person', 'private-domain.example', '8675309',
-            'Synthetic Certificate', 'private-whm-token', 'private-cpanel-token',
+            'Synthetic Certificate', 'private-whm-token', 'private-cpanel-token', 'Synthetic label', 'Synthetic Store',
+            'Synthetic DCV', '.well-known/pki-validation', '123.45', 'hostname.example.com', 'synthetic',
+            'access_token',
         ];
         foreach ($privateValues as $private) {
             self::assertStringNotContainsString($private, $json);
         }
+        $leaves = [];
+        array_walk_recursive($report, static function (mixed $leaf) use (&$leaves): void {
+            $leaves[] = $leaf;
+        });
+        // These could match inside a recorded hash, so they are compared with whole values instead.
+        foreach (['176', '1', '0', 'a', 'txt', '32', 1, 0, 32] as $short) {
+            self::assertNotContains($short, $leaves);
+        }
+    }
+
+    /**
+     * Bind the immutable artifact to the committed catalog by identity and to the hash the documentation records.
+     *
+     * The artifact stays a valid historical record when a catalogued spec changes, so no current spec hash is compared.
+     * This proves only artifact-to-catalog identity and the recorded hashes, not compatibility with the current
+     * contract, and it stays offline: no ordinary spec change needs a new capture to keep it green.
+     */
+    public function testCommittedArtifactMatchesTheCatalogIdentityAndTheRecordedHash(): void
+    {
+        $bytes = file_get_contents(self::ROOT . '/docs/api/evidence/' . self::ARTIFACT);
+        self::assertIsString($bytes);
+        $hash = hash('sha256', $bytes);
+        $audit = file_get_contents(self::ROOT . '/docs/api/source-audit.md');
+        self::assertIsString($audit);
+        self::assertStringContainsString(
+            '| `market-reads-v1` | [Market reads](evidence/' . self::ARTIFACT . ') | 11 | `' . $hash . '` |',
+            $audit,
+        );
+        self::assertStringContainsString('`' . self::CAPTURE_REVISION . '`', $audit);
+        foreach (['docs/api/evidence/README.md', 'tools/live-verify/README.md'] as $document) {
+            $contents = file_get_contents(self::ROOT . '/' . $document);
+            self::assertIsString($contents);
+            self::assertStringContainsString('`' . $hash . '`', $contents);
+        }
+
+        $artifact = json_decode($bytes, true, flags: JSON_THROW_ON_ERROR);
+        self::assertIsArray($artifact);
+        $section = $artifact['read_only_section'] ?? null;
+        self::assertIsArray($section);
+        self::assertSame('market-reads-v1', $section['recipe'] ?? null);
+        self::assertSame('passed', $section['status'] ?? null);
+        $records = $section['probes'] ?? null;
+        self::assertIsList($records);
+
+        // A probe exposes its method only through its spec, so the catalog's fixed GET is stated here instead.
+        $catalog = [];
+        foreach (MarketReadsProbes::load() as $probe) {
+            $catalog[] = [$probe->operation, $probe->route, 'GET'];
+        }
+        // This dated snapshot is immutable: `sources refresh` writes a new directory and never replaces this one.
+        $whm = hash('sha256', self::source('whm.openapi.json.gz'));
+        $uapi = hash('sha256', self::source('cpanel.openapi.json.gz'));
+        $identity = [];
+        foreach ($records as $record) {
+            self::assertIsArray($record);
+            $route = $record['route'] ?? null;
+            $identity[] = [$record['operation'] ?? null, $route, $record['method'] ?? null];
+            self::assertSame('passed', $record['probe_outcome'] ?? null);
+            self::assertSame([], $record['discrepancies'] ?? null);
+            self::assertSame(self::CAPTURE_REVISION, $record['revision'] ?? null);
+            self::assertSame($route === 'whm' ? $whm : $uapi, $record['source_sha256'] ?? null);
+        }
+        self::assertSame($catalog, $identity);
     }
 
     public function testEmptyPendingListPassesButObservesNoRowFields(): void
@@ -188,6 +288,35 @@ final class MarketReadsProbesTest extends TestCase
         foreach ([5, 6] as $index) {
             self::assertSame(['$' => ['empty-list']], $report['probes'][$index]['payload_paths']);
         }
+    }
+
+    /** Read one pointer from the pinned UAPI source, which is what the catalog constants claim to follow. */
+    private static function pinned(string|int ...$pointer): mixed
+    {
+        if (self::$uapi === null) {
+            $document = json_decode(self::source('cpanel.openapi.json.gz'), true, flags: JSON_THROW_ON_ERROR);
+            self::assertIsArray($document);
+            self::$uapi = $document;
+        }
+        $node = self::$uapi;
+        foreach ($pointer as $key) {
+            self::assertIsArray($node);
+            self::assertArrayHasKey($key, $node);
+            $node = $node[$key];
+        }
+
+        return $node;
+    }
+
+    /** Decompress one pinned source. Its hash covers these bytes, as evidence provenance does. */
+    private static function source(string $file): string
+    {
+        $compressed = file_get_contents(self::ROOT . '/docs/api/sources/2026-10-13/' . $file);
+        self::assertIsString($compressed);
+        $json = gzdecode($compressed);
+        self::assertIsString($json);
+
+        return $json;
     }
 
     /**

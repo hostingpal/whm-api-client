@@ -21,6 +21,12 @@ use Psr\Http\Message\RequestInterface;
 /** @phpstan-import-type Context from EvidenceRunner */
 final class WebmailInventoryProbesTest extends TestCase
 {
+    private const ROOT = __DIR__ . '/../../..';
+
+    private const ARTIFACT = '2026-11-01-webmail-inventory.json';
+
+    private const CAPTURE_REVISION = 'eba1711a62e71d614a50cb5eeb2259aa00adbbea';
+
     private const SESSION_ROW = '{"ip_address":"192.0.2.10","is_current":1,"is_possessed":0,'
         . '"last_active":1700000000,"login_theme":"jupiter","tfa_verified":0}';
 
@@ -109,10 +115,73 @@ final class WebmailInventoryProbesTest extends TestCase
         self::assertSame(['int'], $report['probes'][1]['payload_paths']['$[].is_current']);
         $json = json_encode($report, JSON_THROW_ON_ERROR);
         $privateValues = ['cpsessPRIVATETOKEN', 'synthetic.example', '192.0.2.10', 'private-whm-token',
-            'private-cpanel-token', 'Synthetic Mail', 'jupiter'];
+            'private-cpanel-token', 'Synthetic Mail', 'jupiter', '/synthetic/icon.svg', 'synthetic', '1700000000'];
         foreach ($privateValues as $private) {
             self::assertStringNotContainsString($private, $json);
         }
+        $leaves = [];
+        array_walk_recursive($report, static function (mixed $leaf) use (&$leaves): void {
+            $leaves[] = $leaf;
+        });
+        // These could match inside a recorded hash, so they are compared with whole values instead.
+        foreach (['1', '0', 1, 0] as $short) {
+            self::assertNotContains($short, $leaves);
+        }
+    }
+
+    /**
+     * Bind the immutable artifact to the committed catalog by identity and to the hash the documentation records.
+     *
+     * The artifact stays a valid historical record when a catalogued spec changes, so no current spec hash is compared.
+     * This proves only artifact-to-catalog identity and the recorded hashes, not compatibility with the current
+     * contract, and it stays offline: no ordinary spec change needs a new capture to keep it green.
+     */
+    public function testCommittedArtifactMatchesTheCatalogIdentityAndTheRecordedHash(): void
+    {
+        $bytes = file_get_contents(self::ROOT . '/docs/api/evidence/' . self::ARTIFACT);
+        self::assertIsString($bytes);
+        $hash = hash('sha256', $bytes);
+        $audit = file_get_contents(self::ROOT . '/docs/api/source-audit.md');
+        self::assertIsString($audit);
+        self::assertStringContainsString(
+            '| `webmail-inventory-v1` | [Webmail inventory](evidence/' . self::ARTIFACT . ') | 5 | `' . $hash . '` |',
+            $audit,
+        );
+        self::assertStringContainsString('`' . self::CAPTURE_REVISION . '`', $audit);
+        foreach (['docs/api/evidence/README.md', 'tools/live-verify/README.md'] as $document) {
+            $contents = file_get_contents(self::ROOT . '/' . $document);
+            self::assertIsString($contents);
+            self::assertStringContainsString('`' . $hash . '`', $contents);
+        }
+
+        $artifact = json_decode($bytes, true, flags: JSON_THROW_ON_ERROR);
+        self::assertIsArray($artifact);
+        $section = $artifact['read_only_section'] ?? null;
+        self::assertIsArray($section);
+        self::assertSame('webmail-inventory-v1', $section['recipe'] ?? null);
+        self::assertSame('passed', $section['status'] ?? null);
+        $records = $section['probes'] ?? null;
+        self::assertIsList($records);
+
+        // A probe exposes its method only through its spec, so the catalog's fixed GET is stated here instead.
+        $catalog = [];
+        foreach (WebmailInventoryProbes::load() as $probe) {
+            $catalog[] = [$probe->operation, $probe->route, 'GET'];
+        }
+        // This dated snapshot is immutable: `sources refresh` writes a new directory and never replaces this one.
+        $whm = self::sourceHash('whm.openapi.json.gz');
+        $uapi = self::sourceHash('cpanel.openapi.json.gz');
+        $identity = [];
+        foreach ($records as $record) {
+            self::assertIsArray($record);
+            $route = $record['route'] ?? null;
+            $identity[] = [$record['operation'] ?? null, $route, $record['method'] ?? null];
+            self::assertSame('passed', $record['probe_outcome'] ?? null);
+            self::assertSame([], $record['discrepancies'] ?? null);
+            self::assertSame(self::CAPTURE_REVISION, $record['revision'] ?? null);
+            self::assertSame($route === 'whm' ? $whm : $uapi, $record['source_sha256'] ?? null);
+        }
+        self::assertSame($catalog, $identity);
     }
 
     public function testEmptySessionListPassesButObservesNoRowFields(): void
@@ -147,6 +216,17 @@ final class WebmailInventoryProbesTest extends TestCase
         }
 
         return $http;
+    }
+
+    /** Hash one pinned source over its decompressed bytes, as evidence provenance does. */
+    private static function sourceHash(string $file): string
+    {
+        $compressed = file_get_contents(self::ROOT . '/docs/api/sources/2026-10-13/' . $file);
+        self::assertIsString($compressed);
+        $json = gzdecode($compressed);
+        self::assertIsString($json);
+
+        return hash('sha256', $json);
     }
 
     /** @return Context */

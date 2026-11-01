@@ -9004,7 +9004,9 @@ cleaning them needs filesystem access. The creators stay open under `8x0.2.69`.
 Market reads covers five of the nine reads in `8x0.2.63`. All nine are
 `x-readonly: true` at their `/paths/~1Market~1<function>/get` pointers. That includes
 `get_login_url` and `get_completion_url`, so neither is excluded as a possible token
-or URL source. Selector availability decides instead:
+or URL source. Selector availability decides instead, and `get_product_info` and
+`get_completion_url` also carry a reported blocker that a real selector would not
+clear:
 
 | Operation | Outcome | Selector basis |
 | --- | --- | --- |
@@ -9013,17 +9015,33 @@ or URL source. Selector availability decides instead:
 | `get_pending_ssl_certificates` | Passed; empty list | Real provider `cPStore` |
 | `get_provider_specific_dcv_constraints` | Passed; populated object | Real provider `cPStore` |
 | `get_login_url` | Passed; string payload | Real provider plus the pinned `url_after_login` example |
-| `get_certificate_status_details` | Not run | No pending order, so no real `order_item_id` |
-| `get_ssl_certificate_if_available` | Not run | No pending order, so no real `order_item_id` |
-| `get_product_info` | Not run | No read enumerates a real `product_name` |
-| `get_completion_url` | Not run | No read enumerates a real `product_name` |
+| `get_certificate_status_details` | Not run | No read enumerated a real `order_item_id` |
+| `get_ssl_certificate_if_available` | Not run | No read enumerated a real `order_item_id` |
+| `get_product_info` | Not run | No read enumerates a real `product_name`; missing local product files reported |
+| `get_completion_url` | Not run | No read enumerates a real `product_name`; URL failure reported on token authentication |
+
+Across both pinned sources, the only read that returns `order_item_id` is
+`get_pending_ssl_certificates`. It lists only certificates the system currently
+polls, so its empty list shows an empty polling queue, not that no order exists: a
+completed or expired order could hold a real ID.
 
 `url_after_login` selects no server resource. The recipe sends the pinned parameter
 example on a reserved domain, and the returned URL was not followed. The pinned
-`product_name` example, `cpanel-ssl`, does not appear in this server's catalog, and
-the pinned source states no mapping from the catalog's `product` display labels to
-`product_name`. Trying either value would be a guess, and a failure could not
-separate a wrong selector from the reviewer-reported missing local product files.
+`product_name` example, `cpanel-ssl`, was not among the catalog labels the private
+read printed. That read printed no other catalog field and the artifact stores types
+only, so this was not a search of the whole catalog. The pinned source states no
+mapping from the catalog's `product` display labels to `product_name`. Trying either
+value would be a guess, and a failure could not separate a wrong selector from the
+reviewer-reported missing local product files.
+
+Review 5725042192 reports both blockers on this server, and neither was rerun here.
+Upstream reads `/var/cpanel/market/product_info/<name>`, which does not exist, so
+both real IDs the reviewer tried raised an API error and inspecting store product
+files offers no selector. `get_completion_url` failed on token authentication through
+both routes because server information was unavailable from the environment, as the
+generated `Market::getCompletionUrl()` PHPDoc records. That does not establish
+universal token or route incompatibility, but a real `product_name` may not be enough.
+
 `MarketReadsProbes::NOT_RUN` records each reason. The section runner fails any
 catalog that holds a skipped probe, so the artifact lists only observations made.
 
@@ -9031,15 +9049,17 @@ Selectors came from one private direct-route read before the catalog was written
 `get_providers_list`, `get_all_products` and `get_pending_ssl_certificates` for
 `cPStore`, one GET each. It printed only provider names, catalog labels and the
 pending count, stored nothing, and is not evidence. Both capture routes then
-returned an empty pending list, so the no-order finding held at capture time.
+returned an empty pending list, so the empty polling queue held at capture time.
 
 The catalog shows `license_term`, `product_id` and `requires_ip` as numeric strings,
-the three wildcard prices as numeric strings or omitted, identity verification as
-list or null, and `dcv_file_allowed_characters` mixing integers and strings. This
-adds committed evidence for the PR96 corrections. Catalog `base_name` was an empty
-string in every row, and `max_users` and all three price fields were null, so
-non-null values remain unobserved. So do the object identity branch, populated
-pending rows, and both certificate-status payloads.
+the three `x_price_per_domain*` prices as integers, the three
+`x_price_per_wildcard_domain*` prices as numeric strings or omitted, identity
+verification as list or null, and `dcv_file_allowed_characters` mixing integers and
+strings. This adds committed evidence for the PR96 corrections. Catalog `base_name`
+was an empty string in every row, and `max_users`, `price`, `maximum_server_price`
+and `minimum_server_price` were null in every row, so other values of those fields
+remain unobserved. So do the object identity branch, populated pending rows, and both
+certificate-status payloads.
 
 These reads establish no purchase, payment, issuance, installation, trust or served
 TLS behavior. No POST, order, cart, checkout, queue, certificate or token action ran,
