@@ -131,6 +131,29 @@ final class FilemanUploadFixtureTest extends TestCase
         self::assertSame(0, $record['uapi_status']);
     }
 
+    /** Generic calls run no ShapeValidator, so their records claim none; the discrepancy review still reads them. */
+    public function testOnlyTypedCallsClaimPayloadValidation(): void
+    {
+        $scenario = self::scenario(new FilemanUploadServer());
+        foreach ($scenario['probes'] as $record) {
+            $generic = in_array($record['phase'], ['home_initial', 'upload_raw', 'home_final'], true);
+            self::assertSame($generic ? 'not_checked' : 'passed', $record['payload_validation'], $record['phase']);
+        }
+        self::assertSame('passed', $scenario['discrepancy_review']['status']);
+    }
+
+    public function testGenericShapeSurpriseStillReachesTheStrictReview(): void
+    {
+        $http = new FilemanUploadServer();
+        $http->overrides[self::UPLOAD . ':4'] = (string) json_encode([
+            'uploads' => [['file' => 'private', 'reason' => 1, 'size' => 1, 'status' => 1, 'warnings' => []]],
+            'succeeded' => 1, 'failed' => 0, 'warned' => 0,
+        ]);
+        $scenario = self::scenario($http);
+        self::assertSame('not_checked', self::observation($scenario, 'upload_raw')['payload_validation']);
+        self::assertContains('unacknowledged_discrepancy:upload_raw', $scenario['discrepancy_review']['findings']);
+    }
+
     public function testTheLargeRequestReallyStreamsInBoundedReads(): void
     {
         $transfer = self::scenario(new FilemanUploadServer())['uploads']['upload_success']['transfer'];

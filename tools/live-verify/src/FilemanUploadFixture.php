@@ -434,7 +434,7 @@ final class FilemanUploadFixture
                 null,
                 'uapi:Fileman/upload_files#POST',
                 str_replace('_', '-', $phase),
-            ), $direct);
+            ), $direct, $surface === 'typed');
         } finally {
             $this->guard->clearPending();
         }
@@ -716,7 +716,7 @@ final class FilemanUploadFixture
             null,
             null,
             'home-presence',
-        ), $direct));
+        ), $direct, false));
         $this->expect(isset($rows['public_html']));
         $webroot = FilemanUploadRecipe::HOME . '/public_html';
         $this->expect(($rows['public_html']['fullpath'] ?? $webroot) === $webroot);
@@ -797,11 +797,13 @@ final class FilemanUploadFixture
     }
 
     /**
-     * Capture one generated call through the shared runner, keeping its result in memory for expectations.
+     * Capture one call through the shared runner, keeping its result in memory for expectations.
      *
-     * The runner clears prior capture and never retries; the record carries only structural evidence.
+     * The runner clears prior capture and never retries; the record carries only structural evidence. It reports
+     * validation passed for any call that returned, but only a typed call has a validator, so a generic call's record
+     * says not_checked. Structural discrepancies from the same response still reach the strict review.
      */
-    private function observe(string $phase, Probe $probe, Client $client): mixed
+    private function observe(string $phase, Probe $probe, Client $client, bool $validated = true): mixed
     {
         $result = null;
         $invoke = $probe->invoke;
@@ -818,6 +820,9 @@ final class FilemanUploadFixture
             $probe->argumentVariant,
         );
         $record = $this->runner->capture($wrapped, $this->capture, $client);
+        if (!$validated) {
+            $record['payload_validation'] = 'not_checked';
+        }
         $metadata = $probe->route === 'direct-uapi' ? $client->uapi()->responseMeta() : null;
         $this->records[] = [...$record, 'phase' => $phase, 'uapi_status' => $metadata?->uapiStatus(),
             'expectation' => $record['probe_outcome'] === 'passed' ? 'passed' : 'not_checked'];
@@ -825,9 +830,9 @@ final class FilemanUploadFixture
         return $result;
     }
 
-    private function succeed(string $phase, Probe $probe, Client $client): mixed
+    private function succeed(string $phase, Probe $probe, Client $client, bool $validated = true): mixed
     {
-        $result = $this->observe($phase, $probe, $client);
+        $result = $this->observe($phase, $probe, $client, $validated);
         $this->passed();
 
         return $result;

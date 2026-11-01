@@ -12,7 +12,9 @@ use HostingPal\WhmApiClient\Api\Whm\Spec\ServerSpec;
  *
  * Original records are never altered. Every phase must appear once, in order, with its reviewed contract, a successful
  * outcome, a passed expectation and no discrepancy. An all-failed upload is an expected status-0 row batch, so its
- * record is judged by the same rule: the typed client must return it normally rather than raise.
+ * record is judged by the same rule: the typed client must return it normally rather than raise. Typed phases must
+ * report passed payload validation. The generic phases must report not_checked, because no ShapeValidator runs on them;
+ * their structural discrepancies are held to the same rule as every other phase.
  *
  * @phpstan-import-type Context from EvidenceRunner
  * @phpstan-import-type Observation from FilemanUploadFixture
@@ -31,6 +33,9 @@ final class FilemanUploadEvidence
         'delete_bytes', 'delete_cursor', 'delete_path', 'delete_partial', 'delete_raw', 'delete_empty',
         'inventory_empty', 'delete_directory', 'home_final',
     ];
+
+    /** Phases sent through generic call() or callMultipart(), which run no ShapeValidator. */
+    private const GENERIC_PHASES = ['home_initial', 'upload_raw', 'home_final'];
 
     /**
      * The reviewed contract of one phase; delete_file is pinned as GET and sent as POST by its generated spec.
@@ -127,8 +132,10 @@ final class FilemanUploadEvidence
     /** @param Observation $record */
     private static function successful(array $record): bool
     {
+        $validation = in_array($record['phase'], self::GENERIC_PHASES, true) ? 'not_checked' : 'passed';
+
         return $record['probe_outcome'] === 'passed' && $record['api_outcome'] === 'success'
-            && $record['payload_validation'] === 'passed' && $record['expectation'] === 'passed'
+            && $record['payload_validation'] === $validation && $record['expectation'] === 'passed'
             && $record['failure_kind'] === null && $record['http_status'] !== null
             && $record['http_status'] >= 200 && $record['http_status'] < 300;
     }
