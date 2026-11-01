@@ -192,11 +192,36 @@ names PHP would convert to integer array keys on a supported platform, including
 canonical signed decimal integers within the 64-bit range. String-preserving names
 such as `01`, `+1`, `-0`, `1.0` and integers outside that range retain their spelling.
 Unknown members reject unless `additionalProperties` supplies an explicit supported
-value schema; integer caller keys remain invalid.
+value schema; integer caller keys remain invalid in ordinary maps. Literal
+`additionalProperties: true` or exactly `{}` on an explicitly typed object selects
+an internal `json` value node. This exception applies only to that additional-value
+position in an already source-bound input; empty/untyped roots, properties, items,
+unresolved references and nonempty untyped additional schemas remain errors.
 
-A required body has a required native array argument. WHM JSON body specs must
+The `json` node intrinsically accepts null, strict bool/int, finite float, UTF-8
+string, `JsonObject` and `JsonList`. Bare arrays reject in this position; nested
+containers require explicit descriptors. It cannot participate in disjoint scalar
+unions. Known object arrays with `values.type=json` additionally accept `JsonObject`,
+including numeric names through `fromEntries()`, while all declared fields retain
+their requiredness/types. Closed objects, typed-value maps and known list schemas
+remain array-only. Generated PHPDoc preserves field shapes plus the `JsonObject`
+alternative; native open-object arguments use `array|JsonObject`, avoiding weak-mode
+scalar coercion. No source type lowers to a whole-body `json` root.
+
+Factories only tag contents; member names, entry/list shapes, duplicate names,
+UTF-8, finite numbers and depth validate inside the operation after metadata reset.
+Descriptors are readonly wrappers with normal PHP reference semantics, not deep
+snapshots. Runtime traversal shares the 511-container budget across known and
+explicit containers and bounds reference cycles. Optional JSON-valued fields still
+cannot have a null-accepting root; `json` intrinsically accepts null even without
+`nullable: true`. See the [explicit-value design](../superpowers/specs/2026-11-01-explicit-json-values-design.md).
+This foundation selects no new endpoints and establishes no live compatibility.
+
+A required body has a required native array argument (or `array|JsonObject` for
+unrestricted additional values). WHM JSON body specs must
 be required: omission would lose API1 root routing. Optional direct-UAPI objects use
-`?array $body = null`: null or omission means absence, while `[]` sends `{}`.
+`?array $body = null` (or `array|JsonObject|null` for an open object): null or
+omission means absence, while `[]` or an empty `JsonObject` sends `{}`.
 A present body sets exactly `Content-Type: application/json`; absence sends no
 bytes or JSON Content-Type. Scalar, list, null and nullable-object whole-body specs
 fail with exact `LogicException` before input validation or I/O. Nested schema
@@ -224,7 +249,7 @@ references bind corrections to the resolved source-node pointer. Cross-document
 input corrections fail until their separate provenance can be represented.
 
 Generation fails for missing formal types, ambiguous container alternatives,
-unsupported composition, binary input, unschematized additional values, exhausted
+unsupported composition, binary input, unsupported additional schemas, exhausted
 nesting budgets, non-object or nullable roots, query parameters, and any declared
 reserved root members (optional or required).
 The request grammar accepts up to 511 object/list containers, independently of the

@@ -8,6 +8,9 @@ use HostingPal\WhmApiClient\Client;
 use HostingPal\WhmApiClient\Exception\ApiErrorException;
 use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
 use HostingPal\WhmApiClient\Http\HttpTransport;
+use HostingPal\WhmApiClient\JsonList;
+use HostingPal\WhmApiClient\JsonObject;
+use HostingPal\WhmApiClient\Tests\Fixtures\StrictJsonCaller;
 use Http\Mock\Client as MockClient;
 use InvalidArgumentException;
 use Nyholm\Psr7\Factory\Psr17Factory;
@@ -182,6 +185,95 @@ final class TypedJsonBodyTest extends TestCase
             if ($prior !== false) {
                 ini_set('zend.exception_ignore_args', $prior);
             }
+        }
+    }
+
+
+    public function testExplicitOpenObjectsRetainRoutingReservationsAndResetBeforeContentValidation(): void
+    {
+        $schema = ['type' => 'object', 'fields' => [], 'values' => ['type' => 'json']];
+        foreach ([false, true] as $direct) {
+            [$client, $http] = self::client($direct);
+            $handle = $direct ? $client->uapi() : $client->whm();
+            $run = (new ReflectionMethod($handle, 'run'))->getClosure($handle);
+            $spec = self::spec($direct, true, $schema);
+            $reservations = ['api.', 'api.version', 'api.future',
+                ...($direct ? ['cpanel.user', 'cpanel.module', 'cpanel.function'] : [])];
+            foreach ($reservations as $reserved) {
+                foreach ([false, true] as $entries) {
+                    $http->addResponse(self::success($direct));
+                    $run($spec, ['configuration' => JsonObject::fromArray([])]);
+                    self::assertNotNull($handle->responseMeta());
+                    $before = count($http->getRequests());
+                    $bad = $entries ? JsonObject::fromEntries([['name' => $reserved, 'value' => null]])
+                        : JsonObject::fromArray([$reserved => null]);
+                    self::assertNotNull($handle->responseMeta(), 'Factory content checks must wait for the attempt.');
+                    try {
+                        $run($spec, ['configuration' => $bad]);
+                        self::fail('Reserved root member accepted.');
+                    } catch (InvalidArgumentException) {
+                        self::assertNull($handle->responseMeta());
+                        self::assertCount($before, $http->getRequests());
+                    }
+                }
+            }
+            $http->addResponse(self::success($direct));
+            $run($spec, ['configuration' => JsonObject::fromArray([
+                'nested' => JsonObject::fromEntries([['name' => 'api.future', 'value' => null]]),
+                'Api.version' => 0,
+            ])]);
+            $request = $http->getRequests()[count($http->getRequests()) - 1];
+            self::assertSame(
+                ($direct ? '{' : '{"api.version":1,') . '"nested":{"api.future":null},"Api.version":0}',
+                (string) $request->getBody(),
+            );
+            foreach (
+                [StrictJsonCaller::factory(JsonList::class, 'fromArray', [1 => 'private-value']),
+                JsonObject::fromEntries([['name' => 'private-name', 'value' => []]]),
+                StrictJsonCaller::factory(JsonObject::class, 'fromEntries', [['name' => 'private-name']])] as $bad
+            ) {
+                $http->addResponse(self::success($direct));
+                $run($spec, ['configuration' => []]);
+                $before = count($http->getRequests());
+                try {
+                    $run($spec, ['configuration' => ['late' => $bad]]);
+                    self::fail('Invalid nested explicit content accepted.');
+                } catch (InvalidArgumentException $error) {
+                    self::assertNull($handle->responseMeta());
+                    self::assertCount($before, $http->getRequests());
+                    self::assertStringNotContainsString('private-', $error->getMessage());
+                }
+            }
+        }
+    }
+
+    public function testOptionalOpenObjectAndBridgePoliciesRemainUnchanged(): void
+    {
+        $schema = ['type' => 'object', 'fields' => [], 'values' => ['type' => 'json']];
+        [$client, $http] = self::client(true);
+        $handle = $client->uapi();
+        $run = (new ReflectionMethod($handle, 'run'))->getClosure($handle);
+        foreach ([null, JsonObject::fromArray([]), []] as $value) {
+            $http->addResponse(self::success(true));
+            $run(self::spec(true, false, $schema), ['configuration' => $value]);
+            $request = $http->getRequests()[count($http->getRequests()) - 1];
+            self::assertSame($value === null ? '' : '{}', (string) $request->getBody());
+        }
+        [$client, $http] = self::client(false);
+        $handle = $client->uapi('alpha');
+        $http->addResponse(new Response(200, [], '{"metadata":{"result":1},"data":{"uapi":{"status":1,"data":7}}}'));
+        $handle->call('Example', 'read');
+        self::assertNotNull($handle->responseMeta());
+        try {
+            (new ReflectionMethod($handle, 'run'))->invoke(
+                $handle,
+                self::spec(true, true, $schema),
+                ['configuration' => JsonObject::fromArray([])],
+            );
+            self::fail('Bridged JSON accepted.');
+        } catch (InvalidArgumentException) {
+            self::assertNull($handle->responseMeta());
+            self::assertCount(1, $http->getRequests());
         }
     }
 

@@ -1,5 +1,11 @@
 # Structured JSON inputs and the callJson escape hatch
 
+Amendment: the [2026-11-01 explicit JSON value design](2026-11-01-explicit-json-values-design.md)
+supersedes general object rejection only for explicit `JsonObject`/`JsonList`
+descriptors in reviewed unrestricted positions, and `JsonObject` on objects with
+unrestricted additional values. Known schemas, raw calls, root/routing restrictions
+and source evidence gates retain their contracts. This foundation adopts no endpoint.
+
 Date: 2026-10-31 (Europe/Belgrade). Status: the user approved structured PHP inputs
 for typed methods and an explicit low-level `callJson()` escape hatch for raw JSON.
 This document records that decision and the engineering rules needed to implement
