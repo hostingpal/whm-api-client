@@ -311,7 +311,7 @@ final class FilemanUploadFixture
                     permissions: FilemanUploadRecipe::PERMISSIONS,
                 ),
                 ['bytes', 'cursor', 'path'],
-                0,
+                null,
                 1,
                 $direct,
             );
@@ -342,7 +342,7 @@ final class FilemanUploadFixture
                 permissions: FilemanUploadRecipe::PERMISSIONS,
             ),
             ['partial'],
-            1,
+            'bytes',
             1,
             $direct,
         );
@@ -359,7 +359,7 @@ final class FilemanUploadFixture
                 permissions: FilemanUploadRecipe::PERMISSIONS,
             ),
             [],
-            1,
+            'cursor',
             0,
             $direct,
         );
@@ -375,7 +375,7 @@ final class FilemanUploadFixture
                 ['dir' => $recipe->directory, 'overwrite' => 0, 'permissions' => FilemanUploadRecipe::PERMISSIONS],
             )->data,
             ['raw'],
-            0,
+            null,
             1,
             $direct,
         );
@@ -397,7 +397,7 @@ final class FilemanUploadFixture
                 permissions: FilemanUploadRecipe::PERMISSIONS,
             ),
             ['empty'],
-            0,
+            null,
             1,
             $direct,
         );
@@ -412,13 +412,14 @@ final class FilemanUploadFixture
      * @param 'typed'|'generic' $surface
      * @param Closure(Client): mixed $send
      * @param list<Label> $stored
+     * @param Label|null $refused The one file this batch offers for refusal, if any.
      */
     private function upload(
         string $phase,
         string $surface,
         #[SensitiveParameter] Closure $send,
         array $stored,
-        int $refused,
+        ?string $refused,
         int $status,
         Client $direct,
     ): void {
@@ -461,7 +462,7 @@ final class FilemanUploadFixture
         $summary = $this->uploads[$phase];
         $this->expect(
             $observed === $status && $rows['stored'] && $rows['refused']
-            && $summary['succeeded'] === count($stored) && $summary['failed'] === $refused
+            && $summary['succeeded'] === count($stored) && $summary['failed'] === ($refused === null ? 0 : 1)
             && in_array($summary['warned'], [0, null], true)
             && ($phase !== 'upload_success' || $summary['diskinfo'] === 'present')
             && self::deliveredExactly($delivery),
@@ -469,17 +470,19 @@ final class FilemanUploadFixture
     }
 
     /**
-     * Match stored rows by exact name, then require every remaining row to be a refusal with a reason.
+     * Match stored rows by exact name, then require the one remaining row, if any, to be this batch's refusal.
      *
      * The source promises one entry per file but no order. A refusal proves nothing about ownership, so its
-     * optional name need only agree when present.
+     * optional name need only agree when present, but then it must be the exact name this batch offered.
      *
      * @param list<Label> $stored
+     * @param Label|null $refused
      * @return array{stored: bool, refused: bool}
      */
-    private function rowFindings(#[SensitiveParameter] mixed $rows, array $stored, int $refused): array
+    private function rowFindings(#[SensitiveParameter] mixed $rows, array $stored, ?string $refused): array
     {
-        if (!is_array($rows) || !array_is_list($rows) || count($rows) !== count($stored) + $refused) {
+        $refusals = $refused === null ? 0 : 1;
+        if (!is_array($rows) || !array_is_list($rows) || count($rows) !== count($stored) + $refusals) {
             return ['stored' => false, 'refused' => false];
         }
         $storedExact = true;
@@ -493,12 +496,13 @@ final class FilemanUploadFixture
                 && ($row['warnings'] ?? []) === [];
             $rows = array_diff_key($rows, $matching);
         }
-        $refusedExact = count($rows) === $refused;
+        $refusedExact = count($rows) === $refusals;
+        $offered = $refused === null ? null : $this->recipe->names[$refused];
         foreach ($rows as $row) {
             $reason = is_array($row) ? ($row['reason'] ?? null) : null;
             $refusedExact = $refusedExact && is_array($row) && ($row['status'] ?? null) === 0
                 && ($row['size'] ?? null) === null && is_string($reason) && $reason !== ''
-                && (!array_key_exists('file', $row) || in_array($row['file'], $this->recipe->names, true));
+                && (!array_key_exists('file', $row) || $row['file'] === $offered);
         }
 
         return ['stored' => $storedExact, 'refused' => $refusedExact];

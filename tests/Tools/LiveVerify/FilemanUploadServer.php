@@ -51,6 +51,9 @@ final class FilemanUploadServer implements ClientInterface
     /** How an upload row reports a stored zero-byte file; listings report it as an empty string on this server. */
     public mixed $emptyRowSize = 0;
 
+    /** Label of another fixture file that a refused row names, in place of the file actually offered. */
+    public ?string $refusedRowLabel = null;
+
     /** @var array<string, int> */
     public array $counts = [];
 
@@ -277,7 +280,9 @@ final class FilemanUploadServer implements ClientInterface
             $name = $match[1];
             $bytes = substr($segment, strlen($match[0]), -2);
             if (isset($this->directories[$directory][$name]) && !$overwrite && $this->honorOverwrite) {
-                $rows[] = ['file' => $name, 'reason' => 'private upstream refusal', 'size' => null, 'status' => 0];
+                $reported = $this->refusedRowLabel === null ? $name
+                    : $this->refusedRowLabel . substr($name, (int) strpos($name, '-'));
+                $rows[] = ['file' => $reported, 'reason' => 'private upstream refusal', 'size' => null, 'status' => 0];
                 continue;
             }
             $this->directories[$directory][$name] = $bytes;

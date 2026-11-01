@@ -974,6 +974,41 @@ final class FilemanUploadFixtureTest extends TestCase
         self::assertSame('passed', $scenario['fixture']['status']);
     }
 
+    /** Another real fixture name is still not the name this batch offered for refusal. */
+    #[DataProvider('misnamedRefusals')]
+    public function testRefusedRowNamingAnotherFixtureFileStopsTheRun(string $label, string $phase, int $uploads): void
+    {
+        $http = new FilemanUploadServer();
+        $http->refusedRowLabel = $label;
+        $scenario = self::scenario($http);
+        self::assertFalse($scenario['uploads'][$phase]['refused_rows_exact']);
+        self::assertSame($phase, $scenario['fixture']['stopped_at']);
+        self::assertContains('expectation_failure', $scenario['fixture']['failures']);
+        self::assertSame($uploads, $http->counts[self::UPLOAD]);
+        self::assertFalse($http->account);
+        self::assertPrivate($scenario);
+    }
+
+    /** @return iterable<string, array{string, string, int}> */
+    public static function misnamedRefusals(): iterable
+    {
+        yield 'names a stored file of this batch' => ['partial', 'upload_partial', 2];
+        yield 'names the refusal of a later batch' => ['cursor', 'upload_partial', 2];
+        yield 'names a file not yet uploaded' => ['empty', 'upload_partial', 2];
+        // The partial batch does offer this name, so only the exact name of each batch can stop the next one.
+        yield 'names the refusal of an earlier batch' => ['bytes', 'upload_all_failed', 3];
+    }
+
+    public function testRefusedRowMayOmitItsOptionalName(): void
+    {
+        $http = new FilemanUploadServer();
+        $http->overrides[self::UPLOAD . ':3'] = '{"uploads":[{"reason":"private refusal","size":null,"status":0}],'
+            . '"succeeded":0,"failed":1,"warned":0}';
+        $scenario = self::scenario($http);
+        self::assertTrue($scenario['uploads']['upload_all_failed']['refused_rows_exact']);
+        self::assertSame('passed', $scenario['fixture']['status']);
+    }
+
     public function testServerOverwriteDespiteDisabledOverwriteStopsAtTheUnexpectedRows(): void
     {
         $http = new FilemanUploadServer();
