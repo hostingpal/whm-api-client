@@ -7323,3 +7323,81 @@ schema copies and historical audit text are preserved. All 55 inherited pinned
 source diagnostics remain unwaived. Delivery and live verification are separate:
 `8x0.2.70` and the full API goal remain OPEN; offline tests establish no live POST,
 rebuild, routing, persistence or backend reachability behavior.
+
+
+## 2026-11-01: SiteQuality account and project lifecycle (10/13)
+
+The additive SiteQuality overlay and official generated group/spec expose ten
+canonical operations: create_project, create_site_quality_user,
+delete_site_quality_user, get_app_token, has_site_quality_user,
+is_site_quality_user_enabled, reset_config, send_activation_email, update_domain
+and verify_code. The source is the unchanged 2026-10-13 pinned UAPI OpenAPI
+11.138.0.10, decompressed SHA-256
+`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`.
+Each operation binds its selected variant and policy to exact source pointers.
+All ten are available from cPanel 110 and apply to the selected account.
+
+Three reads retain source GET, including get_app_token because its credential is
+a response rather than an input. Source POST variants remain POST for project
+creation, user creation and domain update. Client policy uses form POST for the
+selected GET account deletion/reset/activation-email mutations and the
+secret-bearing activation code. Ordinary Flag envelope handling is unchanged;
+integer deleted/reset/status/etc 0 under status 1 is a payload result. Outer WHM
+failure retains precedence. Each explicit method runs once with no implicit read,
+retry, polling, account action, email, login, token exchange/storage, URL fetch,
+restore or rollback. Registration/account and activation-email requests can have
+upstream side effects; this delivery does not observe them.
+
+Inputs preserve requiredness, null omission, empty strings and exact encoded
+bytes. Optional standardAlerting is bool|null under the established flag input
+mapping; false sends 0, true sends 1 and null omits. Its pinned null default means
+no standard alerts. Omitted systemType retains Website and strings remain open.
+Optional sensitive password omission leaves generation to the server; the source
+says the system does not save this value. Empty password remains a supplied value.
+URL/password/code are sensitive inputs; ordinary email/domain inputs remain
+ordinary. updateDomain intentionally follows public oldDomain/newDomain semantic
+order and sends old_domain/new_domain in that order, preserving the formal wire
+names although source parameters are formally ordered new_domain/old_domain.
+The server searches owned projects; no client loop is added.
+
+Every response root is a nonnullable object with optional fields; no response
+correction, void, unwrap or optional-payload policy is applied. Create-user
+enabled is native bool|null, while the status read uses an integer 0|1 flag.
+Project systems retain optional string|null description, native bool
+fixedComponents and formally untyped mixed system_type.id. The example/default
+1 on that ID establishes no integer type. Nested optional objects/lists, empty
+lists and absent versus explicit-null values preserve the formal source shape.
+The established object validator also accepts an empty JSON array as an empty
+map/object; the decoder still distinguishes JSON {} from []. Unknown members
+follow existing known-field validation/filtering; no opaque widening is added.
+Long-lived app_token values authenticate with koality; pinned text says a lost
+token requires a new account. They and returned URLs are payload data only.
+Library frames conceal input/response secrets; explicit mismatch payloads and
+upstream metadata can still contain private data and must not be logged.
+
+Delete initiates external-account deletion, with no immediate-completion promise.
+Reset removes local association/configuration and prevents automatic login while
+retaining the external account. sendActivationEmail is an explicit request, and
+verifyCode validates the registration code without initiating another email.
+Warnings/raw metadata remain accessible without proving external persistence,
+email delivery, monitoring, account activation or token usability.
+
+The remaining three methods are absent and uncounted: formal monitored_domains
+and system_scores arrays lie outside result.data (8x0.1.34), and required nullable
+verbose on get_all_scores lacks established explicit-null form serialization
+(8x0.1.35). No source relocation or bool-only narrowing is guessed. Live follow-up
+8x0.2.71 and the full API goal remain OPEN; SiteQuality is not complete or live
+verified. Independent literal HTTP-boundary fixtures cover both routes, exact
+method/auth/path/query/form/header, named/positional ordering, optional/empty/
+unusual-byte inputs, strict nested fields, bool/flag/mixed distinctions, root
+shape/presence, metadata replacement/reset, native-before-entry errors, actual
+transport/HTTP/JSON/outer-WHM/API/payload precedence, secret-bearing frames and
+one attempt without implicit email/retry.
+
+Generated coverage becomes 1,201 canonical operations (613 UAPI, 588 WHM), 105
+groups and 213 outputs (212 PHP plus coverage). Prior generated PHP, accessors,
+overlays and effective contracts remain unchanged except the additive cached
+siteQuality accessor and coverage row/counts. Pinned sources, evidence, checksum,
+schema copies and all historical audit text are preserved. All 55 inherited
+source diagnostics remain unwaived. PHP 8.3 is the supported minimum; local
+execution uses PHP 8.4.26, leaving PHP 8.3 execution to CI.

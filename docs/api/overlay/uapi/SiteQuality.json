@@ -1,0 +1,473 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "SiteQuality",
+  "accessor": "siteQuality",
+  "description": "Selected-account Site Quality Monitoring account, project, token, status and activation operations (10 of 13 pinned functions), available from cPanel 110. Token-bearing responses are sensitive payload data. Single request only; no implicit email, polling, login, URL fetch, retry or rollback. Offline source-backed coverage only: live follow-up whm-api-client-8x0.2.71 remains open. get_monitored_domains/get_monitored_system_scores result locations remain gated under whm-api-client-8x0.1.34; get_all_scores required nullable verbose serialization remains gated under whm-api-client-8x0.1.35. SiteQuality is incomplete.",
+  "operations": {
+    "uapi:SiteQuality/create_project": {
+      "name": "createProject",
+      "method": "POST",
+      "order": [
+        "name",
+        "url",
+        "standard_alerting",
+        "system_type"
+      ],
+      "params": {
+        "url": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 110 and later; operates on the selected cPanel account. Response roots are nonnullable objects with optional fields. Omission is distinct from explicit null; only documented nullable fields accept null. Payload flags do not replace UAPI envelope status. Inspect responseMeta() warnings and raw metadata."
+        },
+        {
+          "kind": "documented",
+          "text": "Creates a monitoring project that bundles URLs sharing a domain. Optional standardAlerting is bool|null: false sends 0, true sends 1, null omits; the pinned null default means no standard alerts. Omitted systemType retains the Website default; supplied strings stay open. URL input is sensitive and is never fetched or locally format-validated. Empty strings remain values. The nested system_type.id is formally untyped (mixed), not inferred from its example/default 1. fixedComponents is a native bool; optional description is string|null. Preserve nested presence, list order and empty systems."
+        },
+        {
+          "kind": "policy",
+          "text": "One explicit request and one attempt only. No implicit read, retry, polling, account action, activation email, login, token exchange, URL fetch, restore or rollback. Returned URLs, tokens and data are payload only; API success alone does not establish external application or persistence. Avoid logging token-bearing responses or PayloadMismatchException::$payload."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "2026-10-13 pinned UAPI OpenAPI 11.138.0.10",
+          "date": "2026-11-01",
+          "note": "Selected POST source variant; preserve its transport method.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1SiteQuality~1create_project/post"
+        },
+        {
+          "kind": "doc",
+          "version": "2026-10-13 pinned UAPI OpenAPI 11.138.0.10",
+          "date": "2026-11-01",
+          "note": "Creates a monitoring project that bundles URLs sharing a domain. Optional standardAlerting is bool|null: false sends 0, true sends 1, null omits; the pinned null default means no standard alerts. Omitted systemType retains the Website default; supplied strings stay open. URL input is sensitive and is never fetched or locally format-validated. Empty strings remain values. The nested system_type.id is formally untyped (mixed), not inferred from its example/default 1. fixedComponents is a native bool; optional description is string|null. Preserve nested presence, list order and empty systems.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1SiteQuality~1create_project/post/description"
+        },
+        {
+          "kind": "doc",
+          "version": "2026-10-13 pinned UAPI OpenAPI 11.138.0.10",
+          "date": "2026-11-01",
+          "note": "The monitored URL is a string input; preserve exact bytes and mark it sensitive without fetching it.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1SiteQuality~1create_project/post/parameters/1"
+        },
+        {
+          "kind": "doc",
+          "version": "2026-10-13 pinned UAPI OpenAPI 11.138.0.10",
+          "date": "2026-11-01",
+          "note": "Optional nullable integer enum [0,1,null] uses existing bool|null input mapping: null omits and false/true serialize 0/1, retaining optionality and pinned null default.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1SiteQuality~1create_project/post/parameters/2"
+        },
+        {
+          "kind": "doc",
+          "version": "2026-10-13 pinned UAPI OpenAPI 11.138.0.10",
+          "date": "2026-11-01",
+          "note": "Optional system_type is an open string with Website default; no closed enum is inferred.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1SiteQuality~1create_project/post/parameters/3"
+        },
+        {
+          "kind": "doc",
+          "version": "2026-10-13 pinned UAPI OpenAPI 11.138.0.10",
+          "date": "2026-11-01",
+          "note": "Preserve the complete formal object with optional fields, nullable string description, native bool fixedComponents and formally untyped system_type.id. Examples/defaults do not establish an integer type.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1SiteQuality~1create_project/post/responses/200/content/application~1json/schema/properties/result/properties/data"
+        }
+      ]
+    },
+    "uapi:SiteQuality/create_site_quality_user": {
+      "name": "createSiteQualityUser",
+      "method": "POST",
+      "order": [
+        "email",
+        "password"
+      ],
+      "params": {
+        "password": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 110 and later; operates on the selected cPanel account. Response roots are nonnullable objects with optional fields. Omission is distinct from explicit null; only documented nullable fields accept null. Payload flags do not replace UAPI envelope status. Inspect responseMeta() warnings and raw metadata."
+        },
+        {
+          "kind": "documented",
+          "text": "Creates an external Site Quality Monitoring account associated with the cPanel account. Password is optional and sensitive: omitted/null password lets the server generate one; empty string is sent and is not omission. The source says the system does not save the password. Email is ordinary account input. The optional app_token is a long-lived authentication credential; pinned text says a lost token requires a new account. username is optional string and enabled is optional native bool|null, unlike the integer enabled flag on isSiteQualityUserEnabled(). Registration email and account actions are server side effects of this explicit call; the client initiates no additional action."
+        },
+        {
+          "kind": "policy",
+          "text": "One explicit request and one attempt only. No implicit read, retry, polling, account action, activation email, login, token exchange, URL fetch, restore or rollback. Returned URLs, tokens and data are payload only; API success alone does not establish external application or persistence. Avoid logging token-bearing responses or PayloadMismatchException::$payload."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "2026-10-13 pinned UAPI OpenAPI 11.138.0.10",
+          "date": "2026-11-01",
+          "note": "Selected POST source variant; preserve its transport method.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1SiteQuality~1create_site_quality_user/post"
+        },
+        {
+          "kind": "doc",
+          "version": "2026-10-13 pinned UAPI OpenAPI 11.138.0.10",
+          "date": "2026-11-01",
+          "note": "Creates an external Site Quality Monitoring account associated with the cPanel account. Password is optional and sensitive: omitted/null password lets the server generate one; empty string is sent and is not omission. The source says the system does not save the password. Email is ordinary account input. The optional app_token is a long-lived authentication credential; pinned text says a lost token requires a new account. username is optional string and enabled is optional native bool|null, unlike the integer enabled flag on isSiteQualityUserEnabled(). Registration email and account actions are server side effects of this explicit call; the client initiates no additional action.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1SiteQuality~1create_site_quality_user/post/description"
+        },
+        {
+          "kind": "doc",
+          "version": "2026-10-13 pinned UAPI OpenAPI 11.138.0.10",
+          "date": "2026-11-01",
+          "note": "Optional password is sensitive; omission retains server generation, with no synthesized secret, while explicit empty string remains supplied.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1SiteQuality~1create_site_quality_user/post/parameters/1"
+        },
+        {
+          "kind": "doc",
+          "version": "2026-10-13 pinned UAPI OpenAPI 11.138.0.10",
+          "date": "2026-11-01",
+          "note": "Retain optional app_token/username strings and optional nullable native boolean enabled. Treat returned tokens as sensitive authentication data.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1SiteQuality~1create_site_quality_user/post/responses/200/content/application~1json/schema/properties/result/properties/data"
+        }
+      ]
+    },
+    "uapi:SiteQuality/delete_site_quality_user": {
+      "name": "deleteSiteQualityUser",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 110 and later; operates on the selected cPanel account. Response roots are nonnullable objects with optional fields. Omission is distinct from explicit null; only documented nullable fields accept null. Payload flags do not replace UAPI envelope status. Inspect responseMeta() warnings and raw metadata."
+        },
+        {
+          "kind": "documented",
+          "text": "Initiates deletion of the associated external Site Quality Monitoring account. This is not a promise of immediate deletion. Optional deleted is an integer 0|1 payload flag: 0 under UAPI status 1 remains a payload result, not envelope failure."
+        },
+        {
+          "kind": "policy",
+          "text": "One explicit request and one attempt only. No implicit read, retry, polling, account action, activation email, login, token exchange, URL fetch, restore or rollback. Returned URLs, tokens and data are payload only; API success alone does not establish external application or persistence. Avoid logging token-bearing responses or PayloadMismatchException::$payload."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "2026-10-13 pinned UAPI OpenAPI 11.138.0.10",
+          "date": "2026-11-01",
+          "note": "Selected GET source variant; client policy uses form POST because this operation mutates account state or accepts an activation secret. No envelope or response correction.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1SiteQuality~1delete_site_quality_user/get"
+        },
+        {
+          "kind": "doc",
+          "version": "2026-10-13 pinned UAPI OpenAPI 11.138.0.10",
+          "date": "2026-11-01",
+          "note": "Initiates deletion of the associated external Site Quality Monitoring account. This is not a promise of immediate deletion. Optional deleted is an integer 0|1 payload flag: 0 under UAPI status 1 remains a payload result, not envelope failure.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1SiteQuality~1delete_site_quality_user/get/description"
+        }
+      ]
+    },
+    "uapi:SiteQuality/get_app_token": {
+      "name": "getAppToken",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 110 and later; operates on the selected cPanel account. Response roots are nonnullable objects with optional fields. Omission is distinct from explicit null; only documented nullable fields accept null. Payload flags do not replace UAPI envelope status. Inspect responseMeta() warnings and raw metadata."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns the long-lived authentication app_token as an optional string. Treat it as sensitive; pinned text says losing it requires a new account. The credential is a response value, so the source GET remains GET; no universal POST policy for secret responses is inferred. No token validation, exchange, storage or third-party request occurs."
+        },
+        {
+          "kind": "policy",
+          "text": "One explicit request and one attempt only. No implicit read, retry, polling, account action, activation email, login, token exchange, URL fetch, restore or rollback. Returned URLs, tokens and data are payload only; API success alone does not establish external application or persistence. Avoid logging token-bearing responses or PayloadMismatchException::$payload."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "2026-10-13 pinned UAPI OpenAPI 11.138.0.10",
+          "date": "2026-11-01",
+          "note": "Selected GET source variant; preserve its transport method.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1SiteQuality~1get_app_token/get"
+        },
+        {
+          "kind": "doc",
+          "version": "2026-10-13 pinned UAPI OpenAPI 11.138.0.10",
+          "date": "2026-11-01",
+          "note": "Returns the long-lived authentication app_token as an optional string. Treat it as sensitive; pinned text says losing it requires a new account. The credential is a response value, so the source GET remains GET; no universal POST policy for secret responses is inferred. No token validation, exchange, storage or third-party request occurs.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1SiteQuality~1get_app_token/get/description"
+        }
+      ]
+    },
+    "uapi:SiteQuality/has_site_quality_user": {
+      "name": "hasSiteQualityUser",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 110 and later; operates on the selected cPanel account. Response roots are nonnullable objects with optional fields. Omission is distinct from explicit null; only documented nullable fields accept null. Payload flags do not replace UAPI envelope status. Inspect responseMeta() warnings and raw metadata."
+        },
+        {
+          "kind": "documented",
+          "text": "Reports the selected cPanel account association as optional integer 0|1 has_site_quality_user. Zero under UAPI status 1 remains a valid payload result."
+        },
+        {
+          "kind": "policy",
+          "text": "One explicit request and one attempt only. No implicit read, retry, polling, account action, activation email, login, token exchange, URL fetch, restore or rollback. Returned URLs, tokens and data are payload only; API success alone does not establish external application or persistence. Avoid logging token-bearing responses or PayloadMismatchException::$payload."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "2026-10-13 pinned UAPI OpenAPI 11.138.0.10",
+          "date": "2026-11-01",
+          "note": "Selected GET source variant; preserve its transport method.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1SiteQuality~1has_site_quality_user/get"
+        },
+        {
+          "kind": "doc",
+          "version": "2026-10-13 pinned UAPI OpenAPI 11.138.0.10",
+          "date": "2026-11-01",
+          "note": "Reports the selected cPanel account association as optional integer 0|1 has_site_quality_user. Zero under UAPI status 1 remains a valid payload result.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1SiteQuality~1has_site_quality_user/get/description"
+        }
+      ]
+    },
+    "uapi:SiteQuality/is_site_quality_user_enabled": {
+      "name": "isSiteQualityUserEnabled",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 110 and later; operates on the selected cPanel account. Response roots are nonnullable objects with optional fields. Omission is distinct from explicit null; only documented nullable fields accept null. Payload flags do not replace UAPI envelope status. Inspect responseMeta() warnings and raw metadata."
+        },
+        {
+          "kind": "documented",
+          "text": "Reports whether koality enabled the associated account as optional integer 0|1 enabled. This differs from createSiteQualityUser() enabled bool|null; do not coerce either contract."
+        },
+        {
+          "kind": "policy",
+          "text": "One explicit request and one attempt only. No implicit read, retry, polling, account action, activation email, login, token exchange, URL fetch, restore or rollback. Returned URLs, tokens and data are payload only; API success alone does not establish external application or persistence. Avoid logging token-bearing responses or PayloadMismatchException::$payload."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "2026-10-13 pinned UAPI OpenAPI 11.138.0.10",
+          "date": "2026-11-01",
+          "note": "Selected GET source variant; preserve its transport method.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1SiteQuality~1is_site_quality_user_enabled/get"
+        },
+        {
+          "kind": "doc",
+          "version": "2026-10-13 pinned UAPI OpenAPI 11.138.0.10",
+          "date": "2026-11-01",
+          "note": "Reports whether koality enabled the associated account as optional integer 0|1 enabled. This differs from createSiteQualityUser() enabled bool|null; do not coerce either contract.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1SiteQuality~1is_site_quality_user_enabled/get/description"
+        }
+      ]
+    },
+    "uapi:SiteQuality/reset_config": {
+      "name": "resetConfig",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 110 and later; operates on the selected cPanel account. Response roots are nonnullable objects with optional fields. Omission is distinct from explicit null; only documented nullable fields accept null. Payload flags do not replace UAPI envelope status. Inspect responseMeta() warnings and raw metadata."
+        },
+        {
+          "kind": "documented",
+          "text": "Removes the local Site Quality Monitoring association/configuration and prevents automatic login. It does not delete the external koality account. Optional reset is an integer 0|1 payload flag independent from the envelope status."
+        },
+        {
+          "kind": "policy",
+          "text": "One explicit request and one attempt only. No implicit read, retry, polling, account action, activation email, login, token exchange, URL fetch, restore or rollback. Returned URLs, tokens and data are payload only; API success alone does not establish external application or persistence. Avoid logging token-bearing responses or PayloadMismatchException::$payload."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "2026-10-13 pinned UAPI OpenAPI 11.138.0.10",
+          "date": "2026-11-01",
+          "note": "Selected GET source variant; client policy uses form POST because this operation mutates account state or accepts an activation secret. No envelope or response correction.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1SiteQuality~1reset_config/get"
+        },
+        {
+          "kind": "doc",
+          "version": "2026-10-13 pinned UAPI OpenAPI 11.138.0.10",
+          "date": "2026-11-01",
+          "note": "Removes the local Site Quality Monitoring association/configuration and prevents automatic login. It does not delete the external koality account. Optional reset is an integer 0|1 payload flag independent from the envelope status.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1SiteQuality~1reset_config/get/description"
+        }
+      ]
+    },
+    "uapi:SiteQuality/send_activation_email": {
+      "name": "sendActivationEmail",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 110 and later; operates on the selected cPanel account. Response roots are nonnullable objects with optional fields. Omission is distinct from explicit null; only documented nullable fields accept null. Payload flags do not replace UAPI envelope status. Inspect responseMeta() warnings and raw metadata."
+        },
+        {
+          "kind": "documented",
+          "text": "An explicit call requests an activation email for the currently authenticated Site Quality Monitoring user. The email contains an activation code. Optional send_activation_email is an integer 0|1 request-result flag; fixtures establish no email delivery. No automatic call or retry is added."
+        },
+        {
+          "kind": "policy",
+          "text": "One explicit request and one attempt only. No implicit read, retry, polling, account action, activation email, login, token exchange, URL fetch, restore or rollback. Returned URLs, tokens and data are payload only; API success alone does not establish external application or persistence. Avoid logging token-bearing responses or PayloadMismatchException::$payload."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "2026-10-13 pinned UAPI OpenAPI 11.138.0.10",
+          "date": "2026-11-01",
+          "note": "Selected GET source variant; client policy uses form POST because this operation mutates account state or accepts an activation secret. No envelope or response correction.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1SiteQuality~1send_activation_email/get"
+        },
+        {
+          "kind": "doc",
+          "version": "2026-10-13 pinned UAPI OpenAPI 11.138.0.10",
+          "date": "2026-11-01",
+          "note": "An explicit call requests an activation email for the currently authenticated Site Quality Monitoring user. The email contains an activation code. Optional send_activation_email is an integer 0|1 request-result flag; fixtures establish no email delivery. No automatic call or retry is added.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1SiteQuality~1send_activation_email/get/description"
+        }
+      ]
+    },
+    "uapi:SiteQuality/update_domain": {
+      "name": "updateDomain",
+      "method": "POST",
+      "order": [
+        "old_domain",
+        "new_domain"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 110 and later; operates on the selected cPanel account. Response roots are nonnullable objects with optional fields. Omission is distinct from explicit null; only documented nullable fields accept null. Payload flags do not replace UAPI envelope status. Inspect responseMeta() warnings and raw metadata."
+        },
+        {
+          "kind": "documented",
+          "text": "Server searches all owned projects for systems matching oldDomain and updates them to newDomain; the client does not loop. Public and form order is oldDomain then newDomain (old_domain then new_domain), intentionally following old-to-new semantics despite the formal source parameter order new_domain then old_domain. Both inputs remain ordinary strings, including empty values. Optional system contains optional integer id, string name, nested system_size with optional integer id/string name, and string url. Returned URL is payload only."
+        },
+        {
+          "kind": "policy",
+          "text": "One explicit request and one attempt only. No implicit read, retry, polling, account action, activation email, login, token exchange, URL fetch, restore or rollback. Returned URLs, tokens and data are payload only; API success alone does not establish external application or persistence. Avoid logging token-bearing responses or PayloadMismatchException::$payload."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "2026-10-13 pinned UAPI OpenAPI 11.138.0.10",
+          "date": "2026-11-01",
+          "note": "Selected POST source variant; preserve its transport method.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1SiteQuality~1update_domain/post"
+        },
+        {
+          "kind": "doc",
+          "version": "2026-10-13 pinned UAPI OpenAPI 11.138.0.10",
+          "date": "2026-11-01",
+          "note": "Server searches all owned projects for systems matching oldDomain and updates them to newDomain; the client does not loop. Public and form order is oldDomain then newDomain (old_domain then new_domain), intentionally following old-to-new semantics despite the formal source parameter order new_domain then old_domain. Both inputs remain ordinary strings, including empty values. Optional system contains optional integer id, string name, nested system_size with optional integer id/string name, and string url. Returned URL is payload only.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1SiteQuality~1update_domain/post/description"
+        },
+        {
+          "kind": "doc",
+          "version": "2026-10-13 pinned UAPI OpenAPI 11.138.0.10",
+          "date": "2026-11-01",
+          "note": "Map required old_domain to the first public oldDomain argument and first form field; semantic old-to-new order is a client policy, preserving exact source name/type/requiredness.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1SiteQuality~1update_domain/post/parameters/1"
+        },
+        {
+          "kind": "doc",
+          "version": "2026-10-13 pinned UAPI OpenAPI 11.138.0.10",
+          "date": "2026-11-01",
+          "note": "Map required new_domain to the second public newDomain argument and second form field; preserve source name/type/requiredness despite formal source order.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1SiteQuality~1update_domain/post/parameters/0"
+        }
+      ]
+    },
+    "uapi:SiteQuality/verify_code": {
+      "name": "verifyCode",
+      "method": "POST",
+      "order": [
+        "code"
+      ],
+      "params": {
+        "code": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 110 and later; operates on the selected cPanel account. Response roots are nonnullable objects with optional fields. Omission is distinct from explicit null; only documented nullable fields accept null. Payload flags do not replace UAPI envelope status. Inspect responseMeta() warnings and raw metadata."
+        },
+        {
+          "kind": "documented",
+          "text": "Validates the activation code in the registration email. Code is a sensitive required string, including an explicit empty string. Client policy sends form POST because the code is secret-bearing; the selected source variant is GET. Optional status is integer 0|1 code validity under the independent UAPI envelope status. No activation email or login is implicitly requested."
+        },
+        {
+          "kind": "policy",
+          "text": "One explicit request and one attempt only. No implicit read, retry, polling, account action, activation email, login, token exchange, URL fetch, restore or rollback. Returned URLs, tokens and data are payload only; API success alone does not establish external application or persistence. Avoid logging token-bearing responses or PayloadMismatchException::$payload."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "2026-10-13 pinned UAPI OpenAPI 11.138.0.10",
+          "date": "2026-11-01",
+          "note": "Selected GET source variant; client policy uses form POST because this operation mutates account state or accepts an activation secret. No envelope or response correction.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1SiteQuality~1verify_code/get"
+        },
+        {
+          "kind": "doc",
+          "version": "2026-10-13 pinned UAPI OpenAPI 11.138.0.10",
+          "date": "2026-11-01",
+          "note": "Validates the activation code in the registration email. Code is a sensitive required string, including an explicit empty string. Client policy sends form POST because the code is secret-bearing; the selected source variant is GET. Optional status is integer 0|1 code validity under the independent UAPI envelope status. No activation email or login is implicitly requested.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1SiteQuality~1verify_code/get/description"
+        },
+        {
+          "kind": "doc",
+          "version": "2026-10-13 pinned UAPI OpenAPI 11.138.0.10",
+          "date": "2026-11-01",
+          "note": "Registration activation code is sensitive input. Use form POST with code bytes preserved; do not request an email or login implicitly.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1SiteQuality~1verify_code/get/parameters/0"
+        }
+      ]
+    }
+  }
+}

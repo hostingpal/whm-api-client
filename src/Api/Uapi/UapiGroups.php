@@ -127,6 +127,8 @@ trait UapiGroups
 
     private ?Session $sessionGroup = null;
 
+    private ?SiteQuality $siteQualityGroup = null;
+
     private ?SpamAssassin $spamAssassinGroup = null;
 
     private ?Ssh $sshGroup = null;
@@ -750,6 +752,21 @@ trait UapiGroups
     public function session(): Session
     {
         return $this->sessionGroup ??= new Session($this->run(...));
+    }
+
+    /**
+     * Select the SiteQuality operations without making a request.
+     *
+     * Selected-account Site Quality Monitoring account, project, token, status and activation operations (10 of 13
+     * pinned functions), available from cPanel 110. Token-bearing responses are sensitive payload data. Single request
+     * only; no implicit email, polling, login, URL fetch, retry or rollback. Offline source-backed coverage only: live
+     * follow-up whm-api-client-8x0.2.71 remains open. get_monitored_domains/get_monitored_system_scores result
+     * locations remain gated under whm-api-client-8x0.1.34; get_all_scores required nullable verbose serialization
+     * remains gated under whm-api-client-8x0.1.35. SiteQuality is incomplete.
+     */
+    public function siteQuality(): SiteQuality
+    {
+        return $this->siteQualityGroup ??= new SiteQuality($this->run(...));
     }
 
     /**

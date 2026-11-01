@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 104 generated typed groups cover 1,191 documented operations (see
+The 105 generated typed groups cover 1,201 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, DNS zone and DNSSEC
 management, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -379,6 +379,56 @@ result: 1 means enabled; 0 with no errors means absent or disabled. Nonempty
 `responseMeta()->uapiErrors()` means the call failed, not that the feature is disabled.
 This typed method requires integer status 0 or 1 and accepts 0 as an access result.
 Outer WHM bridge failures still throw.
+
+The `uapi()->siteQuality()` group exposes ten of thirteen pinned SiteQuality
+functions from cPanel 110: account creation/deletion, project creation/domain
+update, token retrieval, association/enabled status, local configuration reset,
+activation email and code validation. Three source gates remain open:
+`get_monitored_domains` and `get_monitored_system_scores` locate their formal
+results outside `result.data` (`8x0.1.34`); `get_all_scores` requires a nullable
+`verbose` input without established explicit-null form encoding (`8x0.1.35`).
+These methods are absent and uncounted. SiteQuality remains incomplete; live
+verification is separately tracked in `8x0.2.71`.
+
+```php
+// Synthetic inputs; this explicit call creates a monitoring project on the server.
+$project = $account->siteQuality()->createProject(
+    name: 'Example project',
+    url: 'https://example.test',
+    standardAlerting: false,
+);
+```
+
+Seven mutations/secret-bearing calls use one form POST on both routes; the three
+status/token reads use GET. `updateDomain(oldDomain, newDomain)` sends `old_domain`
+then `new_domain`; the server searches its owned projects without a client loop.
+Optional `standardAlerting: false` sends 0, true sends 1 and null omits, retaining
+the pinned no-standard-alerts default. Omitted `systemType` retains Website;
+strings stay open. Null optional password omits and allows server generation;
+empty password remains supplied. The source says the system does not save it.
+Password, activation code and monitored URL inputs are sensitive. Returned URLs
+are payload only and are never fetched; returned `app_token` values are long-lived
+authentication credentials. Avoid logging tokens and mismatch exception payloads.
+The pinned token text says losing a token requires a new account.
+
+Response objects retain optional fields. Create-user `enabled` is native
+`bool|null`; the enabled-status read and deleted/reset/activation/code status
+fields use integer `0|1` flags. Payload 0 under UAPI status 1 is a result, whereas
+UAPI status 0 fails regardless of payload. Nested project `system_type.id` is
+formally untyped and stays `mixed`; examples/defaults do not establish an integer
+contract. `fixedComponents` is native bool, description is nullable string and
+systems preserve list order/empty lists. All ten response roots reject explicit
+null and missing data; the existing object validator also accepts an empty JSON
+array as an empty object/map, while the decoder distinguishes `{}` from `[]`.
+
+Deletion initiates external-account deletion without promising immediacy.
+`resetConfig()` removes local association/configuration and prevents automatic
+login; it does not delete the external koality account. An explicit
+`sendActivationEmail()` requests an activation email; the client never initiates
+one implicitly or retries it. Inspect `responseMeta()` warnings and raw metadata.
+The client adds no polling, implicit read, login, token exchange/storage, URL
+fetch, retry, restore or rollback. Offline fixtures establish no live external
+account, email-delivery, activation, monitoring or persistence behavior.
 
 The complete `uapi()->serviceProxy()` group exposes all three pinned ServiceProxy
 operations from cPanel 96: GET inventory and form POST set/unset calls for the
