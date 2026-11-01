@@ -39,7 +39,17 @@ final class TeamSpec
             'expireReason' => ['name' => 'expire_reason', 'encoding' => 'scalar'],
             'notes' => ['name' => 'notes', 'encoding' => 'scalar'],
             'password' => ['name' => 'password', 'encoding' => 'scalar'],
-            'roles' => ['name' => 'roles', 'encoding' => 'scalar'],
+            'roles' => [
+                'name' => 'roles',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => ',',
+                ],
+            ],
             'servicesEmailEnabled' => ['name' => 'services.email.enabled', 'encoding' => 'bool'],
             'servicesEmailQuota' => ['name' => 'services.email.quota', 'encoding' => 'scalar'],
             'servicesFtpEnabled' => ['name' => 'services.ftp.enabled', 'encoding' => 'bool'],

@@ -318,7 +318,17 @@ final class BoxTrapperSpec
         'params' => [
             'email' => ['name' => 'email', 'encoding' => 'scalar'],
             'enableAutoWhitelist' => ['name' => 'enable_auto_whitelist', 'encoding' => 'bool'],
-            'fromAddresses' => ['name' => 'from_addresses', 'encoding' => 'scalar'],
+            'fromAddresses' => [
+                'name' => 'from_addresses',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => ',',
+                ],
+            ],
             'queueDays' => ['name' => 'queue_days', 'encoding' => 'scalar'],
             'whitelistByAssociation' => ['name' => 'whitelist_by_association', 'encoding' => 'bool'],
             'fromName' => ['name' => 'from_name', 'encoding' => 'scalar'],

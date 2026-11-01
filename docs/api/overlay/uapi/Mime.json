@@ -37,6 +37,14 @@
         {
           "kind": "documented",
           "text": "The pinned result is a nullable object without a field schema: preserve explicit null and opaque object fields; an absent data member is rejected."
+        },
+        {
+          "kind": "documented",
+          "text": "Client lists preserve order, duplicates, empty string items and all other bytes, and reject empty, keyed or nonstring lists and items containing a comma before dispatch. Scalars retain commas, percent escapes and empty strings without parsing or pre-encoding. Optional null omits the field; an empty list never means omission. Collection arguments are trace-protected without changing transport or classifying the field as a semantic secret."
+        },
+        {
+          "kind": "documented",
+          "text": "Only extensions accepts client lists; urls remains one caller-prepared newline-separated string and redirectUrl remains scalar. The client does not fetch either URL."
         }
       ],
       "method": "POST",
@@ -46,6 +54,14 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-30",
           "note": "The pinned /Mime/add_hotlink GET variant declares x-readonly=false. Generated-client policy sends mutations as form POST to keep operation parameters out of access-log query strings."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Mime~1add_hotlink/get/parameters/0",
+          "note": "The formal extensions parameter is a concrete nonnullable string documenting comma-separated values. The generated client additionally accepts a nonempty sequential string list, joins once into the original extensions field, and preserves raw scalar bytes. This is an offline client convenience, not PHP-list live evidence; requiredness, defaults, effective HTTP method and response contracts are unchanged."
         }
       ],
       "order": [
@@ -53,7 +69,18 @@
         "redirect_url",
         "urls",
         "allow_null"
-      ]
+      ],
+      "params": {
+        "extensions": {
+          "collection": {
+            "kind": "delimited",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "delimiter": ","
+          }
+        }
+      }
     },
     "uapi:Mime/add_mime": {
       "notes": [

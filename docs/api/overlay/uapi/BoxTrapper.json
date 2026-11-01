@@ -498,11 +498,15 @@
         },
         {
           "kind": "documented",
-          "text": "Changes message handling. Required queue_days documents a minimum of one; omitted spam_score retains current configuration. from_addresses is one comma-separated string. Optional from_name and spam_score retain omission; explicit zero flags and empty strings are sent. The pinned source classifies this operation as clean rollback; the client performs no automatic rollback or retry."
+          "text": "Changes message handling. Required queue_days documents a minimum of one; omitted spam_score retains current configuration. from_addresses uses one comma-separated wire field. Optional from_name and spam_score retain omission; explicit zero flags and empty strings are sent. The pinned source classifies this operation as clean rollback; the client performs no automatic rollback or retry."
         },
         {
           "kind": "documented",
           "text": "The result is a nullable object without a pinned field schema. Preserve opaque fields and explicit null; an absent data member is a payload mismatch."
+        },
+        {
+          "kind": "documented",
+          "text": "Client lists preserve order, duplicates, empty string items and all other bytes, and reject empty, keyed or nonstring lists and items containing a comma before dispatch. Scalars retain commas, percent escapes and empty strings without parsing or pre-encoding. Optional null omits the field; an empty list never means omission. Collection arguments are trace-protected without changing transport or classifying the field as a semantic secret."
         }
       ],
       "evidence": [
@@ -511,8 +515,27 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-30",
           "note": "Pinned /BoxTrapper/save_configuration declares x-readonly=false and x-rollback=clean; mutations use form POST. "
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1BoxTrapper~1save_configuration/get/parameters/2",
+          "note": "The formal from_addresses parameter is a concrete nonnullable string documenting comma-separated values. The generated client additionally accepts a nonempty sequential string list, joins once into the original from_addresses field, and preserves raw scalar bytes. This is an offline client convenience, not PHP-list live evidence; requiredness, defaults, effective HTTP method and response contracts are unchanged."
         }
-      ]
+      ],
+      "params": {
+        "from_addresses": {
+          "collection": {
+            "kind": "delimited",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "delimiter": ","
+          }
+        }
+      }
     },
     "uapi:BoxTrapper/save_email_template": {
       "method": "POST",

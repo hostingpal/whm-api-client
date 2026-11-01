@@ -334,7 +334,17 @@ final class MysqlSpec
         'params' => [
             'database' => ['name' => 'database', 'encoding' => 'scalar'],
             'user' => ['name' => 'user', 'encoding' => 'scalar'],
-            'privileges' => ['name' => 'privileges', 'encoding' => 'scalar'],
+            'privileges' => [
+                'name' => 'privileges',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => ',',
+                ],
+            ],
         ],
         'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
     ];

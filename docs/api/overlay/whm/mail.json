@@ -1329,6 +1329,14 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /generate_mobileconfig x-readonly=true; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 11.52. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1generate_mobileconfig/get/parameters/2",
+          "note": "The formal selected_account_services parameter is a concrete nonnullable string documenting comma-separated values. The generated client additionally accepts a nonempty sequential string list, joins once into the original selected_account_services field, and preserves raw scalar bytes. This is an offline client convenience, not PHP-list live evidence; requiredness, defaults, effective HTTP method and response contracts are unchanged."
         }
       ],
       "notes": [
@@ -1338,14 +1346,33 @@
         },
         {
           "kind": "documented",
-          "text": "Receive Mail role is required. Returns a base64 configuration profile as private payload data; the client does not decode, install or send it. selectedAccountServices is caller-prepared comma-separated email, caldav and carddav; omission retains all three defaults and unsupported values are ignored upstream."
+          "text": "Receive Mail role is required. Returns a base64 configuration profile as private payload data; the client does not decode, install or send it. selectedAccountServices accepts a comma-separated string or a nonempty sequential string list for email, caldav and carddav; omission retains all three defaults and unsupported values are ignored upstream."
+        },
+        {
+          "kind": "documented",
+          "text": "Client lists preserve order, duplicates, empty string items and all other bytes, and reject empty, keyed or nonstring lists and items containing a comma before dispatch. Scalars retain commas, percent escapes and empty strings without parsing or pre-encoding. Optional null omits the field; an empty list never means omission. Collection arguments are trace-protected without changing transport or classifying the field as a semantic secret."
+        },
+        {
+          "kind": "documented",
+          "text": "Collection trace protection retains GET and does not add a semantic secret flag. Omission retains the upstream email,caldav,carddav default; no enum validation or unsupported-service filtering is added."
         }
       ],
       "order": [
         "account",
         "use_ssl",
         "selected_account_services"
-      ]
+      ],
+      "params": {
+        "selected_account_services": {
+          "collection": {
+            "kind": "delimited",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "delimiter": ","
+          }
+        }
+      }
     },
     "whm1:get_default_dmarc_record": {
       "name": "getDefaultDmarcRecord",
@@ -2121,6 +2148,14 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /set_user_email_forward_destination x-readonly=false; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 11.52. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1set_user_email_forward_destination/get/parameters/0",
+          "note": "The formal forward_to parameter is a concrete nonnullable string documenting comma-separated values. The generated client additionally accepts a nonempty sequential string list, joins once into the original forward_to field, and preserves raw scalar bytes. This is an offline client convenience, not PHP-list live evidence; requiredness, defaults, effective HTTP method and response contracts are unchanged."
         }
       ],
       "notes": [
@@ -2130,13 +2165,28 @@
         },
         {
           "kind": "documented",
-          "text": "Changes a system account forwarding destination. forwardTo is a caller-prepared comma-separated list of system accounts or email addresses. root commonly receives server notices and nobody may receive CGI bounce mail without suexec. This call does not send a welcome or configuration message."
+          "text": "Changes a system account forwarding destination. forwardTo accepts a comma-separated string or a nonempty sequential string list of system accounts or email addresses. root commonly receives server notices and nobody may receive CGI bounce mail without suexec. This call does not send a welcome or configuration message."
+        },
+        {
+          "kind": "documented",
+          "text": "Client lists preserve order, duplicates, empty string items and all other bytes, and reject empty, keyed or nonstring lists and items containing a comma before dispatch. Scalars retain commas, percent escapes and empty strings without parsing or pre-encoding. Optional null omits the field; an empty list never means omission. Collection arguments are trace-protected without changing transport or classifying the field as a semantic secret."
         }
       ],
       "order": [
         "user",
         "forward_to"
-      ]
+      ],
+      "params": {
+        "forward_to": {
+          "collection": {
+            "kind": "delimited",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "delimiter": ","
+          }
+        }
+      }
     },
     "whm1:suspend_outgoing_email": {
       "name": "suspendOutgoingEmail",

@@ -8,6 +8,7 @@ use Closure;
 use HostingPal\WhmApiClient\Api\Uapi\Spec\TeamSpec;
 use HostingPal\WhmApiClient\Exception\ApiException;
 use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
+use InvalidArgumentException;
 use SensitiveParameter;
 
 /**
@@ -145,9 +146,9 @@ final readonly class Team
      * allowing the team user to set a password. The client does not enforce this cross-parameter condition or send a
      * message independently. Password is sensitive and stays in the form POST body.
      *
-     * Documented: roles is a comma-separated string; this operation rejects the singular role parameter. A team user
-     * without roles cannot use any features. Adding a team user can grant team owner level privileges. notes must not
-     * contain private information and is documented with a 100-character maximum.
+     * Documented: roles uses one comma-separated wire field; this operation rejects the singular role parameter. A team
+     * user without roles cannot use any features. Adding a team user can grant team owner level privileges. notes must
+     * not contain private information and is documented with a 100-character maximum.
      *
      * Documented: expire_date is an integer Unix Epoch Time or a string offset such as 120days. When returned, the
      * response is the resulting Unix timestamp. Optional service flags default to 0 upstream; Web Disk permissions
@@ -166,6 +167,12 @@ final readonly class Team
      * range; explicit null stays null and absent data is a payload mismatch. Team was unavailable on that server, so
      * this correction has source and offline replay evidence only.
      *
+     * Documented: Client lists preserve order, duplicates, empty string items and all other bytes, and reject empty,
+     * keyed or nonstring lists and items containing a comma before dispatch. Scalars retain commas, percent escapes and
+     * empty strings without parsing or pre-encoding. Optional null omits the field; an empty list never means omission.
+     * Collection arguments are trace-protected without changing transport or classifying the field as a semantic
+     * secret.
+     *
      * API-map identity: uapi:Team/add_team_user#GET (wire name add_team_user).
      *
      * @param string $email1 The contact email for the new team user.
@@ -178,7 +185,8 @@ final readonly class Team
      * @param string|null $expireReason The reason for expiration. Null omits it.
      * @param string|null $notes Notes about the new team user. Null omits it.
      * @param string|null $password The password to set for the new team user. Null omits it.
-     * @param string|null $roles A comma-separated list of roles assigned to the new team user. Null omits it.
+     * @param string|non-empty-list<string>|null $roles A comma-separated list of roles assigned to the new team user.
+     *     Null omits it.
      * @param bool|null $servicesEmailEnabled Whether to create an email subaccount for the team user. Null omits it.
      * @param string|null $servicesEmailQuota The maximum amount of disk space, in megabytes (MB), allocated to the team
      *     user's email account. Null omits it.
@@ -199,6 +207,7 @@ final readonly class Team
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/team-users/team-add_team_user
      */
     public function addTeamUser(
@@ -211,7 +220,8 @@ final readonly class Team
         ?string $notes = null,
         #[SensitiveParameter]
         ?string $password = null,
-        ?string $roles = null,
+        #[SensitiveParameter]
+        string|array|null $roles = null,
         ?bool $servicesEmailEnabled = null,
         ?string $servicesEmailQuota = null,
         ?bool $servicesFtpEnabled = null,

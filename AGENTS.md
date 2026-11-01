@@ -994,8 +994,8 @@ literally, content is form-encoded once, and omitted options retain server defau
 Explicit false, zero and empty values remain distinct from omission.
 
 Team role operations can grant owner privileges. `setRoles()` replaces the whole
-role set; omitting its role value removes all roles. Creation's `roles` field is
-comma-separated, while role updates use singular `role`. Activation and password
+role set; omitting its role value removes all roles. Creation's `roles` field accepts a comma-separated string or a nonempty sequential
+string list, while role updates use singular `role`. Activation and password
 reset requests can send email. Service changes can create, associate or remove
 service subaccounts. Team creation without an expiry can return null; supplied
 expiry results preserve integer timestamps with canonical numeric-string
@@ -4577,3 +4577,103 @@ response changes: coverage stays 1,234 operations, 119 groups and 241 generated
 outputs. These are offline synthetic tests; historical scalar captures do not
 establish PHP-list live acceptance. Live follow-up `8x0.2.84` and the wider
 adopter audit `8x0.28.8` remain open.
+
+
+### Mail and account comma-separated inputs
+
+Eight existing arguments accept raw strings or nonempty sequential string lists.
+The client joins each list once with a comma into its original field:
+
+| Group and method | PHP argument → wire field | Required |
+| --- | --- | --- |
+| `uapi()->boxTrapper()->saveConfiguration()` | `fromAddresses` → `from_addresses` | yes |
+| `uapi()->email()->addForwarder()` | `forwardEmail` → `fwdemail` | no |
+| `uapi()->email()->addMailmanDelegates()` | `delegates` → `delegates` | yes |
+| `uapi()->mime()->addHotlink()` | `extensions` → `extensions` | yes |
+| `uapi()->mysql()->setPrivilegesOnDatabase()` | `privileges` → `privileges` | no |
+| `uapi()->team()->addTeamUser()` | `roles` → `roles` | no |
+| `whm()->mail()->generateMobileconfig()` | `selectedAccountServices` → `selected_account_services` | no |
+| `whm()->mail()->setUserEmailForwardDestination()` | `forwardTo` → `forward_to` | yes |
+
+```php
+// Synthetic inputs: these explicit calls change forwarding and database privileges.
+$account->email()->addForwarder(
+    domain: 'example.test',
+    email: 'alias@example.test',
+    forwardOption: 'fwd',
+    forwardEmail: ['first@example.test', 'second@example.test'],
+);
+$account->mysql()->setPrivilegesOnDatabase(
+    database: 'fixture_db',
+    user: 'fixture_user',
+    privileges: ['SELECT', 'CREATE TEMPORARY TABLES'],
+);
+// Explicit profile read; retain the private returned payload without decoding it.
+$profile = $client->whm()->mail()->generateMobileconfig(
+    account: 'fixture-account',
+    useSsl: true,
+    selectedAccountServices: ['email', 'caldav'],
+);
+```
+
+Lists retain order, duplicates, empty items, whitespace, Unicode, binary, pipes
+and URL/percent bytes. `['']` supplies an empty field and `['', 'a', '']` supplies
+`,a,`. Empty, sparse, keyed, nested and nonstring lists and items containing a
+comma reject locally before I/O after metadata reset; captured metadata snapshots
+remain intact. A quoted email address containing a comma also rejects as a list
+item; no quoting or escaping grammar is added. Scalar commas, literal `%2C` and
+empty strings remain unparsed. Supply raw bytes: ordinary serialization encodes
+the complete field once. No trimming, splitting, sorting, deduplication, coercion,
+email/domain/role/privilege enum validation or implicit defaults are added.
+The four optional arguments retain `null = null` omission; `[]` never becomes
+omission. The four required arguments remain required; native wrong-type errors
+precede method entry and retain prior metadata. Argument names and order stay
+unchanged, including `forwardEmail` and system forwarding's user-first order.
+
+The six UAPI methods retain direct and WHM bridge form POST; native WHM system
+forwarding retains form POST. Mobile profile generation retains GET, including
+its supplied service field in the query. All eight collection arguments have
+`SensitiveParameter` trace protection without a semantic secret flag or transport
+override. This covers library argument frames; caller/third-party traces, memory,
+returned profile/configuration, response metadata and mismatch payloads can still
+contain private data. Inspect warnings and raw metadata; API failure still wins
+over a valid-looking payload and no request is retried.
+
+BoxTrapper (cPanel 82, Receive Mail) changes message handling. Webmail overrides
+the mailbox selector, while direct/bridge calls retain it. `queueDays` minimum one
+is a server constraint; omitted `spamScore` retains current configuration, and
+false/zero flags, float scores and empty `fromName` remain supplied. Email
+forwarding and delegates (11.42, MailReceive/Receive Mail) retain their no-rollback
+caveats. `forwardEmail` remains optional in the interface although required by the
+server for `fwd`; fail/system/pipe alternatives and FileStorage requirements stay
+unchanged, as do `failureMessage`/`pipeForward` trace protections. Delegates gain
+mailing-list administrative privileges. The client does not insert the source
+example's literal `delegates=` prefix into values.
+
+Mime (11.42, WebServer) widens only `extensions`: `urls` stays one raw
+newline-separated string and `redirectUrl` stays scalar. `allowNull: false` still
+sends 0 and referrer behavior remains server-controlled. MySQL (11.44) privilege
+assignment replaces existing privileges; there is no read/merge. Names with spaces
+and `ALL PRIVILEGES` stay open strings. No default or clear/no-op/grant meaning is
+inferred for omitted/null/empty privileges. Account prefixes and the disabled
+MySQL/MariaDB-without-remote-MySQL caveat remain.
+
+Team (104, selected account) uses plural `roles`; no roles means no features, and
+creation can grant owner privileges. Password or activation email is required by
+the server, without a client cross-field guard. Password protection, literal dotted
+service fields, expiry/default/false/zero semantics and the self-referential FTP
+homedir source condition remain. Its reviewed nullable canonical integer-string
+timestamp result is unchanged; no live Team support is established. WHM profile
+generation (11.52, Receive Mail) omits services to retain `email,caldav,carddav`;
+unsupported services remain server-handled. Its private payload stays exact without
+format validation, decoding, installation or sending. WHM system forwarding (11.52)
+changes system-account destinations; root notices and nobody CGI bounce-mail
+caveats remain. The client contacts no destination or supplied URL and performs
+no implicit mail message, read, merge, settings change, retry or rollback.
+
+This adds no endpoints or response changes: 1,234 canonical operations, 119 groups
+and 241 generated outputs remain. Verification uses offline synthetic fixtures:
+no mailbox/list/team/settings/database/server change, activation/welcome/configuration
+message or mail delivery ran. Historical scalar captures cannot establish live
+PHP-list acceptance. Live follow-up `8x0.2.85`, the wider `8x0.28.8` adopter audit
+and existing module live/source follow-ups remain OPEN.

@@ -8,6 +8,7 @@ use Closure;
 use HostingPal\WhmApiClient\Api\Uapi\Spec\MysqlSpec;
 use HostingPal\WhmApiClient\Exception\ApiException;
 use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
+use InvalidArgumentException;
 use SensitiveParameter;
 
 /**
@@ -788,31 +789,46 @@ final readonly class Mysql
      * Documented: Available in cPanel 11.44 and later. Disabling the MySQL/MariaDB role disables this operation when
      * remote MySQL is not configured.
      *
-     * Documented: The privileges list replaces the existing privilege list. Pass ALL PRIVILEGES or a comma-separated
-     * string, not a PHP array. If database prefixing is enabled, database and user must include the account prefix and
-     * underscore. The pinned documentation specifies no default for omitted privileges.
+     * Documented: The privileges list replaces the existing privilege list. Pass ALL PRIVILEGES, a comma-separated
+     * string or a nonempty sequential string list. If database prefixing is enabled, database and user must include the
+     * account prefix and underscore. The pinned documentation specifies no default for omitted privileges.
      *
      * Documented: The pinned response declares a nullable object without a field schema. Null remains null; object
      * fields are preserved as opaque data without assigning them meanings. An omitted data member is not accepted as
      * null. The client's existing empty-map compatibility also accepts an empty JSON list as an empty array; nonempty
      * lists are rejected. This is not a newly observed wire variant.
      *
+     * Documented: Client lists preserve order, duplicates, empty string items and all other bytes, and reject empty,
+     * keyed or nonstring lists and items containing a comma before dispatch. Scalars retain commas, percent escapes and
+     * empty strings without parsing or pre-encoding. Optional null omits the field; an empty list never means omission.
+     * Collection arguments are trace-protected without changing transport or classifying the field as a semantic
+     * secret.
+     *
+     * Documented: Privilege strings remain open, including ALL PRIVILEGES and names with spaces. The client joins once
+     * and percent-encodes once downstream; do not pre-encode commas or spaces. Omitted privileges have no documented
+     * default; the client does not infer clear, no-op or grant semantics or read and merge existing privileges.
+     *
      * API-map identity: uapi:Mysql/set_privileges_on_database#GET (wire name set_privileges_on_database).
      *
      * @param string $database The database's name.
      * @param string $user The database user's name.
-     * @param string|null $privileges * `ALL PRIVILEGES` * A comma-separated list of one or more of the following
-     *     individual privileges: * `ALTER` * `ALTER ROUTINE` * `CREATE` * `CREATE ROUTINE` * `CREATE TEMPORARY TABLES`
-     *     * `CREATE VIEW` * `DELETE` * `DROP` * `EVENT` * `EXECUTE` * `INDEX` * `INSERT` * `LOCK TABLES` * `REFERENCES`
-     *     * `SELECT` * `SHOW VIEW` * `TRIGGER` * `UPDATE` Null omits it.
+     * @param string|non-empty-list<string>|null $privileges * `ALL PRIVILEGES` * A comma-separated list of one or more
+     *     of the following individual privileges: * `ALTER` * `ALTER ROUTINE` * `CREATE` * `CREATE ROUTINE` * `CREATE
+     *     TEMPORARY TABLES` * `CREATE VIEW` * `DELETE` * `DROP` * `EVENT` * `EXECUTE` * `INDEX` * `INSERT` * `LOCK
+     *     TABLES` * `REFERENCES` * `SELECT` * `SHOW VIEW` * `TRIGGER` * `UPDATE` Null omits it.
      * @return SetPrivilegesOnDatabaseResult
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/user-management/mysql-set_privileges_on_database
      */
-    public function setPrivilegesOnDatabase(string $database, string $user, ?string $privileges = null): ?array
-    {
+    public function setPrivilegesOnDatabase(
+        string $database,
+        string $user,
+        #[SensitiveParameter]
+        string|array|null $privileges = null,
+    ): ?array {
         /** @var SetPrivilegesOnDatabaseResult $result Validated against MysqlSpec::SET_PRIVILEGES_ON_DATABASE. */
         $result = ($this->run)(MysqlSpec::SET_PRIVILEGES_ON_DATABASE, [
             'database' => $database,

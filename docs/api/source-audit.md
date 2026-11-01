@@ -8409,3 +8409,96 @@ PHP-list acceptance. Live `8x0.2.84` remains OPEN, wider `8x0.28.8` remains open
 and existing SSL unknown-field `8x0.2.19`, omitted DCV-map `8x0.2.16` and
 ModSecurity findings/follow-ups retain their status. Local PHP 8.4 results do not
 establish exact-HEAD PHP 8.3 CI.
+
+
+## 2026-11-01 — Mail/account delimited-input adoption (8x0.28.8.4)
+
+Eight existing string fields explicitly opt into the accepted shared descriptor:
+`kind: delimited`, `item_type: string`, `allow_scalar: true`, `empty: reject`,
+`delimiter: ','`. No shared runtime, generator or schema change is needed.
+Original decompressed 2026-10-13 source hashes remain:
+
+- UAPI: `172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`
+- WHM: `6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594`
+
+Each operation adds one `kind: doc` evidence binding dated `2026-11-01`, version
+`pinned 2026-10-13`, carrying that source hash and its exact original pointer:
+
+| Operation | Parameter pointer | PHP position / requiredness |
+| --- | --- | --- |
+| UAPI BoxTrapper/save_configuration | `/paths/~1BoxTrapper~1save_configuration/get/parameters/2` | `fromAddresses`, 2, required |
+| UAPI Email/add_forwarder | `/paths/~1Email~1add_forwarder/get/parameters/4` | `forwardEmail`, 4, optional |
+| UAPI Email/add_mailman_delegates | `/paths/~1Email~1add_mailman_delegates/get/parameters/0` | `delegates`, 0, required |
+| UAPI Mime/add_hotlink | `/paths/~1Mime~1add_hotlink/get/parameters/0` | `extensions`, 0, required |
+| UAPI Mysql/set_privileges_on_database | `/paths/~1Mysql~1set_privileges_on_database/get/parameters/2` | `privileges`, 2, optional |
+| UAPI Team/add_team_user | `/paths/~1Team~1add_team_user/get/parameters/8` | `roles`, 8, optional |
+| WHM generate_mobileconfig | `/paths/~1generate_mobileconfig/get/parameters/2` | `selectedAccountServices`, 2, optional |
+| WHM set_user_email_forward_destination | `/paths/~1set_user_email_forward_destination/get/parameters/0` | `forwardTo`, 1, required |
+
+All eight formal source parameters are concrete nonnullable strings whose prose
+specifies comma-separated values. The PHP array alternative is a client
+convenience, not a source-array schema or live observation. Formal names remain
+`from_addresses`, `fwdemail`, `delegates`, `extensions`, `privileges`, `roles`,
+`selected_account_services` and `forward_to`. Existing public aliases/order stay
+unchanged, including user before forwardTo despite opposite source order.
+Four arguments remain required; four retain optional null omission. Nonempty
+sequential strict-string lists join once into one original field. Raw scalars
+remain unparsed. Lists retain order, duplicates, empty items and all other bytes;
+embedded commas and malformed/empty arrays reject before I/O after metadata reset,
+with old captured snapshots preserved. Empty scalar/`['']` stays supplied;
+`['', 'a', '']` stays `,a,`; no empty-array omission, quoting/escaping, trimming,
+parsing, coercion, enum validation or server-default insertion is introduced.
+
+Source ambiguities remain explicit. The delegates multiple-value example embeds
+`delegates=` in its value, but no prefix is inserted. MySQL browser/CLI `%2C` and
+`%20` instructions describe downstream encoding; raw list/scalar bytes are encoded
+once by the client. Privileges replace the existing list, with no documented
+omission default or inferred clear/no-op/grant meaning. Team's creation field is
+plural roles and its FTP homedir requiredness prose refers to itself; neither
+singular-role alias nor an invented cross-field guard is added. Its previously
+reviewed nullable canonical-numeric-string timestamp correction remains, despite
+the pinned strict-integer response. The source profile format/base64 description
+adds no local payload rewriting, decoding, validation, installation or sending.
+
+Method-specific behavior is retained: BoxTrapper's Receive Mail/cPanel 82 and
+Webmail selector override, queue_days minimum one, current-score default and
+false/zero/float/empty handling; forwarding/delegates' 11.42 role/no-rollback and
+server fwd requirement, fail/system/pipe/FileStorage choices and administrative
+privileges; Mime's 11.42 WebServer role, scalar newline-separated urls and scalar
+redirect_url/referrer/allow_null handling; MySQL's 11.44 prefix and disabled-role
+without remote configuration caveats; Team's 104 account selection, owner-level
+privileges, no-role feature restriction, password-or-activation-email requirement,
+password protection and all dotted service/expiry/default fields; profile's
+11.52 Receive Mail/default-all-three/ignore-unsupported behavior; system
+forwarding's 11.52 root-notice/nobody-without-suexec caveats. No client read, merge,
+default, retry, rollback, account switch, destination contact or message is added.
+
+Six UAPI methods retain form POST on both direct and bridge routes. WHM system
+forwarding stays native form POST; profile generation stays native GET even with
+the new collection trace attribute. All eight generated argument frames receive
+SensitiveParameter without semantic sensitive:true. Existing password/failure/pipe
+protection remains; caller/transport traces, response/mismatch payloads and profile
+data remain outside that limited argument-frame guarantee.
+
+Literal synthetic tests cover all 14 route positions: exact URL/control query,
+account/auth/content type/body and one dispatch, list/scalar byte compatibility,
+all four optional omission/null/explicit-empty/rejected-empty matrices, aliases
+and named/positional neighbors, actual hidden generated argument frames, late
+comma and distributed malformed arrays, metadata reset/snapshot preservation and
+native pre-entry failure timing. List calls preserve nullable opaque maps/null
+versus missing, forwarder rows, delegate mixed transformed metadata, Team nullable
+canonical timestamps, exact profile strings and metadata-only forwarding void.
+API/UAPI/outer-WHM failure retains precedence and no retries are added.
+
+All 243 response specs and generated method bodies in the six affected groups,
+and the 235 nontarget contracts/docs, remain unchanged. Every other generated
+output, including coverage, is unchanged. Coverage stays 1,234 canonical
+operations (636 UAPI / 598 WHM), 119 groups and 241 generated outputs. Original
+sources, checksums, annotations and historical captures remain immutable, and all
+55 inherited diagnostics stay visible/unwaived. This is offline coverage only:
+no live API/SSH/DNS/browser/credential access, account/mailbox/list/team/settings/
+database/server change or activation/welcome/configuration/message delivery ran.
+Historical scalar observations cannot establish PHP-list acceptance or behavior.
+Live `8x0.2.85` remains OPEN, wider `8x0.28.8` remains OPEN, and all existing
+module live/source gaps retain their status. Local PHP 8.4 gates do not establish
+exact-HEAD PHP 8.3 CI.

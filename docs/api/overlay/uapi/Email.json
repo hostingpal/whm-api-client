@@ -311,6 +311,10 @@
         {
           "kind": "documented",
           "text": "Changes mail routing; forward, pipe and failure actions have distinct delivery effects."
+        },
+        {
+          "kind": "documented",
+          "text": "Client lists preserve order, duplicates, empty string items and all other bytes, and reject empty, keyed or nonstring lists and items containing a comma before dispatch. Scalars retain commas, percent escapes and empty strings without parsing or pre-encoding. Optional null omits the field; an empty list never means omission. Collection arguments are trace-protected without changing transport or classifying the field as a semantic secret."
         }
       ],
       "method": "POST",
@@ -323,7 +327,14 @@
           "sensitive": true
         },
         "fwdemail": {
-          "php": "forwardEmail"
+          "php": "forwardEmail",
+          "collection": {
+            "kind": "delimited",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "delimiter": ","
+          }
         },
         "fwdsystem": {
           "php": "forwardSystem"
@@ -339,6 +350,14 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-30",
           "note": "The pinned /Email/add_forwarder GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Email~1add_forwarder/get/parameters/4",
+          "note": "The formal fwdemail parameter is a concrete nonnullable string documenting comma-separated values. The generated client additionally accepts a nonempty sequential string list, joins once into the original fwdemail field, and preserves raw scalar bytes. This is an offline client convenience, not PHP-list live evidence; requiredness, defaults, effective HTTP method and response contracts are unchanged."
         }
       ]
     },
@@ -404,6 +423,14 @@
         {
           "kind": "documented",
           "text": "delegates: A list of the administrators to add.\n\n**Note:**\n\n  Separate multiple email addresses with commas."
+        },
+        {
+          "kind": "documented",
+          "text": "Client lists preserve order, duplicates, empty string items and all other bytes, and reject empty, keyed or nonstring lists and items containing a comma before dispatch. Scalars retain commas, percent escapes and empty strings without parsing or pre-encoding. Optional null omits the field; an empty list never means omission. Collection arguments are trace-protected without changing transport or classifying the field as a semantic secret."
+        },
+        {
+          "kind": "documented",
+          "text": "Delegates receive mailing-list administrative privileges. The pinned multiple-delegate example includes delegates= inside its value; the client does not insert that prefix."
         }
       ],
       "method": "POST",
@@ -413,8 +440,27 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-30",
           "note": "The pinned /Email/add_mailman_delegates GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Email~1add_mailman_delegates/get/parameters/0",
+          "note": "The formal delegates parameter is a concrete nonnullable string documenting comma-separated values. The generated client additionally accepts a nonempty sequential string list, joins once into the original delegates field, and preserves raw scalar bytes. This is an offline client convenience, not PHP-list live evidence; requiredness, defaults, effective HTTP method and response contracts are unchanged."
         }
-      ]
+      ],
+      "params": {
+        "delegates": {
+          "collection": {
+            "kind": "delimited",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "delimiter": ","
+          }
+        }
+      }
     },
     "uapi:Email/add_mx": {
       "notes": [

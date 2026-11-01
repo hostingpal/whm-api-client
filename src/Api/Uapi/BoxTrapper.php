@@ -710,19 +710,25 @@ final readonly class BoxTrapper
      * retain the supplied selector; do not assume the cPanel target username is a mailbox address.
      *
      * Documented: Changes message handling. Required queue_days documents a minimum of one; omitted spam_score retains
-     * current configuration. from_addresses is one comma-separated string. Optional from_name and spam_score retain
-     * omission; explicit zero flags and empty strings are sent. The pinned source classifies this operation as clean
-     * rollback; the client performs no automatic rollback or retry.
+     * current configuration. from_addresses uses one comma-separated wire field. Optional from_name and spam_score
+     * retain omission; explicit zero flags and empty strings are sent. The pinned source classifies this operation as
+     * clean rollback; the client performs no automatic rollback or retry.
      *
      * Documented: The result is a nullable object without a pinned field schema. Preserve opaque fields and explicit
      * null; an absent data member is a payload mismatch.
+     *
+     * Documented: Client lists preserve order, duplicates, empty string items and all other bytes, and reject empty,
+     * keyed or nonstring lists and items containing a comma before dispatch. Scalars retain commas, percent escapes and
+     * empty strings without parsing or pre-encoding. Optional null omits the field; an empty list never means omission.
+     * Collection arguments are trace-protected without changing transport or classifying the field as a semantic
+     * secret.
      *
      * API-map identity: uapi:BoxTrapper/save_configuration#GET (wire name save_configuration).
      *
      * @param string $email The account's email address.
      * @param bool $enableAutoWhitelist Whether to enable automatic whitelisting for the account.
-     * @param string $fromAddresses A comma-separated list of email addresses that the system uses when it sends
-     *     messages back to the original message senders.
+     * @param string|non-empty-list<string> $fromAddresses A comma-separated list of email addresses that the system
+     *     uses when it sends messages back to the original message senders.
      * @param int $queueDays The number of days to retain log files and queued messages.
      * @param bool $whitelistByAssociation Whether to whitelist the email addresses in a message's *To* and *From*
      *     sections, including carbon-copied (CC) recipients.
@@ -732,12 +738,14 @@ final readonly class BoxTrapper
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/spam-prevention-(boxtrapper)/boxtrapper-save_configuration
      */
     public function saveConfiguration(
         string $email,
         bool $enableAutoWhitelist,
-        string $fromAddresses,
+        #[SensitiveParameter]
+        string|array $fromAddresses,
         int $queueDays,
         bool $whitelistByAssociation,
         ?string $fromName = null,
