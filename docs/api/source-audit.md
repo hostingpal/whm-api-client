@@ -9833,3 +9833,70 @@ established offline only: no live run met a lost `createacct`, an unreadable lis
 removal or filesystem residue. The proof covers its fixed locations at one moment. It does not
 cover other paths, backups, logs or mail queues. Deferred or asynchronous cPanel work after
 the check is not excluded, and nothing shows how session files are named.
+
+### Review corrections and the v4 capture
+
+An independent review of this branch at `fb8ad12` found ten issues. Each was confirmed
+against the code, shown failing first, and corrected at `e309912`. The v3 and v2 artifacts
+above keep what they recorded at `b3bfc14`. Neither carries a positive control, so their
+`filesystem_cleanup` values are not bound to the changed server by anything in the artifact.
+
+- A lost `Tokens/create_full_access` followed by an absent listing reported `confirmed_absent`,
+  the reasoning already refused for `createacct`. It is now `unconfirmed`, with
+  `token_creation_outcome_unknown`. No artifact met this path.
+- After an unknown `createacct`, the domain, zone and filesystem reads could report
+  `confirmed_absent` though creation might still land. They now stay `unconfirmed` until the
+  marker settles the outcome. No artifact met this path.
+- Nothing tied `oblak.test` to the server the API changed, so `confirmed_absent` could have
+  described the wrong machine. Each run now requires a positive control after setup, in
+  every location but sessions, or a later absence is `unconfirmed`. This replaces the ad hoc
+  poll above and is recorded in the artifact.
+- `find | wc -l` lost the search's exit status, so an unreadable subtree read as 0 beneath a
+  healthy top-level inventory. A failed search now prints no count, and the strict parser
+  refuses the report. The script stays read-only. A failed search now also hides residue
+  elsewhere: such a report is `unconfirmed`, never `present`.
+- A user-level `ControlMaster` or `ControlPersist` could hold standard error open and turn a
+  clean run into `unconfirmed`. Sharing is off, and only standard output ends the read. This
+  machine's configuration sets neither, so the captures were not affected.
+- Both recipes swallowed failures, so the lifecycle reported `exercise: passed` and
+  `status: passed` for a failed capture, and neither recipe read those fields. Recipes now
+  record their detail and throw `ExerciseFailure`, and copy `status`, `setup` and `failures`
+  from the outcome. A token that cannot be bound is now a capture failure, not a setup one,
+  because the lifecycle's setup had passed.
+- Only `fresh()` limited token lifetime, and no production code called it. The constructor
+  now enforces the bound, and both recipes use `fresh()`, so their markers now carry its
+  `fixture-` prefix. `FiniteQuotaGuard` takes the binding, refuses any other, and consumes each
+  mutation once, as `FilemanUploadGuard` does.
+- `FilemanUploadCommandTest` inherited its environment, so `WHM_API_LIVE_FS_CHECK=1 composer
+  test` started real `ssh` from the offline suite. It now clears the variable, and tests fail
+  if the opt-in reaches `ssh` through either command.
+- The API-only limitation was dropped whenever `filesystem_cleanup` was not `not_claimed`,
+  including after a failed proof. Only `confirmed_absent` now replaces it.
+
+Two earlier test expectations pinned these bugs and were changed deliberately.
+`testEveryFailurePathCleansUpWithoutRetrying` expected `confirmed_absent` for a lost token
+creation, and `testRealResidueIsReportedEvenBesideAnUnusableInventory` expected `present` beside
+what is now a failed search.
+
+The scenario moved to `fileman-upload-disposable-v4` and the finite one to
+`finite-quota-disposable-v3`, because captures exist under the old names and these reports mean
+something different. Assessment policies are unchanged.
+
+The [Fileman v4 capture](evidence/2026-11-01-fileman-upload-v4.json), SHA-256
+`239e3417565c511c9177a2d298bfed883d738b102dc653fc2bd8e5ae980ce780`, ran once at
+`e309912ba42d20988c0f32e2c9355b3ac9c5007c` on `11.138.0.19` and is a **passed run**, exit 0. All
+25 phases passed with no review findings, all six files were proven owned and deleted, and
+token, account, directory, domain and zone cleanup are `confirmed_absent`. Its
+`filesystem_control` passed with `home=1, users=1, userdata=1, userdomains=1, passwd=1, zones=2`,
+and `filesystem_cleanup` is `confirmed_absent`. The rewritten script read `confirmed_absent`
+read-only before the run and again after it.
+
+This is the first run with a control inside its own artifact. It shows those six spellings
+finding this run's account on this server. Sessions read 0, so **they still have no positive
+control**, and the wide match stays. It exercises the success path only, including the control
+and the rewritten script. A failed control, a failed search and a held standard error are
+established offline only.
+
+Finite Quota was not rerun. These corrections change its behaviour, so
+`finite-quota-disposable-v3` has no capture, and the
+[v2 artifact](evidence/2026-11-01-finite-quota-v2.json) stays the record of what ran at `b3bfc14`.

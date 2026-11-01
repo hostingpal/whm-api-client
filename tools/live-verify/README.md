@@ -2375,11 +2375,20 @@ different: it adds `filesystem_control`, a proof without one is never `confirmed
 `status` and `setup` come from the lifecycle, and a failed proof keeps the API-only
 limitation. Earlier artifacts stay the valid record of what ran at their revisions.
 
+The [v4 capture](../../docs/api/evidence/2026-11-01-fileman-upload-v4.json) at `e309912` on
+`11.138.0.19` is a **passed run**, exit 0, with the filesystem proof enabled. All 25 phases
+passed with no review findings, all six files were proven owned and deleted, and token,
+account, directory, domain and zone cleanup are `confirmed_absent`. The control passed with
+`home=1, users=1, userdata=1, userdomains=1, passwd=1, zones=2`, so `filesystem_cleanup:
+confirmed_absent` is bound to the server the run changed. Sessions read 0, so their naming
+stays unobserved. See the
+[source audit](../../docs/api/source-audit.md#review-corrections-and-the-v4-capture).
+
 The [v3 capture](../../docs/api/evidence/2026-11-01-fileman-upload-v3.json) at `b3bfc14` on
 `11.138.0.19` is a **passed run**, exit 0, through the shared lifecycle with the filesystem
 proof enabled. All 25 phases passed with no review findings, all six files were proven owned
 and deleted, and token, account, directory, domain and zone cleanup are `confirmed_absent`,
-as is `filesystem_cleanup`. See the
+as is `filesystem_cleanup`, though that claim predates the control. See the
 [source audit](../../docs/api/source-audit.md#shared-disposable-account-lifecycle-2026-11-01).
 
 The [corrected capture](../../docs/api/evidence/2026-11-01-fileman-upload-v2.json) at

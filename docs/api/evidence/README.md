@@ -1343,13 +1343,24 @@ SHA-256: `4138dbf1d083ddfe6d109c86bb8beb449abde6937e93b2452693d47b2b792b81`.
 
 ## Disposable-account Fileman upload evidence
 
+The [v4 capture](2026-11-01-fileman-upload-v4.json) at
+`e309912ba42d20988c0f32e2c9355b3ac9c5007c` on `11.138.0.19` passes recipe
+`fileman-upload-disposable-v4`, exit 0, with the filesystem proof enabled. All 25 phases
+passed with no review findings, all six files were proven owned and deleted, and token,
+account, directory, domain and zone cleanup are `confirmed_absent`. Its `filesystem_control`
+passed with `home=1, users=1, userdata=1, userdomains=1, passwd=1, zones=2`, which binds
+`filesystem_cleanup: confirmed_absent` to the server the run changed. Sessions read 0, so
+their naming stays unobserved. See the
+[source audit](../source-audit.md#review-corrections-and-the-v4-capture). SHA-256:
+`239e3417565c511c9177a2d298bfed883d738b102dc653fc2bd8e5ae980ce780`.
+
 The [v3 capture](2026-11-01-fileman-upload-v3.json) at
 `b3bfc1474729fb2ce60207d9b3d5a3d0bbe51232` on `11.138.0.19` passes recipe
 `fileman-upload-disposable-v3`, exit 0, through the shared disposable-account lifecycle
 with the filesystem proof enabled. All 25 phases passed with no review findings, all six
 files were proven owned and deleted, and token, account, directory, domain and zone cleanup
-are `confirmed_absent`, as is `filesystem_cleanup`. The proof covers its fixed locations at
-one moment, and session filenames still have no positive control. See the
+are `confirmed_absent`, as is `filesystem_cleanup`, a claim made before the proof gained its
+control, so no in-run control binds it to this server. See the
 [source audit](../source-audit.md#shared-disposable-account-lifecycle-2026-11-01). SHA-256:
 `7f5f46ccd0c02d0d883d1221c6e80c8219406766a261f1a7552b4b853e750a90`.
 
@@ -1380,4 +1391,6 @@ account, domain and zone are `confirmed_absent`, as is `filesystem_cleanup`, and
 baseline passes. It fails only the strict finite assessment, on the same two unknown-field
 observations as the [v1 artifact](2026-10-17-finite-quota.json). See the
 [source audit](../source-audit.md#shared-disposable-account-lifecycle-2026-11-01). SHA-256:
-`82fe5c4f332f37cc444e588e57496f20d7d15f00db6495b52c0e1aad263d758a`.
+`82fe5c4f332f37cc444e588e57496f20d7d15f00db6495b52c0e1aad263d758a`. It stays the valid record
+of what ran at that revision, including its `filesystem_cleanup`, which predates the control.
+The fixture has since moved to `finite-quota-disposable-v3`, and no v3 capture exists.
