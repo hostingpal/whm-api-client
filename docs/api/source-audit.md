@@ -9748,3 +9748,135 @@ correction ran live, and **no v3 capture exists yet**.
   Policy v2 requires `not_checked` on these three records, so it would report findings on
   either artifact. Both were assessed under policy v1: their recorded results stand, and
   policy v2 does not judge them retroactively.
+
+
+### Trash complete source-backed slice (2026-11-01)
+
+Delivery `whm-api-client-8x0.4.31` selects both complete Trash path objects from
+the original pinned `2026-10-13/cpanel.openapi.json.gz` (OpenAPI 11.138.0.10),
+decompressed SHA-256
+`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`.
+Evidence binds operation selection/naming/method policies to
+`/paths/~1Trash~1usage/get` and `/paths/~1Trash~1remove/post`, with path sensitivity
+and byte-preservation policy bound to the latter's `/parameters/0`. Both source
+operations declare cPanel 136 and plugin annotation Trash. The version alone
+establishes no plugin installation or enablement, role restriction or implicit
+availability probe. No source refresh, alias, exclusion, unwrap, optional_payload,
+void, requiredness override, response correction or new validation primitive is
+introduced.
+
+`getUsage(): array` maps usage to GET without parameters. Its required nonnullable
+known-field object has optional bytes, exists and items integers. The source
+measures apparent bytes by summing entry lstat sizes, excluding root-level
+.trash_restore bookkeeping; this is not allocated blocks or quota impact. The
+source's no-home-walk/no-outside-symlink statements describe upstream behavior,
+not client operations or live evidence. exists prose describes 0/1 while its
+formal integer has no enum. Preserve strict integers without finite-range,
+minimum, nonnegative or numeric-string assumptions.
+
+`removeItem(#[SensitiveParameter] string $path): array` maps the original POST
+variant to one form POST using established scalar encoding, despite the source
+query-parameter location. The required path stays path in PHP and on the wire.
+Exact leading/repeated slashes, dot/dotdot, backslashes, percent escapes, spaces,
+plus, Unicode and supplied empty string survive one form encoding; empty sends
+path=. The server owns its documented home-relative leading slash, resolved
+symlink/.. confinement strictly inside home/.trash and trash-root rejection.
+The client performs no local filesystem access, normalization or confinement.
+Synthetic fixtures provide no server confinement guarantee.
+
+Removal permanently and recursively deletes one item, including permission-locked
+entries unlike Fileman fileop unlink. Already-absent targets succeed and success
+prunes any stale restore-map line for that item. No actual fixture deletion or
+restore-map action ran. The optional alreadyGone and removed fields are native
+booleans. Source prose says removed is always true on success and alreadyGone is
+true when absent, otherwise omitted, yet the alreadyGone example is false.
+The formal bool contract accepts native false without guessing a truth-only
+restriction or coercing integer/quoted flags. Ordinary Flag API status remains
+authoritative even with false/zero payload fields.
+
+Both results are required nonnullable known-field objects with all fields
+optional, preserving omission and rejecting explicit null/missing data. Existing
+known-field filtering and inherited empty-array object compatibility remain;
+the decoder still distinguishes JSON object/array. No opaque widening is added.
+Independent literal HTTP-boundary fixtures cover account-cached selectors,
+signatures/named path, exact auth/method/routing/query/form/header bytes on direct
+and bridge routes, all optional-field combinations, empty object, strict scalar/
+container/null/missing-data rejection, native bool/int distinctions, large ints,
+known-field filtering, metadata reset/replacement/warnings, native pre-entry
+failure retention, one-attempt transport/HTTP/JSON/outer-WHM/API/payload error
+precedence, and actual nonzero library trace privacy with exception args enabled.
+
+Private paths and response/error values stay concealed in library-owned frames;
+explicit metadata/mismatch payload access remains sensitive caller-accessible
+data. No implicit inventory, readback, retry, restore or rollback is added.
+Success establishes no quota release, allocated-space change, cross-filesystem
+behavior or rollback. No live/API/SSH/network/credentials or returned-path/URL
+access occurred. Live follow-up `whm-api-client-8x0.2.73` remains OPEN and the
+full API goal remains OPEN.
+
+Generated coverage is 1,205 canonical operations (617 UAPI, 588 WHM), 107 groups
+and 217 outputs (216 PHP plus coverage). All prior generated methods/specs and
+overlays remain byte-identical; only the additive cached trash accessor and
+coverage change. Sources, evidence, map checksum, schema copies and historical
+audit text remain unchanged. All 55 inherited diagnostics stay unwaived. PHP 8.3
+is the supported minimum; local validation uses PHP 8.4.26 and exact-head PHP 8.3
+CI remains a publication gate.
+
+
+### Trash response correction and ordered master integration (2026-11-01)
+
+This append supersedes active response guidance of the historical Trash slice
+without editing that entry or its original three overlay evidence objects.
+O210cc400a55f7cc10c08f06d369fe17d8a5f9e14 and P76c7b5a21265ae2a6be6361605fcab3914d8d3bc
+remain fixed. Normal no-commit/no-ff integration preserves approved master
+97a251fcc34d2eafd6109580a75c028e66ca389d, then the exact O-only Trash audit append
+and this correction. Earlier4755/provisional0c4 preparations stay historical;
+incoming139/140/142 head/merge differences remain under adh. Subsequent141 approval
+and equal merge tree establish this base, not final106 acceptance or a waiver.
+
+Review https://github.com/hostingpal/whm-api-client/pull/106#pullrequestreview-5725860648
+at O on11.138.0.19 reports removed=1/alreadyGone=1 on direct UAPI/WHM bridge after
+actual permanent deletion/already-absent success, with owned fixture cleanup.
+Only those optional nonnullable leaves change from bool to flag accepting bool,
+returning0|1. Pinned false/true now return integer0/1: an intentional public output
+type cost. Integer0/bool variants are bounded policy, not observed success values;
+strings/floats/null/other ints/containers fail. Pinned bool schema and alreadyGone
+false-example versus true/omitted-prose contradiction remain intact. Both native
+signatures, SensitiveParameter, request bytes/method and Flag outcome are unchanged.
+
+Separate root artifact open-pr-live-results-b-pr106-v3.json SHA-256
+4507897ac11f49570867428c699a13075e7a178ab6e9d685f11e37e364958c73 classified direct
+usage.items as is_string&&is_numeric while bridge returned int at O/build above.
+Exact lexical bytes were not saved. Reviewer integer counts on both routes are
+separate evidence. Retained-source answer
+https://github.com/hostingpal/whm-api-client/pull/106#issuecomment-6561140130 to
+question6561109583 attributes items to literal0/scalar@entries after excluding
+dot/dotdot/.trash_restore. Producer grammar is not recovered wire grammar; direct
+serializer code/cause were not retained. Only items opts into int numeric-string:
+optional minus, canonical digits, exact in-range string/int roundtrip. Signed
+negative strings/boundaries are explicitly broader policy; native integers remain
+unchanged. -0/plus/whitespace/leading zeros/fractions/exponents/overflow fail.
+Narrower nonnegative-string support needs a new shared grammar; raw string union
+admits malformed values. bytes/exists remain strict int without new bounds/enums
+or compatibility transfer. Old-wire lexical acceptance remains unproven;4g9 needs
+final exact-HEAD disposition and8x0.2.73 retains source/runtime gaps. No new capture
+or implementation-file source hash is invented.
+
+Already-absent success requires an existing resolvable parent; no trash/deeper
+nonexistent parent can error. An outside-target symlink itself stays unremovable
+because confinement follows target. These original-review limits add no fallback,
+retry, rollback, path validation or general idempotence/confinement/quota guarantee.
+Private path/response/metadata/mismatch handling remains explicit. This correction
+performs no live requests, source fetches, remote filesystem actions or captures.
+
+Independent literal HTTP-boundary regressions on both routes were retained RED
+before response edits, rejecting removed1/alreadyGone1/items"5" specifically with
+PayloadMismatchException; minimal overlay and official generation return integer
+results. Further offline cases retain strict types/omission/null/root/filtering,
+integer boundaries, bytes/exists strictness, ordinary API errors, warnings, one
+attempt and sensitive-trace coverage. Shared runtime/generator/schema/source pins,
+map checksum/dependencies and unrelated master contracts stay unchanged. Combined
+generation yields1242canonical/115groups/646U596W/233outputs. All55 diagnostics stay
+unwaived. Local combined offline gates are recorded separately; PHP8.3 CI and
+exact-HEAD Claude4g9/adh dispositions remain publication requirements. No worker
+commit/push/Beads mutation or acceptance is claimed.

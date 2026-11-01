@@ -1,0 +1,165 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "Trash",
+  "accessor": "trash",
+  "description": "Selected-account trash apparent usage and permanent item removal, available from cPanel 136 with source plugin annotation Trash. Paths and payloads are private remote data; the client forwards exact path bytes without local filesystem operations. Original-revision observations are build/route scoped; live follow-up whm-api-client-8x0.2.73 remains open.",
+  "operations": {
+    "uapi:Trash/usage": {
+      "name": "getUsage",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 136 with source plugin annotation Trash. The version annotation alone does not establish that the plugin is installed or enabled; no role restriction or implicit availability probe is inferred."
+        },
+        {
+          "kind": "policy",
+          "text": "Account paths, response values, errors and raw metadata may be private. Do not log results, raw metadata or PayloadMismatchException::$payload indiscriminately. The client performs no local path access, implicit inventory, readback, retry, restore or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a required nonnullable known-field object with all fields optional. Omission remains distinct from explicit null; missing data and null fail. Existing known-field filtering and empty-array object-validator compatibility remain; decoding still distinguishes JSON objects from arrays."
+        },
+        {
+          "kind": "documented",
+          "text": "Apparent bytes sum each entry's lstat size, excluding the root-level .trash_restore bookkeeping file. This is not allocated disk blocks or quota impact. The source says the account home is not walked and symlinks outside trash are not followed; these are upstream claims, not client operations or live evidence."
+        },
+        {
+          "kind": "policy",
+          "text": "bytes and exists remain strict integers without inferred ranges or numeric-string coercion; exists has no formal enum. Only items accepts lossless canonical in-range integer strings under the existing signed grammar and returns int. Signed negative strings and boundaries are compatibility policy beyond the nonnegative count producer, not observed wire values. Reject -0, plus, whitespace, leading zeros, fractions, exponents and overflow. Payload zero does not override ordinary API status."
+        },
+        {
+          "kind": "observed",
+          "text": "At original revision 210cc400a55f7cc10c08f06d369fe17d8a5f9e14 on 11.138.0.19, root classified direct items as is_string && is_numeric, while bridge returned int. Exact lexical bytes were not retained; this correction cannot prove acceptance of that old payload or its serializer cause. The reviewer independently observed integer counts on both routes. Retained Trash.pm excerpts produce literal 0 or scalar @entries excluding dot, dotdot and .trash_restore; source grammar is not recovered wire grammar."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "note": "Select the pinned no-parameter GET as getUsage. Preserve cPanel 136 and Trash plugin annotations, ordinary Flag outcome and optional strict-integer fields in a required nonnullable object; document apparent-byte semantics without schema corrections or inferred ranges.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Trash~1usage/get"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19; original revision 210cc400a55f7cc10c08f06d369fe17d8a5f9e14",
+          "date": "2026-11-01",
+          "note": "Root immutable open-pr-live-results-b-pr106-v3.json SHA-256 4507897ac11f49570867428c699a13075e7a178ab6e9d685f11e37e364958c73 classified direct usage.items as is_string && is_numeric while bridge returned int. Exact lexical bytes were not saved; this is a numeric-string class, not canonical spelling or a serializer cause, and does not prove the old payload passes this grammar. Separate reviewer https://github.com/hostingpal/whm-api-client/pull/106#pullrequestreview-5725860648 observed integer counts on both routes at the same original revision. No new capture/current-candidate live execution is claimed."
+        }
+      ],
+      "response": {
+        "items": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19; original revision 210cc400a55f7cc10c08f06d369fe17d8a5f9e14",
+              "date": "2026-11-01",
+              "note": "Root immutable open-pr-live-results-b-pr106-v3.json SHA-256 4507897ac11f49570867428c699a13075e7a178ab6e9d685f11e37e364958c73 classified direct usage.items as is_string && is_numeric while bridge returned int. Exact lexical bytes were not saved; this is a numeric-string class, not canonical spelling or a serializer cause, and does not prove the old payload passes this grammar. Separate reviewer https://github.com/hostingpal/whm-api-client/pull/106#pullrequestreview-5725860648 observed integer counts on both routes at the same original revision. No new capture/current-candidate live execution is claimed."
+            },
+            {
+              "kind": "doc",
+              "version": "retained reviewer source excerpts 11.138.0.19; answer 6561140130",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Trash~1usage/get",
+              "note": "Complete retained-source answer https://github.com/hostingpal/whm-api-client/pull/106#issuecomment-6561140130 to question https://github.com/hostingpal/whm-api-client/pull/106#issuecomment-6561109583 attributes Trash.pm items to literal 0 or scalar @entries excluding dot, dotdot and .trash_restore. This supports a nonnegative count producer, not retroactive wire spelling; direct serializer code/cause were not retained. The pinned SHA/pointer anchors operation identity/integer schema, not an implementation-file hash. Only items opts into existing int numeric-string: optional minus plus canonical decimal digits and exact in-range string/int roundtrip. Signed negative strings and boundaries are broader compatibility policy; native integer policy is unchanged. -0, plus, whitespace, leading zeros, fractions, exponents and overflow fail. bytes/exists remain unchanged. Old-wire lexical acceptance and 8x0.2.73 remain open."
+            }
+          ]
+        }
+      }
+    },
+    "uapi:Trash/remove": {
+      "name": "removeItem",
+      "method": "POST",
+      "params": {
+        "path": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 136 with source plugin annotation Trash. The version annotation alone does not establish that the plugin is installed or enabled; no role restriction or implicit availability probe is inferred."
+        },
+        {
+          "kind": "policy",
+          "text": "Account paths, response values, errors and raw metadata may be private. Do not log results, raw metadata or PayloadMismatchException::$payload indiscriminately. The client performs no local path access, implicit inventory, readback, retry, restore or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a required nonnullable known-field object with all fields optional. Omission remains distinct from explicit null; missing data and null fail. Existing known-field filtering and empty-array object-validator compatibility remain; decoding still distinguishes JSON objects from arrays."
+        },
+        {
+          "kind": "documented",
+          "text": "Permanently and recursively deletes one item, including permission-locked entries, unlike Fileman fileop unlink. Original review on 11.138.0.19 limits already-absent success to an existing resolvable parent: no trash or a deeper nonexistent parent can error. Success prunes a stale restore-map line if present. This is not a general idempotence, quota-release, allocated-space, cross-filesystem or rollback guarantee."
+        },
+        {
+          "kind": "documented",
+          "text": "The server requires the resolved target strictly inside the selected account home/.trash, never the trash root. A leading slash is home-relative: /.trash/backup-7.14.2026_16-35-25 is the documented form. The source says the server resolves symlinks and .. before confinement; offline fixtures establish no server confinement guarantee. The original reviewer observed that an outside-target symlink itself remains unremovable because confinement follows its target; no Fileman.empty_trash fallback is added."
+        },
+        {
+          "kind": "policy",
+          "text": "The required sensitive string path is forwarded unchanged with one form encoding. Empty string sends path=; leading/repeated slashes, dot/dotdot, backslashes, percent escapes, spaces, plus and Unicode stay exact remote data. No local normalization, symlink resolution, confinement, format, extension or range check is added."
+        },
+        {
+          "kind": "policy",
+          "text": "removed and alreadyGone return integer 0|1 flags. Native integer 1 was observed on both routes in review 5725860648 at original 210cc400a55f7cc10c08f06d369fe17d8a5f9e14 on 11.138.0.19. Integer 0 and pinned booleans are bounded compatibility policy; false/true now normalize to integer 0/1 instead of remaining bool. Strings, floats, null, other integers and containers fail. Fields remain optional and nonnullable. Pinned boolean schema and alreadyGone false example versus true/omitted prose stay historical evidence; no truth-only narrowing or quoted-flag coercion is added. API status remains authoritative."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "note": "Select the pinned POST as removeItem and use one form POST under existing scalar parameter policy, despite the source query parameter. Preserve ordinary Flag outcome, cPanel 136 and Trash plugin annotations, permanent deletion/restore-map caveats and optional formal native-boolean fields without truth-only enforcement, response corrections, unwrap or optional_payload.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Trash~1remove/post"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "note": "Preserve required string path with its PHP and wire name and exact supplied bytes. Bind home-relative path and server-owned resolved confinement semantics to the original description. Mark the private account filesystem path sensitive as client privacy policy without client filesystem access, normalization or invented validation.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Trash~1remove/post/parameters/0"
+        }
+      ],
+      "response": {
+        "removed": {
+          "type": "flag",
+          "accept": [
+            "bool"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19; original revision 210cc400a55f7cc10c08f06d369fe17d8a5f9e14",
+              "date": "2026-11-01",
+              "note": "Reviewer https://github.com/hostingpal/whm-api-client/pull/106#pullrequestreview-5725860648 reports direct UAPI and WHM bridge native integer 1 for removed after irreversible deletion, and removed=1 plus alreadyGone=1 for already-absent success, with owned fixture cleanup. These are attributed original-revision observations, not this combined candidate or a new capture. Change only the two optional nonnullable boolean leaves to flag accepting bool: native 0/1 remains integer; false/true normalizes to 0/1. Integer 0 and boolean variants are compatibility policy, not observed success values. Reject strings, floats, null, other integers and containers. Requests/signatures/outcome remain unchanged."
+            }
+          ]
+        },
+        "alreadyGone": {
+          "type": "flag",
+          "accept": [
+            "bool"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19; original revision 210cc400a55f7cc10c08f06d369fe17d8a5f9e14",
+              "date": "2026-11-01",
+              "note": "Reviewer https://github.com/hostingpal/whm-api-client/pull/106#pullrequestreview-5725860648 reports direct UAPI and WHM bridge native integer 1 for removed after irreversible deletion, and removed=1 plus alreadyGone=1 for already-absent success, with owned fixture cleanup. These are attributed original-revision observations, not this combined candidate or a new capture. Change only the two optional nonnullable boolean leaves to flag accepting bool: native 0/1 remains integer; false/true normalizes to 0/1. Integer 0 and boolean variants are compatibility policy, not observed success values. Reject strings, floats, null, other integers and containers. Requests/signatures/outcome remain unchanged."
+            }
+          ]
+        }
+      }
+    }
+  }
+}
