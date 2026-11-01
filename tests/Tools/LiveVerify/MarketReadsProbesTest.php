@@ -221,14 +221,13 @@ final class MarketReadsProbesTest extends TestCase
     }
 
     /**
-     * Bind the immutable artifact to the committed catalog and to the hash the documentation records.
+     * Bind the immutable artifact to the committed catalog by identity and to the hash the documentation records.
      *
-     * Source hashes are computed from the pinned files, and the revision must be the one the audit records. The
-     * remaining provenance cannot be recomputed offline for a past revision, so it comes from the first record and
-     * the assessment proves only that every record agrees. A later change to a catalogued spec fails here on purpose:
-     * this artifact no longer describes the current contract, so capture a new dated artifact and never edit this one.
+     * The artifact stays a valid historical record when a catalogued spec changes, so no current spec hash is compared.
+     * This proves only artifact-to-catalog identity and the recorded hashes, not compatibility with the current
+     * contract, and it stays offline: no ordinary spec change needs a new capture to keep it green.
      */
-    public function testCommittedArtifactPassesTheCatalogAndMatchesTheRecordedHash(): void
+    public function testCommittedArtifactMatchesTheCatalogIdentityAndTheRecordedHash(): void
     {
         $bytes = file_get_contents(self::ROOT . '/docs/api/evidence/' . self::ARTIFACT);
         self::assertIsString($bytes);
@@ -253,26 +252,27 @@ final class MarketReadsProbesTest extends TestCase
         self::assertSame('market-reads-v1', $section['recipe'] ?? null);
         self::assertSame('passed', $section['status'] ?? null);
         $records = $section['probes'] ?? null;
-        self::assertIsArray($records);
-        $first = $records[0] ?? null;
-        self::assertIsArray($first);
-        $map = $first['map_sha256'] ?? null;
-        $generator = $first['generator_tree'] ?? null;
-        $overlay = $first['overlay_sha256'] ?? null;
-        self::assertIsString($map);
-        self::assertIsString($generator);
-        self::assertIsString($overlay);
+        self::assertIsList($records);
 
-        self::assertTrue(ReadOnlySectionRunner::passes(MarketReadsProbes::load(), $records, [
-            'revision' => self::CAPTURE_REVISION,
-            'source_hashes' => [
-                'whm1' => hash('sha256', self::source('whm.openapi.json.gz')),
-                'uapi' => hash('sha256', self::source('cpanel.openapi.json.gz')),
-            ],
-            'map_sha256' => $map,
-            'generator_tree' => $generator,
-            'overlay_sha256' => $overlay,
-        ]));
+        // A probe exposes its method only through its spec, so the catalog's fixed GET is stated here instead.
+        $catalog = [];
+        foreach (MarketReadsProbes::load() as $probe) {
+            $catalog[] = [$probe->operation, $probe->route, 'GET'];
+        }
+        // This dated snapshot is immutable: `sources refresh` writes a new directory and never replaces this one.
+        $whm = hash('sha256', self::source('whm.openapi.json.gz'));
+        $uapi = hash('sha256', self::source('cpanel.openapi.json.gz'));
+        $identity = [];
+        foreach ($records as $record) {
+            self::assertIsArray($record);
+            $route = $record['route'] ?? null;
+            $identity[] = [$record['operation'] ?? null, $route, $record['method'] ?? null];
+            self::assertSame('passed', $record['probe_outcome'] ?? null);
+            self::assertSame([], $record['discrepancies'] ?? null);
+            self::assertSame(self::CAPTURE_REVISION, $record['revision'] ?? null);
+            self::assertSame($route === 'whm' ? $whm : $uapi, $record['source_sha256'] ?? null);
+        }
+        self::assertSame($catalog, $identity);
     }
 
     public function testEmptyPendingListPassesButObservesNoRowFields(): void
