@@ -74,3 +74,8 @@
 sync.remote: "git+https://github.com/hostingpal/whm-api-client"
 agent:
     profile: team-maintainer
+
+# Bound injected history; full records remain searchable with bd memories.
+prime:
+    max-memories: 4
+    max-memory-chars: 8000
