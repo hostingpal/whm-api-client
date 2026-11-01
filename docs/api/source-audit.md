@@ -8903,9 +8903,10 @@ classified as a confirmed no-match. A `domains=npr.rs` query succeeded in earlie
 captures and the past-window query returned `{}` here, so the same operation has a
 real empty form. Only the domain outside the account failed. That is consistent with
 rejecting an unknown selector, which the owner's decision keeps as a failure. The
-artifact keeps no upstream error text, so the cause is not established. An overlay
-`observed` note records both forms in the generated PHPDoc. The API error remains
-unchanged.
+artifact keeps no upstream error text, so the cause is not established. Recording
+both forms as an overlay note is deferred to `whm-api-client-0hf`, because it
+conflicts with the open delimited-list branches that rewrite this operation's notes.
+The API error remains unchanged.
 
 `matchpkgs` is not a confirmed no-match. An earlier selector-free read on this
 server was already empty while `listPackages()` returned a plan, and the generated
@@ -8931,8 +8932,8 @@ separate the result-0 and result-1 omission forms recorded in the
 It also carries the capture's only discrepancy, `missing_required` at `$`.
 
 `tests/Api/EmptySearchResultsTest.php` pins these forms offline with synthetic values,
-including both API-error boundaries. Generated contracts, the runtime and all earlier
-evidence are unchanged; the only generated change is the Bandwidth PHPDoc note.
+including both API-error boundaries. Generated code, contracts, the runtime and all
+earlier evidence are unchanged.
 
 These observations cover one server, version, capture, root token and designated
 account. They establish nothing about reseller-scoped results, other filter values,

@@ -120,12 +120,6 @@ final readonly class Bandwidth
      * establish those shapes and fractional byte leaves independently; the original immutable artifact remains
      * unchanged.
      *
-     * Observed: The 2026-11-01-empty-results.json capture at fc5264d97f0c9d90ebbf9148b714d69e4a288959 on cPanel
-     * 11.138.0.19 observed two absence forms through both routes with grouping=domain. A one-second report window in
-     * 2001 returned an empty object, which this method returns as an empty array. A domains value naming no account
-     * domain returned status 0, null data and error text, which raises ApiErrorException rather than an empty report.
-     * No upstream error text was retained, so the cause of that failure is not established.
-     *
      * API-map identity: uapi:Bandwidth/query#GET (wire name query).
      *
      * @param string $grouping How to group the data in the report, in pipe-separated format.
