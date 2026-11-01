@@ -155,6 +155,8 @@ trait UapiGroups
 
     private ?Themes $themesGroup = null;
 
+    private ?Trash $trashGroup = null;
+
     private ?TwoFactorAuth $twoFactorAuthGroup = null;
 
     private ?UserManager $userManagerGroup = null;
@@ -919,6 +921,19 @@ trait UapiGroups
     public function themes(): Themes
     {
         return $this->themesGroup ??= new Themes($this->run(...));
+    }
+
+    /**
+     * Select the Trash operations without making a request.
+     *
+     * Selected-account trash apparent usage and permanent item removal, available from cPanel 136 with source plugin
+     * annotation Trash. Paths and payloads are private remote data; the client forwards exact path bytes without local
+     * filesystem operations. Original-revision observations are build/route scoped; live follow-up
+     * whm-api-client-8x0.2.73 remains open.
+     */
+    public function trash(): Trash
+    {
+        return $this->trashGroup ??= new Trash($this->run(...));
     }
 
     /**
