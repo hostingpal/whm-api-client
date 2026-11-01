@@ -2842,6 +2842,46 @@ outcome. On the WHM bridge it waives only the UAPI `status`: the outer WHM
 report HTTP failures. POST, the default method, was verified live on all three
 routes on 2026-10-14 with read-only functions.
 
+### Explicit JSON values
+
+Known structured request schemas use ordinary PHP arrays. Where a reviewed object
+schema explicitly permits arbitrary additional values, choose container kinds with
+`JsonObject::fromArray($members)`, `JsonObject::fromEntries($entries)` or
+`JsonList::fromArray($items)` from `HostingPal\WhmApiClient`. This is serializer
+and generator support; no existing typed operation adopts arbitrary values in this
+slice, and it adds no endpoint or live coverage.
+
+```php
+use HostingPal\WhmApiClient\JsonList;
+use HostingPal\WhmApiClient\JsonObject;
+
+// Synthetic values for a reviewed unrestricted position; these factories send nothing.
+$values = JsonObject::fromEntries([
+    ['name' => '0', 'value' => JsonObject::fromArray([])], // {} with a numeric member name
+    ['name' => 'items', 'value' => JsonList::fromArray([null, false, 0, 1.0])],
+]);
+```
+
+`fromArray()` requires string object keys; PHP coerces canonical numeric string
+keys, so use the exact `{name: string, value: mixed}` entry records for those names.
+Entries must be sequential with unique UTF-8 names. Empty object/list descriptors
+encode as `{}`/`[]`. Nested unrestricted containers also require descriptors;
+bare arrays are ambiguous there and reject. Scalars retain their native kinds,
+including finite floats and null; JSON-looking strings remain strings.
+
+An open schema object accepts its usual array or `JsonObject`; declared fields
+still enforce their own types and requiredness. Closed objects, typed maps and
+known lists retain their array boundary. Factories only tag input: the operation
+validates all contents after clearing `responseMeta()`, before I/O. Native non-array
+factory/signature errors happen before entry in both strict and weak callers.
+Readonly descriptors retain normal PHP reference semantics, without a deep snapshot.
+All containers share the 511-level budget; cycles, malformed lists/entries, duplicate
+names, invalid UTF-8, nonfinite floats, resources and arbitrary objects reject
+without invoking serialization callbacks. Contents may contain secrets; avoid
+logging descriptors or their internal accessor results. Root routing reservations,
+required WHM bodies and direct-only JSON routing continue to apply. Raw `callJson()`
+keeps its complete-body string interface.
+
 ### Raw JSON calls
 
 Use `whm()->callJson($operation, $json, $outcome = OutcomePolicy::Flag)`

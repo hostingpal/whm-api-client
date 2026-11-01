@@ -2824,6 +2824,14 @@ remain unobserved under `8x0.2.59`.
   Internal JsonBody distinguishes absent (no bytes/Content-Type) from present
   string 'null'; future typed dispatch resolves omission before serialization.
   Typed coverage comes from generation.
+- Known structured JSON schemas retain arrays. Only literal additionalProperties:true
+  or exactly {} on a typed, source-bound object lowers additional values to json.
+  That node accepts strict scalars/null and explicit JsonObject/JsonList containers;
+  bare arrays reject. An object with unrestricted additional values also accepts
+  JsonObject while preserving known-field checks. Factories tag only; validate all
+  contents after metadata reset, with one 511-container budget and bounded cycles.
+  Descriptors retain PHP references, conceal secret-bearing frames, and add no typed
+  endpoint/live coverage. Preserve whole-body object roots and routing restrictions.
 - Each attempt clears old response metadata. A usable envelope records an
   immutable snapshot before API or payload errors. `ResponseMetadata::$whm`
   retains raw WHM metadata; `$uapi` retains the UAPI result envelope without `data`.

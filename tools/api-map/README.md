@@ -233,6 +233,17 @@ Operation entries (all keys optional):
   retain API1 routing. On direct UAPI only, optional array/null means absent body,
   while [] means a present empty object. Native array TypeErrors precede metadata
   reset in strict and weak callers; nested array fields stay strict in either mode.
+  Literal additionalProperties:true or exactly {} on an explicitly typed object
+  lowers only its additional values to the strict internal json node, with the same
+  source-hash/requestBody or parameter evidence binding. Nearby missing types,
+  unresolved refs, composition and nonempty untyped schemas remain gates. Known
+  fields retain their shapes and validation. Such objects add a JsonObject native
+  alternative; unrestricted nested containers require JsonObject/JsonList, while
+  closed/typed-value objects and known lists retain arrays. Factories only tag;
+  content validation, reference-cycle and shared depth checks run after metadata
+  reset. json includes null intrinsically, cannot join scalar unions or become a
+  whole-body root, and renders as mixed natively if needed to avoid weak-mode
+  scalar coercion (with precise PHPDoc and runtime checks). No new endpoint is selected.
   The shared input grammar still represents scalar/list/object values for field
   JSON. Explicit boolean nonempty defaults off on lists/strings; true means
   non-empty-list or non-empty-string, rejecting [] or the zero-byte string only.
