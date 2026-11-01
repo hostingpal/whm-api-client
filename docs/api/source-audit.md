@@ -7864,3 +7864,80 @@ Delivery is offline synthetic coverage only; live acceptance, POST compatibility
 rendering/session/redirect/fallback/plugin/survey behavior remain unverified under
 OPEN live follow-up `whm-api-client-8x0.2.77`. Local PHP 8.4.26 validation does not
 establish PHP 8.3; exact-head external CI remains a controller gate.
+
+
+## 2026-11-01 — complete WebProsMCP generated module (8x0.4.36)
+
+Verified the original `docs/api/sources/2026-10-13/cpanel.openapi.json.gz`
+decompressed SHA256
+`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`
+(release 2026-10-13, 11.138.0.10). The complete two-path export independently
+equals the original subset. Two operation-level source pointers bind selection,
+transport, naming, type interpretation and caveats without response corrections:
+
+| Original operation pointer | Public selection | Effective transport |
+| --- | --- | --- |
+| `/paths/~1WebProsMCP~1get_connection_config/get` | `webProsMcp()->getConnectionConfig()` | empty form POST |
+| `/paths/~1WebProsMCP~1unlink_webpros_account/get` | `webProsMcp()->unlinkWebProsAccount()` | empty form POST |
+
+Both canonical declarations remain GET, with no parameters or request body schema,
+normal Flag outcome, cPanel 138 and WebProsMCP plugin. Configuration omits readonly
+and rollback annotations, retaining UNKNOWN source risk and existing default POST;
+its read-like purpose establishes no read-only guarantee or known mutation. Unlink
+has x-readonly:false and no rollback annotation. Routing fields remain in the URL
+on direct and WHM-bridged UAPI; no runtime/generator/transport policy change occurs.
+
+All formal response fields remain represented as optional, nonnullable fields in
+required nonnull known-object roots. Config has integer is_linked, string link_url
+and environment, plus optional mcp_config containing string name/type/url and
+optional oauth with exact camelCase string clientId and integer callbackPort.
+Unlink has optional integer is_linked. No quoted/bool/float integer conversion,
+inferred 0|1 enum, port range guard or constant-zero narrowing is added. Source
+prose/examples describe linked 0/1 and successful unlink 0 without formal enums;
+illustrative synthetic integer 2 acceptance is no server-value claim. Nonflag
+strings remain open. Empty strings, Unicode and URL/path punctuation remain exact.
+
+link_url is source-described session-relative data; environment distinguishes
+production defaults from overrides and mcp_config is a connection snippet.
+None of those values is fetched, installed, followed, authenticated or contacted;
+no installability/reachability claim is made. Returned account/configuration,
+URLs, clientId values, raw metadata and mismatch payloads may be private. Existing
+library response-frame protections remain, without a secrecy promise for callers
+or third-party transports.
+
+Unlink removes ALL selected-account WebPros authentication links, disabling
+WebPros Account login and other integrations beyond MCP until relinked. Its
+source-documented idempotent no-op when no link exists is not live verification,
+an uncertain-state guarantee or authorization for implicit inventory/retry/relink.
+Each invocation returns plain payload after one immediate request, with no extra
+read, browser/navigation, OAuth/token exchange, MCP contact, retry or rollback.
+
+Omitted fields and present empty nested objects remain distinct. Known-object
+unknown-field filtering applies at every level; inherited empty JSON array object
+compatibility (8x0.2.50) remains. Explicit null/missing roots and invalid optional
+fields reject. Payload is_linked 0 under status 1 is valid; API status 0 and outer
+WHM failures precede payload validation. Warnings/raw metadata, invocation reset,
+lazy selector retention and stable mismatch snapshots remain unchanged.
+
+Synthetic PSR transport tests use independent literal expectations for both
+operations/routes, empty form bodies, routing/auth/content-type and one request
+per call. They pin full/minimal/empty shapes, all nine scalar occurrences and two
+nested object nodes, exact OAuth casing, nested filtering, strict int/string/null
+validation, nonflag integers and inert bytes. Failure tests cover both operations,
+API/outer/invalid-envelope precedence, HTTP/JSON/transport errors, metadata reset
+at I/O and retained snapshots/warnings, no retries/relink, and library-owned trace
+privacy. Focused RED captured the missing accessor before overlay/generation;
+all intermediate logs and validation results are retained in the task report.
+
+Current generated coverage is 1,221 operations (633 UAPI, 588 WHM), 116 groups
+and 235 outputs (234 PHP plus coverage), with no new exclusion or waiver. Original
+sources/evidence, prior overlays/endpoints and historical audit bytes remain
+unchanged. No dependency, shared engine/runtime/generator, source refresh or map
+checksum change occurs. The 55 inherited diagnostics remain visible/unwaived;
+rebuilt map SHA256 remains
+`f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8`.
+Live follow-up `whm-api-client-8x0.2.78` stays OPEN: synthetic coverage establishes
+no server acceptance, POST compatibility, linkage/login, MCP connectivity or
+integration behavior. Local PHP 8.4.26 does not establish PHP 8.3 execution;
+exact-head external CI remains the controller's separate gate. No live/API/SSH,
+server filesystem, browser, returned-URL, DNS, credential or auth-link action ran.

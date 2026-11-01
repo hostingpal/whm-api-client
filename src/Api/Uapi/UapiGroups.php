@@ -185,6 +185,8 @@ trait UapiGroups
 
     private ?WebDisk $webDiskGroup = null;
 
+    private ?WebProsMcp $webProsMcpGroup = null;
+
     private ?WebVhosts $webVhostsGroup = null;
 
     private ?WebmailApps $webmailAppsGroup = null;
@@ -1081,6 +1083,17 @@ trait UapiGroups
     public function webDisk(): WebDisk
     {
         return $this->webDiskGroup ??= new WebDisk($this->run(...));
+    }
+
+    /**
+     * Select the WebProsMCP operations without making a request.
+     *
+     * Complete pinned WebProsMCP module for the selected account. Offline coverage only; live follow-up
+     * whm-api-client-8x0.2.78 remains open.
+     */
+    public function webProsMcp(): WebProsMcp
+    {
+        return $this->webProsMcpGroup ??= new WebProsMcp($this->run(...));
     }
 
     /**

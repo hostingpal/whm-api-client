@@ -1,0 +1,98 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "WebProsMCP",
+  "class": "WebProsMcp",
+  "accessor": "webProsMcp",
+  "description": "Complete pinned WebProsMCP module for the selected account. Offline coverage only; live follow-up whm-api-client-8x0.2.78 remains open.",
+  "operations": {
+    "uapi:WebProsMCP/get_connection_config": {
+      "name": "getConnectionConfig",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1WebProsMCP~1get_connection_config/get",
+          "note": "Select complete get_connection_config as getConnectionConfig, no parameters, cPanel 138/WebProsMCP plugin and normal Flag outcome. Source GET lacks readonly/rollback, leaving risk UNKNOWN and selecting existing default empty form POST. Preserve every optional nonnullable known field and nested object, exact oauth camelCase keys and strict native integer/string schemas without corrections or inferred enums; session-relative linking URL and connection snippet stay inert private data."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "get_connection_config omits readonly and rollback annotations: source risk remains UNKNOWN and rollback is not established. Existing unknown-risk policy selects form POST despite the getter-like name and source GET; do not infer a mutation or a read-only guarantee."
+        },
+        {
+          "kind": "documented",
+          "text": "is_linked describes 1 when linked and 0 otherwise, but the formal schema is integer without enum. link_url is session-relative and initiates WebPros Account linking when used by a caller. environment distinguishes production defaults from overridden MCP settings; mcp_config is a connection snippet with optional name, type, url and oauth containing exact camelCase clientId and callbackPort. These values are inert payload, not a promise of installability or reachability; the client never follows an authentication link or exchanges tokens."
+        },
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 138 and requires the WebProsMCP plugin. Source declares GET and no rollback annotation; rollback is not established."
+        },
+        {
+          "kind": "policy",
+          "text": "One invocation makes one immediate empty form POST for the selected account through direct or WHM-bridged UAPI, with ordinary Flag outcome and routing fields only in the URL. Lazy cached selectors perform no I/O or metadata reset. No implicit read, navigation, configuration installation, MCP server contact, retry, relink or rollback."
+        },
+        {
+          "kind": "policy",
+          "text": "Data is a required nonnull known object with optional nonnullable fields; any nested configuration and OAuth fields are also optional and nonnullable. Omitted fields and present empty objects remain distinct. Existing empty JSON array object compatibility and known-object unknown-field filtering remain unchanged. Absent or null data mismatches. UAPI status 0 and outer WHM failures take precedence over payload validation; payload is_linked 0 under status 1 is valid. Inspect responseMeta() warnings and raw metadata, including after a mismatch."
+        },
+        {
+          "kind": "policy",
+          "text": "Formal integer fields stay strict native integers without quoted, boolean or float conversion, inferred 0|1 enums, port range guards or constant-zero narrowing. Source prose/examples do not establish a closed integer or string enum. Preserve empty strings, Unicode and URL/path punctuation unchanged; no response correction or unwrapping."
+        },
+        {
+          "kind": "policy",
+          "text": "Returned account/configuration, URLs, OAuth clientId values and mismatch payloads may be private. Existing SensitiveParameter protections cover library-owned response frames, not caller-readable payloads or third-party transport traces. There are no input parameters. Offline fixtures establish no live server acceptance, POST compatibility, linkage or integration behavior; live follow-up whm-api-client-8x0.2.78 remains open."
+        }
+      ]
+    },
+    "uapi:WebProsMCP/unlink_webpros_account": {
+      "name": "unlinkWebProsAccount",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1WebProsMCP~1unlink_webpros_account/get",
+          "note": "Select complete unlink_webpros_account as unlinkWebProsAccount, no parameters, cPanel 138/WebProsMCP plugin and normal Flag outcome. Source GET x-readonly:false selects empty form POST; rollback annotation absent. Preserve required nonnull object and optional nonnullable native integer is_linked without inferring constant 0. Unlink affects all account WebPros authentication links, login and integrations beyond MCP; documented idempotent no-op is not live verification."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "unlink_webpros_account explicitly declares x-readonly:false, selecting form POST. It removes ALL WebPros authentication links for the selected cPanel account, disabling WebPros Account login and other WebPros integrations as well as MCP until relinked. The source describes idempotent success as a no-op when no link exists; this is documentation, not live verification or a guarantee about an uncertain current state."
+        },
+        {
+          "kind": "documented",
+          "text": "The source describes is_linked as always 0 after success, but its formal integer schema has no enum or constant. Return the validated integer without narrowing. The client never inventories links first, retries, relinks or rolls back after errors or uncertain outcomes."
+        },
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 138 and requires the WebProsMCP plugin. Source declares GET and no rollback annotation; rollback is not established."
+        },
+        {
+          "kind": "policy",
+          "text": "One invocation makes one immediate empty form POST for the selected account through direct or WHM-bridged UAPI, with ordinary Flag outcome and routing fields only in the URL. Lazy cached selectors perform no I/O or metadata reset. No implicit read, navigation, configuration installation, MCP server contact, retry, relink or rollback."
+        },
+        {
+          "kind": "policy",
+          "text": "Data is a required nonnull known object with optional nonnullable fields; any nested configuration and OAuth fields are also optional and nonnullable. Omitted fields and present empty objects remain distinct. Existing empty JSON array object compatibility and known-object unknown-field filtering remain unchanged. Absent or null data mismatches. UAPI status 0 and outer WHM failures take precedence over payload validation; payload is_linked 0 under status 1 is valid. Inspect responseMeta() warnings and raw metadata, including after a mismatch."
+        },
+        {
+          "kind": "policy",
+          "text": "Formal integer fields stay strict native integers without quoted, boolean or float conversion, inferred 0|1 enums, port range guards or constant-zero narrowing. Source prose/examples do not establish a closed integer or string enum. Preserve empty strings, Unicode and URL/path punctuation unchanged; no response correction or unwrapping."
+        },
+        {
+          "kind": "policy",
+          "text": "Returned account/configuration, URLs, OAuth clientId values and mismatch payloads may be private. Existing SensitiveParameter protections cover library-owned response frames, not caller-readable payloads or third-party transport traces. There are no input parameters. Offline fixtures establish no live server acceptance, POST compatibility, linkage or integration behavior; live follow-up whm-api-client-8x0.2.78 remains open."
+        }
+      ]
+    }
+  }
+}
