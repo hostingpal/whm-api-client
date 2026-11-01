@@ -1,0 +1,621 @@
+{
+    "schema_version": 1,
+    "read_only_section": {
+        "recipe": "log-administration-v1",
+        "status": "passed",
+        "probes": [
+            {
+                "operation": "whm1:version",
+                "variant": "whm1:version#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T04:09:29Z",
+                "revision": "dd5e626ae11f0f6c59e353a17d51bee4868aaa96",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "faa47dbf7c11fef7c97bc45a82d17ba86e8bf13f",
+                "overlay_sha256": "d367578790eab727bb3b5062d810ed2c82ed0a513f780d7b74faabef88970ceb",
+                "effective_contract_sha256": "a3b55069b379516f20fcf82f959226d68b68ac515a7e55c0bde8842d39effd60",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.version": [
+                        "string"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.version": [
+                        "string"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "whm1:list_accounts_retention",
+                "variant": "whm1:list_accounts_retention#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T04:09:30Z",
+                "revision": "dd5e626ae11f0f6c59e353a17d51bee4868aaa96",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "faa47dbf7c11fef7c97bc45a82d17ba86e8bf13f",
+                "overlay_sha256": "d367578790eab727bb3b5062d810ed2c82ed0a513f780d7b74faabef88970ceb",
+                "effective_contract_sha256": "e0b4d8cad43219a0d65eba3a8130f3c5f6b27edb0c138ac5a69f6e96c71be008",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.accounts": [
+                        "list"
+                    ],
+                    "$.data.accounts[]": [
+                        "object"
+                    ],
+                    "$.data.accounts[].domain": [
+                        "string"
+                    ],
+                    "$.data.accounts[].retention_days": [
+                        "null"
+                    ],
+                    "$.data.accounts[].user": [
+                        "string"
+                    ],
+                    "$.data.accounts[].using_default": [
+                        "bool"
+                    ],
+                    "$.data.default_retention": [
+                        "numeric-string"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.accounts": [
+                        "list"
+                    ],
+                    "$.accounts[]": [
+                        "object"
+                    ],
+                    "$.accounts[].domain": [
+                        "string"
+                    ],
+                    "$.accounts[].retention_days": [
+                        "null"
+                    ],
+                    "$.accounts[].user": [
+                        "string"
+                    ],
+                    "$.accounts[].using_default": [
+                        "bool"
+                    ],
+                    "$.default_retention": [
+                        "numeric-string"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "uapi:LogManager/get_settings",
+                "variant": "uapi:LogManager/get_settings#GET",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T04:09:30Z",
+                "revision": "dd5e626ae11f0f6c59e353a17d51bee4868aaa96",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "faa47dbf7c11fef7c97bc45a82d17ba86e8bf13f",
+                "overlay_sha256": "d367578790eab727bb3b5062d810ed2c82ed0a513f780d7b74faabef88970ceb",
+                "effective_contract_sha256": "1374fa520225c4af5bd7bc6a89ed17f5750a2354515ecd216ab9be62ac898da2",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.archive_logs": [
+                        "numeric-string"
+                    ],
+                    "$.data.prune_archive": [
+                        "numeric-string"
+                    ],
+                    "$.data.retention_days": [
+                        "numeric-string"
+                    ],
+                    "$.data.using_default": [
+                        "int"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.archive_logs": [
+                        "numeric-string"
+                    ],
+                    "$.prune_archive": [
+                        "numeric-string"
+                    ],
+                    "$.retention_days": [
+                        "numeric-string"
+                    ],
+                    "$.using_default": [
+                        "int"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "uapi:LogManager/get_settings",
+                "variant": "uapi:LogManager/get_settings#GET",
+                "route": "bridged-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T04:09:30Z",
+                "revision": "dd5e626ae11f0f6c59e353a17d51bee4868aaa96",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "faa47dbf7c11fef7c97bc45a82d17ba86e8bf13f",
+                "overlay_sha256": "d367578790eab727bb3b5062d810ed2c82ed0a513f780d7b74faabef88970ceb",
+                "effective_contract_sha256": "1374fa520225c4af5bd7bc6a89ed17f5750a2354515ecd216ab9be62ac898da2",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.archive_logs": [
+                        "numeric-string"
+                    ],
+                    "$.data.uapi.data.prune_archive": [
+                        "numeric-string"
+                    ],
+                    "$.data.uapi.data.retention_days": [
+                        "numeric-string"
+                    ],
+                    "$.data.uapi.data.using_default": [
+                        "int"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "empty-object"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.archive_logs": [
+                        "numeric-string"
+                    ],
+                    "$.prune_archive": [
+                        "numeric-string"
+                    ],
+                    "$.retention_days": [
+                        "numeric-string"
+                    ],
+                    "$.using_default": [
+                        "int"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "uapi:LogManager/list_archives",
+                "variant": "uapi:LogManager/list_archives#GET",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T04:09:31Z",
+                "revision": "dd5e626ae11f0f6c59e353a17d51bee4868aaa96",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "faa47dbf7c11fef7c97bc45a82d17ba86e8bf13f",
+                "overlay_sha256": "d367578790eab727bb3b5062d810ed2c82ed0a513f780d7b74faabef88970ceb",
+                "effective_contract_sha256": "17bc656fccf7b785eb8e73c05a2eae69f8b4f260da1c8869cc4ec77ddadc7be6",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "list"
+                    ],
+                    "$.data[]": [
+                        "object"
+                    ],
+                    "$.data[].file": [
+                        "string"
+                    ],
+                    "$.data[].mtime": [
+                        "int"
+                    ],
+                    "$.data[].path": [
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.*": [
+                        "int"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "list"
+                    ],
+                    "$[]": [
+                        "object"
+                    ],
+                    "$[].file": [
+                        "string"
+                    ],
+                    "$[].mtime": [
+                        "int"
+                    ],
+                    "$[].path": [
+                        "string"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "uapi:LogManager/list_archives",
+                "variant": "uapi:LogManager/list_archives#GET",
+                "route": "bridged-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T04:09:31Z",
+                "revision": "dd5e626ae11f0f6c59e353a17d51bee4868aaa96",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "faa47dbf7c11fef7c97bc45a82d17ba86e8bf13f",
+                "overlay_sha256": "d367578790eab727bb3b5062d810ed2c82ed0a513f780d7b74faabef88970ceb",
+                "effective_contract_sha256": "17bc656fccf7b785eb8e73c05a2eae69f8b4f260da1c8869cc4ec77ddadc7be6",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "list"
+                    ],
+                    "$.data.uapi.data[]": [
+                        "object"
+                    ],
+                    "$.data.uapi.data[].file": [
+                        "string"
+                    ],
+                    "$.data.uapi.data[].mtime": [
+                        "int"
+                    ],
+                    "$.data.uapi.data[].path": [
+                        "string"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "object"
+                    ],
+                    "$.data.uapi.metadata.*": [
+                        "int"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "list"
+                    ],
+                    "$[]": [
+                        "object"
+                    ],
+                    "$[].file": [
+                        "string"
+                    ],
+                    "$[].mtime": [
+                        "int"
+                    ],
+                    "$[].path": [
+                        "string"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "uapi:LogManager/list_error_logs",
+                "variant": "uapi:LogManager/list_error_logs#GET",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T04:09:31Z",
+                "revision": "dd5e626ae11f0f6c59e353a17d51bee4868aaa96",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "faa47dbf7c11fef7c97bc45a82d17ba86e8bf13f",
+                "overlay_sha256": "d367578790eab727bb3b5062d810ed2c82ed0a513f780d7b74faabef88970ceb",
+                "effective_contract_sha256": "75c031d1ec268ab7b7156f12e992f8c4e6dd72ab635f301cb120f2ce742019f6",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "empty-list"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.*": [
+                        "int"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "empty-list"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "uapi:LogManager/list_error_logs",
+                "variant": "uapi:LogManager/list_error_logs#GET",
+                "route": "bridged-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T04:09:31Z",
+                "revision": "dd5e626ae11f0f6c59e353a17d51bee4868aaa96",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "faa47dbf7c11fef7c97bc45a82d17ba86e8bf13f",
+                "overlay_sha256": "d367578790eab727bb3b5062d810ed2c82ed0a513f780d7b74faabef88970ceb",
+                "effective_contract_sha256": "75c031d1ec268ab7b7156f12e992f8c4e6dd72ab635f301cb120f2ce742019f6",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "empty-list"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "object"
+                    ],
+                    "$.data.uapi.metadata.*": [
+                        "int"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "empty-list"
+                    ]
+                },
+                "discrepancies": []
+            }
+        ]
+    }
+}
