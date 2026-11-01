@@ -11,6 +11,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use ReflectionClassConstant;
 use RuntimeException;
 
 final class LiveCurlClientTest extends TestCase
@@ -332,6 +333,14 @@ final class LiveCurlClientTest extends TestCase
             'https://test.oblak.host:2087/json-api/listaccts?api.version=1'
                 . '&search=npr&searchtype=user&searchmethod=exact',
         ];
+        yield 'WHM filtered accounts with want' => [
+            'https://test.oblak.host:2087/json-api/listaccts?api.version=1'
+                . '&search=npr&searchtype=user&searchmethod=exact&want=user',
+        ];
+        yield 'WHM absent exact user' => [
+            'https://test.oblak.host:2087/json-api/listaccts?api.version=1'
+                . '&search=nosuchacct9dy&searchtype=user&searchmethod=exact',
+        ];
         yield 'WHM absent exact user with want' => [
             'https://test.oblak.host:2087/json-api/listaccts?api.version=1'
                 . '&search=nosuchacct9dy&searchtype=user&searchmethod=exact&want=user',
@@ -339,6 +348,17 @@ final class LiveCurlClientTest extends TestCase
         yield 'WHM absent exact domain' => [
             'https://test.oblak.host:2087/json-api/listaccts?api.version=1'
                 . '&search=nosuchacct9dy.example&searchtype=domain&searchmethod=exact',
+        ];
+        yield 'WHM absent user regex' => [
+            'https://test.oblak.host:2087/json-api/listaccts?api.version=1'
+                . '&search=%5Enosuchacct9dy%24&searchtype=user&searchmethod=regex',
+        ];
+        yield 'WHM absent user regex with want' => [
+            'https://test.oblak.host:2087/json-api/listaccts?api.version=1'
+                . '&search=%5Enosuchacct9dy%24&searchtype=user&searchmethod=regex&want=user',
+        ];
+        yield 'WHM absent account summary' => [
+            'https://test.oblak.host:2087/json-api/accountsummary?api.version=1&user=nosuchacct9dy',
         ];
         yield 'WHM account summary' => ['https://test.oblak.host:2087/json-api/accountsummary?api.version=1&user=npr'];
         yield 'WHM packages' => ['https://test.oblak.host:2087/json-api/listpkgs?api.version=1'];
@@ -382,6 +402,29 @@ final class LiveCurlClientTest extends TestCase
                     . '&cpanel.module=DNS&cpanel.function=' . $function . ($query === '' ? '' : '&' . $query),
             ];
         }
+    }
+
+    /**
+     * Pin the approved GET list in both directions.
+     *
+     * approvedUris() spells each URI out independently of LiveCurlClient, so an entry
+     * added to or removed from only one side fails here. Comparing the whole sorted
+     * lists also fails on a duplicate. The data-provider test above proves that every
+     * pinned URI really passes the guard.
+     */
+    public function testApprovedReadOnlyGetListMatchesThePinnedUrisExactly(): void
+    {
+        $pinned = [];
+        foreach (self::approvedUris() as [$uri]) {
+            $pinned[] = $uri;
+        }
+
+        $listed = (new ReflectionClassConstant(LiveCurlClient::class, 'READ_ONLY_GET'))->getValue();
+        self::assertIsArray($listed);
+        sort($pinned);
+        sort($listed);
+
+        self::assertSame($pinned, $listed, 'READ_ONLY_GET and approvedUris() must list exactly the same URIs.');
     }
 
     public function testApprovesDerivedDnsReadsOnlyForTheBoundValues(): void
