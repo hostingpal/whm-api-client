@@ -180,6 +180,7 @@ final class SpecChecker
         }
 
         self::rows($spec, $returns);
+        self::emptyWithoutData($spec, $returns);
 
         $unwrap = $spec['unwrap'] ?? null;
         if ($unwrap === null) {
@@ -238,6 +239,40 @@ final class SpecChecker
             || ($items['nullable'] ?? false) === true
         ) {
             throw new LogicException('Invalid rows result policy.');
+        }
+    }
+
+    /**
+     * Limit the empty result to a WHM flag outcome that unwraps a nonnullable list.
+     *
+     * Only the flag policy guarantees a confirmed success before payload handling,
+     * so an unchecked failure without data can never read as an empty result.
+     *
+     * @param array<mixed> $spec
+     */
+    private static function emptyWithoutData(array $spec, mixed $returns): void
+    {
+        if (!array_key_exists('empty_without_data', $spec)) {
+            return;
+        }
+
+        $fields = is_array($returns) ? ($returns['fields'] ?? null) : null;
+        $unwrap = $spec['unwrap'] ?? null;
+        $field = is_array($fields) && is_string($unwrap) ? ($fields[$unwrap] ?? null) : null;
+        if (
+            $spec['empty_without_data'] !== true
+            || isset($spec['module'])
+            || OperationSpec::outcome($spec) !== OutcomePolicy::Flag
+            || array_key_exists('optional', $spec)
+            || array_key_exists('rows', $spec)
+            || !is_array($returns)
+            || ($returns['type'] ?? null) !== 'object'
+            || ($returns['nullable'] ?? false) === true
+            || !is_array($field)
+            || ($field['type'] ?? null) !== 'list'
+            || ($field['nullable'] ?? false) === true
+        ) {
+            throw new LogicException('Invalid empty_without_data result policy.');
         }
     }
 

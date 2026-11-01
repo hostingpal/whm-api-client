@@ -103,6 +103,8 @@ type Operation struct {
 	Unwrap      string
 	// OptionalPayload makes an omitted or null data member a null result.
 	OptionalPayload bool
+	// EmptyWithoutData makes an omitted data member an empty unwrapped list.
+	EmptyWithoutData bool
 }
 
 // Method owns only input mapping and public symbols, never a second response contract.

@@ -264,6 +264,13 @@ Operation entries (all keys optional):
   spec gains `'optional' => true`, the method's return type becomes nullable and
   it returns null in that case (other payloads are validated as usual). Needs a
   documented payload and is exclusive with `void`.
+- `empty_without_data`: literal `true`. An omitted `data` member on a confirmed WHM
+  success returns an empty list, and the method's return type stays a list. Needs
+  operation-level `live` evidence and a WHM flag outcome that unwraps a nonnullable
+  list from a nonnullable object; exclusive with `void`, `optional_payload`, `rows`
+  and `exclude`. Only the omitted member qualifies: explicit null, an object without
+  the list and every other present payload keep ordinary validation, and a result 0
+  failure stays an API error. Only `whm1:listaccts` selects it.
 - `evidence`: operation-level evidence, required when the entry sets `variant`, `method`,
   `outcome`, `rows`, `void` or `optional_payload`, changes a parameter `required` setting,
   suppresses its enum documentation (`enum_doc: false`), sets a parameter `encoding` (it
