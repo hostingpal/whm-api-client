@@ -1787,3 +1787,46 @@ persisted nor fetched, and they prove neither reachability nor login. No `Sessio
 creator runs on any account: a reviewer's disposable-account test left four session
 files behind after the account was removed, and cleaning them needs filesystem
 access. The creators stay open under `8x0.2.69`.
+
+## UAPI Market reads
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/market-reads.php \
+  --output=docs/api/evidence/YYYY-MM-DD-market-reads.json
+```
+
+`market-reads-v1` has eleven fixed GETs: WHM version, then five `x-readonly: true`
+reads through direct UAPI and the `npr` bridge: `get_providers_list`,
+`get_all_products`, `get_pending_ssl_certificates`,
+`get_provider_specific_dcv_constraints` and `get_login_url`. Existing opt-in,
+committed-input, exact request guard, TLS and immutable structural-output rules apply.
+
+Selectors are not guessed. A private direct-route read of the provider list, catalog
+and pending queue before this catalog was written showed `cPStore` as the only
+provider, three catalog rows and no pending certificates. `url_after_login` selects
+no server resource; the recipe sends the pinned parameter example, on a reserved
+domain, and the returned URL is never followed.
+
+Four of the nine reads in `8x0.2.63` are deliberately not run, and
+`MarketReadsProbes::NOT_RUN` records each reason:
+
+| Operation | Reason |
+| --- | --- |
+| `get_certificate_status_details` | No pending order, so no real `order_item_id` exists |
+| `get_ssl_certificate_if_available` | No pending order, so no real `order_item_id` exists |
+| `get_product_info` | No read enumerates a real `product_name` |
+| `get_completion_url` | No read enumerates a real `product_name` |
+
+The pinned `product_name` example, `cpanel-ssl`, is a store-page slug and appears
+nowhere in this server's catalog. The catalog's `product` values are display labels
+in a different form, and the pinned source states no mapping between them. Run
+these two only with a selector known to be real on the server, for example after
+private inspection of its store product files.
+
+Payloads can hold security tokens, action URLs, PEM, CSR and identity data; only
+structural paths and types are saved. No order, cart, checkout, certificate, queue
+or token action runs, no POST is sent, and no returned URL or credential is used.
+`get_license_info` and `get_build_cart_url` are not `x-readonly` and stay out of this
+catalog. A successful read establishes no purchase, payment, issuance, installation,
+trust or served TLS behavior.
