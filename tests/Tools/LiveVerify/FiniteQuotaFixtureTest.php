@@ -407,6 +407,205 @@ final class FiniteQuotaFixtureTest extends TestCase
         }
     }
 
+    /** @return iterable<string, array{string}> */
+    public static function unusableCreationResponses(): iterable
+    {
+        yield 'lost response' => ['throw'];
+        yield 'gateway error' => ['http'];
+        yield 'unreadable body' => ['invalid'];
+    }
+
+    /** Only an explicit refusal is a known outcome; these replies cannot rule out creation still in flight. */
+    #[DataProvider('unusableCreationResponses')]
+    public function testUnusableCreationResponseIsNeverReportedAsAbsent(string $failure): void
+    {
+        $http = new FiniteQuotaServer();
+        $http->failures['createacct:1'] = $failure . '_before';
+        $report = (new FiniteQuotaFixture($http, 'private-whm-token'))->run(self::capture());
+        self::assertSame('unconfirmed', $report['fixture']['resources']['account']['creation']);
+        self::assertSame('unconfirmed', $report['fixture']['resources']['account']['cleanup']);
+        self::assertSame('failed', $report['fixture']['cleanup']);
+        self::assertSame('failed', $report['fixture']['status']);
+        self::assertContains('account_creation_outcome_unknown', $report['fixture']['failures']);
+        self::assertSame([], $http->mutations);
+        self::assertPrivate($report);
+    }
+
+    #[DataProvider('unusableCreationResponses')]
+    public function testUnusableCreationResponseStillRemovesTheAccountItsMarkerProves(string $failure): void
+    {
+        $http = new FiniteQuotaServer();
+        $http->failures['createacct:1'] = $failure . '_after';
+        $report = (new FiniteQuotaFixture($http, 'private-whm-token'))->run(self::capture());
+        self::assertSame(1, $http->counts['removeacct']);
+        self::assertSame('confirmed', $report['fixture']['resources']['account']['creation']);
+        self::assertSame('confirmed_absent', $report['fixture']['resources']['account']['cleanup']);
+        self::assertNotContains('account_creation_outcome_unknown', $report['fixture']['failures']);
+        self::assertFalse($http->account);
+    }
+
+    public function testRefusedCreationIsAbsentAndRemovesNothing(): void
+    {
+        $http = new FiniteQuotaServer();
+        $http->failures['createacct:1'] = 'api_before';
+        $report = (new FiniteQuotaFixture($http, 'private-whm-token'))->run(self::capture());
+        self::assertSame(['setup_failure'], $report['fixture']['failures']);
+        self::assertSame('confirmed_absent', $report['fixture']['resources']['account']['cleanup']);
+        self::assertSame('passed', $report['fixture']['cleanup']);
+        self::assertSame([], $http->mutations);
+    }
+
+    /**
+     * @param array<string, string> $overrides
+     * @param 'account'|'zone_cleanup' $field
+     */
+    #[DataProvider('emptyIdentityLists')]
+    public function testAnEmptyIdentityListCannotProveAbsence(array $overrides, string $field): void
+    {
+        $http = new FiniteQuotaServer();
+        $http->overrides = $overrides;
+        $report = (new FiniteQuotaFixture($http, 'private-whm-token'))->run(self::capture());
+        $outcome = $field === 'account'
+            ? $report['fixture']['resources']['account']['cleanup'] : $report['fixture'][$field];
+        self::assertSame('unconfirmed', $outcome);
+        self::assertSame('failed', $report['fixture']['cleanup']);
+    }
+
+    /** @return iterable<string, array{array<string, string>, string}> */
+    public static function emptyIdentityLists(): iterable
+    {
+        yield 'accounts during cleanup' => [['listaccts:4' => '{"acct":[]}'], 'account'];
+        yield 'zones after removal' => [['listzones:2' => '{"zone":[]}'], 'zone_cleanup'];
+    }
+
+    #[DataProvider('emptyInitialLists')]
+    public function testAnEmptyInitialInventoryCreatesNothing(string $step, string $payload): void
+    {
+        $http = new FiniteQuotaServer();
+        $http->overrides[$step] = $payload;
+        $report = (new FiniteQuotaFixture($http, 'private-whm-token'))->run(self::capture());
+        self::assertSame('failed', $report['fixture']['setup']);
+        self::assertSame([], $http->mutations);
+    }
+
+    /** @return iterable<string, array{string, string}> */
+    public static function emptyInitialLists(): iterable
+    {
+        yield 'accounts' => ['listaccts:1', '{"acct":[]}'];
+        yield 'zones' => ['listzones:1', '{"zone":[]}'];
+        yield 'manual domains' => ['get_domain_info:1', '{"domains":[]}'];
+    }
+
+    /** This run created the token, so an unreadable listing cannot withhold its revoke; removal may not take it. */
+    #[DataProvider('unreadableTokenListings')]
+    public function testUnreadableTokenListingStillRevokesTheTokenThisRunCreated(string $mode): void
+    {
+        $http = new FiniteQuotaServer();
+        $http->failures['Tokens/list:3'] = $mode;
+        $http->failures['removeacct:1'] = 'api_before';
+        $report = (new FiniteQuotaFixture($http, 'private-whm-token'))->run(self::capture());
+        self::assertSame(1, $http->counts['Tokens/revoke']);
+        self::assertSame([], $http->tokens);
+        self::assertSame('confirmed_absent', $report['fixture']['resources']['token']['cleanup']);
+        self::assertSame('present', $report['fixture']['resources']['account']['cleanup']);
+        self::assertNotContains('token_absence_unconfirmed', $report['fixture']['failures']);
+        self::assertContains('account_remove_failure', $report['fixture']['failures']);
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function unreadableTokenListings(): iterable
+    {
+        yield 'lost request' => ['throw_before'];
+        yield 'result 0' => ['api_before'];
+        yield 'gateway error' => ['http_before'];
+        yield 'unreadable body' => ['invalid_before'];
+    }
+
+    public function testTransientOwnershipReadCannotAbandonTheAccountOrItsToken(): void
+    {
+        $http = new FiniteQuotaServer();
+        $http->failures['listaccts:4'] = 'throw_before';
+        $http->failures['listaccts:5'] = 'throw_before';
+        $report = (new FiniteQuotaFixture($http, 'private-whm-token'))->run(self::capture());
+        self::assertSame('passed', $report['fixture']['status']);
+        self::assertFalse($http->account);
+        self::assertSame([], $http->tokens);
+        self::assertSame(1, $http->counts['removeacct']);
+    }
+
+    public function testExhaustedOwnershipReadsStopAllMutation(): void
+    {
+        $http = new FiniteQuotaServer();
+        foreach ([4, 5, 6] as $count) {
+            $http->failures['listaccts:' . $count] = 'throw_before';
+        }
+        $report = (new FiniteQuotaFixture($http, 'private-whm-token'))->run(self::capture());
+        self::assertTrue($http->account);
+        self::assertArrayNotHasKey('removeacct', $http->counts);
+        self::assertArrayNotHasKey('Tokens/revoke', $http->counts);
+        self::assertSame('unconfirmed', $report['fixture']['resources']['account']['cleanup']);
+        self::assertSame('failed', $report['fixture']['cleanup']);
+        // Three setup reads, the three bounded cleanup reads, and the separate domain check.
+        self::assertSame(7, $http->counts['listaccts']);
+    }
+
+    public function testFilesystemCleanupStaysUnclaimedWithoutTheProof(): void
+    {
+        $report = (new FiniteQuotaFixture(new FiniteQuotaServer(), 'private-whm-token'))->run(self::capture());
+        self::assertSame('not_claimed', $report['fixture']['filesystem_cleanup']);
+        self::assertSame([], $report['fixture']['filesystem_residue']);
+    }
+
+    public function testFilesystemProofRunsOnceOnTheExactTargetAfterCleanup(): void
+    {
+        $http = new FiniteQuotaServer();
+        $proof = new RecordingFilesystemProof(['outcome' => 'confirmed_absent', 'residue' => []]);
+        $report = (new FiniteQuotaFixture($http, 'private-whm-token', $proof))->run(self::capture());
+        self::assertSame('passed', $report['fixture']['status']);
+        self::assertSame('confirmed_absent', $report['fixture']['filesystem_cleanup']);
+        self::assertSame([['wqfinite', 'wqfinite.example.com']], $proof->calls);
+    }
+
+    public function testUnreachableFilesystemProofFailsTheClaimWithoutAnyMutation(): void
+    {
+        $http = new FiniteQuotaServer();
+        $proof = new RecordingFilesystemProof(['outcome' => 'unconfirmed', 'residue' => []]);
+        $report = (new FiniteQuotaFixture($http, 'private-whm-token', $proof))->run(self::capture());
+        self::assertSame('unconfirmed', $report['fixture']['filesystem_cleanup']);
+        self::assertSame('failed', $report['fixture']['status']);
+        self::assertSame('failed', $report['fixture']['cleanup']);
+        self::assertContains('filesystem_absence_unconfirmed', $report['fixture']['failures']);
+        self::assertSame('confirmed_absent', $report['fixture']['resources']['account']['cleanup']);
+        self::assertSame(['createacct', 'Tokens/create_full_access', 'Tokens/revoke', 'removeacct'], $http->mutations);
+    }
+
+    public function testFilesystemResidueIsReportedByLabelAndCount(): void
+    {
+        $proof = new RecordingFilesystemProof(['outcome' => 'present', 'residue' => ['sessions' => 2]]);
+        $report = (new FiniteQuotaFixture(new FiniteQuotaServer(), 'private-whm-token', $proof))->run(self::capture());
+        self::assertSame('present', $report['fixture']['filesystem_cleanup']);
+        self::assertSame(['sessions' => 2], $report['fixture']['filesystem_residue']);
+        self::assertContains('filesystem_residue_present', $report['fixture']['failures']);
+        self::assertPrivate($report);
+    }
+
+    public function testReportNamesTheCurrentScenarioVersion(): void
+    {
+        $report = (new FiniteQuotaFixture(new FiniteQuotaServer(), 'private-whm-token'))->run(self::capture());
+        self::assertSame('finite-quota-disposable-v2', $report['scenario']);
+    }
+
+    public function testInstanceIsSingleUse(): void
+    {
+        $http = new FiniteQuotaServer();
+        $fixture = new FiniteQuotaFixture($http, 'private-whm-token');
+        $fixture->run(self::capture());
+        $requests = count($http->requests);
+        $second = $fixture->run(self::capture());
+        self::assertSame(['configuration_failure'], $second['fixture']['failures']);
+        self::assertCount($requests, $http->requests);
+    }
+
     public function testZoneResidueIsReportedAfterTheAccountIsGoneWithoutFurtherMutations(): void
     {
         $http = new FiniteQuotaServer();

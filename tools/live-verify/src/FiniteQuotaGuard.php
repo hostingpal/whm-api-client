@@ -36,6 +36,9 @@ final class FiniteQuotaGuard implements ClientInterface
     /** @var array<string, string> */
     private readonly array $posts;
 
+    /** @var list<string> */
+    private readonly array $reads;
+
     /** Bind the root control credential and one exact token expiration; construction sends nothing. */
     public function __construct(
         #[SensitiveParameter]
@@ -52,14 +55,22 @@ final class FiniteQuotaGuard implements ClientInterface
         ) {
             throw new LogicException('Finite quota fixture configuration is invalid.');
         }
-        $this->posts = [
-            self::WHM . 'createacct?api.version=1' =>
-                'username=wqfinite&domain=wqfinite.example.com&contactemail=' . rawurlencode($contactEmail)
-                . '&quota=64&forcedns=0&hasshell=0&ip=n',
-            self::WHM . 'removeacct?api.version=1' => 'username=wqfinite&keepdns=0',
-            self::BRIDGE . 'Tokens&cpanel.function=create_full_access' =>
-                'name=' . self::TOKEN_NAME . '&expires_at=' . $expiresAt . '&readonly=1',
-            self::BRIDGE . 'Tokens&cpanel.function=revoke' => 'name=' . self::TOKEN_NAME,
+        $account = new DisposableAccount(
+            self::ACCOUNT,
+            self::DOMAIN,
+            self::TOKEN_NAME,
+            $contactEmail,
+            $expiresAt,
+            readOnlyToken: true,
+        );
+        $this->posts = $account->controlPosts();
+        $this->reads = [
+            ...$account->controlReads(),
+            self::WHM . 'version?api.version=1',
+            self::BRIDGE . 'Quota&cpanel.function=get_quota_info',
+            self::BRIDGE . 'Quota&cpanel.function=get_local_quota_info',
+            self::DIRECT . 'get_quota_info',
+            self::DIRECT . 'get_local_quota_info',
         ];
     }
 
@@ -92,17 +103,8 @@ final class FiniteQuotaGuard implements ClientInterface
         $uri = (string) $request->getUri();
         $post = $request->getMethod() === 'POST';
         $direct = str_starts_with($uri, self::DIRECT);
-        $approved = $request->getMethod() === 'GET' && (string) $request->getBody() === '' && in_array($uri, [
-            self::WHM . 'version?api.version=1',
-            self::WHM . 'listaccts?api.version=1&want=user%2Cdomain%2Cemail',
-            self::WHM . 'listzones?api.version=1',
-            self::WHM . 'get_domain_info?api.version=1',
-            self::BRIDGE . 'Tokens&cpanel.function=list',
-            self::BRIDGE . 'Quota&cpanel.function=get_quota_info',
-            self::BRIDGE . 'Quota&cpanel.function=get_local_quota_info',
-            self::DIRECT . 'get_quota_info',
-            self::DIRECT . 'get_local_quota_info',
-        ], true);
+        $approved = $request->getMethod() === 'GET' && (string) $request->getBody() === ''
+            && in_array($uri, $this->reads, true);
         if ($post) {
             $approved = isset($this->posts[$uri]) && (string) $request->getBody() === $this->posts[$uri];
         }
