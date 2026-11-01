@@ -1,0 +1,82 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "Chkservd",
+  "class": "Chkservd",
+  "accessor": "chkservd",
+  "description": "Complete pinned Chkservd module for the selected account. Offline coverage only; live follow-up whm-api-client-8x0.2.82 remains open.",
+  "operations": {
+    "uapi:Chkservd/get_exim_ports": {
+      "name": "getEximPorts",
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Chkservd~1get_exim_ports/get",
+          "note": "Available from cPanel 11.42. Source GET declares x-readonly:true. The nonnull object has optional ports containing integers; the source specifies items from 1 through 65535 and uniqueItems:true. ports remains an optional list<int>; omission differs from an empty list. Native integers and order are preserved; numeric strings, floats, booleans and null are rejected without normalization. Existing runtime policy validates types, not general bounds or uniqueness. Reported ports do not prove listening, reachability, mail delivery or TLS behavior. No response correction, normalization or requiredness override is applied."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 11.42. Source GET declares x-readonly:true. The nonnull object has optional ports containing integers; the source specifies items from 1 through 65535 and uniqueItems:true."
+        },
+        {
+          "kind": "policy",
+          "text": "ports remains an optional list<int>; omission differs from an empty list. Native integers and order are preserved; numeric strings, floats, booleans and null are rejected without normalization. Existing runtime policy validates types, not general bounds or uniqueness. Reported ports do not prove listening, reachability, mail delivery or TLS behavior."
+        },
+        {
+          "kind": "policy",
+          "text": "One explicit invocation sends one parameterless GET on the selected account through direct or WHM-bridged UAPI with ordinary Flag outcome. Accessors are lazy, cached and account-bound without I/O or metadata reset. No retry, implicit login, account selection, probe, URL fetch or local-file access is added."
+        },
+        {
+          "kind": "policy",
+          "text": "Data is required and nonnull; absent data and explicit null mismatch. Preserve optional-field omission, empty lists, list order, existing empty JSON array object compatibility and unknown-field filtering. UAPI status 0 or outer WHM failure throws before payload validation. Each attempt clears stale metadata; inspect responseMeta() warnings and raw metadata, including after API or payload errors."
+        },
+        {
+          "kind": "policy",
+          "text": "Results and metadata contain private account or infrastructure information. Existing SensitiveParameter protections cover library-owned response frames, not caller-readable results, PayloadMismatchException payloads or third-party transport traces. Offline synthetic fixtures establish no live server behavior; live follow-up whm-api-client-8x0.2.82 remains open."
+        }
+      ]
+    },
+    "uapi:Chkservd/get_exim_ports_ssl": {
+      "name": "getEximPortsSsl",
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Chkservd~1get_exim_ports_ssl/get",
+          "note": "Available from cPanel 11.42. Source GET declares x-readonly:true. The nonnull object has optional ports containing integers; the source specifies items from 0 through 65535 and does not declare uniqueness. ports remains an optional list<int>; omission differs from an empty list. Native integers, duplicates and order are preserved; numeric strings, floats, booleans and null are rejected without normalization. Existing runtime policy validates types, not general bounds or uniqueness. Reported SSL/TLS ports do not prove listening, reachability, TLS negotiation or email delivery. No response correction, normalization or requiredness override is applied."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 11.42. Source GET declares x-readonly:true. The nonnull object has optional ports containing integers; the source specifies items from 0 through 65535 and does not declare uniqueness."
+        },
+        {
+          "kind": "policy",
+          "text": "ports remains an optional list<int>; omission differs from an empty list. Native integers, duplicates and order are preserved; numeric strings, floats, booleans and null are rejected without normalization. Existing runtime policy validates types, not general bounds or uniqueness. Reported SSL/TLS ports do not prove listening, reachability, TLS negotiation or email delivery."
+        },
+        {
+          "kind": "policy",
+          "text": "One explicit invocation sends one parameterless GET on the selected account through direct or WHM-bridged UAPI with ordinary Flag outcome. Accessors are lazy, cached and account-bound without I/O or metadata reset. No retry, implicit login, account selection, probe, URL fetch or local-file access is added."
+        },
+        {
+          "kind": "policy",
+          "text": "Data is required and nonnull; absent data and explicit null mismatch. Preserve optional-field omission, empty lists, list order, existing empty JSON array object compatibility and unknown-field filtering. UAPI status 0 or outer WHM failure throws before payload validation. Each attempt clears stale metadata; inspect responseMeta() warnings and raw metadata, including after API or payload errors."
+        },
+        {
+          "kind": "policy",
+          "text": "Results and metadata contain private account or infrastructure information. Existing SensitiveParameter protections cover library-owned response frames, not caller-readable results, PayloadMismatchException payloads or third-party transport traces. Offline synthetic fixtures establish no live server behavior; live follow-up whm-api-client-8x0.2.82 remains open."
+        }
+      ]
+    }
+  }
+}

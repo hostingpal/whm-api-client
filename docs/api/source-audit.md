@@ -8216,3 +8216,48 @@ all prior evidence bytes and audit prefix remain unchanged. No server, network,
 credentials or live API was accessed. Live follow-up `8x0.2.81` stays OPEN; all
 55 inherited source diagnostics remain visible and unwaived. No independent
 Branding response correction from the integration lane is included.
+
+## UAPI Chkservd and Resellers discovery (2026-11-01)
+
+Delivery `whm-api-client-8x0.4.38` selects all three operations in the complete
+pinned Chkservd and Resellers modules through overlays and the existing generator.
+Decompressed `cpanel.openapi.json.gz` SHA-256 remains
+`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`.
+Exact source pointers are `/paths/~1Chkservd~1get_exim_ports/get`,
+`/paths/~1Chkservd~1get_exim_ports_ssl/get` and
+`/paths/~1Resellers~1list_accounts/get`. All are parameterless source GETs with
+`x-readonly:true` and ordinary Flag outcomes; both routes retain one GET per call.
+
+Source facts: Chkservd is available from cPanel 11.42. Both data roots are nonnull
+objects with optional `ports` integer lists. SMTP items specify 1..65535 with
+`uniqueItems:true`; SSL specifies 0..65535 without uniqueness. Resellers is
+available from cPanel 11; its nonnull list has objects with optional string
+`domain`, `select` and `user`. Source select values are quoted `'1'` for logged in
+and `''` for not logged in. No source requirement makes those optional fields
+mandatory, and no response correction or normalization is added.
+
+Existing policy: native integers remain strict, with no numeric-string/float/bool
+coercion. General ranges, uniqueness, ordinary string enums and identity formats
+are not enforced. Missing/null roots fail; omitted fields, empty lists and order
+are preserved. Existing empty JSON array object compatibility and unknown-field
+filtering remain, including unknown numeric object keys. API failure and outer
+WHM failure precede payload validation; metadata is cleared before each attempt
+and envelope warnings/status survive API/payload errors. Accessors remain lazy,
+cached and account-bound. Response data and account/infrastructure metadata are
+private; existing library response-frame protection does not redact returned or
+mismatch payloads or third-party traces.
+
+Offline evidence: independent literal fixtures exercise all three methods on
+both routes, exact GET URL/query/body/header behavior, account/cache isolation,
+strict native signatures, optional/empty data, quoted markers and identity bytes,
+wrong roots/leaves, API precedence, metadata resets and sensitive library frames.
+No runtime, generator, schema, annotation, dependency, source or immutable capture
+changed. No network, live API, credentials, browser, server, returned identity,
+port, URL or local-file contact ran. API responses establish no actual listening,
+reachability, TLS, login or email-delivery behavior. Live follow-up
+`whm-api-client-8x0.2.82` stays OPEN.
+
+Coverage is 1,231 canonical operations (636 UAPI in 95 groups; 595 WHM in 24),
+119 groups and 241 generated outputs including coverage. All 55 inherited source
+diagnostics remain visible and unwaived. Local PHP 8.4 offline gates do not
+establish exact-head PHP 8.3 CI or successful live compatibility.

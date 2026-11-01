@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 117 typed groups cover 1,228 documented operations:
+and cPanel UAPI surface. The 119 typed groups cover 1,231 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -4392,3 +4392,33 @@ under separate composed-source gate `8x0.28.8.6`. Returned payloads and all comp
 false/zero options are unchanged. This is offline request coverage; historical
 scalar captures do not establish PHP-list execution or server filtering/empty
 semantics. Live follow-up `whm-api-client-8x0.2.81` remains OPEN.
+
+## UAPI Exim ports and reseller account discovery (2026-11-01)
+
+Delivery `whm-api-client-8x0.4.38` generates complete Chkservd (two) and Resellers
+(one) modules from the pinned source. Cached/account-bound/lazy accessors expose
+`chkservd()->getEximPorts()`, `chkservd()->getEximPortsSsl()` and
+`resellers()->listAccounts()`. All are zero-argument native-array methods, use
+one GET on direct and bridged UAPI, and retain ordinary Flag outcome.
+
+Chkservd (cPanel 11.42) returns required nonnull objects with optional
+`ports:list<int>`. Preserve omitted versus empty, native integers and order;
+reject strings/floats/bools/null without normalization. Source SMTP constraints
+are 1..65535 and uniqueItems:true; SSL has 0..65535 with no uniqueness declaration.
+Existing policy validates types, not general bounds/uniqueness. Resellers (cPanel
+11) returns a required nonnull list of optional `domain`, `select`, `user` strings.
+Preserve quoted select markers `'1'`/`''`, omission, exact identity bytes and row
+order; ordinary-string enums remain unenforced. Numeric/bool markers mismatch.
+
+Missing/null roots mismatch; existing empty-array object compatibility and unknown
+field filtering stay unchanged. API/outer-WHM failures precede payload validation;
+metadata resets each attempt and records warnings/status before API/payload errors.
+Treat results/account/infrastructure data and mismatch payloads as private;
+library SensitiveParameter response frames do not promise third-party trace or
+payload-field redaction. No implicit login, account switching, probe, URL fetch,
+file access, retry, listening/reachability/TLS/email guarantee or permission check
+is added. These are offline synthetic contracts; live `8x0.2.82` stays OPEN.
+
+Current totals are 1,231 operations (636 UAPI, 595 WHM), 119 groups and 241 outputs
+including coverage. All 55 inherited source diagnostics remain visible/unwaived;
+runtime/generator/schema/dependencies/source and historical evidence are unchanged.

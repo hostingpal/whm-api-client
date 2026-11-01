@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "Resellers",
+  "class": "Resellers",
+  "accessor": "resellers",
+  "description": "Complete pinned Resellers module for the selected account. Offline coverage only; live follow-up whm-api-client-8x0.2.82 remains open.",
+  "operations": {
+    "uapi:Resellers/list_accounts": {
+      "name": "listAccounts",
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Resellers~1list_accounts/get",
+          "note": "Available from cPanel 11. Source GET declares x-readonly:true. Data is a nonnull list of objects with optional domain, select and user strings. The source select enum is the quoted string 1 for logged in and the empty string for not logged in. Preserve exact domain/user bytes, list order and empty lists. select stays a string, including the quoted 1 and empty marker; omission remains distinct. Numeric and boolean values are rejected without coercion; existing ordinary-string enum policy adds no enum enforcement. Domain and user strings are inert payload data, not validated or contacted identities. No authentication scope or client-side permission check is inferred. No response correction, normalization or requiredness override is applied."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 11. Source GET declares x-readonly:true. Data is a nonnull list of objects with optional domain, select and user strings. The source select enum is the quoted string 1 for logged in and the empty string for not logged in."
+        },
+        {
+          "kind": "policy",
+          "text": "Preserve exact domain/user bytes, list order and empty lists. select stays a string, including the quoted 1 and empty marker; omission remains distinct. Numeric and boolean values are rejected without coercion; existing ordinary-string enum policy adds no enum enforcement. Domain and user strings are inert payload data, not validated or contacted identities. No authentication scope or client-side permission check is inferred."
+        },
+        {
+          "kind": "policy",
+          "text": "One explicit invocation sends one parameterless GET on the selected account through direct or WHM-bridged UAPI with ordinary Flag outcome. Accessors are lazy, cached and account-bound without I/O or metadata reset. No retry, implicit login, account selection, probe, URL fetch or local-file access is added."
+        },
+        {
+          "kind": "policy",
+          "text": "Data is required and nonnull; absent data and explicit null mismatch. Preserve optional-field omission, empty lists, list order, existing empty JSON array object compatibility and unknown-field filtering. UAPI status 0 or outer WHM failure throws before payload validation. Each attempt clears stale metadata; inspect responseMeta() warnings and raw metadata, including after API or payload errors."
+        },
+        {
+          "kind": "policy",
+          "text": "Results and metadata contain private account or infrastructure information. Existing SensitiveParameter protections cover library-owned response frames, not caller-readable results, PayloadMismatchException payloads or third-party transport traces. Offline synthetic fixtures establish no live server behavior; live follow-up whm-api-client-8x0.2.82 remains open."
+        }
+      ]
+    }
+  }
+}

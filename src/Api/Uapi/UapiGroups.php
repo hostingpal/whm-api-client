@@ -35,6 +35,8 @@ trait UapiGroups
 
     private ?Ccs $ccsGroup = null;
 
+    private ?Chkservd $chkservdGroup = null;
+
     private ?Chrome $chromeGroup = null;
 
     private ?ClamScanner $clamScannerGroup = null;
@@ -130,6 +132,8 @@ trait UapiGroups
     private ?Postgresql $postgresqlGroup = null;
 
     private ?Quota $quotaGroup = null;
+
+    private ?Resellers $resellersGroup = null;
 
     private ?ResourceUsage $resourceUsageGroup = null;
 
@@ -309,6 +313,17 @@ trait UapiGroups
     public function ccs(): Ccs
     {
         return $this->ccsGroup ??= new Ccs($this->run(...));
+    }
+
+    /**
+     * Select the Chkservd operations without making a request.
+     *
+     * Complete pinned Chkservd module for the selected account. Offline coverage only; live follow-up
+     * whm-api-client-8x0.2.82 remains open.
+     */
+    public function chkservd(): Chkservd
+    {
+        return $this->chkservdGroup ??= new Chkservd($this->run(...));
     }
 
     /**
@@ -797,6 +812,17 @@ trait UapiGroups
     public function quota(): Quota
     {
         return $this->quotaGroup ??= new Quota($this->run(...));
+    }
+
+    /**
+     * Select the Resellers operations without making a request.
+     *
+     * Complete pinned Resellers module for the selected account. Offline coverage only; live follow-up
+     * whm-api-client-8x0.2.82 remains open.
+     */
+    public function resellers(): Resellers
+    {
+        return $this->resellersGroup ??= new Resellers($this->run(...));
     }
 
     /**

@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 117 generated typed groups cover 1,228 documented operations (see
+The 119 generated typed groups cover 1,231 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, DNS zone and DNSSEC
 management, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -4734,3 +4734,44 @@ under separate composed-source gate `8x0.28.8.6`. Returned payloads and all comp
 false/zero options are unchanged. This is offline request coverage; historical
 scalar captures do not establish PHP-list execution or server filtering/empty
 semantics. Live follow-up `whm-api-client-8x0.2.81` remains OPEN.
+
+## UAPI Exim ports and reseller account discovery (2026-11-01)
+
+The complete pinned Chkservd and Resellers modules expose three parameterless GETs
+on the selected account, through direct cPanel or WHM-bridged UAPI:
+
+```php
+$account = $client->uapi('exampleuser');
+$smtp = $account->chkservd()->getEximPorts();
+$ssl = $account->chkservd()->getEximPortsSsl();
+$accounts = $account->resellers()->listAccounts();
+```
+
+Chkservd requires cPanel 11.42 and returns `array{ports?: list<int>}`. Missing
+`ports` differs from an empty list. Native integer values and list order are
+preserved; numeric strings, floats, booleans and null are rejected. The pinned
+SMTP source specifies 1..65535 and unique items; SSL specifies 0..65535 without
+uniqueness. Existing validation enforces types, not general bounds or uniqueness.
+Reported ports establish no listening, reachability, TLS or email-delivery result.
+
+Resellers requires cPanel 11 and returns
+`list<array{domain?: string, select?: string, user?: string}>`. The documented
+`select` values are the string `'1'` (logged in) and `''` (not logged in).
+Both stay strings, and omission stays distinct; integer/boolean conversions are
+rejected. Existing ordinary-string enum policy adds no enum enforcement. Domain
+and user bytes remain inert payload data. Empty lists and optional row fields
+are preserved without login, account switching or identity validation.
+
+All three require nonnull data; missing data mismatches. Existing empty-array
+object compatibility and unknown-field filtering remain. Accessors are lazy and
+cached; each explicit method call makes one request with no retries or probes.
+API failures take precedence over payload validation; inspect `responseMeta()`
+warnings and raw metadata after API or payload errors. Treat results, metadata
+and mismatch payloads as private account/infrastructure information. Existing
+library response-frame protection does not redact caller-visible payloads or
+third-party traces. Synthetic offline coverage establishes no live behavior;
+follow-up `whm-api-client-8x0.2.82` remains open.
+
+Current coverage is 1,231 operations (636 UAPI, 595 WHM), 119 groups and 241
+generated outputs including coverage. All 55 inherited source diagnostics remain
+visible and unwaived.
