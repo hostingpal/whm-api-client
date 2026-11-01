@@ -1264,3 +1264,30 @@ Sitejet/get_commerce GET and nullable commission IDs; see
 the Commerce/Market contract notes. All remaining methods/variants stay under
 `8x0.2.52`. SHA-256:
 `8b1b468eb3ab91072cd0a676ac7d9337c3359bbde80497703451b24ecda1ee7d`.
+
+## Webmail inventory evidence
+
+The [Webmail inventory capture](2026-11-01-webmail-inventory.json) at
+`eba1711a62e71d614a50cb5eeb2259aa00adbbea` on `11.138.0.19` passes all five GET
+observations and strict assessment with zero discrepancies, through direct UAPI and
+the `npr` bridge. Session inventory is empty on both routes and proves nothing about
+session row fields. Webmail application rows are populated. No `Session/*` creator
+ran, and no returned URL was fetched or login attempted. The creators stay open under
+`8x0.2.69`. SHA-256:
+`37ee9760012a45c19100adc379ca59d7b87d46aebea8596a6c1f8e75dc201cd6`.
+
+## UAPI Market read evidence
+
+The [Market reads capture](2026-11-01-market-reads.json) at
+`eba1711a62e71d614a50cb5eeb2259aa00adbbea` on `11.138.0.19` passes all eleven GET
+observations and strict assessment with zero discrepancies, through direct UAPI and
+the `npr` bridge. It covers five of the nine reads in `8x0.2.63`: provider list,
+catalog, pending certificates, DCV constraints and login URL. The pending list is
+empty and observes no row fields. The login URL was not followed.
+
+Certificate status details, certificate availability, product information and
+completion URL did not run, because no real order or product-name selector exists on
+this server. Their absence is a recorded decision, not a failure or a pass. No
+purchase, payment, issuance, installation, trust or served TLS behavior is
+established. SHA-256:
+`4a9ec4fffec130ee099b63cb2f86c24482b332a8101995828426745bdb70da51`.

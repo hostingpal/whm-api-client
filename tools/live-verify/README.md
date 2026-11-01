@@ -1788,6 +1788,13 @@ creator runs on any account: a reviewer's disposable-account test left four sess
 files behind after the account was removed, and cleaning them needs filesystem
 access. The creators stay open under `8x0.2.69`.
 
+The [2026-11-01 capture](../../docs/api/evidence/2026-11-01-webmail-inventory.json)
+at `eba1711` on `11.138.0.19` passes all five GETs and strict assessment with zero
+discrepancies. Session inventory is empty on both routes, so all six session row
+fields stay unobserved. Application rows are populated. Do not repeat this capture
+for a populated result; session rows need a separately reviewed recipe.
+SHA-256: `37ee9760012a45c19100adc379ca59d7b87d46aebea8596a6c1f8e75dc201cd6`.
+
 ## UAPI Market reads
 
 ```sh
@@ -1830,3 +1837,12 @@ or token action runs, no POST is sent, and no returned URL or credential is used
 `get_license_info` and `get_build_cart_url` are not `x-readonly` and stay out of this
 catalog. A successful read establishes no purchase, payment, issuance, installation,
 trust or served TLS behavior.
+
+The [2026-11-01 capture](../../docs/api/evidence/2026-11-01-market-reads.json) at
+`eba1711` on `11.138.0.19` passes all eleven GETs and strict assessment with zero
+discrepancies. Provider, catalog and DCV payloads are populated, the login URL is a
+string, and the pending list is empty on both routes. Catalog prices, `max_users`
+and a non-empty `base_name` stay unobserved, as do the object identity branch and
+pending rows. Do not repeat this capture unchanged. The four unrun reads need a real
+selector and a new recipe. See the source audit for the observed types.
+SHA-256: `4a9ec4fffec130ee099b63cb2f86c24482b332a8101995828426745bdb70da51`.
