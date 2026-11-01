@@ -492,3 +492,15 @@ Supply the token through the process environment; do not commit credentials or
 real capability profiles. CI receives no WHM/cPanel secrets and does not
 capture, publish, commit, or push artifacts. See the
 [source audit](../../docs/api/README.md) for provenance and upstream licensing.
+
+
+The separate `multipart_upload` descriptor `{php, source, text}` selects the
+reviewed WHM required scalar Upload body, currently `source: "file"` and
+`text: "module"`. It is mutually exclusive with `multipart_uploads`, JSON,
+body aliases, query params and additional methods. The generator requires exact
+source-bound field and schema-requiredness evidence, a WHM POST with no endpoint
+query parameters, the nonnullable binary file plus nonnullable Basic/Main text,
+and absent requestBody.required. Both generated arguments are required and
+sensitive. This explicit adoption does not change formal requiredness defaults,
+ordinary scalar enum enforcement, Fileman list lowering or SSL string bodies.
+The runtime emits text followed by one Upload through the shared streaming stack.

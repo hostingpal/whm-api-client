@@ -1120,7 +1120,7 @@ final class WhmServerAdministrationTest extends TestCase
             }
         }
         // Unsupported transports and the outside-data reboot result must not masquerade as usable typed methods.
-        foreach (['saveConnectedApplication', 'restoreConfigFromUpload', 'systemNeedsReboot'] as $method) {
+        foreach (['saveConnectedApplication', 'systemNeedsReboot'] as $method) {
             self::assertFalse(method_exists(Server::class, $method));
         }
     }

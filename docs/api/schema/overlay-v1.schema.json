@@ -43,6 +43,16 @@
       "required": ["kind", "text"],
       "additionalProperties": false
     },
+    "multipartUpload": {
+      "type": "object",
+      "properties": {
+        "php": {"type": "string", "pattern": "^[a-z][A-Za-z0-9]*$"},
+        "source": {"const": "file"},
+        "text": {"const": "module"}
+      },
+      "required": ["php", "source", "text"],
+      "additionalProperties": false
+    },
     "multipartUploads": {
       "type": "object",
       "properties": {
@@ -373,7 +383,9 @@
     },
     "operation": {
       "type": "object",
+      "not": {"required": ["multipart_upload", "multipart_uploads"]},
       "properties": {
+        "multipart_upload": {"$ref": "#/$defs/multipartUpload"},
         "multipart_uploads": {"$ref": "#/$defs/multipartUploads"},
         "name": {"type": "string", "pattern": "^[a-z][A-Za-z0-9]*$"},
         "function": {"type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*/[A-Za-z_][A-Za-z0-9_]*$"},

@@ -1282,6 +1282,20 @@ final class ServerSpec
         'returns' => null,
     ];
 
+    public const RESTORE_CONFIG_FROM_UPLOAD = [
+        'function' => 'restore_config_from_upload',
+        'method' => 'POST',
+        'body' => 'multipart',
+        'outcome' => 'flag',
+        'multipart_upload' => [
+            'php' => 'file',
+            'source' => 'file',
+            'text' => 'module',
+        ],
+        'params' => [],
+        'returns' => null,
+    ];
+
     public const RUN_CPKEYCLT = [
         'function' => 'run_cpkeyclt',
         'method' => 'POST',

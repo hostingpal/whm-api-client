@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 99 typed groups cover 1,144 documented operations:
+and cPanel UAPI surface. The 99 typed groups cover 1,145 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -3293,3 +3293,35 @@ server observations remain separate, and 8x0.30.5 owns client live evidence. The
 five remaining binary operations remain 8x0.30.7/.30.8/.30.9. Approved parent fixes
 are consumed through the master merge. This correction changes no Upload or
 source/stream contract.
+
+
+The WHM configuration-upload adoption adds exactly one canonical operation:
+current coverage is 1,145 operations (550 UAPI, 595 WHM), 99 groups and 201
+outputs. `whm()->server()->restoreConfigFromUpload(module, Upload)` uses the
+separate evidence-bound `multipart_upload` descriptor `{php, source, text}`.
+Its only reviewed shape is required `module` literal text followed by scalar
+binary `file`, with no endpoint query parameters. Source schema requiredness
+is explicit despite absent requestBody.required; do not globally change legacy
+body requiredness. Both public values are sensitive. Preserve `Basic`/`Main`
+PHPDoc/case and existing scalar runtime policy; do not add enum validation.
+
+The WHM route keeps api.version=1 only in the URL, uses normal flag/metadata
+handling and returns void. Available from cPanel 74; unchanged backups do not
+rewrite configuration. This can affect server-wide configuration, with no retry,
+rollback, transactional or restart guarantee. Empty JSON sample/port 2083 are
+source inconsistencies. No live root restore or Fileman fixture restore ran.
+The disjoint descriptor is mutually exclusive with multipart_uploads and JSON;
+Fileman's required list, query placement and direct-only policy remain intact.
+Four Backup binary methods remain in 8x0.30.8/.30.9. Approved parent source and preparation-exception corrections are integrated;
+PHP 8.3/native Windows and reliable-size metadata follow-ups remain separate. Upload factories, bounded
+stream/source/transport primitives and pinned sources/evidence are unchanged.
+
+Caller warnings follow PR88 review5724678599's source inspection on 11.138.0.19:
+invalid settings retain old values and reject details are discarded, so success
+requires configuration readback for the caller's settings of interest. An unchanged
+restore may surface as an error; compiled-wrapper behavior remains unverified in
+8x0.30.7.1. Source inspection indicates possible root-only uploaded-backup retention
+under /root/tmp/Cpanel_Form_file.upload.*; restore-specific retention is unverified.
+The reviewer's separate read-only file-part check is not restore evidence. Keep
+one Upload: get_uploaded_files_ar chooses the first entry in hash order. No new
+return schema, ACL, enum policy, cleanup, retry or restore execution is introduced.

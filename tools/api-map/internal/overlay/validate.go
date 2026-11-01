@@ -51,7 +51,7 @@ func Validate(set Set) []string {
 			seen[id] = name
 			op := file.Operations[id]
 			if op.Exclude != nil && (op.Name != "" || len(op.Params) > 0 || len(op.Response) > 0 || op.Unwrap != "" ||
-				len(op.AdditionalMethods) > 0 || op.Function != "" || op.Rows != "" || op.OptionalPayload || op.Variant != "" || op.Body != "" || len(op.BodyFields) > 0 || op.MultipartUploads != nil) {
+				len(op.AdditionalMethods) > 0 || op.Function != "" || op.Rows != "" || op.OptionalPayload || op.Variant != "" || op.Body != "" || len(op.BodyFields) > 0 || op.MultipartUploads != nil || op.MultipartUpload != nil) {
 				problems = append(problems, id+": excluded operations take no other settings")
 			}
 			if op.Rows != "" && (file.Family != "uapi" || op.Outcome != "unchecked" || op.Void || op.OptionalPayload || op.Unwrap != "") {
@@ -63,7 +63,7 @@ func Validate(set Set) []string {
 			if op.Void && op.OptionalPayload {
 				problems = append(problems, id+": void and optional_payload are exclusive")
 			}
-			if op.Body != "" && (op.Body != "json" && (op.Body != "multipart" || file.Family != "uapi")) {
+			if op.Body != "" && (op.Body != "json" && (op.Body != "multipart" || (file.Family != "uapi" && op.MultipartUpload == nil))) {
 				problems = append(problems, id+": reviewed multipart bodies require UAPI")
 			}
 			if (op.Body == "json") != (op.JSONBody != nil) {
@@ -71,6 +71,9 @@ func Validate(set Set) []string {
 			}
 			if op.JSONBody != nil && (op.Exclude != nil || len(op.AdditionalMethods) > 0) {
 				problems = append(problems, id+": JSON bodies cannot combine with exclusions or additional methods")
+			}
+			if op.MultipartUpload != nil && (op.Body != "multipart" || file.Family != "whm1" || op.MultipartUploads != nil || op.JSONBody != nil || len(op.Params) > 0 || len(op.Order) > 0 || len(op.BodyFields) > 0 || len(op.AdditionalMethods) > 0) {
+				problems = append(problems, id+": multipart upload requires a WHM multipart body without other input settings")
 			}
 			if op.MultipartUploads != nil && (op.Body != "multipart" || file.Family != "uapi" || len(op.BodyFields) > 0 || len(op.AdditionalMethods) > 0) {
 				problems = append(problems, id+": multipart uploads require UAPI multipart without aliases or additional methods")
@@ -153,6 +156,9 @@ func missingEvidence(id string, op Operation) []string {
 	var settings []string
 	if op.Function != "" {
 		settings = append(settings, "function")
+	}
+	if op.MultipartUpload != nil {
+		settings = append(settings, "multipart_upload")
 	}
 	if op.MultipartUploads != nil {
 		settings = append(settings, "multipart_uploads")

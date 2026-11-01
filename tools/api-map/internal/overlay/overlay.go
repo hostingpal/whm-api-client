@@ -75,7 +75,15 @@ type MultipartUploads struct {
 	FilenameForbidden string `json:"filename_forbidden"`
 }
 
+// MultipartUpload selects the reviewed WHM required text and scalar Upload body.
+type MultipartUpload struct {
+	PHP    string `json:"php"`
+	Source string `json:"source"`
+	Text   string `json:"text"`
+}
+
 type Operation struct {
+	MultipartUpload   *MultipartUpload   `json:"multipart_upload,omitempty"`
 	MultipartUploads  *MultipartUploads  `json:"multipart_uploads,omitempty"`
 	AdditionalMethods []AdditionalMethod `json:"additional_methods,omitempty"`
 	Name              string             `json:"name,omitempty"`

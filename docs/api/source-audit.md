@@ -7022,3 +7022,92 @@ UAPI-only, and the controller explicitly deferred this unrelated WHM adoption.
 No massmodifyacct overlay/spec/method or behavior was changed. Its existing row
 contracts and live/source evidence remain separate. Future PR88..101 work and
 the owned Fileman capture remain outside this correction.
+
+
+### WHM configuration upload adoption (2026-10-31, offline)
+
+`whm1:restore_config_from_upload#POST` is generated as
+`whm()->server()->restoreConfigFromUpload(string $module, Upload $file): void`.
+Both public arguments carry SensitiveParameter. Pinned WHM source version
+11.138.0.10, decompressed SHA-256
+`6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594`,
+binds to `/paths/~1restore_config_from_upload/post`. Exact overlay evidence
+binds `/requestBody/content/multipart~1form-data/schema/properties/file`,
+`/properties/module` at that same schema, and `/schema/required`. The schema
+requires both file and module despite absent requestBody.required; this is an
+explicit typed adoption, preserving old SSL and ordinary body-requiredness rules.
+
+The new disjoint `multipart_upload` descriptor is `{php: file, source: file,
+text: module}`. It accepts only the reviewed required WHM module text and one
+Upload, with no endpoint query fields. Text precedes file in one streamed POST;
+normal WHM routing adds api.version=1 only to the query. The existing Upload,
+source preparation, bounded framing, exact-length HTTP attempt, ownership and
+failure lifecycle are reused. Generic calls, Fileman lists and three SSL string
+multipart contracts retain their prior behavior. Module PHPDoc is exactly
+`'Basic'|'Main'`; there is no new runtime enum or minimum enforcement. General
+Upload filename rules apply; Fileman's extra `<>;` restriction is not inherited.
+
+The source makes this available from cPanel 74. Basic selects Basic WebHost
+Manager Setup and Main selects Tweak Settings; unchanged backups do not rewrite
+configuration. Configuration changes can affect the server. The client provides
+no retry, rollback, transactional or restart guarantee and invents no ACL claim.
+The formal multipart schema and file-upload prose govern. The empty JSON HTTP
+sample and port 2083 at `/x-codeSamples/1/source` are attributed inconsistencies.
+The pinned 200 schema has metadata only, so void retains normal flag outcome
+and responseMeta rather than fabricating a payload or changed-files count.
+
+Canonical coverage increases by one WHM operation to 1,108 (521 UAPI, 587 WHM),
+with 91 groups and 185 generated outputs. Offline fixtures verify exact text/
+binary/empty bytes, routing, one-attempt behavior, ownership, sensitive traces,
+early structural/source failures, outcome and metadata handling. No live root
+configuration restore or Fileman fixture restore occurred. Four Backup uploads
+remain under 8x0.30.8/.30.9. Parent PR84/source and PR86 preparation-exception
+integration gates, POSIX source paths and reliable-size metadata follow-ups
+remain external-owned and unwaived. Historical source snapshots and live
+artifacts are unchanged.
+
+
+## PR88 parent integration and caller-warning correction (2026-11-01, offline)
+
+Approved master `64d6cd2fc18aa30a202bacc87172e43f6510fa96` is integrated into
+original PR88 `cfd8d05872f932f837f99355b16da05078d3d6d2` by a normal merge.
+Every byte of the approved master's preceding audit is retained. The original
+PR88 adoption section above is historical, including its scope and parent-gate
+status. Combined generation adds exactly one WHM operation to approved master:
+1,145 canonical operations (550 UAPI, 595 WHM), 99 groups and 201 outputs. Existing
+Fileman rows:uploads classification, source/preparation privacy corrections,
+strict payload/root guards, JSON routing and all prior generated contracts remain.
+The WHM scalar descriptor remains disjoint from Fileman's list descriptor.
+
+[PR88 review5724678599](https://github.com/hostingpal/whm-api-client/pull/88#pullrequestreview-5724678599)
+attributes these findings to reviewer inspection of `Whostmgr/API/1/Cpanel.pm`,
+`Whostmgr/TweakSettings.pm` and `Cpanel/Form.pm` on 11.138.0.19. This integrator
+has not independently read those server files or executed a restore. According to
+the review, apply_module_settings rejects invalid values, restores the old values
+and logs warnings; _restore_config retains only modified and discards rejects and
+reject_reasons. Consequently success need not mean every setting was applied.
+Generated PHPDoc and caller guidance require re-reading configuration of interest.
+
+The handler reportedly sets success metadata only when modified. Although an
+unchanged backup does not rewrite configuration, its compiled-wrapper response
+remains unobserved and an unchanged restore may surface as an error. Offline typed
+fixtures establish only client classification: missing metadata.result raises
+InvalidResponseException; integer result 0 raises ApiErrorException. They are not
+actual restore responses. This uncertainty remains open under 8x0.30.7.1.
+
+The review also reports that Cpanel/Form.pm unlinks uploads only on its own error
+paths and _restore_config contains no cleanup. Restore-specific retention remains
+unverified, but a root-only backup may remain in /root/tmp/Cpanel_Form_file.upload.*
+and may contain configuration secrets. The reviewer separately sent a four-byte
+file part to read-only WHM version, observed its mode-0600 temporary copy, verified
+its ownership by timestamp and SHA-256, removed exactly that copy and verified the
+directory's earlier state. That observation and cleanup belong to the reviewer
+and establish only that read-handler case, not restore retention or cleanup.
+
+The review reports get_uploaded_files_ar chooses from hash-order keys, supporting
+the deliberate single Upload contract. No list widening, new ACL or enum/range
+checking, return-shape change, server cleanup implementation or automatic retry,
+rollback, transaction or restart guarantee is added. No live configuration restore,
+invalid/no-op restore probe, server/SSH/credential access, new capture or source
+refresh was performed during this integration. Source-derived findings remain
+separate from the pinned 11.138.0.10 contract and historical runtime evidence.

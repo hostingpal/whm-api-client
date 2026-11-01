@@ -194,7 +194,7 @@ func groupClass(g effective.Group) string {
 		}
 	}
 	for _, op := range g.Operations {
-		if op.MultipartUploads != nil {
+		if op.MultipartUploads != nil || op.MultipartUpload != nil {
 			uses = append(uses, "HostingPal\\WhmApiClient\\Upload", "InvalidArgumentException")
 		}
 	}
@@ -373,6 +373,8 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 	} else if op.JSONBody != nil {
 		w.line(indent + " * @throws InvalidArgumentException If the whole JSON body is invalid, root routing names are reserved,")
 		w.line(indent + " *     or this account handle uses the unsupported WHM bridge.")
+	} else if op.MultipartUpload != nil {
+		w.line(indent + " * @throws InvalidArgumentException If the upload or multipart fields are invalid; no retry occurs.")
 	} else if op.MultipartUploads != nil {
 		w.line(indent + " * @throws InvalidArgumentException If uploads are empty, keyed, invalid, or this handle uses the WHM bridge.")
 	} else if rejectEmpty {
@@ -508,6 +510,13 @@ func specClass(g effective.Group) string {
 			}
 			w.line("        'outcome' => " + phpString(op.Outcome) + ",")
 		}
+		if d := op.MultipartUpload; d != nil {
+			w.line("        'multipart_upload' => [")
+			w.line("            'php' => " + phpString(d.PHP) + ",")
+			w.line("            'source' => " + phpString(d.Source) + ",")
+			w.line("            'text' => " + phpString(d.Text) + ",")
+			w.line("        ],")
+		}
 		if d := op.MultipartUploads; d != nil {
 			w.line("        'multipart_uploads' => [")
 			w.line("            'php' => " + phpString(d.PHP) + ",")
@@ -525,7 +534,7 @@ func specClass(g effective.Group) string {
 			w.line("            'schema' => " + inputLiteral(d.Schema, "            ") + ",")
 			w.line("        ],")
 		}
-		if len(op.Params) == 0 || (op.JSONBody != nil && len(op.Params) == 1) {
+		if len(op.Params) == 0 || op.MultipartUpload != nil || (op.JSONBody != nil && len(op.Params) == 1) {
 			w.line("        'params' => [],")
 		} else {
 			w.line("        'params' => [")

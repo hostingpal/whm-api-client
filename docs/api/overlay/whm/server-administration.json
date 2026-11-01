@@ -2371,17 +2371,80 @@
       }
     },
     "whm1:restore_config_from_upload": {
-      "exclude": {
-        "reason": "Requires multipart/form-data file with type:string format:binary plus module. Reviewed multipart string-field support does not implement arbitrary binary file upload. Tracked under whm-api-client-8x0.1.19.",
-        "evidence": [
-          {
-            "kind": "doc",
-            "version": "pinned 2026-10-13",
-            "date": "2026-10-31",
-            "note": "Pinned /restore_config_from_upload source contract: Requires multipart/form-data file with type:string format:binary plus module. Reviewed multipart string-field support does not implement arbitrary binary file upload. Tracked under whm-api-client-8x0.1.19. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
-          }
-        ]
-      }
+      "body": "multipart",
+      "multipart_upload": {
+        "php": "file",
+        "source": "file",
+        "text": "module"
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 74. Basic selects Basic WebHost Manager Setup; Main selects Tweak Settings. Module names are case-sensitive. Unchanged backups do not rewrite configuration."
+        },
+        {
+          "kind": "policy",
+          "text": "Both arguments are required from the body schema despite absent requestBody.required. Sends literal module text followed by a single Upload; routing stays in the WHM query. This can affect server-wide configuration; no retry, rollback, transactional or restart guarantee is provided."
+        },
+        {
+          "kind": "policy",
+          "text": "The formal multipart schema and upload prose govern this request. The empty JSON HTTP sample and its port 2083 are inconsistent examples, not alternate transport or routing contracts."
+        },
+        {
+          "kind": "policy",
+          "text": "Reviewer inspection of the 11.138.0.19 server source found that apply_module_settings rejects invalid values, restores their old values and logs warnings, while _restore_config discards reject details. Success does not mean every setting was applied. Re-read the configuration of interest after the call."
+        },
+        {
+          "kind": "policy",
+          "text": "An unchanged backup does not rewrite the configuration file, but the reviewed 11.138.0.19 handler sets success metadata only when settings are modified. An unchanged restore may therefore surface as an error; the compiled wrapper behavior remains unverified under 8x0.30.7.1. Offline envelope handling raises InvalidResponseException for a missing metadata.result and ApiErrorException for result 0; these are not observed restore responses."
+        },
+        {
+          "kind": "policy",
+          "text": "Reviewer source inspection on 11.138.0.19 indicates a restore may retain a root-only uploaded backup at /root/tmp/Cpanel_Form_file.upload.*. Restore-specific retention remains unverified; a separate read-only WHM file-part check observed a mode-0600 copy. Backups can contain configuration secrets; account for possible server-side retention."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "11.138.0.10",
+          "date": "2026-10-31",
+          "note": "Pinned binary string file upload. Accept an Upload descriptor, never a path string or list.",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1restore_config_from_upload/post/requestBody/content/multipart~1form-data/schema/properties/file"
+        },
+        {
+          "kind": "doc",
+          "version": "11.138.0.10",
+          "date": "2026-10-31",
+          "note": "Pinned case-sensitive Basic/Main literal text part; PHPDoc enum only, no new runtime enum policy.",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1restore_config_from_upload/post/requestBody/content/multipart~1form-data/schema/properties/module"
+        },
+        {
+          "kind": "doc",
+          "version": "11.138.0.10",
+          "date": "2026-10-31",
+          "note": "Both module and file are schema-required. Explicit typed requiredness despite absent requestBody.required; legacy multipart rules unchanged.",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1restore_config_from_upload/post/requestBody/content/multipart~1form-data/schema/required"
+        },
+        {
+          "kind": "doc",
+          "version": "11.138.0.10",
+          "date": "2026-10-31",
+          "note": "Metadata-only WHM success envelope; no application payload contract.",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1restore_config_from_upload/post/responses/200/content/application~1json/schema"
+        },
+        {
+          "kind": "doc",
+          "version": "11.138.0.10",
+          "date": "2026-10-31",
+          "note": "Empty JSON example and port 2083 do not override the formal multipart contract or normal WHM routing.",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1restore_config_from_upload/post/x-codeSamples/1/source"
+        }
+      ]
     },
     "whm1:system_needs_reboot": {
       "exclude": {
