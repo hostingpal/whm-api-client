@@ -8,6 +8,7 @@ use Closure;
 use HostingPal\WhmApiClient\Api\Whm\Spec\ApiToolsSpec;
 use HostingPal\WhmApiClient\Exception\ApiException;
 use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
+use InvalidArgumentException;
 use SensitiveParameter;
 
 /**
@@ -203,14 +204,22 @@ final readonly class ApiTools
      *
      * Documented: The examples use acl-0/acl-1 and whitelist_ip-0/whitelist_ip-1 for multiple values.
      *
-     * Policy: Typed acl and whitelistIp accept one scalar and cannot create or preserve multiple ACL or IP values.
-     * Multi-value support is deferred under 8x0.1.21; the existing unsuffixed-first numbered encoding does not
-     * represent these indexed families and is not used here.
-     *
      * Policy: An accepted creation outcome can still raise PayloadMismatchException after the credential was created.
      * Its sensitive unvalidated $payload may contain the only returned secret, but a malformed payload need not contain
      * it. Recover it securely if present and revoke the created named credential through an authorized caller action.
      * Never automatically retry, log the payload or automatically revoke a credential.
+     *
+     * Policy: Scalars retain their bare field; nonempty sequential string lists emit zero-based acl-0/acl-1 or
+     * whitelist_ip-0/whitelist_ip-1. Order, duplicates and empty string items are preserved; empty or malformed lists
+     * fail before I/O after metadata reset. No client format checks, implicit read/merge, retry or rollback are added.
+     *
+     * Documented: Attributed reviewer source inspection on installed cPanel 11.138.0.19, not credential execution or
+     * new local inspection: _parse_and_validate_acls accepts acl or acl-N with any numeric base;
+     * get_length_arguments(..., whitelist_ip) accepts bare or whitelist_ip-N, not whitelist-ip. Cpanel::Form::Param
+     * collects numeric suffixes. Select zero-based underscore families; pinned update ACL prose is one-based but its
+     * example is zero-based, and later create/update IP examples mix whitelist-ip spelling. No live list acceptance or
+     * all-version compatibility is established. Review:
+     * https://github.com/hostingpal/whm-api-client/pull/72#pullrequestreview-5722427592.
      *
      * Policy: Uses form POST under the client mutation transport policy to keep operation parameters out of access-log
      * URLs.
@@ -219,21 +228,24 @@ final readonly class ApiTools
      * Management).
      *
      * @param string $tokenName The API token's name.
-     * @param string $acl The privileges to assign to the token.
+     * @param string|non-empty-list<string> $acl The privileges to assign to the token.
      * @param int|null $expiresAt The API token's expiration time, in Unix Epoch format. Null omits it.
-     * @param string|null $whitelistIp One or more optional remote IP address or CIDR IP address ranges that can use
-     *     this token. Null omits it.
+     * @param string|non-empty-list<string>|null $whitelistIp One or more optional remote IP address or CIDR IP address
+     *     ranges that can use this token. Null omits it.
      * @return CreateDashboardTokenResult
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/api-token-management/wpdashboard-wp_dashboard_create_api_token
      */
     public function createDashboardToken(
         string $tokenName,
-        string $acl,
+        #[SensitiveParameter]
+        string|array $acl,
         ?int $expiresAt = null,
-        ?string $whitelistIp = null,
+        #[SensitiveParameter]
+        string|array|null $whitelistIp = null,
     ): array {
         /** @var CreateDashboardTokenResult $result Validated against ApiToolsSpec::WP_DASHBOARD_CREATE_API_TOKEN. */
         $result = ($this->run)(ApiToolsSpec::WP_DASHBOARD_CREATE_API_TOKEN, [
@@ -267,16 +279,25 @@ final readonly class ApiTools
      * Policy: Store the returned credential securely and never log the result.
      *
      * Documented: ACL prose and examples use acl-0/acl-1. Whitelist prose uses whitelist_ip-0/whitelist_ip-1, while
-     * later example keys switch to whitelist-ip; these source limitations remain unresolved.
-     *
-     * Policy: Typed acl and whitelistIp accept one scalar and cannot create or preserve multiple ACL or IP values.
-     * Multi-value support is deferred under 8x0.1.21; the existing unsuffixed-first numbered encoding does not
-     * represent these indexed families and is not used here.
+     * later example keys switch to whitelist-ip; the selected underscore spelling follows the attributed 11.138.0.19
+     * source review.
      *
      * Policy: An accepted creation outcome can still raise PayloadMismatchException after the credential was created.
      * Its sensitive unvalidated $payload may contain the only returned secret, but a malformed payload need not contain
      * it. Recover it securely if present and revoke the created named credential through an authorized caller action.
      * Never automatically retry, log the payload or automatically revoke a credential.
+     *
+     * Policy: Scalars retain their bare field; nonempty sequential string lists emit zero-based acl-0/acl-1 or
+     * whitelist_ip-0/whitelist_ip-1. Order, duplicates and empty string items are preserved; empty or malformed lists
+     * fail before I/O after metadata reset. No client format checks, implicit read/merge, retry or rollback are added.
+     *
+     * Documented: Attributed reviewer source inspection on installed cPanel 11.138.0.19, not credential execution or
+     * new local inspection: _parse_and_validate_acls accepts acl or acl-N with any numeric base;
+     * get_length_arguments(..., whitelist_ip) accepts bare or whitelist_ip-N, not whitelist-ip. Cpanel::Form::Param
+     * collects numeric suffixes. Select zero-based underscore families; pinned update ACL prose is one-based but its
+     * example is zero-based, and later create/update IP examples mix whitelist-ip spelling. No live list acceptance or
+     * all-version compatibility is established. Review:
+     * https://github.com/hostingpal/whm-api-client/pull/72#pullrequestreview-5722427592.
      *
      * Policy: Uses form POST under the client mutation transport policy to keep operation parameters out of access-log
      * URLs.
@@ -284,21 +305,24 @@ final readonly class ApiTools
      * API-map identity: whm1:api_token_create#GET (wire name api_token_create; API Token Management).
      *
      * @param string $tokenName The API token's name.
-     * @param string|null $acl The privileges to assign to the token. Null omits it.
+     * @param string|non-empty-list<string>|null $acl The privileges to assign to the token. Null omits it.
      * @param int|null $expiresAt The API token's expiration time. Null omits it.
-     * @param string|null $whitelistIp One or more optional remote IP or CIDR IP ranges this token may be used from.
-     *     Null omits it.
+     * @param string|non-empty-list<string>|null $whitelistIp One or more optional remote IP or CIDR IP ranges this
+     *     token may be used from. Null omits it.
      * @return CreateTokenResult
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/api-token-management/tokens-api_token_create
      */
     public function createToken(
         string $tokenName,
-        ?string $acl = null,
+        #[SensitiveParameter]
+        string|array|null $acl = null,
         ?int $expiresAt = null,
-        ?string $whitelistIp = null,
+        #[SensitiveParameter]
+        string|array|null $whitelistIp = null,
     ): array {
         /** @var CreateTokenResult $result Validated against ApiToolsSpec::API_TOKEN_CREATE. */
         $result = ($this->run)(ApiToolsSpec::API_TOKEN_CREATE, [
@@ -589,19 +613,25 @@ final readonly class ApiTools
      *
      * Documented: The source documents token_name-1, token_name-2 and token_name-3 for multiple revocations.
      *
-     * Policy: Typed tokenName accepts one scalar; multiple revocation support remains deferred under 8x0.1.21.
+     * Policy: Scalar tokenName keeps token_name; nonempty sequential string lists always emit
+     * token_name-1/token_name-2, including singleton lists. Preserve order, duplicates and empty string items; reject
+     * empty or malformed lists before I/O after metadata reset. One request; no batch atomicity, partial-failure or
+     * per-token success guarantee is added.
      *
      * Policy: Uses form POST under the client mutation transport policy to keep operation parameters out of access-log
      * URLs.
      *
      * API-map identity: whm1:api_token_revoke#GET (wire name api_token_revoke; API Token Management).
      *
-     * @param string $tokenName The API token's name.
+     * @param string|non-empty-list<string> $tokenName The API token's name.
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/api-token-management/tokens-api_token_revoke
      */
-    public function revokeToken(string $tokenName): void
-    {
+    public function revokeToken(
+        #[SensitiveParameter]
+        string|array $tokenName,
+    ): void {
         ($this->run)(ApiToolsSpec::API_TOKEN_REVOKE, ['tokenName' => $tokenName]);
     }
 
@@ -612,60 +642,72 @@ final readonly class ApiTools
      *
      * Documented: Available from cPanel 68.
      *
-     * Documented: ACL and whitelist inputs replace all current settings. Pinned omission assigns all caller privileges,
-     * permits any IP and removes expiration; zero also means no expiration. Only caller-held privileges may be
-     * assigned. whitelistIp=any explicitly clears IP restrictions. Expired tokens require manual revocation.
+     * Documented: Supplied ACL/IP inputs replace their entire respective setting; only caller-held privileges may be
+     * assigned. expiresAt=0 explicitly means no expiration and whitelistIp=any explicitly clears IP restrictions.
+     * Expired tokens require manual revocation.
      *
-     * Policy: The typed method requires explicit acl, whitelistIp and expiresAt to express the complete replacement
-     * settings, including when renaming. Empty strings are not a documented way to preserve current settings.
+     * Documented: Pinned reset-on-omission prose conflicts with attributed reviewer-inspected 11.138.0.19 source.
+     * _build_create_or_update_args drops empty lists; Cpanel::Security::Authn::APITokens::Write::update_token copies
+     * only supplied fields. Omitted/null ACL, IP and expiration preserve settings on that inspected version; older
+     * versions are unestablished. This corrects the earlier PR57 assumption. Source review:
+     * https://github.com/hostingpal/whm-api-client/pull/72#pullrequestreview-5722427592. No credential execution is
+     * claimed.
+     *
+     * Policy: Only tokenName is required, restoring formal pinned optionality. Null omits each optional input;
+     * rename-only and partial updates send one request containing only supplied options, without reading or merging
+     * settings. Empty strings are sent as supplied and are not preservation sentinels; [] is rejected because the
+     * inspected update source would silently drop it. Treat returned settings as private payload data.
      *
      * Documented: Omitted newName preserves the name; replacements must be unique and at most 50
      * alphanumeric/dash/underscore characters. Root cannot rename to WebPros_Dashboard, WP-Dashboard or Platform360.
      *
-     * Documented: ACL prose uses acl-1/acl-2 but its example uses acl-0/acl-1; whitelist prose uses whitelist_ip-0
-     * while later example keys use whitelist-ip. These source limitations remain unresolved.
+     * Policy: Scalars retain their bare field; nonempty sequential string lists emit zero-based acl-0/acl-1 or
+     * whitelist_ip-0/whitelist_ip-1. Order, duplicates and empty string items are preserved; empty or malformed lists
+     * fail before I/O after metadata reset. No client format checks, implicit read/merge, retry or rollback are added.
      *
-     * Policy: Typed acl and whitelistIp accept one scalar and cannot preserve or create multiple ACL or IP values. Do
-     * not use updateToken to rename a token restricted by multiple ACL or IP values. Multi-value support is deferred
-     * under 8x0.1.21; the existing unsuffixed-first numbered encoding is not used for these families. Treat returned
-     * settings as private payload data.
+     * Documented: Attributed reviewer source inspection on installed cPanel 11.138.0.19, not credential execution or
+     * new local inspection: _parse_and_validate_acls accepts acl or acl-N with any numeric base;
+     * get_length_arguments(..., whitelist_ip) accepts bare or whitelist_ip-N, not whitelist-ip. Cpanel::Form::Param
+     * collects numeric suffixes. Select zero-based underscore families; pinned update ACL prose is one-based but its
+     * example is zero-based, and later create/update IP examples mix whitelist-ip spelling. No live list acceptance or
+     * all-version compatibility is established. Review:
+     * https://github.com/hostingpal/whm-api-client/pull/72#pullrequestreview-5722427592.
      *
      * Policy: Uses form POST under the client mutation transport policy to keep operation parameters out of access-log
      * URLs.
      *
      * API-map identity: whm1:api_token_update#GET (wire name api_token_update; API Token Management).
      *
-     * @param string $tokenName The existing API token name. This replaces complete settings, including for a rename:
-     *     pinned omission assigns all caller privileges, permits any IP and removes expiration. The client requires
-     *     acl, whitelistIp and expiresAt explicitly; empty strings are not documented preservation values.
-     * @param string $acl The complete replacement privilege, limited to caller-held privileges. This replaces complete
-     *     settings, including for a rename: pinned omission assigns all caller privileges, permits any IP and removes
-     *     expiration. The client requires acl, whitelistIp and expiresAt explicitly; empty strings are not documented
-     *     preservation values.
-     * @param string $whitelistIp The complete replacement remote IP or CIDR range; any explicitly clears IP
-     *     restrictions. This replaces complete settings, including for a rename: pinned omission assigns all caller
-     *     privileges, permits any IP and removes expiration. The client requires acl, whitelistIp and expiresAt
-     *     explicitly; empty strings are not documented preservation values.
-     * @param int $expiresAt The replacement Unix expiration time; zero explicitly means no expiration. Expired tokens
-     *     require manual revocation. This replaces complete settings, including for a rename: pinned omission assigns
-     *     all caller privileges, permits any IP and removes expiration. The client requires acl, whitelistIp and
-     *     expiresAt explicitly; empty strings are not documented preservation values.
+     * @param string $tokenName The existing API token name. Optional settings may be omitted; rename-only sends
+     *     token_name and new_name in one request.
+     * @param string|non-empty-list<string>|null $acl The complete replacement privilege or nonempty sequential string
+     *     list, limited to caller-held privileges. Null omits; omitted settings preserve on reviewer-inspected
+     *     11.138.0.19 source despite pinned reset prose. Empty strings are supplied values, not preservation sentinels.
+     *     Null omits it.
+     * @param string|non-empty-list<string>|null $whitelistIp The complete replacement remote IP/CIDR value or nonempty
+     *     sequential string list; any explicitly clears restrictions. Null omits; omitted settings preserve on
+     *     reviewer-inspected 11.138.0.19 source despite pinned reset prose. Empty strings are supplied values, not
+     *     preservation sentinels. Null omits it.
+     * @param int|null $expiresAt The optional replacement Unix expiration time; zero explicitly means no expiration.
+     *     Null omits; omission preserves on reviewer-inspected 11.138.0.19 source despite pinned reset prose. Expired
+     *     tokens require manual revocation. Null omits it.
      * @param string|null $newName The optional new unique name, at most 50 alphanumeric/dash/underscore characters;
-     *     omission preserves the name. Root cannot use WebPros_Dashboard, WP-Dashboard or Platform360. This replaces
-     *     complete settings, including for a rename: pinned omission assigns all caller privileges, permits any IP and
-     *     removes expiration. The client requires acl, whitelistIp and expiresAt explicitly; empty strings are not
-     *     documented preservation values. Null omits it.
+     *     omission preserves the name. Root cannot use WebPros_Dashboard, WP-Dashboard or Platform360. Null omits; an
+     *     empty string remains supplied. Null omits it.
      * @return UpdateTokenResult
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/api-token-management/tokens-api_token_update
      */
     public function updateToken(
         string $tokenName,
-        string $acl,
-        string $whitelistIp,
-        int $expiresAt,
+        #[SensitiveParameter]
+        string|array|null $acl = null,
+        #[SensitiveParameter]
+        string|array|null $whitelistIp = null,
+        ?int $expiresAt = null,
         ?string $newName = null,
     ): array {
         /** @var UpdateTokenResult $result Validated against ApiToolsSpec::API_TOKEN_UPDATE. */

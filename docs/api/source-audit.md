@@ -8737,3 +8737,43 @@ Their local binding files record identical before/after input-tree digests:
 This binds the checks to the uncommitted inputs, not to a fabricated implementation
 commit. These test/version logs are behavioral validation, not raw-response JSON
 evidence artifacts; all earlier evidence remains unchanged.
+
+## WHM token indexed inputs and optional update correction (2026-11-01)
+
+This offline adoption changes only `api_token_create`,
+`wp_dashboard_create_api_token`, `api_token_update` and `api_token_revoke`.
+The pinned WHM source SHA-256 is
+`6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594`.
+Its formal GET declarations stay pinned; generated client mutation policy remains
+form POST. Creation ACL parameter 1 and whitelist parameter 3 use zero-based
+prose; dashboard ACL parameter 0 and whitelist parameter 3 use zero-based examples.
+Revoke parameter 0 explicitly uses one-based `token_name-1`/`token_name-2`.
+Update parameters 1 (ACL), 2 (expiry), 3 (new name), and 4 (whitelist) are optional.
+Update ACL prose starts at one but its example starts at zero, and later
+creation/update whitelist examples switch from `whitelist_ip` to `whitelist-ip`.
+
+The [PR72 review 5722427592](https://github.com/hostingpal/whm-api-client/pull/72#pullrequestreview-5722427592)
+reports inspection of installed `11.138.0.19` source, not credential execution:
+`_parse_and_validate_acls` accepts bare ACL or numeric `acl-N` with any base;
+`get_length_arguments(..., 'whitelist_ip')` accepts bare or numeric
+`whitelist_ip-N`, not `whitelist-ip`. `Cpanel::Form::Param` collects numeric
+suffixes. The client selects explicit zero-based underscore families and retains
+bare scalars. Revocation lists use the separately pinned one-based family.
+
+That reviewer also corrects the [earlier PR57 assumption](https://github.com/hostingpal/whm-api-client/pull/57#pullrequestreview-5720856204):
+`_build_create_or_update_args` drops empty lists, and
+`Cpanel::Security::Authn::APITokens::Write::update_token` copies only supplied
+fields. Thus omitted ACL/IP/expiry preserve their settings on the inspected
+version, contradicting pinned reset prose. The overlay restores formal optionality
+and documents the version boundary. Supplied ACL/IP values replace the entire
+respective setting; null omits, empty strings are supplied, `0` explicitly removes
+expiry and `any` explicitly clears IP restrictions. Empty lists are rejected,
+never an invented clearing or preservation instruction. Rename-only sends one
+request with the supplied name fields and no implicit read or merge.
+
+This is attributed source evidence, not a new local inspection, live list
+transport observation, persistence check or successful credential lifecycle.
+Older-version preservation, batch atomicity and per-token success remain
+unestablished. Creation defaults, one-time-secret recovery warnings, API outcomes,
+responses, operation counts, generic calls and all unrelated operations are
+unchanged; no retries, automatic revocation, server calls or credentials are used.

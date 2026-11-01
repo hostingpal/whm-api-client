@@ -2387,22 +2387,36 @@ Development Tools group: token lifecycle, session/login-link creation, applicati
 inventory and legacy API usage. Five reads use GET and seven calls use form POST.
 The remaining five execution wrappers are separate work under `8x0.4.17`.
 
-`updateToken()` requires the token name, ACL, IP restriction and expiration as
-explicit arguments. These replace the complete current settings. The pinned
-upstream contract says omitted ACL grants all caller privileges, omitted IP
-restrictions allow any IP, and omitted expiration means never expire. A rename
-must therefore include the intended settings too; omission is not preservation.
-Use `whitelistIp: 'any'` or `expiresAt: 0` only to deliberately choose those
-unrestricted/non-expiring states. `createDashboardToken()` puts `tokenName`
-before `acl`, matching token creation's key-first order.
+`createToken()` and `createDashboardToken()` accept scalar ACL/IP fields or
+nonempty sequential string lists. Lists use `acl-0`/`acl-1` and
+`whitelist_ip-0`/`whitelist_ip-1`; scalars keep their bare fields. Dashboard ACL
+remains required and non-null. Regular creation with omitted ACL grants all caller
+privileges; omitted creation IP restrictions allow any IP and omitted expiration
+means no expiration. The dashboard method keeps `tokenName` before `acl`.
 
-ACL, whitelist and revoke-name inputs currently represent one scalar field.
-The typed create/update methods cannot create or preserve multiple ACLs or IP
-restrictions. Do not rename a multi-value restricted token through this scalar
-update interface or substitute `all` to work around it. Source ACL prose/examples
-disagree about starting indices, and whitelist examples disagree about spelling.
-The existing numbered encoder does not establish these forms. Their explicit
-encoding and validation remain priority-one work under `8x0.1.21` before release.
+`updateToken()` requires only `tokenName`; ACL, IP restriction, expiration and
+new name are optional, preserving the previous positional order. Supplied ACL/IP
+values replace the entire respective setting. Explicit null omits each option;
+empty strings remain supplied values, never preservation sentinels.
+`whitelistIp: 'any'` explicitly clears IP restrictions and `expiresAt: 0` explicitly
+means no expiration. A rename-only call sends only its two fields, with no read
+or merge. The [attributed source review of 11.138.0.19](https://github.com/hostingpal/whm-api-client/pull/72#pullrequestreview-5722427592)
+reports omitted ACL/IP/expiry are preserved, correcting the earlier PR57 assumption
+based on pinned reset prose. Older-version preservation is unestablished.
+
+`revokeToken()` also accepts a nonempty sequential string list, always using
+`token_name-1`/`token_name-2`, including a singleton list. It sends one request;
+no atomicity or per-token success guarantee is added. All seven collection inputs
+preserve exact string bytes, order, duplicates and empty string items. Empty,
+associative, sparse or non-string-item lists fail locally after metadata reset.
+No client format validation or privilege enum is inferred.
+
+The zero-based update ACL choice and underscore IP spelling follow the attributed
+source review: update ACL prose starts at one but its example starts at zero;
+later IP examples mix `whitelist-ip`, which the inspected handler does not accept.
+These calls remain form POST. This implementation and its offline fixtures establish
+no live list transport, persistence or successful credential lifecycle. Separate
+live acceptance remains open under `8x0.2.44`.
 
 Raw token lookup uses sensitive form POST despite the pinned GET declaration;
 this is client policy, and POST compatibility remains live-unverified. Token,

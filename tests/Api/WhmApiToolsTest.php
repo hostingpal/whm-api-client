@@ -9,6 +9,7 @@ use HostingPal\WhmApiClient\Exception\ApiErrorException;
 use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
 use HostingPal\WhmApiClient\Http\HttpTransport;
 use Http\Mock\Client as MockClient;
+use InvalidArgumentException;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7\Response;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -69,6 +70,7 @@ final class WhmApiToolsTest extends TestCase
     /** @return iterable<string, array{string, string, array<array-key, mixed>, string, string, ?string, 6?: string}> */
     public static function operations(): iterable
     {
+        yield from self::indexedTokenRequests();
         yield 'create all inputs' => ['api_token_create', 'createToken',
             ['tokenName' => 'new-token', 'acl' => 'list-accts', 'expiresAt' => 0, 'whitelistIp' => '2001:db8::/48'],
             'POST', 'token_name=new-token&acl=list-accts&expires_at=0&whitelist_ip=2001%3Adb8%3A%3A%2F48',
@@ -198,6 +200,72 @@ final class WhmApiToolsTest extends TestCase
             self::assertSame(['Synthetic'], $error->errors());
         }
         self::assertCount(1, $http->getRequests());
+    }
+
+    /** @return iterable<string, array{string, string, array<array-key, mixed>, string, string, ?string}> */
+    public static function indexedTokenRequests(): iterable
+    {
+        foreach (
+            self::collectionPositions() as $label => [$function, $method, $parameter, $base, $scalar, $single, $many]
+        ) {
+            foreach (
+                [
+                'scalar' => [' +&%雪', $scalar],
+                'singleton' => [[''], $single],
+                'multiple' => [[' +&%雪', '', ' +&%雪'], $many],
+                ] as $variant => [$input, $wire]
+            ) {
+                yield "$label $variant" => [$function, $method, array_replace($base, [$parameter => $input]),
+                    'POST', $wire, $method === 'revokeToken' ? null : '{}'];
+            }
+        }
+        yield 'create scalar positional' => ['api_token_create', 'createToken',
+            ['fixture', 'list-accts', 0, '192.0.2.1'], 'POST',
+            'token_name=fixture&acl=list-accts&expires_at=0&whitelist_ip=192.0.2.1', '{}'];
+        yield 'dashboard scalar positional' => ['wp_dashboard_create_api_token', 'createDashboardToken',
+            ['fixture', 'list-accts', 0, '192.0.2.1'], 'POST',
+            'token_name=fixture&acl=list-accts&expires_at=0&whitelist_ip=192.0.2.1', '{}'];
+        yield 'create both lists positional' => ['api_token_create', 'createToken',
+            ['fixture', ['list-accts', 'create-acct'], 0, ['192.0.2.1', '2001:db8::/48']], 'POST',
+            'token_name=fixture&acl-0=list-accts&acl-1=create-acct&expires_at=0'
+                . '&whitelist_ip-0=192.0.2.1&whitelist_ip-1=2001%3Adb8%3A%3A%2F48', '{}'];
+        yield 'update both lists positional' => ['api_token_update', 'updateToken',
+            ['fixture', ['list-accts'], ['192.0.2.1'], 0, 'renamed'], 'POST',
+            'token_name=fixture&acl-0=list-accts&whitelist_ip-0=192.0.2.1&expires_at=0&new_name=renamed', '{}'];
+        yield 'dashboard both lists positional' => ['wp_dashboard_create_api_token', 'createDashboardToken',
+            ['fixture', ['list-accts'], 0, ['192.0.2.1']], 'POST',
+            'token_name=fixture&acl-0=list-accts&expires_at=0&whitelist_ip-0=192.0.2.1', '{}'];
+    }
+
+    /** @return iterable<string, array{string, string, string, array<string, mixed>, string, string, string}> */
+    public static function collectionPositions(): iterable
+    {
+        yield 'create ACL' => ['api_token_create', 'createToken', 'acl', ['tokenName' => 'fixture'],
+            'token_name=fixture&acl=%20%2B%26%25%E9%9B%AA', 'token_name=fixture&acl-0=',
+            'token_name=fixture&acl-0=%20%2B%26%25%E9%9B%AA&acl-1=&acl-2=%20%2B%26%25%E9%9B%AA'];
+        yield 'create IP' => ['api_token_create', 'createToken', 'whitelistIp', ['tokenName' => 'fixture'],
+            'token_name=fixture&whitelist_ip=%20%2B%26%25%E9%9B%AA', 'token_name=fixture&whitelist_ip-0=',
+            'token_name=fixture&whitelist_ip-0=%20%2B%26%25%E9%9B%AA&whitelist_ip-1='
+                . '&whitelist_ip-2=%20%2B%26%25%E9%9B%AA'];
+        yield 'dashboard ACL' => ['wp_dashboard_create_api_token', 'createDashboardToken', 'acl',
+            ['tokenName' => 'fixture'], 'token_name=fixture&acl=%20%2B%26%25%E9%9B%AA', 'token_name=fixture&acl-0=',
+            'token_name=fixture&acl-0=%20%2B%26%25%E9%9B%AA&acl-1=&acl-2=%20%2B%26%25%E9%9B%AA'];
+        yield 'dashboard IP' => ['wp_dashboard_create_api_token', 'createDashboardToken', 'whitelistIp',
+            ['tokenName' => 'fixture', 'acl' => 'list-accts'],
+            'token_name=fixture&acl=list-accts&whitelist_ip=%20%2B%26%25%E9%9B%AA',
+            'token_name=fixture&acl=list-accts&whitelist_ip-0=',
+            'token_name=fixture&acl=list-accts&whitelist_ip-0=%20%2B%26%25%E9%9B%AA&whitelist_ip-1='
+                . '&whitelist_ip-2=%20%2B%26%25%E9%9B%AA'];
+        yield 'update ACL' => ['api_token_update', 'updateToken', 'acl', ['tokenName' => 'fixture'],
+            'token_name=fixture&acl=%20%2B%26%25%E9%9B%AA', 'token_name=fixture&acl-0=',
+            'token_name=fixture&acl-0=%20%2B%26%25%E9%9B%AA&acl-1=&acl-2=%20%2B%26%25%E9%9B%AA'];
+        yield 'update IP' => ['api_token_update', 'updateToken', 'whitelistIp', ['tokenName' => 'fixture'],
+            'token_name=fixture&whitelist_ip=%20%2B%26%25%E9%9B%AA', 'token_name=fixture&whitelist_ip-0=',
+            'token_name=fixture&whitelist_ip-0=%20%2B%26%25%E9%9B%AA&whitelist_ip-1='
+                . '&whitelist_ip-2=%20%2B%26%25%E9%9B%AA'];
+        yield 'revoke names' => ['api_token_revoke', 'revokeToken', 'tokenName', [],
+            'token_name=%20%2B%26%25%E9%9B%AA', 'token_name-1=',
+            'token_name-1=%20%2B%26%25%E9%9B%AA&token_name-2=&token_name-3=%20%2B%26%25%E9%9B%AA'];
     }
 
     /** @return iterable<string, array{string, string, array<array-key, mixed>}> */
@@ -351,13 +419,20 @@ final class WhmApiToolsTest extends TestCase
         foreach ([false, 1.5, ['list-accts']] as $i => $bad) {
             yield "create token name $i" => ['createToken', ['tokenName' => $bad]];
             yield "details secret $i" => ['getTokenDetails', ['token' => $bad]];
-            yield "revoke token name $i" => ['revokeToken', ['tokenName' => $bad]];
+            if (!is_array($bad)) {
+                yield "revoke token name $i" => ['revokeToken', ['tokenName' => $bad]];
+            }
             foreach (['acl', 'expiresAt', 'newName', 'whitelistIp'] as $name) {
+                if (is_array($bad) && in_array($name, ['acl', 'whitelistIp'], true)) {
+                    continue;
+                }
                 yield "update $name $i" => ['updateToken',
                     array_replace(['tokenName' => 'fixture', 'acl' => 'list-accts',
                         'whitelistIp' => '192.0.2.1', 'expiresAt' => 123], [$name => $bad])];
             }
-            yield "dashboard ACL $i" => ['createDashboardToken', ['acl' => $bad, 'tokenName' => 'fixture']];
+            if (!is_array($bad)) {
+                yield "dashboard ACL $i" => ['createDashboardToken', ['acl' => $bad, 'tokenName' => 'fixture']];
+            }
             foreach (
                 ['service', 'user', 'app', 'cpSecurityToken', 'locale',
                 'preferredDomain', 'promptToken'] as $name
@@ -373,33 +448,121 @@ final class WhmApiToolsTest extends TestCase
     }
 
     /** @param array<string, mixed> $arguments */
-    #[DataProvider('incompleteUpdateInputs')]
-    public function testUpdateRequiresCompleteIntentBeforeDispatch(string $method, array $arguments): void
+    #[DataProvider('partialUpdateInputs')]
+    public function testUpdateSendsOnlySuppliedOptions(array $arguments, string $wire): void
+    {
+        $this->testLiteralRequestsAndPopulatedPayloads(
+            'api_token_update',
+            'updateToken',
+            $arguments,
+            'POST',
+            $wire,
+            '{}',
+        );
+    }
+
+    /** @return iterable<string, array{array<string, mixed>, string}> */
+    public static function partialUpdateInputs(): iterable
+    {
+        yield 'name only' => [['tokenName' => 'fixture'], 'token_name=fixture'];
+        yield 'rename only' => [
+            ['tokenName' => 'fixture', 'newName' => 'renamed'], 'token_name=fixture&new_name=renamed'];
+        yield 'explicit null settings' => [['tokenName' => 'fixture', 'acl' => null, 'whitelistIp' => null,
+            'expiresAt' => null, 'newName' => null], 'token_name=fixture'];
+        yield 'partial ACL' => [['tokenName' => 'fixture', 'acl' => 'list-accts'], 'token_name=fixture&acl=list-accts'];
+        yield 'explicit clearing' => [
+        ['tokenName' => 'fixture', 'whitelistIp' => 'any', 'expiresAt' => 0],
+            'token_name=fixture&whitelist_ip=any&expires_at=0'];
+        yield 'empty strings are supplied' => [
+            ['tokenName' => 'fixture', 'acl' => '', 'whitelistIp' => '', 'newName' => ''],
+            'token_name=fixture&acl=&whitelist_ip=&new_name='];
+    }
+
+    /** @param array<string, mixed> $arguments */
+    #[DataProvider('invalidTokenCollections')]
+    public function testMalformedCollectionsResetMetadataWithoutDispatch(string $method, array $arguments): void
     {
         [$client, $http] = self::client();
         $http->addResponse(new Response(200, [], self::envelope('applist', '{"app":[]}')));
         $client->whm()->apiTools()->listApplications();
-        $previousMetadata = $client->whm()->responseMeta();
-        $this->expectException(TypeError::class);
+        self::assertNotNull($client->whm()->responseMeta());
         try {
             $client->whm()->apiTools()->{$method}(...$arguments);
-        } finally {
+            self::fail('Invalid collections must fail before dispatch.');
+        } catch (InvalidArgumentException) {
+            self::assertNull($client->whm()->responseMeta());
             self::assertCount(1, $http->getRequests());
-            self::assertSame($previousMetadata, $client->whm()->responseMeta());
         }
     }
 
     /** @return iterable<string, array{string, array<string, mixed>}> */
-    public static function incompleteUpdateInputs(): iterable
+    public static function invalidTokenCollections(): iterable
     {
-        yield 'rename only' => ['updateToken', ['tokenName' => 'fixture', 'newName' => 'renamed']];
-        foreach (['acl', 'whitelistIp', 'expiresAt'] as $field) {
-            $arguments = ['tokenName' => 'fixture', 'acl' => 'list-accts',
-                'whitelistIp' => '192.0.2.1', 'expiresAt' => 123];
-            unset($arguments[$field]);
-            yield "missing $field" => ['updateToken', $arguments];
-            $arguments[$field] = null;
-            yield "null $field" => ['updateToken', $arguments];
+        foreach (self::collectionPositions() as $label => [, $method, $parameter, $base]) {
+            foreach (
+                [
+                [], ['named' => 'value'], [1 => 'value'], ['ok', null], ['ok', false], ['ok', 1],
+                ['ok', 1.5], ['ok', ['nested-input-secret']]] as $i => $bad
+            ) {
+                yield "$label malformed $i" => [$method, array_replace($base, [$parameter => $bad])];
+            }
+        }
+    }
+
+    /** @return iterable<string, array{string, array<string, mixed>}> */
+    public static function nestedTokenCollections(): iterable
+    {
+        foreach (self::collectionPositions() as $label => [, $method, $parameter, $base]) {
+            yield $label => [$method, array_replace($base, [$parameter => ['valid', ['nested-input-secret']]])];
+        }
+    }
+
+    /** @param array<string, mixed> $arguments */
+    #[DataProvider('nestedTokenCollections')]
+    public function testInvalidCollectionValuesAreHiddenInLibraryTraces(string $method, array $arguments): void
+    {
+        $previous = ini_set('zend.exception_ignore_args', '0');
+        try {
+            [$client] = self::client();
+            try {
+                $client->whm()->apiTools()->{$method}(...$arguments);
+                self::fail('Invalid collections must fail.');
+            } catch (InvalidArgumentException $error) {
+                self::assertStringNotContainsString('nested-input-secret', $error->getMessage());
+                foreach ($error->getTrace() as $frame) {
+                    $class = $frame['class'] ?? '';
+                    if (str_starts_with($class, 'HostingPal\\WhmApiClient\\') && !str_contains($class, '\\Tests\\')) {
+                        self::assertStringNotContainsString('nested-input-secret', print_r($frame['args'] ?? [], true));
+                    }
+                }
+            }
+        } finally {
+            ini_set('zend.exception_ignore_args', $previous === false ? '1' : $previous);
+        }
+    }
+
+    public function testWrongNativeScalarsRetainPriorMetadata(): void
+    {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope('applist', '{"app":[]}')));
+        $client->whm()->apiTools()->listApplications();
+        $previous = $client->whm()->responseMeta();
+        foreach (self::collectionPositions() as [, $method, $parameter, $base]) {
+            foreach ([false, 1, 1.5, null] as $bad) {
+                if (
+                    $bad === null && $method !== 'revokeToken'
+                    && !($method === 'createDashboardToken' && $parameter === 'acl')
+                ) {
+                    continue;
+                }
+                try {
+                    $client->whm()->apiTools()->{$method}(...array_replace($base, [$parameter => $bad]));
+                    self::fail('Wrong native scalar types must fail before entry.');
+                } catch (TypeError) {
+                    self::assertSame($previous, $client->whm()->responseMeta());
+                    self::assertCount(1, $http->getRequests());
+                }
+            }
         }
     }
 
@@ -445,7 +608,8 @@ final class WhmApiToolsTest extends TestCase
         self::assertSame([], $http->getRequests());
         self::assertNull($client->whm()->responseMeta());
         foreach (
-            ['getTokenDetails' => ['token'],
+            ['createToken' => ['acl', 'whitelistIp'], 'createDashboardToken' => ['acl', 'whitelistIp'],
+            'updateToken' => ['acl', 'whitelistIp'], 'revokeToken' => ['tokenName'], 'getTokenDetails' => ['token'],
             'createUserSession' => ['cpSecurityToken', 'promptToken']] as $method => $parameters
         ) {
             foreach ($parameters as $parameter) {
@@ -453,9 +617,17 @@ final class WhmApiToolsTest extends TestCase
                     ->getAttributes(SensitiveParameter::class));
             }
         }
+        foreach (self::collectionPositions() as [, $method, $parameter]) {
+            $nullable = $method === 'createDashboardToken' && $parameter === 'acl' || $method === 'revokeToken'
+                ? '' : '|null';
+            self::assertStringContainsString(
+                '@param string|non-empty-list<string>' . $nullable . ' $' . $parameter,
+                (new ReflectionMethod($group, $method))->getDocComment() ?: '',
+            );
+        }
         foreach (
             ['createToken' => 1, 'getTokenDetails' => 1, 'listTokens' => 0, 'revokeToken' => 1,
-            'updateToken' => 4, 'createDashboardToken' => 2, 'createUserSession' => 2, 'createDashboardLoginLink' => 0,
+            'updateToken' => 1, 'createDashboardToken' => 2, 'createUserSession' => 2, 'createDashboardLoginLink' => 0,
             'listApplications' => 0, 'getApiCalls' => 0, 'getApiPages' => 0,
             'getAppconfigApplicationList' => 0] as $method => $count
         ) {

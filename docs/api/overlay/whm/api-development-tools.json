@@ -31,15 +31,19 @@
         },
         {
           "kind": "documented",
-          "text": "ACL prose and examples use acl-0/acl-1. Whitelist prose uses whitelist_ip-0/whitelist_ip-1, while later example keys switch to whitelist-ip; these source limitations remain unresolved."
-        },
-        {
-          "kind": "policy",
-          "text": "Typed acl and whitelistIp accept one scalar and cannot create or preserve multiple ACL or IP values. Multi-value support is deferred under 8x0.1.21; the existing unsuffixed-first numbered encoding does not represent these indexed families and is not used here."
+          "text": "ACL prose and examples use acl-0/acl-1. Whitelist prose uses whitelist_ip-0/whitelist_ip-1, while later example keys switch to whitelist-ip; the selected underscore spelling follows the attributed 11.138.0.19 source review."
         },
         {
           "kind": "policy",
           "text": "An accepted creation outcome can still raise PayloadMismatchException after the credential was created. Its sensitive unvalidated $payload may contain the only returned secret, but a malformed payload need not contain it. Recover it securely if present and revoke the created named credential through an authorized caller action. Never automatically retry, log the payload or automatically revoke a credential."
+        },
+        {
+          "kind": "policy",
+          "text": "Scalars retain their bare field; nonempty sequential string lists emit zero-based acl-0/acl-1 or whitelist_ip-0/whitelist_ip-1. Order, duplicates and empty string items are preserved; empty or malformed lists fail before I/O after metadata reset. No client format checks, implicit read/merge, retry or rollback are added."
+        },
+        {
+          "kind": "documented",
+          "text": "Attributed reviewer source inspection on installed cPanel 11.138.0.19, not credential execution or new local inspection: _parse_and_validate_acls accepts acl or acl-N with any numeric base; get_length_arguments(..., whitelist_ip) accepts bare or whitelist_ip-N, not whitelist-ip. Cpanel::Form::Param collects numeric suffixes. Select zero-based underscore families; pinned update ACL prose is one-based but its example is zero-based, and later create/update IP examples mix whitelist-ip spelling. No live list acceptance or all-version compatibility is established. Review: https://github.com/hostingpal/whm-api-client/pull/72#pullrequestreview-5722427592."
         },
         {
           "kind": "policy",
@@ -54,7 +58,27 @@
           "php": "expiresAt"
         },
         "whitelist_ip": {
-          "php": "whitelistIp"
+          "php": "whitelistIp",
+          "collection": {
+            "kind": "indexed",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "prefix": "whitelist_ip",
+            "separator": "-",
+            "start": 0
+          }
+        },
+        "acl": {
+          "collection": {
+            "kind": "indexed",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "prefix": "acl",
+            "separator": "-",
+            "start": 0
+          }
         }
       },
       "method": "POST",
@@ -64,6 +88,22 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned operation is x-readonly=false and creates, changes or revokes authentication state; use form POST per the reviewed mutation transport convention."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13; attributed installed-source review 11.138.0.19",
+          "date": "2026-11-01",
+          "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Pinned GET /api_token_create parameters acl[1] and whitelist_ip[3] document indexed families. Attributed reviewer source inspection on installed cPanel 11.138.0.19, not credential execution or new local inspection: _parse_and_validate_acls accepts acl or acl-N with any numeric base; get_length_arguments(..., whitelist_ip) accepts bare or whitelist_ip-N, not whitelist-ip. Cpanel::Form::Param collects numeric suffixes. Select zero-based underscore families; pinned update ACL prose is one-based but its example is zero-based, and later create/update IP examples mix whitelist-ip spelling. No live list acceptance or all-version compatibility is established. Review: https://github.com/hostingpal/whm-api-client/pull/72#pullrequestreview-5722427592.",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1api_token_create/get/parameters/1"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13; attributed installed-source review 11.138.0.19",
+          "date": "2026-11-01",
+          "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Pinned GET /api_token_create parameters acl[1] and whitelist_ip[3] document indexed families. Attributed reviewer source inspection on installed cPanel 11.138.0.19, not credential execution or new local inspection: _parse_and_validate_acls accepts acl or acl-N with any numeric base; get_length_arguments(..., whitelist_ip) accepts bare or whitelist_ip-N, not whitelist-ip. Cpanel::Form::Param collects numeric suffixes. Select zero-based underscore families; pinned update ACL prose is one-based but its example is zero-based, and later create/update IP examples mix whitelist-ip spelling. No live list acceptance or all-version compatibility is established. Review: https://github.com/hostingpal/whm-api-client/pull/72#pullrequestreview-5722427592.",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1api_token_create/get/parameters/3"
         }
       ]
     },
@@ -138,7 +178,7 @@
         },
         {
           "kind": "policy",
-          "text": "Typed tokenName accepts one scalar; multiple revocation support remains deferred under 8x0.1.21."
+          "text": "Scalar tokenName keeps token_name; nonempty sequential string lists always emit token_name-1/token_name-2, including singleton lists. Preserve order, duplicates and empty string items; reject empty or malformed lists before I/O after metadata reset. One request; no batch atomicity, partial-failure or per-token success guarantee is added."
         },
         {
           "kind": "policy",
@@ -147,7 +187,16 @@
       ],
       "params": {
         "token_name": {
-          "php": "tokenName"
+          "php": "tokenName",
+          "collection": {
+            "kind": "indexed",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "prefix": "token_name",
+            "separator": "-",
+            "start": 1
+          }
         }
       },
       "method": "POST",
@@ -157,6 +206,14 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned operation is x-readonly=false and creates, changes or revokes authentication state; use form POST per the reviewed mutation transport convention."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13; attributed installed-source review 11.138.0.19",
+          "date": "2026-11-01",
+          "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Pinned GET /api_token_revoke parameters[0] explicitly documents one-based token_name-1/token_name-2/token_name-3. Keep scalar token_name and void outcome; client mutation policy remains form POST. Indexed list support is offline-only, not a live batch revocation observation.",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1api_token_revoke/get/parameters/0"
         }
       ]
     },
@@ -169,23 +226,27 @@
         },
         {
           "kind": "documented",
-          "text": "ACL and whitelist inputs replace all current settings. Pinned omission assigns all caller privileges, permits any IP and removes expiration; zero also means no expiration. Only caller-held privileges may be assigned. whitelistIp=any explicitly clears IP restrictions. Expired tokens require manual revocation."
+          "text": "Supplied ACL/IP inputs replace their entire respective setting; only caller-held privileges may be assigned. expiresAt=0 explicitly means no expiration and whitelistIp=any explicitly clears IP restrictions. Expired tokens require manual revocation."
+        },
+        {
+          "kind": "documented",
+          "text": "Pinned reset-on-omission prose conflicts with attributed reviewer-inspected 11.138.0.19 source. _build_create_or_update_args drops empty lists; Cpanel::Security::Authn::APITokens::Write::update_token copies only supplied fields. Omitted/null ACL, IP and expiration preserve settings on that inspected version; older versions are unestablished. This corrects the earlier PR57 assumption. Source review: https://github.com/hostingpal/whm-api-client/pull/72#pullrequestreview-5722427592. No credential execution is claimed."
         },
         {
           "kind": "policy",
-          "text": "The typed method requires explicit acl, whitelistIp and expiresAt to express the complete replacement settings, including when renaming. Empty strings are not a documented way to preserve current settings."
+          "text": "Only tokenName is required, restoring formal pinned optionality. Null omits each optional input; rename-only and partial updates send one request containing only supplied options, without reading or merging settings. Empty strings are sent as supplied and are not preservation sentinels; [] is rejected because the inspected update source would silently drop it. Treat returned settings as private payload data."
         },
         {
           "kind": "documented",
           "text": "Omitted newName preserves the name; replacements must be unique and at most 50 alphanumeric/dash/underscore characters. Root cannot rename to WebPros_Dashboard, WP-Dashboard or Platform360."
         },
         {
-          "kind": "documented",
-          "text": "ACL prose uses acl-1/acl-2 but its example uses acl-0/acl-1; whitelist prose uses whitelist_ip-0 while later example keys use whitelist-ip. These source limitations remain unresolved."
+          "kind": "policy",
+          "text": "Scalars retain their bare field; nonempty sequential string lists emit zero-based acl-0/acl-1 or whitelist_ip-0/whitelist_ip-1. Order, duplicates and empty string items are preserved; empty or malformed lists fail before I/O after metadata reset. No client format checks, implicit read/merge, retry or rollback are added."
         },
         {
-          "kind": "policy",
-          "text": "Typed acl and whitelistIp accept one scalar and cannot preserve or create multiple ACL or IP values. Do not use updateToken to rename a token restricted by multiple ACL or IP values. Multi-value support is deferred under 8x0.1.21; the existing unsuffixed-first numbered encoding is not used for these families. Treat returned settings as private payload data."
+          "kind": "documented",
+          "text": "Attributed reviewer source inspection on installed cPanel 11.138.0.19, not credential execution or new local inspection: _parse_and_validate_acls accepts acl or acl-N with any numeric base; get_length_arguments(..., whitelist_ip) accepts bare or whitelist_ip-N, not whitelist-ip. Cpanel::Form::Param collects numeric suffixes. Select zero-based underscore families; pinned update ACL prose is one-based but its example is zero-based, and later create/update IP examples mix whitelist-ip spelling. No live list acceptance or all-version compatibility is established. Review: https://github.com/hostingpal/whm-api-client/pull/72#pullrequestreview-5722427592."
         },
         {
           "kind": "policy",
@@ -195,25 +256,40 @@
       "params": {
         "token_name": {
           "php": "tokenName",
-          "description": "The existing API token name. This replaces complete settings, including for a rename: pinned omission assigns all caller privileges, permits any IP and removes expiration. The client requires acl, whitelistIp and expiresAt explicitly; empty strings are not documented preservation values."
+          "description": "The existing API token name. Optional settings may be omitted; rename-only sends token_name and new_name in one request."
         },
         "acl": {
-          "required": true,
-          "description": "The complete replacement privilege, limited to caller-held privileges. This replaces complete settings, including for a rename: pinned omission assigns all caller privileges, permits any IP and removes expiration. The client requires acl, whitelistIp and expiresAt explicitly; empty strings are not documented preservation values."
+          "description": "The complete replacement privilege or nonempty sequential string list, limited to caller-held privileges. Null omits; omitted settings preserve on reviewer-inspected 11.138.0.19 source despite pinned reset prose. Empty strings are supplied values, not preservation sentinels.",
+          "collection": {
+            "kind": "indexed",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "prefix": "acl",
+            "separator": "-",
+            "start": 0
+          }
         },
         "whitelist_ip": {
           "php": "whitelistIp",
-          "required": true,
-          "description": "The complete replacement remote IP or CIDR range; any explicitly clears IP restrictions. This replaces complete settings, including for a rename: pinned omission assigns all caller privileges, permits any IP and removes expiration. The client requires acl, whitelistIp and expiresAt explicitly; empty strings are not documented preservation values."
+          "description": "The complete replacement remote IP/CIDR value or nonempty sequential string list; any explicitly clears restrictions. Null omits; omitted settings preserve on reviewer-inspected 11.138.0.19 source despite pinned reset prose. Empty strings are supplied values, not preservation sentinels.",
+          "collection": {
+            "kind": "indexed",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "prefix": "whitelist_ip",
+            "separator": "-",
+            "start": 0
+          }
         },
         "expires_at": {
           "php": "expiresAt",
-          "required": true,
-          "description": "The replacement Unix expiration time; zero explicitly means no expiration. Expired tokens require manual revocation. This replaces complete settings, including for a rename: pinned omission assigns all caller privileges, permits any IP and removes expiration. The client requires acl, whitelistIp and expiresAt explicitly; empty strings are not documented preservation values."
+          "description": "The optional replacement Unix expiration time; zero explicitly means no expiration. Null omits; omission preserves on reviewer-inspected 11.138.0.19 source despite pinned reset prose. Expired tokens require manual revocation."
         },
         "new_name": {
           "php": "newName",
-          "description": "The optional new unique name, at most 50 alphanumeric/dash/underscore characters; omission preserves the name. Root cannot use WebPros_Dashboard, WP-Dashboard or Platform360. This replaces complete settings, including for a rename: pinned omission assigns all caller privileges, permits any IP and removes expiration. The client requires acl, whitelistIp and expiresAt explicitly; empty strings are not documented preservation values."
+          "description": "The optional new unique name, at most 50 alphanumeric/dash/underscore characters; omission preserves the name. Root cannot use WebPros_Dashboard, WP-Dashboard or Platform360. Null omits; an empty string remains supplied."
         }
       },
       "method": "POST",
@@ -229,6 +305,28 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "The api_token_update parameter descriptions explicitly replace all ACL and whitelist settings; omission grants all caller privileges, permits any IP and removes expiration. Require the three settings as non-null inputs by client safety policy, ordered token_name, acl, whitelist_ip, expires_at, new_name. Scalar indexed-family support remains deferred; no undocumented empty-string preservation contract is introduced. Review: https://github.com/hostingpal/whm-api-client/pull/57#pullrequestreview-5720856204."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13; attributed installed-source review 11.138.0.19",
+          "date": "2026-11-01",
+          "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Pinned GET /api_token_update parameters acl[1] and whitelist_ip[4] document indexed families. Attributed reviewer source inspection on installed cPanel 11.138.0.19, not credential execution or new local inspection: _parse_and_validate_acls accepts acl or acl-N with any numeric base; get_length_arguments(..., whitelist_ip) accepts bare or whitelist_ip-N, not whitelist-ip. Cpanel::Form::Param collects numeric suffixes. Select zero-based underscore families; pinned update ACL prose is one-based but its example is zero-based, and later create/update IP examples mix whitelist-ip spelling. No live list acceptance or all-version compatibility is established. Review: https://github.com/hostingpal/whm-api-client/pull/72#pullrequestreview-5722427592.",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1api_token_update/get/parameters/1"
+        },
+        {
+          "kind": "doc",
+          "version": "11.138.0.19 attributed source review",
+          "date": "2026-11-01",
+          "note": "Supersedes the earlier PR57 safety-policy assumption and its required:true overrides above. Formal pinned /api_token_update parameters[1] acl, [2] expires_at, [3] new_name and [4] whitelist_ip are required:false. Pinned reset-on-omission prose conflicts with attributed reviewer-inspected 11.138.0.19 source. _build_create_or_update_args drops empty lists; Cpanel::Security::Authn::APITokens::Write::update_token copies only supplied fields. Omitted/null ACL, IP and expiration preserve settings on that inspected version; older versions are unestablished. This corrects the earlier PR57 assumption. Source review: https://github.com/hostingpal/whm-api-client/pull/72#pullrequestreview-5722427592. No credential execution is claimed. Restore optional nullable arguments in existing token_name, acl, whitelist_ip, expires_at, new_name order. No new live transport, persistence or credential-lifecycle evidence."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13; attributed installed-source review 11.138.0.19",
+          "date": "2026-11-01",
+          "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Pinned GET /api_token_update parameters acl[1] and whitelist_ip[4] document indexed families. Attributed reviewer source inspection on installed cPanel 11.138.0.19, not credential execution or new local inspection: _parse_and_validate_acls accepts acl or acl-N with any numeric base; get_length_arguments(..., whitelist_ip) accepts bare or whitelist_ip-N, not whitelist-ip. Cpanel::Form::Param collects numeric suffixes. Select zero-based underscore families; pinned update ACL prose is one-based but its example is zero-based, and later create/update IP examples mix whitelist-ip spelling. No live list acceptance or all-version compatibility is established. Review: https://github.com/hostingpal/whm-api-client/pull/72#pullrequestreview-5722427592.",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1api_token_update/get/parameters/4"
         }
       ],
       "order": [
@@ -268,11 +366,15 @@
         },
         {
           "kind": "policy",
-          "text": "Typed acl and whitelistIp accept one scalar and cannot create or preserve multiple ACL or IP values. Multi-value support is deferred under 8x0.1.21; the existing unsuffixed-first numbered encoding does not represent these indexed families and is not used here."
+          "text": "An accepted creation outcome can still raise PayloadMismatchException after the credential was created. Its sensitive unvalidated $payload may contain the only returned secret, but a malformed payload need not contain it. Recover it securely if present and revoke the created named credential through an authorized caller action. Never automatically retry, log the payload or automatically revoke a credential."
         },
         {
           "kind": "policy",
-          "text": "An accepted creation outcome can still raise PayloadMismatchException after the credential was created. Its sensitive unvalidated $payload may contain the only returned secret, but a malformed payload need not contain it. Recover it securely if present and revoke the created named credential through an authorized caller action. Never automatically retry, log the payload or automatically revoke a credential."
+          "text": "Scalars retain their bare field; nonempty sequential string lists emit zero-based acl-0/acl-1 or whitelist_ip-0/whitelist_ip-1. Order, duplicates and empty string items are preserved; empty or malformed lists fail before I/O after metadata reset. No client format checks, implicit read/merge, retry or rollback are added."
+        },
+        {
+          "kind": "documented",
+          "text": "Attributed reviewer source inspection on installed cPanel 11.138.0.19, not credential execution or new local inspection: _parse_and_validate_acls accepts acl or acl-N with any numeric base; get_length_arguments(..., whitelist_ip) accepts bare or whitelist_ip-N, not whitelist-ip. Cpanel::Form::Param collects numeric suffixes. Select zero-based underscore families; pinned update ACL prose is one-based but its example is zero-based, and later create/update IP examples mix whitelist-ip spelling. No live list acceptance or all-version compatibility is established. Review: https://github.com/hostingpal/whm-api-client/pull/72#pullrequestreview-5722427592."
         },
         {
           "kind": "policy",
@@ -287,7 +389,27 @@
           "php": "expiresAt"
         },
         "whitelist_ip": {
-          "php": "whitelistIp"
+          "php": "whitelistIp",
+          "collection": {
+            "kind": "indexed",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "prefix": "whitelist_ip",
+            "separator": "-",
+            "start": 0
+          }
+        },
+        "acl": {
+          "collection": {
+            "kind": "indexed",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "prefix": "acl",
+            "separator": "-",
+            "start": 0
+          }
         }
       },
       "method": "POST",
@@ -297,6 +419,22 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned operation is x-readonly=false and creates, changes or revokes authentication state; use form POST per the reviewed mutation transport convention."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13; attributed installed-source review 11.138.0.19",
+          "date": "2026-11-01",
+          "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Pinned GET /wp_dashboard_create_api_token parameters acl[0] and whitelist_ip[3] use zero-based examples; ACL remains required and non-null. Attributed reviewer source inspection on installed cPanel 11.138.0.19, not credential execution or new local inspection: _parse_and_validate_acls accepts acl or acl-N with any numeric base; get_length_arguments(..., whitelist_ip) accepts bare or whitelist_ip-N, not whitelist-ip. Cpanel::Form::Param collects numeric suffixes. Select zero-based underscore families; pinned update ACL prose is one-based but its example is zero-based, and later create/update IP examples mix whitelist-ip spelling. No live list acceptance or all-version compatibility is established. Review: https://github.com/hostingpal/whm-api-client/pull/72#pullrequestreview-5722427592.",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1wp_dashboard_create_api_token/get/parameters/0"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13; attributed installed-source review 11.138.0.19",
+          "date": "2026-11-01",
+          "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Pinned GET /wp_dashboard_create_api_token parameters acl[0] and whitelist_ip[3] use zero-based examples; ACL remains required and non-null. Attributed reviewer source inspection on installed cPanel 11.138.0.19, not credential execution or new local inspection: _parse_and_validate_acls accepts acl or acl-N with any numeric base; get_length_arguments(..., whitelist_ip) accepts bare or whitelist_ip-N, not whitelist-ip. Cpanel::Form::Param collects numeric suffixes. Select zero-based underscore families; pinned update ACL prose is one-based but its example is zero-based, and later create/update IP examples mix whitelist-ip spelling. No live list acceptance or all-version compatibility is established. Review: https://github.com/hostingpal/whm-api-client/pull/72#pullrequestreview-5722427592.",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1wp_dashboard_create_api_token/get/parameters/3"
         }
       ],
       "order": [
