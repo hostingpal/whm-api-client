@@ -477,6 +477,10 @@ final readonly class Accounts
      * Documented: The pinned acct member is an array of account records, so the result is a list rather than a single
      * record.
      *
+     * Observed: On 11.138.0.19 a user or domain that does not exist fails with result 0 and the reason "Account does
+     * not exist.", and search, searchtype and searchmethod without user or domain fail with result 0 even for a
+     * matching search. Both raise ApiErrorException.
+     *
      * API-map identity: whm1:accountsummary#GET (wire name accountsummary; Account Management).
      *
      * @param string|null $user The account's username. Null omits it.
@@ -1513,6 +1517,13 @@ final readonly class Accounts
      * Return cPanel accounts.
      *
      * This function lists the accounts on the server.
+     *
+     * Observed: On 11.138.0.19 a search that matches nothing reports success and omits data for searchmethod regex with
+     * searchtype user, with or without want, and for searchmethod exact with searchtype domain, owner, ip or package.
+     * searchmethod exact with searchtype user instead fails with result 0 and the reason "No accounts found.", with or
+     * without want, which raises ApiErrorException.
+     *
+     * Returns an empty list when the server reports success and omits data.
      *
      * API-map identity: whm1:listaccts#GET (wire name listaccts; Account Management).
      *
