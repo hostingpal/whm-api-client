@@ -131,6 +131,7 @@ These symbols share one canonical operation, route and response contract; counts
 | --- | --- |
 | `uapi:WebApp/configure` | `webApp()->configure()`, `webApp()->configureStructured()` |
 | `whm1:set_provider_display_configurations` | `authentication()->setProviderDisplayConfigurations()`, `authentication()->configureProviderDisplay()` |
+| `whm1:install_spf_records` | `mail()->installSpfRecords()`, `mail()->installSpfRecordBatch()` |
 | `whm1:modsec_batch_settings` | `modSecurity()->batchSettings()`, `modSecurity()->updateSettings()` |
 
 ## Excluded operations

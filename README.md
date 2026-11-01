@@ -1639,9 +1639,20 @@ No returned URL or configuration text is executed or fetched.
 
 Repeated and numbered families follow each operation's explicit source spelling.
 Paired DKIM key and manual-MX lists retain caller responsibility for positional
-matching. `installSpfRecords()` accepts one scalar domain/record pair: the record
-suffix family is not established and remains under `8x0.1.21`. Tracking filter,
-sort and chunk controls require explicitly prepared generic parameters where
+matching. `installSpfRecords()` retains one scalar domain/record pair. The separate
+`installSpfRecordBatch(records)` accepts a nonempty sequential list of complete
+`domain`/`record` string rows and sends one form POST with interleaved
+`domain-1`, `record-1`, `domain-2`, `record-2` fields, including suffixed singletons.
+Row order, duplicate domains, empty strings and exact bytes survive one encoding;
+these byte rules promise no clearing or preservation semantics. The whole argument
+is sensitive. The pinned domain prose numbers fields but omits the record spelling;
+[reviewer source inspection on 11.138.0.19](https://github.com/hostingpal/whm-api-client/pull/72#pullrequestreview-5722427592)
+supports positional pairing. No live batch list was observed; `8x0.2.48` remains
+open. Installing replaces each supplied complete SPF record, with no patch,
+read/merge, retry, rollback, atomicity, persistence or DNS propagation guarantee.
+Duplicate-domain resolution is not established. Returned messages/configuration
+remain private payload data. Tracking filter, sort and chunk controls require
+explicitly prepared generic parameters where
 the typed source surface does not declare them. No dynamic field is invented.
 
 Per-item domain/mailbox results remain separate from API success. DKIM and DMARC

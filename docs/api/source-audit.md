@@ -8848,3 +8848,40 @@ No live call, capture, source fetch, credential creation/use, login, session/mai
 write or server cleanup was performed for this integration. The completed owner
 165-call pass was not replayed. Combined offline validation is recorded separately
 with exact product-input attribution; it cannot prove new server or wire behavior.
+
+
+### 2026-11-01 paired WHM SPF-record companion (`8x0.1.21.4`)
+
+`installSpfRecords(string $domain, string $record): array` is unchanged. The
+generated `installSpfRecordBatch(array $records): array` shares the same
+`whm1:install_spf_records` operation, form POST, Flag outcome and response.
+`SpfRecordInput` contains required string `domain` and `record`; a nonempty
+sequential list emits interleaved `domain-1`, `record-1`, `domain-2`, `record-2`,
+including a suffixed singleton. Closed complete rows reject locally after metadata
+reset. Exact bytes, empty strings, row order and duplicates survive one encoding;
+this establishes no semantic clearing, preservation or duplicate-resolution rule.
+The whole collection is sensitive; returned messages/configuration are private.
+
+Pinned WHM SHA-256
+`6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594`,
+`/paths/~1install_spf_records/get/parameters/0` documents domain-1/-2/-3;
+`/paths/~1install_spf_records/get/parameters/1` requires a record for every domain
+but omits record-N spelling. Both formal parameters are required strings;
+`x-readonly: false` and cPanel 78+ remain unchanged. The
+[PR72 reviewer source inspection](https://github.com/hostingpal/whm-api-client/pull/72#pullrequestreview-5722427592)
+reports `validate_domain_value_pairs_or_die` through
+`map_length_required_multiple_to_key_values` pairing domain/record families by
+sorted position and rejecting count mismatch on 11.138.0.19;
+`Cpanel::Form::Param` collects bare/numerically suffixed names. This supersedes the
+earlier unresolved paired-serialization claim above. It is attributed source
+evidence, not a live batch observation or a promise across all versions.
+
+Offline literal fixtures cover byte fidelity, singleton/multi/duplicate rows,
+strict validation and trace secrecy, metadata lifecycle, unchanged scalar wire
+behavior and response handling. Optional payload/row fields and integer 0|1 status
+remain unchanged; per-domain failure under API success is returned data, while
+API failure raises the existing exception without recovering discarded rows.
+There is no new source inspection, response capture, DNS lookup, live call,
+read/merge, retry or rollback. No atomicity, persistence, duplicate resolution,
+DNS propagation or applied-state guarantee is inferred. Historical evidence is
+unchanged; live follow-up `8x0.2.48` remains open.
