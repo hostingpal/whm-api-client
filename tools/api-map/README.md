@@ -146,6 +146,21 @@ Operation entries (all keys optional):
   emitted; use `php` to give placeholder parameters a meaningful public name.
   Actual map collisions with fixed, other map/list and route fields fail before
   dispatch in either order without exposing keys or values in diagnostics.
+  Additional methods can combine canonical scalar inputs into ordered `records`
+  (`alias`, `start`, `separator`, `sensitive`, and source-bound `fields`). Each field
+  selects `source`, `php` and `prefix`; its strict type and requiredness inherit the
+  canonical source. Optional `required: true` strengthens a field only in that
+  additional method. False, null and type overrides are rejected. Every source
+  binding requires exact matching source SHA and parameter or description-pointer
+  doc evidence; canonical parameters and sibling methods stay unchanged.
+  Optional `first_unsuffixed: true` requires `start: 0` and `separator: "-"`:
+  the first row emits each prefix alone, then rows emit `prefix-1`, `prefix-2`,
+  preserving row positions when optional fields are absent. False/null are invalid;
+  omission retains ordinary prefix + separator + index behavior and the original
+  effective serialization. Records require a nonempty sequential list of strict
+  named rows; values, order, duplicate values and empty strings are preserved.
+  Static base/tail overlaps reject during preparation, while actual map-key
+  collisions reject during encoding. Diagnostics and sensitive frames omit values.
   Collection descriptors cannot combine with `encoding`, `type`, `wire`, `omit`, `omit_empty` or
   `reject_empty`. Static indexed overlaps fail generation and whole-spec lint;
   expanded collisions fail before dispatch, retaining the ordered-field engine's origin checks.
