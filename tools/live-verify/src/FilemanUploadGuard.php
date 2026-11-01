@@ -29,9 +29,6 @@ final class FilemanUploadGuard implements ClientInterface
 {
     private const WHM = 'https://test.oblak.host:2087/json-api/';
 
-    private const BRIDGE = self::WHM . 'uapi_cpanel?api.version=1&cpanel.user=wlupload&cpanel.module=Tokens'
-        . '&cpanel.function=';
-
     private ?string $cpanelToken = null;
 
     /** @var UploadPhase|null */
@@ -65,23 +62,15 @@ final class FilemanUploadGuard implements ClientInterface
         if ($whmToken === '') {
             throw new LogicException('Fileman upload fixture configuration is invalid.');
         }
-        $this->controlPosts = [
-            self::WHM . 'createacct?api.version=1' => 'username=wlupload&domain=wlupload.example.com&contactemail='
-                . rawurlencode($recipe->contactEmail) . '&quota=64&forcedns=0&hasshell=0&ip=n',
-            self::WHM . 'removeacct?api.version=1' => 'username=wlupload&keepdns=0',
-            self::BRIDGE . 'create_full_access' =>
-                'name=' . FilemanUploadRecipe::TOKEN_NAME . '&expires_at=' . $recipe->expiresAt,
-            self::BRIDGE . 'revoke' => 'name=' . FilemanUploadRecipe::TOKEN_NAME,
-        ];
+        $this->controlPosts = $recipe->account->controlPosts();
         $reads = [
             self::WHM . 'version?api.version=1' => true,
-            self::WHM . 'listaccts?api.version=1&want=user%2Cdomain%2Cemail' => true,
-            self::WHM . 'listzones?api.version=1' => true,
-            self::WHM . 'get_domain_info?api.version=1' => true,
-            self::BRIDGE . 'list' => true,
             $recipe->homeListUri() => true,
             $recipe->directoryListUri() => true,
         ];
+        foreach ($recipe->account->controlReads() as $uri) {
+            $reads[$uri] = true;
+        }
         foreach (FilemanUploadRecipe::LABELS as $label) {
             $reads[$recipe->readUri($label)] = true;
         }

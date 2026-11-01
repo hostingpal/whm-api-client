@@ -50,6 +50,9 @@ final readonly class FilemanUploadRecipe
 
     public string $contactEmail;
 
+    /** The exact account, domain, token and marker of this run, as the shared lifecycle binds them. */
+    public DisposableAccount $account;
+
     /** @var array<Label, string> */
     public array $names;
 
@@ -61,6 +64,14 @@ final readonly class FilemanUploadRecipe
         }
         $this->directory = 'wlupload-fixture-' . $entropy;
         $this->contactEmail = 'upload-' . $entropy . '@' . self::DOMAIN;
+        $this->account = new DisposableAccount(
+            self::ACCOUNT,
+            self::DOMAIN,
+            self::TOKEN_NAME,
+            $this->contactEmail,
+            $expiresAt,
+            readOnlyToken: false,
+        );
         $names = [];
         foreach (self::LABELS as $label) {
             $names[$label] = $label . '-' . substr($entropy, 0, 16) . '.bin';

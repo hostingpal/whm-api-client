@@ -9,12 +9,8 @@ use HostingPal\WhmApiClient\Api\RequestMethod;
 use HostingPal\WhmApiClient\Api\Uapi\Spec\FilemanSpec;
 use HostingPal\WhmApiClient\Api\Whm\Spec\ServerSpec;
 use HostingPal\WhmApiClient\Client;
-use HostingPal\WhmApiClient\Exception\ApiErrorException;
-use HostingPal\WhmApiClient\Exception\TransportException;
 use HostingPal\WhmApiClient\Http\HttpTransport;
-use HostingPal\WhmApiClient\UapiClient;
 use HostingPal\WhmApiClient\Upload;
-use HostingPal\WhmApiClient\WhmClient;
 use LogicException;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7\Stream;
@@ -28,10 +24,8 @@ use Throwable;
 /**
  * Prove typed Fileman uploads on one freshly created disposable account, once, then remove the account.
  *
- * Follows the finite-Quota lifecycle: raw identity lists must establish initial account, manual-domain and zone
- * absence, and a random contact-email marker, held only in memory, proves account ownership. An existing account is
- * never adopted, and a failed creation never authorizes removing anything the marker does not match. No mutation is
- * retried. Setup creates a short-lived writable token; it lives in memory only.
+ * DisposableAccountLifecycle owns identity, ownership, the short-lived writable token and account cleanup, and states
+ * their rules. This fixture holds the uploads, the byte oracle and the cleanup of its own files.
  *
  * Capture stops at the first unexpected state, because later uploads could not be interpreted. The batches with rows
  * run first, each gated by its rows and an inventory, so a problem in the readback endpoint, which has no earlier
@@ -41,8 +35,7 @@ use Throwable;
  * for this run, never a flag or a later inventory alone. Only proven-owned files are deleted individually; the
  * upstream-recursive directory delete runs only after an unfiltered inventory, hidden entries included, proves it
  * empty. Anything unproven stays for account removal and is reported. File cleanup failure does not prevent token and
- * account cleanup, and token, account, domain and zone absence are each checked through the API. That is the whole
- * claim: no filesystem or home-directory cleanup is claimed, and none is checked.
+ * account cleanup. Absence is claimed through the API; the filesystem is claimed only when a proof was supplied.
  *
  * Fileman/get_file_content transcodes, so readback is a documented reversible check: the file is read as ISO-8859-1
  * into UTF-8 and compared with the independent mapping in FilemanUploadRecipe, never with a size alone.
@@ -58,6 +51,9 @@ use Throwable;
  * @phpstan-import-type Transfer from FilemanUploadBodyStream
  * @phpstan-import-type Framing from StreamingTransport
  * @phpstan-import-type Assessment from FilemanUploadEvidence
+ * @phpstan-import-type CleanupOutcome from DisposableAccountLifecycle
+ * @phpstan-import-type ResourceOutcome from DisposableAccountLifecycle
+ * @phpstan-import-type FilesystemOutcome from DisposableAccountLifecycle
  * @phpstan-type Observation array{
  *     phase: string, expectation: 'passed'|'failed'|'not_checked', uapi_status: int|null,
  *     operation: string, variant: string, argument_variant?: string, route: string, method: string|null,
@@ -67,10 +63,6 @@ use Throwable;
  *     failure_kind: string|null, response_paths: array<string, list<string>>,
  *     payload_paths: array<string, list<string>>, discrepancies: list<array{path: string, kind: string}>,
  *     payload_alternatives?: list<Alternative>
- * }
- * @phpstan-type CleanupOutcome 'not_required'|'confirmed_absent'|'present'|'unconfirmed'
- * @phpstan-type ResourceOutcome array{
- *     creation: 'not_attempted'|'confirmed'|'unconfirmed', cleanup: CleanupOutcome
  * }
  * @phpstan-type UploadSummary array{
  *     surface: 'typed'|'generic', uapi_status: int|null, envelope_errors: int, succeeded: int|null, failed: int|null,
@@ -90,7 +82,8 @@ use Throwable;
  *         account: ResourceOutcome, token: ResourceOutcome, directory: ResourceOutcome,
  *         files: array{proven_owned: int, deleted: int}
  *     },
- *     domain_cleanup: CleanupOutcome, zone_cleanup: CleanupOutcome, filesystem_cleanup: 'not_claimed'
+ *     domain_cleanup: CleanupOutcome, zone_cleanup: CleanupOutcome,
+ *     filesystem_cleanup: FilesystemOutcome, filesystem_residue: array<string, int>
  * }
  * @phpstan-type Scenario array{
  *     scenario: 'fileman-upload-disposable-v3', target_role: 'disposable-test-account', probes: list<Observation>,
@@ -105,10 +98,6 @@ final class FilemanUploadFixture
     /** Long enough for this run and short enough that a lost token dies quickly; cleanup still revokes it. */
     private const TOKEN_LIFETIME = 900;
 
-    private const IDENTITY_READS = 3;
-
-    private const REREAD_PAUSE_MICROSECONDS = 250000;
-
     private readonly FilemanUploadRecipe $recipe;
 
     private readonly FilemanUploadGuard $guard;
@@ -119,9 +108,10 @@ final class FilemanUploadFixture
 
     private readonly Client $root;
 
-    private readonly WhmClient $whm;
+    private readonly DisposableAccountLifecycle $lifecycle;
 
-    private readonly UapiClient $account;
+    /** @var Report */
+    private array $report;
 
     private ?Client $direct = null;
 
@@ -146,8 +136,6 @@ final class FilemanUploadFixture
 
     private ?string $stoppedAt = null;
 
-    private bool $creationOutcomeUnknown = false;
-
     private bool $used = false;
 
     /**
@@ -155,7 +143,8 @@ final class FilemanUploadFixture
      *
      * The ordinary client must support form POST; the streaming transport receives only multipart bodies. Both must
      * verify TLS and refuse redirects and retries. The guard re-checks both live opt-ins and the exact account and
-     * domain on every request. Live callers must obtain committed context through RepositoryContext first.
+     * domain on every request. Live callers must obtain committed context through RepositoryContext first. Without a
+     * filesystem proof, nothing is claimed about the server's files.
      *
      * @param Context $context
      */
@@ -164,6 +153,7 @@ final class FilemanUploadFixture
         #[SensitiveParameter] StreamingTransport $streaming,
         #[SensitiveParameter] string $whmToken,
         private readonly array $context,
+        ?FilesystemAbsenceProof $filesystem = null,
     ) {
         $this->recipe = new FilemanUploadRecipe(bin2hex(random_bytes(16)), time() + self::TOKEN_LIFETIME);
         $this->guard = new FilemanUploadGuard($http, $streaming, $whmToken, $this->recipe);
@@ -173,8 +163,12 @@ final class FilemanUploadFixture
         $this->root = new Client([
             'host' => self::HOST, 'port' => 2087, 'authType' => 'whm', 'username' => 'root', 'token' => $whmToken,
         ], new HttpTransport($this->capture, $factory, $factory));
-        $this->whm = $this->root->whm();
-        $this->account = $this->root->uapi(FilemanUploadRecipe::ACCOUNT);
+        $this->lifecycle = new DisposableAccountLifecycle(
+            $this->recipe->account,
+            $this->capture,
+            $this->root,
+            $filesystem,
+        );
     }
 
     /**
@@ -187,92 +181,78 @@ final class FilemanUploadFixture
      */
     public function run(): array
     {
-        $report = self::report();
+        $this->report = self::report();
         try {
             if ($this->used) {
                 throw new RuntimeException('Fileman upload fixture is single-use.');
             }
             FilemanUploadGuard::requireEnvironment();
         } catch (Throwable) {
-            $report['failures'][] = 'configuration_failure';
+            $this->report['failures'][] = 'configuration_failure';
 
-            return $this->scenario($report);
+            return $this->scenario();
         }
         $this->used = true;
-        try {
-            $report['setup'] = 'failed';
-            $this->setup($report);
-            $report['setup'] = 'passed';
-            $report['capture'] = 'failed';
-            $this->exercise($report);
-            $report['capture'] = 'passed';
-        } catch (Throwable) {
-            if ($report['setup'] !== 'passed') {
-                $report['failures'][] = 'setup_failure';
-            } elseif (!$this->expectationFailed || $this->observationFailed()) {
-                $report['failures'][] = 'capture_failure';
-            }
-            $last = array_key_last($this->records);
-            $report['stopped_at'] = $this->stoppedAt ?? ($last === null ? null : $this->records[$last]['phase']);
-        } finally {
-            if ($this->expectationFailed) {
-                $report['expectations'] = 'failed';
-                $report['failures'][] = 'expectation_failure';
-            } elseif ($report['capture'] === 'passed') {
-                $report['expectations'] = 'passed';
-            }
-            $this->cleanup($report);
-        }
-        $report['failures'] = array_values(array_unique($report['failures']));
-        if ($report['failures'] === [] && $report['expectations'] === 'passed' && $report['cleanup'] === 'passed') {
-            $report['status'] = 'passed';
+        $this->report['setup'] = 'failed';
+        $outcome = $this->lifecycle->run(
+            function (#[SensitiveParameter] string $token): void {
+                $this->capture($token);
+            },
+            fn (): array => $this->cleanupFiles(),
+        );
+        $resources = ['account' => $outcome['account'], 'token' => $outcome['token']];
+        $this->report['resources'] = [...$this->report['resources'], ...$resources];
+        $this->report['cleanup'] = $outcome['cleanup'];
+        $this->report['failures'] = array_values(array_unique([...$this->report['failures'], ...$outcome['failures']]));
+        $this->report['domain_cleanup'] = $outcome['domain_cleanup'];
+        $this->report['zone_cleanup'] = $outcome['zone_cleanup'];
+        $this->report['filesystem_cleanup'] = $outcome['filesystem_cleanup'];
+        $this->report['filesystem_residue'] = $outcome['filesystem_residue'];
+        if (
+            $this->report['failures'] === [] && $this->report['expectations'] === 'passed'
+            && $this->report['cleanup'] === 'passed'
+        ) {
+            $this->report['status'] = 'passed';
         }
 
-        return $this->scenario($report);
+        return $this->scenario();
     }
 
-    /** @param Report $report */
-    private function setup(array &$report): void
+    /** Bind the token, run every phase, and settle what capture left for cleanup to report. */
+    private function capture(#[SensitiveParameter] string $token): void
     {
-        if ($this->accountExists() || $this->domainExists() || $this->zoneExists()) {
-            throw new RuntimeException('Fileman upload fixture identity is already present.');
-        }
-        $report['resources']['account']['creation'] = 'unconfirmed';
         try {
-            $this->whm->call('createacct', [
-                'username' => FilemanUploadRecipe::ACCOUNT, 'domain' => FilemanUploadRecipe::DOMAIN,
-                'contactemail' => $this->recipe->contactEmail,
-                'quota' => 64, 'forcedns' => 0, 'hasshell' => 0, 'ip' => 'n',
-            ], RequestMethod::Post);
-        } catch (ApiErrorException $refusal) {
-            // The server answered and refused: a known outcome, so a later absent read is final.
-            throw $refusal;
-        } catch (Throwable $failure) {
-            // A lost reply, gateway error or unreadable body says nothing about a server still working, so
-            // absence read now cannot prove the account will stay absent.
-            $this->creationOutcomeUnknown = true;
-            throw $failure;
+            $this->guard->bindToken($token);
+            $factory = new Psr17Factory();
+            $this->direct = new Client([
+                'host' => self::HOST, 'port' => 2083, 'authType' => 'cpanel',
+                'username' => FilemanUploadRecipe::ACCOUNT, 'token' => $token,
+            ], new HttpTransport($this->capture, $factory, $factory));
+            $this->report['setup'] = 'passed';
+            $this->report['capture'] = 'failed';
+            $this->exercise($this->report);
+            $this->report['capture'] = 'passed';
+        } catch (Throwable) {
+            if ($this->report['setup'] !== 'passed') {
+                $this->report['failures'][] = 'setup_failure';
+            } elseif (!$this->expectationFailed || $this->observationFailed()) {
+                $this->report['failures'][] = 'capture_failure';
+            }
+            $last = array_key_last($this->records);
+            $this->report['stopped_at'] = $this->stoppedAt
+                ?? ($last === null ? null : $this->records[$last]['phase']);
+        } finally {
+            if ($this->expectationFailed) {
+                $this->report['expectations'] = 'failed';
+                $this->report['failures'][] = 'expectation_failure';
+            } elseif ($this->report['capture'] === 'passed') {
+                $this->report['expectations'] = 'passed';
+            }
+            $this->report['resources']['files']['proven_owned'] = count($this->owned);
+            if ($this->report['resources']['directory']['creation'] !== 'not_attempted') {
+                $this->report['resources']['directory']['cleanup'] = 'unconfirmed';
+            }
         }
-        $report['resources']['account']['creation'] = 'confirmed';
-        if (!$this->accountExists() || $this->tokenExists()) {
-            throw new RuntimeException('Fileman upload fixture setup identities are unusable.');
-        }
-        $report['resources']['token']['creation'] = 'unconfirmed';
-        $result = $this->account->call('Tokens', 'create_full_access', [
-            'name' => FilemanUploadRecipe::TOKEN_NAME, 'expires_at' => $this->recipe->expiresAt,
-        ], RequestMethod::Post);
-        $report['resources']['token']['creation'] = 'confirmed';
-        $token = is_array($result->data) ? ($result->data['token'] ?? null) : null;
-        if (!is_string($token)) {
-            throw new RuntimeException('Fileman upload fixture token was not returned.');
-        }
-        $this->confirmTokenCapabilities();
-        $this->guard->bindToken($token);
-        $factory = new Psr17Factory();
-        $this->direct = new Client([
-            'host' => self::HOST, 'port' => 2083, 'authType' => 'cpanel',
-            'username' => FilemanUploadRecipe::ACCOUNT, 'token' => $token,
-        ], new HttpTransport($this->capture, $factory, $factory));
     }
 
     /** @param Report $report */
@@ -879,300 +859,56 @@ final class FilemanUploadFixture
     }
 
     /**
-     * Read exact account ownership; another primary domain or marker cannot authorize account removal.
-     *
-     * @phpstan-impure
-     */
-    private function accountExists(): bool
-    {
-        $rows = array_values(array_filter($this->accounts(), static fn (stdClass $row): bool =>
-            $row->user === FilemanUploadRecipe::ACCOUNT));
-        if ($rows === []) {
-            return false;
-        }
-        if (
-            count($rows) !== 1 || $rows[0]->domain !== FilemanUploadRecipe::DOMAIN
-            || ($rows[0]->email ?? null) !== $this->recipe->contactEmail
-        ) {
-            throw new RuntimeException('Fileman upload account ownership is unconfirmed.');
-        }
-
-        return true;
-    }
-
-    /**
-     * Check main and manually configured addon/alias/subdomain identities, without persisting inventory.
-     *
-     * @phpstan-impure
-     */
-    private function domainExists(): bool
-    {
-        $accounts = $this->accounts();
-        $this->whm->call('get_domain_info', [], RequestMethod::Get);
-        $payload = $this->rawPayload(false);
-        $rows = self::identityRows($payload instanceof stdClass ? ($payload->domains ?? null) : null, 'domain', 'user');
-
-        return in_array(FilemanUploadRecipe::DOMAIN, array_column($accounts, 'domain'), true)
-            || in_array(FilemanUploadRecipe::DOMAIN, array_column($rows, 'domain'), true);
-    }
-
-    /**
-     * Validate every row before exact local filtering; failed or null filtered lookups cannot prove absence.
-     *
-     * The server always hosts other accounts, so an empty list is no proof of absence either.
-     *
-     * @return list<stdClass>
-     */
-    private function accounts(): array
-    {
-        $this->whm->call('listaccts', ['want' => 'user,domain,email'], RequestMethod::Get);
-        $payload = $this->rawPayload(false);
-        $rows = self::identityRows($payload instanceof stdClass ? ($payload->acct ?? null) : null, 'user', 'domain');
-        if ($rows === []) {
-            throw new RuntimeException('Fileman upload account inventory cannot prove absence.');
-        }
-
-        return $rows;
-    }
-
-    /**
-     * Read account ownership for a cleanup decision, surviving a transient failed request.
-     *
-     * Only this read repeats, and only when the request itself failed: anything the server returned is final, so a
-     * result-0, HTTP or unreadable reply, a foreign marker or unusable rows are never read twice. One lost read must
-     * not abandon an account and a writable token.
-     *
-     * @phpstan-impure
-     */
-    private function accountOwned(): bool
-    {
-        for ($attempt = 1; $attempt < self::IDENTITY_READS; ++$attempt) {
-            try {
-                return $this->accountExists();
-            } catch (TransportException) {
-                usleep(self::REREAD_PAUSE_MICROSECONDS);
-            }
-        }
-
-        return $this->accountExists();
-    }
-
-    /**
-     * Read exact zone presence; the server always hosts other zones, so an empty list cannot prove absence.
-     *
-     * @phpstan-impure
-     */
-    private function zoneExists(): bool
-    {
-        $this->whm->call('listzones', [], RequestMethod::Get);
-        $payload = $this->rawPayload(false);
-        $rows = self::identityRows($payload instanceof stdClass ? ($payload->zone ?? null) : null, 'domain');
-        if ($rows === []) {
-            throw new RuntimeException('Fileman upload zone inventory cannot prove absence.');
-        }
-
-        return in_array(FilemanUploadRecipe::DOMAIN, array_column($rows, 'domain'), true);
-    }
-
-    /** @phpstan-impure */
-    private function tokenExists(): bool
-    {
-        $this->account->call('Tokens', 'list', [], RequestMethod::Get);
-        $rows = self::identityRows($this->rawPayload(true), 'name');
-
-        return in_array(FilemanUploadRecipe::TOKEN_NAME, array_column($rows, 'name'), true);
-    }
-
-    /**
-     * Confirm writability and the exact expiry once during setup; cleanup needs usable identities only.
-     *
-     * The source says readonly is absent or 0 on a writable token. An earlier reviewed setup returned expires_at
-     * as the exact requested decimal string, which is accepted without numeric coercion.
-     */
-    private function confirmTokenCapabilities(): void
-    {
-        $this->account->call('Tokens', 'list', [], RequestMethod::Get);
-        foreach (self::identityRows($this->rawPayload(true), 'name') as $row) {
-            if ($row->name === FilemanUploadRecipe::TOKEN_NAME) {
-                $expiresAt = $row->expires_at ?? null;
-                if (
-                    ($row->readonly ?? 0) === 0 && ($expiresAt === $this->recipe->expiresAt
-                        || $expiresAt === (string) $this->recipe->expiresAt)
-                ) {
-                    return;
-                }
-                break;
-            }
-        }
-        throw new RuntimeException('Fileman upload token capabilities are unconfirmed.');
-    }
-
-    /**
-     * Inspect the same successful generic response while retaining JSON object/list distinctions.
-     *
-     * The generic call has already validated the envelope and outcome. An empty JSON object cannot prove an empty list.
-     */
-    private function rawPayload(bool $bridge): mixed
-    {
-        $raw = $this->capture->rawBody();
-        if ($raw === null) {
-            throw new RuntimeException('Fileman upload identity inventory was not captured.');
-        }
-        $document = json_decode($raw, false, 512, JSON_THROW_ON_ERROR);
-        $payload = $document instanceof stdClass ? ($document->data ?? null) : null;
-        if ($bridge) {
-            $uapi = $payload instanceof stdClass ? ($payload->uapi ?? null) : null;
-
-            return $uapi instanceof stdClass ? ($uapi->data ?? null) : null;
-        }
-
-        return $payload;
-    }
-
-    /** @return list<stdClass> */
-    private static function identityRows(
-        #[SensitiveParameter] mixed $rows,
-        string $identity,
-        ?string $related = null,
-    ): array {
-        if (!is_array($rows) || !array_is_list($rows)) {
-            throw new RuntimeException('Fileman upload identity inventory must be a list.');
-        }
-        $identities = [];
-        $checked = [];
-        foreach ($rows as $row) {
-            $name = $row instanceof stdClass ? ($row->{$identity} ?? null) : null;
-            $owner = $row instanceof stdClass && $related !== null ? ($row->{$related} ?? null) : '';
-            if (
-                !$row instanceof stdClass || !is_string($name) || $name === '' || in_array($name, $identities, true)
-                || !is_string($owner) || ($related !== null && $owner === '')
-            ) {
-                throw new RuntimeException('Fileman upload inventory identities are unusable.');
-            }
-            $identities[] = $name;
-            $checked[] = $row;
-        }
-
-        return $checked;
-    }
-
-    /**
-     * Reconcile every attempted resource, removing only what this run proved it owns.
-     *
-     * @param Report $report
-     */
-    private function cleanup(array &$report): void
-    {
-        if ($report['resources']['account']['creation'] === 'not_attempted') {
-            return;
-        }
-        $report['cleanup'] = 'passed';
-        $report['resources']['account']['cleanup'] = 'unconfirmed';
-        $report['resources']['files']['proven_owned'] = count($this->owned);
-        if ($report['resources']['token']['creation'] !== 'not_attempted') {
-            $report['resources']['token']['cleanup'] = 'unconfirmed';
-        }
-        if ($report['resources']['directory']['creation'] !== 'not_attempted') {
-            $report['resources']['directory']['cleanup'] = 'unconfirmed';
-        }
-        try {
-            if ($this->accountOwned()) {
-                $report['resources']['account']['creation'] = 'confirmed';
-                $this->cleanupFiles($report);
-                $this->cleanupToken($report);
-                if (!$this->accountOwned()) {
-                    throw new RuntimeException('Fileman upload account ownership changed during cleanup.');
-                }
-                try {
-                    $this->whm->call('removeacct', [
-                        'username' => FilemanUploadRecipe::ACCOUNT, 'keepdns' => 0,
-                    ], RequestMethod::Post);
-                } catch (Throwable) {
-                    self::cleanupFailure($report, 'account_remove_failure');
-                }
-                $report['resources']['account']['cleanup'] = $this->accountOwned() ? 'present' : 'confirmed_absent';
-            } elseif ($this->creationOutcomeUnknown) {
-                self::cleanupFailure($report, 'account_creation_outcome_unknown');
-            } else {
-                $report['resources']['account']['cleanup'] = 'confirmed_absent';
-                if ($report['resources']['token']['creation'] !== 'not_attempted') {
-                    $report['resources']['token']['cleanup'] = 'unconfirmed';
-                    self::cleanupFailure($report, 'token_absence_unconfirmed');
-                }
-            }
-            if ($report['resources']['account']['cleanup'] === 'present') {
-                self::cleanupFailure($report, 'account_still_present');
-            }
-        } catch (Throwable) {
-            self::cleanupFailure($report, 'account_identity_unconfirmed');
-        }
-        try {
-            $report['domain_cleanup'] = $this->domainExists() ? 'present' : 'confirmed_absent';
-            if ($report['domain_cleanup'] === 'present') {
-                self::cleanupFailure($report, 'domain_still_present');
-            }
-        } catch (Throwable) {
-            $report['domain_cleanup'] = 'unconfirmed';
-            self::cleanupFailure($report, 'domain_absence_unconfirmed');
-        }
-        try {
-            $report['zone_cleanup'] = $this->zoneExists() ? 'present' : 'confirmed_absent';
-            if ($report['zone_cleanup'] === 'present') {
-                self::cleanupFailure($report, 'zone_still_present');
-            }
-        } catch (Throwable) {
-            $report['zone_cleanup'] = 'unconfirmed';
-            self::cleanupFailure($report, 'zone_absence_unconfirmed');
-        }
-    }
-
-    /**
      * Delete proven-owned files, then the directory only if owned and empty, then read its absence.
      *
-     * An unproven or unexpected entry is left alone; account removal takes it, and the outcome is reported.
+     * The lifecycle calls this only for an account the marker proves, while the token still works. An unproven or
+     * unexpected entry is left alone; account removal takes it, and the outcome is reported.
      *
-     * @param Report $report
+     * @return list<string> Failure labels for the lifecycle's report.
      */
-    private function cleanupFiles(array &$report): void
+    private function cleanupFiles(): array
     {
         $direct = $this->direct;
-        if ($report['resources']['directory']['creation'] === 'not_attempted' || $direct === null) {
-            return;
+        if ($this->report['resources']['directory']['creation'] === 'not_attempted' || $direct === null) {
+            return [];
         }
+        $failures = [];
         foreach (FilemanUploadRecipe::LABELS as $label) {
             if (
                 isset($this->owned[$label])
-                && $this->deleteExact($report, 'delete_' . $label, $this->recipe->relativePath($label), $direct)
+                && $this->deleteExact($failures, 'delete_' . $label, $this->recipe->relativePath($label), $direct)
             ) {
-                ++$report['resources']['files']['deleted'];
+                ++$this->report['resources']['files']['deleted'];
             }
         }
         try {
             if ($this->directoryOwned) {
                 if ($this->directoryRows('inventory_empty', $direct) !== []) {
-                    self::cleanupFailure($report, 'fixture_directory_not_empty');
+                    $failures[] = 'fixture_directory_not_empty';
                 } elseif ($this->listingProvesContents()) {
-                    $this->deleteExact($report, 'delete_directory', $this->recipe->directory, $direct);
+                    $this->deleteExact($failures, 'delete_directory', $this->recipe->directory, $direct);
                 } else {
-                    self::cleanupFailure($report, 'directory_emptiness_unproven');
+                    $failures[] = 'directory_emptiness_unproven';
                 }
             }
             $present = isset($this->homeRows('home_final', $direct)[$this->recipe->directory]);
-            $report['resources']['directory']['cleanup'] = $present ? 'present' : 'confirmed_absent';
+            $this->report['resources']['directory']['cleanup'] = $present ? 'present' : 'confirmed_absent';
             if ($present) {
-                self::cleanupFailure($report, 'directory_still_present');
+                $failures[] = 'directory_still_present';
             }
         } catch (Throwable) {
-            self::cleanupFailure($report, 'directory_absence_unconfirmed');
+            $failures[] = 'directory_absence_unconfirmed';
         }
+
+        return $failures;
     }
 
     /**
      * Delete one exact guard-authorized path once; a following inventory, not this reply, proves the outcome.
      *
-     * @param Report $report
+     * @param list<string> $failures
      */
-    private function deleteExact(array &$report, string $phase, string $path, Client $direct): bool
+    private function deleteExact(array &$failures, string $phase, string $path, Client $direct): bool
     {
         try {
             $this->guard->authorizeDelete($path);
@@ -1194,72 +930,10 @@ final class FilemanUploadFixture
 
             return true;
         } catch (Throwable) {
-            self::cleanupFailure($report, 'owned_delete_failure');
+            $failures[] = 'owned_delete_failure';
 
             return false;
         }
-    }
-
-    /**
-     * Revoke this run's token once, then read its absence; removal may fail, and only expiry would then end it.
-     *
-     * The token name is fixed, so it proves nothing alone. Ownership is the per-run account marker, read again here,
-     * plus a token this run can show is its own: setup read the name absent just before the one create, so either a
-     * listing with that name or this run's own confirmed creation will do. An unreadable listing therefore cannot
-     * withhold the revoke of a token this run knows it created, while a lost creation that no listing can show stays
-     * unproven and is never revoked: account removal takes it, and the report says so.
-     *
-     * @param Report $report
-     */
-    private function cleanupToken(array &$report): void
-    {
-        if ($report['resources']['token']['creation'] === 'not_attempted') {
-            return;
-        }
-        $report['resources']['token']['cleanup'] = 'unconfirmed';
-        try {
-            $listed = $this->tokenExists();
-        } catch (Throwable) {
-            $listed = null;
-        }
-        if ($listed === false) {
-            $report['resources']['token']['cleanup'] = 'confirmed_absent';
-
-            return;
-        }
-        if ($listed === true) {
-            $report['resources']['token']['creation'] = 'confirmed';
-        }
-        if ($report['resources']['token']['creation'] !== 'confirmed') {
-            self::cleanupFailure($report, 'token_absence_unconfirmed');
-
-            return;
-        }
-        try {
-            if (!$this->accountOwned()) {
-                throw new RuntimeException('Fileman upload token ownership changed during cleanup.');
-            }
-            try {
-                $this->account->call('Tokens', 'revoke', [
-                    'name' => FilemanUploadRecipe::TOKEN_NAME,
-                ], RequestMethod::Post);
-            } catch (Throwable) {
-                self::cleanupFailure($report, 'token_revoke_failure');
-            }
-            $report['resources']['token']['cleanup'] = $this->tokenExists() ? 'present' : 'confirmed_absent';
-            if ($report['resources']['token']['cleanup'] === 'present') {
-                self::cleanupFailure($report, 'token_still_present');
-            }
-        } catch (Throwable) {
-            self::cleanupFailure($report, 'token_absence_unconfirmed');
-        }
-    }
-
-    /** @param Report $report */
-    private static function cleanupFailure(array &$report, string $kind): void
-    {
-        $report['cleanup'] = 'failed';
-        $report['failures'][] = $kind;
     }
 
     /** @return Report */
@@ -1273,17 +947,16 @@ final class FilemanUploadFixture
             'resources' => ['account' => $resource, 'token' => $resource, 'directory' => $resource,
                 'files' => ['proven_owned' => 0, 'deleted' => 0]],
             'domain_cleanup' => 'not_required', 'zone_cleanup' => 'not_required',
-            'filesystem_cleanup' => 'not_claimed',
+            'filesystem_cleanup' => 'not_claimed', 'filesystem_residue' => [],
         ];
     }
 
     /**
      * Assemble the sanitized result, attributing every observation to the run's one server version.
      *
-     * @param Report $report
      * @return Scenario
      */
-    private function scenario(array $report): array
+    private function scenario(): array
     {
         $versions = array_column(array_filter($this->records, static fn (array $record): bool =>
             $record['phase'] === 'version'), 'server_version');
@@ -1301,11 +974,13 @@ final class FilemanUploadFixture
             'byte_oracle' => $this->oracle,
             'borrowed_streams' => $this->borrowed,
             'discrepancy_review' => FilemanUploadEvidence::assess($records, $this->context),
-            'fixture' => $report,
+            'fixture' => $this->report,
             'limitations' => [
                 'direct_route_on_one_server_version_only',
                 'byte_oracle_is_reversible_transcoding_not_a_raw_download',
-                'api_absence_only_no_filesystem_or_home_directory_cleanup_claim',
+                $this->report['filesystem_cleanup'] === 'not_claimed'
+                    ? 'api_absence_only_no_filesystem_or_home_directory_cleanup_claim'
+                    : 'filesystem_proof_covers_fixed_locations_at_one_moment',
                 'observed_filename_and_size_variants_only',
                 'no_status_0_null_or_empty_rows_observation',
                 'no_antivirus_or_archive_behavior',
