@@ -424,6 +424,7 @@
         "void": {"type": "boolean"},
         "optional_payload": {"type": "boolean"},
         "empty_without_data": {"const": true},
+        "account_search_empty": {"const": true},
         "order": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
         "params": {"type": "object", "additionalProperties": {"$ref": "#/$defs/param"}},
         "additional_methods": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/additionalMethod"}},
@@ -460,6 +461,27 @@
           "required": ["unwrap"],
           "properties": {"outcome": {"const": "flag"}, "void": {"const": false}, "optional_payload": {"const": false}},
           "not": {"anyOf": [{"required": ["rows"]}, {"required": ["exclude"]}]}
+        }
+      },
+      {
+        "if": {"required": ["account_search_empty"]},
+        "then": {
+          "required": ["unwrap"],
+          "properties": {
+            "unwrap": {"const": "acct"},
+            "outcome": {"const": "flag"},
+            "method": {"const": "GET"},
+            "variant": {"const": "GET"},
+            "void": {"const": false},
+            "optional_payload": {"const": false}
+          },
+          "not": {"anyOf": [
+            {"required": ["rows"]},
+            {"required": ["exclude"]},
+            {"required": ["empty_without_data"]},
+            {"required": ["body"]},
+            {"required": ["function"]}
+          ]}
         }
       }]
     },

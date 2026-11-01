@@ -2697,6 +2697,12 @@ remain unobserved under `8x0.2.59`.
   are absent keys and explicit nulls stay `null`. `whm()->accounts()->listAccounts()` and
   `accountSummary()` return the `acct` record list (`accountSummary()` does not require
   exactly one record); `hostingPlans()->listPackages()` returns the `pkg` list.
+  `listAccounts()` alone selects `account_search_empty`: success with omitted/null
+  data and result 0 with exact `No accounts found.` plus omitted data return `[]`.
+  Retain original metadata; other failures and present failure data still throw.
+  The 11.138.0.15 successful-null replay is historical structural evidence, separate
+  from the verbatim 11.138.0.19 omitted-data bodies. Summary, mutations, packages and
+  generic Flag calls keep existing failure/payload rules.
   `createAccount()`, `changePassword()` and `modifyAccount()` return `null` when the
   server sends no data (overlay `optional_payload`, engine `optional` spec key) and the
   documented array otherwise. Overlay `order` puts the key arguments first in

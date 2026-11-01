@@ -76,6 +76,8 @@ final readonly class LiveCurlClient implements ClientInterface
         self::WHM . 'listaccts?api.version=1&search=npr&searchtype=user&searchmethod=exact',
         self::WHM . 'listaccts?api.version=1&search=npr&searchtype=user&searchmethod=exact&want=user',
         self::WHM . 'listaccts?api.version=1&search=nosuchacct9dy&searchtype=user&searchmethod=exact',
+        self::WHM . 'listaccts?api.version=1&search=nosuchacct9dy&searchtype=user&searchmethod=exact&want=user',
+        self::WHM . 'listaccts?api.version=1&search=nosuchacct9dy.example&searchtype=domain&searchmethod=exact',
         self::WHM . 'listaccts?api.version=1&search=%5Enosuchacct9dy%24&searchtype=user&searchmethod=regex',
         self::WHM . 'listaccts?api.version=1&search=%5Enosuchacct9dy%24&searchtype=user&searchmethod=regex&want=user',
         self::WHM . 'accountsummary?api.version=1&user=nosuchacct9dy',

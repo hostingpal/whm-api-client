@@ -264,13 +264,22 @@ Operation entries (all keys optional):
   spec gains `'optional' => true`, the method's return type becomes nullable and
   it returns null in that case (other payloads are validated as usual). Needs a
   documented payload and is exclusive with `void`.
+- `account_search_empty`: literal `true`, with live evidence, only for WHM
+  `listaccts` GET/form, Flag outcome, `acct` unwrap of a nonnullable list of
+  nonnullable account objects. It cannot combine with `empty_without_data`, rows,
+  void, optional payload, exclusion or function/body overrides. The runtime defers
+  envelope outcome interpretation only internally, then restores strict integer
+  0/1 before payload handling: success permits omitted/null data; result 0 permits
+  only the exact `No accounts found.` reason with omitted data. Original metadata
+  stays unchanged; every other failure throws before payload validation. Present
+  nonnull success data retains its original schema. Generic Flag calls are unchanged.
 - `empty_without_data`: literal `true`. An omitted `data` member on a confirmed WHM
   success returns an empty list, and the method's return type stays a list. Needs
   operation-level `live` evidence and a WHM flag outcome that unwraps a nonnullable
   list from a nonnullable object; exclusive with `void`, `optional_payload`, `rows`
   and `exclude`. Only the omitted member qualifies: explicit null, an object without
   the list and every other present payload keep ordinary validation, and a result 0
-  failure stays an API error. Only `whm1:listaccts` selects it.
+  failure stays an API error.
 - `evidence`: operation-level evidence, required when the entry sets `variant`, `method`,
   `outcome`, `rows`, `void` or `optional_payload`, changes a parameter `required` setting,
   suppresses its enum documentation (`enum_doc: false`), sets a parameter `encoding` (it

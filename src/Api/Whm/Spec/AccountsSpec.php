@@ -1042,7 +1042,7 @@ final class AccountsSpec
             ],
         ],
         'unwrap' => 'acct',
-        'empty_without_data' => true,
+        'account_search_empty' => true,
     ];
 
     public const LISTLOCKEDACCOUNTS = [

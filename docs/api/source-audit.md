@@ -709,6 +709,11 @@ code or contracts from the recorded revision.
 
 ## Runtime observations 2026-11-01 (empty account results)
 
+Historical PR122 interpretation, superseded by the
+[account-search absence reconciliation](#account-search-absence-reconciliation-2026-11-01).
+The original wire observations below remain unchanged; the Typed result column
+and interpretation describe the behavior before that reconciliation.
+
 Bead `whm-api-client-9dy`. Read-only generic `whm()->call(..., RequestMethod::Get)`
 requests on `test.oblak.host`, cPanel 11.138.0.19, with the WHM root token through
 the GET-only `CurlClient`. No server state was changed. The pinned documentation
@@ -1002,8 +1007,10 @@ a usable record list, while manual-domain and DNS-zone inventories also returned
 usable lists with the designated target absent. The fixture therefore selects
 exact identities locally from the full account inventory. API errors, null
 payloads and malformed identity lists still fail closed. This changes only the
-development recipe; it does not widen a generated contract or add a compatibility
-correction. The original failed artifact remains unchanged.
+development recipe; at that time it did not widen a generated contract or add a
+compatibility correction. The later [account-search absence reconciliation](#account-search-absence-reconciliation-2026-11-01)
+uses the successful-null structural observation explicitly. The original failed
+artifact remains unchanged.
 
 ### Runtime observations: 2026-10-17 finite-Quota token setup
 
@@ -8656,6 +8663,80 @@ Delivery 8x0.4.26 stays closed; correction/integration acceptance is tracked by
 complete original eight evidence bindings are preserved. No historical evidence,
 pinned source, schema asset, annotation or map hash is changed. The original
 four-line explicit-open-object lowering and both focused Go tests survive.
+
+
+## Account-search absence reconciliation 2026-11-01
+
+Bead `whm-api-client-9dy` (related live follow-up `whm-api-client-8x0.2.8`).
+The approved public search contract returns an empty collection for no matches;
+operations requiring an existing account/domain still fail when it is absent.
+This supersedes PR122's result-0/error recommendation and its description of
+successful null as unobserved in the earlier empty-account-results section.
+The implementation worker performed no live request. The controller subsequently
+ran the bounded live validation recorded below.
+
+The generated `account_search_empty` policy is limited to WHM GET `listaccts`,
+Flag outcome and a nonnullable `acct` object-list unwrap. For the verbatim
+11.138.0.19 WHM-root GET bodies recorded above, result 1 with omitted data and
+result 0 with reason exactly `No accounts found.` and omitted data return `[]`.
+Exact-user searches with and without `want` use that result-0 form. Metadata
+retains the original integer result, reason and all other envelope fields; a
+returned empty collection does not rewrite a failed envelope as success.
+
+The separate 2026-10-17 finite-Quota preflight diagnostics on 11.138.0.15,
+revision `c81036e62aa89d3c1bc4b9bb79e145f609ef8e22`, recorded an absent exact-domain
+WHM search succeeding with explicit `data: null`. Only the diagnostic's structural
+observation survives; the original wire body was not retained. A separate offline
+structural replay now returns `[]` under the same explicit operation policy.
+It is not presented as a newly captured or reconstructed verbatim response.
+Neither that older null form nor the newer omission form is a universal version
+or route guarantee. No pinned source or original JSON evidence artifact changed.
+
+The internal dispatch defers outcome interpretation for this generated policy
+until the complete response is available, after HTTP/envelope checks. It then
+requires integer 0/1 and rejects all nonmatching failures before payload handling.
+A result-0 response with any present data (including null, an empty object, an
+empty acct list or populated/malformed rows) remains an API error. Missing/invalid
+flags, other reasons/spelling/locales, HTTP/auth/permission and transport failures
+remain errors. Present nonnull success payloads keep strict validation, including
+rejection of `{}` and `acct:null`. No retry, implicit existence lookup or extra
+request is added.
+
+`accountSummary()`, account mutations and `listPackages()` keep their existing
+outcome and payload contracts. Empty package data remains unobserved. Generic
+`call()`, `callJson()` and `callMultipart()` retain ordinary Flag behavior.
+The older `empty_without_data` policy remains available with its original
+success-only omitted-member behavior; it is not broadened. Offline tests pin
+these failure boundaries and the narrow live-recipe allowlist extension.
+
+Controller live validation on 2026-11-01 ran
+`WHM_API_LIVE=1 vendor/bin/phpunit --testsuite live --group live --filter AccountsLiveTest`
+on the uncommitted implementation over base
+`81c6a051700b77c10039bd28b57f6ab8288f4c21`: **12 tests, 81 assertions, exit 0**
+with PHP 8.4.26. The separate guarded WHM GET `version` check returned
+`11.138.0.19`, HTTP 200 and integer result 1. These are controller-run checks;
+the implementation worker did not execute network or live tests. No full live
+suite or mutation was run.
+
+The bounded suite validates typed empty-search behavior, including exact-user
+searches in both `want` modes with the original result 0/reason retained, regex
+absence and exact-domain absence, alongside its existing account/package and
+route checks. It does not inspect or retain raw empty-payload member presence,
+so this run adds no verbatim wire body or fresh null-versus-omission capture.
+The older successful-null case remains the separately attributed 11.138.0.15
+structural observation and offline replay. Malformed-payload and negative-policy
+variants remain offline coverage; no universal version/route compatibility or
+mutation behavior is inferred.
+
+Local controller log `/tmp/account-search-empty-live.log` has SHA-256
+`d7f06c57815822fb4ea5b51505782430c2809ce1b65b1ad393cd729012f218ca`;
+the separate version log `/tmp/account-search-empty-live-version.log` has SHA-256
+`0d1b34fa253fa61032b871410175b4d934304fe81f096077cb85c4e70d18a74c`.
+Their local binding files record identical before/after input-tree digests:
+`01a2bd859c0473c2a4292a291c1a51c80a70b9cb7902af4939ca466f665b3203`.
+This binds the checks to the uncommitted inputs, not to a fabricated implementation
+commit. These test/version logs are behavioral validation, not raw-response JSON
+evidence artifacts; all earlier evidence remains unchanged.
 
 
 ### 2026-11-01: UAPI Webmail credentials and active-session inventory

@@ -198,11 +198,10 @@
         "expected": "success"
       },
       "name": "listAccounts",
-      "empty_without_data": true,
       "notes": [
         {
           "kind": "observed",
-          "text": "On 11.138.0.19 a search that matches nothing reports success and omits data for searchmethod regex with searchtype user, with or without want, and for searchmethod exact with searchtype domain, owner, ip or package. searchmethod exact with searchtype user instead fails with result 0 and the reason \"No accounts found.\", with or without want, which raises ApiErrorException."
+          "text": "On WHM GET 11.138.0.19, no-match searches omit data: success and the exact result 0 reason \"No accounts found.\" return an empty list without rewriting response metadata. Every other failure and every present failure payload remains an error. The recorded 11.138.0.15 successful exact-domain null data also returns an empty list; only structural diagnostics survive, not the original wire body. Other nonnull payloads retain strict validation."
         }
       ],
       "evidence": [
@@ -211,6 +210,12 @@
           "version": "11.138.0.19",
           "date": "2026-11-01",
           "note": "Read-only generic GET listaccts with names no account uses returned result 1, reason OK and no data member for regex/user (with and without want) and exact/domain, owner, ip and package, and result 0, reason \"No accounts found.\" and no data member for exact/user (with and without want). Matching searches returned data.acct rows. Each client wire form is pinned from these verbatim bodies; docs/api/source-audit.md#runtime-observations-2026-11-01-empty-account-results"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.15",
+          "date": "2026-10-17",
+          "note": "Historical WHM GET exact-domain no-match was recorded as successful with data:null in the 2026-10-17 finite-Quota preflight diagnostics, reconciled in docs/api/source-audit.md#account-search-absence-reconciliation-2026-11-01. The original wire body was not retained; the PHP fixture is a separate structural replay."
         }
       ],
       "order": [
@@ -256,7 +261,8 @@
             }
           ]
         }
-      }
+      },
+      "account_search_empty": true
     },
     "whm1:modifyacct": {
       "name": "modifyAccount",

@@ -1518,12 +1518,13 @@ final readonly class Accounts
      *
      * This function lists the accounts on the server.
      *
-     * Observed: On 11.138.0.19 a search that matches nothing reports success and omits data for searchmethod regex with
-     * searchtype user, with or without want, and for searchmethod exact with searchtype domain, owner, ip or package.
-     * searchmethod exact with searchtype user instead fails with result 0 and the reason "No accounts found.", with or
-     * without want, which raises ApiErrorException.
+     * Observed: On WHM GET 11.138.0.19, no-match searches omit data: success and the exact result 0 reason "No accounts
+     * found." return an empty list without rewriting response metadata. Every other failure and every present failure
+     * payload remains an error. The recorded 11.138.0.15 successful exact-domain null data also returns an empty list;
+     * only structural diagnostics survive, not the original wire body. Other nonnull payloads retain strict validation.
      *
-     * Returns an empty list when the server reports success and omits data.
+     * Returns an empty list for the evidenced account-search absence forms; response metadata retains the server
+     * outcome.
      *
      * API-map identity: whm1:listaccts#GET (wire name listaccts; Account Management).
      *
