@@ -127,7 +127,6 @@ final class BackupSpec
             'fields' => [
                 'log_id' => ['type' => 'string'],
                 'log_path' => ['type' => 'string'],
-                'messages' => ['type' => 'list', 'items' => ['type' => 'string']],
             ],
         ],
     ];
@@ -153,7 +152,6 @@ final class BackupSpec
             'fields' => [
                 'log_id' => ['type' => 'string'],
                 'log_path' => ['type' => 'string'],
-                'messages' => ['type' => 'list', 'items' => ['type' => 'string']],
             ],
         ],
     ];
@@ -179,7 +177,6 @@ final class BackupSpec
             'fields' => [
                 'log_id' => ['type' => 'string'],
                 'log_path' => ['type' => 'string'],
-                'messages' => ['type' => 'list', 'items' => ['type' => 'string']],
             ],
         ],
     ];
@@ -206,7 +203,6 @@ final class BackupSpec
             'fields' => [
                 'log_id' => ['type' => 'string'],
                 'log_path' => ['type' => 'string'],
-                'messages' => ['type' => 'list', 'items' => ['type' => 'string']],
             ],
         ],
     ];

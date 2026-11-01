@@ -1964,11 +1964,25 @@ final readonly class Server
      *
      * Policy: Both arguments are required from the body schema despite absent requestBody.required. Sends literal
      * module text followed by a single Upload; routing stays in the WHM query. This can affect server-wide
-     * configuration; no retry, rollback, transactional or restart guarantee is provided. No live configuration restore
-     * has been performed.
+     * configuration; no retry, rollback, transactional or restart guarantee is provided.
      *
      * Policy: The formal multipart schema and upload prose govern this request. The empty JSON HTTP sample and its port
      * 2083 are inconsistent examples, not alternate transport or routing contracts.
+     *
+     * Policy: Reviewer inspection of the 11.138.0.19 server source found that apply_module_settings rejects invalid
+     * values, restores their old values and logs warnings, while _restore_config discards reject details. Success does
+     * not mean every setting was applied. Re-read the configuration of interest after the call.
+     *
+     * Policy: An unchanged backup does not rewrite the configuration file, but the reviewed 11.138.0.19 handler sets
+     * success metadata only when settings are modified. An unchanged restore may therefore surface as an error; the
+     * compiled wrapper behavior remains unverified under 8x0.30.7.1. Offline envelope handling raises
+     * InvalidResponseException for a missing metadata.result and ApiErrorException for result 0; these are not observed
+     * restore responses.
+     *
+     * Policy: Reviewer source inspection on 11.138.0.19 indicates a restore may retain a root-only uploaded backup at
+     * /root/tmp/Cpanel_Form_file.upload.*. Restore-specific retention remains unverified; a separate read-only WHM
+     * file-part check observed a mode-0600 copy. Backups can contain configuration secrets; account for possible
+     * server-side retention.
      *
      * API-map identity: whm1:restore_config_from_upload#POST (wire name restore_config_from_upload; Configuration
      * Clusters).

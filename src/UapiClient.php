@@ -141,33 +141,27 @@ final class UapiClient extends AbstractApiClient
      * POST an already serialized JSON document for this direct cPanel account.
      *
      * WHM-bridged handles reject this route locally after metadata reset. Direct
-     * access uses only this handle's host, credentials and account. Valid JSON roots
-     * retain exact bytes without endpoint schema validation. The case-sensitive api.
-     * prefix and exact cpanel.user/module/function names are reserved in caller
-     * query fields and root object members, including nulls. Nested names remain data.
-     * Query uses the existing parameter representation and is encoded once. Keep
-     * secrets in the body: servers may log the separate query. The untyped result,
-     * outcome policy, envelope errors and metadata follow call(); no retries occur.
-     * Choose a JSON-compatible operation with a standard envelope. This raw escape
-     * hatch establishes neither typed coverage nor live endpoint compatibility.
-     * Reviewer-inspected 11.138.0.19 UAPI source generally accepts flat JSON
-     * arguments; nested structures require the function's requires_json declaration.
-     * The corrected review identifies five functions across four modules:
-     * ClamScanner (1), ContactInformation (1), Personalization (2), StatsManager (1).
-     * This source attribution is neither live verification nor an endpoint allowlist.
+     * access uses only this handle's host, credentials and account. The body must
+     * be a valid JSON object; its exact bytes are retained without endpoint schema
+     * validation. The case-sensitive api. prefix and exact cpanel.user/module/function
+     * names are reserved in caller root members, including escaped names and nulls.
+     * Nested names remain data. On cPanel 11.138.0.19 JSON arguments are read only
+     * from the body; there is no separate query. Upstream removes root members
+     * beginning with file-. Flat JSON arguments are generally accepted there;
+     * nested structures require the function's requires_json declaration. Flat
+     * bridge arguments can use form calls; the bridge rejects nested structures.
+     * The untyped result, outcome policy, envelope errors and metadata follow
+     * call(); no retries occur. Choose a compatible operation and standard envelope;
+     * raw access establishes neither typed coverage nor live endpoint compatibility.
      *
-     * @param Parameters $query Explicit URL query data, never merged into the body.
-     * @throws InvalidArgumentException If bridged, or a name, JSON document or query is invalid; metadata clears first.
+     * @throws InvalidArgumentException If bridged, or a name or JSON object is invalid; metadata clears first.
      * @throws ApiException If transport, HTTP, or the API envelope fails.
      * @see https://api.docs.cpanel.net/cpanel/introduction
-     * @see https://github.com/hostingpal/whm-api-client/pull/73#pullrequestreview-5722705880
-     * @see https://github.com/hostingpal/whm-api-client/pull/73#issuecomment-6543354915
      */
     public function callJson(
         string $module,
         string $operation,
         #[SensitiveParameter] string $json,
-        #[SensitiveParameter] array $query = [],
         OutcomePolicy $outcome = OutcomePolicy::Flag,
     ): CallResult {
         $this->beginRequest();
@@ -181,14 +175,10 @@ final class UapiClient extends AbstractApiClient
                 );
             }
         }
-        $reserved = ['cpanel.user', 'cpanel.module', 'cpanel.function'];
-        $this->validateJsonQuery($query, $reserved);
         $body = JsonBody::present($json);
-        $body->assertNoReservedRoot($reserved);
 
         return CallResult::fromApiResponse($this->executeJsonPost(
             '/execute/' . $module . '/' . $operation,
-            $query,
             $body,
             ResponseRoute::DirectUapi,
             $outcome,
@@ -211,6 +201,9 @@ final class UapiClient extends AbstractApiClient
      * Sources are prepared only after complete local validation. Borrowed streams
      * start at their current cursor and are never rewound, closed or detached;
      * exact remaining lengths are required. Owned files close on every exit.
+     * Preparation failures before HTTP raise a static, unchained
+     * InvalidArgumentException. A recorded body failure during an attempt raises
+     * a static, unchained ApiException; remote state may already have changed.
      * A partial send or failure never retries or establishes remote ownership.
      * Standard envelope, metadata and CallResult semantics follow call(). Flag's
      * API error omits data/per-file reasons; explicit Unchecked retains raw data.
@@ -220,7 +213,7 @@ final class UapiClient extends AbstractApiClient
      * @param list<array{name: string, value: string|Upload}> $parts
      * @param MultipartQuery $query
      * @throws InvalidArgumentException If local input is invalid; metadata clears first and errors omit caller data.
-     * @throws ApiException If transport, HTTP, or the API envelope fails.
+     * @throws ApiException If the attempted body, transport, HTTP, or the API envelope fails.
      */
     public function callMultipart(
         string $module,
@@ -296,12 +289,8 @@ final class UapiClient extends AbstractApiClient
             if ($this->isBridged()) {
                 throw new InvalidArgumentException('JSON bodies require a direct cPanel UAPI handle.');
             }
-            $reserved = ['cpanel.user', 'cpanel.module', 'cpanel.function'];
-            $this->validateJsonQuery($parameters, $reserved);
-            $body->assertNoReservedRoot($reserved);
             return $this->executeJsonPost(
                 '/execute/' . OperationSpec::text($spec, 'module') . '/' . OperationSpec::text($spec, 'function'),
-                $parameters,
                 $body,
                 ResponseRoute::DirectUapi,
                 OperationSpec::outcome($spec),
@@ -322,7 +311,8 @@ final class UapiClient extends AbstractApiClient
      *
      * Groups supply operation names and endpoint parameters. The bound module,
      * account, API version, and function are reserved on the bridge. Generated
-     * fields reject collisions before filtering; generic arrays retain reserved
+     * fields reject the entire case-sensitive api. prefix on both routes, and exact
+     * bridge controls when bridged, before filtering; generic arrays retain reserved
      * field removal. Execution clears metadata before
      * parameter validation or I/O, then retains usable envelope metadata before
      * API or group-level payload errors. Post keeps the routing fields in the
@@ -362,6 +352,9 @@ final class UapiClient extends AbstractApiClient
                 : $this->executeGet('/json-api/uapi_cpanel', $query, $route, $outcome);
         }
 
+        if ($parameters instanceof OrderedFields) {
+            $parameters->assertNoReserved([]);
+        }
         $path = '/execute/' . $module . '/' . $operation;
 
         return $method === RequestMethod::Post

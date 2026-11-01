@@ -187,6 +187,20 @@ final class WhmDnsMassEditTest extends TestCase
         yield 'legacy empty array compatibility' => ['[]', []];
         yield 'zero serial' => ['{"new_serial":0}', ['new_serial' => 0]];
         yield 'large serial' => ['{"new_serial":202001010100}', ['new_serial' => 202001010100]];
+        yield 'reviewer first add' => ['{"new_serial":"2026103103"}', ['new_serial' => 2026103103]];
+        yield 'reviewer second add' => ['{"new_serial":"2026103104"}', ['new_serial' => 2026103104]];
+        yield 'reviewer two adds' => ['{"new_serial":"2026103105"}', ['new_serial' => 2026103105]];
+        yield 'reviewer removal' => ['{"new_serial":"2026103106"}', ['new_serial' => 2026103106]];
+        yield 'reviewer source increment branch' => ['{"new_serial":"10000000000"}', ['new_serial' => 10000000000]];
+        yield 'simple digit string' => ['{"new_serial":"12"}', ['new_serial' => 12]];
+        yield 'zero digit string' => ['{"new_serial":"0"}', ['new_serial' => 0]];
+        yield 'signed integer policy' => ['{"new_serial":"-12"}', ['new_serial' => -12]];
+        yield 'native negative integer policy' => ['{"new_serial":-12}', ['new_serial' => -12]];
+        yield 'maximum integer string' => ['{"new_serial":"' . PHP_INT_MAX . '"}', ['new_serial' => PHP_INT_MAX]];
+        yield 'minimum integer string' => ['{"new_serial":"' . PHP_INT_MIN . '"}', ['new_serial' => PHP_INT_MIN]];
+        yield 'maximum native integer' => ['{"new_serial":' . PHP_INT_MAX . '}', ['new_serial' => PHP_INT_MAX]];
+        yield 'digit string with unknown field filtered' => ['{"new_serial":"12","future":{"x":true}}',
+            ['new_serial' => 12]];
         yield 'unknown fields follow existing filtering' => ['{"new_serial":12,"future":{"x":true}}',
             ['new_serial' => 12]];
     }
@@ -196,47 +210,81 @@ final class WhmDnsMassEditTest extends TestCase
     {
         [$client, $http] = self::client();
         $whm = $client->whm();
+        $http->addResponse(new Response(200, [], self::envelope('{}')));
+        $whm->dns()->massEditDnsZone(6, 'example.test', remove: [0]);
+        $previousMetadata = $whm->responseMeta();
+        self::assertNotNull($previousMetadata);
         $http->addResponse(new Response(200, [], self::envelope($payload)));
+        $error = null;
         try {
             $whm->dns()->massEditDnsZone(7, 'example.test', remove: [0]);
-            self::fail('Malformed success must fail payload validation.');
-        } catch (PayloadMismatchException $error) {
-            self::assertTrue($error->outcomeConfirmed);
-            self::assertSame($whm->responseMeta(), $error->metadata);
-            self::assertSame(1, $error->metadata?->whmResult());
-            self::assertSame(
-                $payload === null ? null : json_decode($payload, true, 512, JSON_THROW_ON_ERROR),
-                $error->payload,
-            );
+        } catch (PayloadMismatchException $caught) {
+            $error = $caught;
         }
-        self::assertRequest($http, 'serial=7&zone=example.test&remove=0');
+        self::assertInstanceOf(PayloadMismatchException::class, $error);
+        self::assertTrue($error->outcomeConfirmed);
+        self::assertSame($whm->responseMeta(), $error->metadata);
+        self::assertNotSame($previousMetadata, $error->metadata);
+        self::assertSame(1, $error->metadata?->whmResult());
+        self::assertSame(
+            $payload === null ? null : json_decode($payload, true, 512, JSON_THROW_ON_ERROR),
+            $error->payload,
+        );
+        self::assertRequest($http, 'serial=7&zone=example.test&remove=0', 2);
     }
 
     /** @return iterable<string, array{?string}> */
     public static function invalidPayloads(): iterable
     {
         foreach (
-            [null, 'null', '[1]', 'false', '1', '"text"', '{"new_serial":"12"}',
-            '{"new_serial":false}', '{"new_serial":null}', '{"new_serial":1.5}',
+            [null, 'null', '[1]', 'false', 'true', '1', '1.5', '"text"',
+            '{"new_serial":false}', '{"new_serial":true}', '{"new_serial":null}',
+            '{"new_serial":1.5}', '{"new_serial":1.0}',
             '{"new_serial":[]}', '{"new_serial":{}}'] as $i => $payload
         ) {
             yield 'invalid payload ' . $i => [$payload];
         }
+        foreach (
+            ['', 'text', ' 12', '12 ', '+12', '012', '-0', '12.0', '1e3', '12x', (string) PHP_INT_MAX . '0',
+            (string) PHP_INT_MIN . '0'] as $i => $serial
+        ) {
+            yield 'invalid serial string ' . $i => ['{"new_serial":"' . $serial . '"}'];
+        }
+        yield 'overflow JSON number' => ['{"new_serial":' . PHP_INT_MAX . '0}'];
     }
 
-    public function testSerialConflictKeepsMetadataAndDoesNotRetry(): void
+    /** @param array<string, mixed> $arguments */
+    #[DataProvider('apiFailures')]
+    public function testApiFailureKeepsMetadataAndDoesNotRetry(array $arguments, string $wire, string $reason): void
     {
         [$client, $http] = self::client();
         $whm = $client->whm();
-        $http->addResponse(new Response(200, [], self::envelope(null, 0, 'Serial does not match current zone')));
+        $http->addResponse(new Response(200, [], self::envelope(null, 0, $reason)));
+        $error = null;
         try {
-            $whm->dns()->massEditDnsZone(7, 'example.test', remove: [0]);
-            self::fail('Failed serial outcome must throw.');
-        } catch (ApiErrorException $error) {
-            self::assertSame($whm->responseMeta(), $error->metadata);
-            self::assertSame(0, $error->metadata?->whmResult());
+            self::invoke($whm->dns(), 'massEditDnsZone', $arguments);
+        } catch (ApiErrorException $caught) {
+            $error = $caught;
         }
-        self::assertRequest($http, 'serial=7&zone=example.test&remove=0');
+        self::assertInstanceOf(ApiErrorException::class, $error);
+        self::assertSame($whm->responseMeta(), $error->metadata);
+        self::assertSame(0, $error->metadata?->whmResult());
+        self::assertSame($reason, $error->metadata->whm['reason'] ?? null);
+        self::assertRequest($http, $wire);
+    }
+
+    /** @return iterable<string, array{array<string, mixed>, string, string}> */
+    public static function apiFailures(): iterable
+    {
+        yield 'serial conflict' => [
+        ['serial' => 7, 'zone' => 'example.test', 'remove' => [0]],
+            'serial=7&zone=example.test&remove=0', 'Serial does not match current zone'];
+        yield 'empty changes reach upstream' => [
+        ['serial' => 7, 'zone' => 'example.test'],
+            'serial=7&zone=example.test', 'You must provide at least one change to the DNS zone.'];
+        yield 'malformed JSON reaches upstream' => [
+        ['serial' => 7, 'zone' => 'example.test', 'add' => ['not JSON']],
+            'serial=7&zone=example.test&add=not%20JSON', 'Invalid JSON'];
     }
 
     public function testHttpAndTransportFailuresMakeNoSecondRequest(): void
@@ -323,9 +371,9 @@ final class WhmDnsMassEditTest extends TestCase
         return false;
     }
 
-    private static function assertRequest(MockClient $http, string $wire): void
+    private static function assertRequest(MockClient $http, string $wire, int $count = 1): void
     {
-        self::assertCount(1, $http->getRequests());
+        self::assertCount($count, $http->getRequests());
         $request = $http->getLastRequest();
         self::assertInstanceOf(RequestInterface::class, $request);
         self::assertSame('POST', $request->getMethod());
