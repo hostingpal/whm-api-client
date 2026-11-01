@@ -26,13 +26,21 @@ use Throwable;
  */
 final readonly class DiscrepancyPolicy
 {
-    private const EVIDENCE = 'docs/api/evidence/2026-10-16-quota-inventory.json';
+    /**
+     * Current immutable reference, captured at 5f9b001 on cPanel 11.138.0.19.
+     *
+     * Until 2026-11-01 the same two observations were bound to cPanel 11.138.0.15 through
+     * docs/api/evidence/2026-10-16-quota-inventory.json (SHA-256
+     * 5f65d66acc36673ee37be1b4e024dad3ac725e5313d45c208abb489d5c9f6811). That file stays
+     * unchanged as history; only this rebinding moved the acknowledgments.
+     */
+    private const EVIDENCE = 'docs/api/evidence/2026-11-01-read-only-11.138.0.19.json';
 
-    private const SHA256 = '5f65d66acc36673ee37be1b4e024dad3ac725e5313d45c208abb489d5c9f6811';
+    private const SHA256 = '4138dbf1d083ddfe6d109c86bb8beb449abde6937e93b2452693d47b2b792b81';
 
     private const ROUTES = [
-        'direct-uapi' => 'quota-total-direct-11.138.0.15',
-        'bridged-uapi' => 'quota-total-bridge-11.138.0.15',
+        'direct-uapi' => 'quota-total-direct-11.138.0.19',
+        'bridged-uapi' => 'quota-total-bridge-11.138.0.19',
     ];
 
     /** @param array<string, array{identity: string, signature: string}> $expected */
@@ -57,7 +65,7 @@ final readonly class DiscrepancyPolicy
                 throw new RuntimeException('Invalid reference.');
             }
             $document = json_decode($bytes, true, 512, JSON_THROW_ON_ERROR);
-            if (!is_array($document) || ($document['schema_version'] ?? null) !== 1) {
+            if (!is_array($document) || ($document['schema_version'] ?? null) !== 2) {
                 throw new RuntimeException('Invalid reference.');
             }
             $records = $document['probes'] ?? null;

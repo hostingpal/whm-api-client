@@ -1264,3 +1264,72 @@ Sitejet/get_commerce GET and nullable commission IDs; see
 the Commerce/Market contract notes. All remaining methods/variants stay under
 `8x0.2.52`. SHA-256:
 `8b1b468eb3ab91072cd0a676ac7d9337c3359bbde80497703451b24ecda1ee7d`.
+
+## Webmail inventory evidence
+
+The [Webmail inventory capture](2026-11-01-webmail-inventory.json) at
+`eba1711a62e71d614a50cb5eeb2259aa00adbbea` on `11.138.0.19` passes all five GET
+observations and strict assessment with zero discrepancies, through direct UAPI and
+the `npr` bridge. Session inventory is empty on both routes and proves nothing about
+session row fields. Webmail application rows are populated. No `Session/*` creator
+ran, and no returned URL was fetched or login attempted. The creators stay open under
+`8x0.2.69`. SHA-256:
+`37ee9760012a45c19100adc379ca59d7b87d46aebea8596a6c1f8e75dc201cd6`.
+
+## UAPI Market read evidence
+
+The [Market reads capture](2026-11-01-market-reads.json) at
+`eba1711a62e71d614a50cb5eeb2259aa00adbbea` on `11.138.0.19` passes all eleven GET
+observations and strict assessment with zero discrepancies, through direct UAPI and
+the `npr` bridge. It covers five of the nine reads in `8x0.2.63`: provider list,
+catalog, pending certificates, DCV constraints and login URL. The pending list is
+empty and observes no row fields. The login URL was not followed.
+
+Certificate status details, certificate availability, product information and
+completion URL did not run, because no real order or product-name selector exists on
+this server. Their absence is a recorded decision, not a failure or a pass. No
+purchase, payment, issuance, installation, trust or served TLS behavior is
+established. SHA-256:
+`4a9ec4fffec130ee099b63cb2f86c24482b332a8101995828426745bdb70da51`.
+
+The [no-match audit capture](2026-11-01-empty-results.json) at
+`fc5264d97f0c9d90ebbf9148b714d69e4a288959` on `11.138.0.19` records 27 GET observations
+across WHM version and 15 curated operations. Twenty-three return empty results and three
+raise API errors, including the required entity-lookup control. No typed method threw a
+client exception. Its `failed` status and exit 1 are expected because the controls cannot
+pass the strict assessment. Empty results establish no item fields, and several have no
+populated baseline; see the [source audit](../source-audit.md#empty-result-audit-2026-11-01).
+SHA-256: `2ec7d60176b4354c01d1016849e0e3d62ae85a7182354010ab8d89e77a39894f`.
+
+## cPanel 11.138.0.19 default read-only capture
+
+The [default-catalog capture](2026-11-01-read-only-11.138.0.19.json) at
+`5f9b001466a30bc45828c4fb3dd8007f7f811ad0` on `11.138.0.19` passes all 67 GET
+HTTP/API/payload/probe observations across 37 operations. DomainInfo `domains_data`,
+`single_domain_data` and LangPHP `php_ini_get_user_basic_directives`,
+`php_ini_get_user_paths` report their typed fields as named paths with no discrepancy
+through both direct and bridged UAPI. The only discrepancies left are the two masked
+Quota `$.*` integer observations.
+
+Its embedded `discrepancy_review` says failed (0 acknowledged, 2 unexpected, 2 stale)
+because this run was assessed against the previous `11.138.0.15` reference. The review
+stays as captured. `DiscrepancyPolicy` now uses this file as its reference, which is a
+later code change and not a change to this artifact. Masked Quota keys establish neither
+names nor counts, and empty addon, parked and subdomain lists establish no row fields.
+SHA-256: `4138dbf1d083ddfe6d109c86bb8beb449abde6937e93b2452693d47b2b792b81`.
+
+## Disposable-account Fileman upload evidence
+
+The [corrected capture](2026-11-01-fileman-upload-v2.json) at
+`1c8bbce3325f5b758837e1615cdcba199f3bd2ce` on `11.138.0.19` passes recipe
+`fileman-upload-disposable-v2`, exit 0: five multipart uploads, six exact content
+readbacks through the Latin-1 oracle, and token, account, domain and zone absence
+confirmed through the API. It claims no filesystem cleanup, raw-download identity, or
+WHM or bridged upload coverage. SHA-256:
+`10eecbe1be592a3872fc59d74f2e24187fad98bb4f0e3c700f38af9afcd874d3`.
+
+The [first capture](2026-11-01-fileman-upload.json) at
+`aa84150664d6e5c48e1668cc833bb9220e11a1bf` is a failed run, exit 1, kept unchanged. It
+required the exact requested charset spelling, which this server does not return. See
+the [source audit](../source-audit.md#charset-echo-classification-and-corrected-capture).
+SHA-256: `34e31bfd989c84deee7568a5d8fca72b1b6c657346cf5d81dcd3f760c7f2f41a`.

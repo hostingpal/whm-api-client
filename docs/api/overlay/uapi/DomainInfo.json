@@ -393,6 +393,18 @@
                             "items": {
                               "type": "string"
                             }
+                          },
+                          "phpopenbasedirprotect": {
+                            "type": "flag",
+                            "accept": [
+                              "string-flag"
+                            ]
+                          },
+                          "phpversion": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string"
                           }
                         }
                       },
@@ -1065,6 +1077,12 @@
               "version": "pinned 2026-10-13",
               "date": "2026-10-30",
               "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /DomainInfo/domains_data GET responses/200/content/application~1json/examples/hash and /list document quoted 0/1 for shared domain flags and an exact empty string for userdirprotect. Preserve only that empty string without assigning disabled semantics; other nonflag strings remain invalid. Apply shared field wire compatibility across addon, main, parked, subdomain and list record kinds and single_domain_data, whose corresponding documented flags share their meanings. Independently copied examples are tests/Fixtures/DomainInfo/domains-data-hash.json and domains-data-list.json; source snapshots are unchanged."
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-11-01",
+              "note": "One-off read-only name inspection on 2026-11-01 from revision 760ca68: one direct UAPI GET as npr printed only key names and structural types, never values. The format=hash main_domain object carried phpopenbasedirprotect as a numeric string, and phpversion and status as non-numeric strings. None is declared by the pinned domains_data schema. phpopenbasedirprotect reuses the pinned single_domain_data 0/1 field, whose quoted form already passes live validation for the same account domain. phpversion and status have no pinned meaning, so they are optional strings with unknown semantics, allowed values and requiredness. Addon, parked and subdomain rows were empty and format=list was not requested, so those records are unchanged."
             }
           ]
         }
@@ -1077,6 +1095,10 @@
         {
           "kind": "documented",
           "text": "Quoted 0/1 domain flags and port values normalize to integers. The documented empty-string userdirprotect value stays an empty string, distinct from 0; other nonflag strings remain invalid. Shared flag fields use the same wire compatibility across record kinds and singleDomainData()."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19 the format=hash main_domain object also carries phpopenbasedirprotect, whose quoted 0/1 value normalizes to an integer as in singleDomainData(), plus phpversion and status. phpversion and status are undocumented optional strings with unknown meaning. Addon, parked, subdomain and format=list records were not observed with these fields and keep their documented shape."
         }
       ],
       "probe": {
@@ -1091,7 +1113,22 @@
           "bridged-uapi"
         ],
         "expected": "success"
-      }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-11-01",
+          "note": "One-off read-only name inspection on 2026-11-01 from revision 760ca68: one direct UAPI GET as npr printed only key names and structural types, never values. Request: format=hash, hide_temporary_domains=0, return_https_redirects_status=0. Extra main_domain keys: phpopenbasedirprotect, phpversion, status. Their meaning is not established by this inspection."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-11-01",
+          "note": "The 67-probe read-only capture at revision 5f9b001 ran both direct UAPI and WHM-bridged GET observations with these corrections in the contract. main_domain.phpopenbasedirprotect, main_domain.phpversion and main_domain.status appear as named paths. Both routes passed HTTP, API, payload and probe checks with no unknown_field at the formerly masked paths. Immutable artifact SHA-256 4138dbf1d083ddfe6d109c86bb8beb449abde6937e93b2452693d47b2b792b81. Structural evidence establishes no values or meaning.",
+          "fingerprint": "docs/api/evidence/2026-11-01-read-only-11.138.0.19.json"
+        }
+      ]
     },
     "uapi:DomainInfo/single_domain_data": {
       "notes": [
@@ -1110,6 +1147,10 @@
         {
           "kind": "documented",
           "text": "Shared domain flags accept the quoted 0/1 forms documented by the domains_data examples. The userdirprotect empty-string variant is preserved without mapping it to 0; other nonflag strings remain invalid. Optional fields remain omitted when absent."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19 the result for an account main domain also carries phpversion and status, undocumented optional strings with unknown meaning. customlog list items carry format; the pinned domain key was absent from them. format is typed for list items only."
         }
       ],
       "probe": {
@@ -1151,6 +1192,9 @@
                     },
                     "target": {
                       "type": "string"
+                    },
+                    "format": {
+                      "type": "string"
                     }
                   }
                 }
@@ -1164,6 +1208,12 @@
               "date": "2026-10-30",
               "note": "Observed customlog as a list of objects. Preserve the pinned single_domain_data object fields as both object and list items; masked item keys cannot justify extra fields. The separate pinned domains_data examples also contain customlog lists, but do not redefine this operation's item keys. Both direct and bridged GET observations at revision c79ed1d; immutable artifact SHA-256 d75a3575bf2ceec2e38c620eedaaf98b54253a42cb0f506b4cdbd74bb6749a0f. Structural evidence does not establish values or unknown key names.",
               "fingerprint": "docs/api/evidence/2026-10-30-domain-features-php.json"
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-11-01",
+              "note": "One-off read-only name inspection on 2026-11-01 from revision 760ca68: one direct UAPI GET as npr printed only key names and structural types, never values. Both customlog list items for npr.rs carried format as a non-numeric string. The pinned domain key was absent in the 2026-10-30 reviewed artifact, and pinned domains_data examples use format for the same list. format is optional on list items only, and pinned domain stays optional. The pinned object form was not observed and is unchanged. The upstream meaning of format is not documented here."
             }
           ]
         },
@@ -1315,6 +1365,32 @@
               "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /DomainInfo/domains_data GET responses/200/content/application~1json/examples/hash and /list document quoted 0/1 for shared domain flags and an exact empty string for userdirprotect. Preserve only that empty string without assigning disabled semantics; other nonflag strings remain invalid. Apply shared field wire compatibility across addon, main, parked, subdomain and list record kinds and single_domain_data, whose corresponding documented flags share their meanings. Independently copied examples are tests/Fixtures/DomainInfo/domains-data-hash.json and domains-data-list.json; source snapshots are unchanged."
             }
           ]
+        },
+        "phpversion": {
+          "add": {
+            "type": "string"
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-11-01",
+              "note": "One-off read-only name inspection on 2026-11-01 from revision 760ca68: one direct UAPI GET as npr printed only key names and structural types, never values. The npr.rs result carried phpversion as a non-numeric string. The pinned single_domain_data schema does not declare it. Its meaning, allowed values and requiredness are unknown, so it is an optional string with no assumed semantics."
+            }
+          ]
+        },
+        "status": {
+          "add": {
+            "type": "string"
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-11-01",
+              "note": "One-off read-only name inspection on 2026-11-01 from revision 760ca68: one direct UAPI GET as npr printed only key names and structural types, never values. The npr.rs result carried status as a non-numeric string. The pinned single_domain_data schema does not declare it. Its meaning, allowed values and requiredness are unknown, so it is an optional string with no assumed semantics. It is a payload field, unrelated to the UAPI envelope status."
+            }
+          ]
         }
       },
       "evidence": [
@@ -1330,6 +1406,19 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-30",
           "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /DomainInfo/domains_data GET responses/200/content/application~1json/examples/hash and /list document quoted 0/1 for shared domain flags and an exact empty string for userdirprotect. Preserve only that empty string without assigning disabled semantics; other nonflag strings remain invalid. Apply shared field wire compatibility across addon, main, parked, subdomain and list record kinds and single_domain_data, whose corresponding documented flags share their meanings. Independently copied examples are tests/Fixtures/DomainInfo/domains-data-hash.json and domains-data-list.json; source snapshots are unchanged."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-11-01",
+          "note": "One-off read-only name inspection on 2026-11-01 from revision 760ca68: one direct UAPI GET as npr printed only key names and structural types, never values. Request: domain=npr.rs, hide_temporary_domains=0, return_https_redirect_status=0. Extra keys: phpversion and status at the payload root, format in customlog list items. Their meaning is not established by this inspection."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-11-01",
+          "note": "The 67-probe read-only capture at revision 5f9b001 ran both direct UAPI and WHM-bridged GET observations with these corrections in the contract. phpversion, status and customlog[].format appear as named paths. Both routes passed HTTP, API, payload and probe checks with no unknown_field at the formerly masked paths. Immutable artifact SHA-256 4138dbf1d083ddfe6d109c86bb8beb449abde6937e93b2452693d47b2b792b81. Structural evidence establishes no values or meaning.",
+          "fingerprint": "docs/api/evidence/2026-11-01-read-only-11.138.0.19.json"
         }
       ]
     }

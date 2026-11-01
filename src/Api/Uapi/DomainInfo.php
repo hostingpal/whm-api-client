@@ -89,6 +89,8 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  *         owner?: string,
  *         parked_capable_of_https_redirects?: list<string>,
  *         parked_with_https_redirects?: list<string>,
+ *         phpopenbasedirprotect?: 0|1,
+ *         phpversion?: string,
  *         port?: int,
  *         scriptalias?: array{
  *             path?: string,
@@ -100,6 +102,7 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  *         serveradmin?: string,
  *         serveralias?: string,
  *         servername?: string,
+ *         status?: string,
  *         type?: string,
  *         usecanonicalname?: string,
  *         user?: string,
@@ -273,6 +276,7 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  *         target?: string,
  *     }|list<array{
  *         domain?: string,
+ *         format?: string,
  *         target?: string,
  *     }>,
  *     documentroot?: string,
@@ -289,6 +293,7 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  *     options?: string,
  *     owner?: string,
  *     phpopenbasedirprotect?: 0|1,
+ *     phpversion?: string,
  *     port?: int,
  *     scriptalias?: array{
  *         path?: string,
@@ -300,6 +305,7 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  *     serveradmin?: string,
  *     serveralias?: string,
  *     servername?: string,
+ *     status?: string,
  *     type?: string,
  *     usecanonicalname?: string,
  *     user?: string,
@@ -330,6 +336,11 @@ final readonly class DomainInfo
      * Documented: Quoted 0/1 domain flags and port values normalize to integers. The documented empty-string
      * userdirprotect value stays an empty string, distinct from 0; other nonflag strings remain invalid. Shared flag
      * fields use the same wire compatibility across record kinds and singleDomainData().
+     *
+     * Observed: On cPanel 11.138.0.19 the format=hash main_domain object also carries phpopenbasedirprotect, whose
+     * quoted 0/1 value normalizes to an integer as in singleDomainData(), plus phpversion and status. phpversion and
+     * status are undocumented optional strings with unknown meaning. Addon, parked, subdomain and format=list records
+     * were not observed with these fields and keep their documented shape.
      *
      * API-map identity: uapi:DomainInfo/domains_data#GET (wire name domains_data).
      *
@@ -450,6 +461,10 @@ final readonly class DomainInfo
      * Documented: Shared domain flags accept the quoted 0/1 forms documented by the domains_data examples. The
      * userdirprotect empty-string variant is preserved without mapping it to 0; other nonflag strings remain invalid.
      * Optional fields remain omitted when absent.
+     *
+     * Observed: On cPanel 11.138.0.19 the result for an account main domain also carries phpversion and status,
+     * undocumented optional strings with unknown meaning. customlog list items carry format; the pinned domain key was
+     * absent from them. format is typed for list items only.
      *
      * API-map identity: uapi:DomainInfo/single_domain_data#GET (wire name single_domain_data).
      *

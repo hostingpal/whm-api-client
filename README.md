@@ -404,6 +404,13 @@ DomainInfo, Features and LangPHP expose every function in their pinned modules.
 returns a record list. Domain details retain optional fields and explicit nulls.
 Shared domain flags accept integer and quoted 0/1; documented empty-string
 `userdirprotect` stays `''`, distinct from 0.
+Observed on cPanel 11.138.0.19, the hash-format `main_domain` record and
+`singleDomainData()` also return `phpversion` and `status`, `main_domain` also returns
+`phpopenbasedirprotect`, and list-form `customlog` items in `singleDomainData()` return
+`format`. INI directive rows can carry `cpanel_default` and INI path rows `is_suspended`.
+All are optional. Except for `phpopenbasedirprotect`, upstream does not document them,
+so `phpversion`, `status`, `cpanel_default` and `is_suspended` have unknown meaning;
+`is_suspended` is a plain integer, not a documented suspension flag.
 `phpGetVhostVersions()` returns a list, or a single record when `vhost` is supplied.
 INI setters and PHP version changes use form POST. INI content and directives are
 sensitive parameters; retain a configuration backup before overwriting content.
@@ -1068,6 +1075,9 @@ zero acknowledgments and two stale Quota acknowledgments. No mutation ran.
 The empty-string `userdirprotect` variant remains documentation/offline coverage
 because the live responses omit that field. PHP setters and the INI write/read
 round trip remain offline-only; see the [source audit](docs/api/source-audit.md).
+The later [default-catalog capture](docs/api/evidence/2026-11-01-read-only-11.138.0.19.json)
+at `5f9b001` passes the same 67 GETs with those DomainInfo and INI fields typed. Its only
+discrepancies are the two masked Quota observations, which stay outside typed results.
 
 
 The Email module uses POST for mutations and secret-bearing requests. Passwords,

@@ -307,10 +307,12 @@ raw or decoded responses may contain secrets. Overlay parameter requiredness can
 be overridden only with evidence; omission retains the pinned requiredness.
 The 2026-10-30 reviewed integrated DomainInfo/Features/LangPHP artifact at 27abfe6
 on 11.138.0.19 records all 67 GET-only API/payload probes passing, including 20 new
-reads and normalized countPops() through both routes. Strict review remains failed:
+reads and normalized countPops() through both routes. Its strict review failed:
 12 unknown-field entries across 10 observations, zero acknowledgments and two stale
 11.138.0.15 Quota acknowledgments. No mutation ran and all historical artifacts stay
-unchanged. Empty-string userdirprotect remains documentation/offline coverage because
+unchanged. The 2026-11-01 artifact at 5f9b001 types those DomainInfo and INI fields,
+and the two Quota acknowledgments now bind it on 11.138.0.19.
+Empty-string userdirprotect remains documentation/offline coverage because
 the live field is omitted. Three PHP setters and their INI write/read round trip
 remain offline-only; follow-up 8x0.2.17 owns the remaining live work.
 The `uapi()->siteQuality()` group exposes ten of thirteen pinned SiteQuality

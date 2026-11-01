@@ -28,10 +28,10 @@ use SplFileInfo;
  */
 final class DiscrepancyPolicyTest extends TestCase
 {
-    private const EVIDENCE = 'docs/api/evidence/2026-10-16-quota-inventory.json';
-    private const EVIDENCE_HASH = '5f65d66acc36673ee37be1b4e024dad3ac725e5313d45c208abb489d5c9f6811';
-    private const DIRECT = 'quota-total-direct-11.138.0.15';
-    private const BRIDGE = 'quota-total-bridge-11.138.0.15';
+    private const EVIDENCE = 'docs/api/evidence/2026-11-01-read-only-11.138.0.19.json';
+    private const EVIDENCE_HASH = '4138dbf1d083ddfe6d109c86bb8beb449abde6937e93b2452693d47b2b792b81';
+    private const DIRECT = 'quota-total-direct-11.138.0.19';
+    private const BRIDGE = 'quota-total-bridge-11.138.0.19';
 
     private ?string $fixtureRoot = null;
 
@@ -63,8 +63,8 @@ final class DiscrepancyPolicyTest extends TestCase
 
         self::assertSame('passed', $assessment['status']);
         self::assertEqualsCanonicalizing([
-            'quota-total-direct-11.138.0.15',
-            'quota-total-bridge-11.138.0.15',
+            'quota-total-direct-11.138.0.19',
+            'quota-total-bridge-11.138.0.19',
         ], $assessment['acknowledged']);
         self::assertSame([], $assessment['unexpected']);
         self::assertSame([], $assessment['stale']);
@@ -421,13 +421,13 @@ final class DiscrepancyPolicyTest extends TestCase
         $source = $root . '/' . self::EVIDENCE;
         $target = $source;
         if ($kind === 'normalized') {
-            $target = $root . '/docs/api/evidence/../evidence/2026-10-16-quota-inventory.json';
+            $target = $root . '/docs/api/evidence/../evidence/2026-11-01-read-only-11.138.0.19.json';
         } elseif ($kind === 'symlink') {
             $target = $root . '/output-private-alias.json';
             symlink($source, $target);
         } elseif ($kind === 'directory-symlink') {
             symlink($root . '/docs/api/evidence', $root . '/private-directory-alias');
-            $target = $root . '/private-directory-alias/2026-10-16-quota-inventory.json';
+            $target = $root . '/private-directory-alias/2026-11-01-read-only-11.138.0.19.json';
         } elseif ($kind === 'hardlink') {
             $target = $root . '/output-private-alias.json';
             link($source, $target);
