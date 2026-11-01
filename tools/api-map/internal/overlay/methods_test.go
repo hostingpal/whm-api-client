@@ -58,3 +58,22 @@ func TestAdditionalJSONFieldSchema(t *testing.T) {
 		}
 	}
 }
+
+func TestScalarMapJSONFieldDescriptorSchema(t *testing.T) {
+	method := `{"name":"configure","inputs":[{"php":"environment","source":"search","json":{"alias":"EnvironmentInput","scalar_map":true}}]}`
+	load := func(m string) error {
+		_, err := Load(writeOverlay(t, "listed", map[string]string{"whm/Accounts.json": strings.Replace(validWHM, `"name": "listAccounts",`, `"name": "listAccounts", "additional_methods":[`+m+`],`, 1)}))
+		return err
+	}
+	if err := load(method); err != nil {
+		t.Fatal(err)
+	}
+	for _, v := range []string{"false", "null", "1", `"true"`, `{}`} {
+		if err := load(strings.Replace(method, `"scalar_map":true`, `"scalar_map":`+v, 1)); err == nil {
+			t.Fatalf("invalid scalar_map %s accepted", v)
+		}
+	}
+	if err := load(strings.Replace(method, `"scalar_map":true`, `"Scalar_map":true`, 1)); err == nil {
+		t.Fatal("unknown key accepted")
+	}
+}

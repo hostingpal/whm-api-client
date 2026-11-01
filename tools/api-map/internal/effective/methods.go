@@ -55,15 +55,7 @@ func (b *builder) additionalMethods(op model.Operation, v model.Variant, ov over
 				if p, ok := bind(input.Source); ok {
 					p.PHP = input.PHP
 					if input.JSON != nil {
-						sourceParam := locators[input.Source]
-						content, ok := asObject(sourceParam.Definition["content"])
-						media, found := asObject(content["application/json"])
-						_, sibling := sourceParam.Definition["schema"]
-						if canonical.Body != "" && canonical.Body != "form" || sourceParam.In != "query" || sibling || !ok || !found || len(content) != 1 || sourceParam.Locator.Pointer == nil || !IsClassName(input.JSON.Alias) || !strings.HasSuffix(input.JSON.Alias, "Input") {
-							fail("JSON field requires a canonical form body, selected JSON-content query parameter and Input alias")
-							continue
-						}
-						schema, err := b.schemas.inputFor(sourceParam.Locator.SourceID, media["schema"], 0, 0, "", nil, nil, sourceParam.Locator, *sourceParam.Locator.Pointer+"/content/application~1json/schema")
+						schema, description, err := b.jsonField(locators[input.Source], input.JSON, ov.Params[input.Source], canonical, p, ov.Evidence)
 						if err != nil {
 							fail("JSON field " + err.Error())
 							continue
@@ -73,7 +65,7 @@ func (b *builder) additionalMethods(op model.Operation, v model.Variant, ov over
 							continue
 						}
 						p.Input, p.Encoding, p.PHPType, p.DocType, p.Sensitive = &schema, "json", InputNative(schema), input.JSON.Alias, true
-						p.Description = "Structured PHP value from the selected source schema. String contents are preserved without fetching URLs or opening files; source defaults remain upstream."
+						p.Description = description
 						if schema.Type == "object" {
 							p.Description += " Omitted members stay absent. Empty object input [] serializes to {}."
 						}
