@@ -17,11 +17,14 @@ func TestJSONBodyDescriptorGrammar(t *testing.T) {
 	if p := Validate(set); len(p) > 0 {
 		t.Fatal(p)
 	}
+	if _, err := Load(writeOverlay(t, "listed", map[string]string{"whm/Accounts.json": content(strings.Replace(descriptor, `"nonempty":true`, `"nonempty":false`, 1))})); err != nil {
+		t.Fatal(err)
+	}
 	for _, bad := range []string{
 		strings.Replace(descriptor, `"php":"configuration",`, "", 1),
 		strings.Replace(descriptor, `"alias":"ConfigurationInput"`, `"alias":"Configuration"`, 1),
 		strings.Replace(descriptor, `"routes":"direct"`, `"routes":"bridge"`, 1),
-		strings.Replace(descriptor, `"nonempty":true`, `"nonempty":false`, 1),
+		strings.Replace(descriptor, `"nonempty":true`, `"nonempty":1`, 1),
 		strings.Replace(descriptor, `"nonempty":true`, `"accept":["numeric-string"]`, 1),
 		strings.Replace(descriptor, `"required":true`, `"Required":true`, 1),
 	} {

@@ -193,7 +193,7 @@ final class UapiDomainRecommendationsTest extends TestCase
         foreach (
             [
             '{"pricing":null,"is_premium":0,"premium_cost_pricing":null}',
-            '{"pricing":[],"is_premium":true,"premium_cost_pricing":null}',
+            '{"pricing":[],"is_premium":"true","premium_cost_pricing":null}',
             '{"pricing":[],"is_premium":"1","premium_cost_pricing":null}',
             '{"pricing":[],"is_premium":2,"premium_cost_pricing":null}',
             '{"pricing":[],"is_premium":0,"premium_cost_pricing":[1]}',
