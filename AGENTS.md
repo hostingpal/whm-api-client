@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 112 typed groups cover 1,228 documented operations:
+and cPanel UAPI surface. The 114 typed groups cover 1,240 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -310,11 +310,79 @@ on 11.138.0.19 records all 67 GET-only API/payload probes passing, including 20 
 reads and normalized countPops() through both routes. Its strict review failed:
 12 unknown-field entries across 10 observations, zero acknowledgments and two stale
 11.138.0.15 Quota acknowledgments. No mutation ran and all historical artifacts stay
-unchanged. The 2026-11-01 artifact at 5f9b001 types those DomainInfo and INI fields,
-and the two Quota acknowledgments now bind it on 11.138.0.19.
+unchanged. The two Quota acknowledgments now bind the 2026-11-01 artifact at 5f9b001
+on 11.138.0.19. That capture ran with those DomainInfo and INI fields typed; the
+fields of unknown meaning were later relaxed to optional `mixed`, so its contract
+hashes for those operations differ from the current specs. Of those eight fields only
+list-form `customlog[].format` stays validated: `main_domain.phpopenbasedirprotect` is
+also `mixed` because domains_data does not promise it, while the pinned
+single_domain_data flag and other documented fields keep their validation.
 Empty-string userdirprotect remains documentation/offline coverage because
 the live field is omitted. Three PHP setters and their INI write/read round trip
 remain offline-only; follow-up 8x0.2.17 owns the remaining live work.
+The `uapi()->siteQuality()` group exposes ten of thirteen pinned SiteQuality
+functions from cPanel 110: account creation/deletion, project creation/domain
+update, token retrieval, association/enabled status, local configuration reset,
+activation email and code validation. Three source gates remain open:
+`get_monitored_domains` and `get_monitored_system_scores` locate their formal
+results outside `result.data` (`8x0.1.34`); `get_all_scores` requires a nullable
+`verbose` input without established explicit-null form encoding (`8x0.1.35`).
+These methods are absent and uncounted. SiteQuality remains incomplete; live
+verification is separately tracked in `8x0.2.71`.
+
+```php
+// Synthetic inputs; this explicit call creates a monitoring project on the server.
+$project = $account->siteQuality()->createProject(
+    name: 'Example project',
+    url: 'https://example.test',
+    standardAlerting: false,
+);
+```
+
+Seven mutations/secret-bearing calls use one form POST on both routes; the three
+status/token reads use GET. `updateDomain(oldDomain, newDomain)` sends `old_domain`
+then `new_domain`; the server searches its owned projects without a client loop.
+Optional `standardAlerting: false` sends 0, true sends 1 and null omits, retaining
+the pinned no-standard-alerts default. Omitted `systemType` retains Website;
+strings stay open. Null optional password omits and allows server generation;
+empty password remains supplied. The source says the system does not save it.
+Password, activation code and monitored URL inputs are sensitive. Returned URLs
+are payload only and are never fetched; returned `app_token` values are long-lived
+authentication credentials. Avoid logging tokens and mismatch exception payloads.
+The pinned token text says losing a token requires a new account.
+
+Create-user `enabled` remains optional `bool|null`: pinned booleans and null
+are preserved, while native integer 0/1 normalize to false/true. Attributed
+11.138.0.19 source review establishes the new-user default 0; accepting 1 is
+bounded compatibility policy, not a provider observation. Strings, floats,
+other integers and containers fail. The enabled-status read and
+deleted/reset/activation/code status fields retain integer `0|1` flags. Payload
+0 under UAPI status 1 is a result; UAPI status 0 fails regardless of payload.
+
+`createProject()` returns required `project` and `component` keys. `project` is a
+nullable opaque provider row; null on the 403 reuse path does not imply failed
+component creation. `component` preserves the whole decoded provider JSON,
+including its envelope, or integer 1 for an empty body. Inner keys and JSON values
+are preserved without an invented schema; unknown wrapper siblings are filtered.
+All ten roots reject missing data and explicit null. The project wrapper also
+rejects missing keys and empty roots. Its nullable project map retains inherited
+empty-array compatibility; nonempty lists and scalars fail. These corrections
+come from attributed source excerpts, not successful provider wire observations.
+
+Deletion initiates external-account deletion without promising immediacy. Source
+review says it clears the local link even when remote deletion fails, so deleted
+0 can accompany a retained external account. `resetConfig()` renames the active
+config to `config.<time>` and retains a token-bearing backup; this is not secure
+deletion and does not delete the external account. `updateDomain()` can rename a
+project before system lookup fails; a no-match status 0 reason is in metadata
+messages while `errors()` may be empty. These are source-review limitations.
+An explicit `sendActivationEmail()` requests an activation email; the client never
+initiates one implicitly or retries it. Inspect `responseMeta()` warnings,
+messages and raw metadata.
+The client adds no polling, implicit read, login, token exchange/storage, URL
+fetch, retry, restore or rollback. Offline fixtures establish no live external
+account, email-delivery, activation, monitoring or persistence behavior.
+
 The complete `uapi()->serviceProxy()` group exposes all three pinned ServiceProxy
 operations from cPanel 96: GET inventory and form POST set/unset calls for the
 selected account. `getServiceProxyBackends()` returns a list with optional string
@@ -4408,3 +4476,73 @@ The reviewer reports four lingering session files manually removed after account
 removal, not an account-deletion cleanup guarantee. Root's four GETs observed only
 empty ActiveSessions and populated WebmailApps. This integration performs no live
 call or server write and does not replay the completed owner 165-call pass.
+
+### UAPI user task queue (2026-11-01)
+
+`uapi()->userTasks()` covers both pinned UserTasks functions from cPanel 72 for
+the selected account. `listTasks()` sends one GET and returns the queue in server
+order, including an empty list. Row `action`, `args`, `id` and `subsystem` fields
+remain optional. The source-inferred compatibility additions are optional
+nonnullable string `sse_url` and optional nonnullable `exclusive` as `string|int`.
+`exclusive` is a key, not a boolean flag: strings (including empty and numeric
+strings) and native integers retain their primitive values without coercion or
+flag bounds. `sse_url` is a relative progress path, not a full URL.
+
+Present `args` remains a closed object with optional strings `repository_root`,
+`domain`, `install_id` and `log_file`. Unknown row and argument fields, including
+`title` and `site_settings`, are filtered. Empty strings and omissions remain
+valid; explicit null and other primitive/container types fail these string leaves.
+The pinned `create`/`VersionControl`-only prose is incomplete: reviewer-retained
+WPX source queues `install` and `import`. Action and subsystem remain open strings;
+these examples do not define a closed enum or arbitrary future argument contracts.
+
+The five additions follow attributed source review
+[5725807972](https://github.com/hostingpal/whm-api-client/pull/105#pullrequestreview-5725807972)
+and retained-source answer
+[6560200145](https://github.com/hostingpal/whm-api-client/pull/105#issuecomment-6560200145).
+Producer string expressions and the integer-zero `exclusive` default support the
+compatibility policy; `Directory::Queue::Normal` serialization and `Task.adopt`
+were not inspected. Exact wire types and universal nullability remain unproven.
+
+```php
+$tasks = $account->userTasks()->listTasks();
+// An explicit deletion call with a synthetic task ID; use an intentionally selected ID.
+$deleted = $account->userTasks()->deleteTask(id: '00000000\/5a9ec8dd4c345d');
+```
+
+`deleteTask(id)` sends one form POST. Its required string ID retains every byte:
+literal backslash/slash, slash, percent escapes, Unicode, plus and empty string
+are distinct values, encoded once without repair, normalization or unescaping.
+The result is a nullable opaque object: object fields survive, explicit null is
+returned as null, and missing data fails validation. Nullable is not void.
+Inventory rejects missing/null roots and invalid known field types. Existing
+empty-array object compatibility is retained; the decoder distinguishes `{}` and
+`[]`. Post-processing `metadata.transformed` and warnings remain available through
+`responseMeta()`, separate from task payloads and the UAPI outcome status.
+
+Deleting a queue entry does not establish task completion or running-process
+termination. The client performs no implicit inventory, polling, task execution,
+retry, restore or rollback. Each explicit call makes at most one request; API or
+outer-WHM failures precede payload validation. A payload mismatch after API success
+can follow a state change, so do not retry automatically.
+
+Task IDs, arguments, repository paths and progress paths are private data. WPX
+import `args.site_settings` can be JSON containing `source_password`. Typed lists
+filter it without parsing it; raw responses, generic `call()` payloads and
+`PayloadMismatchException::$payload` can retain the password. Avoid logging those
+values indiscriminately. Envelope metadata does not always contain task payloads.
+IDs remain sensitive method parameters as client privacy policy, without claiming
+they are authentication tokens. Library-owned trace arguments conceal sensitive
+inputs and responses; explicit application logging is outside that protection.
+Returned paths are never opened or fetched.
+
+Generated coverage is 1,240 canonical operations (644 UAPI, 596 WHM), 114 groups
+and 231 outputs (230 PHP files plus coverage), adding the original two operations
+and one group to approved master `2b3e61c0abbc9e2556d81c8253767c67f6f0113a`.
+The five response leaves add no endpoints. Delivery `whm-api-client-8x0.4.30` and
+this correction have independent synthetic offline coverage; synthetic WPX rows
+are not real queued execution or capture. Reviewer-injected rows bypassed the
+producer add method and establish no producer-wire type proof. Live follow-up
+`whm-api-client-8x0.2.72` and serialization follow-up `8x0.2.72.1` remain OPEN.
+No runtime task success, cleanup or held-lock behavior is established here; no
+queue entry, path, process, account or server was accessed by this correction.

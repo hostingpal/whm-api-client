@@ -9004,7 +9004,9 @@ cleaning them needs filesystem access. The creators stay open under `8x0.2.69`.
 Market reads covers five of the nine reads in `8x0.2.63`. All nine are
 `x-readonly: true` at their `/paths/~1Market~1<function>/get` pointers. That includes
 `get_login_url` and `get_completion_url`, so neither is excluded as a possible token
-or URL source. Selector availability decides instead:
+or URL source. Selector availability decides instead, and `get_product_info` and
+`get_completion_url` also carry a reported blocker that a real selector would not
+clear:
 
 | Operation | Outcome | Selector basis |
 | --- | --- | --- |
@@ -9013,17 +9015,33 @@ or URL source. Selector availability decides instead:
 | `get_pending_ssl_certificates` | Passed; empty list | Real provider `cPStore` |
 | `get_provider_specific_dcv_constraints` | Passed; populated object | Real provider `cPStore` |
 | `get_login_url` | Passed; string payload | Real provider plus the pinned `url_after_login` example |
-| `get_certificate_status_details` | Not run | No pending order, so no real `order_item_id` |
-| `get_ssl_certificate_if_available` | Not run | No pending order, so no real `order_item_id` |
-| `get_product_info` | Not run | No read enumerates a real `product_name` |
-| `get_completion_url` | Not run | No read enumerates a real `product_name` |
+| `get_certificate_status_details` | Not run | No read enumerated a real `order_item_id` |
+| `get_ssl_certificate_if_available` | Not run | No read enumerated a real `order_item_id` |
+| `get_product_info` | Not run | No read enumerates a real `product_name`; missing local product files reported |
+| `get_completion_url` | Not run | No read enumerates a real `product_name`; URL failure reported on token authentication |
+
+Across both pinned sources, the only read that returns `order_item_id` is
+`get_pending_ssl_certificates`. It lists only certificates the system currently
+polls, so its empty list shows an empty polling queue, not that no order exists: a
+completed or expired order could hold a real ID.
 
 `url_after_login` selects no server resource. The recipe sends the pinned parameter
 example on a reserved domain, and the returned URL was not followed. The pinned
-`product_name` example, `cpanel-ssl`, does not appear in this server's catalog, and
-the pinned source states no mapping from the catalog's `product` display labels to
-`product_name`. Trying either value would be a guess, and a failure could not
-separate a wrong selector from the reviewer-reported missing local product files.
+`product_name` example, `cpanel-ssl`, was not among the catalog labels the private
+read printed. That read printed no other catalog field and the artifact stores types
+only, so this was not a search of the whole catalog. The pinned source states no
+mapping from the catalog's `product` display labels to `product_name`. Trying either
+value would be a guess, and a failure could not separate a wrong selector from the
+reviewer-reported missing local product files.
+
+Review 5725042192 reports both blockers on this server, and neither was rerun here.
+Upstream reads `/var/cpanel/market/product_info/<name>`, which does not exist, so
+both real IDs the reviewer tried raised an API error and inspecting store product
+files offers no selector. `get_completion_url` failed on token authentication through
+both routes because server information was unavailable from the environment, as the
+generated `Market::getCompletionUrl()` PHPDoc records. That does not establish
+universal token or route incompatibility, but a real `product_name` may not be enough.
+
 `MarketReadsProbes::NOT_RUN` records each reason. The section runner fails any
 catalog that holds a skipped probe, so the artifact lists only observations made.
 
@@ -9031,15 +9049,17 @@ Selectors came from one private direct-route read before the catalog was written
 `get_providers_list`, `get_all_products` and `get_pending_ssl_certificates` for
 `cPStore`, one GET each. It printed only provider names, catalog labels and the
 pending count, stored nothing, and is not evidence. Both capture routes then
-returned an empty pending list, so the no-order finding held at capture time.
+returned an empty pending list, so the empty polling queue held at capture time.
 
 The catalog shows `license_term`, `product_id` and `requires_ip` as numeric strings,
-the three wildcard prices as numeric strings or omitted, identity verification as
-list or null, and `dcv_file_allowed_characters` mixing integers and strings. This
-adds committed evidence for the PR96 corrections. Catalog `base_name` was an empty
-string in every row, and `max_users` and all three price fields were null, so
-non-null values remain unobserved. So do the object identity branch, populated
-pending rows, and both certificate-status payloads.
+the three `x_price_per_domain*` prices as integers, the three
+`x_price_per_wildcard_domain*` prices as numeric strings or omitted, identity
+verification as list or null, and `dcv_file_allowed_characters` mixing integers and
+strings. This adds committed evidence for the PR96 corrections. Catalog `base_name`
+was an empty string in every row, and `max_users`, `price`, `maximum_server_price`
+and `minimum_server_price` were null in every row, so other values of those fields
+remain unobserved. So do the object identity branch, populated pending rows, and both
+certificate-status payloads.
 
 These reads establish no purchase, payment, issuance, installation, trust or served
 TLS behavior. No POST, order, cart, checkout, queue, certificate or token action ran,
@@ -9061,13 +9081,21 @@ at `fc5264d97f0c9d90ebbf9148b714d69e4a288959`. That catalog, `empty-results-v1`,
 once on `test.oblak.host`, cPanel `11.138.0.19`, with no retry. All 27 GETs used typed
 generated methods and returned HTTP 200. The sanitized artifact is
 [2026-11-01-empty-results.json](evidence/2026-11-01-empty-results.json), SHA-256
-`2ec7d60176b4354c01d1016849e0e3d62ae85a7182354010ab8d89e77a39894f`. Its `failed`
-status and exit 1 were expected, because the two controls cannot pass the strict
-assessment.
+`2ec7d60176b4354c01d1016849e0e3d62ae85a7182354010ab8d89e77a39894f`.
+
+Its `failed` status and exit 1 were predicted at that revision, but only from the two
+controls. The README said `accountsummary` would fail and `listaccts` would return an
+empty list from a response that omits `data`. Both held. The two `Bandwidth/query`
+absent-domain API errors also failed the strict assessment, and they were not
+predicted: no document stated them, and the `fc5264d` test fixture assumed a status-1
+`{}` success on both routes, which the capture contradicted. The other 23 records,
+WHM `version` and 22 empty results, had no stated outcome and were only observed. The
+controls forced `failed` whatever those 25 records did, so that status confirmed
+nothing about them.
 
 | Operation | Routes | Filter style | Observed structural form | Classification | Filter attributable |
 | --- | --- | --- | --- | --- | --- |
-| `listaccts` (control) | WHM | exact user search | `data` omitted | empty collection through the fixed path | yes, `npr` matched earlier |
+| `listaccts` (control) | WHM | exact user search | `data` omitted | empty collection through the fixed path | no, the record cannot separate result 0 from result 1 |
 | `showbw` | WHM | PCRE on user | `acct: []` with report fields | empty collection | no baseline |
 | `matchpkgs` | WHM | attribute criterion | `pkg: []` | empty collection, not a confirmed no-match | no, see below |
 | `emailtrack_search` | WHM | event selectors all off | `records: []` | empty collection | no baseline |
@@ -9089,7 +9117,10 @@ assessment.
 criterion, so the empty result here can be credited to the filter. Those baselines
 come from earlier artifacts, not from this run, so account state could differ. "No
 baseline" means no earlier capture exists for that operation, and the empty result
-shows only how this request was answered.
+shows only how this request was answered. The `listaccts` control gets no such credit
+even though `npr` matched in earlier captures: its record shows the fixed path was
+taken, not that this filter produced the absence, as the `listaccts` paragraph below
+explains.
 
 No typed method threw a client exception, and no audited operation is a new real
 case. Direct and bridged routes agreed on every UAPI request. The pinned
@@ -9105,12 +9136,17 @@ both forms as an overlay note is deferred to `whm-api-client-0hf`, because it
 conflicts with the open delimited-list branches that rewrite this operation's notes.
 The API error remains unchanged.
 
-`matchpkgs` is not a confirmed no-match. An earlier selector-free read on this
-server was already empty while `listPackages()` returned a plan, and the generated
-`matchPackages()` PHPDoc already says an empty match does not prove absence
-(`whm-api-client-8x0.2.43`). This capture adds no evidence about that open question.
-The pre-execution catalog row called the plan list populated, which was a misreading
-of earlier path listings. The README records that correction.
+`matchpkgs` is not a confirmed no-match. Earlier results on this server
+[conflict](#expanded-whm-hosting-plans), and that contradiction stays open under
+`whm-api-client-8x0.2.43`. One selector-free read returned an empty
+`pkg` list while `listPackages()` returned a plan. A later review with two plans
+returned one of them without selectors and the matching plan for `MAXSQL=5`, but none
+for `QUOTA=100`, that plan's real quota, or for `QUOTA=99999`. The cause is unknown, so
+this operation has both returned rows and missed a plan holding the requested value.
+An empty `pkg` here cannot be credited to the absent feature list. The generated
+`matchPackages()` PHPDoc says an empty match does not prove absence, and this capture
+adds no evidence about the open question. The pre-execution catalog row called the
+plan list populated, which implied that credit. The README records that correction.
 
 Absence is not uniform across operations. An absent PHP package and absent domains on
 `list_pops_with_disk` and `list_ssl_items` returned empty results, while `Bandwidth/query`
@@ -9123,14 +9159,40 @@ that policy explicitly excludes. This covers only the audited requests. Removal 
 a separate follow-up, and this branch leaves the policy in place.
 
 The `listaccts` record shows `api_outcome: success` because the typed method returned
-normally. Its envelope result is retained only as a type, so this artifact cannot
-separate the result-0 and result-1 omission forms recorded in the
-[2026-11-01 empty account results](#runtime-observations-2026-11-01-empty-account-results).
-It also carries the capture's only discrepancy, `missing_required` at `$`.
+normally. That field reports the harness's view of the call, not an upstream value.
+The fixed path returns `[]` on result 0 with the exact `No accounts found.` diagnostic
+and on result 1, and this artifact retains the envelope result as a type only and no
+reason. It therefore cannot separate the result-0 and result-1 omission forms recorded
+in the [2026-11-01 empty account results](#runtime-observations-2026-11-01-empty-account-results),
+or show that this criterion produced the absence. It also carries the capture's only
+discrepancy, `missing_required` at `$`.
 
-`tests/Api/EmptySearchResultsTest.php` pins these forms offline with synthetic values,
-including both API-error boundaries. Generated code, contracts, the runtime and all
-earlier evidence are unchanged.
+`tests/Api/EmptySearchResultsTest.php` pins these forms offline with synthetic values
+on the routes that returned them, including the `accountsummary` error and the status-0
+`Bandwidth/query` form through both the direct bare object and the bridge. Those are
+regressions over recorded forms, not contracts. Generated code, contracts, the runtime
+and all earlier evidence are unchanged.
+
+`empty-results-v1` could never pass, so its status carried no signal: a client
+exception on a rerun would have looked like this capture. Recipe `empty-results-v2`
+keeps the same requests and declares each probe's recorded outcome, so such a deviation
+now fails the run.
+
+Its one [capture](evidence/2026-11-01-empty-results-v2.json) ran at
+`e8021d20d859efc84b6532c6b78a4e4471a6ba0d` on `11.138.0.19`, with no retry, and exited
+0 with `status: passed`, SHA-256
+`e1258f73d56221a60dee6fdab3d7fee6b2a3036ee062f8a5935449134b2fce15`. All 27 GETs returned
+HTTP 200, all 27 records match outcomes committed before the run, and every outcome,
+path and discrepancy field is identical to the v1 capture about three hours earlier.
+That repeats one version from declarations drawn from v1, so it is not independent
+evidence and establishes no other version. No live run has produced a deviation, so the
+rule's failure path is proven offline only. Nothing in the classification table above
+changes.
+
+Offline tests hold both artifacts to the declarations by operation, variant, route,
+method, outcome, revision and SHA-256. They compare no contract hash, so each artifact
+stays a valid historical record when a spec later changes. A declaration is a recorded
+form, not a contract.
 
 These observations cover one server, version, capture, root token and designated
 account. They establish nothing about reseller-scoped results, other filter values,
@@ -9165,37 +9227,36 @@ no other undeclared key exists at those locations in the bridged responses.
 
 None of the keys looked dynamic or sensitive, so none was declined.
 
-### Typed fields
+### Added fields
+
+The effective types below are the current contract. The capture further down ran under
+an earlier one; see [the correction](#correction-carried-not-typed).
 
 | Operation and path | Effective type | Observed | Pinned status |
 | --- | --- | --- | --- |
-| `domains_data` `main_domain.phpopenbasedirprotect` | `0\|1`, quoted form accepted | numeric string | Undeclared here; declared 0/1 on `single_domain_data` |
-| `domains_data` `main_domain.phpversion` | optional string | string | Undeclared; meaning unknown |
-| `domains_data` `main_domain.status` | optional string | string | Undeclared; meaning unknown |
-| `single_domain_data` `phpversion` | optional string | string | Undeclared; meaning unknown |
-| `single_domain_data` `status` | optional string | string | Undeclared; meaning unknown |
+| `domains_data` `main_domain.phpopenbasedirprotect` | optional `mixed` | numeric string | Undeclared here; declared 0/1 on `single_domain_data` |
+| `domains_data` `main_domain.phpversion` | optional `mixed` | string | Undeclared; meaning unknown |
+| `domains_data` `main_domain.status` | optional `mixed` | string | Undeclared; meaning unknown |
+| `single_domain_data` `phpversion` | optional `mixed` | string | Undeclared; meaning unknown |
+| `single_domain_data` `status` | optional `mixed` | string | Undeclared; meaning unknown |
 | `single_domain_data` `customlog[].format` | optional string | string, both items | Undeclared here; pinned `domain` absent live |
-| `php_ini_get_user_basic_directives` `directives[].cpanel_default` | optional `string\|bool\|int\|number`, deliberately wider than observed | string, 1 of 15 rows | Undeclared; meaning unknown |
-| `php_ini_get_user_paths` `paths[].is_suspended` | optional int | int, 1 of 2 rows | Undeclared; meaning unknown |
+| `php_ini_get_user_basic_directives` `directives[].cpanel_default` | optional `mixed` | string, 1 of 15 rows | Undeclared; meaning unknown |
+| `php_ini_get_user_paths` `paths[].is_suspended` | optional `mixed` | int, 1 of 2 rows | Undeclared; meaning unknown |
 
 All corrections are overlay entries with `live` evidence for `11.138.0.19`, dated
-2026-11-01, and generated methods carry `Observed:` notes. Offline expectations are
-hand-written in `tests/Api/DomainPhpObservedFieldsTest.php`, using synthetic values.
+2026-11-01, and generated methods carry `Observed:` and `Policy:` notes. Offline
+expectations are hand-written in `tests/Api/DomainPhpObservedFieldsTest.php`, using
+synthetic values.
 
-`cpanel_default` was first typed `string` from its one observation, then corrected in
-review before publication. It now accepts string, bool, int and number, in the same
-overlay union form that `default_value` uses. String is the only form observed, on 1 of
-15 rows through the direct route. The wider acceptance is a deliberate client decision:
-values on these rows are polymorphic, so a single string observation cannot justify
-rejecting the others, and one server's observations do not define a universal contract.
-This states no relationship between the two fields. `cpanel_default` stays optional and
-of unknown meaning. Null, lists and objects still fail validation.
+`cpanel_default` was first typed `string` from its one observation, then widened in
+review to the scalar union that `default_value` uses, and is now `mixed`. String is the
+only form observed, on 1 of 15 rows through the direct route. This states no relationship
+between the two fields.
 
 `status` here is a payload field and has no connection to the UAPI envelope `status`.
-`is_suspended` is typed `int` rather than a 0/1 flag because no value was inspected,
-and no suspension meaning is claimed. `phpopenbasedirprotect` reuses the pinned
-`single_domain_data` flag, which already passes live validation in quoted form for
-the same account domain, and pinned prose gives both functions the same userdata file.
+`is_suspended` claims no suspension meaning, because no value was inspected. Pinned prose
+gives `domains_data` and `single_domain_data` the same userdata file, but only
+`single_domain_data` declares `phpopenbasedirprotect`.
 
 `customlog` is a documentation contradiction. Pinned `single_domain_data` describes
 `domain` and `target`, while pinned `domains_data` examples and the live list items use
@@ -9207,11 +9268,9 @@ and the object form, which was not observed, is unchanged.
 - Addon, parked and subdomain rows were empty on `npr`, and `format=list` was not
   requested. Those records and the `main_domain` list form keep their documented shape,
   so the same keys there are still dropped and still reported as unknown.
-- Typing is stricter than the previous drop. A different wire type at one of these
-  paths, for example a string `is_suspended` on another server, now raises
-  `PayloadMismatchException` rather than being discarded. The fields other than
-  `cpanel_default` accept only their observed form, plus the reviewed quoted flag on
-  `phpopenbasedirprotect`.
+- Carrying a field replaces the previous drop: callers now receive these values, and no
+  value at a `mixed` path can fail a read. `customlog[].format` is the one strict
+  addition, so a non-string list-item `format` raises `PayloadMismatchException`.
 - Validation rules, `Fingerprint` and the wildcard masking of other keys are unchanged.
   Any other undeclared key at these locations still reports `unknown_field`.
 
@@ -9233,22 +9292,49 @@ reference was `evidence/2026-10-16-quota-inventory.json`, SHA-256
 ending in `11.138.0.15`. That file is unchanged and remains the record of those
 observations. No entry was added, and fingerprint, version, source and effective-contract
 matching are unchanged. The reference schema check moved from 1 to 2 because the new
-artifact is schema 2. `tools/live-verify/verify.php` labels follow the new identifiers.
+artifact is schema 2. `tools/live-verify/verify.php` now takes its console labels from
+the policy, so the identifiers live in one place. The output guard covers every existing
+file under `evidence/`, so the earlier reference stays protected after the move.
 
 Quota stays out of typed results under the owner's 2026-10-17 acceptance. The two extra
 keys were not re-inspected on `11.138.0.19`. The fingerprint still shows `$.*` as integer,
 which does not establish their names or count on this version.
 
-Later overlay evidence entries cite this artifact without changing any effective
-contract, with one exception. Widening `cpanel_default` happened after the capture, so
-the artifact's `effective_contract_sha256` for `php_ini_get_user_basic_directives` records
-the string-only contract. The artifact was neither edited nor recaptured: its recorded
-`string` observation is still true, its other recorded contract hashes still match, and
-the Quota acknowledgments keep binding it because the Quota contract did not change.
-The non-string forms remain offline-tested only: this server has not been observed
-sending them, and a passing gate does not establish them. The final gate result is
-reported with the change rather than here, because a commit cannot contain the outcome
-of a run against itself.
+### Correction: carried, not typed
+
+Review after merge found that typing these fields from one observation could fail a whole
+read where the value used to be dropped. Seven paths are now optional `mixed`, as the table
+above shows. Any JSON value, including null, reaches the caller unchanged, an omitted field
+stays omitted, and `Fingerprint` still reports the named path with nested keys masked. This
+is a decision not to validate, not a finding about the values: claiming a type from one
+observation invents a contract, and a wider union is equally unevidenced.
+
+`main_domain.phpopenbasedirprotect` needed its own check, because its meaning is pinned
+elsewhere. `domains_data` declares it in neither its schema nor its examples, and the sibling
+forms do not bound it. `single_domain_data` accepts `0`, `1`, `"0"` and `"1"`,
+`userdirprotect` adds only the empty string, and pinned WHM `domainuserdata` documents
+`userdirprotect` itself as `On` or `Off`. Those forms would still fail on null, `2`, booleans
+or other strings, so `mixed` was chosen over extending the flag. `single_domain_data` keeps
+its pinned flag, and `customlog[].format` stays a string because pinned `domains_data`
+examples document it.
+
+**The 2026-11-01 artifact records the earlier contract for four operations.** Its
+`effective_contract_sha256` for `domains_data`, `single_domain_data`,
+`php_ini_get_user_basic_directives` and `php_ini_get_user_paths`, eight records across both
+routes, describes these fields as they stood at `5f9b001` (a flag, strings, an integer and a
+string-only `cpanel_default`) and no longer matches the shipped specs. The artifact was
+neither edited nor recaptured. Its structural observations stay true, and the overlay
+evidence entries that cite it now say which contract they ran under. The other 59 records
+still match, including both Quota records, so the acknowledgments keep binding it.
+
+**This correction relaxes validation only.** It adds no field, changes no request and tightens
+no check, so every payload that passed under the recorded contract still passes. One visible
+effect follows from not validating: a quoted `main_domain.phpopenbasedirprotect` is returned
+as sent instead of normalized to an integer. The other six paths return the observed forms as
+before. Forms other than those observed remain offline-tested only: this server has not been
+observed sending them, and a passing gate does not establish them. The final gate result is
+reported with the change rather than here, because a commit cannot contain the outcome of a
+run against itself.
 
 ## Multipart compatibility audit and owned Fileman capture (2026-11-01)
 
@@ -9365,6 +9451,268 @@ and `filesystem_cleanup` stays `not_claimed`. The same scope limits apply.
 
 Tracked separately: `whm-api-client-6su` records the observed echo as an overlay note,
 and `whm-api-client-9yu` decides whether filenames should reject C1 controls.
+
+
+## 2026-11-01: SiteQuality account and project lifecycle (10/13)
+
+The additive SiteQuality overlay and official generated group/spec expose ten
+canonical operations: create_project, create_site_quality_user,
+delete_site_quality_user, get_app_token, has_site_quality_user,
+is_site_quality_user_enabled, reset_config, send_activation_email, update_domain
+and verify_code. The source is the unchanged 2026-10-13 pinned UAPI OpenAPI
+11.138.0.10, decompressed SHA-256
+`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`.
+Each operation binds its selected variant and policy to exact source pointers.
+All ten are available from cPanel 110 and apply to the selected account.
+
+Three reads retain source GET, including get_app_token because its credential is
+a response rather than an input. Source POST variants remain POST for project
+creation, user creation and domain update. Client policy uses form POST for the
+selected GET account deletion/reset/activation-email mutations and the
+secret-bearing activation code. Ordinary Flag envelope handling is unchanged;
+integer deleted/reset/status/etc 0 under status 1 is a payload result. Outer WHM
+failure retains precedence. Each explicit method runs once with no implicit read,
+retry, polling, account action, email, login, token exchange/storage, URL fetch,
+restore or rollback. Registration/account and activation-email requests can have
+upstream side effects; this delivery does not observe them.
+
+Inputs preserve requiredness, null omission, empty strings and exact encoded
+bytes. Optional standardAlerting is bool|null under the established flag input
+mapping; false sends 0, true sends 1 and null omits. Its pinned null default means
+no standard alerts. Omitted systemType retains Website and strings remain open.
+Optional sensitive password omission leaves generation to the server; the source
+says the system does not save this value. Empty password remains a supplied value.
+URL/password/code are sensitive inputs; ordinary email/domain inputs remain
+ordinary. updateDomain intentionally follows public oldDomain/newDomain semantic
+order and sends old_domain/new_domain in that order, preserving the formal wire
+names although source parameters are formally ordered new_domain/old_domain.
+The server searches owned projects; no client loop is added.
+
+Every response root is a nonnullable object with optional fields; no response
+correction, void, unwrap or optional-payload policy is applied. Create-user
+enabled is native bool|null, while the status read uses an integer 0|1 flag.
+Project systems retain optional string|null description, native bool
+fixedComponents and formally untyped mixed system_type.id. The example/default
+1 on that ID establishes no integer type. Nested optional objects/lists, empty
+lists and absent versus explicit-null values preserve the formal source shape.
+The established object validator also accepts an empty JSON array as an empty
+map/object; the decoder still distinguishes JSON {} from []. Unknown members
+follow existing known-field validation/filtering; no opaque widening is added.
+Long-lived app_token values authenticate with koality; pinned text says a lost
+token requires a new account. They and returned URLs are payload data only.
+Library frames conceal input/response secrets; explicit mismatch payloads and
+upstream metadata can still contain private data and must not be logged.
+
+Delete initiates external-account deletion, with no immediate-completion promise.
+Reset removes local association/configuration and prevents automatic login while
+retaining the external account. sendActivationEmail is an explicit request, and
+verifyCode validates the registration code without initiating another email.
+Warnings/raw metadata remain accessible without proving external persistence,
+email delivery, monitoring, account activation or token usability.
+
+The remaining three methods are absent and uncounted: formal monitored_domains
+and system_scores arrays lie outside result.data (8x0.1.34), and required nullable
+verbose on get_all_scores lacks established explicit-null form serialization
+(8x0.1.35). No source relocation or bool-only narrowing is guessed. Live follow-up
+8x0.2.71 and the full API goal remain OPEN; SiteQuality is not complete or live
+verified. Independent literal HTTP-boundary fixtures cover both routes, exact
+method/auth/path/query/form/header, named/positional ordering, optional/empty/
+unusual-byte inputs, strict nested fields, bool/flag/mixed distinctions, root
+shape/presence, metadata replacement/reset, native-before-entry errors, actual
+transport/HTTP/JSON/outer-WHM/API/payload precedence, secret-bearing frames and
+one attempt without implicit email/retry.
+
+Generated coverage becomes 1,201 canonical operations (613 UAPI, 588 WHM), 105
+groups and 213 outputs (212 PHP plus coverage). Prior generated PHP, accessors,
+overlays and effective contracts remain unchanged except the additive cached
+siteQuality accessor and coverage row/counts. Pinned sources, evidence, checksum,
+schema copies and all historical audit text are preserved. All 55 inherited
+source diagnostics remain unwaived. PHP 8.3 is the supported minimum; local
+execution uses PHP 8.4.26, leaving PHP 8.3 execution to CI.
+
+## SiteQuality source-review corrections and approved-master integration (2026-11-01)
+
+This append supersedes the original SiteQuality native-boolean-only and root
+project-shape claims above without changing those historical bytes or the pinned
+11.138.0.10 documentation. It follows review 5725684971 of original
+9d84cf26b8655644f4d1099ef339e4e9b91b6e19 and clarification 6558865496:
+https://github.com/hostingpal/whm-api-client/pull/104#pullrequestreview-5725684971
+https://github.com/hostingpal/whm-api-client/pull/104#issuecomment-6558865496
+These are attributed excerpts from Claude's reviewed 11.138.0.19 implementation
+material, not root-authenticated server source bytes/hash or successful provider
+wire observations. No new live call, source fetch, capture, provider action or
+email ran for this correction. Reviewer local fixture reports and the earlier
+owner has_site_quality_user observations remain separate historical evidence.
+
+Only two response effects change. create_site_quality_user.enabled retains its
+optional bool|null result and pinned native booleans; native integer 0/1 normalize
+to false/true through the existing int-flag rule. User.enabled's source default
+establishes 0; accepting 1 is the bounded compatibility decision. Omission/null
+remain distinct, with no string/float/other integer/container coercion.
+
+create_project now requires both wrapper keys. project is a nullable opaque
+provider row, with null on the 403 reuse path; component is the whole decoded
+provider response, potentially its own envelope, or integer 1 on an empty body.
+No nested field schema is inferred. Mixed values preserve decoded JSON types and
+unknown inner keys; unknown wrapper siblings are filtered. Missing keys, absent
+payload, null/empty roots, nonempty project lists and project scalars fail. The
+project map retains the inherited empty-array compatibility case.
+
+Source-only caller notes record delete_user clearing local configuration even
+when remote deletion fails; reset_config retaining a token-bearing config.<time>
+backup; and update_domain renaming before system lookup, with no-match reasons
+in messages while errors() can be empty. No global outcome/error, retry, rollback
+or readback behavior changes. All ten executable methods, parameter specs,
+methods/routes/sensitive attributes and standard_alerting bytes remain unchanged;
+the other eight result specs and all original 29 evidence entries stay exact.
+The three excluded methods (8x0.1.34/.35) and live follow-up 8x0.2.71 stay open.
+
+Integration uses a normal no-commit merge of approved master
+2b8249dcd086d1a073714004b5d82d5df69945fa into original 9d84cf2. The historical
+audit above is the exact master prefix followed by the exact original104-only
+appendix. Shared runtime, search, Webmail, ServiceProxy, JSON and multipart
+corrections are preserved. Official offline generation computes 1,238 operations
+(642 UAPI, 596 WHM), 113 groups and 229 outputs (228 PHP plus coverage), adding
+only SiteQuality's original ten operations and one group to master.
+
+Independent literal HTTP-boundary regression fixtures reproduced native enabled
+PayloadMismatchException and dropped project wrappers before overlay correction.
+The corrected fixtures cover normal populated wrappers, reuse:null, component:1,
+opaque JSON values, required presence and strict malformed inputs on both routes.
+They are synthetic offline compatibility evidence, not provider runtime coverage.
+Current candidate validation and exact native/input bindings are reported in the
+separate retained PR104 correction records; historical original-head approvals
+and gates do not approve this combined candidate. All 55 inherited map diagnostics
+remain unwaived. Pins, schema mirrors, annotations, historical evidence and old
+captures remain unchanged. Publication and current-head acceptance are separate.
+
+
+### UserTasks complete source-backed slice (2026-11-01)
+
+Delivery `whm-api-client-8x0.4.30` selects both UserTasks operations from the original
+pinned `2026-10-13/cpanel.openapi.json.gz` (OpenAPI 11.138.0.10), decompressed SHA-256
+`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`.
+Selection, method, naming and task-ID sensitivity policy bind to
+`/paths/~1UserTasks~1retrieve/get`, `/paths/~1UserTasks~1delete/get` and the latter's
+`/parameters/0`. Both functions are available from cPanel 72 and operate on the
+selected account's separate queue. No endpoint exclusion, schema correction,
+requiredness override, optional-payload rule, void, unwrap or alias was added.
+
+`listTasks()` maps retrieve to GET with no parameters. Its nonnullable list
+preserves order/empty lists and optional action, args, id and subsystem fields.
+Present args is a nonnullable known-field object with optional string
+repository_root; no dynamic arguments are inferred from prose. The source's
+create/VersionControl string enums stay documented under existing runtime string
+policy. Unknown fields follow existing filtering. Empty objects and inherited
+empty-array object compatibility are retained; JSON object/array decoding stays
+distinct. metadata.transformed remains envelope metadata, not a new task field.
+
+`deleteTask(#[SensitiveParameter] string $id): ?array` maps the selected GET variant
+to form POST because x-readonly=false and x-rollback=none. Requiredness, id naming
+and exact bytes remain unchanged. Literal backslash/slash and slash-only source
+examples are distinct; percent escapes, Unicode, plus and empty strings also pass
+through one form encoding without normalization or repair. SensitiveParameter is
+client privacy policy for private queue work, not evidence of authentication.
+The source's nullable fieldless object lowers through existing map<mixed> support:
+unknown/nested fields and explicit null survive; missing data fails. Flag outcome
+and one-request runtime are unchanged. No implicit inventory, execution, polling,
+retry, restore or rollback was added. Queue deletion proves neither completion
+nor termination of a running process.
+
+Independent HTTP-boundary fixtures cover literal direct/bridge methods, auth,
+paths, queries, headers and form bytes; optional/private nested fields, string
+enum policy and filtering; missing/null/object/list/type distinctions; native
+signature failures before entry; metadata clearing/replacement and transformed/
+warnings retention; transport/HTTP/JSON/API/outer-WHM/payload precedence and actual
+library trace privacy. Task IDs, arguments, repository paths and explicit payload/
+metadata access are private; returned paths are never opened. Offline coverage
+establishes no live queue behavior or POST acceptance. Live follow-up
+`whm-api-client-8x0.2.72` remains OPEN; the full API goal remains OPEN.
+
+Generated coverage is 1,203 canonical operations (615 UAPI, 588 WHM), 106 groups
+and 215 outputs (214 PHP plus coverage). Existing generated contracts, overlays
+and accessors are preserved except the additive cached userTasks accessor and
+coverage row/counts. Pinned sources, evidence, map checksum, schema copies and
+historical source-audit prefix are unchanged. All 55 inherited diagnostics remain
+unwaived. PHP 8.3 is the supported minimum; local validation uses PHP 8.4.26 and
+exact-head PHP 8.3 CI remains a publication gate.
+
+## UserTasks identification correction and approved-master integration (2026-11-01)
+
+This appendix supersedes only the original UserTasks narrow-field and
+create/VersionControl-only effective guidance above. Historical original105 text
+is preserved byte-for-byte after the exact approved-master prefix. The normal
+merge integrates original `76c7b5a21265ae2a6be6361605fcab3914d8d3bc` with approved
+master `2b3e61c0abbc9e2556d81c8253767c67f6f0113a`; original/local reviews and CI are
+history, not acceptance of this combined candidate.
+
+Formal review [5725807972](https://github.com/hostingpal/whm-api-client/pull/105#pullrequestreview-5725807972)
+and complete existing-material answer
+[6560200145](https://github.com/hostingpal/whm-api-client/pull/105#issuecomment-6560200145)
+attribute the excerpts to cPanel 11.138.0.19. They are reviewer-retained source
+excerpts, not authenticated raw Perl files or hash-bound server source snapshots.
+The retained answer has SHA-256
+`e9dd31c6eb9c103ab062e4bbabed73b565920ef45a1aaa8ad60f5a90e2aea443`.
+The pinned decompressed OpenAPI SHA-256 remains
+`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`;
+its retrieve-description pointer anchors identity, not a schema for added fields.
+All three original overlay evidence entries and every pinned source remain exact.
+The new evidence is kind:doc attributed-source-review, with no invented live entry.
+
+`Cpanel::UserTasks::get()` decorates rows when args.log_file is truthy.
+`get_sse_url` concatenates `/sse/UserTasks`, a slash-normalized task ID and the
+basename of the log file. WPX `_queue_wp_task` passes domain, a sprintf-built
+install_id with dots replaced by hyphens, and LogPath::build_path's log_file into
+args. The retained create_website handler requires and lowercases domain.
+UserTasks' schema calls exclusive string, its POD permits integer 1 or an arbitrary
+key, and add() defaults undefined exclusive to integer 0. WPX omits exclusive.
+These are producer expressions/defaults, not observed JSON primitive guarantees.
+
+R1 explicitly adopts five optional nonnullable SOURCE-INFERRED COMPATIBILITY
+leaves: string sse_url; string args.domain, args.install_id and args.log_file;
+and exclusive union(string,int), preserving primitives without coercion or flag,
+enum or integer bounds. Other types, including explicit null, reject at these
+leaves. Directory::Queue::Normal persistence/serialization and
+Cpanel::UserTasksCore::Task->adopt were not inspected. Exact wire primitives and
+universal nullability remain unknown. Native integer extremes in tests exercise
+the declared compatibility policy, not source-observed values. Live follow-up
+8x0.2.72 and dedicated serialization follow-up 8x0.2.72.1 remain OPEN; root's R1
+choice does not erase this uncertainty or replace current-head review.
+
+R2 retains closed named args with the original optional string repository_root;
+all old retrieve fields, root/list/args compatibility and delete specs remain
+unchanged. No title, site_settings, nova or free-map contract is introduced.
+Retained WPX source queues install and import, contradicting the pinned closed
+create/VersionControl prose without defining an exhaustive action/subsystem enum.
+WebApp source was not retained; the ClamScanner scan row was manually injected.
+Neither is used as producer evidence here. WPX import stores site_settings as
+opaque JSON including source_password, with a source comment saying queue args
+are carried verbatim. Typed filtering does not parse or expose that field.
+Raw responses, generic call() results and explicit mismatch payloads may retain
+the password. Envelope metadata does not always contain task data;
+metadata.transformed stays envelope metadata. Returned progress/repository paths
+are never opened or fetched. Delete's exact sensitive ID, one form POST, nullable
+opaque result, no retry and no process-termination/rollback inference stay intact.
+
+Independent SYNTHETIC WPX/install and VersionControl/create HTTP-double fixtures
+first failed with four actual field-loss assertion failures on both routes, then
+passed after official generation. They are source-inferred regression data,
+not real queued WPX execution or capture. The reviewer likewise disclosed that
+injected rows bypassed Cpanel::UserTasks::add and used supplied values. Old empty
+root GET evidence proves no item fields. No live call, SSH/server/source fetch,
+queue injection, runner, returned-path access, capture or replay occurred here.
+Runtime success, held locks, completion, cleanup and serializer behavior remain
+unproven; historical boundaries and refusals persist.
+
+Official generation produces 1,240 canonical operations (644 UAPI, 596 WHM),
+114 groups and 231 outputs (230 PHP plus coverage): two original operations and
+one group over approved master, zero endpoint inflation from the five fields.
+Fresh combined offline gate and preservation evidence is retained separately in
+the PR105 task report/records; original gates are not relabeled. All 55 inherited
+map diagnostics remain explicit and unwaived. Pins, schema mirrors, annotations,
+checksum, runtime, generator, tooling, historical evidence and failed captures
+are preserved from the appropriate parent. Local PHP 8.4 cannot establish the
+PHP 8.3 floor CI. Stress, consumer, Windows, parity and release gaps remain.
 
 ### Fixture corrections after the corrected capture
 

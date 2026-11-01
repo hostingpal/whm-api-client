@@ -1286,20 +1286,40 @@ catalog, pending certificates, DCV constraints and login URL. The pending list i
 empty and observes no row fields. The login URL was not followed.
 
 Certificate status details, certificate availability, product information and
-completion URL did not run, because no real order or product-name selector exists on
-this server. Their absence is a recorded decision, not a failure or a pass. No
-purchase, payment, issuance, installation, trust or served TLS behavior is
-established. SHA-256:
+completion URL did not run, because no read available here enumerated an order item
+or a product name. The empty pending list covers only certificates the system
+currently polls, so it does not show that no order exists. Review 5725042192 also
+reports missing local product files and a completion URL failure on token
+authentication, so a real selector may not be enough for those two. Their absence is
+a recorded decision, not a failure or a pass. No purchase, payment, issuance,
+installation, trust or served TLS behavior is established. SHA-256:
 `4a9ec4fffec130ee099b63cb2f86c24482b332a8101995828426745bdb70da51`.
 
 The [no-match audit capture](2026-11-01-empty-results.json) at
 `fc5264d97f0c9d90ebbf9148b714d69e4a288959` on `11.138.0.19` records 27 GET observations
-across WHM version and 15 curated operations. Twenty-three return empty results and three
-raise API errors, including the required entity-lookup control. No typed method threw a
-client exception. Its `failed` status and exit 1 are expected because the controls cannot
-pass the strict assessment. Empty results establish no item fields, and several have no
-populated baseline; see the [source audit](../source-audit.md#empty-result-audit-2026-11-01).
+across WHM version and 15 curated operations, under recipe `empty-results-v1`.
+Twenty-three return empty results and three raise API errors, including the required
+entity-lookup control. No typed method threw a client exception.
+
+Its `failed` status and exit 1 were predicted before execution from the two controls
+only: `accountsummary` fails, and `listaccts` omits `data`. The two `Bandwidth/query`
+absent-domain API errors, which also failed that assessment, were not predicted. They
+and the other 23 records were only observed.
+
+Recipe `empty-results-v2` assesses a declared outcome per probe. This artifact keeps its
+recipe and `failed` status unchanged, and its records match those declarations. Empty
+results establish no item fields, and several have no populated baseline; see the
+[source audit](../source-audit.md#empty-result-audit-2026-11-01).
 SHA-256: `2ec7d60176b4354c01d1016849e0e3d62ae85a7182354010ab8d89e77a39894f`.
+
+The [v2 capture](2026-11-01-empty-results-v2.json) at
+`e8021d20d859efc84b6532c6b78a4e4471a6ba0d` on `11.138.0.19` passes recipe
+`empty-results-v2`, exit 0: all 27 GETs returned HTTP 200 and all 27 records match the
+outcomes committed before the run. Three records still raise API errors and `listaccts`
+keeps its discrepancy, as declared, and every structural field matches the v1 capture.
+It repeats one server version from declarations drawn from v1, so it is not independent
+evidence and establishes no other version. No live run has produced a deviation.
+SHA-256: `e1258f73d56221a60dee6fdab3d7fee6b2a3036ee062f8a5935449134b2fce15`.
 
 ## cPanel 11.138.0.19 default read-only capture
 
@@ -1316,6 +1336,9 @@ because this run was assessed against the previous `11.138.0.15` reference. The 
 stays as captured. `DiscrepancyPolicy` now uses this file as its reference, which is a
 later code change and not a change to this artifact. Masked Quota keys establish neither
 names nor counts, and empty addon, parked and subdomain lists establish no row fields.
+Seven of those fields became `mixed` after this capture, so its contract hashes for those
+four operations record the earlier contract; see the
+[source audit](../source-audit.md#correction-carried-not-typed).
 SHA-256: `4138dbf1d083ddfe6d109c86bb8beb449abde6937e93b2452693d47b2b792b81`.
 
 ## Disposable-account Fileman upload evidence

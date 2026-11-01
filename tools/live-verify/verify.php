@@ -269,16 +269,13 @@ $verifyCommand = static function (#[SensitiveParameter] array $arguments) use ($
             . ' (acknowledged: ' . count($review['acknowledged'])
             . ', unexpected: ' . count($review['unexpected'])
             . ', stale: ' . count($review['stale']) . ")\n");
-        $acknowledgmentLabels = [
-            'quota-total-direct-11.138.0.19' => 'quota-total-direct-11.138.0.19 ($.* unknown_field)',
-            'quota-total-bridge-11.138.0.19' => 'quota-total-bridge-11.138.0.19 ($.* unknown_field)',
-        ];
         foreach (['acknowledged' => 'Acknowledged', 'stale' => 'Stale'] as $field => $label) {
             foreach ($review[$field] as $id) {
-                if (!isset($acknowledgmentLabels[$id])) {
+                $acknowledgment = $policy->acknowledgmentLabel($id);
+                if ($acknowledgment === null) {
                     throw new RuntimeException('Unexpected discrepancy acknowledgment.');
                 }
-                fwrite(STDOUT, $label . ': ' . $acknowledgmentLabels[$id] . "\n");
+                fwrite(STDOUT, $label . ': ' . $acknowledgment . "\n");
             }
         }
         /** @var array<string, string> $unexpectedReasons */

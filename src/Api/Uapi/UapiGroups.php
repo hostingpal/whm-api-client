@@ -131,6 +131,8 @@ trait UapiGroups
 
     private ?Session $sessionGroup = null;
 
+    private ?SiteQuality $siteQualityGroup = null;
+
     private ?Sitejet $sitejetGroup = null;
 
     private ?SpamAssassin $spamAssassinGroup = null;
@@ -156,6 +158,8 @@ trait UapiGroups
     private ?TwoFactorAuth $twoFactorAuthGroup = null;
 
     private ?UserManager $userManagerGroup = null;
+
+    private ?UserTasks $userTasksGroup = null;
 
     private ?Users $usersGroup = null;
 
@@ -791,6 +795,21 @@ trait UapiGroups
     }
 
     /**
+     * Select the SiteQuality operations without making a request.
+     *
+     * Selected-account Site Quality Monitoring account, project, token, status and activation operations (10 of 13
+     * pinned functions), available from cPanel 110. Token-bearing responses are sensitive payload data. Single request
+     * only; no implicit email, polling, login, URL fetch, retry or rollback. Offline source-backed coverage only: live
+     * follow-up whm-api-client-8x0.2.71 remains open. get_monitored_domains/get_monitored_system_scores result
+     * locations remain gated under whm-api-client-8x0.1.34; get_all_scores required nullable verbose serialization
+     * remains gated under whm-api-client-8x0.1.35. SiteQuality is incomplete.
+     */
+    public function siteQuality(): SiteQuality
+    {
+        return $this->siteQualityGroup ??= new SiteQuality($this->run(...));
+    }
+
+    /**
      * Select the Sitejet operations without making a request.
      *
      * Policy: Each call makes one request without automatic retry, polling, rollback or undo. Returned tokens, SSO URLs
@@ -920,6 +939,18 @@ trait UapiGroups
     public function userManager(): UserManager
     {
         return $this->userManagerGroup ??= new UserManager($this->run(...));
+    }
+
+    /**
+     * Select the UserTasks operations without making a request.
+     *
+     * Selected-account user task queue inventory and deletion, available from cPanel 72. Task IDs and queue payloads
+     * are private. The client preserves identifier bytes and performs no task execution, polling, retry, restore or
+     * rollback. Offline source-backed coverage only; live follow-up whm-api-client-8x0.2.72 remains open.
+     */
+    public function userTasks(): UserTasks
+    {
+        return $this->userTasksGroup ??= new UserTasks($this->run(...));
     }
 
     /**

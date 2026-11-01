@@ -67,7 +67,7 @@ use SensitiveParameter;
  * }
  * @phpstan-type PhpIniGetUserBasicDirectivesResult array{
  *     directives?: list<array{
- *         cpanel_default?: string|bool|int|int|float,
+ *         cpanel_default?: mixed,
  *         default_value?: string|bool|int|int|float,
  *         info?: string,
  *         key?: string,
@@ -84,7 +84,7 @@ use SensitiveParameter;
  *         account?: string,
  *         documentroot?: string,
  *         homedir?: string,
- *         is_suspended?: int,
+ *         is_suspended?: mixed,
  *         main_domain?: 0|1,
  *         path?: string,
  *         type?: string,
@@ -251,12 +251,13 @@ final readonly class LangPhp
      * Documented: Requires EasyApache 4 and the WebServer role; INI operations additionally require MultiPHP enabled.
      * Requests act through the selected account.
      *
-     * Observed: On cPanel 11.138.0.19 cpanel_default appeared as a string on 1 of 15 directive rows, and the other rows
-     * omitted it. It is undocumented, optional and of unknown meaning.
+     * Observed: On cPanel 11.138.0.19 with type=home, cpanel_default appeared as a non-numeric string on 1 of 15
+     * directive rows through direct UAPI, and the other rows omitted it. A later capture recorded string and omitted
+     * rows through both direct and bridged UAPI.
      *
-     * Policy: cpanel_default accepts string, bool, int and number. This is deliberately wider than the one string
-     * observation: values on these rows are polymorphic, so a single string cannot justify rejecting the other forms.
-     * It implies no relationship to default_value.
+     * Policy: cpanel_default is optional and deliberately unvalidated because its meaning is unknown: any JSON value,
+     * including null, reaches the caller unchanged and cannot fail the read. It implies no relationship to
+     * default_value.
      *
      * API-map identity: uapi:LangPHP/php_ini_get_user_basic_directives#GET (wire name
      * php_ini_get_user_basic_directives).
@@ -317,8 +318,12 @@ final readonly class LangPhp
      * Documented: Requires EasyApache 4 and the WebServer role; INI operations additionally require MultiPHP enabled.
      * Requests act through the selected account.
      *
-     * Observed: On cPanel 11.138.0.19 some path rows also carry is_suspended, an undocumented optional integer with
-     * unknown meaning and allowed values. It is not a documented suspension flag.
+     * Observed: On cPanel 11.138.0.19 is_suspended appeared as an integer on 1 of 2 path rows through direct UAPI, and
+     * the other row omitted it. A later capture recorded integer and omitted rows through both direct and bridged UAPI.
+     * No value was inspected, and it is not a documented suspension flag.
+     *
+     * Policy: is_suspended is optional and deliberately unvalidated because its meaning is unknown: any JSON value,
+     * including null, reaches the caller unchanged and cannot fail the read.
      *
      * API-map identity: uapi:LangPHP/php_ini_get_user_paths#GET (wire name php_ini_get_user_paths).
      *

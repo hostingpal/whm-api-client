@@ -514,8 +514,8 @@ final class VerifyCommandTest extends TestCase
             "uapi:Quota/get_quota_info direct-uapi: passed\n"
                 . "uapi:Quota/get_quota_info bridged-uapi: passed\n"
                 . "Discrepancy review: passed (acknowledged: 2, unexpected: 0, stale: 0)\n"
-                . "Acknowledged: quota-total-direct-11.138.0.19 ($.* unknown_field)\n"
-                . "Acknowledged: quota-total-bridge-11.138.0.19 ($.* unknown_field)\n",
+                . "Acknowledged: fixture-direct (fixture label)\n"
+                . "Acknowledged: fixture-bridge (fixture label)\n",
             $stdout,
         );
         $document = json_decode((string) file_get_contents($output), true, 512, JSON_THROW_ON_ERROR);
@@ -541,9 +541,7 @@ final class VerifyCommandTest extends TestCase
             JSON_THROW_ON_ERROR,
         ));
         self::assertIsArray($document['discrepancy_review']);
-        self::assertSame([
-            'quota-total-direct-11.138.0.19', 'quota-total-bridge-11.138.0.19',
-        ], $document['discrepancy_review']['acknowledged']);
+        self::assertSame(['fixture-direct', 'fixture-bridge'], $document['discrepancy_review']['acknowledged']);
         self::assertSame([], glob($root . '/.live-verify-*'));
     }
 
@@ -560,7 +558,7 @@ final class VerifyCommandTest extends TestCase
         self::assertSame('', $stderr);
         self::assertSame(
             "whm1:version whm: passed\nDiscrepancy review: failed (acknowledged: 0, unexpected: 0, stale: 1)\n"
-                . "Stale: quota-total-direct-11.138.0.19 ($.* unknown_field)\n",
+                . "Stale: fixture-direct (fixture label)\n",
             $stdout,
         );
     }
@@ -797,6 +795,10 @@ final class DiscrepancyPolicy
             throw new \RuntimeException(getenv('CLI_PRIVATE_MARKER'));
         }
     }
+    public function acknowledgmentLabel(string $id): ?string
+    {
+        return in_array($id, ['fixture-direct', 'fixture-bridge'], true) ? $id . ' (fixture label)' : null;
+    }
     public function assess(array $records): array
     {
         file_put_contents(dirname(__DIR__) . '/assessed-probes.json', json_encode($records));
@@ -814,14 +816,12 @@ final class DiscrepancyPolicy
         };
         $review = [
             'status' => $failed ? 'failed' : 'passed',
-            'acknowledged' => $case === 'acknowledged' ? [
-                'quota-total-direct-11.138.0.19', 'quota-total-bridge-11.138.0.19',
-            ] : [],
+            'acknowledged' => $case === 'acknowledged' ? ['fixture-direct', 'fixture-bridge'] : [],
             'unexpected' => $unexpected ? [[
                 'operation' => $case === 'private-review' ? getenv('CLI_PRIVATE_MARKER') : 'whm1:version',
                 'variant' => 'whm1:version#GET', 'route' => 'whm', 'reason' => $reason,
             ]] : [],
-            'stale' => $case === 'stale' ? ['quota-total-direct-11.138.0.19'] : [],
+            'stale' => $case === 'stale' ? ['fixture-direct'] : [],
             'policy' => 'reviewed-quota-discrepancies-v1', 'tracking' => 'whm-api-client-8x0.4.3.1',
             'evidence' => 'docs/api/evidence/2026-10-16-quota-inventory.json',
             'evidence_sha256' => str_repeat('a', 64),

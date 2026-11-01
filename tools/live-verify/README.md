@@ -418,8 +418,10 @@ A passing assessment with acknowledgments is **not a discrepancy-free run**.
 
 `DiscrepancyPolicy` contains only the two reviewed Quota total observations from
 `docs/api/evidence/2026-11-01-read-only-11.138.0.19.json`. It verifies that file's
-fixed SHA-256 before any network request and refuses it (including filesystem aliases)
-as an output destination. There is no command-line option to create acknowledgments.
+fixed SHA-256 and, also before any network request, refuses every existing file under
+`docs/api/evidence/` (including filesystem aliases) as an output destination, so history
+stays protected after the reference moves. New paths there and files elsewhere stay
+allowed. There is no command-line option to create acknowledgments.
 Policy changes require code review and independent tests.
 
 Until 2026-11-01 the same two observations were bound to cPanel `11.138.0.15` through
@@ -628,7 +630,7 @@ The [reviewed integrated capture](../../docs/api/evidence/2026-10-30-domain-feat
 ran the exact 67-probe GET-only catalog once at committed code `27abfe6` after
 normal integration of the reviewed MySQL, FTP and PostgreSQL sections. All 67
 HTTP/API/payload observations pass on `11.138.0.19`, including both mailbox counts.
-The command exits 1 for strict review: 12 unknown-field entries across 10
+That command exited 1 for its strict review: 12 unknown-field entries across 10
 unexpected observations, zero acknowledgments and two stale Quota acknowledgments.
 Historical artifacts remain unchanged; findings are not waived or retried away.
 This run includes no PHP mutation. INI write/read behavior and the omitted
@@ -640,6 +642,9 @@ the DomainInfo and INI fields to be typed. All 67 observations pass and the only
 remaining discrepancies are the two masked Quota observations. Its embedded review
 reports failed because it was assessed against the previous `11.138.0.15` reference;
 the policy could only move to this artifact after the artifact existed.
+Seven of those fields became `mixed` after this capture, so its contract hashes for
+`domains_data`, `single_domain_data`, `php_ini_get_user_basic_directives` and
+`php_ini_get_user_paths` record the earlier contract. The Quota records still match.
 
 ## Owned Email mailbox recipe
 
@@ -1846,16 +1851,32 @@ Four of the nine reads in `8x0.2.63` are deliberately not run, and
 
 | Operation | Reason |
 | --- | --- |
-| `get_certificate_status_details` | No pending order, so no real `order_item_id` exists |
-| `get_ssl_certificate_if_available` | No pending order, so no real `order_item_id` exists |
-| `get_product_info` | No read enumerates a real `product_name` |
-| `get_completion_url` | No read enumerates a real `product_name` |
+| `get_certificate_status_details` | No read available here enumerated a real `order_item_id` |
+| `get_ssl_certificate_if_available` | No read available here enumerated a real `order_item_id` |
+| `get_product_info` | No read enumerates a real `product_name`, and local product files are reported missing |
+| `get_completion_url` | No read enumerates a real `product_name`, and URL construction is reported to fail on token authentication |
 
-The pinned `product_name` example, `cpanel-ssl`, is a store-page slug and appears
-nowhere in this server's catalog. The catalog's `product` values are display labels
-in a different form, and the pinned source states no mapping between them. Run
-these two only with a selector known to be real on the server, for example after
-private inspection of its store product files.
+The only pinned read that returns `order_item_id` is
+`get_pending_ssl_certificates`. It lists only certificates the system currently
+polls, so its empty list does not show that no order exists: a completed or expired
+order could hold a real ID.
+
+The pinned `product_name` example is `cpanel-ssl`. It was not among the catalog
+labels the private read printed, but that read printed no other catalog field and
+the artifact stores types only, so this was not a search of the whole catalog. The
+labels are in a different form, and the pinned source states no mapping between them
+and `product_name`.
+
+A real selector is necessary for these two, but review 5725042192 reports that it is
+not enough on this server:
+
+- `get_product_info`: upstream reads `/var/cpanel/market/product_info/<name>`, which
+  does not exist here, so both real IDs the reviewer tried raised an API error.
+  Inspecting store product files therefore offers no selector.
+- `get_completion_url`: on token authentication, through both routes, URL
+  construction failed because server information was unavailable from the
+  environment, as the generated `Market::getCompletionUrl()` PHPDoc records. That
+  does not establish universal token or route incompatibility.
 
 Payloads can hold security tokens, action URLs, PEM, CSR and identity data; only
 structural paths and types are saved. No order, cart, checkout, certificate, queue
@@ -1867,18 +1888,24 @@ trust or served TLS behavior.
 The [2026-11-01 capture](../../docs/api/evidence/2026-11-01-market-reads.json) at
 `eba1711` on `11.138.0.19` passes all eleven GETs and strict assessment with zero
 discrepancies. Provider, catalog and DCV payloads are populated, the login URL is a
-string, and the pending list is empty on both routes. Catalog prices, `max_users`
-and a non-empty `base_name` stay unobserved, as do the object identity branch and
-pending rows. Do not repeat this capture unchanged. The four unrun reads need a real
-selector and a new recipe. See the source audit for the observed types.
+string, and the pending list is empty on both routes. Catalog prices are partly
+observed: `x_price_per_domain*` are integers and `x_price_per_wildcard_domain*` are
+numeric strings or omitted. `price`, `maximum_server_price`, `minimum_server_price`
+and `max_users` are null in every row and `base_name` is empty, so other values of
+those fields stay unobserved, as do the object identity branch and pending rows. Do
+not repeat this capture unchanged. The four unrun reads need a real selector and a
+new recipe, and `get_product_info` and `get_completion_url` also need their reported
+blockers cleared. See the source audit for the observed types.
 SHA-256: `4a9ec4fffec130ee099b63cb2f86c24482b332a8101995828426745bdb70da51`.
 
 ## Bounded no-match audit
 
-`empty-results-v1` is a separate opt-in catalog for bead `8x0.2.88`. It asks how a
+`empty-results-v2` is a separate opt-in catalog for bead `8x0.2.88`. It asks how a
 curated set of read-only collection operations answers when nothing can match. The
 selection was fixed and committed before execution. It follows pinned operation
-semantics and documented filters; a parameter name alone proves nothing.
+semantics and documented filters; a parameter name alone proves nothing. The requests
+have not changed since `empty-results-v1`; only the
+[assessment](#assessment-of-declared-outcomes) differs.
 
 Twenty-seven GETs run once each, in catalog order: WHM `version` for provenance, then
 15 operations. Every request is a typed generated method. WHM routes use the root
@@ -1887,7 +1914,7 @@ live-derived value.
 
 | Operation | Routes | No-match criterion | Label | Why it belongs |
 | --- | --- | --- | --- | --- |
-| `listaccts` | WHM | `search=wzzemptyaudit`, `searchtype=user`, `searchmethod=exact` | `fixed-path-control` | PR123 control for the fixed result-0 form |
+| `listaccts` | WHM | `search=wzzemptyaudit`, `searchtype=user`, `searchmethod=exact` | `fixed-path-control` | PR123 control for the fixed path, which also accepts the result-0 form |
 | `showbw` | WHM | `search=wzzemptyaudit`, `searchtype=user` | `absent-user-pcre` | Documented PCRE filter over accounts |
 | `matchpkgs` | WHM | `FEATURELIST=wzzemptyaudit` | `absent-feature-list` | Documented criteria; see the correction under the results |
 | `emailtrack_search` | WHM | `defer`, `failure`, `inprogress`, `success` all `0`, `max_results_by_type=1` | `all-event-types-off` | Documented event selectors; typed method has no value filter |
@@ -1919,23 +1946,68 @@ because `npr` already returned empty lists for them, so a filter could prove not
 `Ftp/list_ftp`, whose empty form is already recorded in the FTP section;
 `DomainRecommendations/domain_suggestions`, which calls an external service.
 
-An operation is classified from its record as one of:
+The empty-list reason covers those four operations only. It is not a rule over the
+catalog: `SubDomain/listsubdomains` meets the same condition and is included, as its
+table row says, so its probe shows how one request was answered and proves nothing
+about its filter.
 
-- **empty collection**: the API reported success and the typed method returned an
-  empty result.
+An operation is classified from its record as one of the forms below. `api_outcome`
+is the harness's reading of the typed call, not an upstream field: `EvidenceRunner`
+sets `success` once the method returns, and envelope `result` and `status` values are
+retained as types only.
+
+- **empty collection**: the typed method returned an empty result. Every audited
+  operation uses the Flag policy, so that means the API reported success, with one
+  exception. `listaccts` reaches `[]` through `account_search_empty`, which returns it
+  on result 1 with `data` omitted or null, and on result 0 with the exact
+  `No accounts found.` diagnostic and `data` omitted. For that control, `success`
+  says only that the method returned.
 - **API error**: the API reported failure and the typed method raised
   `ApiErrorException`.
-- **client exception**: the API reported success and the typed method raised
-  `PayloadMismatchException` or another client failure.
-
-The section assessment stays strict. It passes only when every probe succeeds with
-no discrepancy, so the entity control and the `listaccts` control cannot pass it: the
-first must fail, and the second returns an empty list from a response that omits
-`data`. A `failed` status therefore records the audit, not a broken run. Exit 1 and
-`status: failed` are expected. Per-record outcomes carry the classification.
+- **client exception**: the typed method raised `PayloadMismatchException` or another
+  failure that is not an API-reported error. Only a mismatch after a confirmed outcome
+  follows an API success; `request_failure` and `probe_failure` records have none.
 
 Evidence keeps structure only. An API error's text is not retained, so a record cannot
 distinguish a no-match failure from any other failure by itself.
+
+### Assessment of declared outcomes
+
+`empty-results-v2` assesses each record against the outcome its probe declares, which
+is the form the 2026-11-01 capture recorded. `EmptyResultProbes` holds the
+declarations and `tests/Tools/LiveVerify/EmptyResultProbesTest.php` repeats them as
+literals. Provenance, label, method and HTTP checks are the shared strict ones.
+
+| Declared outcome | Probes | A record matches when |
+| --- | --- | --- |
+| `value` | WHM `version` | the method returned, with no discrepancy |
+| `empty` | 22 records | the method returned, with no discrepancy, and the declared path holds exactly `empty-list`, or `empty-object` for the `Bandwidth/query` past window |
+| `fixed_path_empty` | `listaccts` | the method returned, the payload is `missing`, and the only discrepancy is `missing_required` at `$` |
+| `api_failure` | `accountsummary`; `Bandwidth/query` absent domain on both routes | `ApiErrorException` was raised, with `null` at `$.acct` or `$` |
+
+Exit 0 and `status: passed` mean the run reproduced those forms on its server. Exit 1
+and `status: failed` mean at least one record deviated and needs review: a client
+exception, an API error on a probe declared empty, a success on a probe declared
+`api_failure`, a populated result, or a changed form. A failed run is a finding, not
+an expected result. It also names each deviating probe on stdout, by operation, route,
+label and the record's fixed outcome values, with no URI, path or upstream text. The
+published report does not change.
+
+A `passed` report can hold records with `probe_outcome: failed`, because
+`accountsummary` must fail. Declaring the `listaccts` discrepancy does not waive it:
+the record keeps it, and any other discrepancy fails.
+
+A declaration is one recorded form from one capture, not a contract. A pass confirms
+no no-match: `matchpkgs` and `listsubdomains` stay unconfirmed. Declaring
+`Bandwidth/query` absent domain as `api_failure` rules nothing on its cause, and a
+match cannot show why a call failed, because no upstream text is kept. If a later
+version legitimately changes a form, review it and change the declaration under a new
+label.
+
+`empty-results-v2` has [one capture](#no-match-audit-v2-capture-2026-11-01), which
+passed. The offline test checks both artifacts against the declarations by identity,
+outcome, capture revision and SHA-256. It compares no contract hash, so each artifact
+stays a valid historical record when a spec later changes.
 
 ```sh
 WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
@@ -1948,9 +2020,9 @@ outside this table.
 
 ### No-match audit results, 2026-11-01
 
-The capture ran once at `fc5264d97f0c9d90ebbf9148b714d69e4a288959` on `11.138.0.19`.
-It exited 1 with `status: failed`, as the recipe predicted. All 27 GETs returned
-HTTP 200. The artifact is
+The capture ran once under `empty-results-v1` at
+`fc5264d97f0c9d90ebbf9148b714d69e4a288959` on `11.138.0.19`. It exited 1 with
+`status: failed`. All 27 GETs returned HTTP 200. The artifact is
 [2026-11-01-empty-results.json](../../docs/api/evidence/2026-11-01-empty-results.json),
 SHA-256 `2ec7d60176b4354c01d1016849e0e3d62ae85a7182354010ab8d89e77a39894f`.
 
@@ -1959,14 +2031,67 @@ result and three raised `ApiErrorException`; the remaining record is WHM `versio
 No client behavior changed. [The source audit](../../docs/api/source-audit.md#empty-result-audit-2026-11-01)
 holds the per-operation table and limits.
 
+`empty-results-v1` applied the shared strict rule, which needs every probe to succeed
+with no discrepancy. Four records failed it: `accountsummary`, `listaccts` and
+`Bandwidth/query` absent domain on both routes.
+
+Predicted at `fc5264d`, before execution:
+
+- `status: failed` and exit 1.
+- `accountsummary` fails.
+- `listaccts` returns an empty list from a response that omits `data`.
+
+Only observed, never predicted:
+
+- Both `Bandwidth/query` absent-domain API errors. No document predicted them. The
+  only assumption on record was the `fc5264d` test fixture, which gave that probe a
+  status-1 `{}` success on both routes, and the capture contradicted it.
+- The other 23 records, WHM `version` and 22 empty results. No outcome was stated for
+  any of them. The catalog said only that an API error on any probe would fail the
+  assessment.
+
+The predicted status held, but it could not have done otherwise: the two controls
+forced it whatever the other 25 records did. Only two of the four failing records were
+predicted. That is why `empty-results-v2` declares an outcome per probe.
+
 `whm1:listaccts` carries the only discrepancy, `missing_required` at `$`. The client
 accepts that omission through `account_search_empty`, while the evidence tool still
-reports it, so the record passes and the strict assessment does not.
+reports it, so the record passes and the strict rule does not. The record cannot
+confirm the result-0 form the pre-execution catalog row named: `metadata.result` is
+kept as a type only, and no `reason` is kept.
 
-Correction: the pre-execution row for `matchpkgs` called its plan list populated.
-That was a misreading of earlier path listings. The earlier selector-free read was
-already empty, and `matchPackages()` already documents that an empty match does not
-prove absence (`8x0.2.43`). Its empty result here is not a confirmed no-match.
+Correction: the pre-execution row for `matchpkgs` called its plan list populated,
+which implied an empty match could be credited to the filter. It cannot.
+`listPackages()` returns plans, but `matchPackages()` results on this server conflict.
+One selector-free read returned an empty `pkg` list while a plan existed. A later
+review with two plans returned one of them without selectors and the matching plan
+for `MAXSQL=5`, but none for `QUOTA=100`, that plan's real quota. The cause is unknown
+and stays open under `8x0.2.43`, and `matchPackages()` documents that an empty match
+does not prove absence. Its empty result here is not a confirmed no-match.
+
+### No-match audit v2 capture, 2026-11-01
+
+`empty-results-v2` ran once at `e8021d20d859efc84b6532c6b78a4e4471a6ba0d` on
+`11.138.0.19`, with no retry. It exited 0 with `status: passed`. All 27 GETs returned
+HTTP 200, and all 27 records match their declared outcomes: one `value`, one
+`fixed_path_empty`, 22 `empty` and three `api_failure`. The artifact is
+[2026-11-01-empty-results-v2.json](../../docs/api/evidence/2026-11-01-empty-results-v2.json),
+SHA-256 `e1258f73d56221a60dee6fdab3d7fee6b2a3036ee062f8a5935449134b2fce15`.
+
+Unlike v1, every outcome here was declared and committed before the run, at `0e0262f`,
+and all of them held. The three `api_failure` records still show
+`probe_outcome: failed`, and `listaccts` keeps its `missing_required` discrepancy. That
+is what a pass means under this recipe. Every record's outcome fields, payload paths,
+response paths and discrepancies are identical to the v1 capture, about three hours
+earlier.
+
+This shows the rule passes on the real server, and no more. The declarations came from
+the v1 capture of the same version, so this is a repeat, not independent evidence, and
+it establishes nothing about another cPanel version. No live run has produced a
+deviation, so the failure path and the deviation lines are proven offline only. It
+confirms no no-match: `matchpkgs` and `listsubdomains` stay unconfirmed, the cause of
+the `Bandwidth/query` absent-domain error stays unestablished, and the record still
+cannot separate the two `listaccts` result forms.
 
 ## Disposable-account Fileman upload fixture
 
