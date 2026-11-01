@@ -8898,3 +8898,39 @@ The group is 1/2. Coverage adds exactly one UAPI operation and one group from
 (1,226 operations, 112 groups, 227 generated outputs). Existing methods/specs,
 source pins and all historical evidence remain unchanged; raw generic callJson
 availability is neither typed nor live coverage.
+
+### Separate bounded typed getter verification (2026-11-01)
+
+After the offline implementation stage above, the controller ran the reviewed
+read-only probe against exact clean committed implementation
+`646612249d9b86dc19ed17dea0b7babf15b3c516`. The immutable custom developer artifact
+`/tmp/personalization-get-typed-verification-2026-11-01.json` has SHA-256
+`e67db47603ad5c377400f72ecac1f0c7714ce627b6fc0c5ad4f1c29bffa0ce2a`.
+Reviewed PHP probe SHA-256:
+`c497bb8292b2a9ea47b0ac97c585582cb580a717cd4929ad6501bac550e2edfd`;
+reviewed launcher SHA-256:
+`9792570cfc361e0f1baaf577b051f275315a33117661390ad6a3fdb949848b6f`.
+
+Exactly two attempts completed on cPanel `11.138.0.19`: WHM `version` GET followed
+by one direct `Personalization/get` JSON POST. Both returned HTTP 200 and API status 1.
+Typed payload validation passed and the exact two fresh requested rows were present
+with explicit null values. **Both integer row success flags were 1, not 0.** The
+bare direct-UAPI envelope's `data.personalization` wrapper supports the formal
+schema and contradicts the pinned direct-key example for this observed response.
+Names, reason text and values are masked; only structural types, flags, hashes
+and the bounded predicates are retained. No writes, SSH, sessions, retries or
+returned-URL access occurred.
+
+This is a separate bounded developer verification, not a schema-2 catalog capture
+or strict unknown-field acceptance. No custom artifact is copied into the standard
+evidence directory. It establishes no known nonnull values, live row-success 0
+behavior, omitted/empty names, other server versions, WHM bridge, setter behavior
+or persistence. Those variants and the group's 1/2 scope remain unchanged. The
+original failed protocol artifact stays byte-identical at SHA-256
+`6734dfa5f3a03cb89b910f883177d2277c940e4466197f3f359d9a60b7ebb8e2`, with lost
+API status and row identity; it is not recovered, reclassified or superseded as
+historical evidence. Only this new passing observation adds bounded typed coverage.
+
+This final documentation phase updates getter notes/evidence, generated PHPDoc,
+README and maintained AGENTS guidance. It changes no executable method, spec,
+request/response contract, source pin, test or earlier historical section/evidence.

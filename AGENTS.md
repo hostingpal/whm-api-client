@@ -237,9 +237,17 @@ row success 0 under envelope status 1 is data. Preserve omission/null and inheri
 empty-array object/map compatibility. Do not log private names/values/reasons or
 mismatch payloads. The earlier failed protocol probe establishes only structural
 wrapper observations: its parser lost actual API outcome and row identity.
-No successful typed live or missing-key coverage follows. This group is 1/2;
-Personalization/set remains excluded under 8x0.29.6. No implicit reads, retries,
-fallbacks, URL fetches, writes or persistence claims are added.
+No API/typed outcome follows from that original probe. A separate bounded typed
+capture through clean committed 646612249d9b86dc19ed17dea0b7babf15b3c516 on
+11.138.0.19 passed exactly two requests (WHM version GET, direct getter JSON POST),
+both HTTP 200/API status 1. The exact two fresh requested rows had value:null and
+both row success flags 1; the bare data.personalization wrapper supports the formal schema.
+This is custom developer evidence, not schema-2 catalog or strict unknown-field
+acceptance. Keep known nonnull values, live row0, omitted/empty names, other
+versions, bridge/setter/persistence unverified. Original failed evidence remains
+unchanged; source-audit records exact hashes. This group is 1/2; Personalization/set
+remains excluded under 8x0.29.6. No implicit reads, retries, fallbacks, URL fetches,
+writes or persistence claims are added.
 
 The complete Email module exposes 96 pinned functions. Mutations and secret-bearing
 requests use form POST. Preserve password/passwordHash alternatives, receive-mail

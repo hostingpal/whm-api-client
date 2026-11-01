@@ -532,8 +532,16 @@ distinct. Keep names, values, reasons and mismatch payloads private. Documented
 retry, fallback or returned-URL fetch occurs. This covers one of two Personalization
 operations; `set()` remains excluded under `8x0.29.6`. The original protocol probe
 retained structural wrapper observations but lost the API outcome through its
-incorrect temporary parser. This implementation has offline coverage only and
-establishes no successful live typed or missing-key behavior.
+incorrect temporary parser; that failed evidence remains unchanged. A separate
+bounded typed observation through clean committed `6466122` on `11.138.0.19`
+passed WHM version GET and direct getter JSON POST (two attempts, HTTP 200/API 1).
+The exact two fresh requested rows had explicit null values and both row success
+flags were **1**. The bare `data.personalization` wrapper matches the formal schema.
+This custom developer verification is not a schema-2 catalog capture or strict
+unknown-field audit. Known nonnull values, live row success 0, omitted/empty names,
+other versions, WHM bridge, setter and persistence remain unverified. No writes,
+SSH, sessions, retries or returned-URL access ran. See
+[`docs/api/source-audit.md`](docs/api/source-audit.md) for exact artifact/probe hashes.
 
 The resource and web statistics slice exposes eleven GET operations across
 `bandwidth()`, `resourceUsage()`, `statsBar()`, `stats()` and `statsManager()`.

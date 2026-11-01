@@ -62,6 +62,14 @@ final readonly class Personalization
      * typed coverage or missing-key semantics. No implicit read, retry or fallback is added. Personalization/set
      * remains excluded under 8x0.29.6.
      *
+     * Observed: A separate bounded typed verification on 2026-11-01 through clean committed implementation
+     * 646612249d9b86dc19ed17dea0b7babf15b3c516 passed on 11.138.0.19: WHM version GET followed by one direct
+     * Personalization/get JSON POST, both HTTP 200/API status 1. Exactly two fresh requested rows were validated with
+     * explicit null values and row success flags 1 and 1 in the bare data.personalization wrapper. This custom
+     * developer capture is not schema-2 catalog evidence or a strict unknown-field audit. Known nonnull values, live
+     * row success 0, omitted/empty names, other versions, WHM bridge, setter and persistence remain unverified; no
+     * write, session, SSH, retry or returned-URL access ran. The original failed probe remains separate and unchanged.
+     *
      * Retrieve NVData data from file.
      *
      * This function retrieves the data from an NVData file on disk. cPanel NVData is a per-account configuration
