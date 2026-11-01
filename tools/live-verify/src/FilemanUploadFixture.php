@@ -1173,7 +1173,17 @@ final class FilemanUploadFixture
         }
     }
 
-    /** @param Report $report */
+    /**
+     * Revoke this run's token once, then read its absence; removal may fail, and only expiry would then end it.
+     *
+     * The token name is fixed, so it proves nothing alone. Ownership is the per-run account marker, read again here,
+     * plus a token this run can show is its own: setup read the name absent just before the one create, so either a
+     * listing with that name or this run's own confirmed creation will do. An unreadable listing therefore cannot
+     * withhold the revoke of a token this run knows it created, while a lost creation that no listing can show stays
+     * unproven and is never revoked: account removal takes it, and the report says so.
+     *
+     * @param Report $report
+     */
     private function cleanupToken(array &$report): void
     {
         if ($report['resources']['token']['creation'] === 'not_attempted') {
@@ -1181,22 +1191,35 @@ final class FilemanUploadFixture
         }
         $report['resources']['token']['cleanup'] = 'unconfirmed';
         try {
-            if ($this->tokenExists()) {
-                $report['resources']['token']['creation'] = 'confirmed';
-                if (!$this->accountExists()) {
-                    throw new RuntimeException('Fileman upload token ownership changed during cleanup.');
-                }
-                try {
-                    $this->account->call('Tokens', 'revoke', [
-                        'name' => FilemanUploadRecipe::TOKEN_NAME,
-                    ], RequestMethod::Post);
-                } catch (Throwable) {
-                    self::cleanupFailure($report, 'token_revoke_failure');
-                }
-                $report['resources']['token']['cleanup'] = $this->tokenExists() ? 'present' : 'confirmed_absent';
-            } else {
-                $report['resources']['token']['cleanup'] = 'confirmed_absent';
+            $listed = $this->tokenExists();
+        } catch (Throwable) {
+            $listed = null;
+        }
+        if ($listed === false) {
+            $report['resources']['token']['cleanup'] = 'confirmed_absent';
+
+            return;
+        }
+        if ($listed === true) {
+            $report['resources']['token']['creation'] = 'confirmed';
+        }
+        if ($report['resources']['token']['creation'] !== 'confirmed') {
+            self::cleanupFailure($report, 'token_absence_unconfirmed');
+
+            return;
+        }
+        try {
+            if (!$this->accountOwned()) {
+                throw new RuntimeException('Fileman upload token ownership changed during cleanup.');
             }
+            try {
+                $this->account->call('Tokens', 'revoke', [
+                    'name' => FilemanUploadRecipe::TOKEN_NAME,
+                ], RequestMethod::Post);
+            } catch (Throwable) {
+                self::cleanupFailure($report, 'token_revoke_failure');
+            }
+            $report['resources']['token']['cleanup'] = $this->tokenExists() ? 'present' : 'confirmed_absent';
             if ($report['resources']['token']['cleanup'] === 'present') {
                 self::cleanupFailure($report, 'token_still_present');
             }

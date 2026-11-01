@@ -500,6 +500,112 @@ final class FilemanUploadFixtureTest extends TestCase
         }
     }
 
+    /**
+     * This run created the token, so an unreadable listing cannot withhold its revoke; removal may not take it.
+     *
+     * Reads: setup absence, setup capability, then this gate.
+     */
+    #[DataProvider('unreadableTokenListings')]
+    public function testUnreadableTokenListingStillRevokesTheTokenThisRunCreated(string $mode): void
+    {
+        $http = new FilemanUploadServer();
+        $http->failures['Tokens/list:3'] = $mode;
+        $http->failures['removeacct:1'] = 'api_before';
+        $scenario = self::scenario($http);
+        self::assertSame(1, $http->counts['Tokens/revoke']);
+        self::assertSame([], $http->tokens);
+        self::assertTrue($http->account);
+        self::assertSame('confirmed_absent', $scenario['fixture']['resources']['token']['cleanup']);
+        self::assertSame('present', $scenario['fixture']['resources']['account']['cleanup']);
+        self::assertNotContains('token_absence_unconfirmed', $scenario['fixture']['failures']);
+        self::assertContains('account_remove_failure', $scenario['fixture']['failures']);
+        self::assertPrivate($scenario);
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function unreadableTokenListings(): iterable
+    {
+        yield 'lost request' => ['throw_before'];
+        yield 'result 0' => ['api_before'];
+        yield 'gateway error' => ['http_before'];
+        yield 'unreadable body' => ['invalid_before'];
+    }
+
+    /** The token's own gate survives a lost ownership read too; it must not fall back to a single read. */
+    public function testLostOwnershipReadAtTheTokenGateStillRevokesTheToken(): void
+    {
+        $http = new FilemanUploadServer();
+        $http->failures['listaccts:5'] = 'throw_before';
+        $http->failures['removeacct:1'] = 'api_before';
+        $scenario = self::scenario($http);
+        self::assertSame(1, $http->counts['Tokens/revoke']);
+        self::assertSame([], $http->tokens);
+        self::assertSame('confirmed_absent', $scenario['fixture']['resources']['token']['cleanup']);
+    }
+
+    public function testUnprovenTokenIsNeverRevoked(): void
+    {
+        $http = new FilemanUploadServer();
+        // The create may have worked and nothing can show it: no create reply, then no listing.
+        $http->failures['Tokens/create_full_access:1'] = 'throw_after';
+        $http->failures['Tokens/list:2'] = 'throw_before';
+        $http->failures['removeacct:1'] = 'api_before';
+        $scenario = self::scenario($http);
+        self::assertArrayNotHasKey('Tokens/revoke', $http->counts);
+        self::assertSame('unconfirmed', $scenario['fixture']['resources']['token']['creation']);
+        self::assertSame('unconfirmed', $scenario['fixture']['resources']['token']['cleanup']);
+        self::assertContains('token_absence_unconfirmed', $scenario['fixture']['failures']);
+        self::assertSame('failed', $scenario['fixture']['cleanup']);
+    }
+
+    public function testTokenListingThatShowsTheTokenProvesALostCreation(): void
+    {
+        $http = new FilemanUploadServer();
+        $http->failures['Tokens/create_full_access:1'] = 'throw_after';
+        $scenario = self::scenario($http);
+        self::assertSame(1, $http->counts['Tokens/revoke']);
+        self::assertSame('confirmed', $scenario['fixture']['resources']['token']['creation']);
+        self::assertSame('confirmed_absent', $scenario['fixture']['resources']['token']['cleanup']);
+    }
+
+    public function testTokenListedAsAbsentSendsNoRevoke(): void
+    {
+        $http = new FilemanUploadServer();
+        $http->failures['Tokens/create_full_access:1'] = 'api_before';
+        $scenario = self::scenario($http);
+        self::assertArrayNotHasKey('Tokens/revoke', $http->counts);
+        self::assertSame('confirmed_absent', $scenario['fixture']['resources']['token']['cleanup']);
+    }
+
+    /**
+     * Ownership lost after the first gate stops the revoke, the listing notwithstanding.
+     *
+     * @param array<string, string> $failures
+     */
+    #[DataProvider('tokenListingsAtALostOwnershipGate')]
+    public function testForeignMarkerAtTheTokenGateRevokesNothing(array $failures): void
+    {
+        $foreign = '{"acct":[{"user":"wlupload","domain":"wlupload.example.com",'
+            . '"email":"private-foreign@example.com"}]}';
+        $http = new FilemanUploadServer();
+        $http->failures = $failures;
+        $http->overrides['listaccts:5'] = $foreign;
+        $http->overrides['listaccts:6'] = $foreign;
+        $scenario = self::scenario($http);
+        self::assertArrayNotHasKey('Tokens/revoke', $http->counts);
+        self::assertArrayNotHasKey('removeacct', $http->counts);
+        self::assertSame(['wlupload-upload-fixture'], $http->tokens);
+        self::assertSame('unconfirmed', $scenario['fixture']['resources']['token']['cleanup']);
+        self::assertContains('token_absence_unconfirmed', $scenario['fixture']['failures']);
+    }
+
+    /** @return iterable<string, array{array<string, string>}> */
+    public static function tokenListingsAtALostOwnershipGate(): iterable
+    {
+        yield 'listing shows the token' => [[]];
+        yield 'listing unreadable' => [['Tokens/list:3' => 'throw_before']];
+    }
+
     public function testLostUploadResponseProvesNoOwnershipAndDeletesNoFile(): void
     {
         $http = new FilemanUploadServer();
