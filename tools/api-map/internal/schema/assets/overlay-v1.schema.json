@@ -95,7 +95,8 @@
           "enum": [
             "indexed",
             "repeat",
-            "map"
+            "map",
+            "delimited"
           ]
         },
         "item_type": {
@@ -129,6 +130,12 @@
           "type": "integer",
           "minimum": 0,
           "maximum": 2147483647
+        },
+        "delimiter": {
+          "enum": [
+            ",",
+            "|"
+          ]
         }
       },
       "required": [
@@ -160,6 +167,15 @@
               "empty": {
                 "const": "reject"
               }
+            },
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "delimiter"
+                  ]
+                }
+              ]
             }
           }
         },
@@ -187,6 +203,11 @@
                 {
                   "required": [
                     "start"
+                  ]
+                },
+                {
+                  "required": [
+                    "delimiter"
                   ]
                 }
               ]
@@ -217,6 +238,52 @@
             },
             "not": {
               "anyOf": [
+                {
+                  "required": [
+                    "separator"
+                  ]
+                },
+                {
+                  "required": [
+                    "start"
+                  ]
+                },
+                {
+                  "required": [
+                    "delimiter"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "delimited"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "delimiter"
+            ],
+            "properties": {
+              "item_type": {
+                "const": "string"
+              },
+              "empty": {
+                "const": "reject"
+              }
+            },
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "prefix"
+                  ]
+                },
                 {
                   "required": [
                     "separator"

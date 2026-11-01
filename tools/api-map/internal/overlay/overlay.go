@@ -170,6 +170,7 @@ type Collection struct {
 	Prefix      *string `json:"prefix,omitempty"`
 	Separator   *string `json:"separator,omitempty"`
 	Start       *int    `json:"start,omitempty"`
+	Delimiter   *string `json:"delimiter,omitempty"`
 }
 
 // Param renames, re-encodes or omits one documented parameter, keyed by wire

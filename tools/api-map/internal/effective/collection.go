@@ -30,7 +30,7 @@ func (b *builder) collection(op model.Operation, source model.Parameter, ov over
 		b.problem(op.ID + ": parameter " + source.Name + ": collection needs doc evidence matching source_sha256 and parameter/prose pointer")
 	}
 	item := spec
-	if c.Kind != "map" && spec.Type == "list" && spec.Items != nil {
+	if c.Kind != "map" && c.Kind != "delimited" && spec.Type == "list" && spec.Items != nil {
 		item = *spec.Items
 	}
 	compatible := func(t TypeSpec) bool {
@@ -56,6 +56,21 @@ func (b *builder) collection(op model.Operation, source model.Parameter, ov over
 	if !ok || (spec.Type == "list" && item.Nullable) {
 		b.problem(op.ID + ": parameter " + source.Name + ": collection item_type is incompatible with the source scalar/list type")
 	}
+	if c.Kind == "delimited" {
+		schema, concrete := asObject(source.Definition["schema"])
+		_, content := source.Definition["content"]
+		valid := concrete && !content && schema["type"] == "string" && schema["format"] != "json" &&
+			!isNullable(schema) && !enumHasNull(schema) && spec.Type == "string" && !spec.Nullable
+		for _, key := range []string{"$ref", "$dynamicRef", "allOf", "anyOf", "oneOf", "not", "if", "then", "else", "discriminator", "items", "prefixItems", "contains", "additionalItems", "unevaluatedItems", "properties", "patternProperties", "additionalProperties", "unevaluatedProperties", "propertyNames", "required", "dependentSchemas"} {
+			if _, present := schema[key]; present {
+				valid = false
+			}
+		}
+		if !valid {
+			b.problem(op.ID + ": parameter " + source.Name + ": delimited collection requires a concrete nonnullable string source without content, JSON format, references, composition or structures")
+		}
+	}
+
 	param.Collection = c
 	param.Encoding = "collection"
 	param.PHPType = "array"

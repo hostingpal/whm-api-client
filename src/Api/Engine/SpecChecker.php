@@ -294,24 +294,27 @@ final class SpecChecker
                 $maps[$wire] = true;
             }
         }
-        self::firstUnsuffixedOverlaps($params);
+        self::optedInFamilyOverlaps($params);
     }
 
     /**
-     * Check the opt-in record namespace even when no arguments are supplied.
+     * Check delimited and opt-in record namespaces even when no arguments are supplied.
      *
      * Old descriptors retain their existing checks. Unknown map keys are checked
      * by OrderedFields when their concrete values are prepared.
      *
      * @param array<string, array<mixed>> $params
      */
-    private static function firstUnsuffixedOverlaps(array $params): void
+    private static function optedInFamilyOverlaps(array $params): void
     {
         $optedIn = false;
         foreach ($params as $param) {
             $record = $param['records'] ?? null;
+            $collection = $param['collection'] ?? null;
             $optedIn = $optedIn || (($param['encoding'] ?? null) === 'records'
-                && is_array($record) && ($record['first_unsuffixed'] ?? false) === true);
+                && is_array($record) && ($record['first_unsuffixed'] ?? false) === true)
+                || (($param['encoding'] ?? null) === 'collection'
+                    && is_array($collection) && ($collection['kind'] ?? null) === 'delimited');
         }
         if (!$optedIn) {
             return;
@@ -324,22 +327,28 @@ final class SpecChecker
                 throw new LogicException('Invalid parameter spec.');
             }
             $record = $encoding === 'records' ? RecordEncoder::check($param['records'] ?? null) : null;
-            $opted = ($record['first_unsuffixed'] ?? false) === true;
+            $collection = $param['collection'] ?? null;
+            $firstUnsuffixed = ($record['first_unsuffixed'] ?? false) === true;
+            $opted = $firstUnsuffixed || ($encoding === 'collection'
+                && is_array($collection) && ($collection['kind'] ?? null) === 'delimited');
             $names = [];
             $tails = [];
             if ($record !== null) {
                 foreach ($record['fields'] as $field) {
-                    if ($opted) {
+                    if ($firstUnsuffixed) {
                         $names[] = $field['prefix'];
                     }
-                    $tails[] = [$field['prefix'] . $record['separator'], $opted ? 1 : $record['start']];
+                    $tails[] = [$field['prefix'] . $record['separator'], $firstUnsuffixed ? 1 : $record['start']];
                 }
             } elseif ($encoding === 'collection') {
                 $collection = CollectionEncoder::check($param['collection'] ?? null);
                 if ($collection['kind'] === 'map') {
                     continue;
                 }
-                if ($collection['kind'] === 'repeat' || $collection['allow_scalar']) {
+                if (
+                    $collection['kind'] === 'repeat' || $collection['kind'] === 'delimited'
+                    || $collection['allow_scalar']
+                ) {
                     $names[] = $wire;
                 }
                 if ($collection['kind'] === 'indexed') {
@@ -374,7 +383,7 @@ final class SpecChecker
                     }
                 }
                 if ($overlap) {
-                    throw new LogicException('Overlapping wire names in first-unsuffixed record specs.');
+                    throw new LogicException('Overlapping wire names in collection/record parameter specs.');
                 }
             }
         }

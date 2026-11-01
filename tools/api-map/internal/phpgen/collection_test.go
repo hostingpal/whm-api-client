@@ -14,6 +14,22 @@ import (
 
 func TestRenderExplicitCollectionNativeDocAndCompleteSpec(t *testing.T) {
 	for _, tc := range []struct{ descriptor, native, doc, spec string }{
+		{`{"kind":"delimited","item_type":"string","allow_scalar":true,"empty":"reject","delimiter":","}`, "string|array|null", "string|non-empty-list<string>|null",
+			`                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => ',',
+                ],`},
+		{`{"kind":"delimited","item_type":"string","allow_scalar":false,"empty":"reject","delimiter":"|"}`, "?array", "non-empty-list<string>|null",
+			`                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => false,
+                    'empty' => 'reject',
+                    'delimiter' => '|',
+                ],`},
 		{`{"kind":"indexed","item_type":"string","allow_scalar":true,"empty":"reject","prefix":"domain","separator":"-","start":0}`, "string|array|null", "string|non-empty-list<string>|null",
 			`                'collection' => [
                     'kind' => 'indexed',
@@ -79,6 +95,8 @@ func TestRenderExplicitCollectionNativeDocAndCompleteSpec(t *testing.T) {
 
 func TestRenderNonsecretCollectionStillRedactsPublicFrame(t *testing.T) {
 	for _, tc := range []struct{ descriptor, native, doc string }{
+		{`{"kind":"delimited","item_type":"string","allow_scalar":false,"empty":"reject","delimiter":","}`, "array", "non-empty-list<string>"},
+		{`{"kind":"delimited","item_type":"string","allow_scalar":true,"empty":"reject","delimiter":"|"}`, "string|array", "string|non-empty-list<string>"},
 		{`{"kind":"indexed","item_type":"string","allow_scalar":true,"empty":"reject","prefix":"domain","separator":"-","start":0}`, "string|array", "string|non-empty-list<string>"},
 		{`{"kind":"map","item_type":"string","allow_scalar":false,"empty":"allow","prefix":""}`, "array", "array<string, string>"},
 	} {

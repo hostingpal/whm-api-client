@@ -15,6 +15,8 @@ const namedMapDescriptor = `{"kind":"map","item_type":"string","allow_scalar":fa
 
 func TestCollectionPreciseEffectiveTypes(t *testing.T) {
 	for _, tc := range []struct{ source, descriptor, native, doc string }{
+		{`{"type":"string"}`, delimitedDescriptor, "string|array", "string|non-empty-list<string>"},
+		{`{"type":"string"}`, strings.Replace(delimitedDescriptor, `true`, `false`, 1), "array", "non-empty-list<string>"},
 		{`{"type":"string"}`, namedMapDescriptor, "array", "array<string, string>"},
 		{`{"type":"string"}`, strings.Replace(namedMapDescriptor, `"empty":"allow"`, `"empty":"reject"`, 1), "array", "non-empty-array<string, string>"},
 		{`{"type":"integer"}`, strings.Replace(namedMapDescriptor, `"item_type":"string"`, `"item_type":"int"`, 1), "array", "array<string, int>"},
@@ -226,52 +228,54 @@ func TestCollectionRejectsTypedRepeatLegacyNumberedOverlapInBothOrders(t *testin
 // Trace redaction for ordinary lists must not turn an inventory GET into POST;
 // actual secret names and explicit sensitive decisions still require POST.
 func TestCollectionTraceRedactionPreservesTransportPolicy(t *testing.T) {
-	for _, tc := range []struct {
-		name, wire, decision, method, want, problem string
-	}{
-		{"plain inferred GET", "username", "", "", "GET", ""},
-		{"plain explicit GET", "username", "", "GET", "GET", ""},
-		{"explicit nonsecret GET", "username", `,"sensitive":false`, "GET", "GET", ""},
-		{"explicit secret inferred POST", "username", `,"sensitive":true`, "", "POST", ""},
-		{"explicit secret refuses GET", "username", `,"sensitive":true`, "GET", "", "secret-bearing parameters require POST"},
-		{"secret name inferred POST", "password", "", "", "POST", ""},
-		{"secret name refuses GET", "password", "", "GET", "", "secret-bearing parameters require POST"},
-	} {
-		t.Run(tc.name, func(t *testing.T) {
-			m := fixtureMap(t)
-			for i := range m.Operations {
-				if m.Operations[i].ID != "whm1:createacct" {
-					continue
+	for _, descriptor := range []string{indexedDescriptor, namedMapDescriptor, delimitedDescriptor} {
+		for _, tc := range []struct {
+			name, wire, decision, method, want, problem string
+		}{
+			{"plain inferred GET", "username", "", "", "GET", ""},
+			{"plain explicit GET", "username", "", "GET", "GET", ""},
+			{"explicit nonsecret GET", "username", `,"sensitive":false`, "GET", "GET", ""},
+			{"explicit secret inferred POST", "username", `,"sensitive":true`, "", "POST", ""},
+			{"explicit secret refuses GET", "username", `,"sensitive":true`, "GET", "", "secret-bearing parameters require POST"},
+			{"secret name inferred POST", "password", "", "", "POST", ""},
+			{"secret name refuses GET", "password", "", "GET", "", "secret-bearing parameters require POST"},
+		} {
+			t.Run(tc.name, func(t *testing.T) {
+				m := fixtureMap(t)
+				for i := range m.Operations {
+					if m.Operations[i].ID != "whm1:createacct" {
+						continue
+					}
+					v := &m.Operations[i].Variants[0]
+					v.Parameters = v.Parameters[:1]
+					v.Parameters[0].Name = tc.wire
+					v.Parameters[0].Definition["name"] = tc.wire
+					v.Risk.Classification = "read-only"
 				}
-				v := &m.Operations[i].Variants[0]
-				v.Parameters = v.Parameters[:1]
-				v.Parameters[0].Name = tc.wire
-				v.Parameters[0].Definition["name"] = tc.wire
-				v.Risk.Classification = "read-only"
-			}
-			var op overlay.Operation
-			raw := `{"name":"createAccount","params":{"` + tc.wire + `":{"collection":` + indexedDescriptor + tc.decision + `}},"evidence":[{"kind":"doc","version":"synthetic fixture only","date":"2026-10-31","note":"Fixture collection transport policy","source_sha256":"y","pointer":"/paths/~1createacct/get/parameters/0"}]}`
-			if err := json.Unmarshal([]byte(raw), &op); err != nil {
-				t.Fatal(err)
-			}
-			op.Method = tc.method
-			set := fixtureOverlay("listed")
-			set.Files[1].Operations["whm1:createacct"] = op
-			result, problems := buildProblems(t, m, set)
-			if tc.problem != "" {
-				if !strings.Contains(problems, tc.problem) {
-					t.Fatalf("secret transport policy bypassed: %s", problems)
+				var op overlay.Operation
+				raw := `{"name":"createAccount","params":{"` + tc.wire + `":{"collection":` + descriptor + tc.decision + `}},"evidence":[{"kind":"doc","version":"synthetic fixture only","date":"2026-10-31","note":"Fixture collection transport policy","source_sha256":"y","pointer":"/paths/~1createacct/get/parameters/0"}]}`
+				if err := json.Unmarshal([]byte(raw), &op); err != nil {
+					t.Fatal(err)
 				}
-				return
-			}
-			if problems != "" {
-				t.Fatal(problems)
-			}
-			got := groupByClass(t, result, "Accounts").Operations[0]
-			if got.Method != tc.want || got.Params[0].Sensitive != (tc.wire == "password" || tc.decision == `,"sensitive":true`) {
-				t.Fatalf("transport/redaction policy lost: %+v", got)
-			}
-		})
+				op.Method = tc.method
+				set := fixtureOverlay("listed")
+				set.Files[1].Operations["whm1:createacct"] = op
+				result, problems := buildProblems(t, m, set)
+				if tc.problem != "" {
+					if !strings.Contains(problems, tc.problem) {
+						t.Fatalf("secret transport policy bypassed: %s", problems)
+					}
+					return
+				}
+				if problems != "" {
+					t.Fatal(problems)
+				}
+				got := groupByClass(t, result, "Accounts").Operations[0]
+				if got.Method != tc.want || got.Params[0].Sensitive != (tc.wire == "password" || tc.decision == `,"sensitive":true`) {
+					t.Fatalf("transport/redaction policy lost: %+v", got)
+				}
+			})
+		}
 	}
 }
 

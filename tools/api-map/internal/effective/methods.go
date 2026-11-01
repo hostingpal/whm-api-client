@@ -160,7 +160,7 @@ func (b *builder) additionalMethods(op model.Operation, v model.Variant, ov over
 				}
 				exact := !overlay.IsSuffixNumbered(other.Encoding)
 				if other.Collection != nil {
-					exact = other.Collection.Kind == "repeat" || other.Collection.AllowScalar != nil && *other.Collection.AllowScalar
+					exact = other.Collection.Kind == "repeat" || other.Collection.Kind == "delimited" || other.Collection.AllowScalar != nil && *other.Collection.AllowScalar
 				}
 				base, start, indexed := indexedBase(other)
 				if exact && p.Wire == other.Wire || indexed && indexContains(base, start, p.Wire) {

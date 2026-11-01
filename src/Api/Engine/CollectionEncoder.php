@@ -10,9 +10,11 @@ use SensitiveParameter;
 use stdClass;
 
 /**
- * Explicit strict indexed/repeated list and named-map grammar, independent of legacy markers.
+ * Explicit strict indexed/repeated/delimited list and named-map grammar, independent of legacy markers.
  *
  * @phpstan-type CollectionSpec array{
+ *     kind: 'delimited', item_type: 'string', allow_scalar: bool, empty: 'reject', delimiter: ','|'|'
+ * }|array{
  *     kind: 'repeat', item_type: 'string'|'int'|'bool'|'string|int', allow_scalar: bool, empty: 'reject'
  * }|array{
  *     kind: 'indexed', item_type: 'string'|'int'|'bool'|'string|int', allow_scalar: bool, empty: 'reject',
@@ -35,7 +37,7 @@ final class CollectionEncoder
     {
         if (
             !is_array($spec)
-            || !in_array($spec['kind'] ?? null, ['indexed', 'repeat', 'map'], true)
+            || !in_array($spec['kind'] ?? null, ['indexed', 'repeat', 'map', 'delimited'], true)
             || !in_array($spec['item_type'] ?? null, ['string', 'int', 'bool', 'string|int'], true)
             || !is_bool($spec['allow_scalar'] ?? null)
             || !in_array($spec['empty'] ?? null, $spec['kind'] === 'map' ? ['allow', 'reject'] : ['reject'], true)
@@ -43,6 +45,12 @@ final class CollectionEncoder
             throw new LogicException('Invalid collection descriptor.');
         }
         $keys = ['kind', 'item_type', 'allow_scalar', 'empty'];
+        if ($spec['kind'] === 'delimited') {
+            if ($spec['item_type'] !== 'string' || !in_array($spec['delimiter'] ?? null, [',', '|'], true)) {
+                throw new LogicException('Invalid delimited collection rules.');
+            }
+            $keys[] = 'delimiter';
+        }
         if ($spec['kind'] === 'map') {
             if (
                 $spec['allow_scalar'] !== false
@@ -69,6 +77,10 @@ final class CollectionEncoder
         if (array_diff(array_keys($spec), $keys) !== []) {
             throw new LogicException('Unsupported collection descriptor fields.');
         }
+        if ($spec['kind'] === 'delimited') {
+            return ['kind' => 'delimited', 'item_type' => 'string', 'allow_scalar' => $spec['allow_scalar'],
+                'empty' => 'reject', 'delimiter' => $spec['delimiter']];
+        }
         if ($spec['kind'] === 'map') {
             return ['kind' => 'map', 'item_type' => $spec['item_type'], 'allow_scalar' => false,
                 'empty' => $spec['empty'], 'prefix' => $spec['prefix']];
@@ -87,7 +99,8 @@ final class CollectionEncoder
      * Append every strict item in original order, retaining argument provenance.
      *
      * For list kinds, a scalar uses the original unsuffixed name; arrays always
-     * use the list pattern. No empty, sparse or keyed array becomes a valid list.
+     * use the list pattern, or join once for delimited lists after full validation.
+     * No empty, sparse or keyed array becomes a valid list.
      * Maps use the explicit literal prefix and preserve every valid caller key.
      *
      * @throws InvalidArgumentException If the input does not match its descriptor.
@@ -115,6 +128,16 @@ final class CollectionEncoder
         }
         if ($value === [] || !array_is_list($value)) {
             throw new InvalidArgumentException('Collection arguments require a nonempty sequential list.');
+        }
+        if ($spec['kind'] === 'delimited') {
+            foreach ($value as $item) {
+                if (!is_string($item) || str_contains($item, $spec['delimiter'])) {
+                    throw new InvalidArgumentException('Delimited items must be strings without the delimiter.');
+                }
+            }
+            $fields->append($origin, $wire, implode($spec['delimiter'], $value), null, false);
+
+            return;
         }
         $family = $spec['kind'] === 'repeat' ? new stdClass() : null;
         foreach ($value as $position => $item) {

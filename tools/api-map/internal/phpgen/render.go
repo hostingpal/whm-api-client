@@ -579,6 +579,9 @@ func specClass(g effective.Group) string {
 					w.line("                    'item_type' => " + phpString(c.ItemType) + ",")
 					w.line(fmt.Sprintf("                    'allow_scalar' => %t,", *c.AllowScalar))
 					w.line("                    'empty' => " + phpString(c.Empty) + ",")
+					if c.Kind == "delimited" {
+						w.line("                    'delimiter' => " + phpString(*c.Delimiter) + ",")
+					}
 					if c.Kind == "indexed" || c.Kind == "map" {
 						w.line("                    'prefix' => " + phpString(*c.Prefix) + ",")
 					}

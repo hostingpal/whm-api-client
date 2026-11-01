@@ -119,6 +119,22 @@ Operation entries (all keys optional):
   all collection arguments receive `SensitiveParameter` for trace protection,
   independently of secret-bearing transport classification. Source/overlay secret
   decisions still require POST; ordinary read-only collection inputs retain GET.
+  `kind: "delimited"` requires `item_type: "string"`, `allow_scalar: true` or
+  `false`, `empty: "reject"` and `delimiter: ","` or `"|"`; no other descriptor
+  facts are permitted. For example `{"kind":"delimited","item_type":"string",
+  "allow_scalar":true,"empty":"reject","delimiter":","}` accepts either an
+  unchanged strict string or a nonempty sequential string list. Every list item
+  must exclude the selected delimiter. Validated items join literally into one
+  ordinary field under the original wire name, encoded once. Order, duplicates,
+  empty strings, whitespace, Unicode and binary bytes are preserved; `['']`
+  emits an explicit empty field, while `[]` rejects. Scalars are never parsed,
+  trimmed or rejoined and may contain delimiters. Optional whole null omits.
+  Delimited collections require a concrete nonnullable source schema of type
+  string, without content, JSON format, references, compositions or array/object
+  structures. Source enums and patterns do not become runtime guards. The same
+  exact-SHA parameter/prose evidence gate applies. Other kinds forbid delimiter,
+  including explicit null. The original wire name is reserved even for an omitted
+  array-only input; fixed, indexed, map, record and routing collisions fail locally.
   `kind: "map"` requires `allow_scalar: false`, `empty: "allow"` or `"reject"`,
   and a mandatory literal `prefix` (empty or `[A-Za-z_][A-Za-z0-9_-]*`); it forbids
   separator/start. For example `{"kind":"map","item_type":"bool",
