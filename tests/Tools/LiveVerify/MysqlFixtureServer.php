@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace HostingPal\WhmApiClient\Tests\Tools\LiveVerify;
 
+use Closure;
 use LogicException;
 use Nyholm\Psr7\Response;
 use Psr\Http\Client\ClientExceptionInterface;
@@ -42,6 +43,9 @@ final class MysqlFixtureServer implements ClientInterface
     /** @var array<string, string> */
     public array $overrides = [];
 
+    /** @var array<string, Closure(): void> Another process acting just before the keyed step is served. */
+    public array $before = [];
+
     /** @var list<array{string, string, string, string}> */
     public array $privilegeRequests = [];
 
@@ -58,6 +62,9 @@ final class MysqlFixtureServer implements ClientInterface
         $this->counts[$key] = ($this->counts[$key] ?? 0) + 1;
         $step = $key . ':' . $this->counts[$key];
         $this->steps[] = $step;
+        if (isset($this->before[$step])) {
+            ($this->before[$step])();
+        }
         $failure = $this->failures[$step] ?? '';
         if ($failure === 'throw_before') {
             self::failTransport();
@@ -79,13 +86,19 @@ final class MysqlFixtureServer implements ClientInterface
         }
         switch ($function) {
             case 'create_database':
+                if (array_key_exists($name, $this->databases)) {
+                    return self::response('null', $bridge, false);
+                }
                 $this->databases[$name] = [];
                 break;
             case 'create_user':
-                $this->users[$name] = [];
                 if (is_string($parameters['password'] ?? null)) {
                     $this->passwords[] = $parameters['password'];
                 }
+                if (array_key_exists($name, $this->users)) {
+                    return self::response('null', $bridge, false);
+                }
+                $this->users[$name] = [];
                 break;
             case 'set_privileges_on_database':
                 $this->databases['npr_wva1b2c3d'] = ['npr_wva1b2c3u'];
