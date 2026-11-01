@@ -113,7 +113,7 @@ final class OperationRunner
      * unwrapped field must be present in the validated object.
      *
      * An explicit "rows" policy preserves valid row-bearing status-0 batches, but
-     * classifies explicit null or a fully validated object with an empty row list
+     * classifies explicit null or a fully validated payload with an empty selected row list
      * as ApiErrorException. Missing data or rows and malformed known fields remain
      * payload mismatches. Status 1 retains the declared field optionality.
      *
@@ -164,10 +164,12 @@ final class OperationRunner
         try {
             $value = self::validated($spec, $returns, $response, $read);
             if ($failedRows) {
-                if (!is_array($value) || !array_key_exists($rows, $value)) {
+                // List roots use '$'; an object field named '$' remains literal.
+                $root = ($returns['type'] ?? null) === 'list' && $rows === '$';
+                if (!is_array($value) || (!$root && !array_key_exists($rows, $value))) {
                     return $read->fail();
                 }
-                if ($value[$rows] === []) {
+                if (($root ? $value : $value[$rows]) === []) {
                     throw new ApiErrorException(
                         'UAPI operation failed; inspect errors() or response metadata.',
                         $response->metadata,

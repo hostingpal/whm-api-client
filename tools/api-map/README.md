@@ -246,12 +246,20 @@ Operation entries (all keys optional):
   with `void`). Read-only operations default to GET; mutating, unknown-risk and
   secret-bearing ones default to POST, and GET is refused for secret-bearing ones.
 - `rows`: a nonempty declared result-field name for an unchecked UAPI object
-  batch, without void, optional_payload or unwrap. Root, list and object rows must
+  batch, or `$` selecting a nonnullable root list of nonnullable objects, without
+  void, optional_payload or unwrap. Root, list and object rows must
   be nonnullable. Exact source hash/pointer evidence binds the selected row field
   in the reviewed result/data response schema; other source layouts are unsupported.
   Status 0 plus explicit null or a fully validated empty row list raises API error;
   missing data/rows or malformed known fields remain payload mismatches. Status 1
-  keeps pinned optional fields. Only Fileman/upload_files opts in here.
+  keeps pinned optional fields. Fileman/upload_files selects its uploads field; ImageManager/create_thumbnails
+  selects the whole list with `$`.
+  For root lists, evidence must bind the exact selected source SHA and
+  `/responses/200/content/application~1json/schema/properties/result/properties/data`
+  pointer. `$` on object roots remains a literal declared field name with its
+  existing field evidence binding. Whole payload validation precedes empty-list
+  classification; other Unchecked operations do not inherit this policy.
+
 - `optional_payload`: an omitted or null `data` member is a valid response; the
   spec gains `'optional' => true`, the method's return type becomes nullable and
   it returns null in that case (other payloads are validated as usual). Needs a
@@ -403,8 +411,8 @@ canonical route, method, selected variant, response shape/result alias,
 optional/unwrap rules and outcome, replacing only `params`. No separate response,
 `Unchecked` override or failure schema belongs in `additional_methods`. Both
 symbols appear in coverage while the canonical operation counts once. The
-ModSecurity alias is one extra public method across the existing 1,142 canonical
-operations, 99 groups and 200 generated PHP files (201 outputs with coverage.md).
+ModSecurity alias is one extra public method across the current 1,154 canonical
+operations, 100 groups and 202 generated PHP files (203 outputs with coverage.md).
 It issues one request, without batching loops, automatic reads, retries or rollback.
 
 Query parameters with `content` support exactly one `application/json` media entry

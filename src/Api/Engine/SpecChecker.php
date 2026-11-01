@@ -200,9 +200,10 @@ final class SpecChecker
     }
 
     /**
-     * Limit no-row failure classification to explicit unchecked UAPI object batches.
+     * Limit no-row failure classification to explicit unchecked UAPI object or root-list batches.
      *
-     * The list and its object items must be nonnullable. Field requiredness remains
+     * A list root uses rows '$'; object selectors remain literal field names.
+     * The root, selected list and its object items must be nonnullable. Field requiredness remains
      * part of the payload schema; only status 0 additionally needs usable rows.
      *
      * @param array<mixed> $spec
@@ -215,7 +216,9 @@ final class SpecChecker
 
         $name = $spec['rows'];
         $fields = is_array($returns) ? ($returns['fields'] ?? null) : null;
-        $field = is_array($fields) && is_string($name) ? ($fields[$name] ?? null) : null;
+        // '$' selects the root only for a list; object keys remain literal.
+        $root = is_array($returns) && ($returns['type'] ?? null) === 'list' && $name === '$';
+        $field = $root ? $returns : (is_array($fields) && is_string($name) ? ($fields[$name] ?? null) : null);
         $items = is_array($field) ? ($field['items'] ?? null) : null;
         if (
             !is_string($name)
@@ -225,7 +228,7 @@ final class SpecChecker
             || array_key_exists('optional', $spec)
             || array_key_exists('unwrap', $spec)
             || !is_array($returns)
-            || ($returns['type'] ?? null) !== 'object'
+            || (!$root && ($returns['type'] ?? null) !== 'object')
             || ($returns['nullable'] ?? false) === true
             || !is_array($field)
             || ($field['type'] ?? null) !== 'list'

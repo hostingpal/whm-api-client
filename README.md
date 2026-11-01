@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 99 generated typed groups cover 1,150 documented operations (see
+The 100 generated typed groups cover 1,154 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, DNS zone and DNSSEC
 management, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -383,6 +383,7 @@ remain unobserved under `8x0.2.59`.
 | `uapi()->features()` | All 5 operations: `getFeatureMetadata()`, `hasFeature()`, `hasFeaturesLike()`, `listFeatures()`, `listFeaturesLike()` |
 | `uapi()->email()` | All 96 pinned functions, including mailbox lifecycle, quotas and suspension, forwarders, filters, MX routing, autoresponders, spam settings and delivery diagnostics; see [generated methods](src/Api/Uapi/Email.php). |
 | `uapi()->ssl()` | All 49 nondeprecated functions, including certificate/key/CSR inventory and lifecycle, installation, AutoSSL, SNI and redirects; see [generated methods](src/Api/Uapi/Ssl.php). |
+| `uapi()->imageManager()` | `convertFile()`, `createThumbnails()`, `getDimensions()`, `resizeImage()` (complete pinned module). |
 | `uapi()->logManager()` | `deleteArchive()`, `getSettings()`, `listArchives()`, `listErrorLogs()`, `setSettings()`, `viewErrorLog()`; see [log administration](#log-administration). |
 | `uapi()->nova()` | All 11 pinned functions; see [Nova and Sitejet site builders](#nova-and-sitejet-site-builders). |
 | `uapi()->sitejet()` | All 12 nondeprecated pinned functions; see [Nova and Sitejet site builders](#nova-and-sitejet-site-builders). |
@@ -3652,6 +3653,74 @@ required upload alternative. Streaming, source preparation, transport, old gener
 operations and SSL bridge behavior remain unchanged. Approved parent source/preparation and Fileman/WHM corrections are integrated.
 Server-path modes (.30.9), owned Fileman evidence (.30.5) and native Windows
 verification (.30.10) remain separate open work.
+
+
+### UAPI ImageManager (2026-10-31)
+
+`uapi()->imageManager()` exposes all four pinned functions, available from
+cPanel 82 with the WebServer role. `getDimensions(imageFile)` uses GET and
+returns optional integer pixel `height` and `width` fields.
+`convertFile(imageFile, type)`, `createThumbnails(dir, heightPercentage,
+widthPercentage)` and `resizeImage(height, imageFile, width, saveOriginalAs:
+null)` use form POST. Paths are account-server paths sent unchanged and encoded
+once; the client does not access local files or normalize paths. The pinned
+conversion prose describes account `/home` relative paths; reviewer cPanel
+11.138.0.19 calls also accepted absolute paths under that home. This is no
+universal confinement guarantee. The reviewed conversion handler
+character-checks `type` only: `nope` succeeded and wrote a `.nope` extension; no
+format enum is added. Positive dimensions and thumbnail percentages 1 through 99
+are documented requirements; integer forwarding adds no new range validation or
+promise that zero/negative values work upstream.
+
+```php
+$images = $client->uapi('example')->imageManager();
+$dimensions = $images->getDimensions(imageFile: 'images/photo.jpg');
+$converted = $images->convertFile(imageFile: 'images/photo.jpg', type: 'png');
+$thumbnails = $images->createThumbnails(dir: 'images', heightPercentage: 25, widthPercentage: 25);
+$resizedPath = $images->resizeImage(height: 300, imageFile: 'images/photo.jpg', width: 200,
+    saveOriginalAs: 'images/original.jpg');
+```
+
+Conversion returns optional `converted_file`; resize returns the absolute
+resized image path as a string. Thumbnail rows retain optional integer `failed`
+and optional string `file`, `reason` and `thumbnail_file` fields, including
+partial failures under API status 1. The source documents `failed=1` only on
+failure; the existing integer contract does not enforce that singleton enum.
+Thumbnails go in a `thumbnails` subdirectory with `tn_` filenames. Inspect every
+row; success does not prove every thumbnail exists. Optional result fields
+preserve omission, and empty thumbnail lists stay empty. Dimensions normalize
+evidenced canonical bounded integer strings to optional integers under the
+existing signed integer compatibility policy. Thumbnail status 0 returns every
+validated nonempty row, including all-failed reasons. Status 0 with an empty
+list or explicit null raises `ApiErrorException`; empty-directory failures can
+have `errors()` empty. Missing data, wrong roots and malformed known row fields
+remain payload mismatches with `outcomeConfirmed=false`. Status 1 permits an
+empty list and retains strict payload validation. Other operations retain Flag
+outcomes.
+
+Omitted/null `saveOriginalAs` sends no field and saves no original copy; an
+explicit empty string stays present. `saveOriginalAs` must be a NEW FILE path.
+The server rejects existing paths, including directories. The pinned parameter
+prose says directory, but reviewed source and both-route cPanel 11.138.0.19
+calls resolve it to a file: `img/orig.png` retained the original 10x5 image
+while existing directory `img` failed. The client performs no local filesystem
+existence check. The client does no implicit read, backup, restore, cleanup,
+collision handling, retry or rollback, and promises no atomicity. Resize has a
+pinned clean rollback label, without a defined client restore protocol. No
+server calls or image mutations ran for this slice. Offline tests establish
+requests and payload handling; live transformations and HTTP image behavior
+remain open under `8x0.2.60`.
+
+Exactly four canonical operations are added: 1,154 total (558 UAPI, 596 WHM),
+100 groups and 203 generated outputs (202 PHP files plus coverage). The guarded
+root-list `rows: "$"` extension is explicit and source-bound; other Unchecked,
+generic and Fileman object-field policies keep their existing behavior. Pinned
+sources and historical evidence remain unchanged.
+
+Review corrections above are attributed to [PR93 review 5724933500](https://github.com/hostingpal/whm-api-client/pull/93#pullrequestreview-5724933500)
+of revision `0898b8b23929b57c233aa3065be8c460aa2f8d23`, submitted
+2026-10-31T21:07:45Z. The reviewer removed the disposable account/home and revoked
+temporary tokens after both runs. This correction made no server call or capture.
 
 
 ## License

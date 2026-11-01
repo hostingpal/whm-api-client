@@ -75,6 +75,8 @@ trait UapiGroups
 
     private ?Gpg $gpgGroup = null;
 
+    private ?ImageManager $imageManagerGroup = null;
+
     private ?KnownHosts $knownHostsGroup = null;
 
     private ?LangPhp $langPhpGroup = null;
@@ -463,6 +465,16 @@ trait UapiGroups
     public function gpg(): Gpg
     {
         return $this->gpgGroup ??= new Gpg($this->run(...));
+    }
+
+    /**
+     * Select the ImageManager operations without making a request.
+     *
+     * The ImageManager module for UAPI.
+     */
+    public function imageManager(): ImageManager
+    {
+        return $this->imageManagerGroup ??= new ImageManager($this->run(...));
     }
 
     /**
