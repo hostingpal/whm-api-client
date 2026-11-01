@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 105 generated typed groups cover 1,201 documented operations (see
+The 106 generated typed groups cover 1,203 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, DNS zone and DNSSEC
 management, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -4054,3 +4054,47 @@ to baseline `99f3c83b99eaad926c6c9ac308e771c47c641430`.
 Delivery is `whm-api-client-8x0.4.27`; live follow-up `8x0.2.69` remains OPEN.
 Implementation used synthetic offline fixtures only. No real session, login,
 mailbox, mail delivery, server or account state changed.
+
+### UAPI user task queue (2026-11-01)
+
+`uapi()->userTasks()` covers both pinned UserTasks functions from cPanel 72 for
+the selected account. `listTasks()` sends one GET and returns the queue in server
+order, including an empty list. Row `action`, `args`, `id` and `subsystem` fields
+are optional. Present `args` is an object with optional string `repository_root`;
+unknown task/argument fields follow the existing known-field filtering. The source
+documents `create` and `VersionControl`, with the existing open string runtime
+policy. Do not infer arbitrary future subsystem arguments from the example.
+
+```php
+$tasks = $account->userTasks()->listTasks();
+// An explicit deletion call with a synthetic task ID; use an intentionally selected ID.
+$deleted = $account->userTasks()->deleteTask(id: '00000000\/5a9ec8dd4c345d');
+```
+
+`deleteTask(id)` sends one form POST. Its required string ID retains every byte:
+literal backslash/slash, slash, percent escapes, Unicode, plus and empty string
+are distinct values, encoded once without repair, normalization or unescaping.
+The result is a nullable opaque object: object fields survive, explicit null is
+returned as null, and missing data fails validation. Nullable is not void.
+Inventory rejects missing/null roots and invalid known field types. Existing
+empty-array object compatibility is retained; the decoder distinguishes `{}` and
+`[]`. Post-processing `metadata.transformed` and warnings remain available through
+`responseMeta()`, separate from task payloads and the UAPI outcome status.
+
+Deleting a queue entry does not establish task completion or running-process
+termination. The client performs no implicit inventory, polling, task execution,
+retry, restore or rollback. Each explicit call makes at most one request; API or
+outer-WHM failures precede payload validation. A payload mismatch after API success
+can follow a state change, so do not retry automatically.
+
+Task IDs, arguments, repository paths and explicit mismatch/metadata payloads are
+private data. IDs are sensitive method parameters as a client privacy policy,
+without claiming they are authentication tokens. Avoid logging results and
+exceptions' explicit payloads; library-owned trace arguments conceal sensitive
+inputs and responses. Returned repository paths are never opened.
+
+Generated coverage is 1,203 canonical operations (615 UAPI, 588 WHM), 106 groups
+and 215 outputs (214 PHP files plus coverage). This delivery
+`whm-api-client-8x0.4.30` has independent synthetic offline coverage only; live
+follow-up `whm-api-client-8x0.2.72` remains OPEN. No queue entry, repository,
+process, account or server state was accessed or changed during implementation.

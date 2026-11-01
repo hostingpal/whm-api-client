@@ -1,0 +1,94 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "UserTasks",
+  "accessor": "userTasks",
+  "description": "Selected-account user task queue inventory and deletion, available from cPanel 72. Task IDs and queue payloads are private. The client preserves identifier bytes and performs no task execution, polling, retry, restore or rollback. Offline source-backed coverage only; live follow-up whm-api-client-8x0.2.72 remains open.",
+  "operations": {
+    "uapi:UserTasks/retrieve": {
+      "name": "listTasks",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 72 and later; operates on the selected cPanel account, whose user task queue is separate from other accounts."
+        },
+        {
+          "kind": "policy",
+          "text": "Queue IDs, task arguments and repository paths are private payload data. Do not log results, raw metadata or PayloadMismatchException::$payload indiscriminately. Returned paths are never opened."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a nonnullable ordered list with optional action, args, id and subsystem fields. args, when supplied, is a nonnullable object with optional string repository_root. Empty lists and omitted fields remain distinct from explicit null."
+        },
+        {
+          "kind": "policy",
+          "text": "The source documents action=create and subsystem=VersionControl. Existing string-enum policy retains their documentation without adding a runtime enum validator. Only the formally declared repository_root argument is retained; unknown task and argument fields follow existing known-field filtering. Empty args objects and inherited empty-array object compatibility remain valid."
+        },
+        {
+          "kind": "documented",
+          "text": "Post-processing metadata.transformed remains envelope metadata accessible through responseMeta(); it is not a task payload field."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "note": "Select the pinned read-only GET operation with no parameters and the descriptive public method listTasks. Preserve cPanel 72 selected-account scope, formal optional inventory fields and envelope metadata.transformed without response corrections or new enum enforcement.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1UserTasks~1retrieve/get"
+        }
+      ]
+    },
+    "uapi:UserTasks/delete": {
+      "name": "deleteTask",
+      "method": "POST",
+      "params": {
+        "id": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 72 and later; operates on the selected cPanel account, whose user task queue is separate from other accounts."
+        },
+        {
+          "kind": "policy",
+          "text": "Queue IDs, task arguments and repository paths are private payload data. Do not log results, raw metadata or PayloadMismatchException::$payload indiscriminately. Returned paths are never opened."
+        },
+        {
+          "kind": "documented",
+          "text": "Deletes the supplied item from the selected account user task queue. Queue deletion does not establish task completion or running-process termination. The source declares no rollback; the client adds no implicit inventory, execution, polling, retry, restore or rollback."
+        },
+        {
+          "kind": "policy",
+          "text": "The required string id is forwarded unchanged with exactly one form encoding, including literal backslash/slash, slash, percent escapes, Unicode, plus and empty string. There is no normalization, unescaping or inferred ID format. Sensitivity is a client privacy policy for private account queue identifiers, not an authentication-token claim."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a nullable opaque object with no pinned fields. Preserve arbitrary object fields and explicit null; an absent data member is a payload mismatch. Existing empty-array object compatibility remains; nullable does not mean void or optional payload."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "note": "Select the pinned GET source variant and expose it as deleteTask. x-readonly=false and x-rollback=none select one form POST under the existing mutation policy. Preserve ordinary Flag outcome, cPanel 72 scope and nullable opaque object result without response corrections, unwrap or optional_payload.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1UserTasks~1delete/get"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "note": "The required query id is formally a string described as the task ID. Preserve source requiredness, the id PHP/wire name and exact bytes; examples include a literal backslash followed by slash, while retrieve also shows slash-only IDs. Mark this queue identifier sensitive as client privacy policy; do not infer a token, format, default, unescaping or path normalization.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1UserTasks~1delete/get/parameters/0"
+        }
+      ]
+    }
+  }
+}

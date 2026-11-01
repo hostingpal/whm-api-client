@@ -7401,3 +7401,54 @@ siteQuality accessor and coverage row/counts. Pinned sources, evidence, checksum
 schema copies and all historical audit text are preserved. All 55 inherited
 source diagnostics remain unwaived. PHP 8.3 is the supported minimum; local
 execution uses PHP 8.4.26, leaving PHP 8.3 execution to CI.
+
+
+### UserTasks complete source-backed slice (2026-11-01)
+
+Delivery `whm-api-client-8x0.4.30` selects both UserTasks operations from the original
+pinned `2026-10-13/cpanel.openapi.json.gz` (OpenAPI 11.138.0.10), decompressed SHA-256
+`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`.
+Selection, method, naming and task-ID sensitivity policy bind to
+`/paths/~1UserTasks~1retrieve/get`, `/paths/~1UserTasks~1delete/get` and the latter's
+`/parameters/0`. Both functions are available from cPanel 72 and operate on the
+selected account's separate queue. No endpoint exclusion, schema correction,
+requiredness override, optional-payload rule, void, unwrap or alias was added.
+
+`listTasks()` maps retrieve to GET with no parameters. Its nonnullable list
+preserves order/empty lists and optional action, args, id and subsystem fields.
+Present args is a nonnullable known-field object with optional string
+repository_root; no dynamic arguments are inferred from prose. The source's
+create/VersionControl string enums stay documented under existing runtime string
+policy. Unknown fields follow existing filtering. Empty objects and inherited
+empty-array object compatibility are retained; JSON object/array decoding stays
+distinct. metadata.transformed remains envelope metadata, not a new task field.
+
+`deleteTask(#[SensitiveParameter] string $id): ?array` maps the selected GET variant
+to form POST because x-readonly=false and x-rollback=none. Requiredness, id naming
+and exact bytes remain unchanged. Literal backslash/slash and slash-only source
+examples are distinct; percent escapes, Unicode, plus and empty strings also pass
+through one form encoding without normalization or repair. SensitiveParameter is
+client privacy policy for private queue work, not evidence of authentication.
+The source's nullable fieldless object lowers through existing map<mixed> support:
+unknown/nested fields and explicit null survive; missing data fails. Flag outcome
+and one-request runtime are unchanged. No implicit inventory, execution, polling,
+retry, restore or rollback was added. Queue deletion proves neither completion
+nor termination of a running process.
+
+Independent HTTP-boundary fixtures cover literal direct/bridge methods, auth,
+paths, queries, headers and form bytes; optional/private nested fields, string
+enum policy and filtering; missing/null/object/list/type distinctions; native
+signature failures before entry; metadata clearing/replacement and transformed/
+warnings retention; transport/HTTP/JSON/API/outer-WHM/payload precedence and actual
+library trace privacy. Task IDs, arguments, repository paths and explicit payload/
+metadata access are private; returned paths are never opened. Offline coverage
+establishes no live queue behavior or POST acceptance. Live follow-up
+`whm-api-client-8x0.2.72` remains OPEN; the full API goal remains OPEN.
+
+Generated coverage is 1,203 canonical operations (615 UAPI, 588 WHM), 106 groups
+and 215 outputs (214 PHP plus coverage). Existing generated contracts, overlays
+and accessors are preserved except the additive cached userTasks accessor and
+coverage row/counts. Pinned sources, evidence, map checksum, schema copies and
+historical source-audit prefix are unchanged. All 55 inherited diagnostics remain
+unwaived. PHP 8.3 is the supported minimum; local validation uses PHP 8.4.26 and
+exact-head PHP 8.3 CI remains a publication gate.
