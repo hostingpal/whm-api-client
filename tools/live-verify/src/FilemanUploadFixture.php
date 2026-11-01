@@ -47,6 +47,10 @@ use Throwable;
  * Fileman/get_file_content transcodes, so readback is a documented reversible check: the file is read as ISO-8859-1
  * into UTF-8 and compared with the independent mapping in FilemanUploadRecipe, never with a size alone.
  *
+ * In the report, capture says whether every planned observation finished, as in the finite-Quota fixture, and
+ * expectations whether they held. A failed observation leaves expectations not_run; an expectation that stops capture
+ * fails both; a wrong charset echo fails expectations alone, because capture finished, so stopped_at stays null.
+ *
  * @phpstan-import-type Alternative from EvidenceRunner
  * @phpstan-import-type Context from EvidenceRunner
  * @phpstan-import-type Label from FilemanUploadRecipe
@@ -140,6 +144,8 @@ final class FilemanUploadFixture
 
     private bool $expectationFailed = false;
 
+    private ?string $stoppedAt = null;
+
     private bool $creationOutcomeUnknown = false;
 
     private bool $used = false;
@@ -198,19 +204,23 @@ final class FilemanUploadFixture
             $this->setup($report);
             $report['setup'] = 'passed';
             $report['capture'] = 'failed';
-            $report['expectations'] = 'failed';
             $this->exercise($report);
             $report['capture'] = 'passed';
-            $report['expectations'] = 'passed';
         } catch (Throwable) {
-            $report['failures'][] = match (true) {
-                $report['setup'] !== 'passed' => 'setup_failure',
-                $this->expectationFailed => 'expectation_failure',
-                default => 'capture_failure',
-            };
+            if ($report['setup'] !== 'passed') {
+                $report['failures'][] = 'setup_failure';
+            } elseif (!$this->expectationFailed || $this->observationFailed()) {
+                $report['failures'][] = 'capture_failure';
+            }
             $last = array_key_last($this->records);
-            $report['stopped_at'] = $last === null ? null : $this->records[$last]['phase'];
+            $report['stopped_at'] = $this->stoppedAt ?? ($last === null ? null : $this->records[$last]['phase']);
         } finally {
+            if ($this->expectationFailed) {
+                $report['expectations'] = 'failed';
+                $report['failures'][] = 'expectation_failure';
+            } elseif ($report['capture'] === 'passed') {
+                $report['expectations'] = 'passed';
+            }
             $this->cleanup($report);
         }
         $report['failures'] = array_values(array_unique($report['failures']));
@@ -393,9 +403,6 @@ final class FilemanUploadFixture
         );
         $this->inventory('inventory_complete', FilemanUploadRecipe::LABELS, $direct);
         $this->readBack(['read_empty' => 'empty'], $direct);
-        if ($this->expectationFailed) {
-            throw new RuntimeException('Fileman upload readback expectation failed.');
-        }
     }
 
     /**
@@ -537,20 +544,26 @@ final class FilemanUploadFixture
     }
 
     /**
-     * Read every listed file, record each oracle outcome, then stop if any content differed.
+     * Read every listed file, record each oracle outcome, then stop at the first read without exact content.
      *
-     * All reads complete first: they mutate nothing, and one mismatch should not hide the others. An unaccepted
-     * charset echo over exact content fails the run at its end instead: it cannot affect how later uploads are read.
+     * All reads complete first: they mutate nothing, and one mismatch should not hide the others, so each record
+     * carries its own outcome and the stop names the first. An unaccepted charset echo over exact content does not
+     * stop capture, as it cannot affect how later uploads are read; it fails the expectations of a finished capture.
      *
      * @param array<string, Label> $phases
      */
     private function readBack(array $phases, Client $direct): void
     {
-        $matched = true;
+        $stopped = null;
         foreach ($phases as $phase => $label) {
-            $matched = $this->readOne($phase, $label, $direct) && $matched;
+            if (!$this->readOne($phase, $label, $direct)) {
+                $stopped ??= $phase;
+            }
         }
-        $this->expect($matched);
+        if ($stopped !== null) {
+            $this->stoppedAt = $stopped;
+            throw new RuntimeException('Fileman upload readback stopped capture.');
+        }
     }
 
     /** @param Label $label */
@@ -589,16 +602,16 @@ final class FilemanUploadFixture
             'from_charset_echo' => $from,
             'to_charset_echo' => $to,
         ];
-        $matched = $this->last()['probe_outcome'] === 'passed' && $exact;
-        if ($matched) {
+        $observed = $this->last()['probe_outcome'] === 'passed';
+        if ($observed && $exact) {
             // Anything left unproven is not cleaned up individually; account removal takes it.
             $this->owned[$label] = true;
         }
-        if (!$matched || $from === 'other' || $to === 'other') {
+        if ($observed && (!$exact || $from === 'other' || $to === 'other')) {
             $this->markFailed();
         }
 
-        return $matched;
+        return $observed && $exact;
     }
 
     /**
@@ -838,6 +851,11 @@ final class FilemanUploadFixture
         if ($index !== null) {
             $this->records[$index]['expectation'] = 'failed';
         }
+    }
+
+    private function observationFailed(): bool
+    {
+        return in_array('failed', array_column($this->records, 'probe_outcome'), true);
     }
 
     /** @return Observation */

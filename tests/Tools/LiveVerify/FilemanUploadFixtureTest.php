@@ -693,7 +693,7 @@ final class FilemanUploadFixtureTest extends TestCase
 
         self::assertSame('failed', $scenario['fixture']['status']);
         self::assertContains('expectation_failure', $scenario['fixture']['failures']);
-        self::assertSame('read_raw', $scenario['fixture']['stopped_at']);
+        self::assertSame('read_bytes', $scenario['fixture']['stopped_at']);
         // Every row batch already ran; the only mutation a mismatch withholds is the empty upload.
         self::assertSame(4, $http->counts[self::UPLOAD]);
         self::assertCount(4, $scenario['uploads']);
@@ -708,6 +708,114 @@ final class FilemanUploadFixtureTest extends TestCase
         self::assertContains('fixture_directory_not_empty', $scenario['fixture']['failures']);
         self::assertFalse($http->account);
         self::assertPrivate($scenario);
+    }
+
+    /** Reads run as one batch, so the failure belongs to the file that differed, not to the last one read. */
+    public function testMismatchIsBlamedOnItsOwnFileAndNeverOnAMatchingReadback(): void
+    {
+        $http = new FilemanUploadServer();
+        $http->overrides[self::READ . ':2'] = '{"content":"different","from_char":"ISO-8859-1","to_char":"UTF-8"}';
+        $scenario = self::scenario($http);
+        self::assertSame('read_cursor', $scenario['fixture']['stopped_at']);
+        self::assertSame('failed', self::observation($scenario, 'read_cursor')['expectation']);
+        foreach (['read_bytes', 'read_path', 'read_partial', 'read_raw'] as $phase) {
+            self::assertSame('passed', self::observation($scenario, $phase)['expectation'], $phase);
+            self::assertTrue($scenario['byte_oracle'][$phase]['content_exact'], $phase);
+        }
+        self::assertSame(['proven_owned' => 4, 'deleted' => 4], $scenario['fixture']['resources']['files']);
+        self::assertContains('expectation_failure', $scenario['fixture']['failures']);
+        self::assertNotContains('capture_failure', $scenario['fixture']['failures']);
+    }
+
+    public function testEveryMismatchKeepsItsOwnRecordAndTheFirstNamesTheStop(): void
+    {
+        $http = new FilemanUploadServer();
+        $http->overrides[self::READ . ':2'] = '{"content":"different","from_char":"ISO-8859-1","to_char":"UTF-8"}';
+        $http->overrides[self::READ . ':4'] = '{"content":"different","from_char":"ISO-8859-1","to_char":"UTF-8"}';
+        $scenario = self::scenario($http);
+        self::assertSame('read_cursor', $scenario['fixture']['stopped_at']);
+        self::assertSame('failed', self::observation($scenario, 'read_cursor')['expectation']);
+        self::assertSame('passed', self::observation($scenario, 'read_path')['expectation']);
+        self::assertSame('failed', self::observation($scenario, 'read_partial')['expectation']);
+        self::assertSame('passed', self::observation($scenario, 'read_raw')['expectation']);
+    }
+
+    /** A read that failed was never judged: it stays not_checked, and the run reports a capture failure. */
+    public function testFailedReadIsACaptureFailureNotAnExpectationFailure(): void
+    {
+        $http = new FilemanUploadServer();
+        $http->failures[self::READ . ':2'] = 'api_before';
+        $scenario = self::scenario($http);
+        $fixture = $scenario['fixture'];
+        self::assertSame('read_cursor', $fixture['stopped_at']);
+        self::assertSame('not_checked', self::observation($scenario, 'read_cursor')['expectation']);
+        self::assertSame('passed', self::observation($scenario, 'read_raw')['expectation']);
+        self::assertSame('failed', $fixture['capture']);
+        self::assertSame('not_run', $fixture['expectations']);
+        self::assertContains('capture_failure', $fixture['failures']);
+        self::assertNotContains('expectation_failure', $fixture['failures']);
+    }
+
+    public function testBatchWithBothFailuresReportsBoth(): void
+    {
+        $http = new FilemanUploadServer();
+        $http->failures[self::READ . ':1'] = 'api_before';
+        $http->overrides[self::READ . ':3'] = '{"content":"different","from_char":"ISO-8859-1","to_char":"UTF-8"}';
+        $scenario = self::scenario($http);
+        $fixture = $scenario['fixture'];
+        self::assertSame('read_bytes', $fixture['stopped_at']);
+        self::assertSame('failed', $fixture['capture']);
+        self::assertSame('failed', $fixture['expectations']);
+        self::assertContains('capture_failure', $fixture['failures']);
+        self::assertContains('expectation_failure', $fixture['failures']);
+    }
+
+    /** Capture finished, so nothing about it failed and nothing stopped: only the expectation did. */
+    public function testFinishedCaptureWithAWrongEchoFailsOnlyExpectations(): void
+    {
+        $http = new FilemanUploadServer();
+        $http->charsetEcho = ['from_char' => 'UTF-8'];
+        $fixture = self::scenario($http)['fixture'];
+        self::assertSame('passed', $fixture['setup']);
+        self::assertSame('passed', $fixture['capture']);
+        self::assertSame('failed', $fixture['expectations']);
+        self::assertNull($fixture['stopped_at']);
+        self::assertSame(['expectation_failure'], $fixture['failures']);
+        self::assertSame('failed', $fixture['status']);
+    }
+
+    public function testExpectationThatStopsCaptureFailsBothFields(): void
+    {
+        $http = new FilemanUploadServer();
+        $http->honorOverwrite = false;
+        $fixture = self::scenario($http)['fixture'];
+        self::assertSame('failed', $fixture['capture']);
+        self::assertSame('failed', $fixture['expectations']);
+        self::assertSame('upload_partial', $fixture['stopped_at']);
+        self::assertNotContains('capture_failure', $fixture['failures']);
+    }
+
+    /** Nothing was evaluated past a failed observation, so no expectation may be reported as failed. */
+    public function testCaptureFailureLeavesExpectationsNotRun(): void
+    {
+        $http = new FilemanUploadServer();
+        $http->failures['version:1'] = 'api_before';
+        $fixture = self::scenario($http)['fixture'];
+        self::assertSame('failed', $fixture['capture']);
+        self::assertSame('not_run', $fixture['expectations']);
+        self::assertSame('version', $fixture['stopped_at']);
+        self::assertContains('capture_failure', $fixture['failures']);
+        self::assertNotContains('expectation_failure', $fixture['failures']);
+    }
+
+    public function testSetupFailureRunsNeitherCaptureNorExpectations(): void
+    {
+        $http = new FilemanUploadServer();
+        $http->failures['createacct:1'] = 'api_before';
+        $fixture = self::scenario($http)['fixture'];
+        self::assertSame('failed', $fixture['setup']);
+        self::assertSame('not_run', $fixture['capture']);
+        self::assertSame('not_run', $fixture['expectations']);
     }
 
     public function testSizeAloneNeverPassesTheOracle(): void
