@@ -1350,8 +1350,14 @@ read failures; enabled-account reads passed. ExternalAuthentication failed over
 the bridge because its module file was absent, while direct calls worked. These
 are installation-specific observations, not client route restrictions. ClamAV
 was absent, so completed scans remain unobserved. Reviewer lifecycle reports are
-separate from immutable capture evidence; see the source audit. Format-only
-`scan_type` input correction remains tracked in `8x0.1.26` before release.
+separate from immutable capture evidence; see the source audit. The enum-only
+`scan_type` input now generates `startScan(string $scanType): ?array`, with PHPDoc
+`home|mail|public_html|public_ftp`. The pinned schema has neither type nor format;
+its string enum and directory prose support this evidence-bound correction.
+This pre-release narrowing rejects integers from strict PHP callers before a
+request or metadata reset. Weak PHP callers retain normal scalar coercion.
+Unknown strings still forward unchanged: the PHPDoc enum adds no runtime
+membership validator. POST encoding, nullable opaque results and coverage are unchanged.
 
 ### Account backup and restoration
 

@@ -174,7 +174,9 @@ type Collection struct {
 // reachable through call() and are left out of the generated signature. EnumDoc
 // false suppresses only the literal enum PHPDoc, without changing native types or
 // encoding, and needs evidence. An absent or true value preserves enum PHPDoc.
-// Type permits reviewed string|int widening of scalar string/integer inputs,
+// Type permits an exact-schema-evidenced string correction for a concrete
+// enum-only all-string scalar without type/format or structural alternatives,
+// preserving literal enum documentation and scalar encoding; or reviewed string|int widening of scalar string/integer inputs,
 // string|int|float widening of scalar number inputs, or a true presence guard
 // for concrete nonnullable scalar integer inputs with exact source enum [1]
 // and unchanged requiredness (optional ?true or required true).

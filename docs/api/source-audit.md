@@ -7221,3 +7221,39 @@ restore, replay, server/SSH/credential call, capture or source refresh. It does 
 establish all-archive completion, permissions, cleanup or bridged restore behavior.
 Server-path modes (.30.9), owned Fileman evidence (.30.5), native Windows (.30.10)
 and other deferred work remain open; the 55 inherited diagnostics are unwaived.
+
+
+### ClamScanner enum-only scan selector input (2026-10-31)
+
+`uapi()->clamScanner()->startScan(string $scanType): ?array` now narrows the
+pre-release native `string|int` input to `string`. The pinned source is
+`docs/api/sources/2026-10-13/cpanel.openapi.json.gz`, decompressed SHA-256
+`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`.
+The exact schema pointer is
+`/paths/~1ClamScanner~1start_scan/get/parameters/0/schema`: it has neither `type`
+nor `format`, only enum `home`, `mail`, `public_html`, `public_ftp` and example
+`home`. The parameter is required query `scan_type`; its directory prose
+independently names those four textual selectors. This corrects the former
+format-only description of the follow-up. The selected source variant remains
+GET while the existing evidenced effective transport stays form POST.
+
+The explicit overlay `type: string` correction requires exact parameter-schema
+hash/pointer evidence bound to the selected operation. Only a plain nonempty
+all-string enum without type, format, nullability or structural/composed
+alternatives qualifies; unannotated typeless and format-only lowering is unchanged.
+The generated PHPDoc preserves the four literal values. This is native PHP
+argument typing: strict-caller integer inputs now raise TypeError before dispatch
+and before old response metadata is reset. Normal weak-caller scalar coercion
+remains PHP behavior, and unknown string values still forward unchanged without a
+new enum-membership validator. This is a pre-release public-type narrowing caveat.
+
+Offline route tests verify each documented selector and an unknown string through
+direct UAPI and the WHM bridge, encoded exactly once in one form POST. They retain
+opaque/null response and metadata/error handling coverage. Runtime operation specs,
+response contracts, pinned source/map checksum, canonical coverage and unrelated
+generated output remain unchanged. Administrator availability, cPanel 94,
+selected-account scope and no retry/rollback caveats remain. No scan, polling,
+disinfection, plugin installation, network API call or server change ran. The
+attributed absent-ClamAV reviewer report and historical captures stay unchanged;
+this correction establishes no successful or completed scan. Follow-up `.1.26`
+owns the input correction; controller review/publication remain separate.

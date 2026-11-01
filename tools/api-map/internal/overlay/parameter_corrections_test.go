@@ -8,6 +8,7 @@ import (
 func TestParameterCorrectionsRequireOperationEvidence(t *testing.T) {
 	for _, tc := range []struct{ setting, name string }{
 		{`"type":"string|int"`, "type"},
+		{`"type":"string"`, "type"},
 		{`"wire":"search_text"`, "wire"},
 		{`"description":"Use the deployment identifier. Omission preserves the default."`, "description"},
 	} {

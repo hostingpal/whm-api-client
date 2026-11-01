@@ -259,7 +259,7 @@
         "collection": {"$ref": "#/$defs/collection"},
         "php": {"type": "string", "pattern": "^[a-z][A-Za-z0-9]*$"},
         "wire": {"type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"},
-        "type": {"enum": ["string|int", "string|int|float", "true"]},
+        "type": {"enum": ["string", "string|int", "string|int|float", "true"]},
         "description": {"type": "string", "minLength": 1, "pattern": "\\S"},
         "encoding": {"enum": ["scalar", "bool", "repeat", "numbered", "suffix-numbered", "suffix-numbered-scalar"]},
         "sensitive": {"type": "boolean"},
