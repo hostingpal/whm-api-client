@@ -8848,3 +8848,39 @@ No live call, capture, source fetch, credential creation/use, login, session/mai
 write or server cleanup was performed for this integration. The completed owner
 165-call pass was not replayed. Combined offline validation is recorded separately
 with exact product-input attribution; it cannot prove new server or wire behavior.
+
+
+### Remaining simple WHM indexed inputs (2026-11-01)
+
+This two-operation input-only adoption binds the unchanged WHM pin
+`6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594`.
+At `/paths/~1twofactorauth_remove_user_config/get/parameters/0`, required string
+user documents user-1/user-2/user-3. The existing scalar remains user; nonempty
+sequential string lists start at user-1, including singleton lists. The formal
+GET has x-readonly:false; existing form POST policy and cPanel 54+ remain intact.
+Inspect failed independently of metadata.result. users_modified includes users
+with no prior configuration, so it cannot establish actual removal; setup is
+required again after removal. No implicit prior-state read is added.
+
+At `/paths/~1convert_addon_get_conversion_status/get/parameters/0`, required
+integer job_id has minimum 1, multiple-job prose starts job_id-0 and its example
+starts job_id-1. [Reviewer source inspection 5722427592](https://github.com/hostingpal/whm-api-client/pull/72#pullrequestreview-5722427592)
+reports _parse_job_ids accepting unsuffixed job_id and numeric job_id-N at either
+base on 11.138.0.19. This is attributed source evidence, not a locally inspected
+server file or observed multi-job call. It supports selecting explicit zero-based
+job_id-0/job_id-1 for nonempty sequential native integer lists while preserving
+the pinned contradiction. Scalars retain native integer job_id. No numeric
+coercion or new local range policy is introduced; no server acceptance of invalid
+IDs is claimed. GET, empty body, cPanel 58+, Web Server role, dynamic response-map
+keys, string payload job_id and per-job statuses remain unchanged. API success
+still does not imply job success, and no polling or initiation is added.
+
+Both descriptors use existing indexed metadata, preserve order/duplicates/value
+bytes and one encoding, and add generated collection trace protection without
+semantic secret flags. Empty, sparse, associative and wrong-type lists fail before
+I/O after metadata reset. Native wrong scalar/null inputs retain the pre-entry
+TypeError boundary. The source schemas, manifests, engine/tooling, historical
+artifacts, coverage and all response/nonparameter spec fields are preserved.
+No live request, credential access, server/source fetch, capture, TFA change or
+conversion ran. Offline tests establish no batch atomicity, persistence or live
+list compatibility. Token collections and related SPF records remain separate.

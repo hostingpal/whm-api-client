@@ -407,6 +407,21 @@
     "whm1:convert_addon_get_conversion_status": {
       "name": "convertAddonGetConversionStatus",
       "method": "GET",
+      "params": {
+        "job_id": {
+          "php": "jobId",
+          "collection": {
+            "kind": "indexed",
+            "item_type": "int",
+            "allow_scalar": true,
+            "empty": "reject",
+            "prefix": "job_id",
+            "separator": "-",
+            "start": 0
+          },
+          "description": "The conversion job identification number as a native integer, or a nonempty sequential native integer list. Scalars retain job_id; lists always use job_id-0,job_id-1, including a singleton. Numeric strings, floats, booleans and null list items are rejected without coercion. The source documents a minimum of 1; this extension adds no local range validation or server acceptance guarantee for invalid IDs."
+        }
+      },
       "notes": [
         {
           "kind": "documented",
@@ -414,7 +429,15 @@
         },
         {
           "kind": "documented",
-          "text": "Requires the Web Server role. This method accepts one native integer job_id. The pinned multiple-job prose starts job_id-0 while its example starts job_id-1; the contradictory indexed family remains excluded from this signature under whm-api-client-8x0.1.21. Job statuses are separate from API success and are not polled."
+          "text": "Requires the Web Server role. The pinned multiple-job prose starts job_id-0 while its example starts job_id-1. The source documents a minimum job ID of 1. Dynamic result keys, string payload job_id and each job_status remain separate from API success."
+        },
+        {
+          "kind": "policy",
+          "text": "Scalars retain native integer job_id; nonempty sequential native integer lists use job_id-0,job_id-1, including singleton lists. No numeric coercion or new local range policy is added. One GET adds no polling, conversion initiation, retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Reviewer source inspection on 11.138.0.19 reports _parse_job_ids accepting job_id or numeric job_id-N at either base (https://github.com/hostingpal/whm-api-client/pull/72#pullrequestreview-5722427592). This supports the explicit zero-based choice without resolving the pinned prose/example contradiction generally. No multi-job list was observed live; list support remains source/offline coverage."
         }
       ],
       "evidence": [
@@ -423,6 +446,20 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "The pinned x-readonly is true. Use GET for this read."
+        },
+        {
+          "kind": "doc",
+          "version": "11.138.0.19 reviewer source inspection",
+          "date": "2026-11-01",
+          "note": "Review 5722427592 (https://github.com/hostingpal/whm-api-client/pull/72#pullrequestreview-5722427592) reports _parse_job_ids matching job_id or job_id-N with numeric suffixes, accepting either zero- or one-based suffixes. The reviewer reports source reading, not live multi-job execution; the pinned prose/example contradiction remains explicit."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1convert_addon_get_conversion_status/get/parameters/0",
+          "note": "Pinned whm.openapi.json SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, /paths/~1convert_addon_get_conversion_status/get/parameters/0: required integer job_id with minimum 1; multiple-job prose starts job_id-0 while the example starts job_id-1. The zero-based descriptor follows prose plus reviewer source inspection on 11.138.0.19, not a live list observation. Existing GET and response schema remain unchanged."
         }
       ]
     },
