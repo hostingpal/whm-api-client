@@ -85,7 +85,7 @@ final class MarketSpec
                     'enabled' => ['type' => 'flag'],
                     'icon' => ['type' => 'string'],
                     'icon_mime_type' => ['type' => 'string'],
-                    'license_term' => ['type' => 'int'],
+                    'license_term' => ['type' => 'int', 'accept' => ['numeric-string']],
                     'max_users' => ['type' => 'int', 'nullable' => true],
                     'maximum_server_price' => ['type' => 'number', 'nullable' => true],
                     'minimum_server_price' => ['type' => 'number', 'nullable' => true],
@@ -94,11 +94,11 @@ final class MarketSpec
                     'product' => ['type' => 'string'],
                     'product_category' => ['type' => 'string'],
                     'product_group' => ['type' => 'string'],
-                    'product_id' => ['type' => 'int'],
+                    'product_id' => ['type' => 'int', 'accept' => ['numeric-string']],
                     'provider_display_name' => ['type' => 'string'],
                     'provider_name' => ['type' => 'string'],
                     'recommended' => ['type' => 'flag'],
-                    'requires_ip' => ['type' => 'flag'],
+                    'requires_ip' => ['type' => 'flag', 'accept' => ['string-flag']],
                     'x_certificate_term' => ['type' => 'list', 'items' => ['type' => 'string']],
                     'x_identity_verification' => [
                         'type' => 'union',
@@ -321,7 +321,16 @@ final class MarketSpec
         'returns' => [
             'type' => 'object',
             'fields' => [
-                'dcv_file_allowed_characters' => ['type' => 'list', 'items' => ['type' => 'string']],
+                'dcv_file_allowed_characters' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'union',
+                        'anyOf' => [
+                            ['type' => 'string'],
+                            ['type' => 'int'],
+                        ],
+                    ],
+                ],
                 'dcv_file_extension' => ['type' => 'string'],
                 'dcv_file_random_character_count' => ['type' => 'int'],
                 'dcv_file_relative_path' => ['type' => 'string'],
@@ -364,6 +373,7 @@ final class MarketSpec
                 'certificate_pem' => ['type' => 'string', 'nullable' => true],
                 'encrypted_action_urls' => [
                     'type' => 'object',
+                    'nullable' => true,
                     'values' => ['type' => 'mixed'],
                     'fields' => [
                         'evClickThroughStatus' => ['type' => 'string', 'nullable' => true],
@@ -371,7 +381,7 @@ final class MarketSpec
                     ],
                 ],
                 'status_code' => ['type' => 'string'],
-                'status_message' => ['type' => 'string'],
+                'status_message' => ['type' => 'string', 'nullable' => true],
             ],
         ],
     ];

@@ -1,7 +1,7 @@
 # Official API documentation inputs
 
 The source audit for Beads `whm-api-client-gwi.1` covers **WHM API 1** and
-**cPanel UAPI**. The PHP package implements typed groups for 1,098 documented operations
+**cPanel UAPI**. The PHP package implements typed groups for 1,142 documented operations
 plus generic calls; these documents pin the contracts and do not by themselves
 establish endpoint implementation or live-test coverage. Coverage is generated:
 [coverage.md](coverage.md) lists generated groups and exclusions, and live
@@ -145,12 +145,16 @@ failures and collection truthiness rules are version-attributed in PHPDoc and
 seven-GET artifact remains failed/unwaived; the fixed catalog is diagnostic, and
 two misleading success recipes are removed. No sources, runtime or generator changed.
 
+Nova and Sitejet contracts and reviewer-source/live boundaries are recorded in
+[source-audit.md](source-audit.md#nova-and-sitejet-site-builders). Their historical
+five-GET capture remains failed; no corrected-head live acceptance is implied.
+
 
 ## Typed whole JSON body grammar
 
 The generator supports an explicit `body: "json"` selection, independently of
-form fields and JSON-valued string parameters. This foundation does not select
-any production JSON-body operation or change the coverage count. A selection must
+form fields and JSON-valued string parameters. StatsManager/save_configuration is the first selected production operation; the
+remaining JSON-body operations stay excluded. A selection must
 bind operation-level `doc` evidence to the exact pinned source SHA-256 and the
 selected variant's `/requestBody` JSON pointer. `variant` continues to identify the
 source method; the effective transport is fixed POST.
@@ -168,12 +172,14 @@ The operation overlay uses:
 }
 ```
 
-`php` names the whole public argument; it must not collide with a query argument.
+`php` names the whole public argument; JSON-body operations declare no query parameters.
 `alias` is a unique PHPStan alias ending in `Input`. `routes: "direct"` enables
 ordinary WHM API 1 or direct cPanel UAPI according to the selected family, while
-refusing the account bridge locally. Query declarations retain their own source
-order and wire names, apart from the existing required-before-optional ordering.
-They are never inferred as JSON members or moved into the body.
+refusing the account bridge locally. A nonempty `params` spec fails lint; upstream
+JSON parsing ignores URL arguments. Both routes require a nonnullable object root.
+WHM inserts library-owned `api.version:1` as the first root member and sends no URL
+version. Direct UAPI sends the encoded object unchanged. Form/GET and multipart
+query behavior is independent.
 
 Lowering uses a separate strict request schema. It supports explicit objects,
 sequential lists, strings, integers, finite numbers, booleans, nullability and
@@ -188,29 +194,27 @@ such as `01`, `+1`, `-0`, `1.0` and integers outside that range retain their spe
 Unknown members reject unless `additionalProperties` supplies an explicit supported
 value schema; integer caller keys remain invalid.
 
-A required body has a required native argument. Optional nonnullable roots use
-`null` as absence; an optional object/list uses `?array $body = null`. Required
-nullable roots accept explicit null as the complete JSON document `null`.
-`[]` becomes `{}` for an object schema and `[]` for a list schema. A present body
-sets exactly `Content-Type: application/json`; absence sends no bytes or JSON
-Content-Type. False, zero and empty strings remain present scalar documents.
+A required body has a required native array argument. WHM JSON body specs must
+be required: omission would lose API1 root routing. Optional direct-UAPI objects use
+`?array $body = null`: null or omission means absence, while `[]` sends `{}`.
+A present body sets exactly `Content-Type: application/json`; absence sends no
+bytes or JSON Content-Type. Scalar, list, null and nullable-object whole-body specs
+fail with exact `LogicException` before input validation or I/O. Nested schema
+nodes and the shared serializer still support scalar/list/object roots for future
+JSON-valued fields; that grammar does not imply executable scalar-body methods.
 
-Strict request validation applies to values that reach the serializer, after PHP
-binds the generated native argument. Use `declare(strict_types=1)` in the calling
-file to prevent native scalar coercion for scalar whole-body methods; the generated
-file's strict declaration does not control its callers. A weak caller can convert
-`'false'` to bool `true` (wire flag `1`), `'7'` to int `7`, or `17` to string `"17"`;
-a Stringable object's conversion can run before method entry. Native signature
-`TypeError`s, conversions and conversion callbacks occur before the library's
-metadata reset and validation. Library validation and redaction guarantees do not
-cover original values before entry. Nested array values, including StatsManager's `enabled`,
-remain strictly validated in either caller mode: integer/string flags are rejected.
-No production scalar whole-body endpoint is selected here.
+Native array argument errors occur before method entry and metadata reset in both
+strict and weak callers; arrays do not coerce scalars or invoke Stringable callbacks.
+Nested array fields, including StatsManager's `enabled`, remain strictly validated
+in either caller mode: integer/string flags are rejected after metadata reset.
 
 Narrow input corrections live in `json_body.corrections`, keyed by JSON pointers
 relative to the source schema (`""` means the root). An object correction may set
-`required` to a list of declared fields. A list correction may set `nonempty: true`;
-its PHPDoc becomes `non-empty-list<T>`. The default list permits an empty list.
+`required` to a list of declared fields. List and string corrections may set boolean `nonempty` (default false). True
+produces `non-empty-list<T>` or `non-empty-string` PHPDoc; false is explicitly valid.
+Lists reject exactly `[]`; strings reject exactly the zero-byte string, preserving
+zero-looking and whitespace strings without trimming. Only StatsManager domain
+uses the string policy; analyzer names and ordinary lists retain default-off behavior.
 Each correction requires its own `evidence` list with the exact pinned SHA-256,
 full schema-node pointer and attribution in `note`. `json_body.required` can
 correct whole-body requiredness under the source-bound operation evidence.
@@ -221,12 +225,13 @@ input corrections fail until their separate provenance can be represented.
 
 Generation fails for missing formal types, ambiguous container alternatives,
 unsupported composition, binary input, unschematized additional values, exhausted
-nesting budgets, optional nullable roots, and required reserved root members.
+nesting budgets, non-object or nullable roots, query parameters, and any declared
+reserved root members (optional or required).
 The request grammar accepts up to 511 object/list containers, independently of the
 response resolver's fallback policy. The full case-sensitive `api.` prefix is
-reserved on JSON query/root members, including additional map keys; direct UAPI
-also reserves exact `cpanel.user`, `cpanel.module` and `cpanel.function`. Optional
-reserved root fields reject when present; nested names remain data. This policy
+reserved on JSON root members, including additional map keys; direct UAPI
+also reserves exact `cpanel.user`, `cpanel.module` and `cpanel.function`. Declared optional reserved root fields fail lint even when absent; additional
+reserved root keys reject by presence at execution. Nested/lookalike names remain data. This policy
 is applied by whole-body execution and does not constrain the shared serializer
 when it is used for a JSON-valued form parameter.
 

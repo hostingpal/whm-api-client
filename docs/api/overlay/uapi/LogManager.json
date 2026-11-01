@@ -1,0 +1,289 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "LogManager",
+  "accessor": "logManager",
+  "operations": {
+    "uapi:LogManager/delete_archive": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 136 and later. Deletes the named log archive from the authenticated account's ~/logs directory. The pinned text requires that the filename reside in that directory, end in .gz and contain no path traversal characters. Deletion can permanently remove archived logs."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned data schema is unconstrained."
+        },
+        {
+          "kind": "policy",
+          "text": "Uses form POST. Preserve any present JSON value, including null, false, zero, empty strings and opaque objects; an absent data member remains a mismatch. Shared group requirements and filesystem policy apply."
+        },
+        {
+          "kind": "policy",
+          "text": "Each call sends one request with no retry or undo. API success does not establish subsequent log rotation, pruning or retention enforcement."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /LogManager/delete_archive declares x-readonly=false. Query requiredness, wire spelling and response data schema are retained. UAPI source SHA256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc. No role restrictions or string-integer response variants are declared in this operation."
+        }
+      ]
+    },
+    "uapi:LogManager/get_settings": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later. Retrieves the selected account's archival settings. archive_logs, prune_archive and using_default are integer 0/1 flags in the pinned schema. retention_days is a number of days; zero retains logs indefinitely. When no custom retention value is set, retention_days is the server-wide default. using_default distinguishes default from custom retention."
+        },
+        {
+          "kind": "observed",
+          "text": "The original 2026-10-31 capture on cPanel 11.138.0.19 observed numeric-string archive_logs, prune_archive and retention_days through direct UAPI and the WHM bridge. Structural types identify neither the quoted flag value nor whether both values occurred. Reviewer 5721279104 separately read explicit false/zero flags back after writes on that version."
+        },
+        {
+          "kind": "policy",
+          "text": "Only archive_logs/prune_archive accept exact quoted 0/1 flags, and only retention_days accepts canonical signed decimal strings within PHP integer bounds, normalizing to integer results. Preserve omitted fields. using_default and sibling operation fields remain strict. Shared group requirements apply."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /LogManager/get_settings declares x-readonly=true. Query requiredness, wire spelling and response data schema are retained. UAPI source SHA256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc. No role restrictions or string-integer response variants are declared in this operation."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Original immutable capture docs/api/evidence/2026-10-31-log-administration.json, SHA256 093432542f5f0dd5ac066707112c3f7e0ae8b5d76bfc29c4fefb3e96160a4550, at revision e5476c1b9fd2d8a94f371ab05caee86b46f4ab37: uapi:LogManager/get_settings#GET, routes direct-uapi and bridged-uapi, method GET, server 11.138.0.19, source SHA256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, effective contract SHA256 9606b78ab293fee8ae02f2053429babf67878a0fc01d807a486e3d3622eb6a32. HTTP 200 and API success on both routes; payload path $.archive_logs is numeric-string and has type_mismatch on each route. The pinned field is an integer 0/1 flag. Admit only exact quoted \"0\"/\"1\" and normalize to that public integer flag; structural evidence does not identify which quoted value occurred and does not prove both values were observed. Original immutable capture docs/api/evidence/2026-10-31-log-administration.json, SHA256 093432542f5f0dd5ac066707112c3f7e0ae8b5d76bfc29c4fefb3e96160a4550, at revision e5476c1b9fd2d8a94f371ab05caee86b46f4ab37: uapi:LogManager/get_settings#GET, routes direct-uapi and bridged-uapi, method GET, server 11.138.0.19, source SHA256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, effective contract SHA256 9606b78ab293fee8ae02f2053429babf67878a0fc01d807a486e3d3622eb6a32. HTTP 200 and API success on both routes; payload path $.prune_archive is numeric-string and has type_mismatch on each route. The pinned field is an integer 0/1 flag. Admit only exact quoted \"0\"/\"1\" and normalize to that public integer flag; structural evidence does not identify which quoted value occurred and does not prove both values were observed. Original immutable capture docs/api/evidence/2026-10-31-log-administration.json, SHA256 093432542f5f0dd5ac066707112c3f7e0ae8b5d76bfc29c4fefb3e96160a4550, at revision e5476c1b9fd2d8a94f371ab05caee86b46f4ab37: uapi:LogManager/get_settings#GET, routes direct-uapi and bridged-uapi, method GET, server 11.138.0.19, source SHA256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, effective contract SHA256 9606b78ab293fee8ae02f2053429babf67878a0fc01d807a486e3d3622eb6a32. HTTP 200 and API success on both routes; payload path $.retention_days is numeric-string and has type_mismatch on each route. The pinned field is integer days. Admit only lossless canonical integer strings within PHP integer bounds, normalize to int, and reject fractions, noncanonical forms, booleans, floats and overflow. No sibling field or other operation is changed.",
+          "fingerprint": "docs/api/evidence/2026-10-31-log-administration.json"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Corrected immutable capture docs/api/evidence/2026-10-31-log-administration-corrected.json, SHA256 743a081ee25a8971df4052534a96c60b05cde3483d9ed624857ccd82912e7255, revision dd5e626ae11f0f6c59e353a17d51bee4868aaa96: uapi:LogManager/get_settings#GET, routes direct-uapi, bridged-uapi, method GET, server 11.138.0.19, source SHA256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, effective contract SHA256 1374fa520225c4af5bd7bc6a89ed17f5750a2354515ecd216ab9be62ac898da2. Payload leaves $.archive_logs, $.prune_archive and $.retention_days each have raw structural type numeric-string. HTTP/API/payload/probe checks pass with zero discrepancies; selected-read acceptance only. Structural evidence does not identify flag values. No view_error_log, write or rotation behavior is established.",
+          "fingerprint": "docs/api/evidence/2026-10-31-log-administration-corrected.json"
+        }
+      ],
+      "response": {
+        "archive_logs": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Original immutable capture docs/api/evidence/2026-10-31-log-administration.json, SHA256 093432542f5f0dd5ac066707112c3f7e0ae8b5d76bfc29c4fefb3e96160a4550, at revision e5476c1b9fd2d8a94f371ab05caee86b46f4ab37: uapi:LogManager/get_settings#GET, routes direct-uapi and bridged-uapi, method GET, server 11.138.0.19, source SHA256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, effective contract SHA256 9606b78ab293fee8ae02f2053429babf67878a0fc01d807a486e3d3622eb6a32. HTTP 200 and API success on both routes; payload path $.archive_logs is numeric-string and has type_mismatch on each route. The pinned field is an integer 0/1 flag. Admit only exact quoted \"0\"/\"1\" and normalize to that public integer flag; structural evidence does not identify which quoted value occurred and does not prove both values were observed.",
+              "fingerprint": "docs/api/evidence/2026-10-31-log-administration.json"
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Corrected immutable capture docs/api/evidence/2026-10-31-log-administration-corrected.json, SHA256 743a081ee25a8971df4052534a96c60b05cde3483d9ed624857ccd82912e7255, revision dd5e626ae11f0f6c59e353a17d51bee4868aaa96: uapi:LogManager/get_settings#GET, routes direct-uapi, bridged-uapi, method GET, server 11.138.0.19, source SHA256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, effective contract SHA256 1374fa520225c4af5bd7bc6a89ed17f5750a2354515ecd216ab9be62ac898da2. Payload leaf $.archive_logs has raw structural type numeric-string. HTTP/API/payload/probe checks pass with zero discrepancies; selected-read acceptance only. Structural evidence does not identify flag values. No view_error_log, write or rotation behavior is established.",
+              "fingerprint": "docs/api/evidence/2026-10-31-log-administration-corrected.json"
+            }
+          ]
+        },
+        "prune_archive": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Original immutable capture docs/api/evidence/2026-10-31-log-administration.json, SHA256 093432542f5f0dd5ac066707112c3f7e0ae8b5d76bfc29c4fefb3e96160a4550, at revision e5476c1b9fd2d8a94f371ab05caee86b46f4ab37: uapi:LogManager/get_settings#GET, routes direct-uapi and bridged-uapi, method GET, server 11.138.0.19, source SHA256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, effective contract SHA256 9606b78ab293fee8ae02f2053429babf67878a0fc01d807a486e3d3622eb6a32. HTTP 200 and API success on both routes; payload path $.prune_archive is numeric-string and has type_mismatch on each route. The pinned field is an integer 0/1 flag. Admit only exact quoted \"0\"/\"1\" and normalize to that public integer flag; structural evidence does not identify which quoted value occurred and does not prove both values were observed.",
+              "fingerprint": "docs/api/evidence/2026-10-31-log-administration.json"
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Corrected immutable capture docs/api/evidence/2026-10-31-log-administration-corrected.json, SHA256 743a081ee25a8971df4052534a96c60b05cde3483d9ed624857ccd82912e7255, revision dd5e626ae11f0f6c59e353a17d51bee4868aaa96: uapi:LogManager/get_settings#GET, routes direct-uapi, bridged-uapi, method GET, server 11.138.0.19, source SHA256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, effective contract SHA256 1374fa520225c4af5bd7bc6a89ed17f5750a2354515ecd216ab9be62ac898da2. Payload leaf $.prune_archive has raw structural type numeric-string. HTTP/API/payload/probe checks pass with zero discrepancies; selected-read acceptance only. Structural evidence does not identify flag values. No view_error_log, write or rotation behavior is established.",
+              "fingerprint": "docs/api/evidence/2026-10-31-log-administration-corrected.json"
+            }
+          ]
+        },
+        "retention_days": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Original immutable capture docs/api/evidence/2026-10-31-log-administration.json, SHA256 093432542f5f0dd5ac066707112c3f7e0ae8b5d76bfc29c4fefb3e96160a4550, at revision e5476c1b9fd2d8a94f371ab05caee86b46f4ab37: uapi:LogManager/get_settings#GET, routes direct-uapi and bridged-uapi, method GET, server 11.138.0.19, source SHA256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, effective contract SHA256 9606b78ab293fee8ae02f2053429babf67878a0fc01d807a486e3d3622eb6a32. HTTP 200 and API success on both routes; payload path $.retention_days is numeric-string and has type_mismatch on each route. The pinned field is integer days. Admit only lossless canonical integer strings within PHP integer bounds, normalize to int, and reject fractions, noncanonical forms, booleans, floats and overflow. No sibling field or other operation is changed.",
+              "fingerprint": "docs/api/evidence/2026-10-31-log-administration.json"
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Corrected immutable capture docs/api/evidence/2026-10-31-log-administration-corrected.json, SHA256 743a081ee25a8971df4052534a96c60b05cde3483d9ed624857ccd82912e7255, revision dd5e626ae11f0f6c59e353a17d51bee4868aaa96: uapi:LogManager/get_settings#GET, routes direct-uapi, bridged-uapi, method GET, server 11.138.0.19, source SHA256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, effective contract SHA256 1374fa520225c4af5bd7bc6a89ed17f5750a2354515ecd216ab9be62ac898da2. Payload leaf $.retention_days has raw structural type numeric-string. HTTP/API/payload/probe checks pass with zero discrepancies; selected-read acceptance only. Structural evidence does not identify flag values. No view_error_log, write or rotation behavior is established.",
+              "fingerprint": "docs/api/evidence/2026-10-31-log-administration-corrected.json"
+            }
+          ]
+        }
+      }
+    },
+    "uapi:LogManager/list_archives": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later. Lists archive metadata in the selected account's ~/logs directory without reading contents. file and path are strings; mtime is an integer last-modified timestamp."
+        },
+        {
+          "kind": "policy",
+          "text": "Preserve optional fields and empty lists. Returned paths are payload data; shared group requirements and filesystem policy apply."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /LogManager/list_archives declares x-readonly=true. Query requiredness, wire spelling and response data schema are retained. UAPI source SHA256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc. No role restrictions or string-integer response variants are declared in this operation."
+        }
+      ]
+    },
+    "uapi:LogManager/list_error_logs": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 138 and later. Requires a domain owned by the selected account. Returns PHP error-log metadata without contents. file_id identifies php_fpm_error_log (home logs directory), docroot_error_log (website document root) or homedir_error_log (home directory)."
+        },
+        {
+          "kind": "documented",
+          "text": "modified_today is an integer 0/1 flag using server local time. mtime is a Unix timestamp and size is bytes; each may explicitly be null. error is an optional nullable string explaining an unavailable file."
+        },
+        {
+          "kind": "policy",
+          "text": "Keep flags and non-null integer metadata strict. Preserve optional fields and explicit null; shared group requirements and filesystem policy apply."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /LogManager/list_error_logs declares x-readonly=true. Query requiredness, wire spelling and response data schema are retained. UAPI source SHA256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc. No role restrictions or string-integer response variants are declared in this operation."
+        }
+      ]
+    },
+    "uapi:LogManager/set_settings": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later. Saves the selected account's log archival settings. The pinned text requires at least one of archive_logs, prune_archive or retention_days."
+        },
+        {
+          "kind": "documented",
+          "text": "archive_logs controls archiving to the home directory after statistics processing. Omission uses archive-logs in ~/.cpanel-logs, or default_archive-logs in cpanel.config when that file is absent. prune_archive controls removing the previous month's archives from ~/logs at month end. Omission uses remove-old-archived-logs in ~/.cpanel-logs, or default_remove-old-archive-logs in cpanel.config when that file is absent."
+        },
+        {
+          "kind": "documented",
+          "text": "retention_days is in days: zero retains logs indefinitely; -1 clears the per-user override and restores the server default; positive integers retain logs for that many days. Omission preserves the existing value. The pinned schema declares a minimum of -1 but no maximum. Pruning and retention can remove archives. The pinned data schema is unconstrained."
+        },
+        {
+          "kind": "observed",
+          "text": "Reviewer 5721279104 on cPanel 11.138.0.19 observed the server bound -1..999; 1000 raises ApiErrorException. Explicit false/zero flags were stored and read back. Omitted flags kept their current values with ~/.cpanel-logs present, including after retentionDays: -1. A call without arguments was server-rejected. These observations do not establish actual rotation or pruning."
+        },
+        {
+          "kind": "policy",
+          "text": "Uses form POST. Null arguments are omitted; explicit false sends 0 and explicit zero is transmitted. Native optional bool/int inputs and server-side cross-field/range validation remain unchanged; no local minimum, maximum or enum check is added. Preserve every present JSON value and reject missing data. Shared group requirements apply."
+        },
+        {
+          "kind": "policy",
+          "text": "Each call sends one request with no retry or undo. API success does not establish subsequent log rotation, pruning or retention enforcement."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /LogManager/set_settings declares x-readonly=false. Query requiredness, wire spelling and response data schema are retained. UAPI source SHA256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc. No role restrictions or string-integer response variants are declared in this operation."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review 5721279104 at revision 984c5c16e47c43741b50e817a6f87149eb2f86d5 separately exercised set_settings through direct-uapi and bridged-uapi form POST on a disposable account. Explicit false/zero flags were stored and read back; omitted flags kept current values with ~/.cpanel-logs present after retention_days=-1. The server rejected retention_days=1000 with its -1..999 bound and rejected an empty-argument call. No actual rotation or pruning was established. These writes are not in either immutable GET-only capture."
+        }
+      ]
+    },
+    "uapi:LogManager/view_error_log": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 138 and later. Requires a domain owned by the selected account and the exact file_id selector: php_fpm_error_log (home logs directory), docroot_error_log (domain document root), or homedir_error_log (home directory)."
+        },
+        {
+          "kind": "documented",
+          "text": "Reads trailing PHP error-log lines in chronological order, oldest first. Omitted limit uses the server default of 100; the documented minimum is 1 and values above 5000 are silently capped by the server."
+        },
+        {
+          "kind": "documented",
+          "text": "log_content is a string list, empty for an empty log. lines_read is the returned integer line count in the pinned schema; partial=1 means the file exceeds limit. modified_today uses the server date/time. mtime and size are integer Unix time and bytes. Flags are integer 0/1; fields are optional."
+        },
+        {
+          "kind": "observed",
+          "text": "Reviewer 5721279104 on cPanel 11.138.0.19 observed lines_read as the digit string \"0\" for an empty log through direct UAPI, with log_content: []. Nonempty direct and bridged reads returned native integer counts. Neither committed log-administration capture contains view_error_log."
+        },
+        {
+          "kind": "policy",
+          "text": "Only lines_read additionally accepts canonical signed decimal strings within PHP integer bounds and normalizes them to int; native integers and omission remain intact. No range or nonnegative check is added. Sibling mtime, size and flags remain strict. The supplied limit is sent unchanged. Private log_content and explicitly accessible PayloadMismatchException payloads must not be logged; they stay out of exception messages and trace arguments. Shared group requirements and filesystem policy apply."
+        },
+        {
+          "kind": "policy",
+          "text": "Each call sends one request with no retry or undo. API success does not establish subsequent log rotation, pruning or retention enforcement."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /LogManager/view_error_log declares x-readonly=true. Query requiredness, wire spelling and response data schema are retained. UAPI source SHA256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc. No role restrictions or string-integer response variants are declared in this operation."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review 5721279104 of revision 984c5c16e47c43741b50e817a6f87149eb2f86d5: uapi:LogManager/view_error_log#GET, direct-uapi, GET, payload leaf $.lines_read was digit string \"0\" with empty $.log_content []; nonempty direct and bridged reads had native integer counts. This separate reviewer observation is absent from both immutable log-administration captures. Accept canonical signed decimal integer strings within PHP integer bounds on this optional leaf only; preserve native ints, omission and strict siblings. Pinned UAPI source SHA256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        }
+      ],
+      "response": {
+        "lines_read": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Review 5721279104 of revision 984c5c16e47c43741b50e817a6f87149eb2f86d5: uapi:LogManager/view_error_log#GET, direct-uapi, GET, payload leaf $.lines_read was digit string \"0\" with empty $.log_content []; nonempty direct and bridged reads had native integer counts. This separate reviewer observation is absent from both immutable log-administration captures. Accept canonical signed decimal integer strings within PHP integer bounds on this optional leaf only; preserve native ints, omission and strict siblings. Pinned UAPI source SHA256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+            }
+          ]
+        }
+      }
+    }
+  },
+  "description": "Selected-account log administration. Observed: reviewer 5721279104 inspected Cpanel/API/LogManager.pm on cPanel 11.138.0.19 and found the shared %API requirements WebServer role and rawlog feature for all six operations. Neither requirement is declared in the pinned snapshot; disabled-role/feature behavior was not runtime-tested. Policy: supplied paths/selectors are sent unchanged and the client performs no local filesystem access. Log contents are private payload data, including explicitly accessible exception payloads."
+}

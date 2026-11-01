@@ -14,7 +14,7 @@
         },
         {
           "kind": "documented",
-          "text": "image_file is relative to the cPanel account home directory according to the pinned /home wording. type remains a string without a closed format enum. The optional converted_file field is the new absolute image path; omission remains absent and explicit null is invalid."
+          "text": "image_file is relative to the cPanel account home directory according to the pinned /home wording. type remains a string without a closed format enum. The optional converted_file field is the new absolute image path; omission remains absent and explicit null is invalid. On reviewed cPanel 11.138.0.19 absolute paths under the account home also worked; this does not establish a universal confinement guarantee. The reviewed handler checks type characters only: type nope succeeded and wrote a .nope extension. This is no validated format list or conversion-quality guarantee."
         },
         {
           "kind": "documented",
@@ -29,6 +29,12 @@
           "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1ImageManager~1convert_file/get: x-cpanel-available-version=cPanel 82, description requires the WebServer role, parameters (image_file, type) preserve source scalar types and requiredness, and responses/200/content/application~1json/schema/properties/result/properties/data preserves source kind and optional nonnullable fields. x-readonly=false and x-rollback=none; use form POST under the generated-client mutation policy.",
           "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
           "pointer": "/paths/~1ImageManager~1convert_file/get"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Independent formal review 5724933500 of revision 0898b8b23929b57c233aa3065be8c460aa2f8d23, submitted 2026-10-31T21:07:45Z, through direct UAPI and WHM bridge on disposable reviewer account wrvimg. Absolute image paths under the home directory worked as well as relative paths. convert_file type nope succeeded and wrote a .nope extension; source only character-checks type. No closed format enum or universal path-security guarantee is inferred. Reviewer reported account and home directory removed and temporary tokens revoked after both runs. Attributed reviewer source/wire observations, not a capture or replay by this correction. Review: https://github.com/hostingpal/whm-api-client/pull/93#pullrequestreview-5724933500."
         }
       ]
     },
@@ -46,7 +52,7 @@
         },
         {
           "kind": "documented",
-          "text": "The result is a list with optional failed, file, reason and thumbnail_file fields. failed is documented as the integer 1, returned only when a thumbnail was not created; the existing integer policy does not enforce that singleton enum. reason is failure information and file and thumbnail_file are absolute paths. API status 1 does not establish that every thumbnail was created; inspect each row. Empty lists remain empty."
+          "text": "The result is a list with optional failed, file, reason and thumbnail_file fields. failed is documented as the integer 1, returned only when a thumbnail was not created; the existing integer policy does not enforce that singleton enum. reason is failure information and file and thumbnail_file are absolute paths. API status 1 does not establish that every thumbnail was created; inspect each row. Status 1 accepts empty lists. Reviewed all-failed batches report status 0 with row reasons: valid nonempty row lists are returned in full. Status 0 with no rows raises ApiErrorException; an empty directory can have errors() empty because upstream errors is null. Missing data, malformed roots or known row fields remain payload mismatches with outcomeConfirmed=false; integer status validation and outer WHM failure precedence remain strict."
         },
         {
           "kind": "documented",
@@ -61,8 +67,24 @@
           "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1ImageManager~1create_thumbnails/get: x-cpanel-available-version=cPanel 82, description requires the WebServer role, parameters (dir, height_percentage, width_percentage) preserve source scalar types and requiredness, and responses/200/content/application~1json/schema/properties/result/properties/data preserves source kind and optional nonnullable fields. x-readonly=false and x-rollback=none; use form POST under the generated-client mutation policy.",
           "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
           "pointer": "/paths/~1ImageManager~1create_thumbnails/get"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Independent formal review 5724933500 of revision 0898b8b23929b57c233aa3065be8c460aa2f8d23, submitted 2026-10-31T21:07:45Z, through direct UAPI and WHM bridge on disposable reviewer account wrvimg. create_thumbnails returns did_any_succeed. A mixed good/corrupt batch had status 1 and both rows; two corrupt images had status 0, errors null and both failure reasons. An empty directory had status 0, errors null and no rows. Opt into the source-bound nonnullable root object-list rows policy: whole-shape validation, nonempty rows returned; empty validated lists or explicit null at status 0 raise the existing static ApiErrorException. The null classification is retained compatibility policy, not a newly observed payload. Reviewer reported account and home directory removed and temporary tokens revoked after both runs. Attributed reviewer source/wire observations, not a capture or replay by this correction. Review: https://github.com/hostingpal/whm-api-client/pull/93#pullrequestreview-5724933500."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "note": "Exact selected source data schema is a nonnullable root array of nonnullable objects with optional failed, file, reason and thumbnail_file fields; this binding supports rows $ only for this root-list shape.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1ImageManager~1create_thumbnails/get/responses/200/content/application~1json/schema/properties/result/properties/data"
         }
-      ]
+      ],
+      "outcome": "unchecked",
+      "rows": "$"
     },
     "uapi:ImageManager/get_dimensions": {
       "name": "getDimensions",
@@ -74,7 +96,7 @@
         },
         {
           "kind": "documented",
-          "text": "image_file accepts an absolute path or a path relative to the user home directory. This read uses GET. Optional height and width are integer pixel dimensions, documented as positive. Omission remains absent and explicit null is invalid; the existing scalar policy adds no response range validation."
+          "text": "image_file accepts an absolute path or a path relative to the user home directory. This read uses GET. Optional height and width are integer pixel dimensions, documented as positive. Omission remains absent and explicit null is invalid; the existing scalar policy adds no response range validation. Reviewed cPanel 11.138.0.19 returns digit strings; evidenced canonical in-range integer strings normalize losslessly to integers under the existing signed integer policy."
         }
       ],
       "evidence": [
@@ -86,7 +108,35 @@
           "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
           "pointer": "/paths/~1ImageManager~1get_dimensions/get"
         }
-      ]
+      ],
+      "response": {
+        "height": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Independent formal review 5724933500 of revision 0898b8b23929b57c233aa3065be8c460aa2f8d23, submitted 2026-10-31T21:07:45Z, through direct UAPI and WHM bridge on disposable reviewer account wrvimg. _get_dimensions returns regex captures for width/height; successful relative and absolute image paths returned digit strings (10 by 5), causing PayloadMismatchException with outcomeConfirmed=true. Normalize canonical bounded integer strings losslessly to the pinned optional integer; preserve native ints, omission and non-nullability. Signed and platform-bound cases follow existing compatibility policy, not extra upstream observations. Reviewer reported account and home directory removed and temporary tokens revoked after both runs. Attributed reviewer source/wire observations, not a capture or replay by this correction. Review: https://github.com/hostingpal/whm-api-client/pull/93#pullrequestreview-5724933500."
+            }
+          ]
+        },
+        "width": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Independent formal review 5724933500 of revision 0898b8b23929b57c233aa3065be8c460aa2f8d23, submitted 2026-10-31T21:07:45Z, through direct UAPI and WHM bridge on disposable reviewer account wrvimg. _get_dimensions returns regex captures for width/height; successful relative and absolute image paths returned digit strings (10 by 5), causing PayloadMismatchException with outcomeConfirmed=true. Normalize canonical bounded integer strings losslessly to the pinned optional integer; preserve native ints, omission and non-nullability. Signed and platform-bound cases follow existing compatibility policy, not extra upstream observations. Reviewer reported account and home directory removed and temporary tokens revoked after both runs. Attributed reviewer source/wire observations, not a capture or replay by this correction. Review: https://github.com/hostingpal/whm-api-client/pull/93#pullrequestreview-5724933500."
+            }
+          ]
+        }
+      }
     },
     "uapi:ImageManager/resize_image": {
       "name": "resizeImage",
@@ -102,7 +152,7 @@
         },
         {
           "kind": "documented",
-          "text": "Omitting saveOriginalAs (including null) omits save_original_as and the server does not save a copy of the original. Explicit empty string is sent. The pinned save_original_as description calls it a directory, while its example images/original.jpg looks file-like; the client forwards it unchanged without resolving that discrepancy or performing a local filesystem operation."
+          "text": "Omitting saveOriginalAs (including null) omits save_original_as and the server does not save a copy of the original. Explicit empty string is sent unchanged. saveOriginalAs must name a NEW FILE path: an existing path, including a directory, is rejected by the server. The pinned parameter prose says directory, but reviewed _get_safe_image_file source and both-route cPanel 11.138.0.19 behavior resolve it to a new file path: img/orig.png retained the original 10x5 image, while existing directory img was rejected. No local filesystem check is performed."
         },
         {
           "kind": "documented",
@@ -117,8 +167,27 @@
           "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1ImageManager~1resize_image/get: x-cpanel-available-version=cPanel 82, description requires the WebServer role, parameters (height, image_file, width, save_original_as) preserve source scalar types and requiredness, and responses/200/content/application~1json/schema/properties/result/properties/data preserves source kind and optional nonnullable fields. x-readonly=false and x-rollback=clean; use form POST under the generated-client mutation policy.",
           "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
           "pointer": "/paths/~1ImageManager~1resize_image/get"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Independent formal review 5724933500 of revision 0898b8b23929b57c233aa3065be8c460aa2f8d23, submitted 2026-10-31T21:07:45Z, through direct UAPI and WHM bridge on disposable reviewer account wrvimg. _get_safe_image_file treats save_original_as as a file path and rejects existing paths. Existing directory img failed, whereas new file img/orig.png retained original dimensions 10x5 while resize produced 8x4. Reviewer reported account and home directory removed and temporary tokens revoked after both runs. Attributed reviewer source/wire observations, not a capture or replay by this correction. Review: https://github.com/hostingpal/whm-api-client/pull/93#pullrequestreview-5724933500."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10); reviewed 11.138.0.19",
+          "date": "2026-11-01",
+          "note": "PR93 final review 5726193860 of d9973b8170cc10452bc3668b1a612401c52947a5 identified the remaining contradictory directory instruction. Existing Param.Description replaces only save_original_as caller prose with a new file path, preserving omission and absolute/user-home-relative meanings; existing-path rejection is attributed to reviewed _get_safe_image_file source and cPanel 11.138.0.19 observations from review 5724933500, confirmed in final review. The pinned parameter itself says directory and is preserved unchanged. No runtime or parameter schema correction. Review: https://github.com/hostingpal/whm-api-client/pull/93#pullrequestreview-5726193860.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1ImageManager~1resize_image/get/parameters/3"
         }
-      ]
+      ],
+      "params": {
+        "save_original_as": {
+          "description": "The new file path at which to save a copy of the original image. If you omit this parameter, the server does not save a copy of the original image. This path may be absolute or relative to the user home directory. Reviewed source and cPanel 11.138.0.19 reject existing paths, including directories."
+        }
+      }
     }
   }
 }

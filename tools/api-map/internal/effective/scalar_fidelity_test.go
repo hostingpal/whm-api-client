@@ -108,13 +108,15 @@ func TestContentQueryRejectsUnreviewedMediaAndCollectionMappings(t *testing.T) {
 		name     string
 		content  map[string]any
 		schema   bool
-		encoding string
+		override overlay.Param
 	}{
-		{"unknown media", map[string]any{"text/plain": map[string]any{"schema": map[string]any{"type": "string"}}}, false, ""},
-		{"multiple media", map[string]any{"application/json": map[string]any{"schema": map[string]any{}}, "text/plain": map[string]any{}}, false, ""},
-		{"schema and content", map[string]any{"application/json": map[string]any{"schema": map[string]any{}}}, true, ""},
-		{"missing schema", map[string]any{"application/json": map[string]any{}}, false, ""},
-		{"repeat", map[string]any{"application/json": map[string]any{"schema": map[string]any{"type": "array"}}}, false, "repeat"},
+		{"unknown media", map[string]any{"text/plain": map[string]any{"schema": map[string]any{"type": "string"}}}, false, overlay.Param{}},
+		{"multiple media", map[string]any{"application/json": map[string]any{"schema": map[string]any{}}, "text/plain": map[string]any{}}, false, overlay.Param{}},
+		{"schema and content", map[string]any{"application/json": map[string]any{"schema": map[string]any{}}}, true, overlay.Param{}},
+		{"missing schema", map[string]any{"application/json": map[string]any{}}, false, overlay.Param{}},
+		{"repeat", map[string]any{"application/json": map[string]any{"schema": map[string]any{"type": "array"}}}, false, overlay.Param{Encoding: "repeat"}},
+		{"collection override", map[string]any{"application/json": map[string]any{"schema": map[string]any{"type": "array", "items": map[string]any{"type": "string"}}}}, false, overlay.Param{Collection: &overlay.Collection{Kind: "indexed", ItemType: "string"}}},
+		{"type override", map[string]any{"application/json": map[string]any{"schema": map[string]any{"type": "string"}}}, false, overlay.Param{Type: "string|int"}},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			m := fixtureMap(t)
@@ -126,7 +128,7 @@ func TestContentQueryRejectsUnreviewedMediaAndCollectionMappings(t *testing.T) {
 			p.Definition["content"] = tc.content
 			set := fixtureOverlay("listed")
 			ov := set.Files[1].Operations["whm1:createacct"]
-			ov.Params = map[string]overlay.Param{p.Name: {Encoding: tc.encoding}}
+			ov.Params = map[string]overlay.Param{p.Name: tc.override}
 			ov.Evidence = evidence()
 			set.Files[1].Operations["whm1:createacct"] = ov
 			_, problems := buildProblems(t, m, set)
@@ -163,5 +165,67 @@ func TestContentQueryDoesNotPromoteUnlistedOrExcludedOperations(t *testing.T) {
 	}
 	if len(result.Excluded) != 1 || result.Excluded[0].ID != "whm1:suspendacct" {
 		t.Fatalf("excluded operations changed: %+v", result.Excluded)
+	}
+}
+
+// These cases reach the format-only helper; a nonempty allOf is handled earlier
+// by shape and is only a characterization case in the preceding table.
+func TestFormatOnlyAlternativesRejectCompetingComposition(t *testing.T) {
+	s, err := newSchemas(fixtureMap(t))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, unionKey := range []string{"oneOf", "anyOf"} {
+		for _, competing := range []string{"oneOf", "anyOf", "allOf", "discriminator"} {
+			if competing == unionKey {
+				continue
+			}
+			t.Run(unionKey+"/"+competing, func(t *testing.T) {
+				options := []any{map[string]any{"format": "domain"}}
+				node := map[string]any{"type": "string", unionKey: options, competing: []any{}}
+				if s.formatOnlyScalarAlternatives("fixture", node, unionKey, options) {
+					t.Fatal("competing composition accepted by format-only helper")
+				}
+				if got := s.specFor("fixture", node, 0, nil); !reflect.DeepEqual(got, TypeSpec{Type: "mixed"}) {
+					t.Fatalf("competing composition lowered to %+v", got)
+				}
+			})
+		}
+	}
+}
+
+// Full Build must reject content queries before scalar lowering can make them
+// appear compatible with inline multipart fields. Matching sibling schema also
+// remains unsupported, independently of the multipart source-schema check.
+func TestContentQueryCannotBecomeMultipartField(t *testing.T) {
+	for _, sibling := range []bool{false, true} {
+		m := fixtureMap(t)
+		const id = "uapi:DomainInfo/primary_domain"
+		addQueryParameter(t, m, id, "text", map[string]any{"type": "string"})
+		op := operationByID(t, m, id)
+		for _, p := range op.Variants[0].Parameters {
+			if p.Name != "text" {
+				continue
+			}
+			if !sibling {
+				delete(p.Definition, "schema")
+			}
+			p.Definition["content"] = map[string]any{"application/json": map[string]any{"schema": map[string]any{"type": "object"}}}
+		}
+		fixtureNode(t, m, id)["requestBody"] = map[string]any{"content": map[string]any{
+			"multipart/form-data": map[string]any{"schema": map[string]any{"type": "object", "properties": map[string]any{"text": map[string]any{"type": "string"}}}},
+		}}
+		set := fixtureOverlay("listed")
+		ov := set.Files[0].Operations[id]
+		ov.Body, ov.Evidence = "multipart", evidence()
+		set.Files[0].Operations[id] = ov
+		_, problems := buildProblems(t, m, set)
+		want := "query and multipart field schemas disagree for text"
+		if sibling {
+			want = "content requires only application/json"
+		}
+		if !strings.Contains(problems, want) {
+			t.Fatalf("sibling=%v: want %q, got %q", sibling, want, problems)
+		}
 	}
 }
