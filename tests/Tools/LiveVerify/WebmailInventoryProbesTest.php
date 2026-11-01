@@ -21,6 +21,12 @@ use Psr\Http\Message\RequestInterface;
 /** @phpstan-import-type Context from EvidenceRunner */
 final class WebmailInventoryProbesTest extends TestCase
 {
+    private const ROOT = __DIR__ . '/../../..';
+
+    private const ARTIFACT = '2026-11-01-webmail-inventory.json';
+
+    private const CAPTURE_REVISION = 'eba1711a62e71d614a50cb5eeb2259aa00adbbea';
+
     private const SESSION_ROW = '{"ip_address":"192.0.2.10","is_current":1,"is_possessed":0,'
         . '"last_active":1700000000,"login_theme":"jupiter","tfa_verified":0}';
 
@@ -123,6 +129,61 @@ final class WebmailInventoryProbesTest extends TestCase
         }
     }
 
+    /**
+     * Bind the immutable artifact to the committed catalog and to the hash the documentation records.
+     *
+     * Source hashes are computed from the pinned files, and the revision must be the one the audit records. The
+     * remaining provenance cannot be recomputed offline for a past revision, so it comes from the first record and
+     * the assessment proves only that every record agrees. A later change to a catalogued spec fails here on purpose:
+     * this artifact no longer describes the current contract, so capture a new dated artifact and never edit this one.
+     */
+    public function testCommittedArtifactPassesTheCatalogAndMatchesTheRecordedHash(): void
+    {
+        $bytes = file_get_contents(self::ROOT . '/docs/api/evidence/' . self::ARTIFACT);
+        self::assertIsString($bytes);
+        $hash = hash('sha256', $bytes);
+        $audit = file_get_contents(self::ROOT . '/docs/api/source-audit.md');
+        self::assertIsString($audit);
+        self::assertStringContainsString(
+            '| `webmail-inventory-v1` | [Webmail inventory](evidence/' . self::ARTIFACT . ') | 5 | `' . $hash . '` |',
+            $audit,
+        );
+        self::assertStringContainsString('`' . self::CAPTURE_REVISION . '`', $audit);
+        foreach (['docs/api/evidence/README.md', 'tools/live-verify/README.md'] as $document) {
+            $contents = file_get_contents(self::ROOT . '/' . $document);
+            self::assertIsString($contents);
+            self::assertStringContainsString('`' . $hash . '`', $contents);
+        }
+
+        $artifact = json_decode($bytes, true, flags: JSON_THROW_ON_ERROR);
+        self::assertIsArray($artifact);
+        $section = $artifact['read_only_section'] ?? null;
+        self::assertIsArray($section);
+        self::assertSame('webmail-inventory-v1', $section['recipe'] ?? null);
+        self::assertSame('passed', $section['status'] ?? null);
+        $records = $section['probes'] ?? null;
+        self::assertIsArray($records);
+        $first = $records[0] ?? null;
+        self::assertIsArray($first);
+        $map = $first['map_sha256'] ?? null;
+        $generator = $first['generator_tree'] ?? null;
+        $overlay = $first['overlay_sha256'] ?? null;
+        self::assertIsString($map);
+        self::assertIsString($generator);
+        self::assertIsString($overlay);
+
+        self::assertTrue(ReadOnlySectionRunner::passes(WebmailInventoryProbes::load(), $records, [
+            'revision' => self::CAPTURE_REVISION,
+            'source_hashes' => [
+                'whm1' => self::sourceHash('whm.openapi.json.gz'),
+                'uapi' => self::sourceHash('cpanel.openapi.json.gz'),
+            ],
+            'map_sha256' => $map,
+            'generator_tree' => $generator,
+            'overlay_sha256' => $overlay,
+        ]));
+    }
+
     public function testEmptySessionListPassesButObservesNoRowFields(): void
     {
         $report = (new ReadOnlySectionRunner(self::mock([], [self::APP_ROW]), self::context()))->run(
@@ -155,6 +216,17 @@ final class WebmailInventoryProbesTest extends TestCase
         }
 
         return $http;
+    }
+
+    /** Hash one pinned source over its decompressed bytes, as evidence provenance does. */
+    private static function sourceHash(string $file): string
+    {
+        $compressed = file_get_contents(self::ROOT . '/docs/api/sources/2026-10-13/' . $file);
+        self::assertIsString($compressed);
+        $json = gzdecode($compressed);
+        self::assertIsString($json);
+
+        return hash('sha256', $json);
     }
 
     /** @return Context */
