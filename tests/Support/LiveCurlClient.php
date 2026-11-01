@@ -34,6 +34,15 @@ final readonly class LiveCurlClient implements ClientInterface
 
     private const BRIDGE = self::WHM . 'uapi_cpanel?api.version=1&cpanel.user=npr';
 
+    /**
+     * Two repeated domain keys for the multi-value DNS reads.
+     *
+     * npr has no domain besides npr.rs (list_domains, 2026-11-01), so both values are
+     * that domain. This exercises the repeated-key wire form with the account's real
+     * domain, but it cannot show how the server handles two distinct domains.
+     */
+    private const REPEATED_DOMAIN = 'domain=npr.rs&domain=npr.rs';
+
     /** Approved read-only GET requests; the body must be empty. */
     private const READ_ONLY_GET = [
         self::WHM . 'get_feature_metadata?api.version=1',
@@ -93,19 +102,28 @@ final readonly class LiveCurlClient implements ClientInterface
         self::WHM . 'resolvedomainname?api.version=1&domain=example.com',
         self::WHM . 'get_nameserver_config?api.version=1',
         self::WHM . 'has_local_authority?api.version=1&domain=npr.rs',
+        self::WHM . 'has_local_authority?api.version=1&' . self::REPEATED_DOMAIN,
         self::WHM . 'is_alias_available?api.version=1',
         self::WHM . 'is_https_available?api.version=1',
         self::WHM . 'is_svcb_available?api.version=1',
         self::WHM . 'export_zone_files?api.version=1&zone=npr.rs',
         self::WHM . 'fetch_ds_records_for_domains?api.version=1&domain=npr.rs',
+        self::WHM . 'fetch_ds_records_for_domains?api.version=1&' . self::REPEATED_DOMAIN,
         self::CPANEL . 'DNS/parse_zone?zone=npr.rs',
         self::BRIDGE . '&cpanel.module=DNS&cpanel.function=parse_zone&zone=npr.rs',
         self::CPANEL . 'DNS/has_local_authority?domain=npr.rs',
         self::BRIDGE . '&cpanel.module=DNS&cpanel.function=has_local_authority&domain=npr.rs',
+        self::CPANEL . 'DNS/has_local_authority?' . self::REPEATED_DOMAIN,
+        self::BRIDGE . '&cpanel.module=DNS&cpanel.function=has_local_authority&' . self::REPEATED_DOMAIN,
         self::CPANEL . 'DNS/ensure_domains_reside_only_locally?domain=npr.rs',
         self::BRIDGE . '&cpanel.module=DNS&cpanel.function=ensure_domains_reside_only_locally&domain=npr.rs',
+        self::CPANEL . 'DNS/ensure_domains_reside_only_locally?' . self::REPEATED_DOMAIN,
+        self::BRIDGE . '&cpanel.module=DNS&cpanel.function=ensure_domains_reside_only_locally&' . self::REPEATED_DOMAIN,
         self::CPANEL . 'DNS/ensure_domains_use_recognized_nameservers?domain=npr.rs',
         self::BRIDGE . '&cpanel.module=DNS&cpanel.function=ensure_domains_use_recognized_nameservers&domain=npr.rs',
+        self::CPANEL . 'DNS/ensure_domains_use_recognized_nameservers?' . self::REPEATED_DOMAIN,
+        self::BRIDGE . '&cpanel.module=DNS&cpanel.function=ensure_domains_use_recognized_nameservers&'
+            . self::REPEATED_DOMAIN,
         self::CPANEL . 'DNS/is_alias_available',
         self::BRIDGE . '&cpanel.module=DNS&cpanel.function=is_alias_available',
         self::CPANEL . 'DNS/is_https_available',

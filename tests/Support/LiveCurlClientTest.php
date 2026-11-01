@@ -226,6 +226,31 @@ final class LiveCurlClientTest extends TestCase
             'GET',
             'https://test.oblak.host:2087/json-api/parse_dns_zone?api.version=1&zone=example.com',
         ];
+        yield 'repeated domains with a value npr does not have' => [
+            'GET',
+            'https://test.oblak.host:2083/execute/DNS/has_local_authority?domain=npr.rs&domain=example.com',
+        ];
+        yield 'bridged repeated domains with a value npr does not have' => [
+            'GET',
+            'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
+                . '&cpanel.module=DNS&cpanel.function=has_local_authority&domain=npr.rs&domain=example.com',
+        ];
+        yield 'three repeated domains' => [
+            'GET',
+            'https://test.oblak.host:2083/execute/DNS/has_local_authority?domain=npr.rs&domain=npr.rs&domain=npr.rs',
+        ];
+        yield 'numbered instead of repeated domains' => [
+            'GET',
+            'https://test.oblak.host:2083/execute/DNS/has_local_authority?domain=npr.rs&domain-1=npr.rs',
+        ];
+        yield 'repeated domains on an operation without an approved multi-value read' => [
+            'GET',
+            'https://test.oblak.host:2083/execute/DNS/lookup?domain=example.com&domain=example.com',
+        ];
+        yield 'multi-zone export' => [
+            'GET',
+            'https://test.oblak.host:2087/json-api/export_zone_files?api.version=1&zone=npr.rs&zone=npr.rs',
+        ];
         yield 'userinfo' => ['GET', 'https://root@test.oblak.host:2087/json-api/version?api.version=1'];
         yield 'fragment' => ['GET', 'https://test.oblak.host:2087/json-api/version?api.version=1#unexpected'];
     }
@@ -384,6 +409,28 @@ final class LiveCurlClientTest extends TestCase
         yield 'WHM DS records' => [
             'https://test.oblak.host:2087/json-api/fetch_ds_records_for_domains?api.version=1&domain=npr.rs',
         ];
+        yield 'WHM local authority with repeated domains' => [
+            'https://test.oblak.host:2087/json-api/has_local_authority?api.version=1&domain=npr.rs&domain=npr.rs',
+        ];
+        yield 'WHM DS records with repeated domains' => [
+            'https://test.oblak.host:2087/json-api/fetch_ds_records_for_domains?api.version=1'
+                . '&domain=npr.rs&domain=npr.rs',
+        ];
+        $repeated = [
+            'has_local_authority',
+            'ensure_domains_reside_only_locally',
+            'ensure_domains_use_recognized_nameservers',
+        ];
+        foreach ($repeated as $function) {
+            yield 'direct DNS repeated domains ' . $function => [
+                'https://test.oblak.host:2083/execute/DNS/' . $function . '?domain=npr.rs&domain=npr.rs',
+            ];
+            yield 'bridged DNS repeated domains ' . $function => [
+                'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
+                    . '&cpanel.module=DNS&cpanel.function=' . $function . '&domain=npr.rs&domain=npr.rs',
+            ];
+        }
+
         $dns = [
             'parse_zone' => 'zone=npr.rs',
             'has_local_authority' => 'domain=npr.rs',

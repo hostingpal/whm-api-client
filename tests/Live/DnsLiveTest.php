@@ -32,11 +32,18 @@ use Throwable;
  * The test zone exists only locally, so resolvedomainname, which needs public
  * resolution, targets a public name. Everything else stays on the test zone.
  *
+ * The multi-value reads send two repeated domain keys. LiveCurlClient approves that
+ * exact query, so a pass shows the client sent both keys, and requiring one result per
+ * key shows the server read both. Both values are the test zone because npr has no
+ * other domain, so these tests say nothing about two distinct domains or their order.
+ * export_zone_files is deliberately not exercised with more than one zone.
+ *
  * The WHM and UAPI zone-line and authority-record shapes are identical, so both
  * families share the UAPI aliases.
  *
  * @phpstan-import-type ParseZoneResult from UapiDns as ZoneLines
  * @phpstan-import-type HasLocalAuthorityResult from UapiDns as AuthorityRecords
+ * @phpstan-import-type EnsureDomainsUseRecognizedNameserversResult from UapiDns as NameserverResults
  */
 #[Group('live')]
 final class DnsLiveTest extends TestCase
@@ -45,6 +52,9 @@ final class DnsLiveTest extends TestCase
 
     /** Reserved by RFC 2606 and resolvable, unlike the test zone, which is NXDOMAIN publicly. */
     private const PUBLIC_DOMAIN = 'example.com';
+
+    /** The test zone is the only domain on npr (list_domains, 2026-11-01), so it is sent twice. */
+    private const REPEATED_DOMAINS = [self::ZONE, self::ZONE];
 
     public function testWhmListZonesIncludesTheTestZone(): void
     {
@@ -184,6 +194,15 @@ final class DnsLiveTest extends TestCase
         self::assertWhmSuccess($whm);
     }
 
+    public function testWhmHasLocalAuthorityWithRepeatedDomains(): void
+    {
+        $whm = self::whm();
+        $result = self::safely(static fn (): array => $whm->dns()->hasLocalAuthority(self::REPEATED_DOMAINS));
+
+        self::assertAuthority($result['records'] ?? [], 2);
+        self::assertWhmSuccess($whm);
+    }
+
     /** @param Closure(WhmDns): array<string, mixed> $operation */
     #[DataProvider('whmAvailability')]
     public function testWhmRecordTypeAvailability(Closure $operation, string $flag): void
@@ -229,6 +248,20 @@ final class DnsLiveTest extends TestCase
         self::assertWhmSuccess($whm);
     }
 
+    public function testWhmFetchDsRecordsWithRepeatedDomains(): void
+    {
+        $whm = self::whm();
+        $result = self::safely(static fn (): array => $whm->dns()->fetchDsRecordsForDomains(self::REPEATED_DOMAINS));
+        $domains = $result['domains'] ?? [];
+
+        self::assertTrue(count($domains) === 2, 'Expected one DS result per repeated domain key.');
+        foreach ($domains as $domain) {
+            self::assertTrue(($domain['domain'] ?? null) === self::ZONE, 'DS records must belong to the test zone.');
+        }
+
+        self::assertWhmSuccess($whm);
+    }
+
     #[DataProvider('routes')]
     public function testUapiParseZone(bool $direct): void
     {
@@ -250,12 +283,34 @@ final class DnsLiveTest extends TestCase
     }
 
     #[DataProvider('routes')]
+    public function testUapiHasLocalAuthorityWithRepeatedDomains(bool $direct): void
+    {
+        [$client, $account] = self::uapi($direct);
+        $records = self::safely(static fn (): array => $account->dns()->hasLocalAuthority(self::REPEATED_DOMAINS));
+
+        self::assertAuthority($records, 2);
+        self::assertUapiSuccess($client, $account, $direct);
+    }
+
+    #[DataProvider('routes')]
     public function testUapiEnsureDomainsResideOnlyLocally(bool $direct): void
     {
         [$client, $account] = self::uapi($direct);
         $results = self::safely(static fn (): ?array => $account->dns()->ensureDomainsResideOnlyLocally(self::ZONE));
 
         self::assertTrue($results === null || count($results) === 1, 'Expected one result for the one domain.');
+        self::assertUapiSuccess($client, $account, $direct);
+    }
+
+    #[DataProvider('routes')]
+    public function testUapiEnsureDomainsResideOnlyLocallyWithRepeatedDomains(bool $direct): void
+    {
+        [$client, $account] = self::uapi($direct);
+        $results = self::safely(
+            static fn (): ?array => $account->dns()->ensureDomainsResideOnlyLocally(self::REPEATED_DOMAINS),
+        );
+
+        self::assertTrue(count($results ?? []) === 2, 'Expected one result per repeated domain key.');
         self::assertUapiSuccess($client, $account, $direct);
     }
 
@@ -268,14 +323,20 @@ final class DnsLiveTest extends TestCase
         );
 
         self::assertTrue($results === null || count($results) === 1, 'Expected one result for the one domain.');
-        foreach ($results ?? [] as $result) {
-            self::assertTrue(
-                $result === null
-                    || in_array($result['type'] ?? null, ['domain_not_registered', 'unrecognized_nameservers'], true),
-                'A failed nameserver check must carry a documented reason code.',
-            );
-        }
+        self::assertNameserverReasons($results);
+        self::assertUapiSuccess($client, $account, $direct);
+    }
 
+    #[DataProvider('routes')]
+    public function testUapiEnsureDomainsUseRecognizedNameserversWithRepeatedDomains(bool $direct): void
+    {
+        [$client, $account] = self::uapi($direct);
+        $results = self::safely(
+            static fn (): ?array => $account->dns()->ensureDomainsUseRecognizedNameservers(self::REPEATED_DOMAINS),
+        );
+
+        self::assertTrue(count($results ?? []) === 2, 'Expected one result per repeated domain key.');
+        self::assertNameserverReasons($results);
         self::assertUapiSuccess($client, $account, $direct);
     }
 
@@ -356,14 +417,28 @@ final class DnsLiveTest extends TestCase
     }
 
     /** @param AuthorityRecords $records */
-    private static function assertAuthority(array $records): void
+    private static function assertAuthority(array $records, int $expected = 1): void
     {
-        self::assertTrue(count($records) === 1, 'Expected one authority record for the one domain.');
-        self::assertTrue(($records[0]['domain'] ?? null) === self::ZONE, 'The authority record must be the test zone.');
-        self::assertTrue(
-            array_key_exists('local_authority', $records[0]),
-            'The authority record must report local authority.',
-        );
+        self::assertTrue(count($records) === $expected, 'Expected one authority record per requested domain key.');
+        foreach ($records as $record) {
+            self::assertTrue(($record['domain'] ?? null) === self::ZONE, 'The authority record must be the test zone.');
+            self::assertTrue(
+                array_key_exists('local_authority', $record),
+                'The authority record must report local authority.',
+            );
+        }
+    }
+
+    /** @param NameserverResults $results */
+    private static function assertNameserverReasons(?array $results): void
+    {
+        foreach ($results ?? [] as $result) {
+            self::assertTrue(
+                $result === null
+                    || in_array($result['type'] ?? null, ['domain_not_registered', 'unrecognized_nameservers'], true),
+                'A failed nameserver check must carry a documented reason code.',
+            );
+        }
     }
 
     private static function assertWhmSuccess(WhmClient $whm): void
