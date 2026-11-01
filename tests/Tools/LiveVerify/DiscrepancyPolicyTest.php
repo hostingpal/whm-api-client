@@ -500,9 +500,10 @@ final class DiscrepancyPolicyTest extends TestCase
     public function testHistoricalArtifactIsRefusedAsAnOutput(): void
     {
         $root = dirname(__DIR__, 3);
+        $policy = DiscrepancyPolicy::load($root);
 
         $this->expectException(RuntimeException::class);
-        DiscrepancyPolicy::load($root)->assertOutputAllowed($root . '/docs/api/evidence/2026-10-16-quota-inventory.json');
+        $policy->assertOutputAllowed($root . '/docs/api/evidence/2026-10-16-quota-inventory.json');
     }
 
     public function testEveryAssessedIdentifierHasAConsoleLabelAndNoOtherDoes(): void
