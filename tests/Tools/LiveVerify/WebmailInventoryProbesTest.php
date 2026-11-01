@@ -124,7 +124,7 @@ final class WebmailInventoryProbesTest extends TestCase
             $leaves[] = $leaf;
         });
         // These could match inside a recorded hash, so they are compared with whole values instead.
-        foreach ([1, 0] as $short) {
+        foreach (['1', '0', 1, 0] as $short) {
             self::assertNotContains($short, $leaves);
         }
     }

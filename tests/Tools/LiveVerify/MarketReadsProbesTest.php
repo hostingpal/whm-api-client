@@ -215,7 +215,7 @@ final class MarketReadsProbesTest extends TestCase
             $leaves[] = $leaf;
         });
         // These could match inside a recorded hash, so they are compared with whole values instead.
-        foreach (['176', '1', '0', 'a', 'txt', 1, 0, 32] as $short) {
+        foreach (['176', '1', '0', 'a', 'txt', '32', 1, 0, 32] as $short) {
             self::assertNotContains($short, $leaves);
         }
     }
