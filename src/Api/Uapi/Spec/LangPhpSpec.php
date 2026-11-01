@@ -200,7 +200,15 @@ final class LangPhpSpec
                     'items' => [
                         'type' => 'object',
                         'fields' => [
-                            'cpanel_default' => ['type' => 'string'],
+                            'cpanel_default' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'string'],
+                                    ['type' => 'bool'],
+                                    ['type' => 'int'],
+                                    ['type' => 'number'],
+                                ],
+                            ],
                             'default_value' => [
                                 'type' => 'union',
                                 'anyOf' => [

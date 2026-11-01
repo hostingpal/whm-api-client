@@ -288,7 +288,11 @@
         },
         {
           "kind": "observed",
-          "text": "On cPanel 11.138.0.19 some directive rows also carry cpanel_default, an undocumented optional string with unknown meaning. Rows can omit it."
+          "text": "On cPanel 11.138.0.19 cpanel_default appeared as a string on 1 of 15 directive rows, and the other rows omitted it. It is undocumented, optional and of unknown meaning."
+        },
+        {
+          "kind": "policy",
+          "text": "cpanel_default accepts string, bool, int and number. This is deliberately wider than the one string observation: values on these rows are polymorphic, so a single string cannot justify rejecting the other forms. It implies no relationship to default_value."
         }
       ],
       "probe": {
@@ -305,14 +309,28 @@
       "response": {
         "directives[].cpanel_default": {
           "add": {
-            "type": "string"
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "bool"
+              },
+              {
+                "type": "int"
+              },
+              {
+                "type": "number"
+              }
+            ]
           },
           "evidence": [
             {
               "kind": "live",
               "version": "11.138.0.19",
               "date": "2026-11-01",
-              "note": "One-off read-only name inspection on 2026-11-01 from revision 760ca68: one direct UAPI GET as npr printed only key names and structural types, never values. With type=home, one of 15 directive rows carried cpanel_default as a non-numeric string. The pinned schema does not declare it. Its meaning, allowed values and requiredness are unknown, so it is an optional string with no assumed semantics."
+              "note": "One-off read-only name inspection on 2026-11-01 from revision 760ca68: one direct UAPI GET as npr printed only key names and structural types, never values. With type=home, one of 15 directive rows carried cpanel_default as a non-numeric string, the only form observed. The pinned schema does not declare it. Its meaning, allowed values and requiredness are unknown. It is optional, and accepting string, bool, int and number is deliberate and wider than that observation: values on these rows are polymorphic, so a single string observation cannot justify rejecting the others. This states no relationship to default_value."
             }
           ]
         }
@@ -328,7 +346,7 @@
           "kind": "live",
           "version": "11.138.0.19",
           "date": "2026-11-01",
-          "note": "The 67-probe read-only capture at revision 5f9b001 ran both direct UAPI and WHM-bridged GET observations with these corrections in the contract. directives[].cpanel_default appears as a named path. Both routes passed HTTP, API, payload and probe checks with no unknown_field at the formerly masked paths. Immutable artifact SHA-256 4138dbf1d083ddfe6d109c86bb8beb449abde6937e93b2452693d47b2b792b81. Structural evidence establishes no values or meaning.",
+          "note": "The 67-probe read-only capture at revision 5f9b001 ran both direct UAPI and WHM-bridged GET observations with cpanel_default typed as a string. directives[].cpanel_default appears as a named path with string and missing observations. Both routes passed HTTP, API, payload and probe checks with no unknown_field at the formerly masked path. The contract was widened to string, bool, int and number after this capture, so the artifact's effective contract hash for this operation records the string-only contract, while its string observation stays true. Immutable artifact SHA-256 4138dbf1d083ddfe6d109c86bb8beb449abde6937e93b2452693d47b2b792b81. Structural evidence establishes no values or meaning.",
           "fingerprint": "docs/api/evidence/2026-11-01-read-only-11.138.0.19.json"
         }
       ]

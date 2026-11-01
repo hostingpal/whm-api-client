@@ -8887,12 +8887,21 @@ None of the keys looked dynamic or sensitive, so none was declined.
 | `single_domain_data` `phpversion` | optional string | string | Undeclared; meaning unknown |
 | `single_domain_data` `status` | optional string | string | Undeclared; meaning unknown |
 | `single_domain_data` `customlog[].format` | optional string | string, both items | Undeclared here; pinned `domain` absent live |
-| `php_ini_get_user_basic_directives` `directives[].cpanel_default` | optional string | string, 1 of 15 rows | Undeclared; meaning unknown |
+| `php_ini_get_user_basic_directives` `directives[].cpanel_default` | optional `string\|bool\|int\|number`, deliberately wider than observed | string, 1 of 15 rows | Undeclared; meaning unknown |
 | `php_ini_get_user_paths` `paths[].is_suspended` | optional int | int, 1 of 2 rows | Undeclared; meaning unknown |
 
 All corrections are overlay entries with `live` evidence for `11.138.0.19`, dated
 2026-11-01, and generated methods carry `Observed:` notes. Offline expectations are
 hand-written in `tests/Api/DomainPhpObservedFieldsTest.php`, using synthetic values.
+
+`cpanel_default` was first typed `string` from its one observation, then corrected in
+review before publication. It now accepts string, bool, int and number, in the same
+overlay union form that `default_value` uses. String is the only form observed, on 1 of
+15 rows through the direct route. The wider acceptance is a deliberate client decision:
+values on these rows are polymorphic, so a single string observation cannot justify
+rejecting the others, and one server's observations do not define a universal contract.
+This states no relationship between the two fields. `cpanel_default` stays optional and
+of unknown meaning. Null, lists and objects still fail validation.
 
 `status` here is a payload field and has no connection to the UAPI envelope `status`.
 `is_suspended` is typed `int` rather than a 0/1 flag because no value was inspected,
@@ -8911,9 +8920,10 @@ and the object form, which was not observed, is unchanged.
   requested. Those records and the `main_domain` list form keep their documented shape,
   so the same keys there are still dropped and still reported as unknown.
 - Typing is stricter than the previous drop. A different wire type at one of these
-  paths, for example a numeric `cpanel_default` on another server, now raises
-  `PayloadMismatchException` rather than being discarded. Only `string` or `int` as
-  observed is accepted; no widening was added without evidence.
+  paths, for example a string `is_suspended` on another server, now raises
+  `PayloadMismatchException` rather than being discarded. The fields other than
+  `cpanel_default` accept only their observed form, plus the reviewed quoted flag on
+  `phpopenbasedirprotect`.
 - Validation rules, `Fingerprint` and the wildcard masking of other keys are unchanged.
   Any other undeclared key at these locations still reports `unknown_field`.
 
@@ -8941,7 +8951,13 @@ Quota stays out of typed results under the owner's 2026-10-17 acceptance. The tw
 keys were not re-inspected on `11.138.0.19`. The fingerprint still shows `$.*` as integer,
 which does not establish their names or count on this version.
 
-Later overlay evidence entries cite this artifact and change no effective contract, so
-its recorded contract hashes stay valid for the corrected operations. The final gate
-result is reported with the change rather than here, because a commit cannot contain
-the outcome of a run against itself.
+Later overlay evidence entries cite this artifact without changing any effective
+contract, with one exception. Widening `cpanel_default` happened after the capture, so
+the artifact's `effective_contract_sha256` for `php_ini_get_user_basic_directives` records
+the string-only contract. The artifact was neither edited nor recaptured: its recorded
+`string` observation is still true, its other recorded contract hashes still match, and
+the Quota acknowledgments keep binding it because the Quota contract did not change.
+The non-string forms remain offline-tested only: this server has not been observed
+sending them, and a passing gate does not establish them. The final gate result is
+reported with the change rather than here, because a commit cannot contain the outcome
+of a run against itself.

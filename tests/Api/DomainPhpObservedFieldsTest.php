@@ -119,6 +119,22 @@ final class DomainPhpObservedFieldsTest extends TestCase
                 ['cpanel_default' => '', 'key' => 'third'],
             ]],
         ];
+        yield 'directive rows keep every accepted scalar form side by side' => [
+            $directives,
+            '{"directives":[{"cpanel_default":"fixture-a"},{"cpanel_default":"0"},{"cpanel_default":0},'
+                . '{"cpanel_default":7},{"cpanel_default":-3},{"cpanel_default":1.5},{"cpanel_default":true},'
+                . '{"cpanel_default":false}]}',
+            ['directives' => [
+                ['cpanel_default' => 'fixture-a'],
+                ['cpanel_default' => '0'],
+                ['cpanel_default' => 0],
+                ['cpanel_default' => 7],
+                ['cpanel_default' => -3],
+                ['cpanel_default' => 1.5],
+                ['cpanel_default' => true],
+                ['cpanel_default' => false],
+            ]],
+        ];
         yield 'path rows keep any integer without a flag restriction' => [
             $paths,
             '{"paths":[{"is_suspended":0,"type":"home"},{"type":"vhost"},{"is_suspended":1,"type":"vhost"},'
@@ -213,9 +229,15 @@ final class DomainPhpObservedFieldsTest extends TestCase
             'single list status' => [$single, '{"status":[]}'],
             'customlog integer format' => [$single, '{"customlog":[{"format":7}]}'],
             'customlog null format' => [$single, '{"customlog":[{"format":null}]}'],
-            'directive integer default' => [$directives, '{"directives":[{"cpanel_default":1}]}'],
-            'directive boolean default' => [$directives, '{"directives":[{"cpanel_default":true}]}'],
             'directive null default' => [$directives, '{"directives":[{"cpanel_default":null}]}'],
+            'directive empty list default' => [$directives, '{"directives":[{"cpanel_default":[]}]}'],
+            'directive list default' => [$directives, '{"directives":[{"cpanel_default":["fixture-a"]}]}'],
+            'directive empty object default' => [$directives, '{"directives":[{"cpanel_default":{}}]}'],
+            'directive object default' => [$directives, '{"directives":[{"cpanel_default":{"a":"fixture-a"}}]}'],
+            'directive one bad row fails the list' => [
+                $directives,
+                '{"directives":[{"cpanel_default":"fixture-a"},{"cpanel_default":["fixture-b"]}]}',
+            ],
             'path string integer' => [$paths, '{"paths":[{"is_suspended":"1"}]}'],
             'path boolean' => [$paths, '{"paths":[{"is_suspended":true}]}'],
             'path fraction' => [$paths, '{"paths":[{"is_suspended":1.5}]}'],
@@ -273,11 +295,40 @@ final class DomainPhpObservedFieldsTest extends TestCase
             '{"directives":[{"cpanel_default":"fixture-a"},{"key":"fixture-b"}]}',
             ['$.directives[].cpanel_default' => ['missing', 'string']],
         ];
+        yield 'directives with every accepted scalar form' => [
+            LangPhpSpec::PHP_INI_GET_USER_BASIC_DIRECTIVES['returns'],
+            '{"directives":[{"cpanel_default":"fixture-a"},{"cpanel_default":1},{"cpanel_default":1.5},'
+                . '{"cpanel_default":true},{"key":"fixture-b"}]}',
+            ['$.directives[].cpanel_default' => ['bool', 'float', 'int', 'missing', 'string']],
+        ];
         yield 'paths' => [
             LangPhpSpec::PHP_INI_GET_USER_PATHS['returns'],
             '{"paths":[{"is_suspended":1},{"type":"fixture-a"}]}',
             ['$.paths[].is_suspended' => ['int', 'missing']],
         ];
+    }
+
+    #[DataProvider('outsideTheDirectiveUnion')]
+    public function testDirectiveValuesOutsideTheUnionRemainATypeMismatchInEvidence(string $value): void
+    {
+        $analysis = Fingerprint::analyze(
+            json_decode('{"directives":[{"cpanel_default":' . $value . '}]}', false, 512, JSON_THROW_ON_ERROR),
+            true,
+            LangPhpSpec::PHP_INI_GET_USER_BASIC_DIRECTIVES['returns'],
+        );
+
+        self::assertSame(
+            [['path' => '$.directives[].cpanel_default', 'kind' => 'type_mismatch']],
+            $analysis['discrepancies'],
+        );
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function outsideTheDirectiveUnion(): iterable
+    {
+        yield 'null' => ['null'];
+        yield 'list' => ['["fixture-a"]'];
+        yield 'object' => ['{"a":"fixture-a"}'];
     }
 
     /** @param array<mixed> $returns */
