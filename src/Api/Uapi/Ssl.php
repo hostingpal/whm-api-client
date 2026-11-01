@@ -489,17 +489,28 @@ final readonly class Ssl
      * Documented: Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables
      * this operation.
      *
+     * Documented: Client lists preserve order, duplicates and empty string items, and reject empty, keyed or nonstring
+     * lists and items containing a comma before dispatch. Scalars retain delimiters, percent escapes and empty strings
+     * without parsing or pre-encoding. Collection arguments are trace-protected; this does not classify domains as
+     * semantic secrets or change transport.
+     *
+     * Documented: The source URI-encoded-comma guidance describes downstream serialization. Supply raw list items; the
+     * client form-encodes once and does not pre-encode items.
+     *
      * API-map identity: uapi:SSL/add_autossl_excluded_domains#GET (wire name add_autossl_excluded_domains).
      *
-     * @param string $domains A comma-separated list of domains for which to disable AutoSSL.
+     * @param string|non-empty-list<string> $domains A comma-separated list of domains for which to disable AutoSSL.
      * @return AddAutosslExcludedDomainsResult
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/auto-generated-ssl-certificates/ssl-add_autossl_excluded_domains
      */
-    public function addAutosslExcludedDomains(string $domains): ?array
-    {
+    public function addAutosslExcludedDomains(
+        #[SensitiveParameter]
+        string|array $domains,
+    ): ?array {
         /** @var AddAutosslExcludedDomainsResult $result Validated against SslSpec::ADD_AUTOSSL_EXCLUDED_DOMAINS. */
         $result = ($this->run)(SslSpec::ADD_AUTOSSL_EXCLUDED_DOMAINS, ['domains' => $domains]);
 
@@ -689,17 +700,25 @@ final readonly class Ssl
      * Documented: Mail SNI is always enabled. Disabling fails without changes; enabling succeeds with a warning.
      * Rebuild the mail SNI configuration after a status change.
      *
+     * Documented: Client lists preserve order, duplicates and empty string items, and reject empty, keyed or nonstring
+     * lists and items containing a pipe before dispatch. Scalars retain delimiters, percent escapes and empty strings
+     * without parsing or pre-encoding. Collection arguments are trace-protected; this does not classify domains as
+     * semantic secrets or change transport.
+     *
      * API-map identity: uapi:SSL/disable_mail_sni#GET (wire name disable_mail_sni).
      *
-     * @param string $domains A pipe-delimited list of the account's domains.
+     * @param string|non-empty-list<string> $domains A pipe-delimited list of the account's domains.
      * @return DisableMailSniResult
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/sni-email-settings/ssl-disable_mail_sni
      */
-    public function disableMailSni(string $domains): array
-    {
+    public function disableMailSni(
+        #[SensitiveParameter]
+        string|array $domains,
+    ): array {
         /** @var DisableMailSniResult $result Validated against SslSpec::DISABLE_MAIL_SNI. */
         $result = ($this->run)(SslSpec::DISABLE_MAIL_SNI, ['domains' => $domains]);
 
@@ -720,17 +739,25 @@ final readonly class Ssl
      * Documented: Mail SNI is always enabled. Enabling succeeds with a warning; disabling fails without changes. Mail
      * SNI does not apply to Webmail, which uses the cPanel service certificate.
      *
+     * Documented: Client lists preserve order, duplicates and empty string items, and reject empty, keyed or nonstring
+     * lists and items containing a pipe before dispatch. Scalars retain delimiters, percent escapes and empty strings
+     * without parsing or pre-encoding. Collection arguments are trace-protected; this does not classify domains as
+     * semantic secrets or change transport.
+     *
      * API-map identity: uapi:SSL/enable_mail_sni#GET (wire name enable_mail_sni).
      *
-     * @param string $domains A pipe-delimited list of the account's domains.
+     * @param string|non-empty-list<string> $domains A pipe-delimited list of the account's domains.
      * @return EnableMailSniResult
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/sni-email-settings/ssl-enable_mail_sni
      */
-    public function enableMailSni(string $domains): array
-    {
+    public function enableMailSni(
+        #[SensitiveParameter]
+        string|array $domains,
+    ): array {
         /** @var EnableMailSniResult $result Validated against SslSpec::ENABLE_MAIL_SNI. */
         $result = ($this->run)(SslSpec::ENABLE_MAIL_SNI, ['domains' => $domains]);
 
@@ -832,17 +859,30 @@ final readonly class Ssl
      * both routes on cPanel 11.138.0.19. No meaning is inferred for null cab/verify_error and other endpoints retain
      * their own contracts.
      *
+     * Documented: Client lists preserve order, duplicates and empty string items, and reject empty, keyed or nonstring
+     * lists and items containing a comma before dispatch. Scalars retain delimiters, percent escapes and empty strings
+     * without parsing or pre-encoding. Collection arguments are trace-protected; this does not classify domains as
+     * semantic secrets or change transport.
+     *
+     * Documented: Some multi-domain source examples embed domains= inside the example value. The formal parameter
+     * remains domains; callers do not add that prefix. List order and duplicates are preserved, including the duplicate
+     * CSR example.
+     *
      * API-map identity: uapi:SSL/fetch_certificates_for_fqdns#GET (wire name fetch_certificates_for_fqdns).
      *
-     * @param string $domains A domain or comma-delimited list of domains for which to retrieve information.
+     * @param string|non-empty-list<string> $domains A domain or comma-delimited list of domains for which to retrieve
+     *     information.
      * @return FetchCertificatesForFqdnsResult
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/cpanel-account-ssl-management/ssl-fetch_certificates_for_fqdns
      */
-    public function fetchCertificatesForFqdns(string $domains): array
-    {
+    public function fetchCertificatesForFqdns(
+        #[SensitiveParameter]
+        string|array $domains,
+    ): array {
         /** @var FetchCertificatesForFqdnsResult $result Validated against SslSpec::FETCH_CERTIFICATES_FOR_FQDNS. */
         $result = ($this->run)(SslSpec::FETCH_CERTIFICATES_FOR_FQDNS, ['domains' => $domains]);
 
@@ -969,10 +1009,20 @@ final readonly class Ssl
      * Numeric fields normalize to integers; optional keys stay omitted. Family inference is separate from
      * operation-specific live coverage.
      *
+     * Documented: Client lists preserve order, duplicates and empty string items, and reject empty, keyed or nonstring
+     * lists and items containing a comma before dispatch. Scalars retain delimiters, percent escapes and empty strings
+     * without parsing or pre-encoding. Collection arguments are trace-protected; this does not classify domains as
+     * semantic secrets or change transport.
+     *
+     * Documented: Some multi-domain source examples embed domains= inside the example value. The formal parameter
+     * remains domains; callers do not add that prefix. List order and duplicates are preserved, including the duplicate
+     * CSR example.
+     *
      * API-map identity: uapi:SSL/generate_cert#GET (wire name generate_cert).
      *
      * @param string $countryName The two-letter country code.
-     * @param string $domains A comma-separated list of domains for which to generate the certificate.
+     * @param string|non-empty-list<string> $domains A comma-separated list of domains for which to generate the
+     *     certificate.
      * @param string $keyId The key's ID.
      * @param string $localityName The certificate's city or locality name.
      * @param string $organizationName The certificate's Organization Name.
@@ -985,11 +1035,13 @@ final readonly class Ssl
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/ssl-certificate-management/ssl-generate_cert
      */
     public function generateCert(
         string $countryName,
-        string $domains,
+        #[SensitiveParameter]
+        string|array $domains,
         string $keyId,
         string $localityName,
         string $organizationName,
@@ -1032,10 +1084,20 @@ final readonly class Ssl
      * Numeric fields normalize to integers; optional keys stay omitted. Family inference is separate from
      * operation-specific live coverage.
      *
+     * Documented: Client lists preserve order, duplicates and empty string items, and reject empty, keyed or nonstring
+     * lists and items containing a comma before dispatch. Scalars retain delimiters, percent escapes and empty strings
+     * without parsing or pre-encoding. Collection arguments are trace-protected; this does not classify domains as
+     * semantic secrets or change transport.
+     *
+     * Documented: Some multi-domain source examples embed domains= inside the example value. The formal parameter
+     * remains domains; callers do not add that prefix. List order and duplicates are preserved, including the duplicate
+     * CSR example.
+     *
      * API-map identity: uapi:SSL/generate_csr#GET (wire name generate_csr).
      *
      * @param string $countryName The two-letter country code.
-     * @param string $domains A comma-separated list of the domains for which to generate the certificate.
+     * @param string|non-empty-list<string> $domains A comma-separated list of the domains for which to generate the
+     *     certificate.
      * @param string $keyId The key's ID.
      * @param string $localityName The certificate's city or locality name.
      * @param string $organizationName The certificate's organization.
@@ -1048,11 +1110,13 @@ final readonly class Ssl
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/ssl-certificate-management/ssl-generate_csr
      */
     public function generateCsr(
         string $countryName,
-        string $domains,
+        #[SensitiveParameter]
+        string|array $domains,
         string $keyId,
         string $localityName,
         string $organizationName,
@@ -1724,17 +1788,30 @@ final readonly class Ssl
      *
      * Documented: Replaces the complete account exclusion list. Use addAutosslExcludedDomains for an additive change.
      *
+     * Documented: Client lists preserve order, duplicates and empty string items, and reject empty, keyed or nonstring
+     * lists and items containing a comma before dispatch. Scalars retain delimiters, percent escapes and empty strings
+     * without parsing or pre-encoding. Collection arguments are trace-protected; this does not classify domains as
+     * semantic secrets or change transport.
+     *
+     * Documented: Omitted or null domains removes all exclusions and enables AutoSSL for every account domain. An empty
+     * list is rejected locally; an empty scalar or single empty-string list sends an explicit empty field, with no
+     * invented no-op or reset meaning. No implicit read, merge, restore, retry or rollback occurs.
+     *
      * API-map identity: uapi:SSL/set_autossl_excluded_domains#GET (wire name set_autossl_excluded_domains).
      *
-     * @param string|null $domains A comma-separated list of domains for which to disable AutoSSL. Null omits it.
+     * @param string|non-empty-list<string>|null $domains A comma-separated list of domains for which to disable
+     *     AutoSSL. Null omits it.
      * @return SetAutosslExcludedDomainsResult
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/auto-generated-ssl-certificates/ssl-set_autossl_excluded_domains
      */
-    public function setAutosslExcludedDomains(?string $domains = null): ?array
-    {
+    public function setAutosslExcludedDomains(
+        #[SensitiveParameter]
+        string|array|null $domains = null,
+    ): ?array {
         /** @var SetAutosslExcludedDomainsResult $result Validated against SslSpec::SET_AUTOSSL_EXCLUDED_DOMAINS. */
         $result = ($this->run)(SslSpec::SET_AUTOSSL_EXCLUDED_DOMAINS, ['domains' => $domains]);
 
@@ -2051,19 +2128,32 @@ final readonly class Ssl
      * Documented: The upstream operation provides no rollback. Calls execute immediately for the selected cPanel
      * account.
      *
+     * Documented: Client lists preserve order, duplicates and empty string items, and reject empty, keyed or nonstring
+     * lists and items containing a comma before dispatch. Scalars retain delimiters, percent escapes and empty strings
+     * without parsing or pre-encoding. Collection arguments are trace-protected; this does not classify domains as
+     * semantic secrets or change transport.
+     *
+     * Documented: For addon domains, include both the addon domain and its associated subdomain. The source requires
+     * account ownership, AutoSSL or a valid certificate as documented; the client adds no local ownership, certificate
+     * or cross-field checks and contacts no target domains.
+     *
      * API-map identity: uapi:SSL/toggle_ssl_redirect_for_domains#GET (wire name toggle_ssl_redirect_for_domains).
      *
-     * @param string $domains A comma-separated list of the cPanel account's domains for which to enable or disable
-     *     secure redirects.
+     * @param string|non-empty-list<string> $domains A comma-separated list of the cPanel account's domains for which to
+     *     enable or disable secure redirects.
      * @param bool $state Whether to enable or disable redirects for the specified domains.
      * @return ToggleSslRedirectForDomainsResult
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/cpanel-account-ssl-management/ssl-toggle_ssl_redirect_for_domains
      */
-    public function toggleSslRedirectForDomains(string $domains, bool $state): array
-    {
+    public function toggleSslRedirectForDomains(
+        #[SensitiveParameter]
+        string|array $domains,
+        bool $state,
+    ): array {
         /**
          * @var ToggleSslRedirectForDomainsResult $result
          * Validated against SslSpec::TOGGLE_SSL_REDIRECT_FOR_DOMAINS.

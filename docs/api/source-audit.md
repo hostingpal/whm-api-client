@@ -8330,3 +8330,82 @@ pinned recommendation to activate Apache PHP-FPM only with at least 2 GB of RAM
 available or at least 30 MB per domain, and the severe-performance warning below
 that level. Regeneration includes this guidance in both methods' PHPDoc. This
 documentation correction adds no runtime RAM guard, server probe or live evidence.
+
+
+## 2026-11-01 — SSL/domain-security delimited domains adoption (8x0.28.8.3)
+
+Twelve existing domains positions opt into the accepted delimited descriptor;
+no shared generator, runtime or schema changes are needed. Original decompressed
+2026-10-13 source SHA-256 values remain:
+
+- UAPI: `172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`
+- WHM: `6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594`
+
+Each operation adds a `kind: doc` binding with its exact source SHA, version
+`pinned 2026-10-13`, date `2026-11-01` and original parameter pointer:
+
+| Operation | Original pointer | Delimiter |
+| --- | --- | --- |
+| UAPI ModSecurity/disable_domains | `/paths/~1ModSecurity~1disable_domains/get/parameters/0` | comma |
+| UAPI ModSecurity/enable_domains | `/paths/~1ModSecurity~1enable_domains/get/parameters/0` | comma |
+| UAPI SSL/add_autossl_excluded_domains | `/paths/~1SSL~1add_autossl_excluded_domains/get/parameters/0` | comma |
+| UAPI SSL/disable_mail_sni | `/paths/~1SSL~1disable_mail_sni/get/parameters/0` | pipe |
+| UAPI SSL/enable_mail_sni | `/paths/~1SSL~1enable_mail_sni/get/parameters/0` | pipe |
+| UAPI SSL/fetch_certificates_for_fqdns | `/paths/~1SSL~1fetch_certificates_for_fqdns/get/parameters/0` | comma |
+| UAPI SSL/generate_cert | `/paths/~1SSL~1generate_cert/get/parameters/1` | comma |
+| UAPI SSL/generate_csr | `/paths/~1SSL~1generate_csr/get/parameters/1` | comma |
+| UAPI SSL/set_autossl_excluded_domains | `/paths/~1SSL~1set_autossl_excluded_domains/get/parameters/0` | comma |
+| UAPI SSL/toggle_ssl_redirect_for_domains | `/paths/~1SSL~1toggle_ssl_redirect_for_domains/get/parameters/0` | comma |
+| WHM fetch_ssl_certificates_for_fqdns | `/paths/~1fetch_ssl_certificates_for_fqdns/get/parameters/0` | comma |
+| WHM generatessl | `/paths/~1generatessl/get/parameters/0` | comma |
+
+All source positions are concrete nonnullable strings. Eleven remain required;
+only set_autossl_excluded_domains remains optional with null omission. Its source
+explicitly replaces all exclusions, and omission enables AutoSSL for every domain.
+Empty arrays reject before I/O rather than collapsing into that destructive
+omission; empty scalar and single empty-string lists send an explicit field,
+without assigning it an invented server meaning. Add is additive. Existing
+countryName/domains/keyId ordering, adjacent defaults, false/zero semantics and
+WHM passphrase protection are unchanged.
+
+URI-encoded-comma prose for UAPI add exclusions and WHM fetch describes downstream
+serialization, not pre-encoding list items. Several UAPI examples include
+domains= inside example values; WHM generatessl uses singular domain= in its
+multiple example despite the formal domains name. Formal wire domains stays
+unchanged; no prefix parser or alias is inferred. CSR example duplicates remain
+ordered duplicates. List convenience preserves byte order, duplicates and empty
+items, rejects the selected embedded delimiter, and joins once before ordinary
+form encoding. Scalar bytes stay unparsed, including literal percent escapes.
+
+Original source GET variants do not change the twelve existing effective form
+POST methods or outcome policies. Ten UAPI methods retain both direct and bridge
+routes; the two WHM methods stay native. Role/version/no-rollback caveats remain.
+ModSecurity diagnostics preserve the list/object alternatives, nullable exception
+and partial-change API-failure warning. Mail SNI remains always enabled in source:
+enable warns and disable fails without changes; Webmail uses the service
+certificate. Rebuilds remain explicit. Redirect ownership/certificate conditions
+and addon-plus-subdomain requirement remain caller/server responsibilities.
+Generation preserves existing stored-key requirements; WHM generates and stores
+key/CSR even when skipping a certificate. No implicit read, merge, generation of
+prerequisite keys, rebuild, restore, retry, rollback or domain contact is added.
+
+All twelve argument positions gain standard collection SensitiveParameter
+protection without semantic sensitive:true or transport changes. PEM/private
+results and mismatch payloads remain sensitive. Third-party traces are outside
+that library guarantee. Literal offline fixtures cover all 22 route positions,
+one encoded POST, scalar compatibility, optional omission versus explicit empty,
+byte fidelity, invalid-list metadata reset and preserved snapshots, actual
+generated sensitive frames, native pre-entry type errors and existing response
+normalization/nullable/opaque/diagnostic/failure behavior without retries.
+
+All 89 response specs and the 77 other operations in the three groups are
+preserved. Sources, checksums, annotations, historical captures and every other
+generated output including coverage stay unchanged. Coverage remains 1,234
+operations (636 UAPI / 598 WHM), 119 groups and 241 outputs. All 55 inherited
+source diagnostics remain visible and unwaived. This is offline synthetic
+evidence only: no live API, credential, server, account, certificate, key, DNS,
+AutoSSL, SNI or redirect action ran. Historical scalar captures do not establish
+PHP-list acceptance. Live `8x0.2.84` remains OPEN, wider `8x0.28.8` remains open,
+and existing SSL unknown-field `8x0.2.19`, omitted DCV-map `8x0.2.16` and
+ModSecurity findings/follow-ups retain their status. Local PHP 8.4 results do not
+establish exact-HEAD PHP 8.3 CI.

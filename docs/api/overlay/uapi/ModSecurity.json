@@ -78,11 +78,15 @@
         },
         {
           "kind": "documented",
-          "text": "domains is a required pre-serialized comma-separated string of domains owned by the authenticated account. Supply the documented comma representation; it is form-encoded once. The list result and the no_domains_provided / invalid_domains_provided object alternatives are preserved. Invalid-domain objects may include invalid_domains; these payload diagnostics remain separate from the API envelope."
+          "text": "domains accepts a comma-separated string or a nonempty sequential string list of domains owned by the authenticated account. Lists join with commas; scalar bytes are preserved and the field is form-encoded once. The list result and the no_domains_provided / invalid_domains_provided object alternatives are preserved. Invalid-domain objects may include invalid_domains; these payload diagnostics remain separate from the API envelope."
         },
         {
           "kind": "observed",
           "text": "On 11.138.0.19, successful writes through both routes returned exception: null. Preserve omitted exception, explicit null and string diagnostics distinctly. Source inspection also shows that status 0 can accompany per-domain results after some domains changed. Flag handling raises ApiErrorException and does not return those rows; re-read with listDomains() to establish current state after a failed call. The client never retries or re-reads automatically."
+        },
+        {
+          "kind": "documented",
+          "text": "Client lists preserve order, duplicates and empty string items, and reject empty, keyed or nonstring lists and items containing a comma before dispatch. Scalars retain delimiters, percent escapes and empty strings without parsing or pre-encoding. Collection arguments are trace-protected; this does not classify domains as semantic secrets or change transport."
         }
       ],
       "evidence": [
@@ -105,6 +109,14 @@
           "date": "2026-10-31",
           "note": "Reviewer inspection of Cpanel/API/ModSecurity.pm reports return $answer->{status} after per-domain rows are set. A failed API call can therefore follow partial changes. Keep Flag and ApiErrorException, document explicit listDomains readback, and do not retry the write automatically.",
           "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/44#pullrequestreview-5720388941"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1ModSecurity~1disable_domains/get/parameters/0",
+          "note": "The formal domains parameter is a concrete nonnullable string documenting a comma-delimited domain list. The generated client additionally accepts a nonempty sequential string list, joins once into the original domains field, and preserves scalar bytes. This is an offline client convenience, not PHP-list live evidence; effective form POST and response contracts are unchanged."
         }
       ],
       "response": {
@@ -170,6 +182,17 @@
               "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/44#pullrequestreview-5720388941"
             }
           ]
+        }
+      },
+      "params": {
+        "domains": {
+          "collection": {
+            "kind": "delimited",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "delimiter": ","
+          }
         }
       }
     },
@@ -247,11 +270,15 @@
         },
         {
           "kind": "documented",
-          "text": "domains is a required pre-serialized comma-separated string of domains owned by the authenticated account. Supply the documented comma representation; it is form-encoded once. The list result and the no_domains_provided / invalid_domains_provided object alternatives are preserved. Invalid-domain objects may include invalid_domains; these payload diagnostics remain separate from the API envelope."
+          "text": "domains accepts a comma-separated string or a nonempty sequential string list of domains owned by the authenticated account. Lists join with commas; scalar bytes are preserved and the field is form-encoded once. The list result and the no_domains_provided / invalid_domains_provided object alternatives are preserved. Invalid-domain objects may include invalid_domains; these payload diagnostics remain separate from the API envelope."
         },
         {
           "kind": "observed",
           "text": "On 11.138.0.19, successful writes through both routes returned exception: null. Preserve omitted exception, explicit null and string diagnostics distinctly. Source inspection also shows that status 0 can accompany per-domain results after some domains changed. Flag handling raises ApiErrorException and does not return those rows; re-read with listDomains() to establish current state after a failed call. The client never retries or re-reads automatically."
+        },
+        {
+          "kind": "documented",
+          "text": "Client lists preserve order, duplicates and empty string items, and reject empty, keyed or nonstring lists and items containing a comma before dispatch. Scalars retain delimiters, percent escapes and empty strings without parsing or pre-encoding. Collection arguments are trace-protected; this does not classify domains as semantic secrets or change transport."
         }
       ],
       "evidence": [
@@ -274,6 +301,14 @@
           "date": "2026-10-31",
           "note": "Reviewer inspection of Cpanel/API/ModSecurity.pm reports return $answer->{status} after per-domain rows are set. A failed API call can therefore follow partial changes. Keep Flag and ApiErrorException, document explicit listDomains readback, and do not retry the write automatically.",
           "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/44#pullrequestreview-5720388941"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1ModSecurity~1enable_domains/get/parameters/0",
+          "note": "The formal domains parameter is a concrete nonnullable string documenting a comma-delimited domain list. The generated client additionally accepts a nonempty sequential string list, joins once into the original domains field, and preserves scalar bytes. This is an offline client convenience, not PHP-list live evidence; effective form POST and response contracts are unchanged."
         }
       ],
       "response": {
@@ -339,6 +374,17 @@
               "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/44#pullrequestreview-5720388941"
             }
           ]
+        }
+      },
+      "params": {
+        "domains": {
+          "collection": {
+            "kind": "delimited",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "delimiter": ","
+          }
         }
       }
     },

@@ -570,27 +570,43 @@ final readonly class Ssl
      * Documented: Returned certificate, private-key, CSR, CA-bundle or provider material is payload data and may be
      * sensitive. Do not log or persist secret-bearing results.
      *
-     * Documented: domains is caller-supplied comma-separated text, form-encoded once. Literal dotted issuer and subject
-     * keys remain literal payload keys. The separately recorded WHM review establishes the narrow certificate-field
-     * compatibility corrections.
+     * Documented: domains accepts caller-supplied comma-separated text or a nonempty sequential string list joined with
+     * commas, form-encoded once. Literal dotted issuer and subject keys remain literal payload keys. The separately
+     * recorded WHM review establishes the narrow certificate-field compatibility corrections.
      *
      * Observed: The independent review on 11.138.0.19 observed digit strings for created, not_before, not_after and
      * modulus_length, a quoted is_self_signed flag, and null verify_error and literal issuer.organizationName. Only
      * these integer leaves use canonical bounded integer-string normalization; the quoted flag accepts exact 0 or 1.
      * Null remains distinct from omission. Other certificate fields retain their existing contracts.
      *
+     * Documented: Client lists preserve order, duplicates and empty string items, and reject empty, keyed or nonstring
+     * lists and items containing a comma before dispatch. Scalars retain delimiters, percent escapes and empty strings
+     * without parsing or pre-encoding. Collection arguments are trace-protected; this does not classify domains as
+     * semantic secrets or change transport.
+     *
+     * Documented: The source URI-encoded-comma guidance describes downstream serialization. Supply raw list items; the
+     * client form-encodes once and does not pre-encode items.
+     *
+     * Documented: Some multi-domain source examples embed domains= inside the example value. The formal parameter
+     * remains domains; callers do not add that prefix. List order and duplicates are preserved, including the duplicate
+     * CSR example.
+     *
      * API-map identity: whm1:fetch_ssl_certificates_for_fqdns#GET (wire name fetch_ssl_certificates_for_fqdns; cPanel
      * Account Settings).
      *
-     * @param string $domains A comma-separated list of domains for which to retrieve information.
+     * @param string|non-empty-list<string> $domains A comma-separated list of domains for which to retrieve
+     *     information.
      * @return FetchSslCertificatesForFqdnsResult
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/cpanel-account-settings/ssl-fetch_ssl_certificates_for_fqdns
      */
-    public function fetchSslCertificatesForFqdns(string $domains): array
-    {
+    public function fetchSslCertificatesForFqdns(
+        #[SensitiveParameter]
+        string|array $domains,
+    ): array {
         /**
          * @var FetchSslCertificatesForFqdnsResult $result
          * Validated against SslSpec::FETCH_SSL_CERTIFICATES_FOR_FQDNS.
@@ -715,9 +731,17 @@ final readonly class Ssl
      * Documented: Creates and stores a key and CSR even when skipCertificate is true. Omitting optional subject fields
      * preserves the upstream CSR defaults.
      *
+     * Documented: Client lists preserve order, duplicates and empty string items, and reject empty, keyed or nonstring
+     * lists and items containing a comma before dispatch. Scalars retain delimiters, percent escapes and empty strings
+     * without parsing or pre-encoding. Collection arguments are trace-protected; this does not classify domains as
+     * semantic secrets or change transport.
+     *
+     * Documented: The multi-domain example uses singular domain= despite the formal domains parameter. Retain domains
+     * without inferring an alias or parsing example prefixes.
+     *
      * API-map identity: whm1:generatessl#GET (wire name generatessl; SSL Server Settings).
      *
-     * @param string $domains A comma-separated list of the certificate's domains.
+     * @param string|non-empty-list<string> $domains A comma-separated list of the certificate's domains.
      * @param string|null $countryName The certificate's country code. Null omits it.
      * @param string|null $emailAddress The certificate's contact email address. Null omits it.
      * @param int|null $keysize The size of the certificate's key, in bits. Null omits it.
@@ -732,10 +756,12 @@ final readonly class Ssl
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/ssl-server-settings/ssl-generatessl
      */
     public function generateSsl(
-        string $domains,
+        #[SensitiveParameter]
+        string|array $domains,
         ?string $countryName = null,
         ?string $emailAddress = null,
         ?int $keysize = null,

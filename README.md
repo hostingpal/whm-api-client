@@ -1355,7 +1355,7 @@ Typed ClamScanner JSON disinfection remains excluded under `8x0.1.18`; generic f
 calls cannot provide that body contract.
 
 IP block inputs retain documented address, hostname and range spellings. ModSecurity
-domain filters are caller-supplied comma-separated strings, encoded once; dependency
+domain filters accept comma-separated strings or nonempty sequential string lists, encoded once; dependency
 lists identify other affected domains. Per-domain exception fields preserve both
 explicit null and omission. A failed call can still change some domains: re-read
 `listDomains()` before deciding how to proceed. API status remains checked and no
@@ -4869,3 +4869,66 @@ its separate live follow-up `8x0.2.83` stays OPEN. All fixtures are offline and
 synthetic: no request, validation-only call, server setting or credential access
 ran. No persistent configuration, role enforcement or live acceptance is established.
 All 55 inherited source diagnostics remain visible and unwaived.
+
+
+### SSL and domain-security domain lists
+
+These existing `domains` arguments accept a compatible scalar string or a
+nonempty sequential string list. The generated client joins lists into one
+original form field using the pinned convention:
+
+| Group | Methods | List delimiter |
+| --- | --- | --- |
+| `uapi()->modSecurity()` | `disableDomains`, `enableDomains` | comma |
+| `uapi()->ssl()` | `addAutosslExcludedDomains`, `fetchCertificatesForFqdns`, `generateCert`, `generateCsr`, `setAutosslExcludedDomains`, `toggleSslRedirectForDomains` | comma |
+| `uapi()->ssl()` | `disableMailSni`, `enableMailSni` | pipe |
+| `whm()->ssl()` | `fetchSslCertificatesForFqdns`, `generateSsl` | comma |
+
+```php
+// Synthetic inputs. Calling this method immediately requests a redirect change.
+$account->ssl()->toggleSslRedirectForDomains(
+    domains: ['addon.example.test', 'addon.main.example.test'],
+    state: false,
+);
+
+// Certificate inventory also accepts ordinary lists.
+$certificates = $client->whm()->ssl()->fetchSslCertificatesForFqdns(
+    ['one.example.test', 'two.example.test'],
+);
+```
+
+Lists preserve order, duplicates, empty items and exact bytes. `['']` supplies an
+empty field; `['', 'a', '']` retains both delimiters. Empty, sparse, keyed and
+nonstring lists, nested/object items and items containing the selected delimiter
+fail locally before dispatch. The other delimiter remains data. Scalars retain
+raw delimiters, literal `%2C`/`%7C` and empty strings without parsing. Supply raw
+values: the whole joined field is form-encoded once. No trimming, domain
+validation, sorting or deduplication occurs.
+
+Only `setAutosslExcludedDomains()` has optional `domains = null`: omission or null
+removes every exclusion and enables AutoSSL for every account domain. It replaces
+the complete list; `addAutosslExcludedDomains()` is additive. `[]` is rejected,
+and an empty scalar or `['']` remains a supplied field without an invented reset
+or no-op meaning. Every other listed domains argument is required. Certificate
+and CSR generation keep `countryName` before `domains` and the existing `keyId`;
+the client never generates a prerequisite key implicitly. WHM `generateSsl()`
+stores a key and CSR even with `skipCertificate: true`.
+
+All twelve remain one form POST: UAPI uses the direct or WHM bridge route, WHM
+uses its native route. Role/version restrictions remain in generated PHPDoc.
+ModSecurity requires account-owned domains and the WebServer role; an API failure
+can follow partial changes. Mail SNI is documented as always enabled: enabling
+succeeds with a warning, disabling fails without changes, and rebuild guidance
+remains caller-driven. Webmail uses the cPanel service certificate. Redirect
+changes retain the documented ownership/certificate conditions and require both
+an addon domain and its associated subdomain. No implicit read, merge, rebuild,
+restore, retry, rollback or contact with supplied/returned domains occurs.
+
+All twelve collection arguments have `SensitiveParameter` trace protection
+without a semantic secret flag. Returned PEM/private material, response metadata
+and `PayloadMismatchException::$payload` can be sensitive; third-party transport
+traces remain their own responsibility. This adoption adds no operations or
+response changes: coverage stays 1,234 operations, 119 groups and 241 generated
+outputs. These are offline synthetic tests; historical scalar captures do not
+establish PHP-list live acceptance. Live follow-up `8x0.2.84` and the wider
+adopter audit `8x0.28.8` remain open.

@@ -216,6 +216,35 @@
         {
           "kind": "documented",
           "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Client lists preserve order, duplicates and empty string items, and reject empty, keyed or nonstring lists and items containing a comma before dispatch. Scalars retain delimiters, percent escapes and empty strings without parsing or pre-encoding. Collection arguments are trace-protected; this does not classify domains as semantic secrets or change transport."
+        },
+        {
+          "kind": "documented",
+          "text": "The source URI-encoded-comma guidance describes downstream serialization. Supply raw list items; the client form-encodes once and does not pre-encode items."
+        }
+      ],
+      "params": {
+        "domains": {
+          "collection": {
+            "kind": "delimited",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "delimiter": ","
+          }
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1SSL~1add_autossl_excluded_domains/get/parameters/0",
+          "note": "The formal domains parameter is a concrete nonnullable string documenting a comma-delimited domain list. The generated client additionally accepts a nonempty sequential string list, joins once into the original domains field, and preserves scalar bytes. This is an offline client convenience, not PHP-list live evidence; effective form POST and response contracts are unchanged."
         }
       ]
     },
@@ -463,6 +492,31 @@
         {
           "kind": "documented",
           "text": "Mail SNI is always enabled. Disabling fails without changes; enabling succeeds with a warning. Rebuild the mail SNI configuration after a status change."
+        },
+        {
+          "kind": "documented",
+          "text": "Client lists preserve order, duplicates and empty string items, and reject empty, keyed or nonstring lists and items containing a pipe before dispatch. Scalars retain delimiters, percent escapes and empty strings without parsing or pre-encoding. Collection arguments are trace-protected; this does not classify domains as semantic secrets or change transport."
+        }
+      ],
+      "params": {
+        "domains": {
+          "collection": {
+            "kind": "delimited",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "delimiter": "|"
+          }
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1SSL~1disable_mail_sni/get/parameters/0",
+          "note": "The formal domains parameter is a concrete nonnullable string documenting a pipe-delimited domain list. The generated client additionally accepts a nonempty sequential string list, joins once into the original domains field, and preserves scalar bytes. This is an offline client convenience, not PHP-list live evidence; effective form POST and response contracts are unchanged."
         }
       ]
     },
@@ -479,6 +533,31 @@
         {
           "kind": "documented",
           "text": "Mail SNI is always enabled. Enabling succeeds with a warning; disabling fails without changes. Mail SNI does not apply to Webmail, which uses the cPanel service certificate."
+        },
+        {
+          "kind": "documented",
+          "text": "Client lists preserve order, duplicates and empty string items, and reject empty, keyed or nonstring lists and items containing a pipe before dispatch. Scalars retain delimiters, percent escapes and empty strings without parsing or pre-encoding. Collection arguments are trace-protected; this does not classify domains as semantic secrets or change transport."
+        }
+      ],
+      "params": {
+        "domains": {
+          "collection": {
+            "kind": "delimited",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "delimiter": "|"
+          }
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1SSL~1enable_mail_sni/get/parameters/0",
+          "note": "The formal domains parameter is a concrete nonnullable string documenting a pipe-delimited domain list. The generated client additionally accepts a nonempty sequential string list, joins once into the original domains field, and preserves scalar bytes. This is an offline client convenience, not PHP-list live evidence; effective form POST and response contracts are unchanged."
         }
       ]
     },
@@ -576,6 +655,14 @@
         {
           "kind": "observed",
           "text": "This operation preserves explicit null for cab, validation_type and verify_error, independently of omitted fields. validation_type null is documented in pinned prose; cab/verify_error null|string is observed on both routes on cPanel 11.138.0.19. No meaning is inferred for null cab/verify_error and other endpoints retain their own contracts."
+        },
+        {
+          "kind": "documented",
+          "text": "Client lists preserve order, duplicates and empty string items, and reject empty, keyed or nonstring lists and items containing a comma before dispatch. Scalars retain delimiters, percent escapes and empty strings without parsing or pre-encoding. Collection arguments are trace-protected; this does not classify domains as semantic secrets or change transport."
+        },
+        {
+          "kind": "documented",
+          "text": "Some multi-domain source examples embed domains= inside the example value. The formal parameter remains domains; callers do not add that prefix. List order and duplicates are preserved, including the duplicate CSR example."
         }
       ],
       "response": {
@@ -701,8 +788,27 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-30",
           "note": "The three FQDN certificate nullable-field corrections are scoped independently: validation_type follows explicit pinned null prose; cab and verify_error follow the immutable same-response null|string observations bound in their per-field evidence. Preserve optionality, strings and every other schema rule."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1SSL~1fetch_certificates_for_fqdns/get/parameters/0",
+          "note": "The formal domains parameter is a concrete nonnullable string documenting a comma-delimited domain list. The generated client additionally accepts a nonempty sequential string list, joins once into the original domains field, and preserves scalar bytes. This is an offline client convenience, not PHP-list live evidence; effective form POST and response contracts are unchanged."
         }
-      ]
+      ],
+      "params": {
+        "domains": {
+          "collection": {
+            "kind": "delimited",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "delimiter": ","
+          }
+        }
+      }
     },
     "uapi:SSL/find_certificates_for_key": {
       "notes": [
@@ -849,6 +955,15 @@
       "params": {
         "key_id": {
           "sensitive": false
+        },
+        "domains": {
+          "collection": {
+            "kind": "delimited",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "delimiter": ","
+          }
         }
       },
       "notes": [
@@ -863,6 +978,14 @@
         {
           "kind": "observed",
           "text": "Reviewed SSL record-family compatibility accepts canonical integer strings for timestamp/bit-length fields, exact quoted 0/1 self-signed flags and nullable issuer organization where those fields are declared. Numeric fields normalize to integers; optional keys stay omitted. Family inference is separate from operation-specific live coverage."
+        },
+        {
+          "kind": "documented",
+          "text": "Client lists preserve order, duplicates and empty string items, and reject empty, keyed or nonstring lists and items containing a comma before dispatch. Scalars retain delimiters, percent escapes and empty strings without parsing or pre-encoding. Collection arguments are trace-protected; this does not classify domains as semantic secrets or change transport."
+        },
+        {
+          "kind": "documented",
+          "text": "Some multi-domain source examples embed domains= inside the example value. The formal parameter remains domains; callers do not add that prefix. List order and duplicates are preserved, including the duplicate CSR example."
         }
       ],
       "evidence": [
@@ -877,6 +1000,14 @@
           "version": "11.138.0.19",
           "date": "2026-10-30",
           "note": "Record-family compatibility reviewed at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154, bound to docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641. New field corrections retain exact types and established conversions. This extension alone does not establish live execution of uapi:SSL/generate_cert."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1SSL~1generate_cert/get/parameters/1",
+          "note": "The formal domains parameter is a concrete nonnullable string documenting a comma-delimited domain list. The generated client additionally accepts a nonempty sequential string list, joins once into the original domains field, and preserves scalar bytes. This is an offline client convenience, not PHP-list live evidence; effective form POST and response contracts are unchanged."
         }
       ],
       "response": {
@@ -962,6 +1093,15 @@
       "params": {
         "key_id": {
           "sensitive": false
+        },
+        "domains": {
+          "collection": {
+            "kind": "delimited",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "delimiter": ","
+          }
         }
       },
       "notes": [
@@ -980,6 +1120,14 @@
         {
           "kind": "observed",
           "text": "Reviewed SSL record-family compatibility accepts canonical integer strings for timestamp/bit-length fields, exact quoted 0/1 self-signed flags and nullable issuer organization where those fields are declared. Numeric fields normalize to integers; optional keys stay omitted. Family inference is separate from operation-specific live coverage."
+        },
+        {
+          "kind": "documented",
+          "text": "Client lists preserve order, duplicates and empty string items, and reject empty, keyed or nonstring lists and items containing a comma before dispatch. Scalars retain delimiters, percent escapes and empty strings without parsing or pre-encoding. Collection arguments are trace-protected; this does not classify domains as semantic secrets or change transport."
+        },
+        {
+          "kind": "documented",
+          "text": "Some multi-domain source examples embed domains= inside the example value. The formal parameter remains domains; callers do not add that prefix. List order and duplicates are preserved, including the duplicate CSR example."
         }
       ],
       "evidence": [
@@ -994,6 +1142,14 @@
           "version": "11.138.0.19",
           "date": "2026-10-30",
           "note": "Record-family compatibility reviewed at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154, bound to docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641. New field corrections retain exact types and established conversions. This extension alone does not establish live execution of uapi:SSL/generate_csr."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1SSL~1generate_csr/get/parameters/1",
+          "note": "The formal domains parameter is a concrete nonnullable string documenting a comma-delimited domain list. The generated client additionally accepts a nonempty sequential string list, joins once into the original domains field, and preserves scalar bytes. This is an offline client convenience, not PHP-list live evidence; effective form POST and response contracts are unchanged."
         }
       ],
       "response": {
@@ -1518,6 +1674,35 @@
         {
           "kind": "documented",
           "text": "Replaces the complete account exclusion list. Use addAutosslExcludedDomains for an additive change."
+        },
+        {
+          "kind": "documented",
+          "text": "Client lists preserve order, duplicates and empty string items, and reject empty, keyed or nonstring lists and items containing a comma before dispatch. Scalars retain delimiters, percent escapes and empty strings without parsing or pre-encoding. Collection arguments are trace-protected; this does not classify domains as semantic secrets or change transport."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitted or null domains removes all exclusions and enables AutoSSL for every account domain. An empty list is rejected locally; an empty scalar or single empty-string list sends an explicit empty field, with no invented no-op or reset meaning. No implicit read, merge, restore, retry or rollback occurs."
+        }
+      ],
+      "params": {
+        "domains": {
+          "collection": {
+            "kind": "delimited",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "delimiter": ","
+          }
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1SSL~1set_autossl_excluded_domains/get/parameters/0",
+          "note": "The formal domains parameter is a concrete nonnullable string documenting a comma-delimited domain list. The generated client additionally accepts a nonempty sequential string list, joins once into the original domains field, and preserves scalar bytes. This is an offline client convenience, not PHP-list live evidence; effective form POST and response contracts are unchanged."
         }
       ]
     },
@@ -1815,6 +2000,35 @@
         {
           "kind": "documented",
           "text": "The upstream operation provides no rollback. Calls execute immediately for the selected cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "Client lists preserve order, duplicates and empty string items, and reject empty, keyed or nonstring lists and items containing a comma before dispatch. Scalars retain delimiters, percent escapes and empty strings without parsing or pre-encoding. Collection arguments are trace-protected; this does not classify domains as semantic secrets or change transport."
+        },
+        {
+          "kind": "documented",
+          "text": "For addon domains, include both the addon domain and its associated subdomain. The source requires account ownership, AutoSSL or a valid certificate as documented; the client adds no local ownership, certificate or cross-field checks and contacts no target domains."
+        }
+      ],
+      "params": {
+        "domains": {
+          "collection": {
+            "kind": "delimited",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "delimiter": ","
+          }
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1SSL~1toggle_ssl_redirect_for_domains/get/parameters/0",
+          "note": "The formal domains parameter is a concrete nonnullable string documenting a comma-delimited domain list. The generated client additionally accepts a nonempty sequential string list, joins once into the original domains field, and preserves scalar bytes. This is an offline client convenience, not PHP-list live evidence; effective form POST and response contracts are unchanged."
         }
       ]
     },

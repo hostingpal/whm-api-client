@@ -807,7 +807,7 @@ final class WhmSslTest extends TestCase
     {
         yield 'queue PEM' => ['enqueueDeferredSslInstallations', ['cab', 'crt', 'key']];
         yield 'candidate certificate' => ['fetchSslInfo', ['crtdata']];
-        yield 'generation passphrase' => ['generateSsl', ['passphrase']];
+        yield 'generation domains and passphrase' => ['generateSsl', ['domains', 'passphrase']];
         yield 'service PEM' => ['installServiceSslCertificate', ['crt', 'key', 'cabundle']];
         yield 'website PEM' => ['installSsl', ['crt', 'key', 'cab']];
         yield 'serialized metadata' => ['setAutoSslMetadata', ['metadataJson']];

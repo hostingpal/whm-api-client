@@ -19,7 +19,17 @@ final class SslSpec
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [
-            'domains' => ['name' => 'domains', 'encoding' => 'scalar'],
+            'domains' => [
+                'name' => 'domains',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => ',',
+                ],
+            ],
         ],
         'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
     ];
@@ -143,7 +153,17 @@ final class SslSpec
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [
-            'domains' => ['name' => 'domains', 'encoding' => 'scalar'],
+            'domains' => [
+                'name' => 'domains',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => '|',
+                ],
+            ],
         ],
         'returns' => [
             'type' => 'object',
@@ -160,7 +180,17 @@ final class SslSpec
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [
-            'domains' => ['name' => 'domains', 'encoding' => 'scalar'],
+            'domains' => [
+                'name' => 'domains',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => '|',
+                ],
+            ],
         ],
         'returns' => [
             'type' => 'object',
@@ -224,7 +254,17 @@ final class SslSpec
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [
-            'domains' => ['name' => 'domains', 'encoding' => 'scalar'],
+            'domains' => [
+                'name' => 'domains',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => ',',
+                ],
+            ],
         ],
         'returns' => [
             'type' => 'list',
@@ -361,7 +401,17 @@ final class SslSpec
         'outcome' => 'flag',
         'params' => [
             'countryName' => ['name' => 'countryName', 'encoding' => 'scalar'],
-            'domains' => ['name' => 'domains', 'encoding' => 'scalar'],
+            'domains' => [
+                'name' => 'domains',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => ',',
+                ],
+            ],
             'keyId' => ['name' => 'key_id', 'encoding' => 'scalar'],
             'localityName' => ['name' => 'localityName', 'encoding' => 'scalar'],
             'organizationName' => ['name' => 'organizationName', 'encoding' => 'scalar'],
@@ -403,7 +453,17 @@ final class SslSpec
         'outcome' => 'flag',
         'params' => [
             'countryName' => ['name' => 'countryName', 'encoding' => 'scalar'],
-            'domains' => ['name' => 'domains', 'encoding' => 'scalar'],
+            'domains' => [
+                'name' => 'domains',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => ',',
+                ],
+            ],
             'keyId' => ['name' => 'key_id', 'encoding' => 'scalar'],
             'localityName' => ['name' => 'localityName', 'encoding' => 'scalar'],
             'organizationName' => ['name' => 'organizationName', 'encoding' => 'scalar'],
@@ -869,7 +929,17 @@ final class SslSpec
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [
-            'domains' => ['name' => 'domains', 'encoding' => 'scalar'],
+            'domains' => [
+                'name' => 'domains',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => ',',
+                ],
+            ],
         ],
         'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
     ];
@@ -1073,7 +1143,17 @@ final class SslSpec
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [
-            'domains' => ['name' => 'domains', 'encoding' => 'scalar'],
+            'domains' => [
+                'name' => 'domains',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => ',',
+                ],
+            ],
             'state' => ['name' => 'state', 'encoding' => 'bool'],
         ],
         'returns' => ['type' => 'list', 'items' => ['type' => 'string']],
