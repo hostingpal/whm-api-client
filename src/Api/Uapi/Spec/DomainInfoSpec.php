@@ -173,6 +173,8 @@ final class DomainInfoSpec
                                             'type' => 'list',
                                             'items' => ['type' => 'string'],
                                         ],
+                                        'phpopenbasedirprotect' => ['type' => 'mixed'],
+                                        'phpversion' => ['type' => 'mixed'],
                                         'port' => ['type' => 'int', 'accept' => ['numeric-string']],
                                         'scriptalias' => [
                                             'type' => 'union',
@@ -199,6 +201,7 @@ final class DomainInfoSpec
                                         'serveradmin' => ['type' => 'string'],
                                         'serveralias' => ['type' => 'string'],
                                         'servername' => ['type' => 'string'],
+                                        'status' => ['type' => 'mixed'],
                                         'type' => ['type' => 'string'],
                                         'usecanonicalname' => ['type' => 'string'],
                                         'user' => ['type' => 'string'],
@@ -595,6 +598,7 @@ final class DomainInfoSpec
                                 'type' => 'object',
                                 'fields' => [
                                     'domain' => ['type' => 'string'],
+                                    'format' => ['type' => 'string'],
                                     'target' => ['type' => 'string'],
                                 ],
                             ],
@@ -618,6 +622,7 @@ final class DomainInfoSpec
                 'options' => ['type' => 'string'],
                 'owner' => ['type' => 'string'],
                 'phpopenbasedirprotect' => ['type' => 'flag', 'accept' => ['string-flag']],
+                'phpversion' => ['type' => 'mixed'],
                 'port' => ['type' => 'int', 'accept' => ['numeric-string']],
                 'scriptalias' => [
                     'type' => 'union',
@@ -644,6 +649,7 @@ final class DomainInfoSpec
                 'serveradmin' => ['type' => 'string'],
                 'serveralias' => ['type' => 'string'],
                 'servername' => ['type' => 'string'],
+                'status' => ['type' => 'mixed'],
                 'type' => ['type' => 'string'],
                 'usecanonicalname' => ['type' => 'string'],
                 'user' => ['type' => 'string'],

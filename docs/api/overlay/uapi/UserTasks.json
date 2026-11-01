@@ -15,15 +15,19 @@
         },
         {
           "kind": "policy",
-          "text": "Queue IDs, task arguments and repository paths are private payload data. Do not log results, raw metadata or PayloadMismatchException::$payload indiscriminately. Returned paths are never opened."
+          "text": "Queue IDs, task arguments, repository paths and progress paths are private payload data. Reviewed WPX imports carry site_settings JSON containing source_password. Typed inventory filters unreviewed arguments without parsing that JSON; raw responses, generic call() results and PayloadMismatchException::$payload can retain the password. Avoid indiscriminate logging. Envelope metadata does not always contain task payloads. Returned paths are never opened or fetched."
         },
         {
           "kind": "documented",
-          "text": "Returns a nonnullable ordered list with optional action, args, id and subsystem fields. args, when supplied, is a nonnullable object with optional string repository_root. Empty lists and omitted fields remain distinct from explicit null."
+          "text": "Returns a nonnullable ordered list with optional action, args, id and subsystem fields. args, when supplied, is a nonnullable closed object; repository_root remains an optional string. Empty lists, omitted fields and explicit null remain distinct. Existing empty-object and empty-array object compatibility is retained."
         },
         {
           "kind": "policy",
-          "text": "The source documents action=create and subsystem=VersionControl. Existing string-enum policy retains their documentation without adding a runtime enum validator. Only the formally declared repository_root argument is retained; unknown task and argument fields follow existing known-field filtering. Empty args objects and inherited empty-array object compatibility remain valid."
+          "text": "The pinned create/VersionControl-only prose is incomplete: reviewer-retained WPX source queues install and import actions. Action and subsystem remain open strings, with no closed enum. Only named reviewed arguments are retained; unknown row and argument fields, including title and site_settings, are filtered."
+        },
+        {
+          "kind": "policy",
+          "text": "Source-inferred compatibility additions: optional nonnullable string sse_url and args.domain, args.install_id and args.log_file; optional nonnullable string|int exclusive, preserving the received primitive without coercion or integer bounds. sse_url is a relative progress path; exclusive is a key, not a boolean flag. Reviewer-attributed producer code concatenates strings and defaults exclusive to integer 0, but Directory::Queue::Normal serialization and Task.adopt were not inspected. These types and rejection of explicit null are client compatibility choices, not proven wire types or universal nullability. Live/source follow-ups whm-api-client-8x0.2.72 and 8x0.2.72.1 remain open."
         },
         {
           "kind": "documented",
@@ -39,7 +43,97 @@
           "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
           "pointer": "/paths/~1UserTasks~1retrieve/get"
         }
-      ]
+      ],
+      "response": {
+        "[].sse_url": {
+          "add": {
+            "type": "string"
+          },
+          "required": false,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "attributed source review 11.138.0.19; formal 5725807972 and answer 6560200145",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1UserTasks~1retrieve/get/description",
+              "note": "Cpanel::UserTasks::get() adds get_sse_url when args.log_file is truthy; get_sse_url concatenates /sse/UserTasks, slash-normalized task ID and basename(log_file). Optional nonnullable string is source-inferred compatibility. Formal review https://github.com/hostingpal/whm-api-client/pull/105#pullrequestreview-5725807972 and complete retained-source answer https://github.com/hostingpal/whm-api-client/pull/105#issuecomment-6560200145 are reviewer-attributed excerpts, not authenticated raw Perl files or real producer-wire proof. Directory::Queue::Normal serialization and Cpanel::UserTasksCore::Task->adopt were not inspected; explicit-null behavior remains unknown. The pinned SHA/description pointer anchors operation identity only and does not document this added field. Synthetic regression rows and reviewer-injected rows are not real queued WPX execution or live evidence."
+            }
+          ]
+        },
+        "[].exclusive": {
+          "add": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "int"
+              }
+            ]
+          },
+          "required": false,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "attributed source review 11.138.0.19; formal 5725807972 and answer 6560200145",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1UserTasks~1retrieve/get/description",
+              "note": "Cpanel::UserTasks schema calls exclusive string, POD permits 1 or an arbitrary key, and add() defaults undefined exclusive to integer 0; WPX does not pass it. Optional nonnullable union(string,int) preserves primitives without coercion, flag bounds or observed-value enumeration. Formal review https://github.com/hostingpal/whm-api-client/pull/105#pullrequestreview-5725807972 and complete retained-source answer https://github.com/hostingpal/whm-api-client/pull/105#issuecomment-6560200145 are reviewer-attributed excerpts, not authenticated raw Perl files or real producer-wire proof. Directory::Queue::Normal serialization and Cpanel::UserTasksCore::Task->adopt were not inspected; explicit-null behavior remains unknown. The pinned SHA/description pointer anchors operation identity only and does not document this added field. Synthetic regression rows and reviewer-injected rows are not real queued WPX execution or live evidence."
+            }
+          ]
+        },
+        "[].args.domain": {
+          "add": {
+            "type": "string"
+          },
+          "required": false,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "attributed source review 11.138.0.19; formal 5725807972 and answer 6560200145",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1UserTasks~1retrieve/get/description",
+              "note": "Retained WPX create_website requires and lowercases domain, then _queue_wp_task passes it into args. Optional nonnullable string is source-inferred compatibility; task-specific absence remains valid. Formal review https://github.com/hostingpal/whm-api-client/pull/105#pullrequestreview-5725807972 and complete retained-source answer https://github.com/hostingpal/whm-api-client/pull/105#issuecomment-6560200145 are reviewer-attributed excerpts, not authenticated raw Perl files or real producer-wire proof. Directory::Queue::Normal serialization and Cpanel::UserTasksCore::Task->adopt were not inspected; explicit-null behavior remains unknown. The pinned SHA/description pointer anchors operation identity only and does not document this added field. Synthetic regression rows and reviewer-injected rows are not real queued WPX execution or live evidence."
+            }
+          ]
+        },
+        "[].args.install_id": {
+          "add": {
+            "type": "string"
+          },
+          "required": false,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "attributed source review 11.138.0.19; formal 5725807972 and answer 6560200145",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1UserTasks~1retrieve/get/description",
+              "note": "WPX _queue_wp_task builds install_id using sprintf from time and PID, then replaces dots with hyphens. Optional nonnullable string is source-inferred compatibility; task-specific absence remains valid. Formal review https://github.com/hostingpal/whm-api-client/pull/105#pullrequestreview-5725807972 and complete retained-source answer https://github.com/hostingpal/whm-api-client/pull/105#issuecomment-6560200145 are reviewer-attributed excerpts, not authenticated raw Perl files or real producer-wire proof. Directory::Queue::Normal serialization and Cpanel::UserTasksCore::Task->adopt were not inspected; explicit-null behavior remains unknown. The pinned SHA/description pointer anchors operation identity only and does not document this added field. Synthetic regression rows and reviewer-injected rows are not real queued WPX execution or live evidence."
+            }
+          ]
+        },
+        "[].args.log_file": {
+          "add": {
+            "type": "string"
+          },
+          "required": false,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "attributed source review 11.138.0.19; formal 5725807972 and answer 6560200145",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1UserTasks~1retrieve/get/description",
+              "note": "WPX _queue_wp_task obtains log_file from Cpanel::WPX::LogPath::build_path and passes it into args; UserTasks get_sse_url consumes it. Optional nonnullable string is source-inferred compatibility; task-specific absence remains valid. Formal review https://github.com/hostingpal/whm-api-client/pull/105#pullrequestreview-5725807972 and complete retained-source answer https://github.com/hostingpal/whm-api-client/pull/105#issuecomment-6560200145 are reviewer-attributed excerpts, not authenticated raw Perl files or real producer-wire proof. Directory::Queue::Normal serialization and Cpanel::UserTasksCore::Task->adopt were not inspected; explicit-null behavior remains unknown. The pinned SHA/description pointer anchors operation identity only and does not document this added field. Synthetic regression rows and reviewer-injected rows are not real queued WPX execution or live evidence."
+            }
+          ]
+        }
+      }
     },
     "uapi:UserTasks/delete": {
       "name": "deleteTask",
@@ -56,7 +150,7 @@
         },
         {
           "kind": "policy",
-          "text": "Queue IDs, task arguments and repository paths are private payload data. Do not log results, raw metadata or PayloadMismatchException::$payload indiscriminately. Returned paths are never opened."
+          "text": "Queue IDs, task arguments, repository paths and progress paths are private payload data. Reviewed WPX imports carry site_settings JSON containing source_password. Typed inventory filters unreviewed arguments without parsing that JSON; raw responses, generic call() results and PayloadMismatchException::$payload can retain the password. Avoid indiscriminate logging. Envelope metadata does not always contain task payloads. Returned paths are never opened or fetched."
         },
         {
           "kind": "documented",

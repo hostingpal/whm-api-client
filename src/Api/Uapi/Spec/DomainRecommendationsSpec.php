@@ -151,7 +151,8 @@ final class DomainRecommendationsSpec
                     'values' => [
                         'type' => 'object',
                         'fields' => [
-                            'is_premium' => ['type' => 'flag'],
+                            'is_premium' => ['type' => 'flag', 'accept' => ['bool']],
+                            'is_searched_term' => ['type' => 'flag'],
                             'premium_cost_pricing' => [
                                 'type' => 'object',
                                 'nullable' => true,

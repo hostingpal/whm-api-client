@@ -24,7 +24,7 @@ final class TrashSpec
             'fields' => [
                 'bytes' => ['type' => 'int'],
                 'exists' => ['type' => 'int'],
-                'items' => ['type' => 'int'],
+                'items' => ['type' => 'int', 'accept' => ['numeric-string']],
             ],
         ],
     ];
@@ -40,8 +40,8 @@ final class TrashSpec
         'returns' => [
             'type' => 'object',
             'fields' => [
-                'alreadyGone' => ['type' => 'bool'],
-                'removed' => ['type' => 'bool'],
+                'alreadyGone' => ['type' => 'flag', 'accept' => ['bool']],
+                'removed' => ['type' => 'flag', 'accept' => ['bool']],
             ],
         ],
     ];

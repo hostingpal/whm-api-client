@@ -132,6 +132,29 @@ final class ReadOnlySectionCommandTest extends TestCase
         }
     }
 
+    public function testFailedOutcomeRuleNamesDeviationsOnTheConsoleOnly(): void
+    {
+        $root = self::fixture('deviation');
+        try {
+            [$exit, $stdout, $stderr] = self::execute(
+                ['--output=' . $root . '/output.json'],
+                ['SECTION_CASE' => 'deviation'],
+                $root,
+            );
+            self::assertSame(1, $exit);
+            self::assertSame("Read-only section verification: failed.\nDeviation: synthetic-label\n", $stdout);
+            self::assertSame('', $stderr);
+            $content = file_get_contents($root . '/output.json');
+            self::assertIsString($content);
+            self::assertSame([
+                'schema_version' => 1,
+                'read_only_section' => ['recipe' => 'synthetic-read-only', 'status' => 'failed', 'probes' => []],
+            ], json_decode($content, true, 512, JSON_THROW_ON_ERROR));
+        } finally {
+            self::removeFixture($root);
+        }
+    }
+
     /** @return iterable<array{string, int}> */
     public static function outcomes(): iterable
     {
@@ -162,6 +185,7 @@ exit(\HostingPal\WhmApiClient\Tools\LiveVerify\ReadOnlySectionCommand::run(
         file_put_contents(__DIR__ . '/catalog-loaded', 'yes');
         return [];
     },
+    getenv('SECTION_CASE') === 'deviation' ? static fn (): bool => false : null,
 ));
 ENTRY);
         file_put_contents($root . '/vendor/autoload.php', <<<'STUB'
@@ -193,6 +217,10 @@ final class CurlClient
 final class ReadOnlySectionRunner
 {
     public function __construct(object $http, array $context) {}
+    public static function deviations(array $probes, array $records, \Closure $outcome): array
+    {
+        return ['Deviation: synthetic-label'];
+    }
     public function run(array $probes, string $recipe, string $optIn, array $tokens): array
     {
         $root = dirname(__DIR__);
@@ -209,8 +237,8 @@ final class ReadOnlySectionRunner
         if (getenv('SECTION_CASE') === 'throws') {
             throw new \RuntimeException('private raw HTTP error with token private-whm');
         }
-        return ['recipe' => $recipe, 'status' => getenv('SECTION_CASE') === 'failed' ? 'failed' : 'passed',
-            'probes' => []];
+        $failed = in_array(getenv('SECTION_CASE'), ['failed', 'deviation'], true);
+        return ['recipe' => $recipe, 'status' => $failed ? 'failed' : 'passed', 'probes' => []];
     }
 }
 STUB);

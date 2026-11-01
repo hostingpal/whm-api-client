@@ -27,45 +27,10 @@ final class SiteQualitySpec
         'returns' => [
             'type' => 'object',
             'fields' => [
-                'id' => ['type' => 'int'],
-                'identifier' => ['type' => 'string'],
-                'location' => ['type' => 'string'],
-                'name' => ['type' => 'string'],
-                'role' => [
-                    'type' => 'object',
-                    'fields' => [
-                        'id' => ['type' => 'int'],
-                        'name' => ['type' => 'string'],
-                    ],
-                ],
-                'systems' => [
-                    'type' => 'list',
-                    'items' => [
-                        'type' => 'object',
-                        'fields' => [
-                            'description' => ['type' => 'string', 'nullable' => true],
-                            'domain' => ['type' => 'string'],
-                            'id' => ['type' => 'int'],
-                            'interval' => ['type' => 'string'],
-                            'limits' => [
-                                'type' => 'object',
-                                'fields' => [
-                                    'maximumCrawlDepth' => ['type' => 'int'],
-                                ],
-                            ],
-                            'name' => ['type' => 'string'],
-                            'system_type' => [
-                                'type' => 'object',
-                                'fields' => [
-                                    'fixedComponents' => ['type' => 'bool'],
-                                    'id' => ['type' => 'mixed'],
-                                    'name' => ['type' => 'string'],
-                                ],
-                            ],
-                        ],
-                    ],
-                ],
+                'component' => ['type' => 'mixed'],
+                'project' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
             ],
+            'required' => ['project', 'component'],
         ],
     ];
 
@@ -82,7 +47,7 @@ final class SiteQualitySpec
             'type' => 'object',
             'fields' => [
                 'app_token' => ['type' => 'string'],
-                'enabled' => ['type' => 'bool', 'nullable' => true],
+                'enabled' => ['type' => 'bool', 'nullable' => true, 'accept' => ['int-flag']],
                 'username' => ['type' => 'string'],
             ],
         ],

@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace HostingPal\WhmApiClient\Tests\Api;
 
 use Closure;
-use HostingPal\WhmApiClient\Api\AbstractApiClient;
+use HostingPal\WhmApiClient\Api\Engine\ArgumentEncoder;
+use HostingPal\WhmApiClient\Api\Engine\OperationRunner;
 use HostingPal\WhmApiClient\Api\Engine\OrderedFields;
 use HostingPal\WhmApiClient\Api\NumberedList;
 use HostingPal\WhmApiClient\Api\RepeatedList;
 use HostingPal\WhmApiClient\Api\RequestMethod;
 use HostingPal\WhmApiClient\Api\Whm\Integrations;
 use HostingPal\WhmApiClient\Client;
-use HostingPal\WhmApiClient\Config\ClientConfigFactory;
 use HostingPal\WhmApiClient\Exception\ApiErrorException;
 use HostingPal\WhmApiClient\Exception\ApiException;
 use HostingPal\WhmApiClient\Exception\HttpException;
@@ -20,8 +20,12 @@ use HostingPal\WhmApiClient\Exception\InvalidResponseException;
 use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
 use HostingPal\WhmApiClient\Exception\TransportException;
 use HostingPal\WhmApiClient\Http\HttpTransport;
+use HostingPal\WhmApiClient\UapiClient;
+use HostingPal\WhmApiClient\Upload;
+use HostingPal\WhmApiClient\WhmClient;
 use Http\Mock\Client as MockClient;
 use InvalidArgumentException;
+use LogicException;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7\Response;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -31,6 +35,7 @@ use Psr\Http\Client\NetworkExceptionInterface;
 use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use ReflectionMethod;
 use RuntimeException;
 use SensitiveParameter;
 use SensitiveParameterValue;
@@ -58,6 +63,22 @@ final class SensitiveTraceTest extends TestCase
 
     private const STRING_TOTP = '029817';
 
+    private const BUILDER_SECRETS = [
+        'private+&=%',
+        'dynamic-map-name-secret',
+        'cHJvbXB0+&=%',
+        'https://panel.test/route#x',
+        'https://user:pass@builder.test/archive+&.zip',
+        'owner+other@example.test',
+        'owner@example.test',
+        'https://panel.test/cpsess123/index.html#x',
+        'Example & Co',
+        '{"Attribute1":9,"text":"+&=%"}',
+        'a note',
+        '000-123',
+        '1 Main St',
+    ];
+
     private string|false $ignoreArgs = false;
 
     protected function setUp(): void
@@ -74,6 +95,176 @@ final class SensitiveTraceTest extends TestCase
         }
     }
 
+    /** @return iterable<string, array{string, string, string}> */
+    public static function generatedLocalFailures(): iterable
+    {
+        foreach (['whm', 'direct', 'bridged'] as $route) {
+            foreach (['GET', 'POST'] as $method) {
+                foreach (['static collision', 'static reserved', 'invalid list', 'runtime reserved'] as $failure) {
+                    yield "$route $method $failure" => [$route, $method, $failure];
+                }
+            }
+            if ($route !== 'whm') {
+                yield "$route multipart runtime reserved" => [$route, 'multipart', 'runtime reserved'];
+            }
+        }
+    }
+
+    #[DataProvider('generatedLocalFailures')]
+    public function testGeneratedLocalFailuresRedactEveryReachableLibraryFrame(
+        string $route,
+        string $method,
+        string $failure,
+    ): void {
+        [$client, $http] = self::client($route === 'direct');
+        $http->addResponse(new Response(200, [], match ($route) {
+            'whm' => '{"metadata":{"result":1}}',
+            'direct' => '{"status":1,"data":null}',
+            default => '{"metadata":{"result":1},"data":{"uapi":{"status":1,"data":null}}}',
+        }));
+        $handle = $route === 'whm' ? $client->whm() : $client->uapi($route === 'direct' ? null : 'npr');
+        $route === 'whm' ? $client->whm()->call('probe') : $client->uapi($route === 'direct' ? null : 'npr')
+            ->call('Email', 'probe');
+        self::assertNotNull($handle->responseMeta());
+        $spec = ['function' => 'probe', 'method' => $method === 'multipart' ? 'POST' : $method,
+            'outcome' => 'flag', 'returns' => null,
+            'params' => ['values' => ['name' => 'value', 'encoding' => 'numbered']]];
+        if ($route !== 'whm') {
+            $spec['module'] = 'Email';
+        }
+        if ($method === 'multipart') {
+            $spec['body'] = 'multipart';
+        }
+        if ($failure === 'static collision') {
+            $spec['params']['fixed'] = ['name' => 'value-1', 'encoding' => 'scalar'];
+        } elseif ($failure === 'static reserved') {
+            $spec['params']['fixed'] = ['name' => 'api.filter.enable', 'encoding' => 'scalar'];
+        }
+        try {
+            if ($failure === 'runtime reserved') {
+                // A future expansion can reach this defense. Today's fixed specs cannot:
+                // SpecChecker rejects every statically knowable reservation first.
+                (new ReflectionMethod($handle, 'beginRequest'))->getClosure($handle)();
+                $fields = new OrderedFields();
+                $fields->append('map', 'dynamic-map-name-secret', self::SECRET);
+                $fields->append('map', 'api.dynamic-map-name-secret', self::SECRET);
+                (new ReflectionMethod($handle, 'dispatch'))->getClosure($handle)($spec, $fields);
+            } else {
+                self::invokeGeneratedRun(
+                    $handle,
+                    $spec,
+                    ['values' => $failure === 'invalid list' ? [self::SECRET, null] : [self::SECRET]],
+                );
+            }
+            self::fail('The local failure must precede I/O.');
+        } catch (LogicException $error) {
+            self::assertSame(str_starts_with($failure, 'static') ? LogicException::class
+                : InvalidArgumentException::class, $error::class);
+            self::assertSecretAbsent($error);
+            $frames = array_filter($error->getTrace(), static fn (array $frame): bool =>
+                str_starts_with($frame['class'] ?? '', 'HostingPal\\WhmApiClient\\')
+                && !str_contains($frame['class'], '\\Tests\\'));
+            $functions = array_column($frames, 'function');
+            if ($failure === 'runtime reserved') {
+                self::assertContains('assertNoReserved', $functions);
+                self::assertContains('request', $functions);
+                self::assertContains('dispatch', $functions);
+                self::assertNotContains('run', $functions);
+            } else {
+                self::assertContains('run', $functions);
+                self::assertNotContains('dispatch', $functions);
+                self::assertSame($failure === 'invalid list', in_array('encode', $functions, true));
+                self::assertSame($failure === 'invalid list', in_array(
+                    ArgumentEncoder::class,
+                    array_column($frames, 'class'),
+                    true,
+                ));
+                self::assertContains(OperationRunner::class, array_column($frames, 'class'));
+            }
+            self::assertNull($handle->responseMeta());
+            self::assertCount(1, $http->getRequests(), 'The priming request must remain the only I/O.');
+        }
+    }
+
+    /**
+     * Enter the actual handle callback without adding ReflectionMethod::invoke arguments to the trace.
+     *
+     * @param array<mixed> $spec
+     * @param array<string, mixed> $arguments
+     * @throws LogicException The malformed spec or invalid collection fails locally.
+     */
+    private static function invokeGeneratedRun(
+        WhmClient|UapiClient $handle,
+        array $spec,
+        #[SensitiveParameter] array $arguments,
+    ): void {
+        (new ReflectionMethod($handle, 'run'))->getClosure($handle)($spec, $arguments);
+    }
+
+    public function testDynamicFieldCollisionRedactsNamesAndValuesRecursively(): void
+    {
+        $fields = new OrderedFields();
+        $fields->append('dynamic-map-name-secret', 'dynamic-map-name-secret', self::SECRET);
+        try {
+            $fields->append('another origin', 'dynamic-map-name-secret', self::SECRET);
+            self::fail('Two origins cannot own the same field.');
+        } catch (InvalidArgumentException $error) {
+            self::assertSecretAbsent($error);
+        }
+    }
+
+    public function testTraceSearchDetectsUnmarkedDynamicFieldsAndNames(): void
+    {
+        $fields = new OrderedFields();
+        $fields->append('map', 'dynamic-map-name-secret', self::SECRET);
+        $leak = static function (mixed $fields): never {
+            throw new RuntimeException('Control failure.');
+        };
+        foreach ([$fields, ['dynamic-map-name-secret' => 'ordinary'], 'dynamic-map-name-secret'] as $value) {
+            try {
+                $leak($value);
+            } catch (RuntimeException $error) {
+                $seen = [];
+                self::assertTrue(self::contains($error->getTrace(), $seen));
+            }
+        }
+    }
+
+    #[DataProvider('privateLogResponseRoutes')]
+    public function testPrivateLogContentStaysOutOfPayloadFailureTrace(string $route): void
+    {
+        [$client, $http] = self::client($route !== 'bridged');
+        $payload = '{"log_content":["' . self::SECRET . '"],"size":false}';
+        $result = '{"status":1,"data":' . $payload . '}';
+        $body = match ($route) {
+            'wrapped' => '{"result":' . $result . '}',
+            'bare' => $result,
+            default => '{"metadata":{"result":1},"data":{"uapi":' . $result . '}}',
+        };
+        $http->addResponse(new Response(200, [], $body));
+        $account = $client->uapi($route === 'bridged' ? 'npr' : null);
+        try {
+            $account->logManager()->viewErrorLog('npr.rs', 'docroot_error_log');
+            self::fail('Invalid sibling must fail without exposing the private log line.');
+        } catch (PayloadMismatchException $exception) {
+            self::assertTrue($exception->outcomeConfirmed);
+            self::assertSame($account->responseMeta(), $exception->metadata);
+            self::assertSame(1, $exception->metadata?->uapiStatus());
+            self::assertSame($route === 'bridged' ? 1 : null, $exception->metadata->whmResult());
+            self::assertSame(['log_content' => [self::SECRET], 'size' => false], $exception->payload);
+            self::assertSecretAbsent($exception);
+        }
+        self::assertCount(1, $http->getRequests());
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function privateLogResponseRoutes(): iterable
+    {
+        yield 'wrapped direct' => ['wrapped'];
+        yield 'bare direct' => ['bare'];
+        yield 'WHM bridge' => ['bridged'];
+    }
+
     public function testTheTraceSearchDetectsUnmarkedArguments(): void
     {
         $leak = static function (string $secret): never {
@@ -85,6 +276,102 @@ final class SensitiveTraceTest extends TestCase
         } catch (RuntimeException $exception) {
             $seen = [];
             self::assertTrue(self::contains($exception->getTrace(), $seen));
+        }
+    }
+
+    #[DataProvider('builderContactControls')]
+    public function testSearchDetectsEveryCreateWebsiteContactValue(string $secret): void
+    {
+        $leak = static function (string $value): never {
+            throw new RuntimeException('Control failure.');
+        };
+        try {
+            $leak($secret);
+        } catch (RuntimeException $exception) {
+            $seen = [];
+            self::assertSame([$secret], $exception->getTrace()[0]['args'] ?? []);
+            self::assertTrue(self::contains($exception->getTrace()[0], $seen));
+        }
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function builderContactControls(): iterable
+    {
+        yield 'company' => ['Example & Co'];
+        yield 'street' => ['1 Main St'];
+        yield 'phone' => ['000-123'];
+        yield 'note' => ['a note'];
+        yield 'metadata' => ['{"Attribute1":9,"text":"+&=%"}'];
+    }
+
+    /** @return iterable<string, array{string, string, string, string}> */
+    public static function builderFailures(): iterable
+    {
+        foreach (['direct', 'bare', 'bridged'] as $route) {
+            foreach (
+                ['Nova' => ['add_api_token', 'ensure_account', 'get_sso_link', 'publish'],
+                'Sitejet' => ['add_api_token', 'create_website', 'get_sso_link']] as $group => $functions
+            ) {
+                foreach ($functions as $function) {
+                    foreach (['api', 'http', 'transport', 'invalid', 'payload'] as $failure) {
+                        yield "$route $group $function $failure" => [$route, $group, $function, $failure];
+                    }
+                }
+            }
+        }
+    }
+
+    #[DataProvider('builderFailures')]
+    public function testBuilderFailurePipelinesKeepReviewedSensitiveValuesOutOfTraces(
+        string $route,
+        string $group,
+        string $function,
+        string $failure,
+    ): void {
+        [$client, $http] = self::client($route !== 'bridged');
+        if ($failure === 'transport') {
+            $http->addException(self::networkFailure());
+        } elseif ($failure === 'http') {
+            $http->addResponse(new Response(503, [], '{}'));
+        } elseif ($failure === 'invalid') {
+            $http->addResponse(new Response(200, [], 'invalid json'));
+        } else {
+            $result = '{"status":' . ($failure === 'api' ? '0' : '1') . ',"data":false}';
+            $body = match ($route) {
+                'direct' => '{"result":' . $result . '}',
+                'bare' => $result,
+                default => '{"metadata":{"result":1},"data":{"uapi":' . $result . '}}',
+            };
+            $http->addResponse(new Response(200, [], $body));
+        }
+        [$method, $arguments] = $group === 'Nova'
+            ? UapiNovaTest::fixture($function) : UapiSitejetTest::fixture($function);
+        $account = $client->uapi($route === 'bridged' ? 'npr' : null);
+        $builder = $group === 'Nova' ? $account->nova() : $account->sitejet();
+        try {
+            $builder->$method(...$arguments);
+            self::fail('Expected builder failure.');
+        } catch (ApiException $exception) {
+            $expected = match ($failure) {
+                'api' => ApiErrorException::class,
+                'http' => HttpException::class,
+                'transport' => TransportException::class,
+                'payload' => PayloadMismatchException::class,
+                default => InvalidResponseException::class,
+            };
+            self::assertInstanceOf($expected, $exception);
+            self::assertSecretAbsent($exception);
+            self::assertCount(1, $http->getRequests());
+            if ($exception instanceof PayloadMismatchException) {
+                self::assertTrue($exception->outcomeConfirmed);
+                self::assertFalse($exception->payload);
+                self::assertSame($account->responseMeta(), $exception->metadata);
+            }
+        }
+        $request = $http->getLastRequest();
+        self::assertInstanceOf(RequestInterface::class, $request);
+        foreach (self::BUILDER_SECRETS as $secret) {
+            self::assertStringNotContainsString($secret, (string) $request->getUri());
         }
     }
 
@@ -137,14 +424,17 @@ final class SensitiveTraceTest extends TestCase
             $http->addResponse(self::failedResponse($route, $failure));
         }
 
+        $exception = null;
         try {
             $call($client);
-            self::fail('Expected ' . $expected . '.');
-        } catch (Throwable $exception) {
-            self::assertInstanceOf($expected, $exception);
-            self::assertCount(1, $http->getRequests());
-            self::assertSecretAbsent($exception);
+        } catch (Throwable $caught) {
+            $exception = $caught;
         }
+        self::assertInstanceOf($expected, $exception);
+        self::assertSame($expected, $exception::class);
+        self::assertCount(1, $http->getRequests());
+        self::assertNull($exception->getPrevious());
+        self::assertSecretAbsent($exception);
     }
 
     /** @return iterable<string, array{'whm'|'direct'|'bridged', Closure(Client): mixed, string, class-string<Throwable>}> */
@@ -160,6 +450,52 @@ final class SensitiveTraceTest extends TestCase
             foreach ($failures as $failure => $expected) {
                 yield $name . ', ' . $failure => [$route, $call, $failure, $expected];
             }
+        }
+    }
+
+    #[DataProvider('invalidProviderDisplayConfigurations')]
+    public function testProviderDisplayLocalFailuresRedactKeysAndValues(string $failure): void
+    {
+        $configuration = match ($failure) {
+            'unknown private key and value' => [self::SECRET => self::SECRET],
+            'wrong nested value' => ['label' => [self::SECRET => self::SECRET]],
+            'invalid UTF-8 value' => ['label' => self::SECRET . "\xff"],
+            'invalid UTF-8 private key' => [self::SECRET . "\xff" => self::SECRET],
+            'integer key' => [1 => self::SECRET],
+            default => [self::SECRET],
+        };
+        [$client, $http] = self::client(false);
+        $http->addResponse(new Response(200, [], '{"metadata":{"result":1}}'));
+        $handle = $client->whm();
+        $handle->call('version');
+        self::assertNotNull($handle->responseMeta());
+        $exception = null;
+        try {
+            $group = $handle->authentication();
+            (new ReflectionMethod($group, 'configureProviderDisplay'))->getClosure($group)(
+                'provider',
+                'cpaneld',
+                $configuration,
+            );
+        } catch (Throwable $caught) {
+            $exception = $caught;
+        }
+        self::assertInstanceOf(InvalidArgumentException::class, $exception);
+        self::assertSame(InvalidArgumentException::class, $exception::class);
+        self::assertNull($exception->getPrevious());
+        self::assertSecretAbsent($exception);
+        self::assertNull($handle->responseMeta());
+        self::assertCount(1, $http->getRequests());
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function invalidProviderDisplayConfigurations(): iterable
+    {
+        foreach (
+            ['unknown private key and value', 'wrong nested value', 'invalid UTF-8 value',
+            'invalid UTF-8 private key', 'integer key', 'list'] as $failure
+        ) {
+            yield $failure => [$failure];
         }
     }
 
@@ -189,21 +525,23 @@ final class SensitiveTraceTest extends TestCase
             new HttpTransport($http, $factory, $factory),
         );
 
+        $caught = null;
         try {
             $client->whm()->call('passwd', ['user' => 'bob', 'password' => self::SECRET], $method);
-            self::fail('Expected the client failure to propagate.');
-        } catch (RuntimeException $exception) {
-            $frames = $exception->getTrace();
-            self::assertSame([$http::class, 'sendRequest'], [$frames[0]['class'] ?? null, $frames[0]['function']]);
-            self::assertSame([HttpTransport::class, 'send'], [$frames[1]['class'] ?? null, $frames[1]['function']]);
-
-            // The client's own frame necessarily holds the request it was handed; the
-            // library cannot redact it, so only that argument is left out of the search.
-            unset($frames[0]['args']);
-            $seen = [];
-            self::assertFalse(self::contains($frames, $seen), 'A library frame argument contains the secret.');
-            self::assertStringNotContainsString(self::SECRET, $exception->getTraceAsString());
+        } catch (RuntimeException $error) {
+            $caught = $error;
         }
+        self::assertInstanceOf(RuntimeException::class, $caught, 'Expected the client failure to propagate.');
+        $frames = $caught->getTrace();
+        self::assertSame([$http::class, 'sendRequest'], [$frames[0]['class'] ?? null, $frames[0]['function']]);
+        self::assertSame([HttpTransport::class, 'send'], [$frames[1]['class'] ?? null, $frames[1]['function']]);
+
+        // The client's own frame necessarily holds the request it was handed; the
+        // library cannot redact it, so only that argument is left out of the search.
+        unset($frames[0]['args']);
+        $seen = [];
+        self::assertFalse(self::contains($frames, $seen), 'A library frame argument contains the secret.');
+        self::assertStringNotContainsString(self::SECRET, $caught->getTraceAsString());
     }
 
     public function testRawJsonTransportFramesStayRedactedWhenClientThrows(): void
@@ -219,33 +557,88 @@ final class SensitiveTraceTest extends TestCase
             $client = new Client([
                 'host' => 'api.example.test', 'authType' => $type, 'username' => 'npr', 'token' => 'fixture-token',
             ], new HttpTransport($http, $factory, $factory));
+            $caught = null;
             try {
                 if ($type === 'whm') {
                     $client->whm()->callJson(
                         'operation',
-                        '"' . self::SECRET . '"',
-                        ['secret' => self::SECRET],
+                        '{"secret":"' . self::SECRET . '"}',
                     );
                 } else {
                     $client->uapi()->callJson(
                         'Example',
                         'operation',
-                        '"' . self::SECRET . '"',
-                        ['secret' => self::SECRET],
+                        '{"secret":"' . self::SECRET . '"}',
                     );
                 }
-                self::fail('Expected client failure.');
-            } catch (RuntimeException $exception) {
-                $frames = $exception->getTrace();
-                self::assertSame([$http::class, 'sendRequest'], [$frames[0]['class'] ?? null, $frames[0]['function']]);
-                unset($frames[0]['args']);
-                $seen = [];
-                self::assertFalse(
-                    self::contains($frames, $seen),
-                    'A library frame contains raw JSON or query secrets.',
-                );
+            } catch (RuntimeException $error) {
+                $caught = $error;
             }
+            self::assertInstanceOf(RuntimeException::class, $caught, 'Expected client failure.');
+            $frames = $caught->getTrace();
+            self::assertSame([$http::class, 'sendRequest'], [$frames[0]['class'] ?? null, $frames[0]['function']]);
+            unset($frames[0]['args']);
+            $seen = [];
+            self::assertFalse(
+                self::contains($frames, $seen),
+                'A library frame contains raw JSON secrets.',
+            );
         }
+    }
+
+    public function testTypedJsonPayloadMismatchRedactsInputAndResponse(): void
+    {
+        [$client, $http] = self::client(true);
+        $http->addResponse(new Response(200, [], '{"status":1,"data":[{"domain":"' . self::SECRET
+            . '","analyzers":[{"name":"' . self::SECRET . '","enabled_by_user":"1"}]}]}'));
+        $caught = null;
+        try {
+            $client->uapi()->statsManager()->saveConfiguration([
+                'changes' => [['domain' => self::SECRET, 'analyzers' => [['name' => self::SECRET, 'enabled' => true]]]],
+            ]);
+        } catch (Throwable $error) {
+            $caught = $error;
+        }
+        self::assertNotNull($caught);
+        self::assertSame(PayloadMismatchException::class, $caught::class);
+        self::assertInstanceOf(PayloadMismatchException::class, $caught);
+        self::assertSecretAbsent($caught);
+        self::assertCount(1, $http->getRequests());
+        self::assertSame($client->uapi()->responseMeta(), $caught->metadata);
+        self::assertTrue($caught->outcomeConfirmed);
+    }
+
+    public function testTypedJsonTransportFramesStayRedactedWhenClientThrows(): void
+    {
+        $factory = new Psr17Factory();
+        $http = new class implements ClientInterface {
+            public function sendRequest(RequestInterface $request): ResponseInterface
+            {
+                throw new RuntimeException('Client failure.');
+            }
+        };
+        $client = new Client([
+            'host' => 'api.example.test', 'authType' => 'cpanel', 'username' => 'npr', 'token' => 'fixture-token',
+        ], new HttpTransport($http, $factory, $factory));
+        $caught = null;
+        try {
+            $client->uapi()->statsManager()->saveConfiguration([
+                'changes' => [[
+                    'domain' => self::SECRET, 'analyzers' => [['name' => self::SECRET, 'enabled' => false]],
+                ]],
+            ]);
+        } catch (Throwable $error) {
+            $caught = $error;
+        }
+        self::assertNotNull($caught);
+        self::assertSame(RuntimeException::class, $caught::class);
+        $frames = $caught->getTrace();
+        self::assertSame([$http::class, 'sendRequest'], [$frames[0]['class'] ?? null, $frames[0]['function']]);
+        // Only the external client's frame necessarily holds the request it receives.
+        unset($frames[0]['args']);
+        $seen = [];
+        self::assertFalse(self::contains($frames, $seen), 'A library frame contains typed JSON secrets.');
+        self::assertNull($client->uapi()->responseMeta());
     }
 
     public function testGuardedTargetsStayOutOfLocalValidationTraceArguments(): void
@@ -320,14 +713,15 @@ final class SensitiveTraceTest extends TestCase
     ): void {
         [$client, $http] = self::client($direct);
         $http->addResponse(new Response($status, [], str_replace('returned-password', self::SECRET, $body)));
+        $caught = null;
         try {
             $client->uapi($direct ? null : 'npr')->mysql()->setupDbAndUser(prefix: 'app');
-            self::fail('Expected the returned-password response to fail.');
-        } catch (Throwable $exception) {
-            self::assertInstanceOf($expected, $exception);
-            self::assertCount(1, $http->getRequests());
-            self::assertSecretAbsent($exception);
+        } catch (Throwable $error) {
+            $caught = $error;
         }
+        self::assertInstanceOf($expected, $caught, 'Expected the returned-password response to fail.');
+        self::assertCount(1, $http->getRequests());
+        self::assertSecretAbsent($caught);
     }
 
     /** @return iterable<string, array{bool, int, string, class-string<Throwable>}> */
@@ -518,28 +912,33 @@ final class SensitiveTraceTest extends TestCase
         };
         $http->addResponse(new Response(200, [], $body));
 
+        $caught = null;
         try {
             $client->uapi($route === 'bridged' ? 'npr' : null)->postgresql()->createUser('npr_writer', self::SECRET);
-            self::fail('Expected the malformed or failed PostgreSQL envelope to be rejected.');
-        } catch (Throwable $exception) {
-            self::assertInstanceOf($expected, $exception);
-            self::assertCount(1, $http->getRequests());
-            foreach ($exception->getTrace() as $frame) {
-                $class = $frame['class'] ?? '';
-                if (
-                    !str_starts_with($class, 'HostingPal\\WhmApiClient\\')
-                    || str_starts_with($class, 'HostingPal\\WhmApiClient\\Tests\\')
-                ) {
-                    continue;
-                }
-                $seen = [];
-                self::assertFalse(
-                    self::containsResponse($frame['args'] ?? [], $seen),
-                    $class . '::' . $frame['function'] . ' retains a raw HTTP response in its trace arguments.',
-                );
-            }
-            self::assertSecretAbsent($exception);
+        } catch (Throwable $error) {
+            $caught = $error;
         }
+        self::assertInstanceOf(
+            $expected,
+            $caught,
+            'Expected the malformed or failed PostgreSQL envelope to be rejected.',
+        );
+        self::assertCount(1, $http->getRequests());
+        foreach ($caught->getTrace() as $frame) {
+            $class = $frame['class'] ?? '';
+            if (
+                !str_starts_with($class, 'HostingPal\\WhmApiClient\\')
+                || str_starts_with($class, 'HostingPal\\WhmApiClient\\Tests\\')
+            ) {
+                continue;
+            }
+            $seen = [];
+            self::assertFalse(
+                self::containsResponse($frame['args'] ?? [], $seen),
+                $class . '::' . $frame['function'] . ' retains a raw HTTP response in its trace arguments.',
+            );
+        }
+        self::assertSecretAbsent($caught);
     }
 
     /** @return iterable<string, array{string, string, class-string<Throwable>}> */
@@ -660,28 +1059,29 @@ final class SensitiveTraceTest extends TestCase
         };
         $http->addResponse(new Response(200, [], $body));
 
+        $caught = null;
         try {
             $client->uapi($route === 'bridged' ? 'npr' : null)->langPhp()->phpIniGetUserContent(type: 'home');
-            self::fail('Expected the malformed or failed INI envelope to be rejected.');
-        } catch (Throwable $exception) {
-            self::assertInstanceOf($expected, $exception);
-            self::assertCount(1, $http->getRequests());
-            foreach ($exception->getTrace() as $frame) {
-                $class = $frame['class'] ?? '';
-                if (
-                    !str_starts_with($class, 'HostingPal\\WhmApiClient\\')
-                    || str_starts_with($class, 'HostingPal\\WhmApiClient\\Tests\\')
-                ) {
-                    continue;
-                }
-                $seen = [];
-                self::assertFalse(
-                    self::containsResponse($frame['args'] ?? [], $seen),
-                    $class . '::' . $frame['function'] . ' retains a raw HTTP response in its trace arguments.',
-                );
-            }
-            self::assertSecretAbsent($exception);
+        } catch (Throwable $error) {
+            $caught = $error;
         }
+        self::assertInstanceOf($expected, $caught, 'Expected the malformed or failed INI envelope to be rejected.');
+        self::assertCount(1, $http->getRequests());
+        foreach ($caught->getTrace() as $frame) {
+            $class = $frame['class'] ?? '';
+            if (
+                !str_starts_with($class, 'HostingPal\\WhmApiClient\\')
+                || str_starts_with($class, 'HostingPal\\WhmApiClient\\Tests\\')
+            ) {
+                continue;
+            }
+            $seen = [];
+            self::assertFalse(
+                self::containsResponse($frame['args'] ?? [], $seen),
+                $class . '::' . $frame['function'] . ' retains a raw HTTP response in its trace arguments.',
+            );
+        }
+        self::assertSecretAbsent($caught);
     }
 
     /** @return iterable<string, array{string, string, class-string<Throwable>}> */
@@ -709,9 +1109,6 @@ final class SensitiveTraceTest extends TestCase
     public function testLocalValidationFailuresKeepSecretsOutOfTraceArguments(string $route, Closure $call): void
     {
         [$client, $http] = self::client($route === 'direct');
-        $http->addResponse(new Response(200, [], $route === 'direct' ? '{"status":1,"data":null}'
-            : '{"metadata":{"result":1},"data":null}'));
-
         try {
             $call($client);
             self::fail('Expected a local validation failure.');
@@ -721,38 +1118,29 @@ final class SensitiveTraceTest extends TestCase
         }
     }
 
-    public function testOrderedJsonRoutingFailureKeepsSecretsOutOfTraceArguments(): void
-    {
-        $factory = new Psr17Factory();
-        $http = new MockClient($factory);
-        $client = new class (new HttpTransport($http, $factory, $factory)) extends AbstractApiClient {
-            public function __construct(HttpTransport $transport)
-            {
-                parent::__construct(ClientConfigFactory::fromArray([
-                    'host' => 'api.example.test', 'authType' => 'whm', 'token' => 'fixture-token',
-                ]), $transport);
-            }
-
-            public function check(#[SensitiveParameter] OrderedFields $query): void
-            {
-                $this->validateJsonQuery($query, []);
-            }
-        };
-        $query = new OrderedFields();
-        $query->append('caller', 'api.' . self::SECRET, self::SECRET);
-        try {
-            $client->check($query);
-            self::fail('Expected an emitted routing collision.');
-        } catch (InvalidArgumentException $exception) {
-            self::assertSame([], $http->getRequests());
-            self::assertNull($exception->getPrevious());
-            self::assertSecretAbsent($exception);
-        }
-    }
-
     /** @return iterable<string, array{'whm'|'direct'|'bridged', Closure(Client): mixed}> */
     public static function invalidSecretCalls(): iterable
     {
+        foreach (['whm', 'direct'] as $route) {
+            foreach (['missing path', 'reserved query'] as $failure) {
+                yield $route . ' raw multipart ' . $failure => [
+                    $route,
+                    static function (Client $client) use ($route, $failure): mixed {
+                        $parts = [
+                            ['name' => 'text', 'value' => self::SECRET],
+                            ['name' => 'file', 'value' => Upload::fromPath(
+                                sys_get_temp_dir() . '/missing-multipart-' . self::SECRET . '/file',
+                                self::SECRET,
+                            )],
+                        ];
+                        $query = [$failure === 'reserved query' ? 'api.' . self::SECRET : 'private' => self::SECRET];
+                        return $route === 'whm'
+                            ? $client->whm()->callMultipart('operation', $parts, $query)
+                            : $client->uapi()->callMultipart('Example', 'operation', $parts, $query);
+                    },
+                ];
+            }
+        }
         yield 'WHM raw JSON invalid syntax' => [
             'whm',
             static fn (Client $client): mixed => $client->whm()->callJson('operation', '{"secret":"' . self::SECRET),
@@ -772,43 +1160,21 @@ final class SensitiveTraceTest extends TestCase
                     ? $client->whm()->callJson('operation', '{"api\\u002e' . self::SECRET . '":null}')
                     : $client->uapi()->callJson('Example', 'operation', '{"api\\u002e' . self::SECRET . '":null}'),
             ];
-            yield $route . ' raw JSON reserved prefix query' => [
+        }
+        foreach (['whm', 'direct'] as $route) {
+            yield $route . ' raw JSON non-object root' => [
                 $route,
                 static fn (Client $client): mixed => $route === 'whm'
-                    ? $client->whm()->callJson('operation', '{}', ['api.' . self::SECRET => self::SECRET])
-                    : $client->uapi()->callJson('Example', 'operation', '{}', ['api.' . self::SECRET => self::SECRET]),
-            ];
-            yield $route . ' raw JSON reserved prefix marker' => [
-                $route,
-                static fn (Client $client): mixed => $route === 'whm'
-                    ? $client->whm()->callJson(
-                        'operation',
-                        '{}',
-                        ['api.' . self::SECRET => new NumberedList(self::SECRET)],
-                    )
-                    : $client->uapi()->callJson(
-                        'Example',
-                        'operation',
-                        '{}',
-                        ['api.' . self::SECRET => new NumberedList(self::SECRET)],
-                    ),
+                    ? $client->whm()->callJson('operation', '"' . self::SECRET . '"')
+                    : $client->uapi()->callJson('Example', 'operation', '"' . self::SECRET . '"'),
             ];
         }
-        yield 'WHM raw JSON late invalid query' => [
-            'whm',
-            static fn (Client $client): mixed => $client->whm()->callJson(
-                'operation',
-                '{"secret":"' . self::SECRET . '"}',
-                [self::SECRET => new NumberedList([self::SECRET, false])],
-            ),
-        ];
         yield 'direct raw JSON invalid name' => [
             'direct',
             static fn (Client $client): mixed => $client->uapi()->callJson(
                 '../bad',
                 'operation',
-                '"' . self::SECRET . '"',
-                ['secret' => self::SECRET],
+                '{"secret":"' . self::SECRET . '"}',
             ),
         ];
         yield 'bridged raw JSON rejected route' => [
@@ -816,8 +1182,7 @@ final class SensitiveTraceTest extends TestCase
             static fn (Client $client): mixed => $client->uapi('npr')->callJson(
                 'Example',
                 'operation',
-                '"' . self::SECRET . '"',
-                ['secret' => self::SECRET],
+                '{"secret":"' . self::SECRET . '"}',
             ),
         ];
         foreach ([RequestMethod::Get, RequestMethod::Post] as $method) {
@@ -853,21 +1218,50 @@ final class SensitiveTraceTest extends TestCase
     /** @return iterable<string, array{'whm'|'direct'|'bridged', Closure(Client): mixed}> */
     private static function secretCalls(): iterable
     {
-        yield 'WHM raw JSON and explicit query' => [
+        foreach (['whm', 'direct'] as $route) {
+            yield $route . ' raw multipart text file and query' => [
+                $route,
+                static function (Client $client) use ($route): mixed {
+                    $parts = [
+                        ['name' => self::SECRET, 'value' => self::SECRET],
+                        ['name' => 'file', 'value' => Upload::fromString(self::SECRET, self::SECRET)],
+                    ];
+                    $query = ['private' => self::SECRET];
+                    return $route === 'whm'
+                        ? $client->whm()->callMultipart('operation', $parts, $query)
+                        : $client->uapi()->callMultipart('Example', 'operation', $parts, $query);
+                },
+            ];
+        }
+        yield 'WHM structured provider display JSON field' => [
+            'whm',
+            static function (Client $client): void {
+                $client->whm()->authentication()->configureProviderDisplay(
+                    'provider',
+                    'cpaneld',
+                    ['label' => self::SECRET, 'icon' => self::SECRET],
+                );
+            },
+        ];
+        yield 'direct typed StatsManager JSON body' => [
+            'direct',
+            static fn (Client $client): mixed => $client->uapi()->statsManager()->saveConfiguration([
+                'changes' => [['domain' => self::SECRET, 'analyzers' => [['name' => self::SECRET, 'enabled' => true]]]],
+            ]),
+        ];
+        yield 'WHM raw JSON body' => [
             'whm',
             static fn (Client $client): mixed => $client->whm()->callJson(
                 'operation',
                 '{"secret":"' . self::SECRET . '"}',
-                ['secret' => self::SECRET],
             ),
         ];
-        yield 'direct raw JSON and explicit query' => [
+        yield 'direct raw JSON body' => [
             'direct',
             static fn (Client $client): mixed => $client->uapi()->callJson(
                 'Example',
                 'operation',
                 '{"secret":"' . self::SECRET . '"}',
-                ['secret' => self::SECRET],
             ),
         ];
         yield 'WHM nonroot transfer password with required true' => [
@@ -1170,7 +1564,7 @@ final class SensitiveTraceTest extends TestCase
                 self::contains($current->getTrace(), $seen),
                 'A trace argument of ' . $current::class . ' contains the secret.',
             );
-            foreach ([self::SECRET, (string) self::TOTP, self::STRING_TOTP] as $secret) {
+            foreach ([self::SECRET, (string) self::TOTP, self::STRING_TOTP, ...self::BUILDER_SECRETS] as $secret) {
                 self::assertStringNotContainsString($secret, $current->getTraceAsString());
                 self::assertStringNotContainsString($secret, $current->getMessage());
             }
@@ -1195,9 +1589,12 @@ final class SensitiveTraceTest extends TestCase
         }
 
         if (is_string($value)) {
-            return str_contains($value, self::SECRET)
-                || str_contains($value, (string) self::TOTP)
-                || str_contains($value, self::STRING_TOTP);
+            foreach ([self::SECRET, (string) self::TOTP, self::STRING_TOTP, ...self::BUILDER_SECRETS] as $secret) {
+                if (str_contains($value, $secret)) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         if ($value instanceof SensitiveParameterValue || $value instanceof MockClient) {

@@ -4,19 +4,27 @@ declare(strict_types=1);
 
 namespace HostingPal\WhmApiClient\Tests\Api;
 
+use HostingPal\WhmApiClient\Api\RequestMethod;
 use HostingPal\WhmApiClient\Api\Whm\Accounts;
 use HostingPal\WhmApiClient\Api\Whm\Spec\AccountsSpec;
+use HostingPal\WhmApiClient\Api\Whm\Spec\HostingPlansSpec;
 use HostingPal\WhmApiClient\Client;
 use HostingPal\WhmApiClient\Exception\ApiErrorException;
+use HostingPal\WhmApiClient\Exception\HttpException;
 use HostingPal\WhmApiClient\Exception\InvalidResponseException;
+use HostingPal\WhmApiClient\Exception\TransportException;
 use HostingPal\WhmApiClient\Http\HttpTransport;
+use HostingPal\WhmApiClient\WhmClient;
 use Http\Mock\Client as MockClient;
+use LogicException;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7\Response;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Message\RequestInterface;
 use ReflectionMethod;
+use RuntimeException;
 use SensitiveParameter;
 
 final class WhmAccountsTest extends TestCase
@@ -370,6 +378,10 @@ final class WhmAccountsTest extends TestCase
         yield 'list without acct' => ['accounts', 'listAccounts', [], 'listaccts', '{}'];
         yield 'list acct not a list' => ['accounts', 'listAccounts', [], 'listaccts', '{"acct":{"user":"npr"}}'];
         yield 'list record not an object' => ['accounts', 'listAccounts', [], 'listaccts', '{"acct":["npr"]}'];
+        yield 'list null acct' => ['accounts', 'listAccounts', [], 'listaccts', '{"acct":null}'];
+        yield 'list malformed row after a search' => [
+            'accounts', 'listAccounts', ['npr', 'user', 'exact', 'user'], 'listaccts', '{"acct":[{"user":1}]}',
+        ];
         yield 'list string flag' => ['accounts', 'listAccounts', [], 'listaccts', '{"acct":[{"suspended":"0"}]}'];
         yield 'list float limit' => ['accounts', 'listAccounts', [], 'listaccts', '{"acct":[{"disklimit":1.5}]}'];
         yield 'list zero-padded uid' => [
@@ -419,6 +431,342 @@ final class WhmAccountsTest extends TestCase
             self::assertSame($exception->metadata, $whm->responseMeta());
             self::assertSame($operation, $whm->responseMeta()?->whm['command'] ?? null);
         }
+    }
+
+    /**
+     * Responses below are verbatim bodies from test.oblak.host 11.138.0.19 on 2026-11-01.
+     *
+     * @return iterable<string, array{array<string, string>, string, string}>
+     */
+    public static function observedSearchesWithoutMatches(): iterable
+    {
+        yield 'exact user' => [
+            ['search' => 'nosuchacct9dy', 'searchtype' => 'user', 'searchmethod' => 'exact'],
+            'search=nosuchacct9dy&searchtype=user&searchmethod=exact',
+            '{"metadata":{"version":1,"result":0,"command":"listaccts","reason":"No accounts found."}}',
+        ];
+        yield 'exact user with want' => [
+            ['search' => 'nosuchacct9dy', 'searchtype' => 'user', 'searchmethod' => 'exact', 'want' => 'user'],
+            'search=nosuchacct9dy&searchtype=user&searchmethod=exact&want=user',
+            '{"metadata":{"result":0,"version":1,"command":"listaccts","reason":"No accounts found."}}',
+        ];
+        yield 'regex user' => [
+            ['search' => '^wrvenv$', 'searchtype' => 'user', 'searchmethod' => 'regex'],
+            'search=%5Ewrvenv%24&searchtype=user&searchmethod=regex',
+            '{"metadata":{"result":1,"version":1,"reason":"OK","command":"listaccts"}}',
+        ];
+        yield 'regex user with want' => [
+            ['search' => '^wrvenv$', 'searchtype' => 'user', 'searchmethod' => 'regex', 'want' => 'user'],
+            'search=%5Ewrvenv%24&searchtype=user&searchmethod=regex&want=user',
+            '{"metadata":{"command":"listaccts","reason":"OK","result":1,"version":1}}',
+        ];
+        yield 'exact domain' => [
+            ['search' => 'nosuchacct9dy.example', 'searchtype' => 'domain', 'searchmethod' => 'exact'],
+            'search=nosuchacct9dy.example&searchtype=domain&searchmethod=exact',
+            '{"metadata":{"reason":"OK","command":"listaccts","version":1,"result":1}}',
+        ];
+        yield 'exact owner' => [
+            ['search' => 'nosuchacct9dy', 'searchtype' => 'owner', 'searchmethod' => 'exact'],
+            'search=nosuchacct9dy&searchtype=owner&searchmethod=exact',
+            '{"metadata":{"version":1,"result":1,"command":"listaccts","reason":"OK"}}',
+        ];
+        yield 'exact package' => [
+            ['search' => 'nosuchacct9dy', 'searchtype' => 'package', 'searchmethod' => 'exact'],
+            'search=nosuchacct9dy&searchtype=package&searchmethod=exact',
+            '{"metadata":{"reason":"OK","command":"listaccts","result":1,"version":1}}',
+        ];
+        yield 'exact ip' => [
+            ['search' => '203.0.113.9', 'searchtype' => 'ip', 'searchmethod' => 'exact'],
+            'search=203.0.113.9&searchtype=ip&searchmethod=exact',
+            '{"metadata":{"command":"listaccts","reason":"OK","version":1,"result":1}}',
+        ];
+    }
+
+    /** @param array<string, string> $arguments */
+    #[DataProvider('observedSearchesWithoutMatches')]
+    public function testSearchWithoutMatchesReturnsAnEmptyList(array $arguments, string $query, string $body): void
+    {
+        [$client, $http] = $this->client();
+        $whm = $client->whm();
+        $http->addResponse(new Response(200, [], $body));
+
+        self::assertSame([], $whm->accounts()->listAccounts(...$arguments));
+
+        $request = $http->getLastRequest();
+        self::assertInstanceOf(RequestInterface::class, $request);
+        self::assertSame('GET', $request->getMethod());
+        self::assertSame(
+            'https://api.example.test:2087/json-api/listaccts?api.version=1&' . $query,
+            (string) $request->getUri(),
+        );
+        $document = json_decode($body, true, 512, JSON_THROW_ON_ERROR);
+        self::assertIsArray($document);
+        self::assertSame($document['metadata'], $whm->responseMeta()?->whm);
+        self::assertSame(1, count($http->getRequests()));
+        self::assertSame('listaccts', $whm->responseMeta()?->whm['command'] ?? null);
+    }
+
+    /**
+     * Responses below are verbatim bodies from test.oblak.host 11.138.0.19 on 2026-11-01.
+     *
+     * @return iterable<string, array{string, array<string, string>, string, string}>
+     */
+    public static function observedMissingAccountErrors(): iterable
+    {
+        $exact = ['search' => 'nosuchacct9dy', 'searchtype' => 'user', 'searchmethod' => 'exact'];
+        yield 'summary missing user' => [
+            'accountSummary',
+            ['user' => 'nosuchacct9dy'],
+            '{"metadata":{"reason":"Account does not exist.","command":"accountsummary","result":0,"version":1},'
+                . '"data":{"acct":null}}',
+            'Account does not exist.',
+        ];
+        yield 'summary missing domain' => [
+            'accountSummary',
+            ['domain' => 'nosuchacct9dy.example'],
+            '{"data":{"acct":[]},"metadata":{"version":1,"result":0,"reason":"Account does not exist.",'
+                . '"command":"accountsummary"}}',
+            'Account does not exist.',
+        ];
+        yield 'summary search only' => [
+            'accountSummary',
+            $exact,
+            '{"metadata":{"reason":"API failure: You must specify a user or domain to get a summary of.\n",'
+                . '"command":"accountsummary","version":1,"result":0}}',
+            "API failure: You must specify a user or domain to get a summary of.\n",
+        ];
+    }
+
+    /** @param array<string, string> $arguments */
+    #[DataProvider('observedMissingAccountErrors')]
+    public function testServerReportedMissingAccountsStayApiErrors(
+        string $method,
+        array $arguments,
+        string $body,
+        string $reason,
+    ): void {
+        [$client, $http] = $this->client();
+        $whm = $client->whm();
+        $http->addResponse(new Response(200, [], $body));
+
+        try {
+            $whm->accounts()->{$method}(...$arguments);
+            self::fail('A server-reported failure must stay an API error.');
+        } catch (ApiErrorException $exception) {
+            self::assertSame([$reason], $exception->errors());
+            self::assertSame($exception->metadata, $whm->responseMeta());
+            self::assertSame(0, $whm->responseMeta()?->whmResult());
+        }
+    }
+
+    /** Structural replay of the recorded 11.138.0.15 exact-domain success; no original wire body survives. */
+    public function testHistoricalSuccessfulNullAccountSearchReturnsAnEmptyList(): void
+    {
+        [$client, $http] = $this->client();
+        $http->addResponse(new Response(200, [], self::response('listaccts', 'null')));
+
+        self::assertSame([], $client->whm()->accounts()->listAccounts('absent.example', 'domain', 'exact'));
+        self::assertSame(1, $client->whm()->responseMeta()?->whmResult());
+        self::assertSame(1, count($http->getRequests()));
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function rejectedEmptySearchFailures(): iterable
+    {
+        foreach (['null', '{}', '[]', '{"acct":null}', '{"acct":[]}', '{"acct":[{"user":"npr"}]}', '"bad"'] as $data) {
+            yield 'present data ' . $data => [
+                '{"metadata":{"result":0,"reason":"No accounts found."},"data":' . $data . '}',
+            ];
+        }
+        foreach (
+            [
+            'No accounts found', 'no accounts found.', 'No accounts found.\n',
+            'Permission denied', '', 'Authentication failed',
+            ] as $reason
+        ) {
+            yield 'other reason ' . $reason => [
+                json_encode(['metadata' => ['result' => 0, 'reason' => $reason]], JSON_THROW_ON_ERROR),
+            ];
+        }
+        yield 'absent reason' => ['{"metadata":{"result":0}}'];
+    }
+
+    #[DataProvider('rejectedEmptySearchFailures')]
+    public function testOtherSearchFailuresRemainApiErrors(string $body): void
+    {
+        [$client, $http] = $this->client();
+        $http->addResponse(new Response(200, [], $body));
+        try {
+            $client->whm()->accounts()->listAccounts();
+            self::fail('Only the exact omitted-data absence is an empty search.');
+        } catch (ApiErrorException $error) {
+            self::assertSame($error->metadata, $client->whm()->responseMeta());
+            self::assertSame(0, $error->metadata?->whmResult());
+            self::assertSame(1, count($http->getRequests()));
+        }
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function invalidSearchOutcomes(): iterable
+    {
+        foreach (['null', '"0"', '"1"', 'false', 'true', '0.0', '1.0', '2', '{}', '[]'] as $result) {
+            yield $result => ['{"metadata":{"result":' . $result . ',"reason":"No accounts found."}}'];
+        }
+        yield 'missing' => ['{"metadata":{"reason":"No accounts found."}}'];
+    }
+
+    #[DataProvider('invalidSearchOutcomes')]
+    public function testInvalidSearchOutcomesRemainEnvelopeErrors(string $body): void
+    {
+        [$client, $http] = $this->client();
+        $http->addResponse(new Response(200, [], $body));
+        try {
+            $client->whm()->accounts()->listAccounts();
+            self::fail('Missing or invalid flags are not absence.');
+        } catch (InvalidResponseException $error) {
+            self::assertSame('Missing or invalid WHM outcome.', $error->getMessage());
+            self::assertSame($error->metadata, $client->whm()->responseMeta());
+            self::assertSame(1, count($http->getRequests()));
+        }
+    }
+
+    public function testGenericFlagAccountSearchStillThrows(): void
+    {
+        foreach ([RequestMethod::Get, RequestMethod::Post] as $method) {
+            [$client, $http] = $this->client();
+            $http->addResponse(new Response(200, [], '{"metadata":{"result":0,"reason":"No accounts found."}}'));
+            try {
+                $client->whm()->call('listaccts', method: $method);
+                self::fail('Generic Flag account searches remain errors.');
+            } catch (ApiErrorException $error) {
+                self::assertSame(['No accounts found.'], $error->errors());
+                self::assertSame($error->metadata, $client->whm()->responseMeta());
+            }
+            self::assertCount(1, $http->getRequests());
+        }
+    }
+
+    public function testOtherAccountOperationsDoNotUseTheSearchException(): void
+    {
+        foreach (['accountSummary', 'suspendAccount'] as $method) {
+            [$client, $http] = $this->client();
+            $http->addResponse(new Response(200, [], '{"metadata":{"result":0,"reason":"No accounts found."}}'));
+            try {
+                $client->whm()->accounts()->{$method}('absent');
+                self::fail('An entity operation does not inherit the search policy.');
+            } catch (ApiErrorException $error) {
+                self::assertSame(['No accounts found.'], $error->errors());
+                self::assertSame($error->metadata, $client->whm()->responseMeta());
+            }
+            self::assertCount(1, $http->getRequests());
+        }
+    }
+
+    public function testPackageInventoryStillRequiresItsPayload(): void
+    {
+        foreach (['', ',"data":null'] as $data) {
+            [$client, $http] = $this->client();
+            $http->addResponse(new Response(200, [], '{"metadata":{"result":1,"reason":"OK"}' . $data . '}'));
+            try {
+                $client->whm()->hostingPlans()->listPackages();
+                self::fail('Package absence has no evidenced empty policy.');
+            } catch (InvalidResponseException $error) {
+                self::assertSame($error->metadata, $client->whm()->responseMeta());
+                self::assertSame('Invalid listpkgs payload.', $error->getMessage());
+            }
+        }
+    }
+
+    public function testGenericJsonAndMultipartAccountSearchesStillThrow(): void
+    {
+        foreach (['json', 'multipart'] as $format) {
+            [$client, $http] = $this->client();
+            $http->addResponse(new Response(200, [], '{"metadata":{"result":0,"reason":"No accounts found."}}'));
+            try {
+                if ($format === 'json') {
+                    $client->whm()->callJson('listaccts', '{}');
+                } else {
+                    $client->whm()->callMultipart('listaccts', []);
+                }
+                self::fail('Generic Flag calls retain strict failure outcomes.');
+            } catch (ApiErrorException $error) {
+                self::assertSame(['No accounts found.'], $error->errors());
+                self::assertSame($error->metadata, $client->whm()->responseMeta());
+            }
+            self::assertCount(1, $http->getRequests());
+        }
+    }
+
+    public function testSearchHttpAndTransportFailuresNeverBecomeEmptyCollections(): void
+    {
+        foreach ([401, 403, 500, 'transport'] as $failure) {
+            [$client, $http] = $this->client();
+            $whm = $client->whm();
+            $http->addResponse(new Response(200, [], self::response('listaccts', '{"acct":[]}')));
+            $whm->accounts()->listAccounts();
+            if (is_int($failure)) {
+                $http->addResponse(new Response(
+                    $failure,
+                    [],
+                    '{"metadata":{"result":0,"reason":"No accounts found."}}',
+                ));
+            } else {
+                $http->addException(new class extends RuntimeException implements ClientExceptionInterface {
+                });
+            }
+            try {
+                $whm->accounts()->listAccounts();
+                self::fail('HTTP/auth/transport failures cannot become empty results.');
+            } catch (HttpException | TransportException $error) {
+                self::assertInstanceOf(is_int($failure) ? HttpException::class : TransportException::class, $error);
+                self::assertSame($error->metadata, $whm->responseMeta());
+                if (is_int($failure)) {
+                    self::assertSame($failure, $whm->responseMeta()?->httpStatus);
+                }
+            }
+            self::assertCount(2, $http->getRequests());
+        }
+    }
+
+    public function testInvalidGeneratedSearchInputsResetMetadataWithoutDispatch(): void
+    {
+        [$client, $http] = $this->client();
+        $whm = $client->whm();
+        $http->addResponse(new Response(200, [], self::response('listaccts', '{"acct":[]}')));
+        $whm->accounts()->listAccounts();
+        self::assertNotNull($whm->responseMeta());
+        try {
+            (new ReflectionMethod(WhmClient::class, 'run'))->invoke($whm, AccountsSpec::LISTACCTS, ['unknown' => 'x']);
+            self::fail('Undeclared input must fail before dispatch.');
+        } catch (LogicException) {
+            self::assertNull($whm->responseMeta());
+            self::assertCount(1, $http->getRequests());
+        }
+    }
+
+    public function testMatchingSearchWithWantReturnsOnlyTheRequestedFields(): void
+    {
+        [$client, $http] = $this->client();
+        $http->addResponse(new Response(
+            200,
+            [],
+            '{"data":{"acct":[{"user":"npr"}]},'
+                . '"metadata":{"reason":"OK","command":"listaccts","result":1,"version":1}}',
+        ));
+
+        self::assertSame(
+            [['user' => 'npr']],
+            $client->whm()->accounts()->listAccounts('npr', 'user', 'exact', 'user'),
+        );
+    }
+
+    public function testOnlyListAccountsReadsOmittedDataAsAnEmptyResult(): void
+    {
+        self::assertArrayHasKey('account_search_empty', AccountsSpec::LISTACCTS);
+        self::assertArrayNotHasKey('account_search_empty', AccountsSpec::ACCOUNTSUMMARY);
+        self::assertArrayNotHasKey('account_search_empty', HostingPlansSpec::LISTPKGS);
+        self::assertArrayNotHasKey('empty_without_data', AccountsSpec::ACCOUNTSUMMARY);
+        self::assertArrayNotHasKey('empty_without_data', HostingPlansSpec::LISTPKGS);
     }
 
     public function testSummaryReturnsEveryRecordWithoutRequiringExactlyOne(): void

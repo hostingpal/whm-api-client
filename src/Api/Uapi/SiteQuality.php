@@ -25,29 +25,8 @@ use SensitiveParameter;
  * before every attempt and records the envelope snapshot before API or payload errors.
  *
  * @phpstan-type CreateProjectResult array{
- *     id?: int,
- *     identifier?: string,
- *     location?: string,
- *     name?: string,
- *     role?: array{
- *         id?: int,
- *         name?: string,
- *     },
- *     systems?: list<array{
- *         description?: string|null,
- *         domain?: string,
- *         id?: int,
- *         interval?: string,
- *         limits?: array{
- *             maximumCrawlDepth?: int,
- *         },
- *         name?: string,
- *         system_type?: array{
- *             fixedComponents?: bool,
- *             id?: mixed,
- *             name?: string,
- *         },
- *     }>,
+ *     component: mixed,
+ *     project: array<array-key, mixed>|null,
  * }
  * @phpstan-type CreateSiteQualityUserResult array{
  *     app_token?: string,
@@ -105,22 +84,26 @@ final readonly class SiteQuality
      * This function creates a Site Quality Monitoring project. A project bundles together one or more URLs with a
      * shared domain for monitoring.
      *
-     * Documented: Available in cPanel 110 and later; operates on the selected cPanel account. Response roots are
-     * nonnullable objects with optional fields. Omission is distinct from explicit null; only documented nullable
-     * fields accept null. Payload flags do not replace UAPI envelope status. Inspect responseMeta() warnings and raw
+     * Documented: Available in cPanel 110 and later; operates on the selected cPanel account. The response root is a
+     * nonnullable object. Payload data does not replace UAPI envelope status. Inspect responseMeta() warnings and raw
      * metadata.
      *
      * Documented: Creates a monitoring project that bundles URLs sharing a domain. Optional standardAlerting is
      * bool|null: false sends 0, true sends 1, null omits; the pinned null default means no standard alerts. Omitted
      * systemType retains the Website default; supplied strings stay open. URL input is sensitive and is never fetched
-     * or locally format-validated. Empty strings remain values. The nested system_type.id is formally untyped (mixed),
-     * not inferred from its example/default 1. fixedComponents is a native bool; optional description is string|null.
-     * Preserve nested presence, list order and empty systems.
+     * or locally format-validated. Empty strings remain values.
      *
      * Policy: One explicit request and one attempt only. No implicit read, retry, polling, account action, activation
      * email, login, token exchange, URL fetch, restore or rollback. Returned URLs, tokens and data are payload only;
      * API success alone does not establish external application or persistence. Avoid logging token-bearing responses
      * or PayloadMismatchException::$payload.
+     *
+     * Policy: Source-review correction: attributed 11.138.0.19 excerpts return required project and component keys
+     * rather than the pinned root fields. project is a nullable opaque provider row; the 403 reuse path returns null
+     * even when component creation succeeds. No inner field schema is established. component preserves the entire
+     * decoded provider JSON, including its envelope, or integer 1 for an empty body. This source-only policy preserves
+     * all inner values and unknown members, filters unknown wrapper siblings, and accepts inherited empty-array project
+     * compatibility; no provider success was observed.
      *
      * API-map identity: uapi:SiteQuality/create_project#POST (wire name create_project).
      *
@@ -166,14 +149,20 @@ final readonly class SiteQuality
      * optional and sensitive: omitted/null password lets the server generate one; empty string is sent and is not
      * omission. The source says the system does not save the password. Email is ordinary account input. The optional
      * app_token is a long-lived authentication credential; pinned text says a lost token requires a new account.
-     * username is optional string and enabled is optional native bool|null, unlike the integer enabled flag on
-     * isSiteQualityUserEnabled(). Registration email and account actions are server side effects of this explicit call;
-     * the client initiates no additional action.
+     * username is optional string and enabled remains optional bool|null in the public result; native integer flags
+     * normalize as described below. Registration email and account actions are server side effects of this explicit
+     * call; the client initiates no additional action.
      *
      * Policy: One explicit request and one attempt only. No implicit read, retry, polling, account action, activation
      * email, login, token exchange, URL fetch, restore or rollback. Returned URLs, tokens and data are payload only;
      * API success alone does not establish external application or persistence. Avoid logging token-bearing responses
      * or PayloadMismatchException::$payload.
+     *
+     * Policy: Source-review correction: attributed 11.138.0.19 excerpts return User.enabled, whose new-user default is
+     * native integer 0. Keep pinned booleans and public bool|null, normalizing only native integer 0/1 to false/true
+     * with the existing bounded flag rule. Integer 1 is compatibility policy, not a provider observation. Null and
+     * omission stay distinct; strings, floats, other integers and containers fail. Source inspection is separate from
+     * provider wire evidence.
      *
      * API-map identity: uapi:SiteQuality/create_site_quality_user#POST (wire name create_site_quality_user).
      *
@@ -215,6 +204,10 @@ final readonly class SiteQuality
      * email, login, token exchange, URL fetch, restore or rollback. Returned URLs, tokens and data are payload only;
      * API success alone does not establish external application or persistence. Avoid logging token-bearing responses
      * or PayloadMismatchException::$payload.
+     *
+     * Policy: Attributed 11.138.0.19 source review says delete_user always resets local configuration even if remote
+     * deletion fails. A deleted=0 result may accompany a cleared local link while the external account remains; do not
+     * infer remote deletion from local disconnection.
      *
      * API-map identity: uapi:SiteQuality/delete_site_quality_user#GET (wire name delete_site_quality_user).
      *
@@ -315,7 +308,7 @@ final readonly class SiteQuality
      * metadata.
      *
      * Documented: Reports whether koality enabled the associated account as optional integer 0|1 enabled. This differs
-     * from createSiteQualityUser() enabled bool|null; do not coerce either contract.
+     * from createSiteQualityUser() enabled bool|null; this read retains native integer flags without coercion.
      *
      * Policy: One explicit request and one attempt only. No implicit read, retry, polling, account action, activation
      * email, login, token exchange, URL fetch, restore or rollback. Returned URLs, tokens and data are payload only;
@@ -351,14 +344,18 @@ final readonly class SiteQuality
      * fields accept null. Payload flags do not replace UAPI envelope status. Inspect responseMeta() warnings and raw
      * metadata.
      *
-     * Documented: Removes the local Site Quality Monitoring association/configuration and prevents automatic login. It
-     * does not delete the external koality account. Optional reset is an integer 0|1 payload flag independent from the
-     * envelope status.
+     * Documented: Disconnects the active local Site Quality Monitoring association/configuration and prevents automatic
+     * login. It does not delete the external koality account. Optional reset is an integer 0|1 payload flag independent
+     * from the envelope status.
      *
      * Policy: One explicit request and one attempt only. No implicit read, retry, polling, account action, activation
      * email, login, token exchange, URL fetch, restore or rollback. Returned URLs, tokens and data are payload only;
      * API success alone does not establish external application or persistence. Avoid logging token-bearing responses
      * or PayloadMismatchException::$payload.
+     *
+     * Policy: Attributed 11.138.0.19 source review says reset_config renames the active ~/.koality/config to
+     * config.<time>, retaining a token-bearing backup. It disconnects the active local association and prevents
+     * automatic login without deleting the external account; this is not secure token deletion.
      *
      * API-map identity: uapi:SiteQuality/reset_config#GET (wire name reset_config).
      *
@@ -436,6 +433,10 @@ final readonly class SiteQuality
      * email, login, token exchange, URL fetch, restore or rollback. Returned URLs, tokens and data are payload only;
      * API success alone does not establish external application or persistence. Avoid logging token-bearing responses
      * or PayloadMismatchException::$payload.
+     *
+     * Policy: Attributed 11.138.0.19 source review says a matching project is renamed before system lookup; failure can
+     * follow partial action. A no-match status 0 reason is in messages while errors() may be empty; inspect
+     * responseMeta() messages. No retry or rollback is implied.
      *
      * API-map identity: uapi:SiteQuality/update_domain#POST (wire name update_domain).
      *
