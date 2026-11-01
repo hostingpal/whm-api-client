@@ -34,6 +34,18 @@ final class EmptyResultProbesTest extends TestCase
 
     private const BRIDGED = 'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr';
 
+    /** The immutable capture; fixtures and declarations are held to it, and it is never rewritten. */
+    private const ARTIFACT = 'docs/api/evidence/2026-11-01-empty-results.json';
+
+    private const ARTIFACT_SHA256 = '2ec7d60176b4354c01d1016849e0e3d62ae85a7182354010ab8d89e77a39894f';
+
+    /** The recorded API errors: the entity control, plus the absent domain on Bandwidth/query on both routes. */
+    private const API_FAILURES = [
+        'whm1:accountsummary|whm|entity-lookup-control',
+        'uapi:Bandwidth/query|direct-uapi|absent-domain',
+        'uapi:Bandwidth/query|bridged-uapi|absent-domain',
+    ];
+
     public function testCatalogIsTheReviewedBoundedAllowlist(): void
     {
         $probes = EmptyResultProbes::load();
@@ -69,12 +81,13 @@ final class EmptyResultProbesTest extends TestCase
                 'token' => 'synthetic-token'],
                 new HttpTransport(new RequestGuard($http, $probe->uri), $factory, $factory),
             );
+            $failed = false;
             try {
                 ($probe->invoke)($client);
-                self::assertNotSame('whm1:accountsummary', $probe->operation);
             } catch (ApiErrorException) {
-                self::assertSame('whm1:accountsummary', $probe->operation);
+                $failed = true;
             }
+            self::assertSame(in_array(self::key($probe), self::API_FAILURES, true), $failed, self::key($probe));
             self::assertCount(1, $http->getRequests());
             $request = $http->getLastRequest();
             self::assertInstanceOf(RequestInterface::class, $request);
@@ -90,6 +103,7 @@ final class EmptyResultProbesTest extends TestCase
 
     public function testRequestGuardRejectsChangedTargetsBeforeHttp(): void
     {
+        $swapped = ['cpanel.user=npr' => 0, 'wzzemptyaudit' => 0];
         foreach (EmptyResultProbes::load() as $probe) {
             $http = new MockClient(new Psr17Factory());
             $wrongRequests = [
@@ -98,9 +112,14 @@ final class EmptyResultProbesTest extends TestCase
                 new Request('GET', $probe->uri, [], 'unexpected'),
                 new Request('GET', $probe->uri . '&extra=1'),
                 new Request('GET', str_replace('test.oblak.host', 'other.example', $probe->uri)),
-                new Request('GET', str_replace('cpanel.user=npr', 'cpanel.user=other', $probe->uri) . '&x=1'),
-                new Request('GET', str_replace('wzzemptyaudit', 'npr', $probe->uri) . '&x=1'),
             ];
+            foreach (['cpanel.user=npr' => 'cpanel.user=other', 'wzzemptyaudit' => 'npr'] as $from => $to) {
+                $changed = str_replace($from, $to, $probe->uri);
+                if ($changed !== $probe->uri) {
+                    $wrongRequests[] = new Request('GET', $changed);
+                    $swapped[$from]++;
+                }
+            }
             foreach ($wrongRequests as $wrong) {
                 try {
                     (new RequestGuard($http, $probe->uri))->sendRequest($wrong);
@@ -110,9 +129,11 @@ final class EmptyResultProbesTest extends TestCase
                 }
             }
         }
+        // Each swap is its only change, so these prove the guard binds the account and the criterion.
+        self::assertSame(['cpanel.user=npr' => 9, 'wzzemptyaudit' => 21], $swapped);
     }
 
-    public function testEntityControlFailsTheStrictAssessmentAndKeepsOnlySanitizedStructure(): void
+    public function testRecordedFormsFailTheStrictAssessmentAndKeepOnlySanitizedStructure(): void
     {
         $probes = EmptyResultProbes::load();
         $bodies = self::noMatchBodies();
@@ -134,11 +155,10 @@ final class EmptyResultProbesTest extends TestCase
             self::assertSame($probes[$index]->operation, $record['operation']);
             self::assertSame($probes[$index]->argumentVariant, $record['argument_variant'] ?? null);
             self::assertSame('11.138.0.19', $record['server_version']);
-            if ($record['operation'] === 'whm1:accountsummary') {
+            if (in_array(self::key($probes[$index]), self::API_FAILURES, true)) {
                 self::assertSame('failed', $record['probe_outcome']);
                 self::assertSame('api_failure', $record['failure_kind']);
                 self::assertSame('failure', $record['api_outcome']);
-                self::assertSame(['null'], $record['payload_paths']['$.acct'] ?? null);
             } else {
                 self::assertSame('passed', $record['probe_outcome'], $record['operation']);
             }
@@ -152,17 +172,42 @@ final class EmptyResultProbesTest extends TestCase
         foreach (['private-whm-token', 'private-cpanel-token', 'wzzemptyaudit'] as $text) {
             self::assertStringNotContainsString($text, $json);
         }
-        foreach (['No accounts found', 'does not exist'] as $text) {
+        foreach (['No accounts found', 'does not exist', 'synthetic failure'] as $text) {
             self::assertStringNotContainsString($text, $json);
         }
     }
 
-    public function testAssessmentPassesOnlyCleanNoMatchRecordsWithExactLabels(): void
+    public function testSyntheticBodiesReproduceTheCommittedStructure(): void
     {
-        $controls = ['whm1:accountsummary', 'whm1:listaccts'];
+        $probes = EmptyResultProbes::load();
+        $bodies = self::noMatchBodies();
+        $http = new MockClient();
+        foreach ($probes as $probe) {
+            $http->addResponse(new Response(200, [], $bodies[self::key($probe)]));
+        }
+        $report = (new ReadOnlySectionRunner($http, self::context()))->run(
+            $probes,
+            'empty-results-v1',
+            '1',
+            ['whm' => 'test-whm', 'cpanel' => 'test-cpanel'],
+        );
+        $captured = self::artifact()['probes'];
+        self::assertCount(27, $captured);
+        $fields = ['api_outcome', 'payload_validation', 'probe_outcome', 'failure_kind', 'response_paths',
+            'payload_paths', 'discrepancies'];
+        foreach ($report['probes'] as $index => $record) {
+            foreach ($fields as $field) {
+                self::assertSame($captured[$index][$field] ?? null, $record[$field], self::key($probes[$index]));
+            }
+        }
+    }
+
+    public function testAssessmentRejectsAMismatchedArgumentLabel(): void
+    {
         $probes = array_values(array_filter(
             EmptyResultProbes::load(),
-            static fn (Probe $probe): bool => !in_array($probe->operation, $controls, true),
+            static fn (Probe $probe): bool => $probe->operation === 'whm1:version'
+                || $probe->operation === 'whm1:showbw',
         ));
         $bodies = self::noMatchBodies();
         $http = new MockClient();
@@ -174,12 +219,11 @@ final class EmptyResultProbesTest extends TestCase
             $probes,
             'empty-results-v1',
             '1',
-            ['whm' => 'private-whm-token', 'cpanel' => 'private-cpanel-token'],
+            ['whm' => 'test-whm', 'cpanel' => 'test-cpanel'],
         );
         self::assertSame('passed', $report['status']);
         $records = $report['probes'];
-        self::assertTrue(ReadOnlySectionRunner::passes($probes, $records, $context));
-        $records[2]['argument_variant'] = 'other-variant';
+        $records[1]['argument_variant'] = 'other-variant';
         self::assertFalse(ReadOnlySectionRunner::passes($probes, $records, $context));
     }
 
@@ -283,38 +327,73 @@ final class EmptyResultProbesTest extends TestCase
     }
 
     /**
-     * Synthetic no-match bodies keyed by probe; independent of every recorded live form.
+     * Synthetic values in the structure the 2026-11-01 capture recorded for each probe.
+     *
+     * No upstream value was retained. The two diagnostics are the ones the source audit publishes, and the
+     * listaccts path reads its one. testSyntheticBodiesReproduceTheCommittedStructure holds these to the artifact.
      *
      * @return array<string, string>
      */
     private static function noMatchBodies(): array
     {
-        $whm = static fn (string $data): string => '{"metadata":{"result":1,"reason":"OK"},"data":' . $data . '}';
+        $whm = static fn (string $data, string $extra = ''): string
+            => '{"metadata":{"command":"synthetic","reason":"OK","result":1,"version":1' . $extra . '},"data":'
+                . $data . '}';
         $bodies = [
             'whm1:version|whm|' => $whm('{"version":"11.138.0.19"}'),
-            'whm1:listaccts|whm|fixed-path-control' => '{"metadata":{"result":0,"reason":"No accounts found."}}',
-            'whm1:showbw|whm|absent-user-pcre' => $whm('{"acct":[]}'),
+            'whm1:listaccts|whm|fixed-path-control'
+                => '{"metadata":{"command":"listaccts","reason":"No accounts found.","result":0,"version":1}}',
+            'whm1:showbw|whm|absent-user-pcre'
+                => $whm('{"acct":[],"month":11,"reseller":"root","totalused":"0","year":2026}'),
             'whm1:matchpkgs|whm|absent-feature-list' => $whm('{"pkg":[]}'),
-            'whm1:emailtrack_search|whm|all-event-types-off' => $whm('{"records":[]}'),
-            'whm1:emailtrack_user_stats|whm|absent-sender-past-window' => $whm('{"records":[]}'),
+            'whm1:emailtrack_search|whm|all-event-types-off' => $whm('{"records":[]}', ',"synthetic":0'),
+            'whm1:emailtrack_user_stats|whm|absent-sender-past-window' => $whm('{"records":[]}', ',"synthetic":0'),
             'whm1:get_unique_sender_recipient_count_per_user|whm|past-window' => $whm('{"payload":[]}'),
             'whm1:php_get_vhosts_by_version|whm|absent-php-package' => $whm('{"vhosts":[]}'),
-            'whm1:accountsummary|whm|entity-lookup-control'
-                => '{"metadata":{"result":0,"reason":"Account does not exist."},"data":{"acct":null}}',
+            'whm1:accountsummary|whm|entity-lookup-control' => '{"metadata":{"command":"accountsummary",'
+                . '"reason":"Account does not exist.","result":0,"version":1},"data":{"acct":null}}',
         ];
         foreach (self::allowlist() as [$operation, $route, $variant]) {
             if ($route === 'whm') {
                 continue;
             }
-            $key = $operation . '|' . $route . '|' . $variant;
-            $payload = $operation === 'uapi:Bandwidth/query' ? '{}' : '[]';
-            $envelope = '{"status":1,"data":' . $payload . ',"errors":null,"messages":null}';
-            $bodies[$key] = $route === 'direct-uapi'
+            $envelope = match ($operation . '|' . $variant) {
+                'uapi:Bandwidth/query|absent-domain' => '{"status":0,"data":null,"errors":["synthetic failure"],'
+                    . '"messages":null,"metadata":{},"warnings":null}',
+                'uapi:Bandwidth/query|past-window'
+                    => '{"status":1,"data":{},"errors":null,"messages":null,"metadata":{},"warnings":null}',
+                default => '{"status":1,"data":[],"errors":null,"messages":null,"metadata":{"synthetic":0},'
+                    . '"warnings":null}',
+            };
+            $bodies[$operation . '|' . $route . '|' . $variant] = $route === 'direct-uapi'
                 ? $envelope
-                : '{"metadata":{"result":1},"data":{"uapi":' . $envelope . '}}';
+                : $whm('{"uapi":' . $envelope . '}');
         }
 
         return $bodies;
+    }
+
+    /**
+     * Read the committed capture; only its structural record fields are used.
+     *
+     * @return array{recipe: mixed, status: mixed, probes: list<array<mixed>>}
+     */
+    private static function artifact(): array
+    {
+        $raw = file_get_contents(dirname(__DIR__, 3) . '/' . self::ARTIFACT);
+        self::assertIsString($raw);
+        self::assertSame(self::ARTIFACT_SHA256, hash('sha256', $raw));
+        $document = json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
+        self::assertIsArray($document);
+        $section = $document['read_only_section'] ?? null;
+        self::assertIsArray($section);
+        $probes = [];
+        foreach (is_array($section['probes'] ?? null) ? $section['probes'] : [] as $record) {
+            self::assertIsArray($record);
+            $probes[] = $record;
+        }
+
+        return ['recipe' => $section['recipe'] ?? null, 'status' => $section['status'] ?? null, 'probes' => $probes];
     }
 
     /** @return Context */
