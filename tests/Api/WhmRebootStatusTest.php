@@ -16,8 +16,6 @@ use HostingPal\WhmApiClient\Exception\InvalidResponseException;
 use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
 use HostingPal\WhmApiClient\Exception\TransportException;
 use HostingPal\WhmApiClient\Http\HttpTransport;
-use HostingPal\WhmApiClient\Upload;
-use HostingPal\WhmApiClient\WhmClient;
 use Http\Mock\Client as MockClient;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7\Response;
@@ -35,27 +33,36 @@ final class WhmRebootStatusTest extends TestCase
     /** @return iterable<string, array{string, array<string, mixed>}> */
     public static function successes(): iterable
     {
-        yield 'zero is present' => ['"needs_reboot":0', ['needs_reboot' => 0]];
-        yield 'all documented fields' => ['"needs_reboot":1,"details":{"kernel":{"boot_version":"next",'
-            . '"running_version":"now"},"quota":1,"updates":{"package":"v2","future":[false,null,{"n":2}]}}',
-            ['details' => ['kernel' => ['boot_version' => 'next', 'running_version' => 'now'], 'quota' => 1,
+        // Only the no-reboot shape was observed by external review5727236239.
+        yield 'reviewed no reboot' => ['{"details":[],"needs_reboot":0}', ['details' => [], 'needs_reboot' => 0]];
+        // Populated reasons are synthetic handler/source cases, not live observations.
+        yield 'all source reasons' => ['{"details":{"kernel":{"boot_version":"next","running_version":"now"},'
+            . '"needs_cloudlinux":1,"quota":1,"securetmp_size_update":1,'
+            . '"updates":{"package":"v2","future":[false,null,{"n":2}]}},"needs_reboot":1}',
+            ['details' => ['kernel' => ['boot_version' => 'next', 'running_version' => 'now'],
+                'needs_cloudlinux' => 1, 'quota' => 1, 'securetmp_size_update' => 1,
                 'updates' => ['package' => 'v2', 'future' => [false, null, ['n' => 2]]]], 'needs_reboot' => 1]];
-        yield 'missing all fields' => ['', []];
-        yield 'details only' => ['"details":{}', ['details' => []]];
-        yield 'empty array object compatibility' => ['"details":{"kernel":[],"updates":[]}',
+        yield 'omitted optional fields' => ['{}', []];
+        yield 'empty root array compatibility' => ['[]', []];
+        yield 'details only' => ['{"details":{}}', ['details' => []]];
+        yield 'empty nested object compatibility' => ['{"details":{"kernel":[],"updates":[]}}',
             ['details' => ['kernel' => [], 'updates' => []]]];
-        yield 'data is not a fallback' => ['"data":{"needs_reboot":1,"details":{"quota":1}}', []];
-        yield 'unselected fields filtered' => ['"needs_reboot":0,"private":"secret","data":"secret"',
-            ['needs_reboot' => 0]];
-        yield 'quota is ordinary int' => ['"details":{"quota":2}', ['details' => ['quota' => 2]]];
+        yield 'optional kernel strings' => ['{"details":{"kernel":{"running_version":"now"}}}',
+            ['details' => ['kernel' => ['running_version' => 'now']]]];
+        yield 'quota ordinary int' => ['{"details":{"quota":2}}', ['details' => ['quota' => 2]]];
+        yield 'cloudlinux alone' => ['{"details":{"needs_cloudlinux":1}}', ['details' => ['needs_cloudlinux' => 1]]];
+        yield 'securetmp alone' => ['{"details":{"securetmp_size_update":1}}',
+            ['details' => ['securetmp_size_update' => 1]]];
+        yield 'both ordinary ints' => ['{"details":{"needs_cloudlinux":2,"securetmp_size_update":0}}',
+            ['details' => ['needs_cloudlinux' => 2, 'securetmp_size_update' => 0]]];
     }
 
     /** @param array<string, mixed> $want */
     #[DataProvider('successes')]
-    public function testPublicMethodProjectsSiblingsWithOneEmptyFormPost(string $fields, array $want): void
+    public function testPublicMethodReturnsOrdinaryDataWithOneEmptyFormPost(string $data, array $want): void
     {
         [$client, $http] = self::client();
-        $http->addResponse(new Response(200, [], self::envelope($fields)));
+        $http->addResponse(new Response(200, [], self::envelope('"data":' . $data)));
         self::assertSame($want, $client->whm()->server()->systemNeedsReboot());
         self::assertSame(1, $client->whm()->responseMeta()?->whmResult());
         self::assertCount(1, $http->getRequests());
@@ -86,13 +93,18 @@ final class WhmRebootStatusTest extends TestCase
         yield 'invalid quota' => ['"details":{"quota":"1"}'];
         yield 'null updates' => ['"details":{"updates":null}'];
         yield 'scalar updates' => ['"details":{"updates":true}'];
+        foreach (['needs_cloudlinux', 'securetmp_size_update'] as $reason) {
+            foreach (['null', '"1"', 'true', 'false', '1.0'] as $wire) {
+                yield $reason . ' ' . $wire => ['"details":{"' . $reason . '":' . $wire . '}'];
+            }
+        }
     }
 
     #[DataProvider('malformed')]
-    public function testMalformedSelectedPayloadRetainsOutcomeAndExcludesUnselectedMaterial(string $fields): void
+    public function testMalformedDataRetainsOutcomeAndKeepsEnvelopeMaterialPrivate(string $fields): void
     {
         [$client, $http] = self::client();
-        $http->addResponse(new Response(200, [], self::envelope($fields . ',"private":"discard-me"')));
+        $http->addResponse(new Response(200, [], self::envelope('"data":{' . $fields . '},"private":"discard-me"')));
         try {
             $client->whm()->server()->systemNeedsReboot();
             self::fail('Expected a payload mismatch.');
@@ -118,19 +130,20 @@ final class WhmRebootStatusTest extends TestCase
     public static function failures(): iterable
     {
         yield 'HTTP before API and payload' => [503,
-            '{"metadata":{"result":0},"needs_reboot":null}', HttpException::class, true];
+            '{"metadata":{"result":0},"data":{"needs_reboot":null}}', HttpException::class, true];
         yield 'API before payload' => [200,
-            '{"metadata":{"result":0},"needs_reboot":null}', ApiErrorException::class, true];
+            '{"metadata":{"result":0},"data":{"needs_reboot":null}}', ApiErrorException::class, true];
         yield 'API despite valid payload' => [200,
-            '{"metadata":{"result":0},"needs_reboot":0}', ApiErrorException::class, true];
+            '{"metadata":{"result":0,"reason":"synthetic failed sub-check"},"data":{"needs_reboot":0}}',
+            ApiErrorException::class, true];
         yield 'invalid outcome' => [200,
-            '{"metadata":{"result":"1"},"needs_reboot":0}', InvalidResponseException::class, true];
+            '{"metadata":{"result":"1"},"data":{"needs_reboot":0}}', InvalidResponseException::class, true];
         yield 'missing outcome' => [200,
-            '{"metadata":{},"needs_reboot":0}', InvalidResponseException::class, true];
-        yield 'no metadata' => [200, '{"needs_reboot":0}', InvalidResponseException::class, false];
+            '{"metadata":{},"data":{"needs_reboot":0}}', InvalidResponseException::class, true];
+        yield 'no metadata' => [200, '{"data":{"needs_reboot":0}}', InvalidResponseException::class, false];
         yield 'malformed JSON' => [200, '{broken', InvalidResponseException::class, false];
         yield 'payload after accepted outcome' => [200,
-            '{"metadata":{"result":1},"needs_reboot":null}', PayloadMismatchException::class, true];
+            '{"metadata":{"result":1},"data":{"needs_reboot":null}}', PayloadMismatchException::class, true];
     }
 
     /** @param class-string<ApiException> $exception */
@@ -142,7 +155,7 @@ final class WhmRebootStatusTest extends TestCase
         bool $hasMetadata,
     ): void {
         [$client, $http] = self::client();
-        $http->addResponse(new Response(200, [], self::envelope('"needs_reboot":0')));
+        $http->addResponse(new Response(200, [], self::envelope('"data":{"needs_reboot":0}')));
         $client->whm()->server()->systemNeedsReboot();
         $old = $client->whm()->responseMeta();
         $raw = $old?->whm;
@@ -167,7 +180,7 @@ final class WhmRebootStatusTest extends TestCase
     public function testTransportFailureClearsEarlierMetadataWithoutRetry(): void
     {
         [$client, $http] = self::client();
-        $http->addResponse(new Response(200, [], self::envelope('"needs_reboot":0')));
+        $http->addResponse(new Response(200, [], self::envelope('"data":{"needs_reboot":0}')));
         $client->whm()->server()->systemNeedsReboot();
         $old = $client->whm()->responseMeta();
         $http->addException(new class extends RuntimeException implements NetworkExceptionInterface {
@@ -188,14 +201,14 @@ final class WhmRebootStatusTest extends TestCase
         self::assertCount(2, $http->getRequests());
     }
 
-    public function testRawResponseFrameIsSensitiveAndUnselectedDataIsAbsentFromMismatchTrace(): void
+    public function testRawResponseFrameIsSensitiveAndEnvelopeMaterialIsAbsentFromMismatchTrace(): void
     {
         $previous = ini_get('zend.exception_ignore_args');
         ini_set('zend.exception_ignore_args', '0');
         try {
             [$client, $http] = self::client();
             $http->addResponse(new Response(200, [], '{"metadata":{"result":0},'
-                . '"needs_reboot":0,"private":"raw-secret-marker"}'));
+                . '"data":{"needs_reboot":0},"private":"raw-secret-marker"}'));
             try {
                 $client->whm()->server()->systemNeedsReboot();
                 self::fail('Expected API failure.');
@@ -211,7 +224,7 @@ final class WhmRebootStatusTest extends TestCase
                 self::assertStringNotContainsString('raw-secret-marker', $error->getTraceAsString());
             }
             $http->addResponse(new Response(200, [], '{"metadata":{"result":1},'
-                . '"needs_reboot":null,"private":"raw-secret-marker"}'));
+                . '"data":{"needs_reboot":null},"private":"raw-secret-marker"}'));
             try {
                 $client->whm()->server()->systemNeedsReboot();
                 self::fail('Expected payload failure.');
@@ -221,57 +234,6 @@ final class WhmRebootStatusTest extends TestCase
             }
         } finally {
             ini_set('zend.exception_ignore_args', $previous === false ? '1' : $previous);
-        }
-    }
-
-    /** @return iterable<string, array{array<string, mixed>, array<string, mixed>, string, string}> */
-    public static function internalBodies(): iterable
-    {
-        $base = ['function' => 'fixture_projection', 'outcome' => 'flag', 'params' => [],
-            'response_fields' => ['details', 'needs_reboot'], 'returns' => ['type' => 'object',
-                'fields' => ['details' => ['type' => 'object'], 'needs_reboot' => ['type' => 'flag']]]];
-        yield 'GET' => [$base + ['method' => 'GET'], [], 'GET', ''];
-        yield 'form' => [$base + ['method' => 'POST'], [], 'POST', 'application/x-www-form-urlencoded'];
-        yield 'JSON' => [$base + ['method' => 'POST', 'body' => 'json', 'json_body' => [
-            'php' => 'configuration', 'routes' => 'direct', 'required' => true,
-            'schema' => ['type' => 'object', 'fields' => []]]], ['configuration' => []], 'POST', 'application/json'];
-        yield 'streamed multipart' => [$base + ['method' => 'POST', 'body' => 'multipart',
-            'multipart_upload' => ['php' => 'upload', 'source' => 'file', 'text' => 'module']],
-            ['upload' => Upload::fromString('fixture.bin', 'fixture-bytes'), 'module' => 'Fixture'],
-            'POST', 'multipart/form-data; boundary='];
-    }
-
-    /**
-     * @param array<string, mixed> $spec
-     * @param array<string, mixed> $arguments
-     */
-    #[DataProvider('internalBodies')]
-    public function testProjectionCrossesEveryExistingWhmDispatchBranch(
-        array $spec,
-        array $arguments,
-        string $verb,
-        string $contentType,
-    ): void {
-        [$client, $http] = self::client();
-        $http->addResponse(new Response(200, [], '{"metadata":{"result":1},"needs_reboot":0}'));
-        $run = new ReflectionMethod(WhmClient::class, 'run');
-        self::assertSame(['needs_reboot' => 0], $run->invoke($client->whm(), $spec, $arguments));
-        self::assertCount(1, $http->getRequests());
-        $request = $http->getLastRequest();
-        self::assertInstanceOf(RequestInterface::class, $request);
-        self::assertSame($verb, $request->getMethod());
-        self::assertSame(
-            'https://api.example.test:2087/json-api/fixture_projection?api.version=1',
-            (string) $request->getUri(),
-        );
-        if ($contentType === '') {
-            self::assertSame('', $request->getHeaderLine('Content-Type'));
-        } else {
-            self::assertStringStartsWith($contentType, $request->getHeaderLine('Content-Type'));
-        }
-        self::assertSame(1, $client->whm()->responseMeta()?->whmResult());
-        if (($spec['body'] ?? null) === 'json') {
-            self::assertSame('{}', (string) $request->getBody());
         }
     }
 
@@ -304,22 +266,23 @@ final class WhmRebootStatusTest extends TestCase
         }
     }
 
-    public function testMalformedEnteredSpecClearsMetadataBeforeIo(): void
+    /** @return iterable<string, array{string}> */
+    public static function missingOrInvalidData(): iterable
+    {
+        yield 'metadata only' => [''];
+        yield 'root siblings are not a fallback' => ['"needs_reboot":0,"details":[]'];
+        foreach (['null', 'true', '0', '"text"', '[1]'] as $wire) {
+            yield 'data ' . $wire => ['"data":' . $wire];
+        }
+    }
+
+    #[DataProvider('missingOrInvalidData')]
+    public function testRequiresAnOrdinaryNonnullableDataObject(string $fields): void
     {
         [$client, $http] = self::client();
-        $http->addResponse(new Response(200, [], self::envelope('"needs_reboot":0')));
+        $http->addResponse(new Response(200, [], self::envelope($fields)));
+        $this->expectException(PayloadMismatchException::class);
         $client->whm()->server()->systemNeedsReboot();
-        $old = $client->whm()->responseMeta();
-        $spec = ServerSpec::SYSTEM_NEEDS_REBOOT;
-        $spec['response_fields'] = null;
-        try {
-            (new ReflectionMethod(WhmClient::class, 'run'))->invoke($client->whm(), $spec, []);
-            self::fail('Expected spec error.');
-        } catch (\LogicException) {
-            self::assertNull($client->whm()->responseMeta());
-        }
-        self::assertCount(1, $http->getRequests());
-        self::assertSame(1, $old?->whmResult());
     }
 
     private static function envelope(string $fields): string

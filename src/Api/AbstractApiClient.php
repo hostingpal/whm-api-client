@@ -21,9 +21,7 @@ use HostingPal\WhmApiClient\Response\ApiResponse;
 use HostingPal\WhmApiClient\Response\EnvelopeReader;
 use HostingPal\WhmApiClient\Response\ResponseMetadata;
 use HostingPal\WhmApiClient\Response\ResponseRoute;
-use HostingPal\WhmApiClient\Response\WhmPayloadProjection;
 use InvalidArgumentException;
-use LogicException;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Client\NetworkExceptionInterface;
 use Psr\Http\Client\RequestExceptionInterface;
@@ -125,9 +123,8 @@ abstract class AbstractApiClient
         array|OrderedFields $query,
         ResponseRoute $route,
         OutcomePolicy $outcome = OutcomePolicy::Flag,
-        ?WhmPayloadProjection $projection = null,
     ): ApiResponse {
-        return $this->execute(RequestMethod::Get, $path, $query, [], $route, $outcome, projection: $projection);
+        return $this->execute(RequestMethod::Get, $path, $query, [], $route, $outcome);
     }
 
     /**
@@ -155,9 +152,8 @@ abstract class AbstractApiClient
         ResponseRoute $route,
         OutcomePolicy $outcome = OutcomePolicy::Flag,
         RequestBodyFormat $bodyFormat = RequestBodyFormat::Form,
-        ?WhmPayloadProjection $projection = null,
     ): ApiResponse {
-        return $this->execute(RequestMethod::Post, $path, $query, $body, $route, $outcome, $bodyFormat, $projection);
+        return $this->execute(RequestMethod::Post, $path, $query, $body, $route, $outcome, $bodyFormat);
     }
 
     /**
@@ -175,14 +171,13 @@ abstract class AbstractApiClient
         #[SensitiveParameter] JsonBody $body,
         ResponseRoute $route,
         OutcomePolicy $outcome = OutcomePolicy::Flag,
-        ?WhmPayloadProjection $projection = null,
     ): ApiResponse {
         $this->beginRequest();
         if ($route === ResponseRoute::BridgedUapi) {
             throw new InvalidArgumentException('JSON bodies require a direct cPanel UAPI handle.');
         }
 
-        return $this->execute(RequestMethod::Post, $path, $query, $body, $route, $outcome, projection: $projection);
+        return $this->execute(RequestMethod::Post, $path, $query, $body, $route, $outcome);
     }
 
     /**
@@ -200,9 +195,8 @@ abstract class AbstractApiClient
         #[SensitiveParameter] MultipartInput $body,
         ResponseRoute $route,
         OutcomePolicy $outcome = OutcomePolicy::Flag,
-        ?WhmPayloadProjection $projection = null,
     ): ApiResponse {
-        return $this->execute(RequestMethod::Post, $path, $query, $body, $route, $outcome, projection: $projection);
+        return $this->execute(RequestMethod::Post, $path, $query, $body, $route, $outcome);
     }
 
     /**
@@ -255,12 +249,8 @@ abstract class AbstractApiClient
         ResponseRoute $route,
         OutcomePolicy $outcome,
         RequestBodyFormat $bodyFormat = RequestBodyFormat::Form,
-        ?WhmPayloadProjection $projection = null,
     ): ApiResponse {
         $this->beginRequest();
-        if ($projection !== null && $route !== ResponseRoute::Whm) {
-            throw new LogicException('WHM response projection requires a WHM route.');
-        }
         $uri = $this->config->baseUri() . $path;
         $encodedQuery = self::encode($query);
         if ($encodedQuery !== '') {
@@ -315,7 +305,7 @@ abstract class AbstractApiClient
             }
 
             try {
-                $result = EnvelopeReader::read($response, $route, $outcome, $projection);
+                $result = EnvelopeReader::read($response, $route, $outcome);
             } catch (ApiException $exception) {
                 if ($exception->metadata !== null) {
                     $this->recordResponseMeta($exception->metadata);

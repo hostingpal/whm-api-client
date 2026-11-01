@@ -1540,7 +1540,6 @@ final class ServerSpec
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [],
-        'response_fields' => ['details', 'needs_reboot'],
         'returns' => [
             'type' => 'object',
             'fields' => [
@@ -1554,7 +1553,9 @@ final class ServerSpec
                                 'running_version' => ['type' => 'string'],
                             ],
                         ],
+                        'needs_cloudlinux' => ['type' => 'int'],
                         'quota' => ['type' => 'int'],
+                        'securetmp_size_update' => ['type' => 'int'],
                         'updates' => ['type' => 'map', 'values' => ['type' => 'mixed']],
                     ],
                 ],

@@ -406,7 +406,9 @@ use SensitiveParameter;
  *             boot_version?: string,
  *             running_version?: string,
  *         },
+ *         needs_cloudlinux?: int,
  *         quota?: int,
+ *         securetmp_size_update?: int,
  *         updates?: array<array-key, mixed>,
  *     },
  *     needs_reboot?: 0|1,
@@ -2526,15 +2528,28 @@ final readonly class Server
      * Documented: updates lists software packages requiring an update and their most recent versions, and is returned
      * only if software packages on the server require updates.
      *
-     * Policy: Select the documented details and needs_reboot envelope siblings after ordinary WHM outcome checks. All
-     * selected fields are optional and nonnullable; absence does not establish no reboot. needs_reboot is a strict
-     * integer 0|1, quota remains int, and updates preserves opaque object contents.
+     * Observed: External review5727236239 at HEAD 789dfb0 on 11.138.0.19 observed needs_reboot 0 and details [] under
+     * ordinary data on GET and typed form POST (HTTP 200/API result 1); the pinned sibling envelope is incorrect.
+     * Populated reasons were source-read/offline cases, not live observations.
+     *
+     * Policy: Use ordinary required nonnullable data-object extraction with no sibling fallback. All result fields are
+     * optional; omission stays omitted and does not establish no reboot. needs_reboot is strict native integer 0|1;
+     * quota remains int and updates preserves opaque mixed values.
      *
      * Policy: The sole documented variant is GET, but x-readonly is false, so the established method policy sends one
-     * empty form POST. POST acceptance is unverified; offline coverage only, live follow-up 8x0.2.87.
+     * empty form POST. External review5727236239 establishes POST acceptance only on 11.138.0.19; live follow-up
+     * 8x0.2.87 retains other unobserved states.
      *
-     * Policy: No reboot, update, command, polling, retry or implicit follow-up read is performed. Generic call(),
-     * callJson() and callMultipart() keep their existing data-only extraction and do not expose these sibling fields.
+     * Policy: Reviewer handler-source observation in Whostmgr/API/1/ApplicationVersions.pm: the server schedules
+     * recache_system_reboot_data unless unpinned no_cache_update is set; no typed argument is added. The client adds no
+     * request, polling or retry.
+     *
+     * Policy: Reviewer handler-source observation: a failed sub-check other than Unsupported sets API result 0 and
+     * raises the ordinary ApiErrorException. Unsupported is skipped, so needs_reboot 0 does not prove every check ran.
+     *
+     * Policy: Reviewer handler-source observation: details.needs_cloudlinux and details.securetmp_size_update are
+     * optional int reasons assigned 1 by the handler. These additions have source-read/offline evidence only, with no
+     * live observation of either condition; the existing singleton-integer policy does not restrict them to literal 1.
      *
      * API-map identity: whm1:system_needs_reboot#GET (wire name system_needs_reboot; System Information).
      *

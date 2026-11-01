@@ -84,11 +84,6 @@ func Validate(set Set) []string {
 			if op.Function != "" && (file.Family != "whm1" || !qualifiedFunction.MatchString(op.Function)) {
 				problems = append(problems, id+": function requires one WHM namespace and identifier leaf")
 			}
-			if op.ResponseFields != nil {
-				if err := ValidateResponseFields(file.Family, op); err != nil {
-					problems = append(problems, id+": response_fields "+err.Error())
-				}
-			}
 			problems = append(problems, missingEvidence(id, op)...)
 			for wire, param := range op.Params {
 				if param.Collection != nil {
@@ -159,9 +154,6 @@ func missingEvidence(id string, op Operation) []string {
 		return nil
 	}
 	var settings []string
-	if op.ResponseFields != nil {
-		settings = append(settings, "response_fields")
-	}
 	if op.Function != "" {
 		settings = append(settings, "function")
 	}
@@ -288,21 +280,6 @@ func ValidateCollection(c *Collection) error {
 	} else if c.Prefix == nil || !IsCorrectedWireName(*c.Prefix) || c.Separator == nil ||
 		(*c.Separator != "" && *c.Separator != "-") || c.Start == nil || *c.Start < 0 || *c.Start > 2147483647 {
 		return fmt.Errorf("indexed requires identifier prefix, empty/hyphen separator and nonnegative 32-bit start")
-	}
-	return nil
-}
-
-// ValidateResponseFields limits explicit projection to complete WHM object results.
-func ValidateResponseFields(family string, op Operation) error {
-	if family != "whm1" || op.Exclude != nil || op.Void || op.OptionalPayload || len(op.ResponseFields) == 0 {
-		return fmt.Errorf("requires a nonempty selection on an included nonvoid WHM operation without optional_payload")
-	}
-	seen := map[string]bool{}
-	for _, name := range op.ResponseFields {
-		if !IsCorrectedWireName(name) || name == "metadata" || name == "data" || seen[name] {
-			return fmt.Errorf("contains an invalid, reserved or duplicate field name")
-		}
-		seen[name] = true
 	}
 	return nil
 }

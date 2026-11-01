@@ -2455,10 +2455,6 @@
     },
     "whm1:system_needs_reboot": {
       "name": "systemNeedsReboot",
-      "response_fields": [
-        "details",
-        "needs_reboot"
-      ],
       "notes": [
         {
           "kind": "documented",
@@ -2477,16 +2473,28 @@
           "text": "updates lists software packages requiring an update and their most recent versions, and is returned only if software packages on the server require updates."
         },
         {
-          "kind": "policy",
-          "text": "Select the documented details and needs_reboot envelope siblings after ordinary WHM outcome checks. All selected fields are optional and nonnullable; absence does not establish no reboot. needs_reboot is a strict integer 0|1, quota remains int, and updates preserves opaque object contents."
+          "kind": "observed",
+          "text": "External review5727236239 at HEAD 789dfb0 on 11.138.0.19 observed needs_reboot 0 and details [] under ordinary data on GET and typed form POST (HTTP 200/API result 1); the pinned sibling envelope is incorrect. Populated reasons were source-read/offline cases, not live observations."
         },
         {
           "kind": "policy",
-          "text": "The sole documented variant is GET, but x-readonly is false, so the established method policy sends one empty form POST. POST acceptance is unverified; offline coverage only, live follow-up 8x0.2.87."
+          "text": "Use ordinary required nonnullable data-object extraction with no sibling fallback. All result fields are optional; omission stays omitted and does not establish no reboot. needs_reboot is strict native integer 0|1; quota remains int and updates preserves opaque mixed values."
         },
         {
           "kind": "policy",
-          "text": "No reboot, update, command, polling, retry or implicit follow-up read is performed. Generic call(), callJson() and callMultipart() keep their existing data-only extraction and do not expose these sibling fields."
+          "text": "The sole documented variant is GET, but x-readonly is false, so the established method policy sends one empty form POST. External review5727236239 establishes POST acceptance only on 11.138.0.19; live follow-up 8x0.2.87 retains other unobserved states."
+        },
+        {
+          "kind": "policy",
+          "text": "Reviewer handler-source observation in Whostmgr/API/1/ApplicationVersions.pm: the server schedules recache_system_reboot_data unless unpinned no_cache_update is set; no typed argument is added. The client adds no request, polling or retry."
+        },
+        {
+          "kind": "policy",
+          "text": "Reviewer handler-source observation: a failed sub-check other than Unsupported sets API result 0 and raises the ordinary ApiErrorException. Unsupported is skipped, so needs_reboot 0 does not prove every check ran."
+        },
+        {
+          "kind": "policy",
+          "text": "Reviewer handler-source observation: details.needs_cloudlinux and details.securetmp_size_update are optional int reasons assigned 1 by the handler. These additions have source-read/offline evidence only, with no live observation of either condition; the existing singleton-integer policy does not restrict them to literal 1."
         }
       ],
       "evidence": [
@@ -2494,11 +2502,96 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-11-01",
-          "note": "The exact 200 schema declares optional nonnullable details and needs_reboot beside ordinary metadata, without data. Select every documented nonmetadata sibling; retain nested types and requiredness. The source x-readonly:false remains the POST policy input despite the documented GET example.",
+          "note": "The pinned envelope incorrectly places optional details and needs_reboot beside metadata. Retain their documented types and optionality as the ordinary WHM data payload; the source x-readonly:false remains the POST policy input despite the GET example.",
           "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
           "pointer": "/paths/~1system_needs_reboot/get/responses/200/content/application~1json/schema"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-11-01",
+          "note": "https://github.com/hostingpal/whm-api-client/pull/121#pullrequestreview-5727236239 at HEAD 789dfb04ab25420efbdc5cf47c4a2b8b77299257 reports GET and typed form POST HTTP 200/API result 1 with needs_reboot integer 0 and details [] under data; the projected typed method returned []. This is attributed external review evidence, not a capture by this implementation."
         }
-      ]
+      ],
+      "response": {
+        "": {
+          "replace": {
+            "type": "object",
+            "fields": {
+              "details": {
+                "type": "object",
+                "fields": {
+                  "kernel": {
+                    "type": "object",
+                    "fields": {
+                      "boot_version": {
+                        "type": "string"
+                      },
+                      "running_version": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "quota": {
+                    "type": "int"
+                  },
+                  "updates": {
+                    "type": "map",
+                    "values": {
+                      "type": "mixed"
+                    }
+                  }
+                }
+              },
+              "needs_reboot": {
+                "type": "flag"
+              }
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-11-01",
+              "note": "The pinned envelope incorrectly places optional details and needs_reboot beside metadata. Retain their documented types and optionality as the ordinary WHM data payload; the source x-readonly:false remains the POST policy input despite the GET example.",
+              "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+              "pointer": "/paths/~1system_needs_reboot/get/responses/200/content/application~1json/schema"
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-11-01",
+              "note": "https://github.com/hostingpal/whm-api-client/pull/121#pullrequestreview-5727236239 at HEAD 789dfb04ab25420efbdc5cf47c4a2b8b77299257 reports GET and typed form POST HTTP 200/API result 1 with needs_reboot integer 0 and details [] under data; the projected typed method returned []. This is attributed external review evidence, not a capture by this implementation."
+            }
+          ]
+        },
+        "details.needs_cloudlinux": {
+          "add": {
+            "type": "int"
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19 handler source reported by external review",
+              "date": "2026-11-01",
+              "note": "https://github.com/hostingpal/whm-api-client/pull/121#pullrequestreview-5727236239 reports Whostmgr/API/1/ApplicationVersions.pm assigning details.needs_cloudlinux the integer 1. This is a handler-source/offline observation only, absent from the pinned schema and not observed as a live server condition. Preserve optional int under the existing singleton-integer policy."
+            }
+          ]
+        },
+        "details.securetmp_size_update": {
+          "add": {
+            "type": "int"
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19 handler source reported by external review",
+              "date": "2026-11-01",
+              "note": "https://github.com/hostingpal/whm-api-client/pull/121#pullrequestreview-5727236239 reports Whostmgr/API/1/ApplicationVersions.pm assigning details.securetmp_size_update the integer 1. This is a handler-source/offline observation only, absent from the pinned schema and not observed as a live server condition. Preserve optional int under the existing singleton-integer policy."
+            }
+          ]
+        }
+      }
     }
   }
 }
