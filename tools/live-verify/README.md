@@ -2120,12 +2120,14 @@ concurrent creation can never authorize removing an account the marker does not
 match. Setup creates a 900-second writable token and confirms it. Cleanup runs in
 `finally`, each mutation is attempted at most once, and token, account, domain and
 zone absence are each read back through the API. An empty identity list proves
-nothing, because the server always hosts other accounts and zones. After a lost
-`createacct` response, a single absent read cannot rule out creation still in flight,
-so the account stays `unconfirmed`. The account read that gates cleanup is the only
-request ever repeated, at most three times and only when the request itself failed:
-one lost read must not abandon an account and a writable token, while a returned
-inventory is final. No mutation repeats. `FilemanUploadGuard` checks both opt-ins and
+nothing, because the server always hosts other accounts and zones. Only an explicit
+API refusal is a known `createacct` outcome. After a lost response, gateway error or
+unreadable body, a single absent read cannot rule out creation still in flight, so the
+account stays `unconfirmed`. The account read that gates a cleanup decision is the only
+request ever repeated, at most three reads per decision and only after a
+`TransportException`: one lost read must not abandon an account and a writable token,
+while anything the server returned is final, including a result-0, HTTP or unreadable
+reply. No mutation repeats. `FilemanUploadGuard` checks both opt-ins and
 the exact account and domain on every request, then the exact method, URI, complete
 header set and body. Each mutation is consumed once even when refused.
 
@@ -2178,7 +2180,7 @@ original. The returned charset must be exactly the requested label or its lowerc
 form, because charset labels are case-insensitive, and evidence records `exact`,
 `lowercase` or `other`. `from_char`/`to_char` are the documented echoes; their
 schema-less `from_charset`/`to_charset` twins are read only when those are absent. Any
-other echo over exact content fails the run at its end without stopping it, since it
+other echo over exact content fails `expectations` without stopping capture, since it
 cannot affect how later uploads are read.
 
 **Ownership and cleanup.** A file is owned only after fresh directory absence, its
@@ -2191,16 +2193,40 @@ Emptiness is read from the original response, as `{}` decodes to the same empty 
 as a real list. Anything unproven is left for account removal and reported. File
 cleanup failure never prevents token or account cleanup.
 
+The token name is fixed, so it proves nothing alone. A revoke needs the per-run account
+marker, read again at that moment, plus a listing that shows the token or this run's own
+confirmed creation: setup read the name absent just before its one create. An unreadable
+listing therefore cannot withhold the revoke of a token this run created, which matters
+if account removal then fails too. A lost creation that no listing can show stays
+unproven, is never revoked, and is left for account removal and reported.
+
 **Evidence.** `fileman_upload` holds structural probe records, per-upload counts and
 transfer statistics, oracle outcomes and fixed-label lifecycle results. No file bytes,
 names, paths, tokens or upstream text are persisted. Its `discrepancy_review` accepts
 no discrepancies and has no acknowledgment mechanism.
+
+`capture` says whether every planned observation finished and `expectations` whether
+they held. A failed observation leaves `expectations` at `not_run`, an expectation that
+stops capture fails both, and a wrong charset echo fails `expectations` alone. `stopped_at`
+names the phase that stopped capture, which is the first read without exact content in a
+readback batch, and stays null when capture finished.
+
+`payload_validation` is `not_checked` on `home_initial`, `upload_raw` and `home_final`,
+because generic `call()` and `callMultipart()` run no `ShapeValidator`, and the assessment
+requires exactly that. Their structural discrepancies still reach the review, and the
+`upload_raw` rows are checked exactly. The committed captures predate this and are kept:
+see the [source audit](../../docs/api/source-audit.md#fixture-corrections-after-the-corrected-capture).
 
 Claim API absence only. `filesystem_cleanup` is fixed at `not_claimed`: nothing here
 checks the account's home directory or the filesystem after removal. The evidence
 covers the observed filenames, sizes and server version on the direct route. It
 establishes no raw-download identity, antivirus or archive behavior, null or empty
 status-0 observation, memory benchmark, or WHM or bridged upload coverage.
+
+The current scenario is `fileman-upload-disposable-v3`, assessed under policy
+`fileman-upload-no-acknowledgments-v2`, and **no v3 capture exists yet**. A passing run
+sends the same requests as v2, but it records and accepts different values, so it has its
+own version. The committed v2 artifact stays the valid record of what ran at `1c8bbce`.
 
 The [corrected capture](../../docs/api/evidence/2026-11-01-fileman-upload-v2.json) at
 `1c8bbce` on `11.138.0.19` is a **passed run**, exit 0. All five uploads passed their

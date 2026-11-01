@@ -1349,7 +1349,11 @@ The [corrected capture](2026-11-01-fileman-upload-v2.json) at
 readbacks through the Latin-1 oracle, and token, account, domain and zone absence
 confirmed through the API. It claims no filesystem cleanup, raw-download identity, or
 WHM or bridged upload coverage. SHA-256:
-`10eecbe1be592a3872fc59d74f2e24187fad98bb4f0e3c700f38af9afcd874d3`.
+`10eecbe1be592a3872fc59d74f2e24187fad98bb4f0e3c700f38af9afcd874d3`. It stays the valid
+record of what ran at that revision. The fixture has since moved to
+`fileman-upload-disposable-v3` and policy `fileman-upload-no-acknowledgments-v2`, and no
+v3 capture exists yet; see the
+[source audit](../source-audit.md#fixture-corrections-after-the-corrected-capture).
 
 The [first capture](2026-11-01-fileman-upload.json) at
 `aa84150664d6e5c48e1668cc833bb9220e11a1bf` is a failed run, exit 1, kept unchanged. It

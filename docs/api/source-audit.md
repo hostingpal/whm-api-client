@@ -9418,12 +9418,18 @@ statuses for partial and all-failed batches are not a universal contract.
 
 ### Charset echo classification and corrected capture
 
-A read-only check after that run named the difference. Two direct GETs on `npr` read an
-existing zero-byte file with the same charset parameters and printed classifications
-only, so no file content or name left memory. `from_char` and `to_char` were absent.
-`from_charset` and `to_charset` were `iso-8859-1` and `utf-8`, the lowercase forms of the
-request. Charset labels are case-insensitive, so the first recipe's byte-exact comparison
-was stricter than what it needed to show.
+Correction: an earlier version of this section said a read-only check after the first run
+named the difference. That check is not evidence. Two direct GETs on `npr` read an existing
+zero-byte file with the same charset parameters, to learn what the first artifact did not
+retain, and AGENTS.md says never to replay an operation to recover evidence. They targeted
+a different account and file from the fixture and appear in no committed artifact. They are
+unrecorded diagnostics: they prompted the corrected recipe and establish nothing here.
+
+Both artifacts record `from_char` and `to_char` as `missing` and `from_charset` and
+`to_charset` as strings on every read. The corrected capture's own `lowercase`
+classification, below, is the only committed confirmation of the lowercase form. Charset
+labels are case-insensitive, so the first recipe's byte-exact comparison was stricter than
+what it needed to show.
 
 Recipe `fileman-upload-disposable-v2` accepts exactly the requested label or its
 lowercase form, and records `exact`, `lowercase` or `other` in place of a boolean.
@@ -9437,10 +9443,11 @@ The corrected capture ran once at `1c8bbce3325f5b758837e1615cdcba199f3bd2ce` on
 `10eecbe1be592a3872fc59d74f2e24187fad98bb4f0e3c700f38af9afcd874d3`, records a **passed
 run**, exit 0, with `fixture.status` and `discrepancy_review.status` both `passed` and
 no findings. All five uploads repeated the row, count and framing outcomes above.
-Content was exact for all six files, and every echo on both fields was `lowercase`,
-which confirms that the first failure had no other cause. Token, account, domain and
-zone are `confirmed_absent` through the API. This is API absence only, and
-`filesystem_cleanup` stays `not_claimed`. The same scope limits apply.
+Content was exact for all six files, and every echo on both fields was `lowercase`. That
+is consistent with a case difference being the first failure's only cause, but the first
+artifact retains no values, so it still cannot show how its own echoes differed. Token,
+account, domain and zone are `confirmed_absent` through the API. This is API absence only,
+and `filesystem_cleanup` stays `not_claimed`. The same scope limits apply.
 
 Tracked separately: `whm-api-client-6su` records the observed echo as an overlay note,
 and `whm-api-client-9yu` decides whether filenames should reject C1 controls.
@@ -9706,3 +9713,38 @@ map diagnostics remain explicit and unwaived. Pins, schema mirrors, annotations,
 checksum, runtime, generator, tooling, historical evidence and failed captures
 are preserved from the appropriate parent. Local PHP 8.4 cannot establish the
 PHP 8.3 floor CI. Stress, consumer, Windows, parity and release gaps remain.
+
+### Fixture corrections after the corrected capture
+
+A post-merge review of the fixture at `bc8069e` led to the corrections below. They follow
+the v2 capture and do not alter what it recorded: both artifacts, their hashes and their
+results stand as captured, and the v2 artifact stays the valid record of what ran at
+`1c8bbce`.
+
+A passing run still sends the same requests in the same order. It no longer records the
+same values, though, and the assessment no longer accepts what the artifacts recorded. Two
+artifacts under one label must not disagree, so the scenario is now
+`fileman-upload-disposable-v3` and the policy `fileman-upload-no-acknowledgments-v2`. No
+correction ran live, and **no v3 capture exists yet**.
+
+- Only an explicit API refusal is a known `createacct` outcome. A 502 or an unreadable body
+  could previously report `confirmed_absent` and `cleanup: passed` while creation was still
+  possible. Neither artifact met this path.
+- A failed token listing no longer withholds the revoke of a token the run confirmed
+  creating on an account its marker proves. The token name is fixed, so it proves nothing
+  alone, and a lost creation that no listing can show is never revoked.
+- The cleanup ownership read repeats only after a `TransportException`. Anything the server
+  returned is final.
+- `capture` says whether every planned observation finished and `expectations` whether they
+  held, as in the finite-Quota fixture, and `stopped_at` names the first read without exact
+  content instead of the last read in the batch. The first artifact predates this: its
+  `capture: failed` and `stopped_at: read_empty` do not mean capture stopped, as all 25
+  phases ran.
+- A refused row's optional name must be exactly the file its batch offered.
+- `home_initial`, `upload_raw` and `home_final` now record `payload_validation: not_checked`,
+  because generic calls run no `ShapeValidator`. Both artifacts say `passed` on those records
+  and are kept: read it there as "the call returned". Their structural discrepancy lists
+  are empty and their expectations passed, and the `upload_raw` rows were checked exactly.
+  Policy v2 requires `not_checked` on these three records, so it would report findings on
+  either artifact. Both were assessed under policy v1: their recorded results stand, and
+  policy v2 does not judge them retroactively.

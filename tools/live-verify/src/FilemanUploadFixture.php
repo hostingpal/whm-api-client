@@ -9,7 +9,7 @@ use HostingPal\WhmApiClient\Api\RequestMethod;
 use HostingPal\WhmApiClient\Api\Uapi\Spec\FilemanSpec;
 use HostingPal\WhmApiClient\Api\Whm\Spec\ServerSpec;
 use HostingPal\WhmApiClient\Client;
-use HostingPal\WhmApiClient\Exception\ApiException;
+use HostingPal\WhmApiClient\Exception\ApiErrorException;
 use HostingPal\WhmApiClient\Exception\TransportException;
 use HostingPal\WhmApiClient\Http\HttpTransport;
 use HostingPal\WhmApiClient\UapiClient;
@@ -46,6 +46,10 @@ use Throwable;
  *
  * Fileman/get_file_content transcodes, so readback is a documented reversible check: the file is read as ISO-8859-1
  * into UTF-8 and compared with the independent mapping in FilemanUploadRecipe, never with a size alone.
+ *
+ * In the report, capture says whether every planned observation finished, as in the finite-Quota fixture, and
+ * expectations whether they held. A failed observation leaves expectations not_run; an expectation that stops capture
+ * fails both; a wrong charset echo fails expectations alone, because capture finished, so stopped_at stays null.
  *
  * @phpstan-import-type Alternative from EvidenceRunner
  * @phpstan-import-type Context from EvidenceRunner
@@ -89,7 +93,7 @@ use Throwable;
  *     domain_cleanup: CleanupOutcome, zone_cleanup: CleanupOutcome, filesystem_cleanup: 'not_claimed'
  * }
  * @phpstan-type Scenario array{
- *     scenario: 'fileman-upload-disposable-v2', target_role: 'disposable-test-account', probes: list<Observation>,
+ *     scenario: 'fileman-upload-disposable-v3', target_role: 'disposable-test-account', probes: list<Observation>,
  *     uploads: array<string, UploadSummary>, byte_oracle: array<string, OracleResult>,
  *     borrowed_streams: array<string, bool>, discrepancy_review: Assessment, fixture: Report, limitations: list<string>
  * }
@@ -139,6 +143,8 @@ final class FilemanUploadFixture
     private array $borrowed = [];
 
     private bool $expectationFailed = false;
+
+    private ?string $stoppedAt = null;
 
     private bool $creationOutcomeUnknown = false;
 
@@ -198,19 +204,23 @@ final class FilemanUploadFixture
             $this->setup($report);
             $report['setup'] = 'passed';
             $report['capture'] = 'failed';
-            $report['expectations'] = 'failed';
             $this->exercise($report);
             $report['capture'] = 'passed';
-            $report['expectations'] = 'passed';
         } catch (Throwable) {
-            $report['failures'][] = match (true) {
-                $report['setup'] !== 'passed' => 'setup_failure',
-                $this->expectationFailed => 'expectation_failure',
-                default => 'capture_failure',
-            };
+            if ($report['setup'] !== 'passed') {
+                $report['failures'][] = 'setup_failure';
+            } elseif (!$this->expectationFailed || $this->observationFailed()) {
+                $report['failures'][] = 'capture_failure';
+            }
             $last = array_key_last($this->records);
-            $report['stopped_at'] = $last === null ? null : $this->records[$last]['phase'];
+            $report['stopped_at'] = $this->stoppedAt ?? ($last === null ? null : $this->records[$last]['phase']);
         } finally {
+            if ($this->expectationFailed) {
+                $report['expectations'] = 'failed';
+                $report['failures'][] = 'expectation_failure';
+            } elseif ($report['capture'] === 'passed') {
+                $report['expectations'] = 'passed';
+            }
             $this->cleanup($report);
         }
         $report['failures'] = array_values(array_unique($report['failures']));
@@ -234,8 +244,12 @@ final class FilemanUploadFixture
                 'contactemail' => $this->recipe->contactEmail,
                 'quota' => 64, 'forcedns' => 0, 'hasshell' => 0, 'ip' => 'n',
             ], RequestMethod::Post);
-        } catch (TransportException $failure) {
-            // The server may still be working: absence read now cannot prove the account will stay absent.
+        } catch (ApiErrorException $refusal) {
+            // The server answered and refused: a known outcome, so a later absent read is final.
+            throw $refusal;
+        } catch (Throwable $failure) {
+            // A lost reply, gateway error or unreadable body says nothing about a server still working, so
+            // absence read now cannot prove the account will stay absent.
             $this->creationOutcomeUnknown = true;
             throw $failure;
         }
@@ -297,7 +311,7 @@ final class FilemanUploadFixture
                     permissions: FilemanUploadRecipe::PERMISSIONS,
                 ),
                 ['bytes', 'cursor', 'path'],
-                0,
+                null,
                 1,
                 $direct,
             );
@@ -328,7 +342,7 @@ final class FilemanUploadFixture
                 permissions: FilemanUploadRecipe::PERMISSIONS,
             ),
             ['partial'],
-            1,
+            'bytes',
             1,
             $direct,
         );
@@ -345,7 +359,7 @@ final class FilemanUploadFixture
                 permissions: FilemanUploadRecipe::PERMISSIONS,
             ),
             [],
-            1,
+            'cursor',
             0,
             $direct,
         );
@@ -361,7 +375,7 @@ final class FilemanUploadFixture
                 ['dir' => $recipe->directory, 'overwrite' => 0, 'permissions' => FilemanUploadRecipe::PERMISSIONS],
             )->data,
             ['raw'],
-            0,
+            null,
             1,
             $direct,
         );
@@ -383,15 +397,12 @@ final class FilemanUploadFixture
                 permissions: FilemanUploadRecipe::PERMISSIONS,
             ),
             ['empty'],
-            0,
+            null,
             1,
             $direct,
         );
         $this->inventory('inventory_complete', FilemanUploadRecipe::LABELS, $direct);
         $this->readBack(['read_empty' => 'empty'], $direct);
-        if ($this->expectationFailed) {
-            throw new RuntimeException('Fileman upload readback expectation failed.');
-        }
     }
 
     /**
@@ -401,13 +412,14 @@ final class FilemanUploadFixture
      * @param 'typed'|'generic' $surface
      * @param Closure(Client): mixed $send
      * @param list<Label> $stored
+     * @param Label|null $refused The one file this batch offers for refusal, if any.
      */
     private function upload(
         string $phase,
         string $surface,
         #[SensitiveParameter] Closure $send,
         array $stored,
-        int $refused,
+        ?string $refused,
         int $status,
         Client $direct,
     ): void {
@@ -422,7 +434,7 @@ final class FilemanUploadFixture
                 null,
                 'uapi:Fileman/upload_files#POST',
                 str_replace('_', '-', $phase),
-            ), $direct);
+            ), $direct, $surface === 'typed');
         } finally {
             $this->guard->clearPending();
         }
@@ -450,7 +462,7 @@ final class FilemanUploadFixture
         $summary = $this->uploads[$phase];
         $this->expect(
             $observed === $status && $rows['stored'] && $rows['refused']
-            && $summary['succeeded'] === count($stored) && $summary['failed'] === $refused
+            && $summary['succeeded'] === count($stored) && $summary['failed'] === ($refused === null ? 0 : 1)
             && in_array($summary['warned'], [0, null], true)
             && ($phase !== 'upload_success' || $summary['diskinfo'] === 'present')
             && self::deliveredExactly($delivery),
@@ -458,17 +470,19 @@ final class FilemanUploadFixture
     }
 
     /**
-     * Match stored rows by exact name, then require every remaining row to be a refusal with a reason.
+     * Match stored rows by exact name, then require the one remaining row, if any, to be this batch's refusal.
      *
      * The source promises one entry per file but no order. A refusal proves nothing about ownership, so its
-     * optional name need only agree when present.
+     * optional name need only agree when present, but then it must be the exact name this batch offered.
      *
      * @param list<Label> $stored
+     * @param Label|null $refused
      * @return array{stored: bool, refused: bool}
      */
-    private function rowFindings(#[SensitiveParameter] mixed $rows, array $stored, int $refused): array
+    private function rowFindings(#[SensitiveParameter] mixed $rows, array $stored, ?string $refused): array
     {
-        if (!is_array($rows) || !array_is_list($rows) || count($rows) !== count($stored) + $refused) {
+        $refusals = $refused === null ? 0 : 1;
+        if (!is_array($rows) || !array_is_list($rows) || count($rows) !== count($stored) + $refusals) {
             return ['stored' => false, 'refused' => false];
         }
         $storedExact = true;
@@ -482,12 +496,13 @@ final class FilemanUploadFixture
                 && ($row['warnings'] ?? []) === [];
             $rows = array_diff_key($rows, $matching);
         }
-        $refusedExact = count($rows) === $refused;
+        $refusedExact = count($rows) === $refusals;
+        $offered = $refused === null ? null : $this->recipe->names[$refused];
         foreach ($rows as $row) {
             $reason = is_array($row) ? ($row['reason'] ?? null) : null;
             $refusedExact = $refusedExact && is_array($row) && ($row['status'] ?? null) === 0
                 && ($row['size'] ?? null) === null && is_string($reason) && $reason !== ''
-                && (!array_key_exists('file', $row) || in_array($row['file'], $this->recipe->names, true));
+                && (!array_key_exists('file', $row) || $row['file'] === $offered);
         }
 
         return ['stored' => $storedExact, 'refused' => $refusedExact];
@@ -533,20 +548,26 @@ final class FilemanUploadFixture
     }
 
     /**
-     * Read every listed file, record each oracle outcome, then stop if any content differed.
+     * Read every listed file, record each oracle outcome, then stop at the first read without exact content.
      *
-     * All reads complete first: they mutate nothing, and one mismatch should not hide the others. An unaccepted
-     * charset echo over exact content fails the run at its end instead: it cannot affect how later uploads are read.
+     * All reads complete first: they mutate nothing, and one mismatch should not hide the others, so each record
+     * carries its own outcome and the stop names the first. An unaccepted charset echo over exact content does not
+     * stop capture, as it cannot affect how later uploads are read; it fails the expectations of a finished capture.
      *
      * @param array<string, Label> $phases
      */
     private function readBack(array $phases, Client $direct): void
     {
-        $matched = true;
+        $stopped = null;
         foreach ($phases as $phase => $label) {
-            $matched = $this->readOne($phase, $label, $direct) && $matched;
+            if (!$this->readOne($phase, $label, $direct)) {
+                $stopped ??= $phase;
+            }
         }
-        $this->expect($matched);
+        if ($stopped !== null) {
+            $this->stoppedAt = $stopped;
+            throw new RuntimeException('Fileman upload readback stopped capture.');
+        }
     }
 
     /** @param Label $label */
@@ -585,16 +606,16 @@ final class FilemanUploadFixture
             'from_charset_echo' => $from,
             'to_charset_echo' => $to,
         ];
-        $matched = $this->last()['probe_outcome'] === 'passed' && $exact;
-        if ($matched) {
+        $observed = $this->last()['probe_outcome'] === 'passed';
+        if ($observed && $exact) {
             // Anything left unproven is not cleaned up individually; account removal takes it.
             $this->owned[$label] = true;
         }
-        if (!$matched || $from === 'other' || $to === 'other') {
+        if ($observed && (!$exact || $from === 'other' || $to === 'other')) {
             $this->markFailed();
         }
 
-        return $matched;
+        return $observed && $exact;
     }
 
     /**
@@ -695,7 +716,7 @@ final class FilemanUploadFixture
             null,
             null,
             'home-presence',
-        ), $direct));
+        ), $direct, false));
         $this->expect(isset($rows['public_html']));
         $webroot = FilemanUploadRecipe::HOME . '/public_html';
         $this->expect(($rows['public_html']['fullpath'] ?? $webroot) === $webroot);
@@ -776,11 +797,13 @@ final class FilemanUploadFixture
     }
 
     /**
-     * Capture one generated call through the shared runner, keeping its result in memory for expectations.
+     * Capture one call through the shared runner, keeping its result in memory for expectations.
      *
-     * The runner clears prior capture and never retries; the record carries only structural evidence.
+     * The runner clears prior capture and never retries; the record carries only structural evidence. It reports
+     * validation passed for any call that returned, but only a typed call has a validator, so a generic call's record
+     * says not_checked. Structural discrepancies from the same response still reach the strict review.
      */
-    private function observe(string $phase, Probe $probe, Client $client): mixed
+    private function observe(string $phase, Probe $probe, Client $client, bool $validated = true): mixed
     {
         $result = null;
         $invoke = $probe->invoke;
@@ -797,6 +820,9 @@ final class FilemanUploadFixture
             $probe->argumentVariant,
         );
         $record = $this->runner->capture($wrapped, $this->capture, $client);
+        if (!$validated) {
+            $record['payload_validation'] = 'not_checked';
+        }
         $metadata = $probe->route === 'direct-uapi' ? $client->uapi()->responseMeta() : null;
         $this->records[] = [...$record, 'phase' => $phase, 'uapi_status' => $metadata?->uapiStatus(),
             'expectation' => $record['probe_outcome'] === 'passed' ? 'passed' : 'not_checked'];
@@ -804,9 +830,9 @@ final class FilemanUploadFixture
         return $result;
     }
 
-    private function succeed(string $phase, Probe $probe, Client $client): mixed
+    private function succeed(string $phase, Probe $probe, Client $client, bool $validated = true): mixed
     {
-        $result = $this->observe($phase, $probe, $client);
+        $result = $this->observe($phase, $probe, $client, $validated);
         $this->passed();
 
         return $result;
@@ -834,6 +860,11 @@ final class FilemanUploadFixture
         if ($index !== null) {
             $this->records[$index]['expectation'] = 'failed';
         }
+    }
+
+    private function observationFailed(): bool
+    {
+        return in_array('failed', array_column($this->records, 'probe_outcome'), true);
     }
 
     /** @return Observation */
@@ -907,8 +938,9 @@ final class FilemanUploadFixture
     /**
      * Read account ownership for a cleanup decision, surviving a transient failed request.
      *
-     * Only this read repeats, and only when the request itself failed: a returned inventory is final, so a foreign
-     * marker or unusable rows are never read twice. One lost read must not abandon an account and a writable token.
+     * Only this read repeats, and only when the request itself failed: anything the server returned is final, so a
+     * result-0, HTTP or unreadable reply, a foreign marker or unusable rows are never read twice. One lost read must
+     * not abandon an account and a writable token.
      *
      * @phpstan-impure
      */
@@ -917,7 +949,7 @@ final class FilemanUploadFixture
         for ($attempt = 1; $attempt < self::IDENTITY_READS; ++$attempt) {
             try {
                 return $this->accountExists();
-            } catch (ApiException) {
+            } catch (TransportException) {
                 usleep(self::REREAD_PAUSE_MICROSECONDS);
             }
         }
@@ -1168,7 +1200,17 @@ final class FilemanUploadFixture
         }
     }
 
-    /** @param Report $report */
+    /**
+     * Revoke this run's token once, then read its absence; removal may fail, and only expiry would then end it.
+     *
+     * The token name is fixed, so it proves nothing alone. Ownership is the per-run account marker, read again here,
+     * plus a token this run can show is its own: setup read the name absent just before the one create, so either a
+     * listing with that name or this run's own confirmed creation will do. An unreadable listing therefore cannot
+     * withhold the revoke of a token this run knows it created, while a lost creation that no listing can show stays
+     * unproven and is never revoked: account removal takes it, and the report says so.
+     *
+     * @param Report $report
+     */
     private function cleanupToken(array &$report): void
     {
         if ($report['resources']['token']['creation'] === 'not_attempted') {
@@ -1176,22 +1218,35 @@ final class FilemanUploadFixture
         }
         $report['resources']['token']['cleanup'] = 'unconfirmed';
         try {
-            if ($this->tokenExists()) {
-                $report['resources']['token']['creation'] = 'confirmed';
-                if (!$this->accountExists()) {
-                    throw new RuntimeException('Fileman upload token ownership changed during cleanup.');
-                }
-                try {
-                    $this->account->call('Tokens', 'revoke', [
-                        'name' => FilemanUploadRecipe::TOKEN_NAME,
-                    ], RequestMethod::Post);
-                } catch (Throwable) {
-                    self::cleanupFailure($report, 'token_revoke_failure');
-                }
-                $report['resources']['token']['cleanup'] = $this->tokenExists() ? 'present' : 'confirmed_absent';
-            } else {
-                $report['resources']['token']['cleanup'] = 'confirmed_absent';
+            $listed = $this->tokenExists();
+        } catch (Throwable) {
+            $listed = null;
+        }
+        if ($listed === false) {
+            $report['resources']['token']['cleanup'] = 'confirmed_absent';
+
+            return;
+        }
+        if ($listed === true) {
+            $report['resources']['token']['creation'] = 'confirmed';
+        }
+        if ($report['resources']['token']['creation'] !== 'confirmed') {
+            self::cleanupFailure($report, 'token_absence_unconfirmed');
+
+            return;
+        }
+        try {
+            if (!$this->accountOwned()) {
+                throw new RuntimeException('Fileman upload token ownership changed during cleanup.');
             }
+            try {
+                $this->account->call('Tokens', 'revoke', [
+                    'name' => FilemanUploadRecipe::TOKEN_NAME,
+                ], RequestMethod::Post);
+            } catch (Throwable) {
+                self::cleanupFailure($report, 'token_revoke_failure');
+            }
+            $report['resources']['token']['cleanup'] = $this->tokenExists() ? 'present' : 'confirmed_absent';
             if ($report['resources']['token']['cleanup'] === 'present') {
                 self::cleanupFailure($report, 'token_still_present');
             }
@@ -1239,7 +1294,7 @@ final class FilemanUploadFixture
         unset($record);
 
         return [
-            'scenario' => 'fileman-upload-disposable-v2',
+            'scenario' => 'fileman-upload-disposable-v3',
             'target_role' => 'disposable-test-account',
             'probes' => $records,
             'uploads' => $this->uploads,

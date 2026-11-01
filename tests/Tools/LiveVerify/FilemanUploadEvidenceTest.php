@@ -8,16 +8,20 @@ use Closure;
 use HostingPal\WhmApiClient\Api\Uapi\Spec\FilemanSpec;
 use HostingPal\WhmApiClient\Tools\LiveVerify\FilemanUploadEvidence;
 use HostingPal\WhmApiClient\Tools\LiveVerify\FilemanUploadFixture;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 /** @phpstan-import-type Observation from FilemanUploadFixture */
 final class FilemanUploadEvidenceTest extends TestCase
 {
+    /** Written out here, independently of the assessment under test. */
+    private const GENERIC_PHASES = ['home_initial', 'upload_raw', 'home_final'];
+
     public function testACompleteOrderedRunPassesWithNoAcknowledgmentMechanism(): void
     {
         $assessment = self::assess(self::records());
         self::assertSame('passed', $assessment['status']);
-        self::assertSame('fileman-upload-no-acknowledgments-v1', $assessment['policy']);
+        self::assertSame('fileman-upload-no-acknowledgments-v2', $assessment['policy']);
         self::assertSame([], $assessment['findings']);
     }
 
@@ -49,6 +53,38 @@ final class FilemanUploadEvidenceTest extends TestCase
             return $record;
         });
         self::assertSame(['unsuccessful_phase:read_bytes'], self::assess($records)['findings']);
+    }
+
+    /** No validator runs on these phases, so a passed claim is false however clean the rest of the record is. */
+    #[DataProvider('genericPhases')]
+    public function testGenericPhaseCannotClaimAValidationItNeverRan(string $phase): void
+    {
+        $records = self::changed($phase, static function (array $record): array {
+            $record['payload_validation'] = 'passed';
+
+            return $record;
+        });
+        self::assertSame(['unsuccessful_phase:' . $phase], self::assess($records)['findings']);
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function genericPhases(): iterable
+    {
+        foreach (self::GENERIC_PHASES as $phase) {
+            yield $phase => [$phase];
+        }
+    }
+
+    public function testTypedPhaseMustHaveValidatedItsPayload(): void
+    {
+        foreach (['upload_success', 'upload_all_failed', 'read_bytes', 'inventory_final', 'delete_bytes'] as $phase) {
+            $records = self::changed($phase, static function (array $record): array {
+                $record['payload_validation'] = 'not_checked';
+
+                return $record;
+            });
+            self::assertSame(['unsuccessful_phase:' . $phase], self::assess($records)['findings']);
+        }
     }
 
     public function testStatusZeroIsExpectedOnlyForTheAllFailedBatch(): void
@@ -197,7 +233,8 @@ final class FilemanUploadEvidenceTest extends TestCase
                 'map_sha256' => $context['map_sha256'], 'generator_tree' => $context['generator_tree'],
                 'overlay_sha256' => $context['overlay_sha256'],
                 'effective_contract_sha256' => hash('sha256', json_encode($contract['spec'], JSON_THROW_ON_ERROR)),
-                'http_status' => 200, 'api_outcome' => 'success', 'payload_validation' => 'passed',
+                'http_status' => 200, 'api_outcome' => 'success',
+                'payload_validation' => in_array($phase, self::GENERIC_PHASES, true) ? 'not_checked' : 'passed',
                 'probe_outcome' => 'passed', 'failure_kind' => null, 'response_paths' => [], 'payload_paths' => [],
                 'discrepancies' => [],
             ];

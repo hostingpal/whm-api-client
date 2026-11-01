@@ -51,13 +51,21 @@ final class FilemanUploadServer implements ClientInterface
     /** How an upload row reports a stored zero-byte file; listings report it as an empty string on this server. */
     public mixed $emptyRowSize = 0;
 
+    /** Label of another fixture file that a refused row names, in place of the file actually offered. */
+    public ?string $refusedRowLabel = null;
+
     /** @var array<string, int> */
     public array $counts = [];
 
     /** @var list<string> */
     public array $mutations = [];
 
-    /** @var array<string, string> */
+    /**
+     * Step failures by function:count, each firing `_before` or `_after` the request's effect: `throw` loses the
+     * response, `api` is an explicit refusal, `http` a 502 gateway error, and `invalid` an unreadable 200 body.
+     *
+     * @var array<string, string>
+     */
     public array $failures = [];
 
     /** @var array<string, string> Raw replacement data JSON, by function:count. */
@@ -154,6 +162,9 @@ final class FilemanUploadServer implements ClientInterface
         if ($failure === 'api_before') {
             return self::failed($function, $bridge);
         }
+        if ($failure === 'http_before' || $failure === 'invalid_before') {
+            return self::unusable($failure);
+        }
         if ($request->getMethod() === 'POST') {
             $this->mutations[] = $function;
         }
@@ -168,6 +179,9 @@ final class FilemanUploadServer implements ClientInterface
         }
         if ($failure === 'api_after') {
             return self::failed($function, $bridge);
+        }
+        if ($failure === 'http_after' || $failure === 'invalid_after') {
+            return self::unusable($failure);
         }
         $data = $this->payload($function, $query);
         $payload = $this->overrides[$step] ?? json_encode($data, JSON_THROW_ON_ERROR);
@@ -197,6 +211,9 @@ final class FilemanUploadServer implements ClientInterface
         if ($failure === 'api_before') {
             return self::failed('direct:Fileman/upload_files', false);
         }
+        if ($failure === 'http_before' || $failure === 'invalid_before') {
+            return self::unusable($failure);
+        }
         $this->mutations[] = 'direct:Fileman/upload_files';
         $type = $request->getHeaderLine('Content-Type');
         $boundary = substr($type, strlen('multipart/form-data; boundary='));
@@ -222,6 +239,9 @@ final class FilemanUploadServer implements ClientInterface
         }
         if ($failure === 'api_after') {
             return self::failed('direct:Fileman/upload_files', false);
+        }
+        if ($failure === 'http_after' || $failure === 'invalid_after') {
+            return self::unusable($failure);
         }
         $payload = $this->overrides[$step] ?? json_encode($data, JSON_THROW_ON_ERROR);
 
@@ -260,7 +280,9 @@ final class FilemanUploadServer implements ClientInterface
             $name = $match[1];
             $bytes = substr($segment, strlen($match[0]), -2);
             if (isset($this->directories[$directory][$name]) && !$overwrite && $this->honorOverwrite) {
-                $rows[] = ['file' => $name, 'reason' => 'private upstream refusal', 'size' => null, 'status' => 0];
+                $reported = $this->refusedRowLabel === null ? $name
+                    : $this->refusedRowLabel . substr($name, (int) strpos($name, '-'));
+                $rows[] = ['file' => $reported, 'reason' => 'private upstream refusal', 'size' => null, 'status' => 0];
                 continue;
             }
             $this->directories[$directory][$name] = $bytes;
@@ -456,6 +478,14 @@ final class FilemanUploadServer implements ClientInterface
         }
 
         return new Response(200, [], '{"metadata":{"result":0,"reason":"private upstream text"},"data":null}');
+    }
+
+    /** A reply that says nothing about the request's outcome, as a gateway or a truncated response does. */
+    private static function unusable(string $failure): ResponseInterface
+    {
+        return str_starts_with($failure, 'http')
+            ? new Response(502, [], 'private upstream gateway text')
+            : new Response(200, [], 'private unreadable upstream text');
     }
 
     private static function failTransport(): never

@@ -2979,7 +2979,11 @@ remain unobserved under `8x0.2.59`.
   `ApiException::errors()` exposes upstream error text outside `getMessage()`.
   `TransportException` records the PSR failure kind, cause class and token-redacted
   cause message without chaining the cause.
-- Authenticated operations perform no retries. `Client` requires an explicit
+- Authenticated operations perform no retries. The one narrow exception is
+  development-only: `tools/live-verify/src/FilemanUploadFixture.php` re-reads its
+  read-only `listaccts` cleanup-ownership check, at most three reads per decision and
+  only after a `TransportException`, so one lost read cannot abandon a disposable
+  account and its writable token. `Client` requires an explicit
   `HttpTransport`; its PSR-18 client must verify TLS, disable redirects and set
   timeouts, and `HttpTransport::discover()` is the explicit opt-in for unverified
   discovered defaults. The API layer rejects HTTP 3xx responses. Handles never
@@ -3582,8 +3586,9 @@ exclusive with Fileman's `multipart_uploads`, WHM's `multipart_upload` and JSON.
 Source-bound lowering preserves absent body/schema requiredness and uses prose's
 required upload alternative. Streaming, source preparation, transport, old generated
 operations and SSL bridge behavior remain unchanged. Approved parent source/preparation and Fileman/WHM corrections are integrated.
-Server-path modes (.30.9), owned Fileman evidence (.30.5) and native Windows
-verification (.30.10) remain separate open work.
+Server-path modes (.30.9) and native Windows verification (.30.10) remain separate
+open work. Owned Fileman evidence (.30.5) is closed; its passing capture is
+`docs/api/evidence/2026-11-01-fileman-upload-v2.json`.
 
 
 ### UAPI ImageManager (2026-10-31)
