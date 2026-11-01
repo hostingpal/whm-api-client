@@ -100,8 +100,11 @@ func (b *builder) responseFields(op model.Operation, v model.Variant, ov overlay
 // lowering, which otherwise intentionally degrades unresolved schemas to mixed.
 // This stricter check is local to explicit response_fields projections.
 func (s schemas) projectionSchema(sourceID string, node any, depth int, seen map[string]bool) error {
-	obj, nextID, key, ok := s.follow(sourceID, node)
-	if !ok || depth > maxDepth || (key != "" && seen[key]) {
+	obj, nextID, key, err := s.projectionNode(sourceID, node)
+	if err != nil {
+		return err
+	}
+	if depth > maxDepth || (key != "" && seen[key]) {
 		return fmt.Errorf("contains an unresolved or recursive schema")
 	}
 	if key != "" {
@@ -121,6 +124,7 @@ func (s schemas) projectionSchema(sourceID string, node any, depth int, seen map
 			return fmt.Errorf("contains malformed schema type")
 		}
 		seenTypes := map[string]bool{}
+		concreteTypes := 0
 		for _, kind := range kinds {
 			name, ok := kind.(string)
 			if !ok || seenTypes[name] {
@@ -132,6 +136,15 @@ func (s schemas) projectionSchema(sourceID string, node any, depth int, seen map
 				return fmt.Errorf("contains unsupported schema type")
 			}
 			seenTypes[name] = true
+			if name != "null" {
+				concreteTypes++
+			}
+		}
+		// specFor represents one concrete type and optional null. Multiple
+		// concrete types would be silently narrowed by typeName; null alone
+		// would degrade to mixed. Neither preserves a declared source type.
+		if concreteTypes != 1 {
+			return fmt.Errorf("contains an unrepresentable declared schema type")
 		}
 	}
 	props, hasProps := asObject(obj["properties"])
@@ -190,6 +203,35 @@ func (s schemas) projectionSchema(sourceID string, node any, depth int, seen map
 		}
 	}
 	return nil
+}
+
+// projectionNode retains ordinary reference resolution and origin tracking, but
+// checks every declared reference before following it. The shared resolver's
+// permissive nonstring-reference behavior must not weaken explicit projections.
+func (s schemas) projectionNode(sourceID string, node any) (map[string]any, string, string, error) {
+	key := ""
+	for range 32 {
+		obj, ok := asObject(node)
+		if !ok {
+			return nil, sourceID, key, fmt.Errorf("contains an unresolved schema")
+		}
+		raw, present := obj["$ref"]
+		if !present {
+			return obj, sourceID, key, nil
+		}
+		ref, ok := raw.(string)
+		if !ok || ref == "" {
+			return nil, sourceID, key, fmt.Errorf("contains a malformed schema reference")
+		}
+		resolved, err := s.index.Resolve(sourceID, ref)
+		if err != nil || resolved.Origin.Pointer == nil {
+			return nil, sourceID, key, fmt.Errorf("contains an unresolved schema reference")
+		}
+		sourceID = resolved.Origin.SourceID
+		key = sourceID + "#" + *resolved.Origin.Pointer
+		node = resolved.Value
+	}
+	return nil, sourceID, key, fmt.Errorf("contains an unresolved or recursive schema reference")
 }
 
 func projectionMatches(spec *TypeSpec, names []string) bool {

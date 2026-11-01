@@ -123,3 +123,111 @@ func TestResponseFieldsRejectInvalidSourceBindingAndSelection(t *testing.T) {
 		})
 	}
 }
+
+func TestResponseFieldsRejectMalformedReferencesAtEveryResolutionStep(t *testing.T) {
+	malformed := []struct {
+		name  string
+		value any
+	}{
+		{"null", nil}, {"integer", 17}, {"zero", 0}, {"boolean", false},
+		{"list", []any{"#/components/schemas/Target"}},
+		{"object", map[string]any{"target": "#/components/schemas/Target"}}, {"empty", ""},
+	}
+	for _, tc := range malformed {
+		for _, steps := range []int{0, 1, 2} {
+			t.Run(tc.name+strings.Repeat("-resolved", steps), func(t *testing.T) {
+				m, set, root := projectedFixture(t)
+				terminal := map[string]any{"$ref": tc.value, "type": "object"}
+				selected := any(terminal)
+				if steps > 0 {
+					schemas := map[string]any{"Target": terminal}
+					selected = map[string]any{"$ref": "#/components/schemas/Target"}
+					if steps == 2 {
+						schemas["Entry"] = selected
+						selected = map[string]any{"$ref": "#/components/schemas/Entry"}
+					}
+					m.Documents["whm-openapi"]["components"] = map[string]any{"schemas": schemas}
+				}
+				root["properties"].(map[string]any)["details"] = selected
+				_, problems := buildProblems(t, m, set)
+				if !strings.Contains(problems, "response_fields") {
+					t.Fatalf("malformed reference accepted after %d resolutions: %s", steps, problems)
+				}
+			})
+		}
+	}
+}
+
+func TestResponseFieldsRejectUnrepresentableDeclaredTypes(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		kind any
+	}{
+		{"string then integer", []any{"string", "integer"}},
+		{"integer then string", []any{"integer", "string"}},
+		{"nullable multiple concrete", []any{"null", "string", "integer"}},
+		{"object then string", []any{"object", "string"}},
+		{"string then object", []any{"string", "object"}},
+		{"null only list", []any{"null"}},
+		{"null only scalar", "null"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			m, set, root := projectedFixture(t)
+			root["properties"].(map[string]any)["details"] = map[string]any{"type": tc.kind}
+			_, problems := buildProblems(t, m, set)
+			if !strings.Contains(problems, "response_fields") {
+				t.Fatalf("unrepresentable declared type accepted: %s", problems)
+			}
+		})
+	}
+}
+
+func TestResponseFieldsPreserveValidReferenceChainsAndRepresentableTypes(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		schema   map[string]any
+		kind     string
+		nullable bool
+	}{
+		{"single concrete list", map[string]any{"type": []any{"string"}}, "string", false},
+		{"concrete then null", map[string]any{"type": []any{"string", "null"}}, "string", true},
+		{"null then concrete", map[string]any{"type": []any{"null", "integer"}}, "int", true},
+		{"nullable opaque object", map[string]any{"type": []any{"object", "null"}}, "map", true},
+		{"explicit nullable scalar", map[string]any{"type": "string", "nullable": true}, "string", true},
+		{"omitted type remains opaque", map[string]any{}, "mixed", false},
+		{"plain opaque object", map[string]any{"type": "object"}, "map", false},
+	} {
+		for _, referenced := range []bool{false, true} {
+			name := tc.name
+			if referenced {
+				name += " through chain"
+			}
+			t.Run(name, func(t *testing.T) {
+				m, set, root := projectedFixture(t)
+				selected := any(tc.schema)
+				if referenced {
+					m.Documents["whm-openapi"]["components"] = map[string]any{"schemas": map[string]any{
+						"Entry": map[string]any{"$ref": "#/components/schemas/Target"}, "Target": tc.schema,
+					}}
+					selected = map[string]any{"$ref": "#/components/schemas/Entry"}
+				}
+				root["properties"].(map[string]any)["details"] = selected
+				result, problems := buildProblems(t, m, set)
+				if problems != "" {
+					t.Fatal(problems)
+				}
+				op := groupByClass(t, result, "Accounts").Operations[0]
+				if op.Returns == nil || len(op.Returns.Fields) != 2 || op.Returns.Fields[0].Name != "details" {
+					t.Fatalf("missing selected field: %+v", op.Returns)
+				}
+				details := op.Returns.Fields[0].Spec
+				if details.Type != tc.kind || details.Nullable != tc.nullable {
+					t.Fatalf("declared type/nullable semantics changed: %+v", details)
+				}
+				if details.Type == "map" && (details.Values == nil || details.Values.Type != "mixed") {
+					t.Fatalf("opaque object contract changed: %+v", details)
+				}
+			})
+		}
+	}
+}
