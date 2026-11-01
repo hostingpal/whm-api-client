@@ -109,9 +109,17 @@ final class WebmailInventoryProbesTest extends TestCase
         self::assertSame(['int'], $report['probes'][1]['payload_paths']['$[].is_current']);
         $json = json_encode($report, JSON_THROW_ON_ERROR);
         $privateValues = ['cpsessPRIVATETOKEN', 'synthetic.example', '192.0.2.10', 'private-whm-token',
-            'private-cpanel-token', 'Synthetic Mail', 'jupiter'];
+            'private-cpanel-token', 'Synthetic Mail', 'jupiter', '/synthetic/icon.svg', 'synthetic', '1700000000'];
         foreach ($privateValues as $private) {
             self::assertStringNotContainsString($private, $json);
+        }
+        $leaves = [];
+        array_walk_recursive($report, static function (mixed $leaf) use (&$leaves): void {
+            $leaves[] = $leaf;
+        });
+        // These could match inside a recorded hash, so they are compared with whole values instead.
+        foreach ([1, 0] as $short) {
+            self::assertNotContains($short, $leaves);
         }
     }
 

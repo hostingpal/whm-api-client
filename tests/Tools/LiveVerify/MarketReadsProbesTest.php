@@ -199,10 +199,20 @@ final class MarketReadsProbesTest extends TestCase
         $privateValues = [
             'PRIVATETOKEN', 'PRIVATECSR', 'BEGIN CERTIFICATE', 'synthetic.example', 'private-identity-value',
             'private-extra-key', 'private-identity-key', 'private-person', 'private-domain.example', '8675309',
-            'Synthetic Certificate', 'private-whm-token', 'private-cpanel-token',
+            'Synthetic Certificate', 'private-whm-token', 'private-cpanel-token', 'Synthetic label', 'Synthetic Store',
+            'Synthetic DCV', '.well-known/pki-validation', '123.45', 'hostname.example.com', 'synthetic',
+            'access_token',
         ];
         foreach ($privateValues as $private) {
             self::assertStringNotContainsString($private, $json);
+        }
+        $leaves = [];
+        array_walk_recursive($report, static function (mixed $leaf) use (&$leaves): void {
+            $leaves[] = $leaf;
+        });
+        // These could match inside a recorded hash, so they are compared with whole values instead.
+        foreach (['176', '1', '0', 'a', 'txt', 1, 0, 32] as $short) {
+            self::assertNotContains($short, $leaves);
         }
     }
 
