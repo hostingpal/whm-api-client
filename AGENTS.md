@@ -2980,10 +2980,10 @@ remain unobserved under `8x0.2.59`.
   `TransportException` records the PSR failure kind, cause class and token-redacted
   cause message without chaining the cause.
 - Authenticated operations perform no retries. The one narrow exception is
-  development-only: `tools/live-verify/src/FilemanUploadFixture.php` re-reads its
+  development-only: `tools/live-verify/src/DisposableAccountLifecycle.php` re-reads its
   read-only `listaccts` cleanup-ownership check, at most three reads per decision and
   only after a `TransportException`, so one lost read cannot abandon a disposable
-  account and its writable token. `Client` requires an explicit
+  account and its token. `Client` requires an explicit
   `HttpTransport`; its PSR-18 client must verify TLS, disable redirects and set
   timeouts, and `HttpTransport::discover()` is the explicit opt-in for unverified
   discovered defaults. The API layer rejects HTTP 3xx responses. Handles never
