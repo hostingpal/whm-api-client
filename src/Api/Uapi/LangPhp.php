@@ -67,6 +67,7 @@ use SensitiveParameter;
  * }
  * @phpstan-type PhpIniGetUserBasicDirectivesResult array{
  *     directives?: list<array{
+ *         cpanel_default?: string,
  *         default_value?: string|bool|int|int|float,
  *         info?: string,
  *         key?: string,
@@ -83,6 +84,7 @@ use SensitiveParameter;
  *         account?: string,
  *         documentroot?: string,
  *         homedir?: string,
+ *         is_suspended?: int,
  *         main_domain?: 0|1,
  *         path?: string,
  *         type?: string,
@@ -249,6 +251,9 @@ final readonly class LangPhp
      * Documented: Requires EasyApache 4 and the WebServer role; INI operations additionally require MultiPHP enabled.
      * Requests act through the selected account.
      *
+     * Observed: On cPanel 11.138.0.19 some directive rows also carry cpanel_default, an undocumented optional string
+     * with unknown meaning. Rows can omit it.
+     *
      * API-map identity: uapi:LangPHP/php_ini_get_user_basic_directives#GET (wire name
      * php_ini_get_user_basic_directives).
      *
@@ -307,6 +312,9 @@ final readonly class LangPhp
      *
      * Documented: Requires EasyApache 4 and the WebServer role; INI operations additionally require MultiPHP enabled.
      * Requests act through the selected account.
+     *
+     * Observed: On cPanel 11.138.0.19 some path rows also carry is_suspended, an undocumented optional integer with
+     * unknown meaning and allowed values. It is not a documented suspension flag.
      *
      * API-map identity: uapi:LangPHP/php_ini_get_user_paths#GET (wire name php_ini_get_user_paths).
      *

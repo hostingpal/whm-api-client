@@ -200,6 +200,7 @@ final class LangPhpSpec
                     'items' => [
                         'type' => 'object',
                         'fields' => [
+                            'cpanel_default' => ['type' => 'string'],
                             'default_value' => [
                                 'type' => 'union',
                                 'anyOf' => [
@@ -255,6 +256,7 @@ final class LangPhpSpec
                             'account' => ['type' => 'string'],
                             'documentroot' => ['type' => 'string'],
                             'homedir' => ['type' => 'string'],
+                            'is_suspended' => ['type' => 'int'],
                             'main_domain' => ['type' => 'flag'],
                             'path' => ['type' => 'string'],
                             'type' => ['type' => 'string'],

@@ -285,6 +285,10 @@
         {
           "kind": "documented",
           "text": "Requires EasyApache 4 and the WebServer role; INI operations additionally require MultiPHP enabled. Requests act through the selected account."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19 some directive rows also carry cpanel_default, an undocumented optional string with unknown meaning. Rows can omit it."
         }
       ],
       "probe": {
@@ -297,7 +301,30 @@
           "bridged-uapi"
         ],
         "expected": "success"
-      }
+      },
+      "response": {
+        "directives[].cpanel_default": {
+          "add": {
+            "type": "string"
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-11-01",
+              "note": "One-off read-only name inspection on 2026-11-01 from revision 760ca68: one direct UAPI GET as npr printed only key names and structural types, never values. With type=home, one of 15 directive rows carried cpanel_default as a non-numeric string. The pinned schema does not declare it. Its meaning, allowed values and requiredness are unknown, so it is an optional string with no assumed semantics."
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-11-01",
+          "note": "One-off read-only name inspection on 2026-11-01 from revision 760ca68: one direct UAPI GET as npr printed only key names and structural types, never values. Request: type=home. Extra row key: cpanel_default on one of 15 rows. Its meaning is not established by this inspection."
+        }
+      ]
     },
     "uapi:LangPHP/php_ini_get_user_content": {
       "notes": [
@@ -327,6 +354,10 @@
         {
           "kind": "documented",
           "text": "Requires EasyApache 4 and the WebServer role; INI operations additionally require MultiPHP enabled. Requests act through the selected account."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19 some path rows also carry is_suspended, an undocumented optional integer with unknown meaning and allowed values. It is not a documented suspension flag."
         }
       ],
       "probe": {
@@ -337,7 +368,30 @@
           "bridged-uapi"
         ],
         "expected": "success"
-      }
+      },
+      "response": {
+        "paths[].is_suspended": {
+          "add": {
+            "type": "int"
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-11-01",
+              "note": "One-off read-only name inspection on 2026-11-01 from revision 760ca68: one direct UAPI GET as npr printed only key names and structural types, never values. One of 2 path rows carried is_suspended as an integer. The pinned schema does not declare it. Its meaning, allowed values and requiredness are unknown, so it is an optional integer, not a 0/1 flag, and no suspension semantics are assumed."
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-11-01",
+          "note": "One-off read-only name inspection on 2026-11-01 from revision 760ca68: one direct UAPI GET as npr printed only key names and structural types, never values. No request arguments. Extra row key: is_suspended on one of 2 rows. Its meaning is not established by this inspection."
+        }
+      ]
     },
     "uapi:LangPHP/php_ini_set_user_basic_directives": {
       "method": "POST",
