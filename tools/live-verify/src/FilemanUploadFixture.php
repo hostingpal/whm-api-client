@@ -9,8 +9,8 @@ use HostingPal\WhmApiClient\Api\RequestMethod;
 use HostingPal\WhmApiClient\Api\Uapi\Spec\FilemanSpec;
 use HostingPal\WhmApiClient\Api\Whm\Spec\ServerSpec;
 use HostingPal\WhmApiClient\Client;
+use HostingPal\WhmApiClient\Exception\ApiErrorException;
 use HostingPal\WhmApiClient\Exception\ApiException;
-use HostingPal\WhmApiClient\Exception\TransportException;
 use HostingPal\WhmApiClient\Http\HttpTransport;
 use HostingPal\WhmApiClient\UapiClient;
 use HostingPal\WhmApiClient\Upload;
@@ -234,8 +234,12 @@ final class FilemanUploadFixture
                 'contactemail' => $this->recipe->contactEmail,
                 'quota' => 64, 'forcedns' => 0, 'hasshell' => 0, 'ip' => 'n',
             ], RequestMethod::Post);
-        } catch (TransportException $failure) {
-            // The server may still be working: absence read now cannot prove the account will stay absent.
+        } catch (ApiErrorException $refusal) {
+            // The server answered and refused: a known outcome, so a later absent read is final.
+            throw $refusal;
+        } catch (Throwable $failure) {
+            // A lost reply, gateway error or unreadable body says nothing about a server still working, so
+            // absence read now cannot prove the account will stay absent.
             $this->creationOutcomeUnknown = true;
             throw $failure;
         }

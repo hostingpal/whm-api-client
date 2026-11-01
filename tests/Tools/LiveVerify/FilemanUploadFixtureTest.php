@@ -27,6 +27,9 @@ final class FilemanUploadFixtureTest extends TestCase
 
     private const DELETE = 'direct:Fileman/delete_file';
 
+    private const FAILURE_MODES = ['throw_before', 'throw_after', 'api_before', 'api_after', 'http_before',
+        'http_after', 'invalid_before', 'invalid_after'];
+
     /** @var array<string, string|false> */
     private array $environment = [];
 
@@ -269,28 +272,41 @@ final class FilemanUploadFixtureTest extends TestCase
         self::assertSame([], $http->mutations);
     }
 
-    /** A lost response cannot rule out creation still in flight, so one absent read claims nothing. */
-    public function testLostCreationResponseIsNeverReportedAsAbsent(): void
+    /** Only an explicit refusal is a known outcome; these replies cannot rule out creation still in flight. */
+    #[DataProvider('unusableCreationResponses')]
+    public function testUnusableCreationResponseIsNeverReportedAsAbsent(string $failure): void
     {
         $http = new FilemanUploadServer();
-        $http->failures['createacct:1'] = 'throw_before';
+        $http->failures['createacct:1'] = $failure . '_before';
         $scenario = self::scenario($http);
         self::assertSame('unconfirmed', $scenario['fixture']['resources']['account']['creation']);
         self::assertSame('unconfirmed', $scenario['fixture']['resources']['account']['cleanup']);
         self::assertSame('failed', $scenario['fixture']['cleanup']);
+        self::assertSame('failed', $scenario['fixture']['status']);
         self::assertContains('account_creation_outcome_unknown', $scenario['fixture']['failures']);
         self::assertSame([], $http->mutations);
+        self::assertPrivate($scenario);
     }
 
-    public function testLostCreationResponseStillRemovesTheAccountItsMarkerProves(): void
+    #[DataProvider('unusableCreationResponses')]
+    public function testUnusableCreationResponseStillRemovesTheAccountItsMarkerProves(string $failure): void
     {
         $http = new FilemanUploadServer();
-        $http->failures['createacct:1'] = 'throw_after';
+        $http->failures['createacct:1'] = $failure . '_after';
         $scenario = self::scenario($http);
         self::assertSame(1, $http->counts['removeacct']);
         self::assertSame('confirmed', $scenario['fixture']['resources']['account']['creation']);
         self::assertSame('confirmed_absent', $scenario['fixture']['resources']['account']['cleanup']);
+        self::assertNotContains('account_creation_outcome_unknown', $scenario['fixture']['failures']);
         self::assertFalse($http->account);
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function unusableCreationResponses(): iterable
+    {
+        yield 'lost response' => ['throw'];
+        yield 'gateway error' => ['http'];
+        yield 'unreadable body' => ['invalid'];
     }
 
     public function testTransientIdentityReadCannotAbandonTheAccountOrItsToken(): void
@@ -425,7 +441,7 @@ final class FilemanUploadFixtureTest extends TestCase
             $steps[] = self::DELETE . ':' . $count;
         }
         foreach ($steps as $step) {
-            foreach (['throw_before', 'throw_after', 'api_before', 'api_after'] as $mode) {
+            foreach (self::FAILURE_MODES as $mode) {
                 yield $step . ' ' . $mode => [$step, $mode];
             }
         }
@@ -451,7 +467,7 @@ final class FilemanUploadFixtureTest extends TestCase
     public static function finalMutationFailures(): iterable
     {
         foreach (['Tokens/revoke:1', 'removeacct:1'] as $step) {
-            foreach (['throw_before', 'throw_after', 'api_before', 'api_after'] as $mode) {
+            foreach (self::FAILURE_MODES as $mode) {
                 yield $step . ' ' . $mode => [$step, $mode];
             }
         }

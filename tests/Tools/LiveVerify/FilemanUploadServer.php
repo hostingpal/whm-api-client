@@ -57,7 +57,12 @@ final class FilemanUploadServer implements ClientInterface
     /** @var list<string> */
     public array $mutations = [];
 
-    /** @var array<string, string> */
+    /**
+     * Step failures by function:count, each firing `_before` or `_after` the request's effect: `throw` loses the
+     * response, `api` is an explicit refusal, `http` a 502 gateway error, and `invalid` an unreadable 200 body.
+     *
+     * @var array<string, string>
+     */
     public array $failures = [];
 
     /** @var array<string, string> Raw replacement data JSON, by function:count. */
@@ -154,6 +159,9 @@ final class FilemanUploadServer implements ClientInterface
         if ($failure === 'api_before') {
             return self::failed($function, $bridge);
         }
+        if ($failure === 'http_before' || $failure === 'invalid_before') {
+            return self::unusable($failure);
+        }
         if ($request->getMethod() === 'POST') {
             $this->mutations[] = $function;
         }
@@ -168,6 +176,9 @@ final class FilemanUploadServer implements ClientInterface
         }
         if ($failure === 'api_after') {
             return self::failed($function, $bridge);
+        }
+        if ($failure === 'http_after' || $failure === 'invalid_after') {
+            return self::unusable($failure);
         }
         $data = $this->payload($function, $query);
         $payload = $this->overrides[$step] ?? json_encode($data, JSON_THROW_ON_ERROR);
@@ -197,6 +208,9 @@ final class FilemanUploadServer implements ClientInterface
         if ($failure === 'api_before') {
             return self::failed('direct:Fileman/upload_files', false);
         }
+        if ($failure === 'http_before' || $failure === 'invalid_before') {
+            return self::unusable($failure);
+        }
         $this->mutations[] = 'direct:Fileman/upload_files';
         $type = $request->getHeaderLine('Content-Type');
         $boundary = substr($type, strlen('multipart/form-data; boundary='));
@@ -222,6 +236,9 @@ final class FilemanUploadServer implements ClientInterface
         }
         if ($failure === 'api_after') {
             return self::failed('direct:Fileman/upload_files', false);
+        }
+        if ($failure === 'http_after' || $failure === 'invalid_after') {
+            return self::unusable($failure);
         }
         $payload = $this->overrides[$step] ?? json_encode($data, JSON_THROW_ON_ERROR);
 
@@ -456,6 +473,14 @@ final class FilemanUploadServer implements ClientInterface
         }
 
         return new Response(200, [], '{"metadata":{"result":0,"reason":"private upstream text"},"data":null}');
+    }
+
+    /** A reply that says nothing about the request's outcome, as a gateway or a truncated response does. */
+    private static function unusable(string $failure): ResponseInterface
+    {
+        return str_starts_with($failure, 'http')
+            ? new Response(502, [], 'private upstream gateway text')
+            : new Response(200, [], 'private unreadable upstream text');
     }
 
     private static function failTransport(): never
