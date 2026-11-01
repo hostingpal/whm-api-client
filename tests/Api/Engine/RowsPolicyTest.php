@@ -101,6 +101,23 @@ final class RowsPolicyTest extends TestCase
         );
     }
 
+    public function testEmptyLiteralDollarObjectFieldRaisesApiErrorWithSameMetadata(): void
+    {
+        $spec = self::rootRows();
+        $spec['returns'] = ['type' => 'object', 'fields' => ['$' => $spec['returns']]];
+        $metadata = new ResponseMetadata(200, null, ['status' => 0]);
+        $response = new ApiResponse((object) ['$' => []], $metadata);
+        $caught = null;
+        try {
+            OperationRunner::run($spec, [], static fn (): ApiResponse => $response);
+        } catch (ApiErrorException $error) {
+            $caught = $error;
+        }
+        self::assertInstanceOf(ApiErrorException::class, $caught);
+        self::assertSame(ApiErrorException::class, $caught::class);
+        self::assertSame($metadata, $caught->metadata);
+    }
+
     /** @return iterable<string, array{array<mixed>}> */
     public static function defectiveRootPolicies(): iterable
     {

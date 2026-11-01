@@ -1,0 +1,227 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "CCS",
+  "accessor": "ccs",
+  "class": "Ccs",
+  "operations": {
+    "uapi:CCS/add_delegate": {
+      "method": "POST",
+      "order": [
+        "delegatee",
+        "delegator",
+        "readonly"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 90 and later. Requires the installed Calendar and Contacts Server cPanel plugin for the selected account. This external plugin module is separate from the native CPDAVD module."
+        },
+        {
+          "kind": "policy",
+          "text": "The client does not install or migrate the plugin or provision calendars. CCS installed-plugin behavior has not been live verified; native CPDAVD observations establish no CCS behavior."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes calendar delegation and declares no rollback. The pinned result has no data member; this method returns void under ordinary UAPI status handling."
+        },
+        {
+          "kind": "policy",
+          "text": "Addresses retain their exact bytes and are form-encoded once in the POST body. No local address normalization, ownership or permission check is inferred. The client adds no default, implicit read, merge, retry or rollback; API success alone does not establish applied calendar permissions or their enforcement."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned readonly default is 0 (full access), with 1 meaning read-only access. This is a documented default, not an observed server guarantee."
+        },
+        {
+          "kind": "policy",
+          "text": "Omitting readonly, including explicit null, omits the field and can select source full access; explicitly choose true for read-only or false for full access when required. true sends 1 and false sends 0. No default is injected."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1CCS~1add_delegate/get: x-cpanel-available-version=cPanel 90; description requires the Calendar and Contacts Server plugin. x-readonly=false and x-rollback=none select form POST under the existing mutation policy. Required delegatee/delegator string parameters retain their source order and email-format scalar conventions. The result properties contain no data member, so normal lowering is void.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1CCS~1add_delegate/get"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1CCS~1add_delegate/get/parameters/2/schema: Optional integer readonly declares enum [1,0] and default 0; existing enum-based bool lowering gives ?bool with omitted/null omitted and false/true encoded as 0/1.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1CCS~1add_delegate/get/parameters/2/schema"
+        }
+      ]
+    },
+    "uapi:CCS/list_delegates": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 90 and later. Requires the installed Calendar and Contacts Server cPanel plugin for the selected account. This external plugin module is separate from the native CPDAVD module."
+        },
+        {
+          "kind": "policy",
+          "text": "The client does not install or migrate the plugin or provision calendars. CCS installed-plugin behavior has not been live verified; native CPDAVD observations establish no CCS behavior."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a nullable list of delegation objects with optional nonnullable delegatee, delegator and integer read_only (0/1) fields. Null and an empty list remain distinct; absent data is a payload mismatch. read_only=0 means full access and read_only=1 means read-only access, separate from UAPI success status."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1CCS~1list_delegates/get: x-cpanel-available-version=cPanel 90; description requires the Calendar and Contacts Server plugin. x-readonly=true retains GET. The response data contract follows responses/200/content/application~1json/schema/properties/result/properties/data without a correction.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1CCS~1list_delegates/get"
+        }
+      ]
+    },
+    "uapi:CCS/list_users": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 90 and later. Requires the installed Calendar and Contacts Server cPanel plugin for the selected account. This external plugin module is separate from the native CPDAVD module."
+        },
+        {
+          "kind": "policy",
+          "text": "The client does not install or migrate the plugin or provision calendars. CCS installed-plugin behavior has not been live verified; native CPDAVD observations establish no CCS behavior."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a dynamic username-to-UUID map. The pinned additionalProperties has UUID prose and string examples but no formal value type."
+        },
+        {
+          "kind": "policy",
+          "text": "Preserve existing map-of-mixed lowering: opaque JSON values retain their types and dynamic keys retain existing PHP numeric-key behavior. Callers must inspect values; no UUID validation, inferred value schema or conversion to a list is added. Empty objects and existing empty-array map compatibility remain valid; null, absent data, nonempty lists and scalar roots mismatch."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1CCS~1list_users/get: x-cpanel-available-version=cPanel 90; description requires the Calendar and Contacts Server plugin. x-readonly=true retains GET. The response data contract follows responses/200/content/application~1json/schema/properties/result/properties/data without a correction.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1CCS~1list_users/get"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1CCS~1list_users/get/responses/200/content/application~1json/schema/properties/result/properties/data/additionalProperties: Only a UUID description is present, without type. String examples at the parent describe expected values but do not establish a formal additional-value schema; retain default map values:mixed with no response correction.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1CCS~1list_users/get/responses/200/content/application~1json/schema/properties/result/properties/data/additionalProperties"
+        }
+      ]
+    },
+    "uapi:CCS/remove_delegate": {
+      "method": "POST",
+      "order": [
+        "delegatee",
+        "delegator"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 90 and later. Requires the installed Calendar and Contacts Server cPanel plugin for the selected account. This external plugin module is separate from the native CPDAVD module."
+        },
+        {
+          "kind": "policy",
+          "text": "The client does not install or migrate the plugin or provision calendars. CCS installed-plugin behavior has not been live verified; native CPDAVD observations establish no CCS behavior."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes calendar delegation and declares no rollback. The pinned result has no data member; this method returns void under ordinary UAPI status handling."
+        },
+        {
+          "kind": "policy",
+          "text": "Addresses retain their exact bytes and are form-encoded once in the POST body. No local address normalization, ownership or permission check is inferred. The client adds no default, implicit read, merge, retry or rollback; API success alone does not establish applied calendar permissions or their enforcement."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1CCS~1remove_delegate/get: x-cpanel-available-version=cPanel 90; description requires the Calendar and Contacts Server plugin. x-readonly=false and x-rollback=none select form POST under the existing mutation policy. Required delegatee/delegator string parameters retain their source order and email-format scalar conventions. The result properties contain no data member, so normal lowering is void.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1CCS~1remove_delegate/get"
+        }
+      ]
+    },
+    "uapi:CCS/update_delegate": {
+      "method": "POST",
+      "order": [
+        "delegatee",
+        "delegator",
+        "readonly"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 90 and later. Requires the installed Calendar and Contacts Server cPanel plugin for the selected account. This external plugin module is separate from the native CPDAVD module."
+        },
+        {
+          "kind": "policy",
+          "text": "The client does not install or migrate the plugin or provision calendars. CCS installed-plugin behavior has not been live verified; native CPDAVD observations establish no CCS behavior."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes calendar delegation and declares no rollback. The pinned result has no data member; this method returns void under ordinary UAPI status handling."
+        },
+        {
+          "kind": "policy",
+          "text": "Addresses retain their exact bytes and are form-encoded once in the POST body. No local address normalization, ownership or permission check is inferred. The client adds no default, implicit read, merge, retry or rollback; API success alone does not establish applied calendar permissions or their enforcement."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned readonly default is 0 (full access), with 1 meaning read-only access. This is a documented default, not an observed server guarantee."
+        },
+        {
+          "kind": "policy",
+          "text": "Omitting readonly, including explicit null, omits the field and can select source full access; explicitly choose true for read-only or false for full access when required. true sends 1 and false sends 0. No default is injected."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1CCS~1update_delegate/get: x-cpanel-available-version=cPanel 90; description requires the Calendar and Contacts Server plugin. x-readonly=false and x-rollback=none select form POST under the existing mutation policy. Required delegatee/delegator string parameters retain their source order and email-format scalar conventions. The result properties contain no data member, so normal lowering is void.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1CCS~1update_delegate/get"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1CCS~1update_delegate/get/parameters/2/schema: Optional integer readonly has default 0 but no enum. Apply only the existing explicit encoding:bool correction; do not change Param.Type grammar or infer other integer parameters as booleans.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1CCS~1update_delegate/get/parameters/2/schema"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1CCS~1update_delegate/get/parameters/2/description: Explicitly specifies 1 for read-only access and 0 for full access. This operation-scoped prose supports encoding:bool on readonly while preserving optionality and omission.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1CCS~1update_delegate/get/parameters/2/description"
+        }
+      ],
+      "params": {
+        "readonly": {
+          "encoding": "bool"
+        }
+      }
+    }
+  }
+}

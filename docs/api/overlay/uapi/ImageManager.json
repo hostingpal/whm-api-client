@@ -173,8 +173,21 @@
           "version": "11.138.0.19",
           "date": "2026-10-31",
           "note": "Independent formal review 5724933500 of revision 0898b8b23929b57c233aa3065be8c460aa2f8d23, submitted 2026-10-31T21:07:45Z, through direct UAPI and WHM bridge on disposable reviewer account wrvimg. _get_safe_image_file treats save_original_as as a file path and rejects existing paths. Existing directory img failed, whereas new file img/orig.png retained original dimensions 10x5 while resize produced 8x4. Reviewer reported account and home directory removed and temporary tokens revoked after both runs. Attributed reviewer source/wire observations, not a capture or replay by this correction. Review: https://github.com/hostingpal/whm-api-client/pull/93#pullrequestreview-5724933500."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10); reviewed 11.138.0.19",
+          "date": "2026-11-01",
+          "note": "PR93 final review 5726193860 of d9973b8170cc10452bc3668b1a612401c52947a5 identified the remaining contradictory directory instruction. Existing Param.Description replaces only save_original_as caller prose with a new file path, preserving omission and absolute/user-home-relative meanings; existing-path rejection is attributed to reviewed _get_safe_image_file source and cPanel 11.138.0.19 observations from review 5724933500, confirmed in final review. The pinned parameter itself says directory and is preserved unchanged. No runtime or parameter schema correction. Review: https://github.com/hostingpal/whm-api-client/pull/93#pullrequestreview-5726193860.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1ImageManager~1resize_image/get/parameters/3"
         }
-      ]
+      ],
+      "params": {
+        "save_original_as": {
+          "description": "The new file path at which to save a copy of the original image. If you omit this parameter, the server does not save a copy of the original image. This path may be absolute or relative to the user home directory. Reviewed source and cPanel 11.138.0.19 reject existing paths, including directories."
+        }
+      }
     }
   }
 }

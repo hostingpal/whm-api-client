@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 100 generated typed groups cover 1,154 documented operations (see
+The 101 generated typed groups cover 1,159 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, DNS zone and DNSSEC
 management, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -3731,3 +3731,63 @@ Project-authored code and documentation are licensed under the
 The bundled cPanel documentation snapshots retain their upstream terms and are
 not covered by the project's MIT license. See the
 [third-party documentation notice](docs/api/README.md#licensing).
+
+### UAPI CCS calendar delegation (2026-10-31)
+
+`uapi()->ccs()` covers all five pinned CCS functions, available from cPanel 90.
+They require the installed **Calendar and Contacts Server** cPanel plugin. CCS is
+separate from the native CPDAVD module; its observations and defaults do not
+establish CCS behavior. The client does not install or migrate the plugin or
+provision calendars.
+
+```php
+$ccs = $client->uapi('example')->ccs();
+$users = $ccs->listUsers();
+$delegations = $ccs->listDelegates();
+$ccs->addDelegate(delegatee: 'guest@example.test', delegator: 'owner@example.test', readonly: true);
+$ccs->updateDelegate(delegatee: 'guest@example.test', delegator: 'owner@example.test', readonly: false);
+$ccs->removeDelegate(delegatee: 'guest@example.test', delegator: 'owner@example.test');
+```
+
+The two reads use GET; the three mutations use form POST and return void under
+ordinary UAPI status handling because their pinned responses have no data member.
+Addresses retain their exact bytes and existing scalar conventions, encoded once
+in the body. Optional `readonly` on add and update is a native nullable boolean:
+omission/null omits the field, false sends 0 and true sends 1. Both sources declare
+default 0 (full access); this is not an observed server guarantee. Omission can
+select source full access, so explicitly choose the intended permission when it
+matters. The client injects no default and adds no implicit read, merge, retry or
+rollback. Mutations declare no rollback; API success alone does not establish
+applied calendar permissions or their enforcement.
+
+`listDelegates()` preserves null separately from an empty list. Rows have optional
+nonnullable string `delegatee`/`delegator` and integer `read_only` (0|1): zero is full
+access, one is read-only access, independent of UAPI status. Missing data or wrong
+kinds/types raise a payload mismatch. `listUsers()` returns a dynamic
+username-to-UUID map with `array<array-key, mixed>` PHPDoc. The formal additional
+value schema has UUID prose and string examples but no type, so opaque JSON values
+retain their types and keys retain existing PHP numeric-key behavior. Callers
+inspect values; there is no inferred UUID validator or string-only correction.
+Empty objects and the existing empty-array map compatibility are preserved;
+null/missing data, nonempty lists and scalar roots mismatch.
+
+Exactly five canonical UAPI operations and one group are added over `0898b8b`:
+1,122 operations (534 UAPI, 588 WHM), 93 groups and 189 generated outputs (188 PHP
+files plus coverage). Existing generator/runtime machinery is unchanged. No live
+calls, plugin installation, calendar/contact reads or delegation mutations ran.
+Installed-plugin behavior, response compatibility and permission enforcement remain
+open under `whm-api-client-8x0.2.61`.
+
+Ordered integration with approved master `7d5099b` yields 1,159 canonical
+operations (563 UAPI, 596 WHM), 101 groups and 205 generated outputs (204 PHP
+files plus coverage). Earlier slice counts above remain historical. The original
+CCS delivery is closed under `whm-api-client-8x0.4.19`; installed-plugin runtime
+verification remains open under `whm-api-client-8x0.2.61`.
+
+[PR94 review 5724966468](https://github.com/hostingpal/whm-api-client/pull/94#pullrequestreview-5724966468)
+of `259c8d6` reported plugin-absent `ApiErrorException` responses for both reads
+through direct UAPI and the WHM bridge on cPanel 11.138.0.19. It saw no CCS handler
+source or installed-plugin successful payload. Populated `read_only` wire types
+remain unobserved: strict native integer 0|1 stays pinned, without speculative
+digit-string acceptance. The opaque `listUsers()` map remains unchanged. This
+integration performs no live call, plugin installation or calendar operation.

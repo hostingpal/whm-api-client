@@ -188,8 +188,10 @@ final readonly class ImageManager
      * @param int $height The height to which to set the image size.
      * @param string $imageFile The name of the file to scale.
      * @param int $width The width to which to set the image size.
-     * @param string|null $saveOriginalAs The path to the directory in which to save a copy the original image file.
-     *     Null omits it.
+     * @param string|null $saveOriginalAs The new file path at which to save a copy of the original image. If you omit
+     *     this parameter, the server does not save a copy of the original image. This path may be absolute or relative
+     *     to the user home directory. Reviewed source and cPanel 11.138.0.19 reject existing paths, including
+     *     directories. Null omits it.
      * @return string
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
