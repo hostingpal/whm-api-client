@@ -16,7 +16,7 @@ use SensitiveParameter;
  * rather than by the library's encoder, so the guard compares the client against a second implementation.
  *
  * @phpstan-type Label 'bytes'|'empty'|'cursor'|'path'|'partial'|'raw'
- * @phpstan-type UploadPhase 'upload_success'|'upload_partial'|'upload_all_failed'|'upload_raw'
+ * @phpstan-type UploadPhase 'upload_success'|'upload_partial'|'upload_all_failed'|'upload_raw'|'upload_empty'
  * @phpstan-type Part array{field: string, filename: string, bytes: string}
  */
 final readonly class FilemanUploadRecipe
@@ -42,7 +42,7 @@ final readonly class FilemanUploadRecipe
     public const CONFLICT_BYTES = 'conflicting bytes that must never replace an owned file';
 
     /** Every label, in the order its file is first stored. */
-    public const LABELS = ['bytes', 'empty', 'cursor', 'path', 'partial', 'raw'];
+    public const LABELS = ['bytes', 'cursor', 'path', 'partial', 'raw', 'empty'];
 
     private const DIRECT = 'https://test.oblak.host:2083/execute/Fileman/';
 
@@ -138,7 +138,6 @@ final readonly class FilemanUploadRecipe
         $files = match ($phase) {
             'upload_success' => [
                 [$this->names['bytes'], self::contents('bytes')],
-                [$this->names['empty'], self::contents('empty')],
                 [$this->names['cursor'], self::contents('cursor')],
                 [$this->names['path'], self::contents('path')],
             ],
@@ -148,6 +147,7 @@ final readonly class FilemanUploadRecipe
             ],
             'upload_all_failed' => [[$this->names['cursor'], self::CONFLICT_BYTES]],
             'upload_raw' => [[$this->names['raw'], self::contents('raw')]],
+            'upload_empty' => [[$this->names['empty'], self::contents('empty')]],
         };
         $parts = [];
         foreach ($files as $index => [$filename, $bytes]) {
@@ -191,11 +191,16 @@ final readonly class FilemanUploadRecipe
         return self::DIRECT . 'list_files?dir=' . rawurlencode(self::HOME) . '&types=dir%7Cfile';
     }
 
-    /** Fixture directory listing, including hidden entries, so nothing can hide from an emptiness check. */
+    /**
+     * Fixture directory listing with hidden entries and no type filter, which returns every file type.
+     *
+     * A type filter would hide a symbolic link or other special entry from the checks that guard the
+     * upstream-recursive directory delete.
+     */
     public function directoryListUri(): string
     {
         return self::DIRECT . 'list_files?dir=' . rawurlencode($this->directory)
-            . '&include_permissions=1&show_hidden=1&types=dir%7Cfile';
+            . '&include_permissions=1&show_hidden=1';
     }
 
     /**

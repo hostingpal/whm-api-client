@@ -102,7 +102,7 @@ final class FilemanUploadRecipeTest extends TestCase
             $base . 'upload_files?dir=' . $directory . '&get_disk_info=1&overwrite=0&permissions=0600',
             $recipe->uploadUri('upload_success'),
         );
-        foreach (['upload_partial', 'upload_all_failed', 'upload_raw'] as $phase) {
+        foreach (['upload_partial', 'upload_all_failed', 'upload_raw', 'upload_empty'] as $phase) {
             self::assertSame(
                 $base . 'upload_files?dir=' . $directory . '&overwrite=0&permissions=0600',
                 $recipe->uploadUri($phase),
@@ -110,7 +110,7 @@ final class FilemanUploadRecipeTest extends TestCase
         }
         self::assertSame($base . 'list_files?dir=%2Fhome%2Fwlupload&types=dir%7Cfile', $recipe->homeListUri());
         self::assertSame(
-            $base . 'list_files?dir=' . $directory . '&include_permissions=1&show_hidden=1&types=dir%7Cfile',
+            $base . 'list_files?dir=' . $directory . '&include_permissions=1&show_hidden=1',
             $recipe->directoryListUri(),
         );
         self::assertSame(
@@ -120,7 +120,7 @@ final class FilemanUploadRecipeTest extends TestCase
         );
     }
 
-    /** @param 'upload_success'|'upload_partial'|'upload_all_failed'|'upload_raw' $phase */
+    /** @param 'upload_success'|'upload_partial'|'upload_all_failed'|'upload_raw'|'upload_empty' $phase */
     #[DataProvider('uploadPhases')]
     public function testHandAssembledBodyEqualsTheLibraryEncoderForEveryPhase(string $phase): void
     {
@@ -134,10 +134,10 @@ final class FilemanUploadRecipeTest extends TestCase
         self::assertSame($recipe->expectedBody($phase, $boundary), (string) $body);
     }
 
-    /** @return iterable<string, array{'upload_success'|'upload_partial'|'upload_all_failed'|'upload_raw'}> */
+    /** @return iterable<string, array{'upload_success'|'upload_partial'|'upload_all_failed'|'upload_raw'|'upload_empty'}> */
     public static function uploadPhases(): iterable
     {
-        foreach (['upload_success', 'upload_partial', 'upload_all_failed', 'upload_raw'] as $phase) {
+        foreach (['upload_success', 'upload_partial', 'upload_all_failed', 'upload_raw', 'upload_empty'] as $phase) {
             yield $phase => [$phase];
         }
     }

@@ -9,6 +9,8 @@ use HostingPal\WhmApiClient\Api\RequestMethod;
 use HostingPal\WhmApiClient\Api\Uapi\Spec\FilemanSpec;
 use HostingPal\WhmApiClient\Api\Whm\Spec\ServerSpec;
 use HostingPal\WhmApiClient\Client;
+use HostingPal\WhmApiClient\Exception\ApiException;
+use HostingPal\WhmApiClient\Exception\TransportException;
 use HostingPal\WhmApiClient\Http\HttpTransport;
 use HostingPal\WhmApiClient\UapiClient;
 use HostingPal\WhmApiClient\Upload;
@@ -31,13 +33,16 @@ use Throwable;
  * never adopted, and a failed creation never authorizes removing anything the marker does not match. No mutation is
  * retried. Setup creates a short-lived writable token; it lives in memory only.
  *
- * Capture stops at the first unexpected state, because later uploads could not be interpreted. Ownership of a file
- * needs fresh directory absence, the original validated upload row and a matching byte readback for this run, never
- * a flag or a later inventory alone. A reread that no longer matches withdraws it. Only proven-owned files are deleted
- * individually; the upstream-recursive directory delete runs only after its inventory, hidden entries included, shows
- * it empty. Anything unproven stays for account removal and is reported. File cleanup failure does not prevent token
- * and account cleanup, and token, account, domain and zone absence are each checked through the API. That is the
- * whole claim: no filesystem or home-directory cleanup is claimed, and none is checked.
+ * Capture stops at the first unexpected state, because later uploads could not be interpreted. The batches with rows
+ * run first, each gated by its rows and an inventory, so a problem in the readback endpoint, which has no earlier
+ * observation, costs no row evidence; one read then proves both byte fidelity and that overwrite=0 kept the originals.
+ * The empty file goes last, alone, as its row representation is the least certain and nothing depends on it.
+ * Ownership of a file needs fresh directory absence, the original validated upload row and a matching byte readback
+ * for this run, never a flag or a later inventory alone. Only proven-owned files are deleted individually; the
+ * upstream-recursive directory delete runs only after an unfiltered inventory, hidden entries included, proves it
+ * empty. Anything unproven stays for account removal and is reported. File cleanup failure does not prevent token and
+ * account cleanup, and token, account, domain and zone absence are each checked through the API. That is the whole
+ * claim: no filesystem or home-directory cleanup is claimed, and none is checked.
  *
  * Fileman/get_file_content transcodes, so readback is a documented reversible check: the file is read as ISO-8859-1
  * into UTF-8 and compared with the independent mapping in FilemanUploadRecipe, never with a size alone.
@@ -95,6 +100,10 @@ final class FilemanUploadFixture
     /** Long enough for this run and short enough that a lost token dies quickly; cleanup still revokes it. */
     private const TOKEN_LIFETIME = 900;
 
+    private const IDENTITY_READS = 3;
+
+    private const REREAD_PAUSE_MICROSECONDS = 250000;
+
     private readonly FilemanUploadRecipe $recipe;
 
     private readonly FilemanUploadGuard $guard;
@@ -129,6 +138,8 @@ final class FilemanUploadFixture
     private array $borrowed = [];
 
     private bool $expectationFailed = false;
+
+    private bool $creationOutcomeUnknown = false;
 
     private bool $used = false;
 
@@ -216,11 +227,17 @@ final class FilemanUploadFixture
             throw new RuntimeException('Fileman upload fixture identity is already present.');
         }
         $report['resources']['account']['creation'] = 'unconfirmed';
-        $this->whm->call('createacct', [
-            'username' => FilemanUploadRecipe::ACCOUNT, 'domain' => FilemanUploadRecipe::DOMAIN,
-            'contactemail' => $this->recipe->contactEmail,
-            'quota' => 64, 'forcedns' => 0, 'hasshell' => 0, 'ip' => 'n',
-        ], RequestMethod::Post);
+        try {
+            $this->whm->call('createacct', [
+                'username' => FilemanUploadRecipe::ACCOUNT, 'domain' => FilemanUploadRecipe::DOMAIN,
+                'contactemail' => $this->recipe->contactEmail,
+                'quota' => 64, 'forcedns' => 0, 'hasshell' => 0, 'ip' => 'n',
+            ], RequestMethod::Post);
+        } catch (TransportException $failure) {
+            // The server may still be working: absence read now cannot prove the account will stay absent.
+            $this->creationOutcomeUnknown = true;
+            throw $failure;
+        }
         $report['resources']['account']['creation'] = 'confirmed';
         if (!$this->accountExists() || $this->tokenExists()) {
             throw new RuntimeException('Fileman upload fixture setup identities are unusable.');
@@ -256,7 +273,6 @@ final class FilemanUploadFixture
             static fn (#[SensitiveParameter] Client $client): mixed => $client->whm()->server()->version(),
         ), $this->root);
 
-        // A home with no entries could not prove absence, so require its known identity too.
         $home = $this->homeRows('home_initial', $direct);
         $this->expect(!isset($home[$recipe->directory]));
 
@@ -266,7 +282,6 @@ final class FilemanUploadFixture
         try {
             $uploads = [
                 Upload::fromString($recipe->names['bytes'], FilemanUploadRecipe::contents('bytes')),
-                Upload::fromString($recipe->names['empty'], FilemanUploadRecipe::contents('empty')),
                 Upload::fromStream($recipe->names['cursor'], $cursor),
                 Upload::fromPath($source, $recipe->names['path']),
             ];
@@ -280,7 +295,7 @@ final class FilemanUploadFixture
                     overwrite: false,
                     permissions: FilemanUploadRecipe::PERMISSIONS,
                 ),
-                ['bytes', 'empty', 'cursor', 'path'],
+                ['bytes', 'cursor', 'path'],
                 0,
                 1,
                 $direct,
@@ -289,10 +304,9 @@ final class FilemanUploadFixture
             @unlink($source);
         }
         $this->expectBorrowedAdvanced('cursor', $cursor);
-        $this->inventory('inventory_success', ['bytes', 'empty', 'cursor', 'path'], $direct);
+        $this->inventory('inventory_success', ['bytes', 'cursor', 'path'], $direct);
         $report['resources']['directory']['creation'] = 'confirmed';
         $this->directoryOwned = true;
-        $this->readBack(['read_bytes' => 'bytes', 'read_cursor' => 'cursor', 'read_path' => 'path'], $direct);
 
         $partial = self::borrowedStream('partial');
         $uploads = [
@@ -351,12 +365,29 @@ final class FilemanUploadFixture
             $direct,
         );
 
-        $this->inventory('inventory_final', FilemanUploadRecipe::LABELS, $direct);
-        // The empty file comes last: its readback is the only one no reviewed observation covers.
+        $this->inventory('inventory_final', ['bytes', 'cursor', 'path', 'partial', 'raw'], $direct);
         $this->readBack([
-            'reread_bytes' => 'bytes', 'reread_cursor' => 'cursor', 'read_partial' => 'partial', 'read_raw' => 'raw',
-            'read_empty' => 'empty',
+            'read_bytes' => 'bytes', 'read_cursor' => 'cursor', 'read_path' => 'path',
+            'read_partial' => 'partial', 'read_raw' => 'raw',
         ], $direct);
+
+        $empty = [Upload::fromString($recipe->names['empty'], FilemanUploadRecipe::contents('empty'))];
+        $this->upload(
+            'upload_empty',
+            'typed',
+            static fn (#[SensitiveParameter] Client $client): mixed => $client->uapi()->fileman()->uploadFiles(
+                files: $empty,
+                dir: $recipe->directory,
+                overwrite: false,
+                permissions: FilemanUploadRecipe::PERMISSIONS,
+            ),
+            ['empty'],
+            0,
+            1,
+            $direct,
+        );
+        $this->inventory('inventory_complete', FilemanUploadRecipe::LABELS, $direct);
+        $this->readBack(['read_empty' => 'empty'], $direct);
         if ($this->expectationFailed) {
             throw new RuntimeException('Fileman upload readback expectation failed.');
         }
@@ -555,10 +586,8 @@ final class FilemanUploadFixture
         ];
         $matched = $this->last()['probe_outcome'] === 'passed' && $exact;
         if ($matched) {
+            // Anything left unproven is not cleaned up individually; account removal takes it.
             $this->owned[$label] = true;
-        } else {
-            // An unproven or changed file is not cleaned up individually; account removal takes it.
-            unset($this->owned[$label]);
         }
         if (!$matched || !$from || !$to) {
             $this->markFailed();
@@ -639,20 +668,21 @@ final class FilemanUploadFixture
     /**
      * List the home directory; its known entry proves the listing is usable as evidence of absence.
      *
+     * This identity read is generic, as in the finite-Quota inventories: an optional field on an unrelated home
+     * entry must not stop an upload run. Any such surprise still reaches the strict review from the same response.
+     *
      * @return array<string, array<mixed>>
      */
     private function homeRows(string $phase, Client $direct): array
     {
-        $recipe = $this->recipe;
         $rows = $this->named($this->succeed($phase, new Probe(
             'uapi:Fileman/list_files',
             'direct-uapi',
             FilemanSpec::LIST_FILES,
-            $recipe->homeListUri(),
-            static fn (#[SensitiveParameter] Client $client): mixed => $client->uapi()->fileman()->listFiles(
-                dir: FilemanUploadRecipe::HOME,
-                types: 'dir|file',
-            ),
+            $this->recipe->homeListUri(),
+            static fn (#[SensitiveParameter] Client $client): mixed => $client->uapi()->call('Fileman', 'list_files', [
+                'dir' => FilemanUploadRecipe::HOME, 'types' => 'dir|file',
+            ], RequestMethod::Get)->data,
             null,
             null,
             'home-presence',
@@ -678,7 +708,6 @@ final class FilemanUploadFixture
                 dir: $recipe->directory,
                 includePermissions: true,
                 showHidden: true,
-                types: 'dir|file',
             ),
             null,
             null,
@@ -687,9 +716,30 @@ final class FilemanUploadFixture
     }
 
     /**
+     * Decide from the original response whether an empty listing is a real one.
+     *
+     * Decoded to arrays, `{}` is the same empty array as a JSON list, and an empty object cannot prove an empty
+     * directory. Only a JSON list or an object holding both documented lists can.
+     */
+    private function listingProvesContents(): bool
+    {
+        $raw = $this->capture->rawBody();
+        if ($raw === null) {
+            return false;
+        }
+        $document = json_decode($raw, false, 512, JSON_THROW_ON_ERROR);
+        $envelope = $document instanceof stdClass && property_exists($document, 'result')
+            ? $document->result : $document;
+        $data = $envelope instanceof stdClass ? ($envelope->data ?? null) : null;
+
+        return is_array($data)
+            || ($data instanceof stdClass && is_array($data->dirs ?? null) && is_array($data->files ?? null));
+    }
+
+    /**
      * Key listing rows by unique exact name, reading both documented listing forms.
      *
-     * Dot entries are not contents, whichever way the server reports them.
+     * Dot and parent entries are not contents, whichever way the server reports them.
      *
      * @return array<string, array<mixed>>
      */
@@ -708,7 +758,7 @@ final class FilemanUploadFixture
             $this->expect(is_string($name) && $name !== '' && !isset($named[$name]));
             /** @var string $name */
             /** @var array<mixed> $row */
-            if ($name !== '.' && $name !== '..') {
+            if ($name !== '.' && $name !== '..' && ($row['isparent'] ?? 0) !== 1) {
                 $named[$name] = $row;
             }
         }
@@ -829,22 +879,56 @@ final class FilemanUploadFixture
     /**
      * Validate every row before exact local filtering; failed or null filtered lookups cannot prove absence.
      *
+     * The server always hosts other accounts, so an empty list is no proof of absence either.
+     *
      * @return list<stdClass>
      */
     private function accounts(): array
     {
         $this->whm->call('listaccts', ['want' => 'user,domain,email'], RequestMethod::Get);
         $payload = $this->rawPayload(false);
+        $rows = self::identityRows($payload instanceof stdClass ? ($payload->acct ?? null) : null, 'user', 'domain');
+        if ($rows === []) {
+            throw new RuntimeException('Fileman upload account inventory cannot prove absence.');
+        }
 
-        return self::identityRows($payload instanceof stdClass ? ($payload->acct ?? null) : null, 'user', 'domain');
+        return $rows;
     }
 
-    /** @phpstan-impure */
+    /**
+     * Read account ownership for a cleanup decision, surviving a transient failed request.
+     *
+     * Only this read repeats, and only when the request itself failed: a returned inventory is final, so a foreign
+     * marker or unusable rows are never read twice. One lost read must not abandon an account and a writable token.
+     *
+     * @phpstan-impure
+     */
+    private function accountOwned(): bool
+    {
+        for ($attempt = 1; $attempt < self::IDENTITY_READS; ++$attempt) {
+            try {
+                return $this->accountExists();
+            } catch (ApiException) {
+                usleep(self::REREAD_PAUSE_MICROSECONDS);
+            }
+        }
+
+        return $this->accountExists();
+    }
+
+    /**
+     * Read exact zone presence; the server always hosts other zones, so an empty list cannot prove absence.
+     *
+     * @phpstan-impure
+     */
     private function zoneExists(): bool
     {
         $this->whm->call('listzones', [], RequestMethod::Get);
         $payload = $this->rawPayload(false);
         $rows = self::identityRows($payload instanceof stdClass ? ($payload->zone ?? null) : null, 'domain');
+        if ($rows === []) {
+            throw new RuntimeException('Fileman upload zone inventory cannot prove absence.');
+        }
 
         return in_array(FilemanUploadRecipe::DOMAIN, array_column($rows, 'domain'), true);
     }
@@ -943,15 +1027,19 @@ final class FilemanUploadFixture
         }
         $report['cleanup'] = 'passed';
         $report['resources']['account']['cleanup'] = 'unconfirmed';
+        $report['resources']['files']['proven_owned'] = count($this->owned);
         if ($report['resources']['token']['creation'] !== 'not_attempted') {
             $report['resources']['token']['cleanup'] = 'unconfirmed';
         }
+        if ($report['resources']['directory']['creation'] !== 'not_attempted') {
+            $report['resources']['directory']['cleanup'] = 'unconfirmed';
+        }
         try {
-            if ($this->accountExists()) {
+            if ($this->accountOwned()) {
                 $report['resources']['account']['creation'] = 'confirmed';
                 $this->cleanupFiles($report);
                 $this->cleanupToken($report);
-                if (!$this->accountExists()) {
+                if (!$this->accountOwned()) {
                     throw new RuntimeException('Fileman upload account ownership changed during cleanup.');
                 }
                 try {
@@ -961,7 +1049,9 @@ final class FilemanUploadFixture
                 } catch (Throwable) {
                     self::cleanupFailure($report, 'account_remove_failure');
                 }
-                $report['resources']['account']['cleanup'] = $this->accountExists() ? 'present' : 'confirmed_absent';
+                $report['resources']['account']['cleanup'] = $this->accountOwned() ? 'present' : 'confirmed_absent';
+            } elseif ($this->creationOutcomeUnknown) {
+                self::cleanupFailure($report, 'account_creation_outcome_unknown');
             } else {
                 $report['resources']['account']['cleanup'] = 'confirmed_absent';
                 if ($report['resources']['token']['creation'] !== 'not_attempted') {
@@ -1008,8 +1098,6 @@ final class FilemanUploadFixture
         if ($report['resources']['directory']['creation'] === 'not_attempted' || $direct === null) {
             return;
         }
-        $report['resources']['directory']['cleanup'] = 'unconfirmed';
-        $report['resources']['files']['proven_owned'] = count($this->owned);
         foreach (FilemanUploadRecipe::LABELS as $label) {
             if (
                 isset($this->owned[$label])
@@ -1020,10 +1108,12 @@ final class FilemanUploadFixture
         }
         try {
             if ($this->directoryOwned) {
-                if ($this->directoryRows('inventory_empty', $direct) === []) {
+                if ($this->directoryRows('inventory_empty', $direct) !== []) {
+                    self::cleanupFailure($report, 'fixture_directory_not_empty');
+                } elseif ($this->listingProvesContents()) {
                     $this->deleteExact($report, 'delete_directory', $this->recipe->directory, $direct);
                 } else {
-                    self::cleanupFailure($report, 'fixture_directory_not_empty');
+                    self::cleanupFailure($report, 'directory_emptiness_unproven');
                 }
             }
             $present = isset($this->homeRows('home_final', $direct)[$this->recipe->directory]);

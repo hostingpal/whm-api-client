@@ -1791,9 +1791,15 @@ random contact-email marker, held only in memory, proves ownership, so a failed 
 concurrent creation can never authorize removing an account the marker does not
 match. Setup creates a 900-second writable token and confirms it. Cleanup runs in
 `finally`, each mutation is attempted at most once, and token, account, domain and
-zone absence are each read back through the API. `FilemanUploadGuard` checks both
-opt-ins and the exact account and domain on every request, then the exact method,
-URI, complete header set and body. Each mutation is consumed once even when refused.
+zone absence are each read back through the API. An empty identity list proves
+nothing, because the server always hosts other accounts and zones. After a lost
+`createacct` response, a single absent read cannot rule out creation still in flight,
+so the account stays `unconfirmed`. The account read that gates cleanup is the only
+request ever repeated, at most three times and only when the request itself failed:
+one lost read must not abandon an account and a writable token, while a returned
+inventory is final. No mutation repeats. `FilemanUploadGuard` checks both opt-ins and
+the exact account and domain on every request, then the exact method, URI, complete
+header set and body. Each mutation is consumed once even when refused.
 
 **Transport.** `CurlClient` casts its body to a string and stays unchanged for every
 other fixture. `StreamingCurlClient` reads at most 8192 bytes at a time through
@@ -1809,14 +1815,22 @@ differing byte, before the closing delimiter. String conversion and buffering ar
 refused outright.
 
 **Requests.** All uploads use `overwrite=0`, `permissions=0600` and one fresh
-high-entropy directory, on the direct route only:
+high-entropy directory, on the direct route only, in this order:
 
 | Phase | Surface | Parts | Expected |
 | --- | --- | --- | --- |
-| `upload_success` | typed | all bytes (`fromString`), empty, borrowed cursor (`fromStream`), 20 KB local file (`fromPath`) | status 1, four stored rows, disk info |
+| `upload_success` | typed | all bytes (`fromString`), borrowed cursor (`fromStream`), 20 KB local file (`fromPath`) | status 1, three stored rows, disk info |
 | `upload_partial` | typed | existing name with conflicting bytes, plus a fresh stream with explicit size | status 1, one refused and one stored row |
 | `upload_all_failed` | typed | existing name with conflicting bytes | status 0, one refused row returned normally |
 | `upload_raw` | `callMultipart` default Flag | one fresh file | status 1, one stored row |
+| `upload_empty` | typed | one true empty file | status 1, one stored row of size 0 |
+
+Each upload is gated by the previous rows and inventory. The batches with rows run
+before any readback because `get_file_content` has no earlier recorded observation,
+so a problem there costs no row evidence. The empty file goes alone and last: listings
+report a zero-byte size as an empty string on this server, so its row is the least
+certain, and a surprise there costs only that file. A readback mismatch withholds the
+empty upload, so no mutation follows an unexpected read.
 
 Status-0 handling is the merged rows-aware rule, not a fixture assumption: a batch
 with rows returns normally, while explicit null or a validated empty `uploads` raises
@@ -1830,22 +1844,22 @@ Each file is read with `from_charset=ISO-8859-1`, `to_charset=UTF-8` and
 `FilemanUploadRecipe::latin1ToUtf8()`, which maps each byte N to U+00NN by definition,
 without a conversion library. The mapping is injective, so an added encoding layer,
 replacement character, truncation or dropped NUL differs; size is never enough. The
-first file holds all 256 byte values plus extra NUL and CRLF bytes. After the two
-refusals both target files are read again, proving `overwrite=0` kept the originals.
-The returned charset must echo the request exactly. `from_char`/`to_char` are the
-documented echoes; their schema-less `from_charset`/`to_charset` twins are read only
-when those are absent. A differing echo over exact content fails the run at its end
-without stopping it, since it cannot affect how later uploads are read. The empty
-file is read last, as no reviewed observation covers it.
+first file holds all 256 byte values plus extra NUL and CRLF bytes. Every read follows
+both refusals, so one match proves both byte fidelity and that `overwrite=0` kept the
+original. The returned charset must echo the request exactly. `from_char`/`to_char`
+are the documented echoes; their schema-less `from_charset`/`to_charset` twins are read
+only when those are absent. A differing echo over exact content fails the run at its
+end without stopping it, since it cannot affect how later uploads are read.
 
 **Ownership and cleanup.** A file is owned only after fresh directory absence, its
-original validated row and a matching readback for this run. A reread that no longer
-matches withdraws ownership. Capture stops at the first unexpected state, and only
-owned files are deleted individually, each by an exact single-use guard authorization.
-`delete_file` is recursive upstream, so the directory is deleted only when it is owned
-and its inventory, hidden entries included, is empty. Anything unproven is left for
-account removal and reported. File cleanup failure never prevents token or account
-cleanup.
+original validated row and a matching readback for this run. Capture stops at the
+first unexpected state, and only owned files are deleted individually, each by an
+exact single-use guard authorization. `delete_file` is recursive upstream, so the
+directory is deleted only when it is owned and an inventory with hidden entries and
+no type filter is empty. A `types` filter would hide links and other special entries.
+Emptiness is read from the original response, as `{}` decodes to the same empty array
+as a real list. Anything unproven is left for account removal and reported. File
+cleanup failure never prevents token or account cleanup.
 
 **Evidence.** `fileman_upload` holds structural probe records, per-upload counts and
 transfer statistics, oracle outcomes and fixed-label lifecycle results. No file bytes,

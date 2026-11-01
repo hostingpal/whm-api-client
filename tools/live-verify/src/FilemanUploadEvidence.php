@@ -25,10 +25,10 @@ final class FilemanUploadEvidence
     /** Every phase in execution order, including the exact cleanup of proven-owned resources. */
     public const PHASES = [
         'version', 'home_initial', 'upload_success', 'inventory_success',
-        'read_bytes', 'read_cursor', 'read_path',
         'upload_partial', 'upload_all_failed', 'upload_raw', 'inventory_final',
-        'reread_bytes', 'reread_cursor', 'read_partial', 'read_raw', 'read_empty',
-        'delete_bytes', 'delete_empty', 'delete_cursor', 'delete_path', 'delete_partial', 'delete_raw',
+        'read_bytes', 'read_cursor', 'read_path', 'read_partial', 'read_raw',
+        'upload_empty', 'inventory_complete', 'read_empty',
+        'delete_bytes', 'delete_cursor', 'delete_path', 'delete_partial', 'delete_raw', 'delete_empty',
         'inventory_empty', 'delete_directory', 'home_final',
     ];
 
@@ -43,7 +43,7 @@ final class FilemanUploadEvidence
             $phase === 'version' => ['whm1:version', 'GET', ServerSpec::VERSION],
             str_starts_with($phase, 'upload_') => ['uapi:Fileman/upload_files', 'POST', FilemanSpec::UPLOAD_FILES],
             str_starts_with($phase, 'delete_') => ['uapi:Fileman/delete_file', 'GET', FilemanSpec::DELETE_FILE],
-            str_contains($phase, 'read_') => ['uapi:Fileman/get_file_content', 'GET', FilemanSpec::GET_FILE_CONTENT],
+            str_starts_with($phase, 'read_') => ['uapi:Fileman/get_file_content', 'GET', FilemanSpec::GET_FILE_CONTENT],
             default => ['uapi:Fileman/list_files', 'GET', FilemanSpec::LIST_FILES],
         };
 

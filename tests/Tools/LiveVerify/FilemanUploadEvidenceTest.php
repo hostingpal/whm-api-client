@@ -150,7 +150,7 @@ final class FilemanUploadEvidenceTest extends TestCase
         self::assertSame('uapi:Fileman/upload_files#POST', FilemanUploadEvidence::contract('upload_raw')['variant']);
         self::assertSame(
             'uapi:Fileman/get_file_content#GET',
-            FilemanUploadEvidence::contract('reread_bytes')['variant'],
+            FilemanUploadEvidence::contract('read_empty')['variant'],
         );
         self::assertSame('uapi:Fileman/list_files#GET', FilemanUploadEvidence::contract('home_final')['variant']);
     }

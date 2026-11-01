@@ -73,12 +73,13 @@ final class FilemanUploadFixtureTest extends TestCase
         self::assertSame([], $http->tokens);
         self::assertSame([], $http->directories);
         self::assertSame([
-            'createacct', 'Tokens/create_full_access', self::UPLOAD, self::UPLOAD, self::UPLOAD, self::UPLOAD,
+            'createacct', 'Tokens/create_full_access',
+            self::UPLOAD, self::UPLOAD, self::UPLOAD, self::UPLOAD, self::UPLOAD,
             self::DELETE, self::DELETE, self::DELETE, self::DELETE, self::DELETE, self::DELETE, self::DELETE,
             'Tokens/revoke', 'removeacct',
         ], $http->mutations);
         self::assertSame(FilemanUploadEvidence::PHASES, array_column($scenario['probes'], 'phase'));
-        self::assertSame(4, $http->streamed);
+        self::assertSame(5, $http->streamed);
         self::assertSame(['cursor' => true, 'partial' => true], $scenario['borrowed_streams']);
         foreach ($scenario['byte_oracle'] as $outcome) {
             self::assertTrue($outcome['content_exact']);
@@ -86,8 +87,10 @@ final class FilemanUploadFixtureTest extends TestCase
             self::assertTrue($outcome['to_charset_exact']);
             self::assertNull($outcome['first_difference']);
         }
-        self::assertSame(['read_bytes', 'read_cursor', 'read_path', 'reread_bytes', 'reread_cursor',
-            'read_partial', 'read_raw', 'read_empty'], array_keys($scenario['byte_oracle']));
+        self::assertSame(
+            ['read_bytes', 'read_cursor', 'read_path', 'read_partial', 'read_raw', 'read_empty'],
+            array_keys($scenario['byte_oracle']),
+        );
         self::assertSame(261, $scenario['byte_oracle']['read_bytes']['expected_bytes']);
         self::assertSame(390, $scenario['byte_oracle']['read_bytes']['expected_utf8_bytes']);
         self::assertSame(0, $scenario['byte_oracle']['read_empty']['expected_bytes']);
@@ -102,7 +105,7 @@ final class FilemanUploadFixtureTest extends TestCase
 
         self::assertSame('typed', $uploads['upload_success']['surface']);
         self::assertSame(1, $uploads['upload_success']['uapi_status']);
-        self::assertSame(4, $uploads['upload_success']['succeeded']);
+        self::assertSame(3, $uploads['upload_success']['succeeded']);
         self::assertSame(0, $uploads['upload_success']['failed']);
         self::assertSame('present', $uploads['upload_success']['diskinfo']);
         self::assertSame(1, $uploads['upload_partial']['uapi_status']);
@@ -117,6 +120,8 @@ final class FilemanUploadFixtureTest extends TestCase
         self::assertSame(1, $uploads['upload_all_failed']['rows']);
         self::assertTrue($uploads['upload_all_failed']['refused_rows_exact']);
         self::assertSame('generic', $uploads['upload_raw']['surface']);
+        self::assertSame('typed', $uploads['upload_empty']['surface']);
+        self::assertSame(1, $uploads['upload_empty']['succeeded']);
         $record = self::observation($scenario, 'upload_all_failed');
         self::assertSame('passed', $record['probe_outcome']);
         self::assertSame('passed', $record['payload_validation']);
@@ -253,14 +258,105 @@ final class FilemanUploadFixtureTest extends TestCase
         self::assertPrivate($scenario);
     }
 
-    public function testFailedCreationWithNoAccountRemovesNothing(): void
+    public function testRefusedCreationIsAbsentAndRemovesNothing(): void
+    {
+        $http = new FilemanUploadServer();
+        $http->failures['createacct:1'] = 'api_before';
+        $scenario = self::scenario($http);
+        self::assertSame(['setup_failure'], $scenario['fixture']['failures']);
+        self::assertSame('confirmed_absent', $scenario['fixture']['resources']['account']['cleanup']);
+        self::assertSame('passed', $scenario['fixture']['cleanup']);
+        self::assertSame([], $http->mutations);
+    }
+
+    /** A lost response cannot rule out creation still in flight, so one absent read claims nothing. */
+    public function testLostCreationResponseIsNeverReportedAsAbsent(): void
     {
         $http = new FilemanUploadServer();
         $http->failures['createacct:1'] = 'throw_before';
         $scenario = self::scenario($http);
-        self::assertSame(['setup_failure'], $scenario['fixture']['failures']);
-        self::assertSame('confirmed_absent', $scenario['fixture']['resources']['account']['cleanup']);
+        self::assertSame('unconfirmed', $scenario['fixture']['resources']['account']['creation']);
+        self::assertSame('unconfirmed', $scenario['fixture']['resources']['account']['cleanup']);
+        self::assertSame('failed', $scenario['fixture']['cleanup']);
+        self::assertContains('account_creation_outcome_unknown', $scenario['fixture']['failures']);
         self::assertSame([], $http->mutations);
+    }
+
+    public function testLostCreationResponseStillRemovesTheAccountItsMarkerProves(): void
+    {
+        $http = new FilemanUploadServer();
+        $http->failures['createacct:1'] = 'throw_after';
+        $scenario = self::scenario($http);
+        self::assertSame(1, $http->counts['removeacct']);
+        self::assertSame('confirmed', $scenario['fixture']['resources']['account']['creation']);
+        self::assertSame('confirmed_absent', $scenario['fixture']['resources']['account']['cleanup']);
+        self::assertFalse($http->account);
+    }
+
+    public function testTransientIdentityReadCannotAbandonTheAccountOrItsToken(): void
+    {
+        $http = new FilemanUploadServer();
+        $http->failures['listaccts:4'] = 'throw_before';
+        $http->failures['listaccts:5'] = 'api_before';
+        $scenario = self::scenario($http);
+        self::assertSame('passed', $scenario['fixture']['status']);
+        self::assertFalse($http->account);
+        self::assertSame([], $http->tokens);
+        self::assertSame(1, $http->counts['removeacct']);
+        self::assertSame(1, $http->counts['Tokens/revoke']);
+    }
+
+    /** Re-reads are bounded, and exhausting them stops every mutation with an accurate report. */
+    public function testExhaustedIdentityReadsStopAllMutationAndReportTheRealState(): void
+    {
+        $http = new FilemanUploadServer();
+        foreach ([4, 5, 6] as $count) {
+            $http->failures['listaccts:' . $count] = 'throw_before';
+        }
+        $scenario = self::scenario($http);
+        $fixture = $scenario['fixture'];
+        self::assertTrue($http->account);
+        self::assertArrayNotHasKey('removeacct', $http->counts);
+        self::assertArrayNotHasKey('Tokens/revoke', $http->counts);
+        self::assertArrayNotHasKey(self::DELETE, $http->counts);
+        self::assertSame('unconfirmed', $fixture['resources']['account']['cleanup']);
+        self::assertSame('unconfirmed', $fixture['resources']['token']['cleanup']);
+        self::assertSame('unconfirmed', $fixture['resources']['directory']['cleanup']);
+        self::assertSame(['proven_owned' => 6, 'deleted' => 0], $fixture['resources']['files']);
+        self::assertSame('failed', $fixture['cleanup']);
+        // Three setup reads, the three bounded cleanup reads, and the separate domain check.
+        self::assertSame(7, $http->counts['listaccts']);
+    }
+
+    /** A returned inventory is final: only a failed request is read again. */
+    public function testForeignMarkerIsNeverReadTwice(): void
+    {
+        $http = new FilemanUploadServer();
+        $http->overrides['listaccts:4'] = '{"acct":[{"user":"wlupload","domain":"wlupload.example.com",'
+            . '"email":"private-foreign@example.com"}]}';
+        $scenario = self::scenario($http);
+        self::assertArrayNotHasKey('removeacct', $http->counts);
+        self::assertSame('unconfirmed', $scenario['fixture']['resources']['account']['cleanup']);
+    }
+
+    /** @param array<string, string> $overrides */
+    #[DataProvider('emptyIdentityLists')]
+    public function testAnEmptyIdentityListCannotProveAbsence(array $overrides, string $resource): void
+    {
+        $http = new FilemanUploadServer();
+        $http->overrides = $overrides;
+        $scenario = self::scenario($http);
+        $outcome = $resource === 'account'
+            ? $scenario['fixture']['resources']['account']['cleanup'] : $scenario['fixture']['zone_cleanup'];
+        self::assertSame('unconfirmed', $outcome);
+        self::assertSame('failed', $scenario['fixture']['cleanup']);
+    }
+
+    /** @return iterable<string, array{array<string, string>, string}> */
+    public static function emptyIdentityLists(): iterable
+    {
+        yield 'accounts during cleanup' => [['listaccts:4' => '{"acct":[]}'], 'account'];
+        yield 'zones after removal' => [['listzones:2' => '{"zone":[]}'], 'zone'];
     }
 
     public function testTokenWithReadonlyFlagOrWrongExpirySkipsCaptureButStillCleansUp(): void
@@ -298,7 +394,7 @@ final class FilemanUploadFixtureTest extends TestCase
         self::assertLessThanOrEqual(1, $http->counts['Tokens/create_full_access'] ?? 0);
         self::assertLessThanOrEqual(1, $http->counts['Tokens/revoke'] ?? 0);
         self::assertSame(1, $http->counts['removeacct']);
-        self::assertLessThanOrEqual(4, $http->counts[self::UPLOAD] ?? 0);
+        self::assertLessThanOrEqual(5, $http->counts[self::UPLOAD] ?? 0);
         self::assertLessThanOrEqual(7, $http->counts[self::DELETE] ?? 0);
         self::assertSame(
             count(array_unique(self::deletedPaths($http))),
@@ -316,13 +412,13 @@ final class FilemanUploadFixtureTest extends TestCase
     public static function everyFailurePath(): iterable
     {
         $steps = ['Tokens/create_full_access:1', 'version:1'];
-        foreach (range(1, 4) as $count) {
+        foreach (range(1, 5) as $count) {
             $steps[] = self::UPLOAD . ':' . $count;
         }
-        foreach (range(1, 8) as $count) {
+        foreach (range(1, 6) as $count) {
             $steps[] = self::READ . ':' . $count;
         }
-        foreach (range(1, 5) as $count) {
+        foreach (range(1, 6) as $count) {
             $steps[] = self::LIST . ':' . $count;
         }
         foreach (range(1, 7) as $count) {
@@ -406,9 +502,9 @@ final class FilemanUploadFixtureTest extends TestCase
     public static function unexpectedRows(): iterable
     {
         $step = self::UPLOAD . ':1';
-        yield 'no rows' => [[$step => '{"succeeded":4,"failed":0,"warned":0,"uploads":[]}']];
-        yield 'no uploads member' => [[$step => '{"succeeded":4,"failed":0,"warned":0}']];
-        yield 'counts disagree' => [[$step => '{"succeeded":3,"failed":1,"warned":0,"uploads":[]}']];
+        yield 'no rows' => [[$step => '{"succeeded":3,"failed":0,"warned":0,"uploads":[]}']];
+        yield 'no uploads member' => [[$step => '{"succeeded":3,"failed":0,"warned":0}']];
+        yield 'counts disagree' => [[$step => '{"succeeded":2,"failed":1,"warned":0,"uploads":[]}']];
         yield 'empty object' => [[$step => '{}']];
     }
 
@@ -448,12 +544,14 @@ final class FilemanUploadFixtureTest extends TestCase
 
         self::assertSame('failed', $scenario['fixture']['status']);
         self::assertContains('expectation_failure', $scenario['fixture']['failures']);
-        self::assertSame('read_path', $scenario['fixture']['stopped_at']);
-        self::assertSame(1, $http->counts[self::UPLOAD]);
-        self::assertSame(3, $http->counts[self::READ]);
+        self::assertSame('read_raw', $scenario['fixture']['stopped_at']);
+        // Every row batch already ran; the only mutation a mismatch withholds is the empty upload.
+        self::assertSame(4, $http->counts[self::UPLOAD]);
+        self::assertCount(4, $scenario['uploads']);
+        self::assertSame(5, $http->counts[self::READ]);
         self::assertFalse($scenario['byte_oracle']['read_bytes']['content_exact']);
         self::assertNotNull($scenario['byte_oracle']['read_bytes']['first_difference']);
-        self::assertLessThan(3, $scenario['fixture']['resources']['files']['proven_owned']);
+        self::assertLessThan(5, $scenario['fixture']['resources']['files']['proven_owned']);
         self::assertSame(
             $scenario['fixture']['resources']['files']['proven_owned'],
             $http->counts[self::DELETE] ?? 0,
@@ -475,7 +573,7 @@ final class FilemanUploadFixtureTest extends TestCase
     public function testEmptyReadbackMustBeExactlyEmpty(): void
     {
         $http = new FilemanUploadServer();
-        $http->overrides[self::READ . ':8'] = '{"content":" ","from_char":"ISO-8859-1","to_char":"UTF-8"}';
+        $http->overrides[self::READ . ':6'] = '{"content":" ","from_char":"ISO-8859-1","to_char":"UTF-8"}';
         $scenario = self::scenario($http);
         self::assertFalse($scenario['byte_oracle']['read_empty']['content_exact']);
         self::assertSame(1, $scenario['byte_oracle']['read_empty']['returned_utf8_bytes']);
@@ -487,12 +585,54 @@ final class FilemanUploadFixtureTest extends TestCase
     public function testFailedEmptyReadbackCostsNoEarlierEvidence(): void
     {
         $http = new FilemanUploadServer();
-        $http->failures[self::READ . ':8'] = 'api_before';
+        $http->failures[self::READ . ':6'] = 'api_before';
         $scenario = self::scenario($http);
-        self::assertSame(4, $http->counts[self::UPLOAD]);
-        self::assertCount(4, $scenario['uploads']);
+        self::assertSame(5, $http->counts[self::UPLOAD]);
+        self::assertCount(5, $scenario['uploads']);
         self::assertSame('read_empty', $scenario['fixture']['stopped_at']);
         self::assertSame('failed', $scenario['fixture']['status']);
+        self::assertFalse($http->account);
+    }
+
+    /**
+     * Listings report a zero-byte size as an empty string on this server, so an upload row may too.
+     *
+     * The empty file is alone and last, so either surprise costs only itself.
+     */
+    #[DataProvider('emptyRowSizes')]
+    public function testUnexpectedEmptyRowSizeCostsOnlyTheEmptyFile(mixed $size, string $kind): void
+    {
+        $http = new FilemanUploadServer();
+        $http->emptyRowSize = $size;
+        $scenario = self::scenario($http);
+        self::assertSame('upload_empty', $scenario['fixture']['stopped_at']);
+        self::assertSame($kind, $scenario['fixture']['failures'][0]);
+        self::assertSame(5, $http->counts[self::UPLOAD]);
+        self::assertCount(5, array_filter($scenario['byte_oracle'], static fn (array $outcome): bool =>
+            $outcome['content_exact']));
+        self::assertSame(['proven_owned' => 5, 'deleted' => 5], $scenario['fixture']['resources']['files']);
+        self::assertFalse($http->account);
+        self::assertPrivate($scenario);
+    }
+
+    /** @return iterable<string, array{mixed, string}> */
+    public static function emptyRowSizes(): iterable
+    {
+        yield 'empty string fails the typed contract' => ['', 'capture_failure'];
+        yield 'null passes the contract but not the row check' => [null, 'expectation_failure'];
+    }
+
+    public function testRowBatchesCompleteEvenWhenTheFirstReadbackFails(): void
+    {
+        $http = new FilemanUploadServer();
+        $http->failures[self::READ . ':1'] = 'api_before';
+        $scenario = self::scenario($http);
+        self::assertSame(4, $http->counts[self::UPLOAD]);
+        self::assertSame(
+            ['upload_success', 'upload_partial', 'upload_all_failed', 'upload_raw'],
+            array_keys($scenario['uploads']),
+        );
+        self::assertArrayNotHasKey('upload_empty', $scenario['uploads']);
         self::assertFalse($http->account);
     }
 
@@ -514,7 +654,7 @@ final class FilemanUploadFixtureTest extends TestCase
             && $scenario['byte_oracle']['read_bytes']['to_charset_exact'],
         );
         self::assertTrue($scenario['byte_oracle']['read_bytes']['content_exact']);
-        self::assertSame(4, $http->counts[self::UPLOAD]);
+        self::assertSame(5, $http->counts[self::UPLOAD]);
         self::assertSame(['proven_owned' => 6, 'deleted' => 6], $scenario['fixture']['resources']['files']);
         self::assertSame('passed', $scenario['fixture']['cleanup']);
         self::assertSame('failed', self::observation($scenario, 'read_bytes')['expectation']);
@@ -557,7 +697,7 @@ final class FilemanUploadFixtureTest extends TestCase
         self::assertFalse($http->account);
     }
 
-    public function testSilentOverwriteBehindRefusalRowsIsCaughtByRereadAndWithdrawsOwnership(): void
+    public function testSilentOverwriteBehindRefusalRowsIsCaughtByTheOracleAndProvesNoOwnership(): void
     {
         $http = new FilemanUploadServer();
         $changed = false;
@@ -575,8 +715,8 @@ final class FilemanUploadFixtureTest extends TestCase
             }
         };
         $scenario = self::scenario($http);
-        self::assertFalse($scenario['byte_oracle']['reread_bytes']['content_exact']);
-        self::assertSame(['proven_owned' => 5, 'deleted' => 5], $scenario['fixture']['resources']['files']);
+        self::assertFalse($scenario['byte_oracle']['read_bytes']['content_exact']);
+        self::assertSame(['proven_owned' => 4, 'deleted' => 4], $scenario['fixture']['resources']['files']);
         self::assertContains('expectation_failure', $scenario['fixture']['failures']);
         self::assertContains('fixture_directory_not_empty', $scenario['fixture']['failures']);
         self::assertFalse($http->account);
@@ -603,6 +743,103 @@ final class FilemanUploadFixtureTest extends TestCase
         self::assertSame('failed', $scenario['fixture']['cleanup']);
         self::assertFalse($http->account);
         self::assertPrivate($scenario);
+    }
+
+    /** The type filter on an earlier listing hid links from this check, so the listing now sends none. */
+    public function testSymbolicLinkBlocksTheRecursiveDirectoryDelete(): void
+    {
+        $http = new FilemanUploadServer();
+        $injected = false;
+        $http->afterEffect = static function (FilemanUploadServer $server) use (&$injected): void {
+            if (!$injected && ($server->counts[self::DELETE] ?? 0) === 6) {
+                $injected = true;
+                foreach (array_keys($server->directories) as $name) {
+                    $server->symlinks[$name] = ['private-link'];
+                }
+            }
+        };
+        $scenario = self::scenario($http);
+        self::assertSame(6, $http->counts[self::DELETE]);
+        self::assertContains('fixture_directory_not_empty', $scenario['fixture']['failures']);
+        self::assertFalse($http->account);
+        self::assertPrivate($scenario);
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function unprovenEmptiness(): iterable
+    {
+        yield 'empty object' => ['{}'];
+        yield 'object without lists' => ['{"other":[]}'];
+        yield 'object with one list' => ['{"dirs":[]}'];
+    }
+
+    #[DataProvider('unprovenEmptiness')]
+    public function testEmptyLookingObjectCannotAuthorizeTheRecursiveDirectoryDelete(string $payload): void
+    {
+        $http = new FilemanUploadServer();
+        $http->overrides[self::LIST . ':5'] = $payload;
+        $scenario = self::scenario($http);
+        self::assertSame(6, $http->counts[self::DELETE]);
+        self::assertContains('directory_emptiness_unproven', $scenario['fixture']['failures']);
+        self::assertSame('failed', $scenario['fixture']['status']);
+        self::assertFalse($http->account);
+    }
+
+    public function testDocumentedEmptyListingFormProvesEmptiness(): void
+    {
+        $http = new FilemanUploadServer();
+        $http->overrides[self::LIST . ':5'] = '{"dirs":[],"files":[]}';
+        $scenario = self::scenario($http);
+        self::assertSame('passed', $scenario['fixture']['status']);
+        self::assertSame(7, $http->counts[self::DELETE]);
+    }
+
+    public function testDotAndParentRowsAreNotDirectoryContents(): void
+    {
+        $http = new FilemanUploadServer();
+        $http->overrides[self::LIST . ':5'] = '[{"file":"."},{"file":".."},{"file":"up","isparent":1}]';
+        $scenario = self::scenario($http);
+        self::assertSame('passed', $scenario['fixture']['status']);
+        self::assertSame(7, $http->counts[self::DELETE]);
+    }
+
+    /** A surprise on an unrelated home entry reaches the strict review without stopping the upload run. */
+    public function testHomeListingShapeSurpriseIsReviewedRatherThanFatal(): void
+    {
+        $http = new FilemanUploadServer();
+        $http->overrides[self::LIST . ':1'] = '[{"file":"public_html","fullpath":"/home/wlupload/public_html"},'
+            . '{"file":"other","mtime":"private-unexpected-type"}]';
+        $scenario = self::scenario($http);
+        self::assertSame('passed', $scenario['fixture']['status']);
+        self::assertSame('failed', $scenario['discrepancy_review']['status']);
+        self::assertContains('unacknowledged_discrepancy:home_initial', $scenario['discrepancy_review']['findings']);
+        self::assertPrivate($scenario);
+    }
+
+    #[DataProvider('unusableHomes')]
+    public function testHomeThatIsNotTheExpectedOneCannotProveAbsence(string $payload): void
+    {
+        $http = new FilemanUploadServer();
+        $http->overrides[self::LIST . ':1'] = $payload;
+        $scenario = self::scenario($http);
+        self::assertSame('home_initial', $scenario['fixture']['stopped_at']);
+        self::assertArrayNotHasKey(self::UPLOAD, $http->counts);
+        self::assertFalse($http->account);
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function unusableHomes(): iterable
+    {
+        yield 'no entries' => ['[]'];
+        yield 'known entry missing' => ['[{"file":"other"}]'];
+        yield 'different home' => ['[{"file":"public_html","fullpath":"/home2/wlupload/public_html"}]'];
+    }
+
+    public function testHomeRowWithoutOptionalFullPathIsStillUsable(): void
+    {
+        $http = new FilemanUploadServer();
+        $http->overrides[self::LIST . ':1'] = '[{"file":"public_html"}]';
+        self::assertSame('passed', self::scenario($http)['fixture']['status']);
     }
 
     public function testExtraEntryDuringCaptureStopsMutationsAtTheInventory(): void

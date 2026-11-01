@@ -45,6 +45,12 @@ final class FilemanUploadServer implements ClientInterface
     /** @var array<string, array<string, string>> Directory name, then filename, then stored bytes. */
     public array $directories = [];
 
+    /** @var array<string, list<string>> Directory name, then symbolic link names listed as type link. */
+    public array $symlinks = [];
+
+    /** How an upload row reports a stored zero-byte file; listings report it as an empty string on this server. */
+    public mixed $emptyRowSize = 0;
+
     /** @var array<string, int> */
     public array $counts = [];
 
@@ -88,6 +94,8 @@ final class FilemanUploadServer implements ClientInterface
 
     private int $expiresAt = 0;
 
+    private string $deletedPath = '';
+
     /** Return the transport that alone receives multipart bodies. */
     public function streaming(): StreamingTransport
     {
@@ -128,6 +136,7 @@ final class FilemanUploadServer implements ClientInterface
             $function = $query['cpanel_module'] . '/' . $query['cpanel_function'];
         } elseif (str_contains($path, '/execute/Fileman/')) {
             $function = 'direct:Fileman/' . $function;
+            $this->requireLiveToken($request);
         }
         $step = $this->step($function);
         $failure = $this->failures[$step] ?? '';
@@ -170,6 +179,7 @@ final class FilemanUploadServer implements ClientInterface
         if ($request->getBody()->isSeekable()) {
             throw new LogicException('Synthetic streaming transport requires a forward-only body.');
         }
+        $this->requireLiveToken($request);
         $this->requests[] = $request;
         ++$this->streamed;
         $step = $this->step('direct:Fileman/upload_files');
@@ -215,6 +225,15 @@ final class FilemanUploadServer implements ClientInterface
         return self::direct($this->statuses[$step] ?? $status, $payload);
     }
 
+    /** A revoked or wrong credential authenticates nothing, so cleanup order is real here. */
+    private function requireLiveToken(RequestInterface $request): void
+    {
+        $live = $request->getHeaderLine('Authorization') === 'cpanel wlupload:PRIVATEFIXTURETOKEN';
+        if ($this->tokens === [] || !$live) {
+            throw new LogicException('Synthetic direct request without a live temporary token.');
+        }
+    }
+
     private function step(string $function): string
     {
         $this->counts[$function] = ($this->counts[$function] ?? 0) + 1;
@@ -243,8 +262,8 @@ final class FilemanUploadServer implements ClientInterface
             }
             $this->directories[$directory][$name] = $bytes;
             ++$stored;
-            $rows[] = ['file' => $name, 'reason' => 'private upstream success', 'size' => strlen($bytes),
-                'status' => 1, 'warnings' => []];
+            $rows[] = ['file' => $name, 'reason' => 'private upstream success',
+                'size' => $bytes === '' ? $this->emptyRowSize : strlen($bytes), 'status' => 1, 'warnings' => []];
         }
 
         return [$stored > 0 ? 1 : 0, ['uploads' => $rows, 'succeeded' => $stored,
@@ -287,9 +306,10 @@ final class FilemanUploadServer implements ClientInterface
                 if (!is_string($path)) {
                     throw new LogicException('Synthetic delete has no path.');
                 }
+                $this->deletedPath = self::HOME . '/' . $path;
                 [$directory, $file] = array_pad(explode('/', $path, 2), 2, null);
                 if ($file === null) {
-                    unset($this->directories[$directory]);
+                    unset($this->directories[$directory], $this->symlinks[$directory]);
                 } else {
                     unset($this->directories[$directory][$file]);
                 }
@@ -307,8 +327,10 @@ final class FilemanUploadServer implements ClientInterface
                 ['user' => 'wluploadextra', 'domain' => 'wlupload.example.com.other'],
             ], $this->account
                 ? [['user' => 'wlupload', 'domain' => 'wlupload.example.com', 'email' => $this->contactEmail]] : [])],
-            'listzones' => ['zone' => $this->zone
-                ? [['domain' => 'wlupload.example.com', 'zonefile' => 'private.db']] : []],
+            'listzones' => ['zone' => array_merge(
+                [['domain' => 'existing.example', 'zonefile' => 'private.db']],
+                $this->zone ? [['domain' => 'wlupload.example.com', 'zonefile' => 'private.db']] : [],
+            )],
             'get_domain_info' => ['domains' => $this->account
                 ? [['domain' => 'wlupload.example.com', 'user' => 'wlupload']] : []],
             'Tokens/list' => array_map(fn (string $name): array => array_replace([
@@ -318,7 +340,7 @@ final class FilemanUploadServer implements ClientInterface
             'Tokens/revoke' => 1,
             'direct:Fileman/list_files' => $this->listing($query),
             'direct:Fileman/get_file_content' => $this->content($query),
-            'direct:Fileman/delete_file' => ['path' => '/home/wlupload/deleted'],
+            'direct:Fileman/delete_file' => ['path' => $this->deletedPath],
             default => null,
         };
     }
@@ -330,23 +352,28 @@ final class FilemanUploadServer implements ClientInterface
     private function listing(array $query): array
     {
         $directory = $query['dir'] ?? null;
+        $rows = [];
         if ($directory === self::HOME) {
-            $rows = [self::row(self::HOME, 'public_html', 'dir', 4096)];
+            $rows[] = self::row(self::HOME, 'public_html', 'dir', 4096);
             foreach (array_keys($this->directories) as $name) {
                 $rows[] = self::row(self::HOME, $name, 'dir', 4096);
             }
-
-            return $rows;
-        }
-        if (!is_string($directory) || !isset($this->directories[$directory])) {
+        } elseif (is_string($directory) && isset($this->directories[$directory])) {
+            foreach ($this->directories[$directory] as $name => $bytes) {
+                $rows[] = self::row(self::HOME . '/' . $directory, $name, 'file', strlen($bytes));
+            }
+            foreach ($this->symlinks[$directory] ?? [] as $name) {
+                $rows[] = self::row(self::HOME . '/' . $directory, $name, 'link', 4096);
+            }
+        } else {
             throw new LogicException('Synthetic listing of an unknown directory.');
         }
-        $rows = [];
-        foreach ($this->directories[$directory] as $name => $bytes) {
-            $rows[] = self::row(self::HOME . '/' . $directory, $name, 'file', strlen($bytes));
-        }
+        $types = is_string($query['types'] ?? null) ? explode('|', $query['types']) : null;
+        $hidden = ($query['show_hidden'] ?? '0') === '1';
 
-        return $rows;
+        return array_values(array_filter($rows, static fn (array $row): bool =>
+            ($types === null || in_array($row['type'], $types, true))
+            && ($hidden || !is_string($row['file']) || !str_starts_with($row['file'], '.'))));
     }
 
     /** @return array<string, mixed> */

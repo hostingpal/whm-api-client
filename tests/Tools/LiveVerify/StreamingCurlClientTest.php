@@ -97,6 +97,25 @@ final class StreamingCurlClientTest extends TestCase
         yield 'source exception' => ['throwing'];
     }
 
+    /** The whole upload path at once: typed client, exact guard, body check, real libcurl, real socket. */
+    public function testGuardBodyCheckAndClientCooperateOnARealUpload(): void
+    {
+        $result = self::exchange('guarded', 0, '');
+
+        self::assertSame(0, $result['client']['exit']);
+        self::assertTrue($result['client']['responded'], $result['client']['message']);
+        self::assertSame(1, $result['server']['connections']);
+        $request = $result['server']['requests'][0];
+        self::assertSame($result['client']['sha256'], $request['sha256']);
+        self::assertSame($result['client']['size'], $request['bytes']);
+        self::assertSame([
+            'http_1_1' => true, 'content_length_exact' => true, 'transfer_encoding_absent' => true,
+            'expect_absent' => true, 'bytes_sent_exact' => true,
+        ], $result['client']['framing']);
+        self::assertStringContainsString('Authorization: cpanel wlupload:TEMPORARY', $request['head']);
+        self::assertStringNotContainsStringIgnoringCase('transfer-encoding', $request['head']);
+    }
+
     public function testRefusesEveryRequestOutsideItsBoundaryBeforeInitializingCurl(): void
     {
         foreach (self::outsideBoundary() as $label => $request) {
@@ -191,7 +210,8 @@ final class StreamingCurlClientTest extends TestCase
             [1 => ['pipe', 'w'], 2 => ['pipe', 'w']],
             $clientPipes,
             $root,
-            ['WHM_API_LIVE' => '1', 'WHM_API_LIVE_MUTATIONS' => '1'],
+            ['WHM_API_LIVE' => '1', 'WHM_API_LIVE_MUTATIONS' => '1', 'WHM_API_LIVE_ACCOUNT' => 'wlupload',
+                'WHM_API_LIVE_DOMAIN' => 'wlupload.example.com'],
         );
         self::assertIsResource($client);
         $clientOutput = stream_get_contents($clientPipes[1]);
@@ -300,6 +320,14 @@ function curl_init($uri) {
 }
 function curl_setopt_array($handle, $options) {
     $options[CURLOPT_PROTOCOLS] = CURLPROTO_HTTP;
+    // Keep what the client actually sends, for comparison with what the server received.
+    $read = $options[CURLOPT_READFUNCTION];
+    $GLOBALS['lastBody'] = '';
+    $options[CURLOPT_READFUNCTION] = static function ($curl, $stream, int $length) use ($read): string {
+        $bytes = $read($curl, $stream, $length);
+        $GLOBALS['lastBody'] .= $bytes;
+        return $bytes;
+    };
     return \curl_setopt_array($handle, $options);
 }
 
@@ -342,6 +370,50 @@ final class ProbeStream implements StreamInterface {
     public function getMetadata($key = null): mixed { return $key === null ? [] : null; }
 }
 
+if ($mode === 'guarded') {
+    $recipe = new FilemanUploadRecipe('0123456789abcdef0123456789abcdef', 1790000000);
+    $streaming = new StreamingCurlClient();
+    $ordinary = new class implements \Psr\Http\Client\ClientInterface {
+        public function sendRequest(\Psr\Http\Message\RequestInterface $request): \Psr\Http\Message\ResponseInterface {
+            throw new \LogicException('A multipart request reached the ordinary client.');
+        }
+    };
+    $guard = new FilemanUploadGuard($ordinary, $streaming, 'WHMTOKEN', $recipe);
+    $guard->bindToken('TEMPORARY');
+    $guard->authorizeUpload('upload_raw');
+    $factory = new \Nyholm\Psr7\Factory\Psr17Factory();
+    $client = new \HostingPal\WhmApiClient\Client([
+        'host' => 'test.oblak.host', 'port' => 2083, 'authType' => 'cpanel',
+        'username' => 'wlupload', 'token' => 'TEMPORARY',
+    ], new \HostingPal\WhmApiClient\Http\HttpTransport($guard, $factory, $factory));
+    $result = ['responded' => false, 'message' => '', 'previous' => false, 'client_exception' => false];
+    try {
+        $call = $client->uapi()->callMultipart(
+            'Fileman',
+            'upload_files',
+            [['name' => 'file-0', 'value' => Upload::fromString(
+                $recipe->names['raw'],
+                FilemanUploadRecipe::contents('raw'),
+            )]],
+            ['dir' => $recipe->directory, 'overwrite' => 0, 'permissions' => '0600'],
+        );
+        $result['responded'] = $call->metadata->uapiStatus() === 1;
+    } catch (\Throwable $exception) {
+        $result['message'] = $exception::class . ': ' . $exception->getMessage();
+    }
+    $transfer = $guard->transfer('upload_raw');
+    // The boundary is random, so rebuild the expectation from the bytes the server hashed against.
+    echo json_encode($result + [
+        'size' => $transfer['transfer']['bytes_read'] ?? 0,
+        'sha256' => $transfer === null ? '' : hash('sha256', $GLOBALS['lastBody'] ?? ''),
+        'reads' => $transfer['transfer']['read_calls'] ?? 0,
+        'largest_read' => $transfer['transfer']['largest_read'] ?? 0,
+        'casts' => ($transfer['transfer']['buffered'] ?? true) ? 1 : 0,
+        'rewinds' => ($transfer['transfer']['sought'] ?? true) ? 1 : 0,
+        'framing' => $transfer['framing'] ?? null,
+    ], JSON_THROW_ON_ERROR);
+    exit(0);
+}
 $bytes = $mode === 'short' ? substr($source, 0, 70000) : $source;
 if ($mode === 'complete') {
     $multipart = StreamingMultipartEncoder::encode([
