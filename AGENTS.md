@@ -310,8 +310,13 @@ on 11.138.0.19 records all 67 GET-only API/payload probes passing, including 20 
 reads and normalized countPops() through both routes. Its strict review failed:
 12 unknown-field entries across 10 observations, zero acknowledgments and two stale
 11.138.0.15 Quota acknowledgments. No mutation ran and all historical artifacts stay
-unchanged. The 2026-11-01 artifact at 5f9b001 types those DomainInfo and INI fields,
-and the two Quota acknowledgments now bind it on 11.138.0.19.
+unchanged. The two Quota acknowledgments now bind the 2026-11-01 artifact at 5f9b001
+on 11.138.0.19. That capture ran with those DomainInfo and INI fields typed; the
+fields of unknown meaning were later relaxed to optional `mixed`, so its contract
+hashes for those operations differ from the current specs. Of those eight fields only
+list-form `customlog[].format` stays validated: `main_domain.phpopenbasedirprotect` is
+also `mixed` because domains_data does not promise it, while the pinned
+single_domain_data flag and other documented fields keep their validation.
 Empty-string userdirprotect remains documentation/offline coverage because
 the live field is omitted. Three PHP setters and their INI write/read round trip
 remain offline-only; follow-up 8x0.2.17 owns the remaining live work.
