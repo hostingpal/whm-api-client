@@ -7925,3 +7925,131 @@ Runtime follow-up `whm-api-client-8x0.2.63`, the 55 inherited source diagnostics
 PHP 8.3 CI, current-head review and all earlier acceptance work remain unwaived.
 Historical PR95 provenance finding I1 / `whm-api-client-qrk` remains open; the
 prospective PR96 recorder does not repair that missing history.
+
+
+## UAPI Market session, cart, token and pending-queue actions (2026-10-31)
+
+The immutable `docs/api/sources/2026-10-13/cpanel.openapi.json.gz`, decompressed
+SHA-256 `172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`,
+binds eight new selected operations at `/paths/~1Market~1` plus
+`cancel_pending_ssl_certificate`, `create_shopping_cart_non_ssl`,
+`get_build_cart_url`, `get_license_info`, `process_ssl_pending_queue`,
+`set_status_of_pending_queue_items`, `set_url_after_checkout` or
+`validate_login_token`, then `/get`. Each operation cites that pointer, parameter
+and operation descriptions, and its formal response data pointer
+`/responses/200/content/application~1json/schema/properties/result/properties/data`.
+All eight have x-readonly=false and x-rollback=none; select existing scalar form
+POST on direct UAPI and WHM bridge despite the selected OpenAPI GET variant.
+Non-SSL cart/build-cart/license availability is cPanel 62, the other five cPanel 56.
+Get-build-cart and get-license save session data. Processing the account queue can
+install certificates; cancellation removes the order and polling, without refund
+or reversibility claims. No implicit read/merge/retry/cache/restore/rollback is added.
+
+The set-status `/parameters/0` formally declares a required string and its prose
+permits repeating literal order_item_id or using numbered parameters. The bound
+`/parameters/0/examples/multiple-alternative` value is exactly
+`order_item_id=12345&order_item_id=12346&order_item_id=12347`;
+`/parameters/0/examples/multiple` shows the numbered alternative. Existing explicit
+collection kind repeat, item_type string, allow_scalar true, empty reject selects
+the repeated literal-key alternative. Scalars retain one literal field and all
+nonempty sequential lists retain caller order, exact bytes and duplicates, including
+singleton and empty-string IDs. Provider/status remain single scalar fields.
+Invalid lists fail after metadata reset and before I/O; native signature type errors
+precede reset. No runtime, collection engine, schema or generator change is needed.
+
+All known response fields remain optional, preserving native integer flags and
+timestamps, string order/product/certificate IDs, nullable certificate_pem and
+empty last_status_message. set_url_after_checkout takes an integer order_id and
+retains optional nullable string error_type. set_status returns optional string
+error_type and integer-list order_item_ids within a nullable object. These payload
+errors/missing IDs are independent of API status; confirmed denotes provider-confirmed
+payment and the client does not verify payment. Opaque order_items_ref objects retain
+provider keys. validate_login_token retains optional string access_token within a
+required object payload. get_license_info retains nullable opaque objects and null,
+with absent data distinct. Optional domain null omits while empty string is supplied.
+Tokens/URLs/provider values are encoded once without normalization, trimming, parsing,
+redirects or provider validation. url_after_login retains the caller's value used
+with get_login_url, without a client session linkage cache.
+
+Three reviewed source rulings add no response correction. cancel_pending_ssl_certificate
+formal data type array/items object wins over its object prose, with no resolving
+response example; an object response would fail strict validation. get_license_info
+formal nullable object wins over its no-data prose/null example; omitted data would
+fail strict validation. process_ssl_pending_queue data/items/properties/deleted
+says 0=deleted and 1=not deleted, opposite properties/expired. Both remain integer
+0|1 without inferred boolean semantics; consumers need live/source confirmation.
+The separately open live work owns these costs, and offline success establishes
+no checkout/payment/certificate/installation/queue/session compatibility.
+
+Independent real-client/mock-HTTP tests assert all eight direct/bridge form POST
+paths, auth, routing-only query, content type, parameter order, empty queue form,
+single dispatch, encode-once bytes and repeated literal raw wire fields without
+parse_str. Populated fixtures cover all formal field families, opaque provider
+objects, empty/null/missing/wrong-root and strict flags/IDs/timestamps. They test
+native versus collection metadata timing, HTTP/transport/API/outer-WHM/payload
+failure ordering and no retry. New tokens and collection values plus responses
+remain redacted in library trace frames with zend.exception_ignore_args=0; tests
+use synthetic values and do not swallow assertion failures. Shared response
+sensitivity and the nine published read tests remain preserved.
+
+Baseline `9a3212839ebd07f1caad02f99e674a91f877b98b` has 1,137 operations (549 UAPI,
+588 WHM), 96 groups and 195 outputs. This adds exactly eight canonical UAPI
+operations and zero groups: 1,145 operations (557 UAPI, 588 WHM), 96 groups and
+195 outputs (194 PHP files plus coverage). Prior Market read objects/specs/public
+methods and all other operation contracts, pinned sources, checksum, evidence and
+audit prefix remain unchanged. No live API/provider/login/cart/order/payment/queue/
+certificate call or URL fetch ran. Separate `whm-api-client-8x0.2.64` stays OPEN;
+delivery is `whm-api-client-8x0.4.22`. create_shopping_cart and request_ssl_certificates
+remain deferred under `8x0.1.22` and taxonomy `8x0.29.6`; their JSON values are
+form/query parameters rather than JSON request bodies. No structured-input or
+generic JSON-body expansion occurred. Required PHP 8.3 CI and the 55 inherited
+diagnostics remain visible, external-owned and unwaived.
+
+
+## UAPI Market actions ordered integration (2026-11-01)
+
+The preceding dated Market sections describe historical deliveries and their
+validation. This candidate integrates approved master
+`e6611d6b30eda72d6e1fd746b290bf847fd8b664` with original action head
+`3872d384a2e4f83a348758085808452230459d8c`: 1,182 canonical operations
+(586 UAPI, 596 WHM), 104 groups and 211 generated outputs (210 PHP files plus
+coverage). It preserves the nine corrected master reads and adds exactly the
+original eight form POST actions. Their strict response contracts, signatures,
+parameter order, sensitivity and repeated-string encoding remain unchanged.
+
+[Review 5725131701](https://github.com/hostingpal/whm-api-client/pull/97#pullrequestreview-5725131701)
+by seebeen covers only original `9a32128..3872d38`, with limited results on
+cPanel `11.138.0.19` through direct UAPI and the WHM bridge. Its three bounded
+caller caveats are now included in generated method documentation:
+
+- `cancelPendingSslCertificate('999', 'cPStore')` returned `[]` with status 1
+  through both routes. In that observed case no matching item was removed.
+  Confirm returned matching rows; envelope success alone does not prove
+  cancellation. The formal list shape and no-refund/reversibility limits remain.
+- Token-authenticated `getBuildCartUrl()` failed through both routes because
+  server information was unavailable from the request environment. This is a
+  build, route and environment scoped observation, not universal token or route
+  incompatibility. Session writes and optional domain omission/empty bytes remain.
+- Reviewer source inspection reports matches updated in memory before leftover
+  IDs reject before `finish()`. Partial-match persistence was not observed.
+  An error proves neither rollback nor atomicity; no persistence, no-change,
+  transaction or retry guarantee follows. Payload errors and API outcome handling
+  retain their existing boundaries.
+
+The reviewer deliberately did not run `validateLoginToken()`,
+`createShoppingCartNonSsl()`, `setUrlAfterCheckout()` or `getLicenseInfo()` because
+they contact the Store or need a Store session. Populated cancellation and queue
+rows and license success remain unobserved. The reviewer's disposable-account
+cleanup and temporary-token revocation are attributed reports, not checks by this
+integration. This integration made no live, provider, session, cart, order,
+payment, queue or certificate request and followed no URL or source refresh.
+
+Combined validation is offline: strict Composer validation, full PHP quality
+gates, exception-argument-enabled Market/read-compatibility/sensitive-trace focus,
+fresh Go tests, vet, schema/source/map checks, generation freshness, offline
+toolchain checks and staged/working whitespace checks. Exact execution results
+belong to the integration handoff; historical counts above are not rerun claims.
+The three original source contradictions and `whm-api-client-8x0.2.64` remain
+open; the 55 inherited diagnostics, PHP 8.3 CI, source/runtime/stress/platform/
+metadata/release gaps and deferred consumer integration remain unwaived.
+Historical PR95 provenance finding I1 / `whm-api-client-qrk` remains open.

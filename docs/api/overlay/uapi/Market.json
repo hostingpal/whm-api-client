@@ -3,7 +3,7 @@
   "family": "uapi",
   "group": "Market",
   "accessor": "market",
-  "description": "Read-only cPanel Market catalog, provider information and certificate request status.",
+  "description": "cPanel Market catalog and provider information, certificate request status, and session, cart and pending-queue actions.",
   "operations": {
     "uapi:Market/get_all_products": {
       "method": "GET",
@@ -760,6 +760,407 @@
               "pointer": "/paths/~1Market~1get_ssl_certificate_if_available/get/responses/200/content/application~1json/schema/properties/result/properties/data/properties/status_message"
             }
           ]
+        }
+      }
+    },
+    "uapi:Market/cancel_pending_ssl_certificate": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 56."
+        },
+        {
+          "kind": "documented",
+          "text": "Cancels the order and removes polling for the pending certificate; no refund or universal reversibility is promised. The formal response is a list of order records despite the prose saying an object. Preserve the formal list: an actual object response will fail payload validation until separate live/source confirmation resolves the contradiction."
+        },
+        {
+          "kind": "policy",
+          "text": "One form POST on direct UAPI or the WHM bridge, with no implicit read, merge, retry, session cache, restore or rollback. Provider/network state can change; no live compatibility is established."
+        },
+        {
+          "kind": "policy",
+          "text": "Input tokens remain sensitive. Returned access tokens, checkout/session URLs, PEM/CSR, provider messages and identity values are sensitive payload data; do not log them. URLs are returned without navigation or secondary requests. Inputs retain exact bytes without trimming, URL/domain parsing or provider-specific validation."
+        },
+        {
+          "kind": "observed",
+          "text": "Review 5725131701 of 3872d38, cPanel 11.138.0.19, direct UAPI and WHM bridge: unknown order 999 with provider cPStore returned an empty list with status 1. No matching item was removed in that observed case. Confirm returned matching rows instead of treating envelope success alone as proof of cancellation."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1Market~1cancel_pending_ssl_certificate/get: x-readonly=false and x-rollback=none select form POST despite the selected GET source variant. Required scalar parameter types/order and availability retain the pinned contract. Formal response data fields stay optional with native integer flags/timestamps, string identifiers and no inferred enum, normalization or response union. Operation description and parameter descriptions bind session, provider and state effects; no live behavior is claimed.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Market~1cancel_pending_ssl_certificate/get"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1Market~1cancel_pending_ssl_certificate/get/responses/200/content/application~1json/schema/properties/result/properties/data: Preserve this formal data schema, optional known fields, nullable versus omitted values and required root presence. Cancels the order and removes polling for the pending certificate; no refund or universal reversibility is promised. The formal response is a list of order records despite the prose saying an object. Preserve the formal list: an actual object response will fail payload validation until separate live/source confirmation resolves the contradiction.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Market~1cancel_pending_ssl_certificate/get/responses/200/content/application~1json/schema/properties/result/properties/data"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Attributed to seebeen review 5725131701 of exact 3872d384a2e4f83a348758085808452230459d8c (9a32128..3872d38). Review 5725131701 of 3872d38, cPanel 11.138.0.19, direct UAPI and WHM bridge: unknown order 999 with provider cPStore returned an empty list with status 1. No matching item was removed in that observed case. Confirm returned matching rows instead of treating envelope success alone as proof of cancellation. This integration performed no live call, capture or source refresh. The pinned pointer anchors operation identity; it does not make reviewer source inspection a pinned wire observation.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Market~1cancel_pending_ssl_certificate/get"
+        }
+      ]
+    },
+    "uapi:Market/create_shopping_cart_non_ssl": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 62."
+        },
+        {
+          "kind": "documented",
+          "text": "Creates a non-SSL shopping cart with the provider using the supplied access token. Optional domain null omits the field; an empty string remains supplied. order_items_ref preserves opaque provider-specific object fields; checkout URLs and order details are payload data."
+        },
+        {
+          "kind": "policy",
+          "text": "One form POST on direct UAPI or the WHM bridge, with no implicit read, merge, retry, session cache, restore or rollback. Provider/network state can change; no live compatibility is established."
+        },
+        {
+          "kind": "policy",
+          "text": "Input tokens remain sensitive. Returned access tokens, checkout/session URLs, PEM/CSR, provider messages and identity values are sensitive payload data; do not log them. URLs are returned without navigation or secondary requests. Inputs retain exact bytes without trimming, URL/domain parsing or provider-specific validation."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1Market~1create_shopping_cart_non_ssl/get: x-readonly=false and x-rollback=none select form POST despite the selected GET source variant. Required scalar parameter types/order and availability retain the pinned contract. Formal response data fields stay optional with native integer flags/timestamps, string identifiers and no inferred enum, normalization or response union. Operation description and parameter descriptions bind session, provider and state effects; no live behavior is claimed.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Market~1create_shopping_cart_non_ssl/get"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1Market~1create_shopping_cart_non_ssl/get/responses/200/content/application~1json/schema/properties/result/properties/data: Preserve this formal data schema, optional known fields, nullable versus omitted values and required root presence. Creates a non-SSL shopping cart with the provider using the supplied access token. Optional domain null omits the field; an empty string remains supplied. order_items_ref preserves opaque provider-specific object fields; checkout URLs and order details are payload data.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Market~1create_shopping_cart_non_ssl/get/responses/200/content/application~1json/schema/properties/result/properties/data"
+        }
+      ],
+      "params": {
+        "access_token": {
+          "sensitive": true
+        }
+      }
+    },
+    "uapi:Market/get_build_cart_url": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 62."
+        },
+        {
+          "kind": "documented",
+          "text": "Builds a cart URL and saves session data; this is a mutation despite its get name. Optional domain null omits the field; an empty string remains supplied. The returned session URL is sensitive payload data and is not fetched."
+        },
+        {
+          "kind": "policy",
+          "text": "One form POST on direct UAPI or the WHM bridge, with no implicit read, merge, retry, session cache, restore or rollback. Provider/network state can change; no live compatibility is established."
+        },
+        {
+          "kind": "policy",
+          "text": "Input tokens remain sensitive. Returned access tokens, checkout/session URLs, PEM/CSR, provider messages and identity values are sensitive payload data; do not log them. URLs are returned without navigation or secondary requests. Inputs retain exact bytes without trimming, URL/domain parsing or provider-specific validation."
+        },
+        {
+          "kind": "observed",
+          "text": "Review 5725131701 of 3872d38, cPanel 11.138.0.19: token-authenticated calls through direct UAPI and the WHM bridge failed because server information was unavailable from the request environment. This build, route and environment scoped result does not establish universal token or route incompatibility."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1Market~1get_build_cart_url/get: x-readonly=false and x-rollback=none select form POST despite the selected GET source variant. Required scalar parameter types/order and availability retain the pinned contract. Formal response data fields stay optional with native integer flags/timestamps, string identifiers and no inferred enum, normalization or response union. Operation description and parameter descriptions bind session, provider and state effects; no live behavior is claimed.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Market~1get_build_cart_url/get"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1Market~1get_build_cart_url/get/responses/200/content/application~1json/schema/properties/result/properties/data: Preserve this formal data schema, optional known fields, nullable versus omitted values and required root presence. Builds a cart URL and saves session data; this is a mutation despite its get name. Optional domain null omits the field; an empty string remains supplied. The returned session URL is sensitive payload data and is not fetched.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Market~1get_build_cart_url/get/responses/200/content/application~1json/schema/properties/result/properties/data"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Attributed to seebeen review 5725131701 of exact 3872d384a2e4f83a348758085808452230459d8c (9a32128..3872d38). Review 5725131701 of 3872d38, cPanel 11.138.0.19: token-authenticated calls through direct UAPI and the WHM bridge failed because server information was unavailable from the request environment. This build, route and environment scoped result does not establish universal token or route incompatibility. This integration performed no live call, capture or source refresh. The pinned pointer anchors operation identity; it does not make reviewer source inspection a pinned wire observation.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Market~1get_build_cart_url/get"
+        }
+      ]
+    },
+    "uapi:Market/get_license_info": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 62."
+        },
+        {
+          "kind": "documented",
+          "text": "Retrieves license information and saves it to the current session. The formal data member is a nullable opaque object despite the no-data prose and null example. Preserve explicit null and opaque fields, and reject an absent data member; actual envelope behavior needs separate live/source confirmation."
+        },
+        {
+          "kind": "policy",
+          "text": "One form POST on direct UAPI or the WHM bridge, with no implicit read, merge, retry, session cache, restore or rollback. Provider/network state can change; no live compatibility is established."
+        },
+        {
+          "kind": "policy",
+          "text": "Input tokens remain sensitive. Returned access tokens, checkout/session URLs, PEM/CSR, provider messages and identity values are sensitive payload data; do not log them. URLs are returned without navigation or secondary requests. Inputs retain exact bytes without trimming, URL/domain parsing or provider-specific validation."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1Market~1get_license_info/get: x-readonly=false and x-rollback=none select form POST despite the selected GET source variant. Required scalar parameter types/order and availability retain the pinned contract. Formal response data fields stay optional with native integer flags/timestamps, string identifiers and no inferred enum, normalization or response union. Operation description and parameter descriptions bind session, provider and state effects; no live behavior is claimed.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Market~1get_license_info/get"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1Market~1get_license_info/get/responses/200/content/application~1json/schema/properties/result/properties/data: Preserve this formal data schema, optional known fields, nullable versus omitted values and required root presence. Retrieves license information and saves it to the current session. The formal data member is a nullable opaque object despite the no-data prose and null example. Preserve explicit null and opaque fields, and reject an absent data member; actual envelope behavior needs separate live/source confirmation.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Market~1get_license_info/get/responses/200/content/application~1json/schema/properties/result/properties/data"
+        }
+      ]
+    },
+    "uapi:Market/process_ssl_pending_queue": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 56."
+        },
+        {
+          "kind": "documented",
+          "text": "Processes the account pending queue and can install certificates; this is a mutation, not harmless polling. The pinned deleted description says 0=deleted and 1=not deleted, opposite expired (1=deleted and 0=not deleted). Both remain strict integer 0|1; their apparent semantic inversion needs live/source confirmation. Nullable certificate_pem and empty last_status_message remain distinct from omission."
+        },
+        {
+          "kind": "policy",
+          "text": "One form POST on direct UAPI or the WHM bridge, with no implicit read, merge, retry, session cache, restore or rollback. Provider/network state can change; no live compatibility is established."
+        },
+        {
+          "kind": "policy",
+          "text": "Input tokens remain sensitive. Returned access tokens, checkout/session URLs, PEM/CSR, provider messages and identity values are sensitive payload data; do not log them. URLs are returned without navigation or secondary requests. Inputs retain exact bytes without trimming, URL/domain parsing or provider-specific validation."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1Market~1process_ssl_pending_queue/get: x-readonly=false and x-rollback=none select form POST despite the selected GET source variant. Required scalar parameter types/order and availability retain the pinned contract. Formal response data fields stay optional with native integer flags/timestamps, string identifiers and no inferred enum, normalization or response union. Operation description and parameter descriptions bind session, provider and state effects; no live behavior is claimed.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Market~1process_ssl_pending_queue/get"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1Market~1process_ssl_pending_queue/get/responses/200/content/application~1json/schema/properties/result/properties/data: Preserve this formal data schema, optional known fields, nullable versus omitted values and required root presence. Processes the account pending queue and can install certificates; this is a mutation, not harmless polling. The pinned deleted description says 0=deleted and 1=not deleted, opposite expired (1=deleted and 0=not deleted). Both remain strict integer 0|1; their apparent semantic inversion needs live/source confirmation. Nullable certificate_pem and empty last_status_message remain distinct from omission.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Market~1process_ssl_pending_queue/get/responses/200/content/application~1json/schema/properties/result/properties/data"
+        }
+      ]
+    },
+    "uapi:Market/set_status_of_pending_queue_items": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 56."
+        },
+        {
+          "kind": "documented",
+          "text": "Sets queue item status. The documented confirmed status denotes provider-confirmed payment; the client does not verify payment. Inspect payload error_type and missing integer order_item_ids separately from responseMeta API success; success does not establish that every item changed."
+        },
+        {
+          "kind": "policy",
+          "text": "One form POST on direct UAPI or the WHM bridge, with no implicit read, merge, retry, session cache, restore or rollback. Provider/network state can change; no live compatibility is established."
+        },
+        {
+          "kind": "policy",
+          "text": "Input tokens remain sensitive. Returned access tokens, checkout/session URLs, PEM/CSR, provider messages and identity values are sensitive payload data; do not log them. URLs are returned without navigation or secondary requests. Inputs retain exact bytes without trimming, URL/domain parsing or provider-specific validation."
+        },
+        {
+          "kind": "policy",
+          "text": "A scalar orderItemId sends one literal order_item_id. Nonempty sequential string lists, including singleton lists, repeat the literal order_item_id in caller order, retaining duplicates and exact bytes. Empty, sparse, keyed, nested or non-string lists fail locally after metadata reset. provider and status remain single fields."
+        },
+        {
+          "kind": "policy",
+          "text": "Review 5725131701 source inspection reports matching items updated in memory before leftover IDs reject before finish(). Partial-match persistence was not observed. An error is not proof of rollback or atomicity; no persistence, no-change, transaction or retry guarantee is established."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1Market~1set_status_of_pending_queue_items/get: x-readonly=false and x-rollback=none select form POST despite the selected GET source variant. Required scalar parameter types/order and availability retain the pinned contract. Formal response data fields stay optional with native integer flags/timestamps, string identifiers and no inferred enum, normalization or response union. Operation description and parameter descriptions bind session, provider and state effects; no live behavior is claimed.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Market~1set_status_of_pending_queue_items/get"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1Market~1set_status_of_pending_queue_items/get/parameters/0: Formal required string scalar and prose expressly allow duplicated literal order_item_id as an alternative to numbered order_item_id-1/-2/-3. Select existing repeat+allow_scalar with strict string items and empty rejection.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Market~1set_status_of_pending_queue_items/get/parameters/0"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1Market~1set_status_of_pending_queue_items/get/parameters/0/examples/multiple-alternative: Exact repeated-key example order_item_id=12345&order_item_id=12346&order_item_id=12347 supports repeated literal fields in caller order.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Market~1set_status_of_pending_queue_items/get/parameters/0/examples/multiple-alternative"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1Market~1set_status_of_pending_queue_items/get/parameters/0/examples/multiple: Numbered order_item_id-1/-2/-3 is a documented alternative; this typed method selects the repeated literal-key alternative and never asks callers to number inputs.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Market~1set_status_of_pending_queue_items/get/parameters/0/examples/multiple"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1Market~1set_status_of_pending_queue_items/get/responses/200/content/application~1json/schema/properties/result/properties/data: Preserve this formal data schema, optional known fields, nullable versus omitted values and required root presence. Sets queue item status. The documented confirmed status denotes provider-confirmed payment; the client does not verify payment. Inspect payload error_type and missing integer order_item_ids separately from responseMeta API success; success does not establish that every item changed.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Market~1set_status_of_pending_queue_items/get/responses/200/content/application~1json/schema/properties/result/properties/data"
+        },
+        {
+          "kind": "doc",
+          "version": "reviewer source inspection; runtime persistence unobserved",
+          "date": "2026-10-31",
+          "note": "Attributed to seebeen review 5725131701 of exact 3872d384a2e4f83a348758085808452230459d8c (9a32128..3872d38). Review 5725131701 source inspection reports matching items updated in memory before leftover IDs reject before finish(). Partial-match persistence was not observed. An error is not proof of rollback or atomicity; no persistence, no-change, transaction or retry guarantee is established. This integration performed no live call, capture or source refresh. The pinned pointer anchors operation identity; it does not make reviewer source inspection a pinned wire observation.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Market~1set_status_of_pending_queue_items/get"
+        }
+      ],
+      "params": {
+        "order_item_id": {
+          "collection": {
+            "kind": "repeat",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject"
+          }
+        }
+      }
+    },
+    "uapi:Market/set_url_after_checkout": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 56."
+        },
+        {
+          "kind": "documented",
+          "text": "Updates the provider checkout destination. Input orderId remains an integer; error_type is an optional nullable string payload field. Inspect it separately from the API envelope."
+        },
+        {
+          "kind": "policy",
+          "text": "One form POST on direct UAPI or the WHM bridge, with no implicit read, merge, retry, session cache, restore or rollback. Provider/network state can change; no live compatibility is established."
+        },
+        {
+          "kind": "policy",
+          "text": "Input tokens remain sensitive. Returned access tokens, checkout/session URLs, PEM/CSR, provider messages and identity values are sensitive payload data; do not log them. URLs are returned without navigation or secondary requests. Inputs retain exact bytes without trimming, URL/domain parsing or provider-specific validation."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1Market~1set_url_after_checkout/get: x-readonly=false and x-rollback=none select form POST despite the selected GET source variant. Required scalar parameter types/order and availability retain the pinned contract. Formal response data fields stay optional with native integer flags/timestamps, string identifiers and no inferred enum, normalization or response union. Operation description and parameter descriptions bind session, provider and state effects; no live behavior is claimed.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Market~1set_url_after_checkout/get"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1Market~1set_url_after_checkout/get/responses/200/content/application~1json/schema/properties/result/properties/data: Preserve this formal data schema, optional known fields, nullable versus omitted values and required root presence. Updates the provider checkout destination. Input orderId remains an integer; error_type is an optional nullable string payload field. Inspect it separately from the API envelope.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Market~1set_url_after_checkout/get/responses/200/content/application~1json/schema/properties/result/properties/data"
+        }
+      ],
+      "params": {
+        "access_token": {
+          "sensitive": true
+        }
+      }
+    },
+    "uapi:Market/validate_login_token": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 56."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns an access token from provider login-token validation. Supply the same urlAfterLogin value used for getLoginUrl; the client does not store or verify session linkage. access_token is optional in the required object payload; its omission is distinct from absent data."
+        },
+        {
+          "kind": "policy",
+          "text": "One form POST on direct UAPI or the WHM bridge, with no implicit read, merge, retry, session cache, restore or rollback. Provider/network state can change; no live compatibility is established."
+        },
+        {
+          "kind": "policy",
+          "text": "Input tokens remain sensitive. Returned access tokens, checkout/session URLs, PEM/CSR, provider messages and identity values are sensitive payload data; do not log them. URLs are returned without navigation or secondary requests. Inputs retain exact bytes without trimming, URL/domain parsing or provider-specific validation."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1Market~1validate_login_token/get: x-readonly=false and x-rollback=none select form POST despite the selected GET source variant. Required scalar parameter types/order and availability retain the pinned contract. Formal response data fields stay optional with native integer flags/timestamps, string identifiers and no inferred enum, normalization or response union. Operation description and parameter descriptions bind session, provider and state effects; no live behavior is claimed.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Market~1validate_login_token/get"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1Market~1validate_login_token/get/responses/200/content/application~1json/schema/properties/result/properties/data: Preserve this formal data schema, optional known fields, nullable versus omitted values and required root presence. Returns an access token from provider login-token validation. Supply the same urlAfterLogin value used for getLoginUrl; the client does not store or verify session linkage. access_token is optional in the required object payload; its omission is distinct from absent data.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Market~1validate_login_token/get/responses/200/content/application~1json/schema/properties/result/properties/data"
+        }
+      ],
+      "params": {
+        "login_token": {
+          "sensitive": true
         }
       }
     }

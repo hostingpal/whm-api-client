@@ -13,6 +13,60 @@ namespace HostingPal\WhmApiClient\Api\Uapi\Spec;
  */
 final class MarketSpec
 {
+    public const CANCEL_PENDING_SSL_CERTIFICATE = [
+        'function' => 'cancel_pending_ssl_certificate',
+        'module' => 'Market',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'orderItemId' => ['name' => 'order_item_id', 'encoding' => 'scalar'],
+            'provider' => ['name' => 'provider', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'list',
+            'items' => [
+                'type' => 'object',
+                'fields' => [
+                    'created_time' => ['type' => 'int'],
+                    'csr' => ['type' => 'string'],
+                    'domains' => ['type' => 'list', 'items' => ['type' => 'string']],
+                    'expired' => ['type' => 'flag'],
+                    'first_poll_time' => ['type' => 'int'],
+                    'last_poll_time' => ['type' => 'int'],
+                    'last_status_code' => ['type' => 'string'],
+                    'order_id' => ['type' => 'string'],
+                    'order_item_id' => ['type' => 'string'],
+                    'product_id' => ['type' => 'string'],
+                    'provider' => ['type' => 'string'],
+                    'status' => ['type' => 'string'],
+                    'support_uri' => ['type' => 'string'],
+                    'vhost_names' => ['type' => 'list', 'items' => ['type' => 'string']],
+                ],
+            ],
+        ],
+    ];
+
+    public const CREATE_SHOPPING_CART_NON_SSL = [
+        'function' => 'create_shopping_cart_non_ssl',
+        'module' => 'Market',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'accessToken' => ['name' => 'access_token', 'encoding' => 'scalar'],
+            'productName' => ['name' => 'product_name', 'encoding' => 'scalar'],
+            'urlAfterCheckout' => ['name' => 'url_after_checkout', 'encoding' => 'scalar'],
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'checkout_url' => ['type' => 'string'],
+                'order_id' => ['type' => 'string'],
+                'order_items_ref' => ['type' => 'list', 'items' => ['type' => 'map', 'values' => ['type' => 'mixed']]],
+            ],
+        ],
+    ];
+
     public const GET_ALL_PRODUCTS = [
         'function' => 'get_all_products',
         'module' => 'Market',
@@ -101,6 +155,23 @@ final class MarketSpec
         ],
     ];
 
+    public const GET_BUILD_CART_URL = [
+        'function' => 'get_build_cart_url',
+        'module' => 'Market',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'productName' => ['name' => 'product_name', 'encoding' => 'scalar'],
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'url' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
     public const GET_CERTIFICATE_STATUS_DETAILS = [
         'function' => 'get_certificate_status_details',
         'module' => 'Market',
@@ -159,6 +230,17 @@ final class MarketSpec
                 'completion_url' => ['type' => 'string'],
             ],
         ],
+    ];
+
+    public const GET_LICENSE_INFO = [
+        'function' => 'get_license_info',
+        'module' => 'Market',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
     ];
 
     public const GET_LOGIN_URL = [
@@ -300,6 +382,108 @@ final class MarketSpec
                 ],
                 'status_code' => ['type' => 'string'],
                 'status_message' => ['type' => 'string', 'nullable' => true],
+            ],
+        ],
+    ];
+
+    public const PROCESS_SSL_PENDING_QUEUE = [
+        'function' => 'process_ssl_pending_queue',
+        'module' => 'Market',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'list',
+            'items' => [
+                'type' => 'object',
+                'fields' => [
+                    'certificate_id' => ['type' => 'string'],
+                    'certificate_pem' => ['type' => 'string', 'nullable' => true],
+                    'created_time' => ['type' => 'int'],
+                    'csr' => ['type' => 'string'],
+                    'deleted' => ['type' => 'flag'],
+                    'domains' => ['type' => 'list', 'items' => ['type' => 'string']],
+                    'expired' => ['type' => 'flag'],
+                    'first_poll_time' => ['type' => 'int'],
+                    'installed' => ['type' => 'flag'],
+                    'last_poll_time' => ['type' => 'int'],
+                    'last_status_code' => ['type' => 'string'],
+                    'last_status_message' => ['type' => 'string'],
+                    'order_id' => ['type' => 'string'],
+                    'order_item_id' => ['type' => 'string'],
+                    'originating_certificate_id' => ['type' => 'string'],
+                    'parent_cert_expiry' => ['type' => 'int'],
+                    'product_id' => ['type' => 'string'],
+                    'provider' => ['type' => 'string'],
+                    'status' => ['type' => 'string'],
+                    'vhost_names' => ['type' => 'list', 'items' => ['type' => 'string']],
+                ],
+            ],
+        ],
+    ];
+
+    public const SET_STATUS_OF_PENDING_QUEUE_ITEMS = [
+        'function' => 'set_status_of_pending_queue_items',
+        'module' => 'Market',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'orderItemId' => [
+                'name' => 'order_item_id',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'repeat',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                ],
+            ],
+            'provider' => ['name' => 'provider', 'encoding' => 'scalar'],
+            'status' => ['name' => 'status', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'nullable' => true,
+            'fields' => [
+                'error_type' => ['type' => 'string'],
+                'order_item_ids' => ['type' => 'list', 'items' => ['type' => 'int']],
+            ],
+        ],
+    ];
+
+    public const SET_URL_AFTER_CHECKOUT = [
+        'function' => 'set_url_after_checkout',
+        'module' => 'Market',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'accessToken' => ['name' => 'access_token', 'encoding' => 'scalar'],
+            'orderId' => ['name' => 'order_id', 'encoding' => 'scalar'],
+            'provider' => ['name' => 'provider', 'encoding' => 'scalar'],
+            'urlAfterCheckout' => ['name' => 'url_after_checkout', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'error_type' => ['type' => 'string', 'nullable' => true],
+            ],
+        ],
+    ];
+
+    public const VALIDATE_LOGIN_TOKEN = [
+        'function' => 'validate_login_token',
+        'module' => 'Market',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'loginToken' => ['name' => 'login_token', 'encoding' => 'scalar'],
+            'provider' => ['name' => 'provider', 'encoding' => 'scalar'],
+            'urlAfterLogin' => ['name' => 'url_after_login', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'access_token' => ['type' => 'string'],
             ],
         ],
     ];

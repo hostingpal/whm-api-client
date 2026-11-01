@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 104 typed groups cover 1,174 documented operations:
+and cPanel UAPI surface. The 104 typed groups cover 1,182 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -3702,3 +3702,115 @@ Runtime follow-up `whm-api-client-8x0.2.63`, the 55 inherited source diagnostics
 PHP 8.3 CI, current-head review and all earlier acceptance work remain unwaived.
 Historical PR95 provenance finding I1 / `whm-api-client-qrk` remains open; the
 prospective PR96 recorder does not repair that missing history.
+
+
+### UAPI Market actions (2026-10-31)
+
+`uapi()->market()` now exposes seventeen of the nineteen pinned functions: the
+nine published GETs plus eight form POST actions, `cancelPendingSslCertificate()`,
+`createShoppingCartNonSsl()`, `getBuildCartUrl()`, `getLicenseInfo()`,
+`processSslPendingQueue()`, `setStatusOfPendingQueueItems()`,
+`setUrlAfterCheckout()` and `validateLoginToken()`. Non-SSL cart creation,
+build-cart URL and license information require cPanel 62; the other five require
+cPanel 56. All eight are documented mutations with no rollback, including the
+get-named methods that save session data. Queue processing acts on the account
+pending queue and can install certificates. Each call makes one form POST on
+direct UAPI or the WHM bridge, without an implicit read, merge, retry, session
+cache, restore or rollback.
+
+`setStatusOfPendingQueueItems(orderItemId, provider, status)` accepts a string or
+nonempty sequential string list. A scalar uses one literal `order_item_id`;
+every list, including a singleton, repeats that literal key in caller order,
+preserving duplicates, empty strings and exact bytes. Provider and status remain
+single fields. Empty, sparse, keyed, nested and non-string lists fail before HTTP
+after metadata reset; native signature errors precede reset. The pinned prose
+and examples expressly permit repeated keys as an alternative to numbered names.
+No caller numbering, bracket keys, sorting, deduplication or numeric conversion
+is introduced. The documented confirmed status denotes provider-confirmed payment;
+the client does not verify payment. Inspect payload `error_type` and missing
+integer `order_item_ids` separately from `responseMeta()` API status.
+
+Known response fields remain optional. Order, product and certificate IDs remain
+strings; input `setUrlAfterCheckout` orderId and returned missing order_item_ids
+remain integers. Flags stay native integer 0|1 and timestamps stay integers.
+Nullable certificate_pem and error_type preserve null versus omission; an empty
+last_status_message stays empty. Provider-specific order_items_ref objects and
+license objects preserve opaque fields. A validateLoginToken object without
+access_token is valid, while an absent root data member is a mismatch.
+
+Three source contradictions remain explicit. Cancellation retains the formal
+list of order records despite object prose; an actual object will fail strict
+validation. License information retains its formal nullable opaque object despite
+no-data prose and a null example; an omitted root data member will fail validation.
+Queue `deleted` prose says 0=deleted and 1=not deleted, opposite `expired`; both
+remain strict integer flags and their semantics need live/source confirmation.
+No union, void weakening or semantic correction is inferred.
+
+Access/login tokens remain sensitive parameters through generated and runner
+frames. Returned access tokens, checkout/session URLs, PEM/CSR, provider messages
+and identity data are sensitive payloads; do not log them or fetch returned URLs.
+Inputs retain exact bytes, optional null omits domain and an explicit empty domain
+remains supplied. Supply validateLoginToken with the caller's urlAfterLogin used
+for getLoginUrl; the client stores or verifies no session linkage. Cancellation
+removes the order/polling per source without a refund or reversibility promise.
+No live API/provider/login/cart/order/payment/queue/certificate call or URL fetch
+ran. Actual session, checkout, payment, installation and queue compatibility remain
+under OPEN `whm-api-client-8x0.2.64`; delivery is `whm-api-client-8x0.4.22`.
+
+Exactly eight canonical UAPI operations and zero groups are added over
+`9a3212839ebd07f1caad02f99e674a91f877b98b`: 1,145 operations (557 UAPI, 588 WHM),
+96 groups and 195 generated outputs (194 PHP files plus coverage). The published
+nine read contracts remain unchanged. `create_shopping_cart` and
+`request_ssl_certificates` remain deferred under `8x0.1.22` and `8x0.29.6`; their
+composed/content JSON values are form/query parameters, not JSON request bodies.
+This slice adds no runtime/generator or generic JSON-body capability. Required
+PHP 8.3 CI and the 55 inherited diagnostics remain visible and unwaived.
+
+
+### UAPI Market actions ordered integration (2026-11-01)
+
+The preceding dated Market sections describe historical deliveries and their
+validation. This candidate integrates approved master
+`e6611d6b30eda72d6e1fd746b290bf847fd8b664` with original action head
+`3872d384a2e4f83a348758085808452230459d8c`: 1,182 canonical operations
+(586 UAPI, 596 WHM), 104 groups and 211 generated outputs (210 PHP files plus
+coverage). It preserves the nine corrected master reads and adds exactly the
+original eight form POST actions. Their strict response contracts, signatures,
+parameter order, sensitivity and repeated-string encoding remain unchanged.
+
+[Review 5725131701](https://github.com/hostingpal/whm-api-client/pull/97#pullrequestreview-5725131701)
+by seebeen covers only original `9a32128..3872d38`, with limited results on
+cPanel `11.138.0.19` through direct UAPI and the WHM bridge. Its three bounded
+caller caveats are now included in generated method documentation:
+
+- `cancelPendingSslCertificate('999', 'cPStore')` returned `[]` with status 1
+  through both routes. In that observed case no matching item was removed.
+  Confirm returned matching rows; envelope success alone does not prove
+  cancellation. The formal list shape and no-refund/reversibility limits remain.
+- Token-authenticated `getBuildCartUrl()` failed through both routes because
+  server information was unavailable from the request environment. This is a
+  build, route and environment scoped observation, not universal token or route
+  incompatibility. Session writes and optional domain omission/empty bytes remain.
+- Reviewer source inspection reports matches updated in memory before leftover
+  IDs reject before `finish()`. Partial-match persistence was not observed.
+  An error proves neither rollback nor atomicity; no persistence, no-change,
+  transaction or retry guarantee follows. Payload errors and API outcome handling
+  retain their existing boundaries.
+
+The reviewer deliberately did not run `validateLoginToken()`,
+`createShoppingCartNonSsl()`, `setUrlAfterCheckout()` or `getLicenseInfo()` because
+they contact the Store or need a Store session. Populated cancellation and queue
+rows and license success remain unobserved. The reviewer's disposable-account
+cleanup and temporary-token revocation are attributed reports, not checks by this
+integration. This integration made no live, provider, session, cart, order,
+payment, queue or certificate request and followed no URL or source refresh.
+
+Combined validation is offline: strict Composer validation, full PHP quality
+gates, exception-argument-enabled Market/read-compatibility/sensitive-trace focus,
+fresh Go tests, vet, schema/source/map checks, generation freshness, offline
+toolchain checks and staged/working whitespace checks. Exact execution results
+belong to the integration handoff; historical counts above are not rerun claims.
+The three original source contradictions and `whm-api-client-8x0.2.64` remain
+open; the 55 inherited diagnostics, PHP 8.3 CI, source/runtime/stress/platform/
+metadata/release gaps and deferred consumer integration remain unwaived.
+Historical PR95 provenance finding I1 / `whm-api-client-qrk` remains open.
