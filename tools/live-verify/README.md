@@ -355,6 +355,13 @@ different. It adds the filesystem fields, and a lost `createacct` is no longer
 [v1 artifact](../../docs/api/evidence/2026-10-17-finite-quota.json), which stands as the
 record of what ran then.
 
+The [v2 capture](../../docs/api/evidence/2026-11-01-finite-quota-v2.json) at `b3bfc14` on
+`11.138.0.19` is a **failed run**, exit 1, kept unchanged. Its setup, capture, finite
+expectations, cleanup and filesystem proof all pass, and so does the baseline. It fails only
+the strict finite assessment, on the same two `get_quota_info` unknown-field observations
+as v1, which that assessment cannot acknowledge by design. See the
+[source audit](../../docs/api/source-audit.md#shared-disposable-account-lifecycle-2026-11-01).
+
 ## Capture and privacy
 
 The transport observes the same response as the client. Its stream decorator
@@ -2206,8 +2213,10 @@ cleanup, where it shows what really remains. Credentials stay out of the SSH pro
 environment, and its standard error is discarded.
 
 The proof covers those locations at one moment. Inventories show that each place can be
-read, not that a particular name was spelled as checked, and nothing here has observed a
-session file's real name. It does not cover other paths, backups, logs or mail queues.
+read, not that a name is spelled as checked. A read-only run of this proof while `wlupload`
+existed reported every location but sessions present, which is the positive control for
+those spellings. Session files read 0 there and in both captures, so nothing has shown
+their real names. The proof does not cover other paths, backups, logs or mail queues.
 
 ## Disposable-account Fileman upload fixture
 
@@ -2323,11 +2332,18 @@ It establishes no raw-download identity, antivirus or archive behavior, null or 
 status-0 observation, memory benchmark, or WHM or bridged upload coverage.
 
 The current scenario is `fileman-upload-disposable-v3`, assessed under policy
-`fileman-upload-no-acknowledgments-v2`, and **no v3 capture exists yet**. A passing run
-sends the same requests as v2, but it records and accepts different values, so it has its
-own version. Moving onto the shared lifecycle kept that version: no capture carries it, so
-nothing recorded under it can be misread. The committed v2 artifact stays the valid
-record of what ran at `1c8bbce`.
+`fileman-upload-no-acknowledgments-v2`. A passing run sends the same requests as v2, but it
+records and accepts different values, so it has its own version. Moving onto the shared
+lifecycle kept that version, because no capture carried it yet, so nothing recorded under
+it could be misread. The committed v2 artifact stays the valid record of what ran at
+`1c8bbce`.
+
+The [v3 capture](../../docs/api/evidence/2026-11-01-fileman-upload-v3.json) at `b3bfc14` on
+`11.138.0.19` is a **passed run**, exit 0, through the shared lifecycle with the filesystem
+proof enabled. All 25 phases passed with no review findings, all six files were proven owned
+and deleted, and token, account, directory, domain and zone cleanup are `confirmed_absent`,
+as is `filesystem_cleanup`. See the
+[source audit](../../docs/api/source-audit.md#shared-disposable-account-lifecycle-2026-11-01).
 
 The [corrected capture](../../docs/api/evidence/2026-11-01-fileman-upload-v2.json) at
 `1c8bbce` on `11.138.0.19` is a **passed run**, exit 0. All five uploads passed their

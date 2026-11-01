@@ -1343,6 +1343,16 @@ SHA-256: `4138dbf1d083ddfe6d109c86bb8beb449abde6937e93b2452693d47b2b792b81`.
 
 ## Disposable-account Fileman upload evidence
 
+The [v3 capture](2026-11-01-fileman-upload-v3.json) at
+`b3bfc1474729fb2ce60207d9b3d5a3d0bbe51232` on `11.138.0.19` passes recipe
+`fileman-upload-disposable-v3`, exit 0, through the shared disposable-account lifecycle
+with the filesystem proof enabled. All 25 phases passed with no review findings, all six
+files were proven owned and deleted, and token, account, directory, domain and zone cleanup
+are `confirmed_absent`, as is `filesystem_cleanup`. The proof covers its fixed locations at
+one moment, and session filenames still have no positive control. See the
+[source audit](../source-audit.md#shared-disposable-account-lifecycle-2026-11-01). SHA-256:
+`7f5f46ccd0c02d0d883d1221c6e80c8219406766a261f1a7552b4b853e750a90`.
+
 The [corrected capture](2026-11-01-fileman-upload-v2.json) at
 `1c8bbce3325f5b758837e1615cdcba199f3bd2ce` on `11.138.0.19` passes recipe
 `fileman-upload-disposable-v2`, exit 0: five multipart uploads, six exact content
@@ -1351,8 +1361,7 @@ confirmed through the API. It claims no filesystem cleanup, raw-download identit
 WHM or bridged upload coverage. SHA-256:
 `10eecbe1be592a3872fc59d74f2e24187fad98bb4f0e3c700f38af9afcd874d3`. It stays the valid
 record of what ran at that revision. The fixture has since moved to
-`fileman-upload-disposable-v3` and policy `fileman-upload-no-acknowledgments-v2`, and no
-v3 capture exists yet; see the
+`fileman-upload-disposable-v3` and policy `fileman-upload-no-acknowledgments-v2`; see the
 [source audit](../source-audit.md#fixture-corrections-after-the-corrected-capture).
 
 The [first capture](2026-11-01-fileman-upload.json) at
@@ -1360,3 +1369,15 @@ The [first capture](2026-11-01-fileman-upload.json) at
 required the exact requested charset spelling, which this server does not return. See
 the [source audit](../source-audit.md#charset-echo-classification-and-corrected-capture).
 SHA-256: `34e31bfd989c84deee7568a5d8fca72b1b6c657346cf5d81dcd3f760c7f2f41a`.
+
+## Disposable-account finite-Quota evidence
+
+The [v2 capture](2026-11-01-finite-quota-v2.json) at
+`b3bfc1474729fb2ce60207d9b3d5a3d0bbe51232` on `11.138.0.19` is a failed run, exit 1, kept
+unchanged. Scenario `finite-quota-disposable-v2` ran through the shared lifecycle with the
+filesystem proof enabled. Setup, capture, finite expectations and cleanup all pass, token,
+account, domain and zone are `confirmed_absent`, as is `filesystem_cleanup`, and the 67-probe
+baseline passes. It fails only the strict finite assessment, on the same two unknown-field
+observations as the [v1 artifact](2026-10-17-finite-quota.json). See the
+[source audit](../source-audit.md#shared-disposable-account-lifecycle-2026-11-01). SHA-256:
+`82fe5c4f332f37cc444e588e57496f20d7d15f00db6495b52c0e1aad263d758a`.
