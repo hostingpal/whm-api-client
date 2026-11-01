@@ -21,6 +21,8 @@ use Psr\Http\Message\RequestInterface;
 /** @phpstan-import-type Context from EvidenceRunner */
 final class MarketReadsProbesTest extends TestCase
 {
+    private const SOURCE = __DIR__ . '/../../../docs/api/sources/2026-10-13/cpanel.openapi.json.gz';
+
     private const LOGIN_QUERY = 'provider=cPStore'
         . '&url_after_login=http%3A%2F%2Fhostname.example.com%2Fredirectionlocation.cgi%3Fstate';
 
@@ -39,6 +41,9 @@ final class MarketReadsProbesTest extends TestCase
         . '"dcv_max_redirects":0,"dcv_user_agent_string":"Synthetic DCV"}';
 
     private const LOGIN_URL = '"https://synthetic.example/login?access_token=PRIVATETOKEN"';
+
+    /** @var array<mixed>|null */
+    private static ?array $source = null;
 
     public function testCatalogExecutesOnlyElevenExactAccountBoundGetRequests(): void
     {
@@ -101,15 +106,41 @@ final class MarketReadsProbesTest extends TestCase
 
     public function testLoginRedirectIsThePinnedExampleEncodedOnce(): void
     {
+        self::assertSame(
+            'url_after_login',
+            self::pinned('paths', '/Market/get_login_url', 'get', 'parameters', 1, 'name'),
+        );
+        $example = self::pinned('paths', '/Market/get_login_url', 'get', 'parameters', 1, 'schema', 'example');
         $query = [];
         parse_str(self::LOGIN_QUERY, $query);
 
-        self::assertSame([
-            'provider' => 'cPStore',
-            'url_after_login' => 'http://hostname.example.com/redirectionlocation.cgi?state',
-        ], $query);
-        self::assertSame($query['url_after_login'], MarketReadsProbes::URL_AFTER_LOGIN);
-        self::assertSame($query['provider'], MarketReadsProbes::PROVIDER);
+        self::assertSame(['provider' => MarketReadsProbes::PROVIDER, 'url_after_login' => $example], $query);
+        self::assertSame($example, MarketReadsProbes::URL_AFTER_LOGIN);
+    }
+
+    public function testPinnedReadOnlyMarketOperationsAreExactlyTheCapturedAndNotRunOperations(): void
+    {
+        $paths = self::pinned('paths');
+        self::assertIsArray($paths);
+        $readOnly = [];
+        foreach (array_keys($paths) as $path) {
+            self::assertIsString($path);
+            if (str_starts_with($path, '/Market/') && self::pinned('paths', $path, 'get', 'x-readonly') === true) {
+                $readOnly[] = 'uapi:Market/' . substr($path, strlen('/Market/'));
+            }
+        }
+
+        $catalogued = array_keys(MarketReadsProbes::NOT_RUN);
+        foreach (MarketReadsProbes::load() as $probe) {
+            if ($probe->operation !== 'whm1:version') {
+                $catalogued[] = $probe->operation;
+            }
+        }
+        self::assertCount(9, $readOnly);
+        self::assertSame(self::sorted($readOnly), self::sorted(array_values(array_unique($catalogued))));
+        foreach (['get_build_cart_url', 'get_license_info'] as $function) {
+            self::assertFalse(self::pinned('paths', '/Market/' . $function, 'get', 'x-readonly'));
+        }
     }
 
     public function testBeadReadsPartitionIntoCapturedAndNotRunOperations(): void
@@ -188,6 +219,28 @@ final class MarketReadsProbesTest extends TestCase
         foreach ([5, 6] as $index) {
             self::assertSame(['$' => ['empty-list']], $report['probes'][$index]['payload_paths']);
         }
+    }
+
+    /** Read one pointer from the pinned UAPI source, which is what the catalog constants claim to follow. */
+    private static function pinned(string|int ...$pointer): mixed
+    {
+        if (self::$source === null) {
+            $compressed = file_get_contents(self::SOURCE);
+            self::assertIsString($compressed);
+            $json = gzdecode($compressed);
+            self::assertIsString($json);
+            $document = json_decode($json, true, flags: JSON_THROW_ON_ERROR);
+            self::assertIsArray($document);
+            self::$source = $document;
+        }
+        $node = self::$source;
+        foreach ($pointer as $key) {
+            self::assertIsArray($node);
+            self::assertArrayHasKey($key, $node);
+            $node = $node[$key];
+        }
+
+        return $node;
     }
 
     /**
