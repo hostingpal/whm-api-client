@@ -19,7 +19,7 @@ use SensitiveParameter;
  * according to the configured credentials, with a single attempt and no retries. The handle clears responseMeta()
  * before every attempt and records the envelope snapshot before API or payload errors.
  *
- * @phpstan-type ExpungeMessagesForMailboxGuidResult array<array-key, mixed>
+ * @phpstan-type ExpungeMessagesForMailboxGuidResult array<array-key, mixed>|null
  * @phpstan-type GetMailboxStatusListResult list<array{
  *     guid?: string,
  *     mailbox?: string,
@@ -52,6 +52,11 @@ final readonly class Mailboxes
      *
      * Documented: Available from cPanel 64.
      *
+     * Observed: A successful outcome can delete nothing: review 5725223473 on original 9e47d95, cPanel 11.138.0.19,
+     * observed a nonmatching query and a nonexistent GUID succeeding through both routes. Separately verify the
+     * intended inventory with getMailboxStatusList(account). The client makes no extra verification request and
+     * supplies no ownership protection, retry or rollback.
+     *
      * Documented: Marks selected messages as deleted; rollback is none. Use getMailboxStatusList(account) separately to
      * inventory mailbox names and GUIDs.
      *
@@ -67,7 +72,8 @@ final readonly class Mailboxes
      *
      * Policy: Scalar identifiers and names are forwarded and form-encoded once without email, domain, path, UUID or
      * search-query validation, trimming or UTF-8 name conversion. Optional and absent known fields remain distinct from
-     * explicit null. No live compatibility is established.
+     * explicit null. No universal live compatibility is established; attributed observations are limited to the stated
+     * revision, build, arguments and routes.
      *
      * API-map identity: uapi:Mailboxes/expunge_mailbox_messages#GET (wire name expunge_mailbox_messages).
      *
@@ -103,6 +109,11 @@ final readonly class Mailboxes
      *
      * Documented: Available from cPanel 64.
      *
+     * Observed: A successful outcome can delete nothing: review 5725223473 on original 9e47d95, cPanel 11.138.0.19,
+     * observed a nonmatching query and a nonexistent GUID succeeding through both routes. Separately verify the
+     * intended inventory with getMailboxStatusList(account). The client makes no extra verification request and
+     * supplies no ownership protection, retry or rollback.
+     *
      * Documented: Marks selected messages as deleted; rollback is none. Use getMailboxStatusList(account) separately to
      * inventory mailbox names and GUIDs.
      *
@@ -110,12 +121,15 @@ final readonly class Mailboxes
      * escape it, establish mailbox ownership, protect arbitrary mail from deletion, retry or roll back. Later live
      * fixtures require separate ownership and cleanup.
      *
-     * Documented: The required opaque object payload preserves provider fields and empty-object compatibility; null and
-     * missing data are mismatches. No per-message outcome is inferred.
+     * Observed: The pinned response declares a nonnullable object, but review 5725223473 observed explicit null after
+     * GUID expunge on original 9e47d95 through both routes. The effective payload is a required nullable opaque map:
+     * explicit null and opaque object fields are preserved, including inherited empty-array compatibility; missing data
+     * still mismatches. No deletion count or per-message outcome is inferred.
      *
      * Policy: Scalar identifiers and names are forwarded and form-encoded once without email, domain, path, UUID or
      * search-query validation, trimming or UTF-8 name conversion. Optional and absent known fields remain distinct from
-     * explicit null. No live compatibility is established.
+     * explicit null. No universal live compatibility is established; attributed observations are limited to the stated
+     * revision, build, arguments and routes.
      *
      * API-map identity: uapi:Mailboxes/expunge_messages_for_mailbox_guid#GET (wire name
      * expunge_messages_for_mailbox_guid).
@@ -134,7 +148,7 @@ final readonly class Mailboxes
         string $mailboxGuid,
         #[SensitiveParameter]
         string $query,
-    ): array {
+    ): ?array {
         /**
          * @var ExpungeMessagesForMailboxGuidResult $result
          * Validated against MailboxesSpec::EXPUNGE_MESSAGES_FOR_MAILBOX_GUID.
@@ -156,12 +170,18 @@ final readonly class Mailboxes
      * Documented: Available from cPanel 64.
      *
      * Documented: Returns a list with optional string guid/mailbox and integer messages/vsize fields; vsize is bytes.
-     * Empty lists and zero counts remain valid. Source minimum 0 is documentation, with no new runtime range validation
-     * or coercion.
+     * Native integers, zero, omitted fields and empty lists retain their meaning. Only messages and vsize additionally
+     * accept canonical decimal integer strings within the platform integer range, normalized losslessly to int. Source
+     * minimum 0 remains descriptive under the existing range policy.
+     *
+     * Observed: Review 5725223473 on original 9e47d95, cPanel 11.138.0.19, reported messages and vsize as digit strings
+     * in every observed row for a mailbox and cPanel username through direct UAPI and WHM bridge. Other fields and
+     * UTF-8 status flags retain their strict types; this is bounded compatibility evidence.
      *
      * Policy: Scalar identifiers and names are forwarded and form-encoded once without email, domain, path, UUID or
      * search-query validation, trimming or UTF-8 name conversion. Optional and absent known fields remain distinct from
-     * explicit null. No live compatibility is established.
+     * explicit null. No universal live compatibility is established; attributed observations are limited to the stated
+     * revision, build, arguments and routes.
      *
      * API-map identity: uapi:Mailboxes/get_mailbox_status_list#GET (wire name get_mailbox_status_list).
      *
@@ -187,12 +207,15 @@ final readonly class Mailboxes
      *
      * Documented: Available from cPanel 78.
      *
-     * Documented: Omitted user defaults to the currently logged-in user. Null omits the optional user; an empty string
-     * remains supplied. The object contains optional integer enabled (0/1), distinct from UAPI status.
+     * Documented: The user argument is a cPanel username, not a mailbox address. Omitted user defaults to the currently
+     * logged-in user. Null omits the optional user; an empty string remains supplied unchanged. No local validation or
+     * normalization is added. The object contains optional integer enabled (0/1), distinct from UAPI status;
+     * mailbox-name encoding does not describe message-content charset.
      *
      * Policy: Scalar identifiers and names are forwarded and form-encoded once without email, domain, path, UUID or
      * search-query validation, trimming or UTF-8 name conversion. Optional and absent known fields remain distinct from
-     * explicit null. No live compatibility is established.
+     * explicit null. No universal live compatibility is established; attributed observations are limited to the stated
+     * revision, build, arguments and routes.
      *
      * API-map identity: uapi:Mailboxes/has_utf8_mailbox_names#GET (wire name has_utf8_mailbox_names).
      *
@@ -228,7 +251,8 @@ final readonly class Mailboxes
      *
      * Policy: Scalar identifiers and names are forwarded and form-encoded once without email, domain, path, UUID or
      * search-query validation, trimming or UTF-8 name conversion. Optional and absent known fields remain distinct from
-     * explicit null. No live compatibility is established.
+     * explicit null. No universal live compatibility is established; attributed observations are limited to the stated
+     * revision, build, arguments and routes.
      *
      * API-map identity: uapi:Mailboxes/set_utf8_mailbox_names#GET (wire name set_utf8_mailbox_names).
      *

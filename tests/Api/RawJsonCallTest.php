@@ -6,11 +6,7 @@ namespace HostingPal\WhmApiClient\Tests\Api;
 
 use HostingPal\WhmApiClient\Api\AbstractApiClient;
 use HostingPal\WhmApiClient\Api\Engine\JsonBody;
-use HostingPal\WhmApiClient\Api\Engine\OrderedFields;
-use HostingPal\WhmApiClient\Api\NumberedList;
 use HostingPal\WhmApiClient\Api\OutcomePolicy;
-use HostingPal\WhmApiClient\Api\RepeatedList;
-use HostingPal\WhmApiClient\Api\SuffixNumberedList;
 use HostingPal\WhmApiClient\Client;
 use HostingPal\WhmApiClient\Config\ClientConfigFactory;
 use HostingPal\WhmApiClient\Exception\ApiErrorException;
@@ -28,11 +24,8 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Client\NetworkExceptionInterface;
 use Psr\Http\Message\RequestInterface;
-use ReflectionMethod;
 use RuntimeException;
-use SensitiveParameter;
 use Throwable;
-use TypeError;
 
 final class RawJsonCallTest extends TestCase
 {
@@ -51,12 +44,8 @@ final class RawJsonCallTest extends TestCase
         $http->addResponse(self::success($direct));
         $json = " \n{\"duplicate\":1,\"duplicate\":2,\"big\":123456789012345678901234567890,\"decimal\":1.000,"
             . '"escaped":"a\\u0000\\/b","\\u0000start":null,"0":0,"01":1,"nested":{"api.version":null}}' . "\t\n";
-        $query = [
-            'space &/%' => 'a +%/', 'repeat' => new RepeatedList(['one', 'two']),
-            'domain' => new NumberedList(['first', 'second']), 'action*' => new SuffixNumberedList(['a', 'b']),
-        ];
-        $result = $direct ? $client->uapi()->callJson('Example', 'operation', $json, $query)
-            : $client->whm()->callJson('Example/operation', $json, $query);
+        $result = $direct ? $client->uapi()->callJson('Example', 'operation', $json)
+            : $client->whm()->callJson('Example/operation', $json);
         self::assertSame(['ok' => true], $result->data);
         self::assertTrue($result->hasData);
         self::assertSame($result->metadata, $handle->responseMeta());
@@ -65,8 +54,7 @@ final class RawJsonCallTest extends TestCase
         self::assertSame('POST', $request->getMethod());
         self::assertSame(
             'https://api.example.test:2443/'
-            . ($direct ? 'execute/Example/operation?' : 'json-api/Example/operation?api.version=1&')
-            . 'space%20%26%2F%25=a%20%2B%25%2F&repeat=one&repeat=two&domain=first&domain-1=second&action1=a&action2=b',
+            . ($direct ? 'execute/Example/operation' : 'json-api/Example/operation'),
             (string) $request->getUri(),
         );
         self::assertSame(
@@ -75,45 +63,68 @@ final class RawJsonCallTest extends TestCase
         );
         self::assertSame('application/json', $request->getHeaderLine('Accept'));
         self::assertSame('application/json', $request->getHeaderLine('Content-Type'));
-        self::assertSame($json, (string) $request->getBody());
+        self::assertSame(
+            $direct ? $json : " \n{\"api.version\":1," . substr($json, 3),
+            (string) $request->getBody(),
+        );
         self::assertNull(
             $direct ? $client->uapi('alpha')->responseMeta()?->whm : $client->uapi('sibling')->responseMeta(),
         );
     }
 
-    /** @return iterable<string, array{string}> */
+    /** @return iterable<string, array{string, string}> */
     public static function documents(): iterable
     {
-        foreach (
-            [
-            '{}', '[]', '"a\\u0000b"', '123456789012345678901234567890',
-            '1e9999', '-0.000', 'true', 'false', 'null',
-            ] as $json
-        ) {
-            yield $json => [$json];
-        }
-        yield '511 lists' => [str_repeat('[', 511) . str_repeat(']', 511)];
-        yield '511 objects' => [
-            str_repeat('{"a":', 510) . '{}' . str_repeat('}', 510),
+        yield 'empty' => ['{}', '{"api.version":1}'];
+        yield 'padded empty' => [" \t{ \r\n }\n", " \t{\"api.version\":1 \r\n }\n"];
+        yield 'padded populated' => ["\n{ \t\"n\":-0.000e+03 }\r", "\n{\"api.version\":1, \t\"n\":-0.000e+03 }\r"];
+        yield 'file prefix remains caller data' => [
+            '{"file-name":"literal"}', '{"api.version":1,"file-name":"literal"}',
         ];
+        yield 'nested duplicate escaped and numeric' => [
+            '{"a":{"api.version":2},"a":[],"\\u0061":1e9999,"b":123456789012345678901234567890}',
+            '{"api.version":1,"a":{"api.version":2},"a":[],"\\u0061":1e9999,"b":123456789012345678901234567890}',
+        ];
+        $nested = str_repeat('{"a":', 510) . '{}' . str_repeat('}', 510);
+        yield '511 containers' => [$nested, '{"api.version":1,' . substr($nested, 1)];
+        $lists = '{"a":' . str_repeat('[', 510) . '0' . str_repeat(']', 510) . '}';
+        yield '511 mixed containers' => [$lists, '{"api.version":1,' . substr($lists, 1)];
     }
 
     #[DataProvider('documents')]
-    public function testEveryValidRootAndDepthKeepsItsBytes(string $json): void
+    public function testObjectBytesHaveOnlyTheOwnedWhmMemberInserted(string $json, string $whm): void
     {
         foreach ([false, true] as $direct) {
             [$client, $http] = self::client($direct);
             $http->addResponse(self::success($direct));
             self::call($client, $direct, $json);
-            self::assertSame($json, (string) self::lastRequest($http)->getBody());
+            self::assertSame($direct ? $json : $whm, (string) self::lastRequest($http)->getBody());
+            self::assertSame('', self::lastRequest($http)->getUri()->getQuery());
+        }
+    }
+
+    public function testPublicJsonSignaturesHaveNoQueryArgument(): void
+    {
+        foreach ([\HostingPal\WhmApiClient\WhmClient::class, \HostingPal\WhmApiClient\UapiClient::class] as $class) {
+            $names = array_map(
+                static fn (\ReflectionParameter $parameter): string => $parameter->getName(),
+                (new \ReflectionMethod($class, 'callJson'))->getParameters(),
+            );
+            self::assertSame($class === \HostingPal\WhmApiClient\WhmClient::class
+                ? ['operation', 'json', 'outcome'] : ['module', 'operation', 'json', 'outcome'], $names);
         }
     }
 
     /** @return iterable<string, array{string}> */
     public static function invalidDocuments(): iterable
     {
-        foreach (['', '  ', '\xEF\xBB\xBF{}', '{', '{}x', 'null true', '{"a":"' . "\xff" . '"}'] as $index => $json) {
-            yield 'syntax ' . $index => [$index === 2 ? "\xef\xbb\xbf{}" : $json];
+        foreach (
+            [
+                '[]', '[1]', '"x"', '1', '12', '-0.0e1', 'true', 'false', 'null', '', '  ',
+                '\xEF\xBB\xBF{}', '{', '{}x', 'null true', '{"a":"' . "\xff" . '"}', '{"a":"\\ud800"}',
+            ] as $index => $json
+        ) {
+            yield 'syntax ' . $index => [$json === '\xEF\xBB\xBF{}' ? "\xef\xbb\xbf{}" : $json];
         }
         foreach ([512, 513] as $depth) {
             yield $depth . ' empty lists' => [str_repeat('[', $depth) . str_repeat(']', $depth)];
@@ -125,7 +136,7 @@ final class RawJsonCallTest extends TestCase
     }
 
     #[DataProvider('invalidDocuments')]
-    public function testInvalidSyntaxSendsNothingAndClearsOldMetadata(string $json): void
+    public function testInvalidDocumentsSendNothingAndClearOldMetadata(string $json): void
     {
         foreach ([false, true] as $direct) {
             [$client, $http] = self::client($direct);
@@ -137,6 +148,7 @@ final class RawJsonCallTest extends TestCase
                 self::call($client, $direct, $json);
                 self::fail('Expected invalid JSON to fail.');
             } catch (InvalidArgumentException $exception) {
+                self::assertSame(InvalidArgumentException::class, $exception::class);
                 self::assertNull($exception->getPrevious());
                 self::assertNull($handle->responseMeta());
                 self::assertNotNull($snapshot);
@@ -145,7 +157,7 @@ final class RawJsonCallTest extends TestCase
         }
     }
 
-    /** @return iterable<string, array{bool, string, array<string, mixed>}> */
+    /** @return iterable<string, array{bool, string}> */
     public static function reservedInputs(): iterable
     {
         foreach ([false, true] as $direct) {
@@ -157,21 +169,15 @@ final class RawJsonCallTest extends TestCase
             }
             foreach ($names as $name) {
                 $prefix = ($direct ? 'direct ' : 'WHM ') . $name;
-                yield $prefix . ' query null' => [$direct, '{}', [$name => null]];
-                yield $prefix . ' query scalar' => [$direct, '{}', [$name => 'override']];
-                yield $prefix . ' query plain list' => [$direct, '{}', [$name => ['override']]];
-                yield $prefix . ' query list' => [$direct, '{}', [$name => new NumberedList(['override', 'second'])]];
-                yield $prefix . ' query repeat' => [$direct, '{}', [$name => new RepeatedList('override')]];
-                yield $prefix . ' root null' => [$direct, '{"' . $name . '":null}', []];
-                yield $prefix . ' root escaped' => [$direct, '{"' . str_replace('.', '\\u002e', $name) . '":null}', []];
-                yield $prefix . ' root duplicate' => [$direct, '{"' . $name . '":1,"' . $name . '":null}', []];
+                yield $prefix . ' root null' => [$direct, '{"' . $name . '":null}'];
+                yield $prefix . ' root escaped' => [$direct, '{"' . str_replace('.', '\\u002e', $name) . '":null}'];
+                yield $prefix . ' root duplicate' => [$direct, '{"' . $name . '":1,"' . $name . '":null}'];
             }
         }
     }
 
-    /** @param array<string, mixed> $query */
     #[DataProvider('reservedInputs')]
-    public function testReservedPresenceRejectsBeforeFiltering(bool $direct, string $json, array $query): void
+    public function testReservedPresenceRejectsBeforeFiltering(bool $direct, string $json): void
     {
         [$client, $http] = self::client($direct);
         $http->addResponse(self::success($direct));
@@ -179,9 +185,10 @@ final class RawJsonCallTest extends TestCase
         $handle = $direct ? $client->uapi() : $client->whm();
         $http->addResponse(self::success($direct));
         try {
-            self::call($client, $direct, $json, $query);
+            self::call($client, $direct, $json);
             self::fail('Expected routing collision rejection.');
         } catch (InvalidArgumentException $exception) {
+                self::assertSame(InvalidArgumentException::class, $exception::class);
             self::assertNull($handle->responseMeta());
             self::assertCount(1, $http->getRequests());
             self::assertStringNotContainsString('override', $exception->getMessage());
@@ -197,7 +204,10 @@ final class RawJsonCallTest extends TestCase
         $json = '{"nested":{"api.":null,"api.future_control":1,"api.version":null,'
             . '"cpanel.user":null,"cpanel.module":null,"cpanel.function":null}}';
         self::call($client, $direct, $json);
-        self::assertSame($json, (string) self::lastRequest($http)->getBody());
+        self::assertSame(
+            $direct ? $json : '{"api.version":1,' . substr($json, 1),
+            (string) self::lastRequest($http)->getBody(),
+        );
     }
 
     #[DataProvider('routes')]
@@ -206,77 +216,24 @@ final class RawJsonCallTest extends TestCase
         [$client, $http] = self::client($direct);
         $http->addResponse(self::success($direct));
         $json = '{"Api.version":null,"API.version":null,"api_version":null,"xapi.version":null,'
-            . '"ordinary":1,"ordinary":2,"\\u0000key":null,"0":1}';
-        self::call($client, $direct, $json, [
-            'Api.version' => 'a', 'API.version' => 'b', 'api_version' => 'c', 'xapi.version' => 'd',
-        ]);
-        self::assertSame($json, (string) self::lastRequest($http)->getBody());
+            . '"ordinary":1,"ordinary":2,"\\u0000key":null,"0":1,"cpanel.User":null,"cpanel.modulex":null}';
+        self::call($client, $direct, $json);
         self::assertSame(
-            ($direct ? '' : 'api.version=1&') . 'Api.version=a&API.version=b&api_version=c&xapi.version=d',
-            self::lastRequest($http)->getUri()->getQuery(),
+            $direct ? $json : '{"api.version":1,' . substr($json, 1),
+            (string) self::lastRequest($http)->getBody(),
         );
+        self::assertSame('', self::lastRequest($http)->getUri()->getQuery());
     }
 
     public function testWhmCpanelNamesRemainOrdinaryData(): void
     {
         [$client, $http] = self::client(false);
         $http->addResponse(self::success(false));
-        $json = '{"cpanel.user":null,"cpanel.module":null,"cpanel.function":null}';
-        self::call($client, false, $json, [
-            'cpanel.user' => 'a', 'cpanel.module' => 'b', 'cpanel.function' => 'c',
-        ]);
-        self::assertSame($json, (string) self::lastRequest($http)->getBody());
+        self::call($client, false, '{"cpanel.user":null,"cpanel.module":null,"cpanel.function":null}');
         self::assertSame(
-            'api.version=1&cpanel.user=a&cpanel.module=b&cpanel.function=c',
-            self::lastRequest($http)->getUri()->getQuery(),
+            '{"api.version":1,"cpanel.user":null,"cpanel.module":null,"cpanel.function":null}',
+            (string) self::lastRequest($http)->getBody(),
         );
-    }
-
-    #[DataProvider('routes')]
-    public function testOrderedPrefixNamesRejectBeforeRouting(bool $direct): void
-    {
-        $factory = new Psr17Factory();
-        $http = new MockClient($factory);
-        $client = new class (new HttpTransport($http, $factory, $factory)) extends AbstractApiClient {
-            public function __construct(HttpTransport $transport)
-            {
-                parent::__construct(ClientConfigFactory::fromArray([
-                    'host' => 'api.example.test', 'authType' => 'whm', 'token' => 'fixture-token',
-                ]), $transport);
-            }
-
-            public function send(#[SensitiveParameter] OrderedFields $query, bool $direct): void
-            {
-                $this->beginRequest();
-                $this->validateJsonQuery($query, $direct ? ['cpanel.user', 'cpanel.module', 'cpanel.function'] : []);
-                $this->executeJsonPost(
-                    '/operation',
-                    $direct ? $query : $query->withRouting(['api.version' => 1]),
-                    JsonBody::present('{}'),
-                    $direct ? ResponseRoute::DirectUapi : ResponseRoute::Whm,
-                );
-            }
-        };
-        $names = [
-            'api.version', 'api.filter', 'api.sort', 'api.paginate', 'api.columns', 'api.', 'api.future_control',
-        ];
-        foreach ($names as $name) {
-            $http->addResponse(self::success($direct));
-            $client->send(new OrderedFields(), $direct);
-            self::assertNotNull($client->responseMeta());
-            $requestCount = count($http->getRequests());
-            $query = new OrderedFields();
-            $query->append('caller', $name, 'override');
-            $http->addResponse(self::success($direct));
-            try {
-                $client->send($query, $direct);
-                self::fail('Expected emitted routing collision rejection before dispatch.');
-            } catch (InvalidArgumentException $exception) {
-                self::assertNull($client->responseMeta());
-                self::assertCount($requestCount, $http->getRequests());
-                self::assertNull($exception->getPrevious());
-            }
-        }
     }
 
     public function testSeparateDirectAccountsRetainTheirOwnCredentialsAndMetadata(): void
@@ -294,7 +251,7 @@ final class RawJsonCallTest extends TestCase
         $snapshot = $alpha->uapi()->callJson('Example', 'operation', '{}')->metadata;
         self::assertNull($beta->uapi()->responseMeta());
         $http->addResponse(self::success(true));
-        $beta->uapi()->callJson('Example', 'operation', 'null');
+        $beta->uapi()->callJson('Example', 'operation', '{}');
         [$first, $second] = $http->getRequests();
         self::assertSame('https://alpha.example.test:2083/execute/Example/operation', (string) $first->getUri());
         self::assertSame('cpanel alpha:alpha-token', $first->getHeaderLine('Authorization'));
@@ -324,18 +281,15 @@ final class RawJsonCallTest extends TestCase
     }
 
     #[DataProvider('routes')]
-    public function testLateInvalidQueryAndNamesClearMetadataWithoutIo(bool $direct): void
+    public function testInvalidNamesClearMetadataWithoutIo(bool $direct): void
     {
-        foreach (['query', 'operation', 'module'] as $failure) {
+        foreach (['operation', 'module'] as $failure) {
             [$client, $http] = self::client($direct);
             $handle = $direct ? $client->uapi() : $client->whm();
             $http->addResponse(self::success($direct));
             self::call($client, $direct, '{}');
             try {
-                $query = $failure === 'query' ? ['first' => 'valid', 'secret-key' => false] : [];
-                if ($failure === 'query') {
-                    self::call($client, $direct, '{}', $query);
-                } elseif ($direct) {
+                if ($direct) {
                     $client->uapi()->callJson(
                         $failure === 'module' ? '../bad' : 'Example',
                         $failure === 'operation' ? '../bad' : 'operation',
@@ -346,6 +300,7 @@ final class RawJsonCallTest extends TestCase
                 }
                 self::fail('Expected invalid input.');
             } catch (InvalidArgumentException $exception) {
+                self::assertSame(InvalidArgumentException::class, $exception::class);
                 self::assertNull($handle->responseMeta());
                 self::assertCount(1, $http->getRequests());
                 self::assertStringNotContainsString('secret-key', $exception->getMessage());
@@ -361,15 +316,15 @@ final class RawJsonCallTest extends TestCase
         $body = $direct ? '{"status":0,"data":null}' : '{"metadata":{"result":0},"data":null}';
         $http->addResponse(new Response(200, [], $body));
         try {
-            self::call($client, $direct, 'null');
+            self::call($client, $direct, '{}');
             self::fail('Expected API failure.');
         } catch (ApiErrorException $exception) {
             self::assertSame($exception->metadata, $handle->responseMeta());
         }
         $snapshot = $handle->responseMeta();
         $http->addResponse(new Response(200, [], $body));
-        $result = $direct ? $client->uapi()->callJson('Example', 'operation', 'null', outcome: OutcomePolicy::Unchecked)
-            : $client->whm()->callJson('operation', 'null', outcome: OutcomePolicy::Unchecked);
+        $result = $direct ? $client->uapi()->callJson('Example', 'operation', '{}', outcome: OutcomePolicy::Unchecked)
+            : $client->whm()->callJson('operation', '{}', outcome: OutcomePolicy::Unchecked);
         self::assertTrue($result->hasData);
         self::assertNull($result->data);
         self::assertNotSame($snapshot, $result->metadata);
@@ -397,9 +352,12 @@ final class RawJsonCallTest extends TestCase
                 self::call($client, $direct, ' {"a":1} ');
                 self::fail('Expected failure.');
             } catch (Throwable $exception) {
-                self::assertInstanceOf($expected, $exception);
+                self::assertSame($expected, $exception::class);
                 self::assertCount(1, $http->getRequests());
-                self::assertSame(' {"a":1} ', (string) self::lastRequest($http)->getBody());
+                self::assertSame(
+                    $direct ? ' {"a":1} ' : ' {"api.version":1,"a":1} ',
+                    (string) self::lastRequest($http)->getBody(),
+                );
                 self::assertSame('application/json', self::lastRequest($http)->getHeaderLine('Content-Type'));
             }
         }
@@ -426,7 +384,7 @@ final class RawJsonCallTest extends TestCase
         }
     }
 
-    public function testInternalAbsentBodyDiffersFromPresentNull(): void
+    public function testInternalExecutorRejectsBridgeAndClearsMetadata(): void
     {
         $factory = new Psr17Factory();
         $http = new MockClient($factory);
@@ -438,80 +396,31 @@ final class RawJsonCallTest extends TestCase
                 ]), $transport);
             }
 
-            public function checkQuery(#[SensitiveParameter] OrderedFields $query): void
+            public function send(ResponseRoute $route): ApiResponse
             {
-                $this->beginRequest();
-                $this->validateJsonQuery($query, ['api.version']);
-            }
-
-            /** @param array<string, string|int>|OrderedFields $query */
-            public function send(
-                #[SensitiveParameter] JsonBody $body,
-                ResponseRoute $route = ResponseRoute::Whm,
-                #[SensitiveParameter] array|OrderedFields $query = ['api.version' => 1],
-            ): ApiResponse {
-                return $this->executeJsonPost('/json-api/operation', $query, $body, $route);
+                return $this->executeJsonPost('/json-api/operation', JsonBody::present('{}'), $route);
             }
         };
-        foreach ([JsonBody::absent(), JsonBody::present('null')] as $body) {
-            $http->addResponse(self::success(false));
-            $client->send($body);
-        }
-        [$absent, $present] = $http->getRequests();
-        self::assertFalse($absent->hasHeader('Content-Type'));
-        self::assertSame('', (string) $absent->getBody());
-        self::assertSame('application/json', $present->getHeaderLine('Content-Type'));
-        self::assertSame('null', (string) $present->getBody());
-        $query = new OrderedFields();
-        $query->append('filter', 'filter', 'a +%/');
-        $client->checkQuery($query);
         $http->addResponse(self::success(false));
+        $snapshot = $client->send(ResponseRoute::Whm)->metadata;
         try {
-            $client->send(JsonBody::present('{}'), query: $query->withRouting(['api.version' => 1]));
-        } catch (TypeError) {
-            self::fail('The JSON executor must accept generated ordered query fields.');
-        }
-        self::assertSame('api.version=1&filter=a%20%2B%25%2F', self::lastRequest($http)->getUri()->getQuery());
-        self::assertSame('{}', (string) self::lastRequest($http)->getBody());
-        $collision = new OrderedFields();
-        $collision->append('caller', 'api.version', 'override');
-        try {
-            $client->checkQuery($collision);
-            self::fail('Generated emitted routing fields must reject before adding routing.');
-        } catch (TypeError) {
-            self::fail('The shared JSON query guard must accept generated ordered fields.');
-        } catch (InvalidArgumentException) {
+            $client->send(ResponseRoute::BridgedUapi);
+            self::fail('Expected local bridge rejection.');
+        } catch (InvalidArgumentException $exception) {
+            self::assertSame(InvalidArgumentException::class, $exception::class);
+            self::assertNull($exception->getPrevious());
             self::assertNull($client->responseMeta());
-            self::assertCount(3, $http->getRequests());
-        }
-
-
-        $http->addResponse(self::success(false));
-        $snapshot = $client->send(JsonBody::present('{}'))->metadata;
-        $http->addResponse(new Response(
-            200,
-            [],
-            '{"metadata":{"result":1},"data":{"uapi":{"status":1,"data":[]}}}',
-        ));
-        try {
-            $client->send(JsonBody::present('{}'), ResponseRoute::BridgedUapi);
-            self::fail('The shared JSON executor must reject bridged routes.');
-        } catch (InvalidArgumentException) {
-            self::assertNull($client->responseMeta());
-            self::assertCount(4, $http->getRequests());
+            self::assertCount(1, $http->getRequests());
             self::assertSame(1, $snapshot->whmResult());
         }
     }
 
-    /** @param array<string, mixed> $query */
-    private static function call(Client $client, bool $direct, string $json, array $query = []): void
+    private static function call(Client $client, bool $direct, string $json): void
     {
         if ($direct) {
-            $handle = $client->uapi();
-            (new ReflectionMethod($handle, 'callJson'))->invoke($handle, 'Example', 'operation', $json, $query);
+            $client->uapi()->callJson('Example', 'operation', $json);
         } else {
-            $handle = $client->whm();
-            (new ReflectionMethod($handle, 'callJson'))->invoke($handle, 'operation', $json, $query);
+            $client->whm()->callJson('operation', $json);
         }
     }
 

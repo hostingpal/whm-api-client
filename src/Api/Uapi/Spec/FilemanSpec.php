@@ -514,5 +514,6 @@ final class FilemanSpec
                 'warned' => ['type' => 'int'],
             ],
         ],
+        'rows' => 'uploads',
     ];
 }
