@@ -203,6 +203,9 @@ use SensitiveParameter;
  *     ipv4?: string,
  *     ipv6?: string,
  * }
+ * @phpstan-type MassEditDnsZoneResult array{
+ *     new_serial?: int,
+ * }
  * @phpstan-type ParseDnsZoneResult array{
  *     payload?: list<array{
  *         data_b64?: list<string>,
@@ -1067,6 +1070,83 @@ final readonly class Dns
     {
         /** @var LookupNameserverIpsResult $result Validated against DnsSpec::LOOKUPNSIPS. */
         $result = ($this->run)(DnsSpec::LOOKUPNSIPS, ['host' => $host]);
+
+        return $result;
+    }
+
+    /**
+     * Update a DNS zone.
+     *
+     * This function updates a given DNS zone. It can add, edit, and remove many records in a single call. It also
+     * ensures that each record not removed will occupy the same number of lines after the edit as it did before the
+     * edit.
+     *
+     * Documented: Both remove indices and edit.line_index are 0-based. Use line_index from parseDnsZone(). Reviewed
+     * dumpzone Line values are 1-based and must not be passed directly: a wrong index can delete another record while
+     * the API reports success. No automatic index conversion is performed.
+     *
+     * Documented: This function updates a DNS zone in one form POST, available from cPanel 96. Temporary domains are
+     * unsupported. The supplied SOA serial must match the current zone or the request fails. The documented serial and
+     * removal-index minima are zero; the client adds no runtime range guard.
+     *
+     * Documented: add and edit contain caller-serialized JSON objects with dname, ttl, record_type and data; edit also
+     * requires line_index, the zero-based starting line. data string count and format depend on record_type. These
+     * requirements remain prose: strings are forwarded unchanged, including malformed text, without a parsed record
+     * schema.
+     *
+     * Documented: Each supplied family must be a nonempty sequential list with strict string items for add/edit and
+     * integer items for remove. Order and duplicates survive repeated literal keys. Omit unused families or pass null;
+     * omitting every family still sends serial and zone once. On reviewed cPanel 11.138.0.19 the server rejects a
+     * serial-and-zone-only call with ApiErrorException and no zone change. The client adds no minimum-one-edit rule or
+     * local no-op.
+     *
+     * Documented: The source says each surviving record occupies the same number of lines after editing, not that line
+     * offsets remain unchanged. The optional integer new_serial accepts native integers and evidenced canonical
+     * in-range integer strings, normalized losslessly for later edits if callers track lines per record. No automatic
+     * reread, serial refresh, retry, rollback, atomicity, deployment or propagation guarantee is provided.
+     *
+     * Documented: Stale serials and malformed add JSON fail with ApiErrorException on reviewed cPanel 11.138.0.19
+     * without changing the zone. A result=0 raises ApiErrorException under Flag before payload validation; unvalidated
+     * failure data.by_line details are not exposed. The reviewer identified the InvalidZoneFile detail path in server
+     * source but did not trigger it.
+     *
+     * Documented: The pinned operation gives A and TXT as record_type examples rather than a complete accepted-type
+     * list. Reviewer inspection of the 11.138.0.19 handler found a fixed set excluding SOA; no closed record-type enum
+     * or local validation is inferred. Composed addzonerecord/editzonerecord forms remain deferred under
+     * whm-api-client-8x0.1.30.
+     *
+     * API-map identity: whm1:mass_edit_dns_zone#GET (wire name mass_edit_dns_zone; DNS Zones).
+     *
+     * @param int $serial The current serial number in the DNS zone’s SOA (Start of Authority) record.
+     * @param string $zone The name of one of the user’s DNS zones.
+     * @param non-empty-list<string>|null $add The records to add to the zone. Null omits it.
+     * @param non-empty-list<string>|null $edit The records to edit in the zone. Null omits it.
+     * @param non-empty-list<int>|null $remove The line indexes of records to remove from the zone. Null omits it.
+     * @return MassEditDnsZoneResult
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/dns-zones/dns-mass_edit_dns_zone
+     */
+    public function massEditDnsZone(
+        int $serial,
+        string $zone,
+        #[SensitiveParameter]
+        ?array $add = null,
+        #[SensitiveParameter]
+        ?array $edit = null,
+        #[SensitiveParameter]
+        ?array $remove = null,
+    ): array {
+        /** @var MassEditDnsZoneResult $result Validated against DnsSpec::MASS_EDIT_DNS_ZONE. */
+        $result = ($this->run)(DnsSpec::MASS_EDIT_DNS_ZONE, [
+            'serial' => $serial,
+            'zone' => $zone,
+            'add' => $add,
+            'edit' => $edit,
+            'remove' => $remove,
+        ]);
 
         return $result;
     }

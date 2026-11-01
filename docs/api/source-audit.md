@@ -7298,3 +7298,141 @@ rejection and unchanged API/payload failures. No live report, vendor communicati
 ModSecurity change, source refresh or server/API call ran; remaining live behavior
 stays under `8x0.2.34`. This completes the remaining input correction in `.1.24`;
 publication and external parent acceptance remain separate.
+
+
+### WHM DNS mass-edit typed adoption (2026-10-31)
+
+`whm()->dns()->massEditDnsZone(int $serial, string $zone, ?array $add = null,
+?array $edit = null, ?array $remove = null): array` adopts exactly one canonical
+operation, `whm1:mass_edit_dns_zone`. The pinned
+`docs/api/sources/2026-10-13/whm.openapi.json.gz` decompressed SHA-256 is
+`6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594`.
+The selected `/paths/~1mass_edit_dns_zone/get` is available from cPanel 96,
+sets `x-readonly:false`, and has no requestBody. Its query parameters 0/1 are
+required integer serial and string zone. Source-bound overlay evidence points
+exactly at `/paths/~1mass_edit_dns_zone/get/parameters/2`, `/3` and `/4`: add/edit
+are optional exploded arrays of strings with format=json; remove is an optional
+exploded integer array. The existing mutation policy sends form POST with only
+`api.version=1` in the URL, not a JSON body.
+
+New typed collections deliberately require nonempty sequential lists with no
+scalar alternative. Callers wrap singleton entries and omit unused families or
+pass null. Every supplied item has its native strict type. Empty, sparse and
+associative lists reject after metadata reset and before dispatch. Repeat encoding
+preserves order, duplicates, zero and exact caller-supplied string bytes, including
+malformed JSON text; it performs no parsing, reencoding, joining or index conversion.
+All omitted families still send serial and zone. add/edit are explicitly sensitive;
+remove also inherits the generator's collection trace redaction. No shared runtime,
+generator, generic method, old typed DNS method/spec or source/evidence file changes.
+
+The source requires dname, ttl, record_type and data in each add/edit serialized
+object, plus zero-based starting line_index for edit. data string count/format
+depends on record_type. These are prose requirements, not a new parsed grammar.
+The documented serial and removal-index minima remain documentation; native zero
+and negative integers follow existing scalar forwarding without claiming server
+acceptance. Native top-level wrong types fail PHP argument typing before metadata
+reset; ordinary weak-caller scalar coercion remains PHP behavior.
+
+The supplied SOA serial must match the current zone or the API fails. The source
+says each surviving record occupies the same number of lines after editing; it
+does not promise stable offsets, atomicity or safe automatic reuse of indexes.
+remove retains source line-index terminology without inferred mismatch handling.
+The returned optional integer new_serial supports later edits only when callers
+track lines per record. Temporary domains are unsupported. There is no implicit
+reread, serial refresh, retry, rollback, deployment or DNS propagation proof.
+
+The generated result is an object with optional new_serial, following normal
+response lowering. Empty objects and the existing legacy empty-array compatibility
+are accepted; unknown fields follow existing filtering. Missing/null data,
+nonempty lists and wrong serial types fail payload validation with confirmed
+Flag outcome and preserved metadata. No upload-specific accept_empty_array
+exception, nullable result or stronger live assertion is introduced. Independent
+mock-HTTP fixtures exercise literal requests, optional collections, strict local
+rejection, sensitive library traces, metadata and API/HTTP/transport failures.
+
+Canonical coverage becomes 1,113 operations (525 UAPI, 588 WHM), with 91 groups
+and 185 generated outputs. WHM DNS becomes 41 of 44 functions: sixteen GETs and
+25 form POSTs. Deprecated dumpzone stays excluded; addzonerecord/editzonerecord
+composed forms remain under `8x0.1.30`. This adoption uses existing repeat
+machinery only. No server, DNS mutation, no-op probe, resolver query or live API
+call ran. Historical findings and captures remain unchanged; offline fixtures do
+not establish server acceptance, concurrency behavior or propagation.
+
+
+### WHM DNS mass-edit review correction (2026-11-01)
+
+The adoption entry above is historical and remains verbatim. Independent formal
+[PR92 review 5724866373](https://github.com/hostingpal/whm-api-client/pull/92#pullrequestreview-5724866373)
+by `seebeen`, submitted `2026-10-31T20:53:18Z`, reviews exactly
+`1ae58592834e77ebc8ecfe63708aa29b863d6860` on cPanel `11.138.0.19` through WHM.
+The reviewer created and removed disposable account/zone `wrvdz` and reported the
+account, home directory, zone file and user records confirmed gone. These are
+attributed reviewer observations, not this correction's execution or committed
+captures. No live/API/DNS/server call, no-op probe, source refresh or replay ran
+for this correction.
+
+Four successful writes (one add, a second add, two adds, and a removal) returned
+`new_serial` strings `2026103103`, `2026103104`, `2026103105` and `2026103106`.
+Each changed the zone before strict integer payload validation raised
+`PayloadMismatchException` with `outcomeConfirmed=true`. The original integer
+fixtures and rejection of string `12` pinned that defect. Reviewer inspection of
+`_bump_soa_serial` found `time2dnstime() . '00'`; isolated server-side
+`Cpanel::JSON::Dump` of date/increment branches encoded string serials
+`2026103100` and `10000000000`. The pinned WHM source remains SHA-256
+`6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594`, with integer
+`new_serial` at `/paths/~1mass_edit_dns_zone/get/responses/200/content/application~1json/schema/properties/data/properties/new_serial`.
+Only that response leaf now opts into the existing `numeric-string` acceptance.
+It returns an optional integer, preserving native integers, absent keys and
+non-nullability. Existing canonical spelling, signed-value and platform integer
+bounds apply; tests of those bounds are compatibility policy, not additional live
+observations. All request parameters, serialized bytes, routing, form POST,
+strict repeated-list rules, sensitivity, Flag outcome and single attempt remain
+unchanged. No shared engine or grammar change was required.
+
+Before acceptance changed, literal mock-HTTP payload fixtures for the four live
+serials, increment branch and canonical boundary cases produced the genuine
+strict-integer payload mismatch. The minimal leaf correction and official
+regeneration make those cases pass. Negative fixtures retain malformed spellings,
+overflow composed as strings, null, booleans, floats, lists, objects and root
+bounds, with fresh same-snapshot exception metadata and no extra request. Existing
+collection, byte-fidelity and sensitive-trace regressions remain in place.
+
+Both `remove` and `edit.line_index` use 0-based indexes. The reviewer measured the
+same SOA record as `dumpzone.Line=4` and `parse_dns_zone.line_index=3`; passing a
+TXT record's dumpzone Line to remove instead deleted the next `_dmarc` record
+with a normal success result. Caller docs now put this destructive mismatch near
+the top and direct callers to `parseDnsZone().line_index`. No claim is added about
+`getZoneRecord()` or `listMxRecords()` Line units: the reviewer did not measure
+those, and this correction performs no server read to broaden the claim. The
+source's surviving-record line-count statement still establishes neither stable
+indexes nor atomicity. No client conversion, reread, refresh, retry or rollback
+was added.
+
+The reviewer observed that stale serial `1`, serial/zone with no changes, and
+malformed add JSON raise `ApiErrorException` without a zone change. The empty-call
+reason was `You must provide at least one change to the DNS zone.` The client
+continues forwarding all-omitted families once, with no local guard or no-op.
+Caller PHPDoc no longer contains the adoption's offline-delivery process prose;
+its historical no-live implementation entry remains unchanged.
+
+Nonblocking review points were assessed separately. Flag raises on result 0
+before response-shape validation; it exposes the upstream reason and snapshot,
+not unvalidated failure `data.by_line`. The reviewer identified the
+`Cpanel::Exception::DNS::InvalidZoneFile` detail path in server source but did not
+trigger it. No global failure/payload policy was weakened. The full pinned
+operation supplies A/TXT examples, not a closed record-type list. The review says
+the 11.138.0.19 handler has a fixed set excluding SOA, but does not enumerate it
+completely. Caller docs retain that bounded, source-qualified caveat rather than
+inventing an enum. Complete type discovery, sibling Line-unit verification and
+error-detail design remain gaps for the existing `8x0.1.30` / `8x0.2.42` follow-up
+scope; they require additional source review and potentially authorized runtime
+work, not a broader change to this correction.
+
+Approved master `da51fd304c42781792026cdacc81a530c46b64c0` was integrated by a
+normal uncommitted merge, preserving its complete audit prefix and the exact
+59-line original adoption appendix before this correction. Combined coverage is
+1,150 canonical operations (554 UAPI and 596 WHM), 99 groups and 201 generated
+outputs. DNS remains 41/44: only mass_edit_dns_zone is added relative to master;
+deprecated dumpzone and composed addzonerecord/editzonerecord stay excluded.
+Historical evidence/source/design files and all other generated contracts remain
+unchanged relative to approved master.
