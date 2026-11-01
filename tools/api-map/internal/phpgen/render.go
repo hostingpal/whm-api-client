@@ -313,6 +313,10 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 		w.line(indent + " *")
 		w.doc(indent, "Returns null when the server sends no data.")
 	}
+	if op.AccountSearchEmpty {
+		w.line(indent + " *")
+		w.doc(indent, "Returns an empty list for the evidenced account-search absence forms; response metadata retains the server outcome.")
+	}
 	if op.EmptyWithoutData {
 		w.line(indent + " *")
 		w.doc(indent, "Returns an empty list when the server reports success and omits data.")
@@ -632,6 +636,9 @@ func specClass(g effective.Group) string {
 			}
 			if op.OptionalPayload && op.Returns != nil {
 				w.line("        'optional' => true,")
+			}
+			if op.AccountSearchEmpty {
+				w.line("        'account_search_empty' => true,")
 			}
 			if op.EmptyWithoutData {
 				w.line("        'empty_without_data' => true,")

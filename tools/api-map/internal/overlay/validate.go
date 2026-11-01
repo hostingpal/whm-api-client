@@ -124,6 +124,7 @@ func Validate(set Set) []string {
 				problems = append(problems, id+": an observed note needs live evidence")
 			}
 			problems = append(problems, emptyWithoutDataProblems(id, file.Family, op)...)
+			problems = append(problems, accountSearchEmptyProblems(id, file.Family, op)...)
 		}
 	}
 	sort.Strings(problems)

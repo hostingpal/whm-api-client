@@ -181,6 +181,7 @@ final class SpecChecker
 
         self::rows($spec, $returns);
         self::emptyWithoutData($spec, $returns);
+        AccountSearchEmpty::check($spec);
 
         $unwrap = $spec['unwrap'] ?? null;
         if ($unwrap === null) {
