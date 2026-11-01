@@ -8,6 +8,7 @@ use HostingPal\WhmApiClient\Tools\LiveVerify\EvidenceRunner;
 use HostingPal\WhmApiClient\Tools\LiveVerify\FilemanUploadEvidence;
 use HostingPal\WhmApiClient\Tools\LiveVerify\FilemanUploadFixture;
 use HostingPal\WhmApiClient\Tools\LiveVerify\FilemanUploadRecipe;
+use HostingPal\WhmApiClient\Tools\LiveVerify\FilesystemAbsenceProof;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
@@ -58,7 +59,7 @@ final class FilemanUploadFixtureTest extends TestCase
         $fixture = $scenario['fixture'];
 
         self::assertSame('passed', $fixture['status'], (string) json_encode($fixture['failures']));
-        self::assertSame('fileman-upload-disposable-v3', $scenario['scenario']);
+        self::assertSame('fileman-upload-disposable-v4', $scenario['scenario']);
         self::assertSame('fileman-upload-no-acknowledgments-v2', $scenario['discrepancy_review']['policy']);
         self::assertSame([], $scenario['discrepancy_review']['findings']);
         self::assertSame('passed', $scenario['discrepancy_review']['status']);
@@ -268,6 +269,7 @@ final class FilemanUploadFixtureTest extends TestCase
         yield 'duplicate account row' => ['listaccts:1',
             '{"acct":[{"user":"other","domain":"a.test"},{"user":"other","domain":"b.test"}]}'];
         yield 'unusable zone list' => ['listzones:1', '{"zone":{}}'];
+        yield 'empty domain list' => ['get_domain_info:1', '{"domains":[]}'];
     }
 
     public function testConcurrentCreationNeverAuthorizesRemovingAnotherRunsAccount(): void
@@ -295,6 +297,8 @@ final class FilemanUploadFixtureTest extends TestCase
         self::assertSame('confirmed_absent', $scenario['fixture']['resources']['account']['cleanup']);
         self::assertSame('passed', $scenario['fixture']['cleanup']);
         self::assertSame([], $http->mutations);
+        self::assertSame('confirmed_absent', $scenario['fixture']['domain_cleanup']);
+        self::assertSame('confirmed_absent', $scenario['fixture']['zone_cleanup']);
     }
 
     /** Only an explicit refusal is a known outcome; these replies cannot rule out creation still in flight. */
@@ -309,6 +313,8 @@ final class FilemanUploadFixtureTest extends TestCase
         self::assertSame('failed', $scenario['fixture']['cleanup']);
         self::assertSame('failed', $scenario['fixture']['status']);
         self::assertContains('account_creation_outcome_unknown', $scenario['fixture']['failures']);
+        self::assertSame('unconfirmed', $scenario['fixture']['domain_cleanup']);
+        self::assertSame('unconfirmed', $scenario['fixture']['zone_cleanup']);
         self::assertSame([], $http->mutations);
         self::assertPrivate($scenario);
     }
@@ -427,6 +433,149 @@ final class FilemanUploadFixtureTest extends TestCase
         yield 'zones after removal' => [['listzones:2' => '{"zone":[]}'], 'zone'];
     }
 
+    /** The lifecycle's setup succeeded; binding the token is the recipe's first step, so this fails capture. */
+    public function testUnusableReturnedTokenFailsCaptureAndStillCleansUp(): void
+    {
+        $http = new FilemanUploadServer();
+        $http->overrides['Tokens/create_full_access:1'] = '{"token":"PRIVATE SPACED TOKEN"}';
+        $scenario = self::scenario($http);
+        $fixture = $scenario['fixture'];
+
+        self::assertSame(['capture_failure'], $fixture['failures']);
+        self::assertSame('passed', $fixture['setup']);
+        self::assertSame('failed', $fixture['capture']);
+        self::assertSame('not_run', $fixture['expectations']);
+        self::assertSame('failed', $fixture['status']);
+        self::assertNull($fixture['stopped_at']);
+        self::assertSame('passed', $fixture['cleanup']);
+        self::assertSame(1, $http->counts['Tokens/revoke']);
+        self::assertFalse($http->account);
+        self::assertArrayNotHasKey(self::UPLOAD, $http->counts);
+    }
+
+    public function testWithoutTheProofOnlyApiAbsenceIsClaimed(): void
+    {
+        $scenario = self::scenario(new FilemanUploadServer());
+        self::assertSame('not_claimed', $scenario['fixture']['filesystem_cleanup']);
+        self::assertSame([], $scenario['fixture']['filesystem_residue']);
+        self::assertContains(
+            'api_absence_only_no_filesystem_or_home_directory_cleanup_claim',
+            $scenario['limitations'],
+        );
+    }
+
+    public function testFilesystemProofRunsOnceOnTheExactTargetAndNarrowsTheClaim(): void
+    {
+        $http = new FilemanUploadServer();
+        $live = [];
+        $proof = RecordingFilesystemProof::after(
+            ['outcome' => 'confirmed_absent', 'residue' => []],
+            static function () use ($http, &$live): void {
+                $live[] = $http->account;
+            },
+        );
+        $scenario = self::scenario($http, $proof);
+
+        self::assertSame('passed', $scenario['fixture']['status']);
+        self::assertSame('confirmed_absent', $scenario['fixture']['filesystem_cleanup']);
+        self::assertSame(
+            ['status' => 'passed', 'counts' => RecordingFilesystemProof::PRESENT['residue']],
+            $scenario['fixture']['filesystem_control'],
+        );
+        self::assertSame(array_fill(0, 2, ['wlupload', 'wlupload.example.com']), $proof->calls);
+        self::assertSame([true, false], $live);
+        self::assertNotContains(
+            'api_absence_only_no_filesystem_or_home_directory_cleanup_claim',
+            $scenario['limitations'],
+        );
+        self::assertContains('filesystem_proof_covers_fixed_locations_at_one_moment', $scenario['limitations']);
+        self::assertPrivate($scenario);
+    }
+
+    /**
+     * A proof that did not confirm absence claims nothing, so the report must still say the claim is API-only.
+     *
+     * @param array{outcome: 'confirmed_absent'|'present'|'unconfirmed', residue: array<string, int>} $final
+     */
+    #[DataProvider('unprovenFilesystems')]
+    public function testOnlyAProvenAbsenceNarrowsTheClaim(array $final): void
+    {
+        $scenario = self::scenario(new FilemanUploadServer(), RecordingFilesystemProof::after($final));
+
+        self::assertContains(
+            'api_absence_only_no_filesystem_or_home_directory_cleanup_claim',
+            $scenario['limitations'],
+        );
+        self::assertNotContains(
+            'filesystem_proof_covers_fixed_locations_at_one_moment',
+            $scenario['limitations'],
+        );
+    }
+
+    /** @return iterable<string, array{array{outcome: 'present'|'unconfirmed', residue: array<string, int>}}> */
+    public static function unprovenFilesystems(): iterable
+    {
+        yield 'unconfirmed' => [['outcome' => 'unconfirmed', 'residue' => []]];
+        yield 'residue' => [['outcome' => 'present', 'residue' => ['sessions' => 1]]];
+    }
+
+    public function testFailedControlStaysApiOnlyEvenWhenTheFinalReadShowsNothing(): void
+    {
+        $scenario = self::scenario(new FilemanUploadServer(), new RecordingFilesystemProof([
+            ['outcome' => 'confirmed_absent', 'residue' => []],
+        ]));
+
+        self::assertSame('failed', $scenario['fixture']['filesystem_control']['status']);
+        self::assertSame('unconfirmed', $scenario['fixture']['filesystem_cleanup']);
+        self::assertContains(
+            'api_absence_only_no_filesystem_or_home_directory_cleanup_claim',
+            $scenario['limitations'],
+        );
+        self::assertContains('filesystem_control_failed', $scenario['fixture']['failures']);
+    }
+
+    public function testUnreachableFilesystemProofFailsTheClaimWithoutAnyMutation(): void
+    {
+        $http = new FilemanUploadServer();
+        $proof = RecordingFilesystemProof::after(['outcome' => 'unconfirmed', 'residue' => []]);
+        $scenario = self::scenario($http, $proof);
+        $fixture = $scenario['fixture'];
+
+        self::assertSame('unconfirmed', $fixture['filesystem_cleanup']);
+        self::assertSame('failed', $fixture['status']);
+        self::assertSame('failed', $fixture['cleanup']);
+        self::assertSame(['filesystem_absence_unconfirmed'], $fixture['failures']);
+        self::assertSame('confirmed_absent', $fixture['resources']['account']['cleanup']);
+        self::assertSame('confirmed_absent', $fixture['domain_cleanup']);
+        self::assertSame('confirmed_absent', $fixture['zone_cleanup']);
+        self::assertSame(1, $http->counts['removeacct']);
+        self::assertSame(1, $http->counts['Tokens/revoke']);
+    }
+
+    public function testFilesystemResidueIsReportedByLabelAndCount(): void
+    {
+        $scenario = self::scenario(
+            new FilemanUploadServer(),
+            RecordingFilesystemProof::after(['outcome' => 'present', 'residue' => ['sessions' => 4]]),
+        );
+        self::assertSame('present', $scenario['fixture']['filesystem_cleanup']);
+        self::assertSame(['sessions' => 4], $scenario['fixture']['filesystem_residue']);
+        self::assertContains('filesystem_residue_present', $scenario['fixture']['failures']);
+        self::assertPrivate($scenario);
+    }
+
+    /** Nothing was created, so the report cannot claim anything about the filesystem or spend a connection on it. */
+    public function testFilesystemProofNeverRunsWhenNoAccountWasAttempted(): void
+    {
+        $http = new FilemanUploadServer();
+        $http->overrides['listzones:1'] = '{"zone":[{"domain":"wlupload.example.com"}]}';
+        $proof = RecordingFilesystemProof::after(['outcome' => 'confirmed_absent', 'residue' => []]);
+        $scenario = self::scenario($http, $proof);
+
+        self::assertSame([], $proof->calls);
+        self::assertSame('not_claimed', $scenario['fixture']['filesystem_cleanup']);
+    }
+
     public function testTokenWithReadonlyFlagOrWrongExpirySkipsCaptureButStillCleansUp(): void
     {
         foreach ([['readonly', 1], ['expires_at', 12345], ['expires_at', null]] as [$field, $value]) {
@@ -472,7 +621,13 @@ final class FilemanUploadFixtureTest extends TestCase
         self::assertSame('confirmed_absent', $fixture['resources']['account']['cleanup']);
         self::assertSame('confirmed_absent', $fixture['domain_cleanup']);
         self::assertSame('confirmed_absent', $fixture['zone_cleanup']);
-        self::assertSame('confirmed_absent', $fixture['resources']['token']['cleanup']);
+        // A lost token creation that no listing shows may still land, so it can never read as absent.
+        $unknownToken = $step === 'Tokens/create_full_access:1'
+            && in_array($mode, ['throw_before', 'http_before', 'invalid_before'], true);
+        self::assertSame(
+            $unknownToken ? 'unconfirmed' : 'confirmed_absent',
+            $fixture['resources']['token']['cleanup'],
+        );
         self::assertPrivate($scenario);
     }
 
@@ -1337,9 +1492,9 @@ final class FilemanUploadFixtureTest extends TestCase
     }
 
     /** @return Scenario */
-    private static function scenario(FilemanUploadServer $http): array
+    private static function scenario(FilemanUploadServer $http, ?FilesystemAbsenceProof $filesystem = null): array
     {
-        return (new FilemanUploadFixture($http, $http->streaming(), 'WHMTOKEN', self::context()))->run();
+        return (new FilemanUploadFixture($http, $http->streaming(), 'WHMTOKEN', self::context(), $filesystem))->run();
     }
 
     /** @return Context */

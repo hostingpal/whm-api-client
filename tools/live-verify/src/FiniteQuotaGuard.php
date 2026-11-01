@@ -16,6 +16,7 @@ use SensitiveParameter;
  * Every request requires both opt-ins and the exact account/domain environment values. Canonical
  * URI/body/header comparisons reject extra or duplicate parameters, alias target fields, control-token
  * revocation and other accounts before I/O. Direct Quota reads require the token returned by setup.
+ * Each mutation is consumed once, even on rejection, so nothing below this guard can retry one.
  */
 final class FiniteQuotaGuard implements ClientInterface
 {
@@ -36,30 +37,35 @@ final class FiniteQuotaGuard implements ClientInterface
     /** @var array<string, string> */
     private readonly array $posts;
 
-    /** Bind the root control credential and one exact token expiration; construction sends nothing. */
+    /** @var list<string> */
+    private readonly array $reads;
+
+    /** @var array<string, true> */
+    private array $consumed = [];
+
+    /** Bind the root control credential and this recipe's one account; construction sends nothing. */
     public function __construct(
         #[SensitiveParameter]
         private readonly ClientInterface $client,
         #[SensitiveParameter]
         private readonly string $whmToken,
-        int $expiresAt,
         #[SensitiveParameter]
-        string $contactEmail,
+        private readonly DisposableAccount $account,
     ) {
         if (
-            $whmToken === '' || $expiresAt < 1
-            || preg_match('/\Afinite-[0-9a-f]{32}@wqfinite\.example\.com\z/', $contactEmail) !== 1
+            $whmToken === '' || $account->user !== self::ACCOUNT || $account->domain !== self::DOMAIN
+            || $account->tokenName !== self::TOKEN_NAME || !$account->readOnlyToken
         ) {
             throw new LogicException('Finite quota fixture configuration is invalid.');
         }
-        $this->posts = [
-            self::WHM . 'createacct?api.version=1' =>
-                'username=wqfinite&domain=wqfinite.example.com&contactemail=' . rawurlencode($contactEmail)
-                . '&quota=64&forcedns=0&hasshell=0&ip=n',
-            self::WHM . 'removeacct?api.version=1' => 'username=wqfinite&keepdns=0',
-            self::BRIDGE . 'Tokens&cpanel.function=create_full_access' =>
-                'name=' . self::TOKEN_NAME . '&expires_at=' . $expiresAt . '&readonly=1',
-            self::BRIDGE . 'Tokens&cpanel.function=revoke' => 'name=' . self::TOKEN_NAME,
+        $this->posts = $account->controlPosts();
+        $this->reads = [
+            ...$account->controlReads(),
+            self::WHM . 'version?api.version=1',
+            self::BRIDGE . 'Quota&cpanel.function=get_quota_info',
+            self::BRIDGE . 'Quota&cpanel.function=get_local_quota_info',
+            self::DIRECT . 'get_quota_info',
+            self::DIRECT . 'get_local_quota_info',
         ];
     }
 
@@ -72,39 +78,23 @@ final class FiniteQuotaGuard implements ClientInterface
         $this->cpanelToken = $token;
     }
 
-    /** Require the explicit designated target without exposing supplied environment values. */
-    public static function requireEnvironment(): void
-    {
-        if (
-            getenv('WHM_API_LIVE') !== '1'
-            || getenv('WHM_API_LIVE_MUTATIONS') !== '1'
-            || getenv('WHM_API_LIVE_ACCOUNT') !== self::ACCOUNT
-            || getenv('WHM_API_LIVE_DOMAIN') !== self::DOMAIN
-        ) {
-            throw new LogicException('Finite quota fixture requires both opt-ins and the designated account/domain.');
-        }
-    }
-
-    /** Permit only the exact fixture mutations, identity reads and five finite-evidence requests. */
+    /** Permit only the exact fixture mutations, each once, identity reads and five finite-evidence requests. */
     public function sendRequest(#[SensitiveParameter] RequestInterface $request): ResponseInterface
     {
-        self::requireEnvironment();
+        $this->account->requireLiveOptIn();
         $uri = (string) $request->getUri();
         $post = $request->getMethod() === 'POST';
         $direct = str_starts_with($uri, self::DIRECT);
-        $approved = $request->getMethod() === 'GET' && (string) $request->getBody() === '' && in_array($uri, [
-            self::WHM . 'version?api.version=1',
-            self::WHM . 'listaccts?api.version=1&want=user%2Cdomain%2Cemail',
-            self::WHM . 'listzones?api.version=1',
-            self::WHM . 'get_domain_info?api.version=1',
-            self::BRIDGE . 'Tokens&cpanel.function=list',
-            self::BRIDGE . 'Quota&cpanel.function=get_quota_info',
-            self::BRIDGE . 'Quota&cpanel.function=get_local_quota_info',
-            self::DIRECT . 'get_quota_info',
-            self::DIRECT . 'get_local_quota_info',
-        ], true);
+        $approved = $request->getMethod() === 'GET' && (string) $request->getBody() === ''
+            && in_array($uri, $this->reads, true);
         if ($post) {
             $approved = isset($this->posts[$uri]) && (string) $request->getBody() === $this->posts[$uri];
+            if ($approved && isset($this->consumed[$uri])) {
+                throw new LogicException('Request outside the finite quota fixture boundary.');
+            }
+            if ($approved) {
+                $this->consumed[$uri] = true;
+            }
         }
         $headers = [
             'host' => ['test.oblak.host:' . ($direct ? '2083' : '2087')],

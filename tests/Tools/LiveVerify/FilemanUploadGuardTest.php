@@ -6,6 +6,7 @@ namespace HostingPal\WhmApiClient\Tests\Tools\LiveVerify;
 
 use HostingPal\WhmApiClient\Http\StreamingMultipartBody;
 use HostingPal\WhmApiClient\Http\StreamingMultipartEncoder;
+use HostingPal\WhmApiClient\Tools\LiveVerify\DisposableAccount;
 use HostingPal\WhmApiClient\Tools\LiveVerify\FilemanUploadGuard;
 use HostingPal\WhmApiClient\Tools\LiveVerify\FilemanUploadRecipe;
 use HostingPal\WhmApiClient\Tools\LiveVerify\StreamingTransport;
@@ -40,6 +41,8 @@ final class FilemanUploadGuardTest extends TestCase
 
     private FilemanUploadRecipe $recipe;
 
+    private static ?int $expiresAt = null;
+
     protected function setUp(): void
     {
         foreach (
@@ -49,7 +52,14 @@ final class FilemanUploadGuardTest extends TestCase
             $this->environment[$key] = getenv($key);
             putenv($key . '=' . $value);
         }
-        $this->recipe = new FilemanUploadRecipe(self::ENTROPY, 1790000000);
+        $this->recipe = new FilemanUploadRecipe(self::ENTROPY, new DisposableAccount(
+            FilemanUploadRecipe::ACCOUNT,
+            FilemanUploadRecipe::DOMAIN,
+            FilemanUploadRecipe::TOKEN_NAME,
+            'upload-' . self::ENTROPY . '@' . FilemanUploadRecipe::DOMAIN,
+            self::expiresAt(),
+            false,
+        ));
     }
 
     protected function tearDown(): void
@@ -129,6 +139,12 @@ final class FilemanUploadGuardTest extends TestCase
         return $requests;
     }
 
+    /** One expiry for the whole class, as providers run first and the binding enforces the token bound. */
+    private static function expiresAt(): int
+    {
+        return self::$expiresAt ??= time() + 1800;
+    }
+
     /** @return array{Host: string, Authorization: string, Accept: string} */
     private static function whmHeaders(): array
     {
@@ -150,7 +166,7 @@ final class FilemanUploadGuardTest extends TestCase
                 'POST',
                 self::BRIDGE . 'create_full_access',
                 $form,
-                'name=wlupload-upload-fixture&expires_at=1790000000',
+                'name=wlupload-upload-fixture&expires_at=' . self::expiresAt(),
             ),
             new Request('POST', self::BRIDGE . 'revoke', $form, 'name=wlupload-upload-fixture'),
         ];
@@ -192,7 +208,7 @@ final class FilemanUploadGuardTest extends TestCase
             'name=wlupload-upload-fixture', $root];
         yield 'revoke control token' => ['POST', self::BRIDGE . 'revoke', 'name=other-token', $root];
         yield 'readonly token' => ['POST', self::BRIDGE . 'create_full_access',
-            'name=wlupload-upload-fixture&expires_at=1790000000&readonly=1', $root];
+            'name=wlupload-upload-fixture&expires_at=' . self::expiresAt() . '&readonly=1', $root];
         yield 'token expiry' => ['POST', self::BRIDGE . 'create_full_access',
             'name=wlupload-upload-fixture&expires_at=1999999999', $root];
         yield 'other WHM function' => ['GET', self::WHM . 'accountsummary?api.version=1&user=npr', '', $root];
