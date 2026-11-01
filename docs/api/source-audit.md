@@ -8158,3 +8158,61 @@ Existing unknown-field/settings live gaps `8x0.2.10` and `8x0.2.11` remain OPEN 
 unchanged; parent `8x0.28.8` remains OPEN for the wider remaining-adopter audit.
 All 55 inherited source diagnostics remain visible and unwaived. Local PHP8.4.26
 gates do not establish exact-head PHP8.3 CI or successful live compatibility.
+
+## Inventory and discovery delimited inputs (2026-11-01)
+
+Delivery `whm-api-client-8x0.28.8.2` adopts the existing PR113/114 delimited
+collection descriptors for nine concrete string selectors, without changing
+pinned source schemas, response contracts, operation counts or shared machinery.
+The decompressed cpanel.openapi SHA-256 is
+`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`;
+whm.openapi SHA-256 is
+`6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594`.
+Every descriptor has exact source-hash and parameter-pointer evidence:
+
+| Source parameter pointer | PHP argument | Delimiter |
+| --- | --- | --- |
+| `/paths/~1Bandwidth~1query/get/parameters/1` | domains | pipe |
+| `/paths/~1Bandwidth~1query/get/parameters/4` | protocols | pipe |
+| `/paths/~1Branding~1get_applications/get/parameters/0` | appKeys | comma |
+| `/paths/~1Branding~1get_available_applications/get/parameters/0` | nvarglist | pipe |
+| `/paths/~1Branding~1get_information_for_applications/get/parameters/1` | appKeys | comma |
+| `/paths/~1Fileman~1list_files/get/parameters/6` | onlyTheseFiles | comma |
+| `/paths/~1StatsBar~1get_stats/get/parameters/0` | display | pipe |
+| `/paths/~1VersionControl~1retrieve/get/parameters/0` | fields | comma |
+| `/paths/~1get_available_applications/get/parameters/0` (WHM) | applicationsList | comma |
+
+Each uses exactly kind=delimited, item_type=string, allow_scalar=true,
+empty=reject and the evidenced delimiter. StatsBar display stays required and
+nonnull; eight optional positions retain null omission. Raw strings, including
+literal delimiters, empty strings and percent escapes, remain unparsed and
+encoded once. Nonempty sequential strict string lists join once into the original
+field, preserving duplicates, order, empty items and every other byte. Empty,
+keyed, sparse, non-string or delimiter-bearing lists reject after metadata reset
+before dispatch. Native required-display omission/null errors occur before entry
+and retain prior metadata. No new enum/default/cross-field constraint is inferred.
+
+The existing cPanel floors and FileStorage role caveat remain. Bandwidth grouping
+and Fileman types scalar contracts stay under separate gate `8x0.28.8.6`.
+Branding sitemap remains effective form POST with required sensitive docroot;
+VersionControl retrieval remains form POST from source x-readonly=false with no
+retry. All other selected methods remain GET, including both UAPI routes.
+Branding semantic sensitive:false remains intact; generated collection trace
+attributes are independent from that classification. The source arglist alias
+does not add an argument; server defaults, companion false/zero options, response
+contracts and operation counts are unchanged. The approved test-maintenance ruling
+updates existing Branding signature/attribute assertions and replaces its obsolete
+native [] rejection case with boolean rejection, plus the WHM applicationsList
+collection-attribute expectation while preserving file and other parameter
+visibility; response fixtures stay unchanged.
+
+Focused public-method offline tests cover all nine selectors on direct/bridged
+UAPI and WHM, both delimiters, scalar/list equivalence, exact one-field routing,
+GET query versus preserved form POST, omission and explicit empty, required display,
+URL/binary/Unicode bytes, other-delimiter acceptance, malformed-list rejection,
+metadata reset and actual generated trace protection. This establishes client
+requests only. Historical scalar captures retain their original attribution and
+all prior evidence bytes and audit prefix remain unchanged. No server, network,
+credentials or live API was accessed. Live follow-up `8x0.2.81` stays OPEN; all
+55 inherited source diagnostics remain visible and unwaived. No independent
+Branding response correction from the integration lane is included.

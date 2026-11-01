@@ -529,7 +529,7 @@
         },
         {
           "kind": "documented",
-          "text": "applicationsList is a comma-separated list sent once; omission returns the entire dynamicui.conf content. file defaults to dynamicui.conf and is relative to /usr/local/cpanel/whostmgr/docroot/themes/x/. A caller-selected file reads server configuration. Returned template directives and application/icon URLs are payload data; the client does not execute or fetch them. Present Group/Image/Subitem fields, nullable ACL/DNSOnly fields and role/service string-or-object alternatives retain their types; observed omissions are documented separately."
+          "text": "applicationsList accepts raw comma-separated text or a nonempty sequential string list joined once with comma; omission returns the entire dynamicui.conf content. file defaults to dynamicui.conf and is relative to /usr/local/cpanel/whostmgr/docroot/themes/x/. A caller-selected file reads server configuration. Returned template directives and application/icon URLs are payload data; the client does not execute or fetch them. Present Group/Image/Subitem fields, nullable ACL/DNSOnly fields and role/service string-or-object alternatives retain their types; observed omissions are documented separately."
         },
         {
           "kind": "observed",
@@ -538,6 +538,10 @@
         {
           "kind": "observed",
           "text": "The 11.138.0.19 clarification observed group description as a string on one of 29 groups and absent on 28. It is retained as an optional string; the pin has no such property. Neither group nor item descriptions were null in that observation. The contract adds no null compatibility, without claiming null is impossible on every server."
+        },
+        {
+          "kind": "documented",
+          "text": "applications_list accepts raw strings or nonempty sequential string lists joined once with ,. List items may be empty but cannot contain ,; other bytes, order and duplicates are preserved. Null omits, while an empty string or a single empty list item is supplied. Omission selects the entire dynamicui content. Preserve the file option, server-relative path/default semantics and GET. Collection arguments receive trace protection without changing semantic sensitivity or transport. Offline coverage only; live list-input follow-up whm-api-client-8x0.2.81 remains open."
         }
       ],
       "response": {
@@ -805,8 +809,27 @@
           "version": "11.138.0.19",
           "date": "2026-10-31",
           "note": "The reviewer's follow-up type-only WHM GET inspection, with and without raw, found groups[].description as string on one of 29 groups and absent on 28, with zero null or empty-string values. Item description was string on 204 of 206 items and absent on two, again with zero null or empty strings. Both call forms had the same counts. The pinned Group schema has no description property; this optional string field is live-evidenced, not documented. No null compatibility is established, but the observations do not prove null impossible on every server: Whostmgr/DynamicUI/Loader.pm:153 only rewrites truthy descriptions and does not rule out null elsewhere. No mutation ran. Original review: https://github.com/hostingpal/whm-api-client/pull/56#pullrequestreview-5720810852. Clarification: https://github.com/hostingpal/whm-api-client/pull/56#issuecomment-6539624881."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1get_available_applications/get/parameters/0",
+          "note": "The pinned optional nonnullable applications_list is a concrete string with explicit comma-delimited prose. Adopt existing client convenience for nonempty sequential strict string lists joined once with , into the original field. Preserve order, duplicates, empty items and all other bytes; reject embedded selected delimiters and malformed/empty lists after metadata reset before I/O. Scalars stay unparsed and encoded once. Omission selects the entire dynamicui content. Preserve the file option, server-relative path/default semantics and GET. Offline request coverage only; historical scalar captures do not establish PHP-list execution. Live follow-up whm-api-client-8x0.2.81 remains open."
         }
-      ]
+      ],
+      "params": {
+        "applications_list": {
+          "collection": {
+            "kind": "delimited",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "delimiter": ","
+          }
+        }
+      }
     },
     "whm1:getpkginfo": {
       "name": "getPackageInfo",

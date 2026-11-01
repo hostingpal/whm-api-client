@@ -56,11 +56,15 @@
         },
         {
           "kind": "documented",
-          "text": "Optional appKeys is a raw comma-separated feature selector; null omits and requests all applications, empty string is supplied. Return a required nonnullable dynamic application map. Three keyed examples quote formal integer height/itemorder/width; only these fields accept canonical in-range integer strings and normalize to int. The same examples establish optional string acontent/base64_png_image/key/onclick/plainitemdesc/target missing from formal properties; no additional plainitemdesc meaning is inferred."
+          "text": "Optional appKeys accepts a raw comma-separated feature selector or a nonempty sequential string list joined once with comma; null omits and requests all applications, empty string is supplied. Return a required nonnullable dynamic application map. Three keyed examples quote formal integer height/itemorder/width; only these fields accept canonical in-range integer strings and normalize to int. The same examples establish optional string acontent/base64_png_image/key/onclick/plainitemdesc/target missing from formal properties; no additional plainitemdesc meaning is inferred."
         },
         {
           "kind": "policy",
           "text": "Returned HTML, JavaScript, conditional expressions, URLs, paths and image strings are inert payload. The client never renders, executes, fetches, decodes or locally reads them. No implicit read, merge, sort, retry, rollback or cache of server data is added. Offline fixtures establish no live theme, rendering, visibility or POST acceptance; live follow-up whm-api-client-8x0.2.75 remains open."
+        },
+        {
+          "kind": "documented",
+          "text": "app_keys accepts raw strings or nonempty sequential string lists joined once with ,. List items may be empty but cannot contain ,; other bytes, order and duplicates are preserved. Null omits, while an empty string or a single empty list item is supplied. Omission selects all dynamicui feature records. Preserve explicit semantic sensitive:false and GET. Collection arguments receive trace protection without changing semantic sensitivity or transport. Offline coverage only; live list-input follow-up whm-api-client-8x0.2.81 remains open."
         }
       ],
       "evidence": [
@@ -79,6 +83,14 @@
           "note": "The documented app_keys is a noncredential application feature/group selector, not an authentication key or secret. Explicit sensitive:false preserves its raw public selector contract.",
           "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
           "pointer": "/paths/~1Branding~1get_applications/get/parameters/0"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Branding~1get_applications/get/parameters/0",
+          "note": "The pinned optional nonnullable app_keys is a concrete string with explicit comma-delimited prose. Adopt existing client convenience for nonempty sequential strict string lists joined once with , into the original field. Preserve order, duplicates, empty items and all other bytes; reject embedded selected delimiters and malformed/empty lists after metadata reset before I/O. Scalars stay unparsed and encoded once. Omission selects all dynamicui feature records. Preserve explicit semantic sensitive:false and GET. Offline request coverage only; historical scalar captures do not establish PHP-list execution. Live follow-up whm-api-client-8x0.2.81 remains open."
         }
       ],
       "response": {
@@ -364,7 +376,14 @@
       },
       "params": {
         "app_keys": {
-          "sensitive": false
+          "sensitive": false,
+          "collection": {
+            "kind": "delimited",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "delimiter": ","
+          }
         }
       }
     },
@@ -378,11 +397,15 @@
         },
         {
           "kind": "documented",
-          "text": "nvarglist is a raw pipe-separated group ordering selector; omission requests no sorting. Source arglist is an alias, not a second public argument. Preserve default_group_order integer map, ordered grouporder/groups/items lists, implements string map and index integer-list map. Index prose describes zero-based group/item positions, but does not establish fixed tuple length. Item height/itemorder/width remain strings. Example-only key/plainitemdesc are optional strings; preserve empty lists/maps and dynamic keys."
+          "text": "nvarglist accepts a raw pipe-separated group ordering selector or a nonempty sequential string list joined once with |; omission requests no sorting. Source arglist is an alias, not a second public argument. Preserve default_group_order integer map, ordered grouporder/groups/items lists, implements string map and index integer-list map. Index prose describes zero-based group/item positions, but does not establish fixed tuple length. Item height/itemorder/width remain strings. Example-only key/plainitemdesc are optional strings; preserve empty lists/maps and dynamic keys."
         },
         {
           "kind": "policy",
           "text": "Returned HTML, JavaScript, conditional expressions, URLs, paths and image strings are inert payload. The client never renders, executes, fetches, decodes or locally reads them. No implicit read, merge, sort, retry, rollback or cache of server data is added. Offline fixtures establish no live theme, rendering, visibility or POST acceptance; live follow-up whm-api-client-8x0.2.75 remains open."
+        },
+        {
+          "kind": "documented",
+          "text": "nvarglist accepts raw strings or nonempty sequential string lists joined once with |. List items may be empty but cannot contain |; other bytes, order and duplicates are preserved. Null omits, while an empty string or a single empty list item is supplied. Preserve caller ordering; omission requests no sorting. The source arglist alias adds no public argument. Preserve explicit semantic sensitive:false and GET. Collection arguments receive trace protection without changing semantic sensitivity or transport. Offline coverage only; live list-input follow-up whm-api-client-8x0.2.81 remains open."
         }
       ],
       "evidence": [
@@ -401,6 +424,14 @@
           "note": "The documented nvarglist is a noncredential application feature/group selector, not an authentication key or secret. Explicit sensitive:false preserves its raw public selector contract.",
           "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
           "pointer": "/paths/~1Branding~1get_available_applications/get/parameters/0"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Branding~1get_available_applications/get/parameters/0",
+          "note": "The pinned optional nonnullable nvarglist is a concrete string with explicit pipe-delimited prose. Adopt existing client convenience for nonempty sequential strict string lists joined once with | into the original field. Preserve order, duplicates, empty items and all other bytes; reject embedded selected delimiters and malformed/empty lists after metadata reset before I/O. Scalars stay unparsed and encoded once. Preserve caller ordering; omission requests no sorting. The source arglist alias adds no public argument. Preserve explicit semantic sensitive:false and GET. Offline request coverage only; historical scalar captures do not establish PHP-list execution. Live follow-up whm-api-client-8x0.2.81 remains open."
         }
       ],
       "response": {
@@ -437,7 +468,14 @@
       },
       "params": {
         "nvarglist": {
-          "sensitive": false
+          "sensitive": false,
+          "collection": {
+            "kind": "delimited",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "delimiter": "|"
+          }
         }
       }
     },
@@ -451,11 +489,15 @@
         },
         {
           "kind": "documented",
-          "text": "docroot is the absolute server theme directory containing sitemap.json; optional appKeys is a comma-separated raw selector and omission requests all applications. The pinned source uses GET; effective form POST keeps the private noncredential docroot path out of URLs. docroot stays sensitive for library traces. Live POST acceptance is unverified. The client never accesses or validates the path locally. Required nonnullable dynamic map retains optional condition/icon/other formal fields with strict integer dimensions/order. terms is an optional ordered string list supported by formal items:string and array example; null is invalid and omission stays absent."
+          "text": "docroot is the absolute server theme directory containing sitemap.json; optional appKeys accepts a raw comma-separated selector or a nonempty sequential string list joined once with comma and omission requests all applications. The pinned source uses GET; effective form POST keeps the private noncredential docroot path out of URLs. docroot stays sensitive for library traces. Live POST acceptance is unverified. The client never accesses or validates the path locally. Required nonnullable dynamic map retains optional condition/icon/other formal fields with strict integer dimensions/order. terms is an optional ordered string list supported by formal items:string and array example; null is invalid and omission stays absent."
         },
         {
           "kind": "policy",
           "text": "Returned HTML, JavaScript, conditional expressions, URLs, paths and image strings are inert payload. The client never renders, executes, fetches, decodes or locally reads them. No implicit read, merge, sort, retry, rollback or cache of server data is added. Offline fixtures establish no live theme, rendering, visibility or POST acceptance; live follow-up whm-api-client-8x0.2.75 remains open."
+        },
+        {
+          "kind": "documented",
+          "text": "app_keys accepts raw strings or nonempty sequential string lists joined once with ,. List items may be empty but cannot contain ,; other bytes, order and duplicates are preserved. Null omits, while an empty string or a single empty list item is supplied. Omission selects all sitemap keys. Preserve semantic sensitive:false, required sensitive docroot and effective form POST despite source GET. Collection arguments receive trace protection without changing semantic sensitivity or transport. Offline coverage only; live list-input follow-up whm-api-client-8x0.2.81 remains open."
         }
       ],
       "evidence": [
@@ -482,6 +524,14 @@
           "note": "The documented app_keys is a noncredential application feature/group selector, not an authentication key or secret. Explicit sensitive:false preserves its raw public selector contract.",
           "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
           "pointer": "/paths/~1Branding~1get_information_for_applications/get/parameters/1"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Branding~1get_information_for_applications/get/parameters/1",
+          "note": "The pinned optional nonnullable app_keys is a concrete string with explicit comma-delimited prose. Adopt existing client convenience for nonempty sequential strict string lists joined once with , into the original field. Preserve order, duplicates, empty items and all other bytes; reject embedded selected delimiters and malformed/empty lists after metadata reset before I/O. Scalars stay unparsed and encoded once. Omission selects all sitemap keys. Preserve semantic sensitive:false, required sensitive docroot and effective form POST despite source GET. Offline request coverage only; historical scalar captures do not establish PHP-list execution. Live follow-up whm-api-client-8x0.2.81 remains open."
         }
       ],
       "params": {
@@ -489,7 +539,14 @@
           "sensitive": true
         },
         "app_keys": {
-          "sensitive": false
+          "sensitive": false,
+          "collection": {
+            "kind": "delimited",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "delimiter": ","
+          }
         }
       },
       "response": {

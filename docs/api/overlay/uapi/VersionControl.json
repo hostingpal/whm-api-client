@@ -97,7 +97,7 @@
         },
         {
           "kind": "documented",
-          "text": "fields is caller-supplied comma-separated text, with * requesting all fields. Omitting it leaves the server default * in effect; an explicit empty string is forwarded. Repository path character and cPanel-controlled-directory restrictions follow the pinned description."
+          "text": "fields accepts caller-supplied comma-separated text or a nonempty sequential string list joined once with comma, with * requesting all fields. Omitting it leaves the server default * in effect; an explicit empty string is forwarded. Repository path character and cPanel-controlled-directory restrictions follow the pinned description."
         },
         {
           "kind": "documented",
@@ -110,6 +110,10 @@
         {
           "kind": "observed",
           "text": "Reviewer observations through both routes found last_deployment=null before a first deployment, quoted 0/1 deployable flags and digit strings for last_update.date. Preserve the null deployment distinctly from omission; normalize only exact quoted flags to 0|1 and canonical in-range integer date strings to int. Other commit/deployment date contracts remain unchanged."
+        },
+        {
+          "kind": "documented",
+          "text": "fields accepts raw strings or nonempty sequential string lists joined once with ,. List items may be empty but cannot contain ,; other bytes, order and duplicates are preserved. Null omits, while an empty string or a single empty list item is supplied. Omission retains the server '*' default; supplied '*' and empty text remain explicit. Preserve source x-readonly=false, effective form POST, no retry and source path restrictions. Collection arguments receive trace protection without changing semantic sensitivity or transport. Offline coverage only; live list-input follow-up whm-api-client-8x0.2.81 remains open."
         }
       ],
       "evidence": [
@@ -124,6 +128,14 @@
           "version": "11.138.0.19",
           "date": "2026-10-31",
           "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/40#pullrequestreview-5720064601 against revision 9aa3a6c9fdeaf670b0de742c36ed7895d1a560a9, submitted 2026-10-31. Repository operations used actual POST through direct UAPI and the WHM bridge on the designated npr account. The reviewer clarified in https://github.com/hostingpal/whm-api-client/pull/40#issuecomment-6536614693 that every result in the original review and the corrected lifecycle at 7b9f1f93ead92504052a31bffd452ade64f9a208 used cPanel 11.138.0.19 through both direct UAPI and the WHM bridge, with all test repositories and deployments cleaned. These lifecycle observations are separate from the initial GET-only capture, which did not execute these operations. Populated retrieve() and retrieve(fields: '*') returned last_deployment=null for never-deployed repositories, digit-string deployable flags and digit-string last_update.date. The reviewer reported payload mismatches with the original contract."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1VersionControl~1retrieve/get/parameters/0",
+          "note": "The pinned optional nonnullable fields is a concrete string with explicit comma-delimited prose. Adopt existing client convenience for nonempty sequential strict string lists joined once with , into the original field. Preserve order, duplicates, empty items and all other bytes; reject embedded selected delimiters and malformed/empty lists after metadata reset before I/O. Scalars stay unparsed and encoded once. Omission retains the server '*' default; supplied '*' and empty text remain explicit. Preserve source x-readonly=false, effective form POST, no retry and source path restrictions. Offline request coverage only; historical scalar captures do not establish PHP-list execution. Live follow-up whm-api-client-8x0.2.81 remains open."
         }
       ],
       "response": {
@@ -163,6 +175,17 @@
               "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/40#pullrequestreview-5720064601 against revision 9aa3a6c9fdeaf670b0de742c36ed7895d1a560a9, submitted 2026-10-31. Repository operations used actual POST through direct UAPI and the WHM bridge on the designated npr account. The reviewer clarified in https://github.com/hostingpal/whm-api-client/pull/40#issuecomment-6536614693 that every result in the original review and the corrected lifecycle at 7b9f1f93ead92504052a31bffd452ade64f9a208 used cPanel 11.138.0.19 through both direct UAPI and the WHM bridge, with all test repositories and deployments cleaned. These lifecycle observations are separate from the initial GET-only capture, which did not execute these operations. retrieve POST on committed repositories returned last_update.date as digits. Preserve documented integers and normalize only canonical decimal integer strings within PHP integer range. Preserve parent last_update nullability and field omission; null dates remain invalid."
             }
           ]
+        }
+      },
+      "params": {
+        "fields": {
+          "collection": {
+            "kind": "delimited",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "delimiter": ","
+          }
         }
       }
     },

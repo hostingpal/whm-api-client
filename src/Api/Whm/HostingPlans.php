@@ -689,12 +689,12 @@ final readonly class HostingPlans
      *
      * Documented: Available in cPanel & WHM 76 and later. Uses GET for this documented read.
      *
-     * Documented: applicationsList is a comma-separated list sent once; omission returns the entire dynamicui.conf
-     * content. file defaults to dynamicui.conf and is relative to /usr/local/cpanel/whostmgr/docroot/themes/x/. A
-     * caller-selected file reads server configuration. Returned template directives and application/icon URLs are
-     * payload data; the client does not execute or fetch them. Present Group/Image/Subitem fields, nullable ACL/DNSOnly
-     * fields and role/service string-or-object alternatives retain their types; observed omissions are documented
-     * separately.
+     * Documented: applicationsList accepts raw comma-separated text or a nonempty sequential string list joined once
+     * with comma; omission returns the entire dynamicui.conf content. file defaults to dynamicui.conf and is relative
+     * to /usr/local/cpanel/whostmgr/docroot/themes/x/. A caller-selected file reads server configuration. Returned
+     * template directives and application/icon URLs are payload data; the client does not execute or fetch them.
+     * Present Group/Image/Subitem fields, nullable ACL/DNSOnly fields and role/service string-or-object alternatives
+     * retain their types; observed omissions are documented separately.
      *
      * Observed: The independent 11.138.0.19 review observed omitted group acl/target and item
      * minimum_accounts_needed/role/service/target/subitems/multiuser_required/description/dnsonly_ok. These fields are
@@ -706,19 +706,31 @@ final readonly class HostingPlans
      * null in that observation. The contract adds no null compatibility, without claiming null is impossible on every
      * server.
      *
+     * Documented: applications_list accepts raw strings or nonempty sequential string lists joined once with ,. List
+     * items may be empty but cannot contain ,; other bytes, order and duplicates are preserved. Null omits, while an
+     * empty string or a single empty list item is supplied. Omission selects the entire dynamicui content. Preserve the
+     * file option, server-relative path/default semantics and GET. Collection arguments receive trace protection
+     * without changing semantic sensitivity or transport. Offline coverage only; live list-input follow-up
+     * whm-api-client-8x0.2.81 remains open.
+     *
      * API-map identity: whm1:get_available_applications#GET (wire name get_available_applications; Feature Lists).
      *
-     * @param string|null $applicationsList A comma-separated list of the application entries to return. Null omits it.
+     * @param string|non-empty-list<string>|null $applicationsList A comma-separated list of the application entries to
+     *     return. Null omits it.
      * @param string|null $file The `dynamicui` configuration file to retrieve, relative to the
      *     `/usr/local/cpanel/whostmgr/docroot/themes/x/` directory. Null omits it.
      * @return GetAvailableApplicationsResult
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/feature-lists/dynamicui-get_available_applications
      */
-    public function getAvailableApplications(?string $applicationsList = null, ?string $file = null): array
-    {
+    public function getAvailableApplications(
+        #[SensitiveParameter]
+        string|array|null $applicationsList = null,
+        ?string $file = null,
+    ): array {
         /**
          * @var GetAvailableApplicationsResult $result
          * Validated against HostingPlansSpec::GET_AVAILABLE_APPLICATIONS.

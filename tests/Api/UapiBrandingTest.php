@@ -42,10 +42,10 @@ final class UapiBrandingTest extends TestCase
         self::assertSame([], $http->getRequests());
         $signatures = [
             'getApplicationInformation' => ['array', ['appKey' => ['string', false, false]]],
-            'getApplications' => ['array', ['appKeys' => ['?string', true, false]]],
-            'getAvailableApplications' => ['array', ['nvarglist' => ['?string', true, false]]],
+            'getApplications' => ['array', ['appKeys' => ['array|string|null', true, true]]],
+            'getAvailableApplications' => ['array', ['nvarglist' => ['array|string|null', true, true]]],
             'getInformationForApplications' => ['array', [
-                'docroot' => ['string', false, true], 'appKeys' => ['?string', true, false],
+                'docroot' => ['string', false, true], 'appKeys' => ['array|string|null', true, true],
             ]],
             'includeFile' => ['?string', [
                 'file' => ['string', false, true], 'data' => ['?string', true, true],
@@ -361,7 +361,7 @@ final class UapiBrandingTest extends TestCase
     {
         yield ['getApplicationInformation', []];
         yield ['getApplicationInformation', [null]];
-        yield ['getApplications', [[]]];
+        yield ['getApplications', [false]];
         yield ['getAvailableApplications', [42]];
         yield ['getInformationForApplications', [false]];
         yield ['includeFile', [null]];

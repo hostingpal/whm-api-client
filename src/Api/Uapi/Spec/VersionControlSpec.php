@@ -87,7 +87,17 @@ final class VersionControlSpec
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [
-            'fields' => ['name' => 'fields', 'encoding' => 'scalar'],
+            'fields' => [
+                'name' => 'fields',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => ',',
+                ],
+            ],
         ],
         'returns' => [
             'type' => 'list',

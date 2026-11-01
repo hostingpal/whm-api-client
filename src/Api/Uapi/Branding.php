@@ -8,6 +8,7 @@ use Closure;
 use HostingPal\WhmApiClient\Api\Uapi\Spec\BrandingSpec;
 use HostingPal\WhmApiClient\Exception\ApiException;
 use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
+use InvalidArgumentException;
 use SensitiveParameter;
 
 /**
@@ -169,28 +170,39 @@ final readonly class Branding
      * Documented: Available from cPanel 11.52. No pinned role or plugin restriction. One immediate account-scoped
      * request uses the ordinary UAPI Flag outcome on direct and WHM-bridged routes.
      *
-     * Documented: Optional appKeys is a raw comma-separated feature selector; null omits and requests all applications,
-     * empty string is supplied. Return a required nonnullable dynamic application map. Three keyed examples quote
-     * formal integer height/itemorder/width; only these fields accept canonical in-range integer strings and normalize
-     * to int. The same examples establish optional string acontent/base64_png_image/key/onclick/plainitemdesc/target
-     * missing from formal properties; no additional plainitemdesc meaning is inferred.
+     * Documented: Optional appKeys accepts a raw comma-separated feature selector or a nonempty sequential string list
+     * joined once with comma; null omits and requests all applications, empty string is supplied. Return a required
+     * nonnullable dynamic application map. Three keyed examples quote formal integer height/itemorder/width; only these
+     * fields accept canonical in-range integer strings and normalize to int. The same examples establish optional
+     * string acontent/base64_png_image/key/onclick/plainitemdesc/target missing from formal properties; no additional
+     * plainitemdesc meaning is inferred.
      *
      * Policy: Returned HTML, JavaScript, conditional expressions, URLs, paths and image strings are inert payload. The
      * client never renders, executes, fetches, decodes or locally reads them. No implicit read, merge, sort, retry,
      * rollback or cache of server data is added. Offline fixtures establish no live theme, rendering, visibility or
      * POST acceptance; live follow-up whm-api-client-8x0.2.75 remains open.
      *
+     * Documented: app_keys accepts raw strings or nonempty sequential string lists joined once with ,. List items may
+     * be empty but cannot contain ,; other bytes, order and duplicates are preserved. Null omits, while an empty string
+     * or a single empty list item is supplied. Omission selects all dynamicui feature records. Preserve explicit
+     * semantic sensitive:false and GET. Collection arguments receive trace protection without changing semantic
+     * sensitivity or transport. Offline coverage only; live list-input follow-up whm-api-client-8x0.2.81 remains open.
+     *
      * API-map identity: uapi:Branding/get_applications#GET (wire name get_applications).
      *
-     * @param string|null $appKeys A comma-separated list of an application feature names. Null omits it.
+     * @param string|non-empty-list<string>|null $appKeys A comma-separated list of an application feature names. Null
+     *     omits it.
      * @return GetApplicationsResult
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/application-information/branding-get_applications
      */
-    public function getApplications(?string $appKeys = null): array
-    {
+    public function getApplications(
+        #[SensitiveParameter]
+        string|array|null $appKeys = null,
+    ): array {
         /** @var GetApplicationsResult $result Validated against BrandingSpec::GET_APPLICATIONS. */
         $result = ($this->run)(BrandingSpec::GET_APPLICATIONS, ['appKeys' => $appKeys]);
 
@@ -206,29 +218,40 @@ final readonly class Branding
      * Documented: Available from cPanel 54. No pinned role or plugin restriction. One immediate account-scoped request
      * uses the ordinary UAPI Flag outcome on direct and WHM-bridged routes.
      *
-     * Documented: nvarglist is a raw pipe-separated group ordering selector; omission requests no sorting. Source
-     * arglist is an alias, not a second public argument. Preserve default_group_order integer map, ordered
-     * grouporder/groups/items lists, implements string map and index integer-list map. Index prose describes zero-based
-     * group/item positions, but does not establish fixed tuple length. Item height/itemorder/width remain strings.
-     * Example-only key/plainitemdesc are optional strings; preserve empty lists/maps and dynamic keys.
+     * Documented: nvarglist accepts a raw pipe-separated group ordering selector or a nonempty sequential string list
+     * joined once with |; omission requests no sorting. Source arglist is an alias, not a second public argument.
+     * Preserve default_group_order integer map, ordered grouporder/groups/items lists, implements string map and index
+     * integer-list map. Index prose describes zero-based group/item positions, but does not establish fixed tuple
+     * length. Item height/itemorder/width remain strings. Example-only key/plainitemdesc are optional strings; preserve
+     * empty lists/maps and dynamic keys.
      *
      * Policy: Returned HTML, JavaScript, conditional expressions, URLs, paths and image strings are inert payload. The
      * client never renders, executes, fetches, decodes or locally reads them. No implicit read, merge, sort, retry,
      * rollback or cache of server data is added. Offline fixtures establish no live theme, rendering, visibility or
      * POST acceptance; live follow-up whm-api-client-8x0.2.75 remains open.
      *
+     * Documented: nvarglist accepts raw strings or nonempty sequential string lists joined once with |. List items may
+     * be empty but cannot contain |; other bytes, order and duplicates are preserved. Null omits, while an empty string
+     * or a single empty list item is supplied. Preserve caller ordering; omission requests no sorting. The source
+     * arglist alias adds no public argument. Preserve explicit semantic sensitive:false and GET. Collection arguments
+     * receive trace protection without changing semantic sensitivity or transport. Offline coverage only; live
+     * list-input follow-up whm-api-client-8x0.2.81 remains open.
+     *
      * API-map identity: uapi:Branding/get_available_applications#GET (wire name get_available_applications).
      *
-     * @param string|null $nvarglist A pipe-separated list of group names denoting the order in which to sort the
-     *     groups. Null omits it.
+     * @param string|non-empty-list<string>|null $nvarglist A pipe-separated list of group names denoting the order in
+     *     which to sort the groups. Null omits it.
      * @return GetAvailableApplicationsResult
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/application-information/branding-get_available_applications
      */
-    public function getAvailableApplications(?string $nvarglist = null): array
-    {
+    public function getAvailableApplications(
+        #[SensitiveParameter]
+        string|array|null $nvarglist = null,
+    ): array {
         /** @var GetAvailableApplicationsResult $result Validated against BrandingSpec::GET_AVAILABLE_APPLICATIONS. */
         $result = ($this->run)(BrandingSpec::GET_AVAILABLE_APPLICATIONS, ['nvarglist' => $nvarglist]);
 
@@ -243,34 +266,43 @@ final readonly class Branding
      * Documented: Available from cPanel 11.52. No pinned role or plugin restriction. One immediate account-scoped
      * request uses the ordinary UAPI Flag outcome on direct and WHM-bridged routes.
      *
-     * Documented: docroot is the absolute server theme directory containing sitemap.json; optional appKeys is a
-     * comma-separated raw selector and omission requests all applications. The pinned source uses GET; effective form
-     * POST keeps the private noncredential docroot path out of URLs. docroot stays sensitive for library traces. Live
-     * POST acceptance is unverified. The client never accesses or validates the path locally. Required nonnullable
-     * dynamic map retains optional condition/icon/other formal fields with strict integer dimensions/order. terms is an
-     * optional ordered string list supported by formal items:string and array example; null is invalid and omission
-     * stays absent.
+     * Documented: docroot is the absolute server theme directory containing sitemap.json; optional appKeys accepts a
+     * raw comma-separated selector or a nonempty sequential string list joined once with comma and omission requests
+     * all applications. The pinned source uses GET; effective form POST keeps the private noncredential docroot path
+     * out of URLs. docroot stays sensitive for library traces. Live POST acceptance is unverified. The client never
+     * accesses or validates the path locally. Required nonnullable dynamic map retains optional condition/icon/other
+     * formal fields with strict integer dimensions/order. terms is an optional ordered string list supported by formal
+     * items:string and array example; null is invalid and omission stays absent.
      *
      * Policy: Returned HTML, JavaScript, conditional expressions, URLs, paths and image strings are inert payload. The
      * client never renders, executes, fetches, decodes or locally reads them. No implicit read, merge, sort, retry,
      * rollback or cache of server data is added. Offline fixtures establish no live theme, rendering, visibility or
      * POST acceptance; live follow-up whm-api-client-8x0.2.75 remains open.
      *
+     * Documented: app_keys accepts raw strings or nonempty sequential string lists joined once with ,. List items may
+     * be empty but cannot contain ,; other bytes, order and duplicates are preserved. Null omits, while an empty string
+     * or a single empty list item is supplied. Omission selects all sitemap keys. Preserve semantic sensitive:false,
+     * required sensitive docroot and effective form POST despite source GET. Collection arguments receive trace
+     * protection without changing semantic sensitivity or transport. Offline coverage only; live list-input follow-up
+     * whm-api-client-8x0.2.81 remains open.
+     *
      * API-map identity: uapi:Branding/get_information_for_applications#GET (wire name
      * get_information_for_applications).
      *
      * @param string $docroot The absolute path to the directory containing the `sitemap.json` file.
-     * @param string|null $appKeys A comma-separated list of Appkey names. Null omits it.
+     * @param string|non-empty-list<string>|null $appKeys A comma-separated list of Appkey names. Null omits it.
      * @return GetInformationForApplicationsResult
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/application-information/branding-get_information_for_applications
      */
     public function getInformationForApplications(
         #[SensitiveParameter]
         string $docroot,
-        ?string $appKeys = null,
+        #[SensitiveParameter]
+        string|array|null $appKeys = null,
     ): array {
         /**
          * @var GetInformationForApplicationsResult $result

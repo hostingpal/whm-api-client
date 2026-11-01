@@ -452,8 +452,8 @@ final readonly class Fileman
      * Documented: types is a pre-serialized pipe-separated scalar such as file|dir, following the pinned prose and
      * pipeDelimited style with explode=false. The existing scalar encoding has a string|int native boundary and
      * forwards the caller value without delimiter parsing; this does not establish an integer filter meaning.
-     * onlyTheseFiles is a comma-separated string. MIME filters cause the server to set include_mime=1 even when
-     * includeMime is false.
+     * onlyTheseFiles accepts a raw comma-separated string or a nonempty sequential string list joined once with comma.
+     * MIME filters cause the server to set include_mime=1 even when includeMime is false.
      *
      * Documented: The limit_to_list description refers to a filepath- prefix but the pinned operation declares no
      * indexed filepath- parameters or family encoding. Only the declared limitToList flag is exposed; no indexed inputs
@@ -477,6 +477,13 @@ final readonly class Fileman
      * strings, distinct from numeric zero and omission. Only file information and observed flat listing rows gain these
      * forms; other integer fields and unobserved dirs/files object rows remain strict.
      *
+     * Documented: only_these_files accepts raw strings or nonempty sequential string lists joined once with ,. List
+     * items may be empty but cannot contain ,; other bytes, order and duplicates are preserved. Null omits, while an
+     * empty string or a single empty list item is supplied. Omission selects all files. Preserve required dir,
+     * FileStorage role and every other option including the separate types scalar override. Collection arguments
+     * receive trace protection without changing semantic sensitivity or transport. Offline coverage only; live
+     * list-input follow-up whm-api-client-8x0.2.81 remains open.
+     *
      * API-map identity: uapi:Fileman/list_files#GET (wire name list_files).
      *
      * @param string $dir The directory from which to list files.
@@ -487,7 +494,8 @@ final readonly class Fileman
      * @param bool|null $limitToList Whether to return only entries that begin with the `filepath-` prefix. Null omits
      *     it.
      * @param string|null $mimeTypes The MIME types to return. Null omits it.
-     * @param string|null $onlyTheseFiles A comma-separated list of files to return. Null omits it.
+     * @param string|non-empty-list<string>|null $onlyTheseFiles A comma-separated list of files to return. Null omits
+     *     it.
      * @param string|null $rawMimeTypes The raw MIME types to return. Null omits it.
      * @param bool|null $showHidden Whether to include hidden files in the output. Null omits it.
      * @param string|int|null $types A pipe-separated list of file types to return. Null omits it.
@@ -495,6 +503,7 @@ final readonly class Fileman
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/manage-files/fileman-list_files
      */
     public function listFiles(
@@ -504,7 +513,8 @@ final readonly class Fileman
         ?bool $includePermissions = null,
         ?bool $limitToList = null,
         ?string $mimeTypes = null,
-        ?string $onlyTheseFiles = null,
+        #[SensitiveParameter]
+        string|array|null $onlyTheseFiles = null,
         ?string $rawMimeTypes = null,
         ?bool $showHidden = null,
         string|int|null $types = null,

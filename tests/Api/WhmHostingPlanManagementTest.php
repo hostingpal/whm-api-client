@@ -683,7 +683,10 @@ final class WhmHostingPlanManagementTest extends TestCase
         }
         foreach (self::operations() as [, $method]) {
             foreach ((new ReflectionMethod($group, $method))->getParameters() as $parameter) {
-                self::assertSame([], $parameter->getAttributes(SensitiveParameter::class));
+                self::assertCount(
+                    $method === 'getAvailableApplications' && $parameter->getName() === 'applicationsList' ? 1 : 0,
+                    $parameter->getAttributes(SensitiveParameter::class),
+                );
             }
         }
     }

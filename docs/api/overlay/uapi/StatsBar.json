@@ -7,7 +7,7 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available in cPanel 11.42 and later; returns statistics for the selected account. display is a required pre-serialized pipe-delimited string, sent once with normal query encoding. Some display values depend on server configuration; no array serialization is inferred."
+          "text": "Available in cPanel 11.42 and later; returns statistics for the selected account. display is a required raw pipe-delimited string or nonempty sequential string list joined once with | and sent with normal query encoding. Some display values depend on server configuration; names remain open."
         },
         {
           "kind": "documented",
@@ -32,6 +32,10 @@
         {
           "kind": "observed",
           "text": "The immutable 2026-10-31-resource-statistics-review-final.json capture at 294b1cc432bd9a9929a49cade5b2425297c89802 on cPanel 11.138.0.19 establishes role as a string or an object whose dynamic values are strings or lists of strings through both routes. Preserve those opaque map keys without inferring names or meanings. The earlier reviewer description of an array did not distinguish a JSON object from a list; nonempty root lists are not accepted. Existing empty-map compatibility accepts an empty JSON list as an empty map. Null, numeric values, nested objects and non-string list members are not inferred. Separate unknown row fields in that failed capture remain unmodeled, strict and unwaived."
+        },
+        {
+          "kind": "documented",
+          "text": "display accepts raw strings or nonempty sequential string lists joined once with |. List items may be empty but cannot contain |; other bytes, order and duplicates are preserved. display remains required; native null/omission errors precede method entry and metadata reset. This selector remains required and nonnullable with no default. Names depend on server configuration and remain open; the CLI URI-encoding note does not require caller pre-encoding. Preserve all companion options. Collection arguments receive trace protection without changing semantic sensitivity or transport. Offline coverage only; live list-input follow-up whm-api-client-8x0.2.81 remains open."
         }
       ],
       "params": {
@@ -49,6 +53,15 @@
         },
         "warnout": {
           "php": "warnOut"
+        },
+        "display": {
+          "collection": {
+            "kind": "delimited",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "delimiter": "|"
+          }
         }
       },
       "response": {
@@ -134,6 +147,14 @@
           "date": "2026-10-31",
           "note": "Immutable docs/api/evidence/2026-10-31-resource-statistics-review-final.json SHA-256 c3c7ac8302133d4d92212f4e47d6455b95e60710adcb04209cf485e5690aed90, captured at revision 294b1cc432bd9a9929a49cade5b2425297c89802 on cPanel 11.138.0.19 from pinned source SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, records direct-uapi and bridged-uapi GET HTTP 200 and API success with payload failure under effective contract 302752ebb47271607b06f3e738d5dacea659b116c31869e34f2214d8ffe859ef. Both raw fingerprints contain $[].role missing/object/string, $[].role.* list/string and $[].role.*[] string. Replace the unsupported root list alternative with map<string|list<string>>, preserving the pinned scalar string alternative and omission. Masked map keys remain opaque; no named property or semantic meaning is established. Reject nonempty root lists, null, numeric leaves, nested objects and non-string list members; retain existing empty-map compatibility. The separate $[].* unknown-field discrepancies are not part of this correction, remain unmodeled and unwaived, and the original artifact remains failed and unchanged.",
           "fingerprint": "docs/api/evidence/2026-10-31-resource-statistics-review-final.json"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1StatsBar~1get_stats/get/parameters/0",
+          "note": "The pinned required nonnullable display is a concrete string with explicit pipe-delimited prose. Adopt existing client convenience for nonempty sequential strict string lists joined once with | into the original field. Preserve order, duplicates, empty items and all other bytes; reject embedded selected delimiters and malformed/empty lists after metadata reset before I/O. Scalars stay unparsed and encoded once. This selector remains required and nonnullable with no default. Names depend on server configuration and remain open; the CLI URI-encoding note does not require caller pre-encoding. Preserve all companion options. Offline request coverage only; historical scalar captures do not establish PHP-list execution. Live follow-up whm-api-client-8x0.2.81 remains open."
         }
       ]
     }

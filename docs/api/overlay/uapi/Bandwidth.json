@@ -27,7 +27,7 @@
         },
         {
           "kind": "documented",
-          "text": "grouping, domains and protocols are pre-serialized pipe-separated strings, following the pinned pipeDelimited, explode=false declarations and examples. The client sends each supplied string once without splitting, reordering or adding a parameter-name prefix. grouping is required; optional report bounds, interval, domains, protocols and timezone remain omitted unless supplied. The documented interval default is daily and available data depends on retention."
+          "text": "grouping remains a required pre-serialized pipe-separated string; domains and protocols additionally accept nonempty sequential string lists joined once with |, following the pinned pipeDelimited, explode=false declarations and examples. The client sends each supplied string once without splitting, reordering or adding a parameter-name prefix. grouping is required; optional report bounds, interval, domains, protocols and timezone remain omitted unless supplied. The documented interval default is daily and available data depends on retention."
         },
         {
           "kind": "documented",
@@ -40,6 +40,14 @@
         {
           "kind": "observed",
           "text": "The original 2026-10-31-resource-statistics.json capture at fb4f9c9eb03e094d89a41806e927c4cbf0c60432 on cPanel 11.138.0.19 observed integer byte leaves at $.*.* for grouping=domain|protocol through both routes. Review 5719939412 also reports successful API responses rejected at one and three grouping levels. The pinned examples establish those shapes and fractional byte leaves independently; the original immutable artifact remains unchanged."
+        },
+        {
+          "kind": "documented",
+          "text": "domains accepts raw strings or nonempty sequential string lists joined once with |. List items may be empty but cannot contain |; other bytes, order and duplicates are preserved. Null omits, while an empty string or a single empty list item is supplied. Omission selects all account domains; UNKNOWN is the documented pseudo-domain for unattributed traffic. Keep grouping a required scalar string and protocol/domain names open. Collection arguments receive trace protection without changing semantic sensitivity or transport. Offline coverage only; live list-input follow-up whm-api-client-8x0.2.81 remains open."
+        },
+        {
+          "kind": "documented",
+          "text": "protocols accepts raw strings or nonempty sequential string lists joined once with |. List items may be empty but cannot contain |; other bytes, order and duplicates are preserved. Null omits, while an empty string or a single empty list item is supplied. Keep protocol names open without an inferred local enum or grouping constraint. Collection arguments receive trace protection without changing semantic sensitivity or transport. Offline coverage only; live list-input follow-up whm-api-client-8x0.2.81 remains open."
         }
       ],
       "name": "query",
@@ -105,8 +113,44 @@
           "date": "2026-10-31",
           "note": "Original immutable docs/api/evidence/2026-10-31-resource-statistics.json (SHA-256 6114814a2c39e52080d34c90cf0790380c16b86d3dca87677cb00fea50a407f3), captured at revision fb4f9c9eb03e094d89a41806e927c4cbf0c60432 on cPanel 11.138.0.19 from pinned source SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, records HTTP 200 and API success on direct-uapi and bridged-uapi GET routes. For the fixed catalog grouping=domain|protocol, payload paths $ and $.* are objects and $.*.* is int, with type_mismatch at $.*.* under effective contract 199c3cd48f4dd5e801bc785c94a7d192bf6c54a8c06556def0211cb23892f1fc. This artifact establishes two-level integer leaves only. The separate pinned examples establish the other depths and fractional leaves; preserve the original failed artifact unchanged.",
           "fingerprint": "docs/api/evidence/2026-10-31-resource-statistics.json"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Bandwidth~1query/get/parameters/1",
+          "note": "The pinned optional nonnullable domains is a concrete string with explicit pipe-delimited prose. Adopt existing client convenience for nonempty sequential strict string lists joined once with | into the original field. Preserve order, duplicates, empty items and all other bytes; reject embedded selected delimiters and malformed/empty lists after metadata reset before I/O. Scalars stay unparsed and encoded once. Omission selects all account domains; UNKNOWN is the documented pseudo-domain for unattributed traffic. Keep grouping a required scalar string and protocol/domain names open. Offline request coverage only; historical scalar captures do not establish PHP-list execution. Live follow-up whm-api-client-8x0.2.81 remains open."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Bandwidth~1query/get/parameters/4",
+          "note": "The pinned optional nonnullable protocols is a concrete string with explicit pipe-delimited prose. Adopt existing client convenience for nonempty sequential strict string lists joined once with | into the original field. Preserve order, duplicates, empty items and all other bytes; reject embedded selected delimiters and malformed/empty lists after metadata reset before I/O. Scalars stay unparsed and encoded once. Keep protocol names open without an inferred local enum or grouping constraint. Offline request coverage only; historical scalar captures do not establish PHP-list execution. Live follow-up whm-api-client-8x0.2.81 remains open."
         }
-      ]
+      ],
+      "params": {
+        "domains": {
+          "collection": {
+            "kind": "delimited",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "delimiter": "|"
+          }
+        },
+        "protocols": {
+          "collection": {
+            "kind": "delimited",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "delimiter": "|"
+          }
+        }
+      }
     }
   }
 }

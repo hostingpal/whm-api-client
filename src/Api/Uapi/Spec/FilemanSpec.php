@@ -189,7 +189,17 @@ final class FilemanSpec
             'includePermissions' => ['name' => 'include_permissions', 'encoding' => 'bool'],
             'limitToList' => ['name' => 'limit_to_list', 'encoding' => 'bool'],
             'mimeTypes' => ['name' => 'mime_types', 'encoding' => 'scalar'],
-            'onlyTheseFiles' => ['name' => 'only_these_files', 'encoding' => 'scalar'],
+            'onlyTheseFiles' => [
+                'name' => 'only_these_files',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => ',',
+                ],
+            ],
             'rawMimeTypes' => ['name' => 'raw_mime_types', 'encoding' => 'scalar'],
             'showHidden' => ['name' => 'show_hidden', 'encoding' => 'bool'],
             'types' => ['name' => 'types', 'encoding' => 'scalar'],

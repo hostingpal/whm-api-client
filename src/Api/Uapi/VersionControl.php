@@ -8,6 +8,7 @@ use Closure;
 use HostingPal\WhmApiClient\Api\Uapi\Spec\VersionControlSpec;
 use HostingPal\WhmApiClient\Exception\ApiException;
 use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
+use InvalidArgumentException;
 use SensitiveParameter;
 
 /**
@@ -252,9 +253,10 @@ final readonly class VersionControl
      * x-readonly=false and x-rollback=none, including retrieval functions; this method uses form POST. The client
      * performs one request with no automatic retry or rollback.
      *
-     * Documented: fields is caller-supplied comma-separated text, with * requesting all fields. Omitting it leaves the
-     * server default * in effect; an explicit empty string is forwarded. Repository path character and
-     * cPanel-controlled-directory restrictions follow the pinned description.
+     * Documented: fields accepts caller-supplied comma-separated text or a nonempty sequential string list joined once
+     * with comma, with * requesting all fields. Omitting it leaves the server default * in effect; an explicit empty
+     * string is forwarded. Repository path character and cPanel-controlled-directory restrictions follow the pinned
+     * description.
      *
      * Documented: All row fields are optional. available_branches may be null for a bare repository, and branch and
      * last_update may be null. Empty lists, omitted fields and explicit null remain distinct. deployable is returned as
@@ -269,17 +271,27 @@ final readonly class VersionControl
      * omission; normalize only exact quoted flags to 0|1 and canonical in-range integer date strings to int. Other
      * commit/deployment date contracts remain unchanged.
      *
+     * Documented: fields accepts raw strings or nonempty sequential string lists joined once with ,. List items may be
+     * empty but cannot contain ,; other bytes, order and duplicates are preserved. Null omits, while an empty string or
+     * a single empty list item is supplied. Omission retains the server '*' default; supplied '*' and empty text remain
+     * explicit. Preserve source x-readonly=false, effective form POST, no retry and source path restrictions.
+     * Collection arguments receive trace protection without changing semantic sensitivity or transport. Offline
+     * coverage only; live list-input follow-up whm-api-client-8x0.2.81 remains open.
+     *
      * API-map identity: uapi:VersionControl/retrieve#GET (wire name retrieve).
      *
-     * @param string|null $fields A comma-separated list of desired return values. Null omits it.
+     * @param string|non-empty-list<string>|null $fields A comma-separated list of desired return values. Null omits it.
      * @return RetrieveResult
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/repository-management/versioncontrol-retrieve
      */
-    public function retrieve(?string $fields = null): array
-    {
+    public function retrieve(
+        #[SensitiveParameter]
+        string|array|null $fields = null,
+    ): array {
         /** @var RetrieveResult $result Validated against VersionControlSpec::RETRIEVE. */
         $result = ($this->run)(VersionControlSpec::RETRIEVE, ['fields' => $fields]);
 

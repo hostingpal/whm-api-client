@@ -570,8 +570,9 @@ setting change; this work authorizes no such change and ran no live calls.
 Twelve other pinned JSON-body operations remain deferred; remaining
 selection/source/route audit is tracked under `8x0.29.6`.
 
-Pipe-separated grouping, domain, protocol and display arguments are supplied as
-strings and encoded once. Omitted options preserve server defaults; explicit
+Bandwidth grouping remains a pipe-separated scalar string. Domain, protocol
+and required StatsBar display selectors also accept nonempty sequential string
+lists joined once with |; all supplied values are encoded once. Omitted options preserve server defaults; explicit
 false flags are sent as zero. Keep bytes, timestamps, per-resource units and
 formatted display strings distinct. Resource `maximum: null` means unlimited;
 zero and omission remain separate. Dynamic domain/date/grouping keys remain keys
@@ -4012,7 +4013,8 @@ The source specifies GET for every method, including `include` with
 `x-readonly=true`. The two effective POSTs follow client privacy policy for the
 private server theme root and arbitrary template variables. Their live POST
 acceptance remains unverified. `docroot`, `file` and `data` carry
-`SensitiveParameter`; application/group selectors are noncredential strings.
+`SensitiveParameter`; application/group selectors remain noncredential inputs,
+with independent collection trace protection.
 
 ```php
 $branding = $client->uapi('example')->branding();
@@ -4024,9 +4026,10 @@ $sitemap = $branding->getInformationForApplications(docroot: '/example/theme');
 $content = $branding->includeFile(file: 'header.tt', data: '{"showBanner":1}');
 ```
 
-`appKey` identifies a feature in `dynamicui.conf`. Optional `appKeys` is a raw
-comma-separated selector; omission requests all source applications. `nvarglist`
-is a raw pipe-separated group ordering selector; omission requests no sorting.
+`appKey` identifies a feature in `dynamicui.conf`. Optional `appKeys` accepts a raw
+comma-separated selector or a nonempty sequential string list joined with comma; omission requests all source applications. `nvarglist`
+accepts a raw pipe-separated group ordering selector or a nonempty sequential
+string list joined with |; omission requests no sorting.
 The source documents `arglist` as its alias; no extra public alias is added.
 `docroot` is an absolute server theme root containing `sitemap.json` and is
 forwarded without normalization, local access or path validation. Null optional
@@ -4357,3 +4360,35 @@ unchanged. The original Monitoring delivery changed no shared runtime or
 generator policy. This subsequent filter adoption uses the accepted explicit
 shared delimited descriptor convention; it adds no further shared runtime,
 generator, dependency or source-schema correction.
+
+Inventory and discovery selectors also accept nonempty sequential string lists:
+Bandwidth `domains`/`protocols`, Branding `nvarglist` and required StatsBar `display`
+join with `|`; Branding `appKeys` on both methods, Fileman `onlyTheseFiles`,
+VersionControl `fields` and WHM HostingPlans `applicationsList` join with `,`.
+Raw strings remain byte-preserved and unparsed. Lists preserve order, duplicates,
+empty items, whitespace, Unicode, binary and URL/percent bytes; an embedded selected
+delimiter rejects, while the other delimiter stays data. No escaping, trimming,
+splitting, deduplication, enum validation or default insertion occurs. Optional
+null omits, `[]` rejects, `['']` supplies empty and `['', 'x', '']` supplies `|x|`
+or `,x,`. Malformed lists fail before I/O after metadata reset. StatsBar `display`
+remains required `string|array`; native omission/null errors precede method entry
+and do not reset prior metadata. Other selectors are `string|array|null = null`.
+
+```php
+// Synthetic request inputs; these calls use the selected account.
+$account->bandwidth()->query(grouping: 'domain', domains: ['example.test', 'UNKNOWN']);
+$account->branding()->getApplications(appKeys: ['email_accounts', 'boxtrapper']);
+$account->statsBar()->getStats(display: ['diskusage', 'bandwidthusage']);
+```
+
+GET routes stay GET. Branding `getInformationForApplications()` retains form POST
+and its required sensitive `docroot`; VersionControl `retrieve()` retains form POST
+and no retry. Collection trace attributes do not classify selectors as secret
+inputs or change transport. Omission retains each source default: all domains,
+all dynamicui features/sitemap keys/files/WHM content, no group sorting, or the
+VersionControl `*` field default. Explicit `*` or `['*']` remains supplied.
+Bandwidth `grouping` and Fileman `types` keep their existing scalar boundaries
+under separate composed-source gate `8x0.28.8.6`. Returned payloads and all companion
+false/zero options are unchanged. This is offline request coverage; historical
+scalar captures do not establish PHP-list execution or server filtering/empty
+semantics. Live follow-up `whm-api-client-8x0.2.81` remains OPEN.

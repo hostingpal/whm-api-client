@@ -19,7 +19,17 @@ final class StatsBarSpec
         'method' => 'GET',
         'outcome' => 'flag',
         'params' => [
-            'display' => ['name' => 'display', 'encoding' => 'scalar'],
+            'display' => [
+                'name' => 'display',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => '|',
+                ],
+            ],
             'infinityImg' => ['name' => 'infinityimg', 'encoding' => 'scalar'],
             'infinityLang' => ['name' => 'infinitylang', 'encoding' => 'scalar'],
             'rowCounter' => ['name' => 'rowcounter', 'encoding' => 'scalar'],

@@ -48,7 +48,17 @@ final class BrandingSpec
         'method' => 'GET',
         'outcome' => 'flag',
         'params' => [
-            'appKeys' => ['name' => 'app_keys', 'encoding' => 'scalar'],
+            'appKeys' => [
+                'name' => 'app_keys',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => ',',
+                ],
+            ],
         ],
         'returns' => [
             'type' => 'map',
@@ -87,7 +97,17 @@ final class BrandingSpec
         'method' => 'GET',
         'outcome' => 'flag',
         'params' => [
-            'nvarglist' => ['name' => 'nvarglist', 'encoding' => 'scalar'],
+            'nvarglist' => [
+                'name' => 'nvarglist',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => '|',
+                ],
+            ],
         ],
         'returns' => [
             'type' => 'object',
@@ -147,7 +167,17 @@ final class BrandingSpec
         'outcome' => 'flag',
         'params' => [
             'docroot' => ['name' => 'docroot', 'encoding' => 'scalar'],
-            'appKeys' => ['name' => 'app_keys', 'encoding' => 'scalar'],
+            'appKeys' => [
+                'name' => 'app_keys',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => ',',
+                ],
+            ],
         ],
         'returns' => [
             'type' => 'map',
