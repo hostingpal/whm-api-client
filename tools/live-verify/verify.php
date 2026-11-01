@@ -270,8 +270,8 @@ $verifyCommand = static function (#[SensitiveParameter] array $arguments) use ($
             . ', unexpected: ' . count($review['unexpected'])
             . ', stale: ' . count($review['stale']) . ")\n");
         $acknowledgmentLabels = [
-            'quota-total-direct-11.138.0.15' => 'quota-total-direct-11.138.0.15 ($.* unknown_field)',
-            'quota-total-bridge-11.138.0.15' => 'quota-total-bridge-11.138.0.15 ($.* unknown_field)',
+            'quota-total-direct-11.138.0.19' => 'quota-total-direct-11.138.0.19 ($.* unknown_field)',
+            'quota-total-bridge-11.138.0.19' => 'quota-total-bridge-11.138.0.19 ($.* unknown_field)',
         ];
         foreach (['acknowledged' => 'Acknowledged', 'stale' => 'Stale'] as $field => $label) {
             foreach ($review[$field] as $id) {
