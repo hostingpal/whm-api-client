@@ -1765,3 +1765,95 @@ A successful result establishes singleton-list wire acceptance only. It establis
 no multi-domain batch, populated DS field, mutation, propagation or DNSSEC resolver
 coverage. Existing artifacts and discrepancy policies are never changed by this
 catalog.
+
+## Disposable-account Fileman upload fixture
+
+`fileman-upload.php` proves typed `Fileman/upload_files` once, on a fresh disposable
+account, with no write to `npr` or any other account. It runs at committed code,
+reads only `OBLAK_TEST_WHM_KEY`, and creates its own short-lived writable token:
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 \
+  WHM_API_LIVE_ACCOUNT=wlupload WHM_API_LIVE_DOMAIN=wlupload.example.com \
+  php tools/live-verify/fileman-upload.php \
+  --output=docs/api/evidence/YYYY-MM-DD-fileman-upload.json
+```
+
+Use a new output path. Run it once; a failed run keeps its artifact and is never
+rerun to obtain a better one. The output is written only after cleanup, as a
+new-only protected file; if publication fails the complete report stays beside the
+destination and its path is printed. Exit 0 requires the lifecycle and the strict
+discrepancy review to pass.
+
+**Lifecycle.** It follows the finite-Quota recipe: account, manual-domain and zone
+inventories must first prove absence, and an existing account is never adopted. A
+random contact-email marker, held only in memory, proves ownership, so a failed or
+concurrent creation can never authorize removing an account the marker does not
+match. Setup creates a 900-second writable token and confirms it. Cleanup runs in
+`finally`, each mutation is attempted at most once, and token, account, domain and
+zone absence are each read back through the API. `FilemanUploadGuard` checks both
+opt-ins and the exact account and domain on every request, then the exact method,
+URI, complete header set and body. Each mutation is consumed once even when refused.
+
+**Transport.** `CurlClient` casts its body to a string and stays unchanged for every
+other fixture. `StreamingCurlClient` reads at most 8192 bytes at a time through
+`CURLOPT_READFUNCTION`. `CURLOPT_POST` with a read callback would silently select
+chunked framing, and PHP does not export `CURLOPT_POSTFIELDSIZE`, so it uses
+`CURLOPT_UPLOAD` with `CURLOPT_INFILESIZE` and a custom POST verb. That sends the
+exact `Content-Length`, no `Transfer-Encoding` and no `Expect`. No seek callback
+exists and the connection is fresh and unreusable, so libcurl cannot rewind or
+replay. The sent head is reduced in memory to booleans under each upload's `framing`.
+Because a forward-only body cannot be inspected before dispatch, the guard compares
+it with an independently assembled expectation as it streams and aborts at the first
+differing byte, before the closing delimiter. String conversion and buffering are
+refused outright.
+
+**Requests.** All uploads use `overwrite=0`, `permissions=0600` and one fresh
+high-entropy directory, on the direct route only:
+
+| Phase | Surface | Parts | Expected |
+| --- | --- | --- | --- |
+| `upload_success` | typed | all bytes (`fromString`), empty, borrowed cursor (`fromStream`), 20 KB local file (`fromPath`) | status 1, four stored rows, disk info |
+| `upload_partial` | typed | existing name with conflicting bytes, plus a fresh stream with explicit size | status 1, one refused and one stored row |
+| `upload_all_failed` | typed | existing name with conflicting bytes | status 0, one refused row returned normally |
+| `upload_raw` | `callMultipart` default Flag | one fresh file | status 1, one stored row |
+
+Status-0 handling is the merged rows-aware rule, not a fixture assumption: a batch
+with rows returns normally, while explicit null or a validated empty `uploads` raises
+`ApiErrorException` and missing rows raise `PayloadMismatchException`. Either of those
+fails this run. The two expected statuses are reviewer-reported observations, so a
+different status with correct rows is recorded and fails the run.
+
+**Byte oracle.** `Fileman/get_file_content` transcodes, so it is not a raw download.
+Each file is read with `from_charset=ISO-8859-1`, `to_charset=UTF-8` and
+`update_html_document_encoding=0`, then compared with
+`FilemanUploadRecipe::latin1ToUtf8()`, which maps each byte N to U+00NN by definition,
+without a conversion library. The mapping is injective, so an added encoding layer,
+replacement character, truncation or dropped NUL differs; size is never enough. The
+first file holds all 256 byte values plus extra NUL and CRLF bytes. After the two
+refusals both target files are read again, proving `overwrite=0` kept the originals.
+The returned charset must echo the request exactly. `from_char`/`to_char` are the
+documented echoes; their schema-less `from_charset`/`to_charset` twins are read only
+when those are absent. A differing echo over exact content fails the run at its end
+without stopping it, since it cannot affect how later uploads are read. The empty
+file is read last, as no reviewed observation covers it.
+
+**Ownership and cleanup.** A file is owned only after fresh directory absence, its
+original validated row and a matching readback for this run. A reread that no longer
+matches withdraws ownership. Capture stops at the first unexpected state, and only
+owned files are deleted individually, each by an exact single-use guard authorization.
+`delete_file` is recursive upstream, so the directory is deleted only when it is owned
+and its inventory, hidden entries included, is empty. Anything unproven is left for
+account removal and reported. File cleanup failure never prevents token or account
+cleanup.
+
+**Evidence.** `fileman_upload` holds structural probe records, per-upload counts and
+transfer statistics, oracle outcomes and fixed-label lifecycle results. No file bytes,
+names, paths, tokens or upstream text are persisted. Its `discrepancy_review` accepts
+no discrepancies and has no acknowledgment mechanism.
+
+Claim API absence only. `filesystem_cleanup` is fixed at `not_claimed`: nothing here
+checks the account's home directory or the filesystem after removal. The evidence
+covers the observed filenames, sizes and server version on the direct route. It
+establishes no raw-download identity, antivirus or archive behavior, null or empty
+status-0 observation, memory benchmark, or WHM or bridged upload coverage.
