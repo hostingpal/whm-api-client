@@ -51,8 +51,11 @@ func Validate(set Set) []string {
 			seen[id] = name
 			op := file.Operations[id]
 			if op.Exclude != nil && (op.Name != "" || len(op.Params) > 0 || len(op.Response) > 0 || op.Unwrap != "" ||
-				len(op.AdditionalMethods) > 0 || op.Function != "" || op.OptionalPayload || op.Variant != "" || op.Body != "" || len(op.BodyFields) > 0 || op.MultipartUploads != nil || op.MultipartUpload != nil || op.MultipartUploadFamily != nil) {
+				len(op.AdditionalMethods) > 0 || op.Function != "" || op.Rows != "" || op.OptionalPayload || op.Variant != "" || op.Body != "" || len(op.BodyFields) > 0 || op.MultipartUploads != nil || op.MultipartUpload != nil || op.MultipartUploadFamily != nil) {
 				problems = append(problems, id+": excluded operations take no other settings")
+			}
+			if op.Rows != "" && (file.Family != "uapi" || op.Outcome != "unchecked" || op.Void || op.OptionalPayload || op.Unwrap != "") {
+				problems = append(problems, id+": rows requires unchecked UAPI without void, optional_payload or unwrap")
 			}
 			if op.Void && op.Unwrap != "" {
 				problems = append(problems, id+": void and unwrap are exclusive")
@@ -178,6 +181,9 @@ func missingEvidence(id string, op Operation) []string {
 	if op.Method != "" {
 		settings = append(settings, "method")
 	}
+	if op.Rows != "" {
+		settings = append(settings, "rows")
+	}
 	if op.Outcome != "" {
 		settings = append(settings, "outcome")
 	}
@@ -254,6 +260,9 @@ var qualifiedFunction = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*/[A-Za-z_][A-
 // ValidateCollection checks explicit facts even for callers constructing overlays
 // directly. JSON loading additionally rejects unknown keys and wrong JSON types.
 func ValidateCollection(c *Collection) error {
+	if c != nil && c.RejectPrefixedKeys != nil && (!*c.RejectPrefixedKeys || c.Kind != "map" || c.Prefix == nil || *c.Prefix == "") {
+		return fmt.Errorf("reject_prefixed_keys requires true and a nonempty map prefix")
+	}
 	if c == nil || (c.Kind != "indexed" && c.Kind != "repeat" && c.Kind != "map") ||
 		(c.ItemType != "string" && c.ItemType != "int" && c.ItemType != "bool" && c.ItemType != "string|int") ||
 		c.AllowScalar == nil || (c.Empty != "reject" && (c.Kind != "map" || c.Empty != "allow")) {

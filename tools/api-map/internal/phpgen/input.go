@@ -12,6 +12,11 @@ func inputShape(s effective.InputSpec, indent string) string {
 		result = "bool"
 	case "number":
 		result = "int|float"
+	case "string":
+		result = "string"
+		if s.Nonempty {
+			result = "non-empty-string"
+		}
 	case "list":
 		prefix := "list"
 		if s.Nonempty {
