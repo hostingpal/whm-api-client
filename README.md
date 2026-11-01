@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 116 generated typed groups cover 1,221 documented operations (see
+The 117 generated typed groups cover 1,228 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, DNS zone and DNSSEC
 management, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -4550,3 +4550,136 @@ and 235 outputs (234 PHP plus coverage). Delivery `whm-api-client-8x0.4.36` is
 offline synthetic coverage only. Live follow-up `whm-api-client-8x0.2.78` remains
 OPEN; no live POST acceptance, authentication/link changes, login, MCP connectivity
 or integration behavior is established.
+
+## WHM 360 Monitoring
+
+`whm()->monitoring()` covers all seven pinned Monitoring functions from cPanel &
+WHM 11.132: registration, agent polling and the five WebPros authentication
+operations. Each explicit invocation sends one form POST to
+`/json-api/360Monitoring/<function>?api.version=1`. The callback source requires
+POST and a body-only `json` field; the other six source GET declarations lack
+`x-readonly`, so the existing unknown-risk policy selects POST. This is offline
+coverage, not proof of live POST acceptance. Generic calls do not add typed or
+live coverage.
+
+Registration can create an external 360 account and configure the local agent.
+The documented already-registered no-op returns the identifier, keeping agent
+credentials server-side; fixtures establish no actual idempotency. Polling
+requires `interval` or `maxDataSpan` on the server. Filters apply only with
+`interval`; an interval without filters updates all core/default plugin sections.
+`maxDataSpan` controls batched metrics. Matching settings avoid changes/restart
+per source; other settings may restart the agent.
+
+```php
+// Synthetic examples. Each call explicitly requests its server-side action.
+$monitoring = $client->whm()->monitoring(); // Lazy, cached; no I/O.
+$registration = $monitoring->registerServerWith360Monitoring();
+$polling = $monitoring->set360AgentPolling(
+    globalSections: 'global,agent',
+    interval: 300,
+    maxDataSpan: 120,
+    pluginSections: 'cpu,network',
+);
+```
+
+Polling filters are canonical comma-separated strings; their bytes, order,
+duplicates and spaces pass through unchanged. Null omits an optional argument;
+empty strings and integer zero remain supplied. Positive timing values and the
+interval/filter relationship are upstream requirements, without local range or
+cross-field guards. Delimited array convenience remains tracked in
+`whm-api-client-8x0.28.7`.
+
+Auth start needs an existing intended WHM session for callers outside browser
+sessions, notably API-token and Basic callers. This client has no browser-session
+transport flow or implicit session creation. `sessionId` is optional in the
+source; when supplied it must belong to the intended session and contain digits.
+The client preserves leading zeros and forwards empty/punctuated strings for
+server validation. These independent examples do not orchestrate a sign-in:
+
+```php
+// Supply the intended existing WHM session; this value is synthetic.
+$start = $client->whm()->monitoring()->webProsAuthStart(sessionId: '0012345678');
+// Keep $start['state'] and $start['auth_url'] private. No navigation is implicit.
+```
+
+The server stores the PKCE verifier. State is a single-use secret expiring after
+ten minutes and bound to the same WHM session. Callback JSON requires `code` and
+`state`; its optional `session_id` applies only when the request has no session,
+and a request session takes precedence. Legacy `verifier` is accepted but ignored
+and scheduled for later removal. The canonical method accepts raw JSON text in
+one form field, preserving whitespace, unknown keys and even invalid/scalar JSON
+for server validation. It form-encodes exactly once and never sends that value in
+the URL or as an `application/json` body. A structured callback companion needs
+separate source-bound foundation work under `whm-api-client-8x0.1.22`.
+
+```php
+// Synthetic callback values only; do not log this text or the response.
+$callbackJson = json_encode([
+    'code' => 'synthetic-authorization-code',
+    'state' => 'synthetic-single-use-state',
+    'session_id' => '0012345678',
+], JSON_THROW_ON_ERROR);
+$callback = $client->whm()->monitoring()->webProsAuthCallback(json: $callbackJson);
+// Inspect optional success/error/reason and responseMeta(); success=0 is a result.
+```
+
+State validation precedes the external exchange. Matching state is consumed
+whether the exchange succeeds or fails; unknown or other-session state consumes
+nothing. The client never retries a callback: a new flow is the caller's explicit
+decision. The server stores the token bundle, while callback returns only an
+optional email/expiry summary. `token_unusable` can mean a stored token is
+unusable; do not infer rollback or all-or-nothing behavior.
+
+```php
+// Independent explicit reads; neither triggers another operation.
+$status = $client->whm()->monitoring()->webProsAuthStatus();
+$token = $client->whm()->monitoring()->webProsAuthToken();
+// $token['access_token'], when present, is a bearer credential: never log it.
+
+// Explicit sign-out: removes the server's stored token bundle.
+$cleared = $client->whm()->monitoring()->webProsAuthClear();
+```
+
+Status checks identity/expiry without returning tokens. Token returns only the
+bearer access token, never the refresh bundle; `expires_in=0` means remaining
+lifetime could not be determined. No status/start/refresh/storage happens
+implicitly. Clear's documented no-token success is not live proof;
+`removal_failed` leaves the token in place. No polling, browser redirect, OAuth
+exchange, retry, rollback or additional server contact is added.
+
+All roots are required nonnull known objects; all fields, including nested ones,
+are optional and nonnullable:
+
+| Method | Returned wire fields |
+| --- | --- |
+| `registerServerWith360Monitoring()` | `user_id?: string` |
+| `set360AgentPolling()` | `status?: int` |
+| `webProsAuthCallback()` | `error?: string`, `reason?: string`, `success?: 0\|1`, `token_data?: array{email?: string, expires_in?: int}` |
+| `webProsAuthClear()` | `error?: string`, `reason?: string`, `success?: 0\|1` |
+| `webProsAuthStart()` | `auth_url?: string`, `error?: string`, `reason?: string`, `state?: string` |
+| `webProsAuthStatus()` | `email?: string`, `expired_at?: int`, `error?: string`, `expires_in?: int`, `reason?: string`, `valid?: 0\|1` |
+| `webProsAuthToken()` | `access_token?: string`, `error?: string`, `expires_in?: int`, `reason?: string` |
+
+`user_id` stays strict string despite the pinned numeric example. Polling's
+source enum `[1]` documents only 1 as success; existing validation enforces native
+integer without singleton membership, and gives other integers no upstream
+meaning. Native integer flags reject quoted strings, booleans and floats. Reason
+strings stay open. Omitted fields, present empty nested objects and empty strings
+remain distinct; absent/null roots reject. Known-object unknown fields are
+filtered; inherited empty JSON array object compatibility remains (8x0.2.50).
+
+WHM `metadata.result=0` fails before payload validation. Payload `success=0` or
+`valid=0` under metadata result 1 is a result to inspect. Warnings remain in raw
+WHM metadata through `responseMeta()->whm`; snapshots remain available after
+mismatches. Selectors retain metadata; invocation resets normally. Strict caller
+argument errors occur before method entry and reset. Token/state/URL/session,
+account/error contents and `PayloadMismatchException::$payload` may be private.
+The callback `json` and auth-start `sessionId` parameters are sensitive, and
+existing library response frames conceal contents; callers and third-party transports control
+their own traces. Returned URLs stay inert and are never fetched.
+
+Coverage is 1,228 canonical operations (633 UAPI, 595 WHM), 117 groups and 237
+outputs (236 PHP plus coverage). Delivery `whm-api-client-8x0.4.37` is offline
+synthetic coverage only. Live follow-up `whm-api-client-8x0.2.79` remains OPEN:
+no account creation, registration, agent/settings change, browser/session/OAuth,
+token persistence, expiry, replay, sign-out or live POST behavior is established.

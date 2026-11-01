@@ -1,0 +1,401 @@
+{
+  "schema_version": "1.0",
+  "family": "whm1",
+  "group": "Monitoring",
+  "accessor": "monitoring",
+  "class": "Monitoring",
+  "description": "Complete pinned WHM 360 Monitoring registration, agent polling and WebPros authentication. Offline coverage only; tokens, state and URLs are private inert payload.",
+  "operations": {
+    "whm1:360Monitoring/register_server_with_360_monitoring": {
+      "name": "registerServerWith360Monitoring",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1360Monitoring~1register_server_with_360_monitoring/get",
+          "note": "Complete pinned operation as registerServerWith360Monitoring. Preserve canonical whm1:360Monitoring/register_server_with_360_monitoring and all optional nonnullable formal fields, required nonnull known-object root, version 11.132 and normal WHM Flag outcome. Source GET lacks x-readonly; existing unknown-risk policy selects form POST. Source variant is retained and no live POST acceptance is claimed."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Registration can create an external 360 Monitoring account and configure the local agent. Credentials remain server-side. The source describes an already registered server as a no-op returning the existing identifier; fixtures do not establish actual idempotency."
+        },
+        {
+          "kind": "policy",
+          "text": "user_id retains its formal string schema despite the pinned numeric example 12345. Integer, float, boolean and null identifiers are rejected; no compatibility correction is inferred from an example."
+        },
+        {
+          "kind": "policy",
+          "text": "Source declares GET without x-readonly. Existing unknown-risk policy selects form POST; this is a client policy, not evidence of live POST acceptance."
+        },
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11.132."
+        },
+        {
+          "kind": "policy",
+          "text": "One invocation makes one immediate form POST to the canonical 360Monitoring namespace, with api.version=1 only in the URL and normal WHM metadata outcome. Lazy cached selectors perform no I/O or metadata reset. No implicit registration, status read, browser redirect, session creation, OAuth exchange, token storage, polling, retry or rollback."
+        },
+        {
+          "kind": "policy",
+          "text": "Data is a required nonnull known object; all declared fields, including nested fields, are optional and nonnullable. Missing data and explicit null mismatch. Preserve omission, empty strings and present empty objects separately. Existing empty JSON array object compatibility and known-object unknown-field filtering remain unchanged. No response correction or unwrapping."
+        },
+        {
+          "kind": "policy",
+          "text": "WHM metadata.result=0 fails before payload validation. Payload success=0 or valid=0 under metadata.result=1 is a result for the caller to inspect, not an exception. Inspect responseMeta() warnings and raw metadata, including after a payload mismatch. Integer fields and integer 0|1 flags remain strict native values without quoted, boolean or float coercion; reason strings remain open."
+        },
+        {
+          "kind": "policy",
+          "text": "Returned tokens, state, authorization URLs, sessions, account identifiers, email/error details and PayloadMismatchException payloads may be private. Existing SensitiveParameter protections cover library-owned input/response frames, not caller-readable payloads or third-party transport traces. Returned URLs remain inert data and are never fetched. Offline fixtures establish no live server acceptance, POST compatibility, account, authentication or agent behavior; live follow-up whm-api-client-8x0.2.79 remains open."
+        }
+      ]
+    },
+    "whm1:360Monitoring/set_360_agent_polling": {
+      "name": "set360AgentPolling",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1360Monitoring~1set_360_agent_polling/get",
+          "note": "Complete pinned operation as set360AgentPolling. Preserve canonical whm1:360Monitoring/set_360_agent_polling and all optional nonnullable formal fields, required nonnull known-object root, version 11.132 and normal WHM Flag outcome. Source GET lacks x-readonly; existing unknown-risk policy selects form POST. Source variant is retained and no live POST acceptance is claimed."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1360Monitoring~1set_360_agent_polling/get/parameters/0",
+          "note": "Preserve source argument order, optionality, scalar schema and full parameter prose. Comma strings stay strings; positive timing and interval/filter constraints remain upstream validation."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1360Monitoring~1set_360_agent_polling/get/parameters/1",
+          "note": "Preserve source argument order, optionality, scalar schema and full parameter prose. Comma strings stay strings; positive timing and interval/filter constraints remain upstream validation."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1360Monitoring~1set_360_agent_polling/get/parameters/2",
+          "note": "Preserve source argument order, optionality, scalar schema and full parameter prose. Comma strings stay strings; positive timing and interval/filter constraints remain upstream validation."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1360Monitoring~1set_360_agent_polling/get/parameters/3",
+          "note": "Preserve source argument order, optionality, scalar schema and full parameter prose. Comma strings stay strings; positive timing and interval/filter constraints remain upstream validation."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Provide interval or max_data_span server-side. Filters apply only with interval; interval without filters updates all core and default plugin sections. max_data_span controls global batched metric delivery. Matching values avoid changes/restart per source; changes may restart agent360."
+        },
+        {
+          "kind": "policy",
+          "text": "globalSections and pluginSections are canonical comma-separated strings. Preserve exact bytes, ordering, duplicates, spaces and empty strings without parsing or rejoining. Optional null omits; explicit zero and negative integers remain supplied for server validation. No local range, cross-field or inferred-default guard. Delimited array convenience is deferred under whm-api-client-8x0.28.7."
+        },
+        {
+          "kind": "policy",
+          "text": "The source status enum is [1], documenting only 1 as success. Existing generated validation enforces native int, not singleton enum membership; other accepted integers carry no promised upstream meaning."
+        },
+        {
+          "kind": "policy",
+          "text": "Source declares GET without x-readonly. Existing unknown-risk policy selects form POST; this is a client policy, not evidence of live POST acceptance."
+        },
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11.132."
+        },
+        {
+          "kind": "policy",
+          "text": "One invocation makes one immediate form POST to the canonical 360Monitoring namespace, with api.version=1 only in the URL and normal WHM metadata outcome. Lazy cached selectors perform no I/O or metadata reset. No implicit registration, status read, browser redirect, session creation, OAuth exchange, token storage, polling, retry or rollback."
+        },
+        {
+          "kind": "policy",
+          "text": "Data is a required nonnull known object; all declared fields, including nested fields, are optional and nonnullable. Missing data and explicit null mismatch. Preserve omission, empty strings and present empty objects separately. Existing empty JSON array object compatibility and known-object unknown-field filtering remain unchanged. No response correction or unwrapping."
+        },
+        {
+          "kind": "policy",
+          "text": "WHM metadata.result=0 fails before payload validation. Payload success=0 or valid=0 under metadata.result=1 is a result for the caller to inspect, not an exception. Inspect responseMeta() warnings and raw metadata, including after a payload mismatch. Integer fields and integer 0|1 flags remain strict native values without quoted, boolean or float coercion; reason strings remain open."
+        },
+        {
+          "kind": "policy",
+          "text": "Returned tokens, state, authorization URLs, sessions, account identifiers, email/error details and PayloadMismatchException payloads may be private. Existing SensitiveParameter protections cover library-owned input/response frames, not caller-readable payloads or third-party transport traces. Returned URLs remain inert data and are never fetched. Offline fixtures establish no live server acceptance, POST compatibility, account, authentication or agent behavior; live follow-up whm-api-client-8x0.2.79 remains open."
+        }
+      ]
+    },
+    "whm1:360Monitoring/webpros_auth_callback": {
+      "name": "webProsAuthCallback",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1360Monitoring~1webpros_auth_callback/post",
+          "note": "Complete pinned operation as webProsAuthCallback. Preserve canonical whm1:360Monitoring/webpros_auth_callback and all optional nonnullable formal fields, required nonnull known-object root, version 11.132 and normal WHM Flag outcome. Formal POST with required application/x-www-form-urlencoded json body field."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1360Monitoring~1webpros_auth_callback/post/requestBody/content/application~1x-www-form-urlencoded/schema/properties/json",
+          "note": "Required sensitive plain-string schema and full callback JSON prose. Form field stays body-only; preserve bytes without client JSON validation. Prose keys do not establish a formal nested schema."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Send required JSON text in the single body-only json form field. Its prose requires code/state; optional session_id applies only when the request has no session, and the request session takes precedence. Legacy verifier is accepted but ignored and documented for later removal; PKCE verifier stays server-side."
+        },
+        {
+          "kind": "documented",
+          "text": "State is validated before external exchange. Matching state is consumed whether exchange succeeds or fails; unknown or other-session state consumes nothing. A retry requires a caller-selected new flow. The server stores the token bundle; this response returns only email/expiry summary, never access/refresh tokens. token_unusable may mean a token was stored but is unusable: success is not an all-or-nothing or rollback guarantee."
+        },
+        {
+          "kind": "policy",
+          "text": "The sensitive json argument is a raw string, not a complete application/json request body. Form encode it exactly once, preserving whitespace, unknown keys, scalar/invalid JSON strings and all bytes for server validation. No automatic JSON serialization, nested schema or per-key convenience; the prose-schema companion remains deferred under whm-api-client-8x0.1.22. Never put this value in URL query data or retry the callback implicitly."
+        },
+        {
+          "kind": "policy",
+          "text": "Source formally requires body-only POST."
+        },
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11.132."
+        },
+        {
+          "kind": "policy",
+          "text": "One invocation makes one immediate form POST to the canonical 360Monitoring namespace, with api.version=1 only in the URL and normal WHM metadata outcome. Lazy cached selectors perform no I/O or metadata reset. No implicit registration, status read, browser redirect, session creation, OAuth exchange, token storage, polling, retry or rollback."
+        },
+        {
+          "kind": "policy",
+          "text": "Data is a required nonnull known object; all declared fields, including nested fields, are optional and nonnullable. Missing data and explicit null mismatch. Preserve omission, empty strings and present empty objects separately. Existing empty JSON array object compatibility and known-object unknown-field filtering remain unchanged. No response correction or unwrapping."
+        },
+        {
+          "kind": "policy",
+          "text": "WHM metadata.result=0 fails before payload validation. Payload success=0 or valid=0 under metadata.result=1 is a result for the caller to inspect, not an exception. Inspect responseMeta() warnings and raw metadata, including after a payload mismatch. Integer fields and integer 0|1 flags remain strict native values without quoted, boolean or float coercion; reason strings remain open."
+        },
+        {
+          "kind": "policy",
+          "text": "Returned tokens, state, authorization URLs, sessions, account identifiers, email/error details and PayloadMismatchException payloads may be private. Existing SensitiveParameter protections cover library-owned input/response frames, not caller-readable payloads or third-party transport traces. Returned URLs remain inert data and are never fetched. Offline fixtures establish no live server acceptance, POST compatibility, account, authentication or agent behavior; live follow-up whm-api-client-8x0.2.79 remains open."
+        }
+      ],
+      "params": {
+        "json": {
+          "sensitive": true
+        }
+      }
+    },
+    "whm1:360Monitoring/webpros_auth_clear": {
+      "name": "webProsAuthClear",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1360Monitoring~1webpros_auth_clear/get",
+          "note": "Complete pinned operation as webProsAuthClear. Preserve canonical whm1:360Monitoring/webpros_auth_clear and all optional nonnullable formal fields, required nonnull known-object root, version 11.132 and normal WHM Flag outcome. Source GET lacks x-readonly; existing unknown-risk policy selects form POST. Source variant is retained and no live POST acceptance is claimed."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Clear deletes the server-stored token bundle and signs the server out of 360 Monitoring. The source describes no-token success as an idempotent no-op; fixtures are not live proof. removal_failed leaves the stored token in place. Inspect payload success/error/reason and WHM metadata; no implicit retry or restore."
+        },
+        {
+          "kind": "policy",
+          "text": "Source declares GET without x-readonly. Existing unknown-risk policy selects form POST; this is a client policy, not evidence of live POST acceptance."
+        },
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11.132."
+        },
+        {
+          "kind": "policy",
+          "text": "One invocation makes one immediate form POST to the canonical 360Monitoring namespace, with api.version=1 only in the URL and normal WHM metadata outcome. Lazy cached selectors perform no I/O or metadata reset. No implicit registration, status read, browser redirect, session creation, OAuth exchange, token storage, polling, retry or rollback."
+        },
+        {
+          "kind": "policy",
+          "text": "Data is a required nonnull known object; all declared fields, including nested fields, are optional and nonnullable. Missing data and explicit null mismatch. Preserve omission, empty strings and present empty objects separately. Existing empty JSON array object compatibility and known-object unknown-field filtering remain unchanged. No response correction or unwrapping."
+        },
+        {
+          "kind": "policy",
+          "text": "WHM metadata.result=0 fails before payload validation. Payload success=0 or valid=0 under metadata.result=1 is a result for the caller to inspect, not an exception. Inspect responseMeta() warnings and raw metadata, including after a payload mismatch. Integer fields and integer 0|1 flags remain strict native values without quoted, boolean or float coercion; reason strings remain open."
+        },
+        {
+          "kind": "policy",
+          "text": "Returned tokens, state, authorization URLs, sessions, account identifiers, email/error details and PayloadMismatchException payloads may be private. Existing SensitiveParameter protections cover library-owned input/response frames, not caller-readable payloads or third-party transport traces. Returned URLs remain inert data and are never fetched. Offline fixtures establish no live server acceptance, POST compatibility, account, authentication or agent behavior; live follow-up whm-api-client-8x0.2.79 remains open."
+        }
+      ]
+    },
+    "whm1:360Monitoring/webpros_auth_start": {
+      "name": "webProsAuthStart",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1360Monitoring~1webpros_auth_start/get",
+          "note": "Complete pinned operation as webProsAuthStart. Preserve canonical whm1:360Monitoring/webpros_auth_start and all optional nonnullable formal fields, required nonnull known-object root, version 11.132 and normal WHM Flag outcome. Source GET lacks x-readonly; existing unknown-risk policy selects form POST. Source variant is retained and no live POST acceptance is claimed."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1360Monitoring~1webpros_auth_start/get/parameters/0",
+          "note": "Optional sensitive session_id stays a string; preserve leading zeros, empty strings and omission. Digits pattern and ownership of the existing WHM session are upstream requirements."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Non-browser-session callers, notably API-token and Basic authentication, need session_id belonging to the intended existing WHM session. The source requires digits; the client does not create a session, validate that pattern or strip leading zeros. Omitted/null omits and empty string remains supplied."
+        },
+        {
+          "kind": "documented",
+          "text": "The server stores the PKCE verifier and returns state and an authorization URL. State is a single-use secret expiring after ten minutes and bound to the same WHM session. Keep URL/state private; the client does not redirect, fetch the URL, exchange credentials or store the token."
+        },
+        {
+          "kind": "policy",
+          "text": "Source declares GET without x-readonly. Existing unknown-risk policy selects form POST; this is a client policy, not evidence of live POST acceptance."
+        },
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11.132."
+        },
+        {
+          "kind": "policy",
+          "text": "One invocation makes one immediate form POST to the canonical 360Monitoring namespace, with api.version=1 only in the URL and normal WHM metadata outcome. Lazy cached selectors perform no I/O or metadata reset. No implicit registration, status read, browser redirect, session creation, OAuth exchange, token storage, polling, retry or rollback."
+        },
+        {
+          "kind": "policy",
+          "text": "Data is a required nonnull known object; all declared fields, including nested fields, are optional and nonnullable. Missing data and explicit null mismatch. Preserve omission, empty strings and present empty objects separately. Existing empty JSON array object compatibility and known-object unknown-field filtering remain unchanged. No response correction or unwrapping."
+        },
+        {
+          "kind": "policy",
+          "text": "WHM metadata.result=0 fails before payload validation. Payload success=0 or valid=0 under metadata.result=1 is a result for the caller to inspect, not an exception. Inspect responseMeta() warnings and raw metadata, including after a payload mismatch. Integer fields and integer 0|1 flags remain strict native values without quoted, boolean or float coercion; reason strings remain open."
+        },
+        {
+          "kind": "policy",
+          "text": "Returned tokens, state, authorization URLs, sessions, account identifiers, email/error details and PayloadMismatchException payloads may be private. Existing SensitiveParameter protections cover library-owned input/response frames, not caller-readable payloads or third-party transport traces. Returned URLs remain inert data and are never fetched. Offline fixtures establish no live server acceptance, POST compatibility, account, authentication or agent behavior; live follow-up whm-api-client-8x0.2.79 remains open."
+        }
+      ],
+      "params": {
+        "session_id": {
+          "php": "sessionId",
+          "sensitive": true
+        }
+      }
+    },
+    "whm1:360Monitoring/webpros_auth_status": {
+      "name": "webProsAuthStatus",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1360Monitoring~1webpros_auth_status/get",
+          "note": "Complete pinned operation as webProsAuthStatus. Preserve canonical whm1:360Monitoring/webpros_auth_status and all optional nonnullable formal fields, required nonnull known-object root, version 11.132 and normal WHM Flag outcome. Source GET lacks x-readonly; existing unknown-risk policy selects form POST. Source variant is retained and no live POST acceptance is claimed."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Checks stored identity and expiry without returning access/refresh tokens. valid=0 with metadata.result=1 is a result requiring caller inspection of the open reason/error fields. The client does not implicitly retrieve tokens or start a sign-in."
+        },
+        {
+          "kind": "policy",
+          "text": "Source declares GET without x-readonly. Existing unknown-risk policy selects form POST; this is a client policy, not evidence of live POST acceptance."
+        },
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11.132."
+        },
+        {
+          "kind": "policy",
+          "text": "One invocation makes one immediate form POST to the canonical 360Monitoring namespace, with api.version=1 only in the URL and normal WHM metadata outcome. Lazy cached selectors perform no I/O or metadata reset. No implicit registration, status read, browser redirect, session creation, OAuth exchange, token storage, polling, retry or rollback."
+        },
+        {
+          "kind": "policy",
+          "text": "Data is a required nonnull known object; all declared fields, including nested fields, are optional and nonnullable. Missing data and explicit null mismatch. Preserve omission, empty strings and present empty objects separately. Existing empty JSON array object compatibility and known-object unknown-field filtering remain unchanged. No response correction or unwrapping."
+        },
+        {
+          "kind": "policy",
+          "text": "WHM metadata.result=0 fails before payload validation. Payload success=0 or valid=0 under metadata.result=1 is a result for the caller to inspect, not an exception. Inspect responseMeta() warnings and raw metadata, including after a payload mismatch. Integer fields and integer 0|1 flags remain strict native values without quoted, boolean or float coercion; reason strings remain open."
+        },
+        {
+          "kind": "policy",
+          "text": "Returned tokens, state, authorization URLs, sessions, account identifiers, email/error details and PayloadMismatchException payloads may be private. Existing SensitiveParameter protections cover library-owned input/response frames, not caller-readable payloads or third-party transport traces. Returned URLs remain inert data and are never fetched. Offline fixtures establish no live server acceptance, POST compatibility, account, authentication or agent behavior; live follow-up whm-api-client-8x0.2.79 remains open."
+        }
+      ]
+    },
+    "whm1:360Monitoring/webpros_auth_token": {
+      "name": "webProsAuthToken",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1360Monitoring~1webpros_auth_token/get",
+          "note": "Complete pinned operation as webProsAuthToken. Preserve canonical whm1:360Monitoring/webpros_auth_token and all optional nonnullable formal fields, required nonnull known-object root, version 11.132 and normal WHM Flag outcome. Source GET lacks x-readonly; existing unknown-risk policy selects form POST. Source variant is retained and no live POST acceptance is claimed."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Returns only the bearer access token, never a refresh token or full bundle. expires_in=0 means remaining lifetime could not be determined. Transmit the token only over HTTPS and do not log it. The client does not automatically check status, start a sign-in, refresh or store tokens."
+        },
+        {
+          "kind": "policy",
+          "text": "Source declares GET without x-readonly. Existing unknown-risk policy selects form POST; this is a client policy, not evidence of live POST acceptance."
+        },
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11.132."
+        },
+        {
+          "kind": "policy",
+          "text": "One invocation makes one immediate form POST to the canonical 360Monitoring namespace, with api.version=1 only in the URL and normal WHM metadata outcome. Lazy cached selectors perform no I/O or metadata reset. No implicit registration, status read, browser redirect, session creation, OAuth exchange, token storage, polling, retry or rollback."
+        },
+        {
+          "kind": "policy",
+          "text": "Data is a required nonnull known object; all declared fields, including nested fields, are optional and nonnullable. Missing data and explicit null mismatch. Preserve omission, empty strings and present empty objects separately. Existing empty JSON array object compatibility and known-object unknown-field filtering remain unchanged. No response correction or unwrapping."
+        },
+        {
+          "kind": "policy",
+          "text": "WHM metadata.result=0 fails before payload validation. Payload success=0 or valid=0 under metadata.result=1 is a result for the caller to inspect, not an exception. Inspect responseMeta() warnings and raw metadata, including after a payload mismatch. Integer fields and integer 0|1 flags remain strict native values without quoted, boolean or float coercion; reason strings remain open."
+        },
+        {
+          "kind": "policy",
+          "text": "Returned tokens, state, authorization URLs, sessions, account identifiers, email/error details and PayloadMismatchException payloads may be private. Existing SensitiveParameter protections cover library-owned input/response frames, not caller-readable payloads or third-party transport traces. Returned URLs remain inert data and are never fetched. Offline fixtures establish no live server acceptance, POST compatibility, account, authentication or agent behavior; live follow-up whm-api-client-8x0.2.79 remains open."
+        }
+      ]
+    }
+  }
+}

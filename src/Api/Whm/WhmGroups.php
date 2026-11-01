@@ -43,6 +43,8 @@ trait WhmGroups
 
     private ?ModSecurity $modSecurityGroup = null;
 
+    private ?Monitoring $monitoringGroup = null;
+
     private ?NginxManager $nginxManagerGroup = null;
 
     private ?Resellers $resellersGroup = null;
@@ -225,6 +227,17 @@ trait WhmGroups
     public function modSecurity(): ModSecurity
     {
         return $this->modSecurityGroup ??= new ModSecurity($this->run(...));
+    }
+
+    /**
+     * Select the Monitoring operations without making a request.
+     *
+     * Complete pinned WHM 360 Monitoring registration, agent polling and WebPros authentication. Offline coverage only;
+     * tokens, state and URLs are private inert payload.
+     */
+    public function monitoring(): Monitoring
+    {
+        return $this->monitoringGroup ??= new Monitoring($this->run(...));
     }
 
     /**

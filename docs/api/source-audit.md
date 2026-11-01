@@ -7941,3 +7941,108 @@ no server acceptance, POST compatibility, linkage/login, MCP connectivity or
 integration behavior. Local PHP 8.4.26 does not establish PHP 8.3 execution;
 exact-head external CI remains the controller's separate gate. No live/API/SSH,
 server filesystem, browser, returned-URL, DNS, credential or auth-link action ran.
+
+
+## 2026-11-01 — complete WHM 360 Monitoring generated module (8x0.4.37)
+
+Verified original `docs/api/sources/2026-10-13/whm.openapi.json.gz` decompressed
+SHA256 `6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594`
+(release 2026-10-13, 11.138.0.10). The full seven-path export equals the original
+subset independently. Operation evidence binds exact SHA and JSON pointers;
+important polling, callback body and session parameter prose/schema are bound
+separately. No response correction, wire correction or new router is added.
+
+| Original operation pointer | Public method | Effective request |
+| --- | --- | --- |
+| `/paths/~1360Monitoring~1register_server_with_360_monitoring/get` | `registerServerWith360Monitoring()` | empty form POST |
+| `/paths/~1360Monitoring~1set_360_agent_polling/get` | `set360AgentPolling()` | optional scalar form fields |
+| `/paths/~1360Monitoring~1webpros_auth_callback/post` | `webProsAuthCallback()` | required body-only json form field |
+| `/paths/~1360Monitoring~1webpros_auth_clear/get` | `webProsAuthClear()` | empty form POST |
+| `/paths/~1360Monitoring~1webpros_auth_start/get` | `webProsAuthStart()` | optional sensitive session_id form field |
+| `/paths/~1360Monitoring~1webpros_auth_status/get` | `webProsAuthStatus()` | empty form POST |
+| `/paths/~1360Monitoring~1webpros_auth_token/get` | `webProsAuthToken()` | empty form POST |
+
+All seven require cPanel & WHM 11.132 and retain canonical namespaced identities,
+paths `/json-api/360Monitoring/<leaf>`, normal WHM Flag outcome and api.version=1
+only in the URL. Callback explicitly requires POST/body-only json; the six source
+GET variants lack x-readonly, so existing unknown-risk policy selects POST. Source
+variants remain unchanged; no live acceptance is claimed.
+
+Polling optional arguments stay in source order global_sections, interval,
+max_data_span, plugin_sections. Comma strings retain exact bytes/order/duplicates;
+null omits, empty strings/zero remain supplied. Positivity, interval-or-span and
+filter/interval requirements stay upstream, without inferred defaults or local
+cross-field/range validation. Interval without filters updates all core/default
+plugin sections; max_data_span controls batched metrics. Matching-values
+no-restart is source prose, not observation. Other changes may restart agent360.
+Array convenience needs source-bound delimiter support under 8x0.28.7, not
+indexed/repeated parameter misuse.
+
+Callback formal schema is plain string inside required form json; prose keys do
+not establish nested schema. Preserve raw bytes, whitespace, unknown keys and
+scalar/invalid JSON for server validation and encode once. No callJson, automatic
+encoding or structured companion; 8x0.1.22 retains that separate work. README uses
+explicit JSON_THROW_ON_ERROR serialization of synthetic code/state/session
+strings. Code/state are prose-required; optional session_id is used only without
+a request session, which takes precedence. Legacy verifier is accepted/ignored
+and documented for removal. PKCE verifier stays server-side. Matching state is
+consumed on successful or failed exchange; unknown/other-session state consumes
+nothing. No automatic retry: a new flow is an explicit caller decision.
+token_unusable can follow token storage without usability, so no atomicity or
+rollback is promised. Callback returns only email/expiry summary, never tokens.
+
+Registration can create an external account/configure the agent; documented
+already-registered no-op is not live idempotency. Auth start needs the intended
+existing WHM session for token/Basic callers; the library creates no session and
+has no browser-session transport flow. Leading zeros remain strings; digits
+pattern is not locally enforced. State is a private ten-minute single-use secret
+bound to the session; URL/state remain inert. Status checks identity/expiry,
+never returns tokens; token returns only bearer access_token, with expires_in=0
+meaning unknown remaining lifetime. Clear removes bundle/signs out; no-token
+success is source prose and removal_failed leaves the stored bundle. No implicit
+registration/read/redirect/exchange/storage/polling/retry/rollback is added.
+
+All response roots are required nonnull known objects with optional nonnullable
+fields. Register keeps string user_id despite numeric example 12345. Polling
+keeps native int status; enum[1] documents only success1, while existing strict
+int validation does not enforce singleton membership or give other integers
+meaning. Callback has string error/reason, integer 0|1 success, nested optional
+known token_data with string email/integer expires_in. Clear has error/reason and
+success. Start has string auth_url/error/reason/state. Status has string
+email/error/reason, integer expired_at/expires_in and 0|1 valid. Token has string
+access_token/error/reason and integer expires_in. No quoted/bool/float coercion,
+closed reason enum, opaque weakening or field addition. Omission, empty strings
+and present empty nested objects remain distinct. Known-object filtering and
+inherited empty JSON array object compatibility (8x0.2.50) remain.
+
+WHM metadata.result0 fails before payload validation; success/valid0 under result1
+is caller-inspected payload. Raw WHM warnings/metadata and stable mismatch
+snapshots remain available. Selectors preserve metadata without I/O; invocation
+resets normally and strict native argument failure precedes entry/reset. json
+and sessionId are SensitiveParameter. Response frames retain existing protection;
+tokens/state/URLs/session/account/error contents and mismatch snapshots may be
+private, with no promise for caller/third-party traces. No returned URL is fetched.
+
+Independent PSR transport tests pin all seven methods, exact namespaced routes,
+auth/query/content-type/body and one request per invocation. They cover all,
+omitted/null/empty/zero/ordered comma filters, leading-zero/punctuated sessions,
+body-only callback JSON Unicode/whitespace/invalid/scalar/binary bytes encoded
+once, full/minimal/empty/nested payloads, all 25 leaf/node occurrences and invalid
+roots, strict flags/int/string fields, unknown filtering and empty-array
+compatibility. They exercise metadata0 versus payload0, malformed-envelope and
+HTTP/JSON/transport precedence, reset and retained warnings/raw snapshots, native
+argument failures, fresh results and library input/response trace privacy.
+Focused RED failed on absent selector before overlay/generation; focused GREEN
+and final gate evidence are retained in the task report and command ledger.
+
+Current coverage is 1,228 canonical operations (633 UAPI, 595 WHM), 117 groups and
+237 outputs (236 PHP plus coverage), with no new exclusion/waiver. Original
+sources/evidence, prior overlays/endpoints/runtime/dependencies and historical
+audit bytes remain unchanged. Map SHA256 stays
+`f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8`;
+all 55 inherited source diagnostics remain visible/unwaived. Live follow-up
+8x0.2.79 stays OPEN. No live/API/SSH/server-filesystem/browser/URL/DNS/credential,
+agent/registration/settings/OAuth/login action ran. Offline fixtures establish no
+live POST, account, authentication/replay/expiry/session/persistence/sign-out or
+agent behavior. Local PHP8.4.26 is not PHP8.3 evidence; exact-head external CI is a
+separate controller gate.

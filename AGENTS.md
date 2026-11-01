@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 116 typed groups cover 1,221 documented operations:
+and cPanel UAPI surface. The 117 typed groups cover 1,228 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -4259,3 +4259,74 @@ and 235 outputs (234 PHP plus coverage). Delivery `whm-api-client-8x0.4.36` is
 offline synthetic coverage only. Live follow-up `whm-api-client-8x0.2.78` remains
 OPEN; no live POST acceptance, authentication/link changes, login, MCP connectivity
 or integration behavior is established.
+
+## WHM 360 Monitoring (2026-11-01)
+
+`whm()->monitoring()` exposes the complete seven-function pinned Monitoring group
+from cPanel & WHM 11.132: `registerServerWith360Monitoring()`,
+`set360AgentPolling()`, `webProsAuthCallback()`, `webProsAuthClear()`,
+`webProsAuthStart()`, `webProsAuthStatus()` and `webProsAuthToken()`.
+Canonical identities already include `360Monitoring/`; no wire correction or
+new router is needed. All seven use one immediate form POST with api.version=1
+only in the URL and normal WHM outcome. Callback source formally requires
+body-only POST. The other six source GET declarations lack x-readonly and use
+existing unknown-risk POST policy, without live acceptance claims.
+
+Registration can create an external account and configure the local agent;
+credentials remain server-side. Already-registered no-op/idempotency is source
+prose, not observed behavior. Polling retains source-order optional scalar
+arguments `(globalSections, interval, maxDataSpan, pluginSections)` and literal
+comma strings. Do not parse/rejoin filters, infer defaults or introduce indexed
+lists. Null omits; empty strings and zero remain supplied. Interval or maxDataSpan
+is required server-side; filters apply with interval, interval without filters
+updates all core/default plugin sections, and maxDataSpan controls batched
+metrics. Source matching-values no-restart behavior is unverified; other changes
+may restart agent360. Delimited array convenience remains under 8x0.28.7.
+
+Callback is a required sensitive raw string in one form `json` field, encoded
+once, never URL query data or callJson. Preserve JSON bytes/whitespace, unknown
+keys and invalid/scalar JSON for server validation; no invented nested schema,
+automatic serialization or companion. README explicitly json_encodes synthetic
+code/state/session strings with JSON_THROW_ON_ERROR. Structured callback
+foundation/adoption remains under 8x0.1.22. Code/state are required by source
+prose; optional session_id applies without a request session, whose session takes
+precedence. Legacy verifier is ignored with later removal documented. Server PKCE
+verifier stays server-side. Validate state before exchange per source; matching
+state is consumed on success or failure, unknown/other-session state consumes
+nothing. Never retry implicitly. token_unusable may follow a stored unusable
+token, so promise no rollback or all-or-nothing behavior.
+
+Auth start's sensitive optional sessionId preserves leading zeros and empty
+strings without local digits validation. Token/Basic callers need the intended
+existing WHM session; the library has no browser-session transport or implicit
+session creation. State is a ten-minute single-use secret bound to that session.
+Authorization URLs/state remain private inert payload. Status checks identity
+and expiry without tokens; token returns only bearer access_token, never refresh
+bundle, with expires_in=0 meaning unknown remaining lifetime. Clear signs the
+server out by removing the stored bundle; no-token success is unverified source
+idempotency, and removal_failed leaves the token in place. Add no implicit read,
+registration, redirect, OAuth exchange, token storage, polling, retry or rollback.
+
+Required nonnull known-object roots retain every optional nonnullable field,
+including callback token_data/email/expires_in. user_id remains strict string
+despite numeric example 12345. Poll status remains strict int: enum[1] documents
+only success 1, and the existing validator does not enforce singleton membership
+or establish other integer semantics. success/valid are strict native integer
+0|1 flags, without quoted/bool/float coercion. Reason strings stay open. Preserve
+missing fields versus present empty objects/strings; null/missing roots mismatch.
+Known-object filtering and inherited empty-array object compatibility remain.
+WHM metadata.result=0 precedes payload validation; payload success/valid=0 under
+result1 requires caller inspection. Preserve raw WHM warnings/metadata and
+mismatch snapshots. Selectors perform no I/O/reset; invocation resets normally,
+while strict native argument failure occurs before entry/reset.
+
+Tokens, URLs/state/session/account/error contents and mismatch payloads may be
+private. json and sessionId have SensitiveParameter; library response frames are
+protected without promising caller/third-party trace secrecy. Never log returned
+tokens/state or fetch authorization URLs automatically. Synthetic offline tests
+establish no external account/authentication, session/replay/expiry, registration,
+agent/settings, persistence, sign-out or POST acceptance behavior. Live follow-up
+8x0.2.79 remains OPEN; delivery 8x0.4.37 adds seven canonical operations once.
+Current totals are 1,228 operations (633 UAPI, 595 WHM), 117 groups and 237 outputs
+(236 PHP plus coverage). Original sources/evidence and previous endpoints remain
+unchanged; no shared runtime, generator, dependency or schema correction is added.
