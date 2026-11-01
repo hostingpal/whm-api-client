@@ -117,6 +117,8 @@ trait UapiGroups
 
     private ?PasswdStrength $passwdStrengthGroup = null;
 
+    private ?Personalization $personalizationGroup = null;
+
     private ?Postgresql $postgresqlGroup = null;
 
     private ?Quota $quotaGroup = null;
@@ -710,6 +712,16 @@ trait UapiGroups
     public function passwdStrength(): PasswdStrength
     {
         return $this->passwdStrengthGroup ??= new PasswdStrength($this->run(...));
+    }
+
+    /**
+     * Select the Personalization operations without making a request.
+     *
+     * The Personalization module for UAPI.
+     */
+    public function personalization(): Personalization
+    {
+        return $this->personalizationGroup ??= new Personalization($this->run(...));
     }
 
     /**

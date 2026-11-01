@@ -8848,3 +8848,89 @@ No live call, capture, source fetch, credential creation/use, login, session/mai
 write or server cleanup was performed for this integration. The completed owner
 165-call pass was not replayed. Combined offline validation is recorded separately
 with exact product-input attribution; it cannot prove new server or wire behavior.
+
+## Personalization getter JSON adoption (2026-11-01)
+
+Delivery `whm-api-client-8x0.4.40` adopts only `Personalization/get`, using the
+approved 2026-10-31 JSON-input design and existing generator/runtime. The pinned
+uncompressed cPanel source SHA-256 is
+`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`.
+Exact bindings are `/paths/~1Personalization~1get/post/requestBody`, its
+`/content/application~1json/schema`, and
+`/paths/~1Personalization~1get/post/responses/200/content/application~1json/schema/properties/result/properties/data`.
+The source selects POST, x-readonly=true, cPanel 74, a required JSON object body
+and optional names string list. No input corrections, response corrections,
+normalizations, new strict-object policy, runtime, generator or schema changes apply.
+The generated required `query` array and `PersonalizationQueryInput` alias preserve
+omitted names, empty lists, empty strings, duplicates, ordering and bytes. The
+128-byte key/2048-byte value text is documentation rather than client validation.
+
+Formal response data declares optional `personalization` with explicit
+additionalProperties object values even though that map node has no explicit type.
+Each row retains optional reason:string, success:integer enum[0,1] and
+value:string|null. The pinned example instead places NVData keys directly in data;
+this adoption selects the formal wrapper without inventing a union or unwrapping.
+Normal PHP map-key behavior, omission/null distinctions, fixed-field projection
+and existing empty-array object/map compatibility remain inherited. Envelope
+status 0 is an API error; a row success 0 under status 1 is returned data.
+
+The original investigation `8x0.29.6.1` artifact is
+`/tmp/personalization-get-readonly-probe-2026-11-01.json`, SHA-256
+`6734dfa5f3a03cb89b910f883177d2277c940e4466197f3f359d9a60b7ebb8e2`, with separate
+`/tmp/personalization-get-readonly-probe-analysis.json`. HTTP 200 on 11.138.0.19
+retained a bare direct-UAPI envelope and data.personalization rows with integer
+success, null value and string reason structural types. Its temporary parser
+incorrectly read result.status/data, losing actual API outcome and row identity.
+The retained api_or_http_failure classification is a probe error, not evidence
+of server failure. It establishes only structural wrapper observation, with no
+successful live API/typed/missing-key coverage. The original artifact is unchanged;
+no raw response reconstruction, replay or standard schema-2 evidence copy is made.
+Existing EnvelopeReader already handles both bare and result-wrapped direct UAPI.
+
+Independent offline tests establish literal JSON bytes, input/sensitivity/lifecycle
+rules, direct-only dispatch, formal responses and failure metadata with one attempt.
+No credentials, network, live call, server write, source fetch or returned-URL fetch
+was used in this implementation. New typed live verification remains separate.
+Personalization/set is expressly excluded under `8x0.29.6`; its response,
+application/persistence and owned-write lifecycle do not follow from this getter.
+The group is 1/2. Coverage adds exactly one UAPI operation and one group from
+629 UAPI/83 groups to 630 UAPI/84 groups, with 596 WHM/28 groups unchanged
+(1,226 operations, 112 groups, 227 generated outputs). Existing methods/specs,
+source pins and all historical evidence remain unchanged; raw generic callJson
+availability is neither typed nor live coverage.
+
+### Separate bounded typed getter verification (2026-11-01)
+
+After the offline implementation stage above, the controller ran the reviewed
+read-only probe against exact clean committed implementation
+`646612249d9b86dc19ed17dea0b7babf15b3c516`. The immutable custom developer artifact
+`/tmp/personalization-get-typed-verification-2026-11-01.json` has SHA-256
+`e67db47603ad5c377400f72ecac1f0c7714ce627b6fc0c5ad4f1c29bffa0ce2a`.
+Reviewed PHP probe SHA-256:
+`c497bb8292b2a9ea47b0ac97c585582cb580a717cd4929ad6501bac550e2edfd`;
+reviewed launcher SHA-256:
+`9792570cfc361e0f1baaf577b051f275315a33117661390ad6a3fdb949848b6f`.
+
+Exactly two attempts completed on cPanel `11.138.0.19`: WHM `version` GET followed
+by one direct `Personalization/get` JSON POST. Both returned HTTP 200 and API status 1.
+Typed payload validation passed and the exact two fresh requested rows were present
+with explicit null values. **Both integer row success flags were 1, not 0.** The
+bare direct-UAPI envelope's `data.personalization` wrapper supports the formal
+schema and contradicts the pinned direct-key example for this observed response.
+Names, reason text and values are masked; only structural types, flags, hashes
+and the bounded predicates are retained. No writes, SSH, sessions, retries or
+returned-URL access occurred.
+
+This is a separate bounded developer verification, not a schema-2 catalog capture
+or strict unknown-field acceptance. No custom artifact is copied into the standard
+evidence directory. It establishes no known nonnull values, live row-success 0
+behavior, omitted/empty names, other server versions, WHM bridge, setter behavior
+or persistence. Those variants and the group's 1/2 scope remain unchanged. The
+original failed protocol artifact stays byte-identical at SHA-256
+`6734dfa5f3a03cb89b910f883177d2277c940e4466197f3f359d9a60b7ebb8e2`, with lost
+API status and row identity; it is not recovered, reclassified or superseded as
+historical evidence. Only this new passing observation adds bounded typed coverage.
+
+This final documentation phase updates getter notes/evidence, generated PHPDoc,
+README and maintained AGENTS guidance. It changes no executable method, spec,
+request/response contract, source pin, test or earlier historical section/evidence.

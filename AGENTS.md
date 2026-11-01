@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 111 typed groups cover 1,225 documented operations:
+and cPanel UAPI surface. The 112 typed groups cover 1,226 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -217,14 +217,38 @@ Separate callMultipart() entrypoints stream ordered text/file parts through WHM
 and direct cPanel UAPI; generic bridged multipart rejects before source I/O. The
 pinned inventory includes 13 JSON operations (8 WHM, 5 UAPI) and 9 multipart
 operations (1 WHM, 8 UAPI). StatsManager/save_configuration is the first typed
-JSON-body adopter; the other 12 JSON endpoints remain deferred, with remaining
-selection/source/route audit under `whm-api-client-8x0.29.6`. Selected
+JSON-body adopter; Personalization/get is the second, and the other 11 remain
+deferred, with remaining selection/source/route audit under `whm-api-client-8x0.29.6`. Selected
 implementations and the StatsManager successful-live-write gate remain open under
 `whm-api-client-8x0.1.18` and `whm-api-client-8x0.1.19`. Generic access is not
 typed or live-verified coverage. The 2026-10-13 spec's
 [scaling decision (typed core plus generic calls)](docs/superpowers/specs/2026-10-13-php-client-design.md#scaling-decision-typed-core-plus-generic-calls)
 is superseded: its hand-written-group decision is replaced by the generated-client
 design (bead `whm-api-client-8x0.10`).
+
+`uapi()->personalization()->get(array $query)` is a required whole JSON object
+body on direct UAPI only (cPanel 74+), with optional nonnullable `names: list<string>`.
+Preserve `{}` versus `{"names":[]}`, empty strings, duplicates, order and bytes;
+add no NVData byte/format checks or server-default inference. The whole input is
+sensitive. WHM bridge refusal and structural rejection clear metadata before I/O;
+native argument failures retain pre-entry behavior. Keep the formal optional
+`personalization` map, optional reason:string, success:integer 0|1 and value:string|null;
+row success 0 under envelope status 1 is data. Preserve omission/null and inherited
+empty-array object/map compatibility. Do not log private names/values/reasons or
+mismatch payloads. The earlier failed protocol probe establishes only structural
+wrapper observations: its parser lost actual API outcome and row identity.
+No API/typed outcome follows from that original probe. A separate bounded typed
+capture through clean committed 646612249d9b86dc19ed17dea0b7babf15b3c516 on
+11.138.0.19 passed exactly two requests (WHM version GET, direct getter JSON POST),
+both HTTP 200/API status 1. The exact two fresh requested rows had value:null and
+both row success flags 1; the bare data.personalization wrapper supports the formal schema.
+This is custom developer evidence, not schema-2 catalog or strict unknown-field
+acceptance. Keep known nonnull values, live row0, omitted/empty names, other
+versions, bridge/setter/persistence unverified. Original failed evidence remains
+unchanged; source-audit records exact hashes. This group is 1/2; Personalization/set
+remains excluded under 8x0.29.6. No implicit reads, retries, fallbacks, URL fetches,
+writes or persistence claims are added.
+
 The complete Email module exposes 96 pinned functions. Mutations and secret-bearing
 requests use form POST. Preserve password/passwordHash alternatives, receive-mail
 role/default/zero-unlimited caveats, and integer/floating-point quota units. Email
@@ -468,7 +492,7 @@ well-formed raw direct-JSON requests bypassed this client and were blocked by
 `_can_self_manage` on 11.138.0.19: “You may not modify the weblog analyzer
 configuration”. Passing the gate requires a root/reseller server-wide statistics
 setting change; this work authorizes no such change and ran no live calls.
-Twelve other pinned JSON-body operations remain deferred; remaining
+Eleven other pinned JSON-body operations remain deferred; remaining
 selection/source/route audit is tracked under `8x0.29.6`.
 
 Pipe-separated grouping, domain, protocol and display arguments are supplied as
