@@ -48,6 +48,9 @@ final class DisposableAccountServer implements ClientInterface
 
     public string $contactEmail = '';
 
+    /** Primary domain the account inventory shows in place of the real one, with the exact marker kept. */
+    public ?string $listedDomain = null;
+
     /** @var list<string> */
     public array $tokens = [];
 
@@ -165,7 +168,8 @@ final class DisposableAccountServer implements ClientInterface
                 ['user' => 'existing', 'domain' => 'existing.example', 'email' => 'private-existing@example.com'],
                 ['user' => self::USER . 'x', 'domain' => self::DOMAIN . '.other'],
             ], $this->account
-                ? [['user' => self::USER, 'domain' => self::DOMAIN, 'email' => $this->contactEmail]] : [])],
+                ? [['user' => self::USER, 'domain' => $this->listedDomain ?? self::DOMAIN,
+                    'email' => $this->contactEmail]] : [])],
             'listzones' => ['zone' => array_merge(
                 [['domain' => 'existing.example', 'zonefile' => 'private.db']],
                 $this->zone ? [['domain' => self::DOMAIN, 'zonefile' => 'private.db']] : [],

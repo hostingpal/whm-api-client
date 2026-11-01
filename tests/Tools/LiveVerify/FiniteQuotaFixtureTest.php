@@ -632,6 +632,34 @@ final class FiniteQuotaFixtureTest extends TestCase
         self::assertPrivate($report);
     }
 
+    public function testCaptureFailureIsNamedInTheReport(): void
+    {
+        $http = new FiniteQuotaServer();
+        $report = (new FiniteQuotaFixture($http, 'private-whm-token'))->run(
+            static function (ClientInterface $guarded, string $token): array {
+                throw new RuntimeException('private callback failure');
+            },
+        );
+        self::assertSame(['capture_failure'], $report['fixture']['failures']);
+        self::assertSame('passed', $report['fixture']['setup']);
+        self::assertSame('failed', $report['fixture']['status']);
+    }
+
+    /** The account and token exist by then, so a token that cannot be used is a setup failure that still cleans up. */
+    public function testUnusableReturnedTokenIsASetupFailureAndStillCleansUp(): void
+    {
+        $http = new FiniteQuotaServer();
+        $http->overrides['Tokens/create_full_access:1'] = '{"token":"private spaced token"}';
+        $report = (new FiniteQuotaFixture($http, 'private-whm-token'))->run(self::capture());
+        self::assertSame(['setup_failure'], $report['fixture']['failures']);
+        self::assertSame('failed', $report['fixture']['setup']);
+        self::assertSame('not_run', $report['fixture']['capture']);
+        self::assertSame('passed', $report['fixture']['cleanup']);
+        self::assertSame(1, $http->counts['Tokens/revoke']);
+        self::assertFalse($http->account);
+        self::assertArrayNotHasKey('direct:Quota/get_quota_info', $http->counts);
+    }
+
     public function testFailedFiniteExpectationsDoNotDiscardEvidenceAndStillCleanUp(): void
     {
         $http = new FiniteQuotaServer();

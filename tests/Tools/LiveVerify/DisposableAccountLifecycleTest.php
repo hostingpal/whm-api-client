@@ -389,6 +389,24 @@ final class DisposableAccountLifecycleTest extends TestCase
         yield 'empty list' => [['listaccts:4' => '{"acct":[]}']];
     }
 
+    /** The marker alone is not enough: this exact row keeps the real marker and changes only the primary domain. */
+    public function testExactMarkerOnAnotherPrimaryDomainIsNotOwnership(): void
+    {
+        $http = new DisposableAccountServer();
+        $http->afterEffect = static function (DisposableAccountServer $server, string $step): void {
+            if ($step === 'listaccts:3') {
+                $server->listedDomain = 'private-other.test';
+            }
+        };
+        $outcome = self::execute($http);
+
+        self::assertArrayNotHasKey('Tokens/create_full_access', $http->counts);
+        self::assertArrayNotHasKey('removeacct', $http->counts);
+        self::assertTrue($http->account);
+        self::assertSame('unconfirmed', $outcome['account']['cleanup']);
+        self::assertContains('account_identity_unconfirmed', $outcome['failures']);
+    }
+
     public function testOwnershipIsReadAgainRightBeforeRemovingTheAccount(): void
     {
         $http = new DisposableAccountServer();

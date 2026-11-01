@@ -429,6 +429,24 @@ final class FilemanUploadFixtureTest extends TestCase
         yield 'zones after removal' => [['listzones:2' => '{"zone":[]}'], 'zone'];
     }
 
+    /** The account and token exist by then, so a token that cannot be used is a setup failure that still cleans up. */
+    public function testUnusableReturnedTokenIsASetupFailureAndStillCleansUp(): void
+    {
+        $http = new FilemanUploadServer();
+        $http->overrides['Tokens/create_full_access:1'] = '{"token":"PRIVATE SPACED TOKEN"}';
+        $scenario = self::scenario($http);
+        $fixture = $scenario['fixture'];
+
+        self::assertSame(['setup_failure'], $fixture['failures']);
+        self::assertSame('failed', $fixture['setup']);
+        self::assertSame('not_run', $fixture['capture']);
+        self::assertNull($fixture['stopped_at']);
+        self::assertSame('passed', $fixture['cleanup']);
+        self::assertSame(1, $http->counts['Tokens/revoke']);
+        self::assertFalse($http->account);
+        self::assertArrayNotHasKey(self::UPLOAD, $http->counts);
+    }
+
     public function testWithoutTheProofOnlyApiAbsenceIsClaimed(): void
     {
         $scenario = self::scenario(new FilemanUploadServer());

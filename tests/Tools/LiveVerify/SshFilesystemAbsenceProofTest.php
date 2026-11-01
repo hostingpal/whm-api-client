@@ -184,6 +184,18 @@ final class SshFilesystemAbsenceProofTest extends TestCase
         yield 'session file by another name' => ['var/cpanel/sessions/preauth/x-wlupload-y', 'x', ['sessions' => 1]];
     }
 
+    /** A domain rarely repeats the account name by rule, so userdomains must be searched for both. */
+    public function testRealScriptFindsADomainThatDoesNotContainTheAccountName(): void
+    {
+        $tree = $this->tree();
+        file_put_contents($tree . '/etc/userdomains', "separate.example.com: other\n", FILE_APPEND);
+
+        self::assertSame(
+            ['outcome' => 'present', 'residue' => ['userdomains' => 1]],
+            $this->realScript($tree)->check(self::USER, 'separate.example.com'),
+        );
+    }
+
     public function testRealScriptCountsEveryMatchingSessionFile(): void
     {
         $tree = $this->tree();
@@ -301,6 +313,17 @@ final class SshFilesystemAbsenceProofTest extends TestCase
             ['outcome' => 'confirmed_absent', 'residue' => []],
             (new SshFilesystemAbsenceProof($ssh))->check(self::USER, self::DOMAIN),
         );
+    }
+
+    /** The full default bound is in force here: only the output limit can end this quickly. */
+    public function testEndlessOutputStopsAtTheOutputLimitInsteadOfTheTimeout(): void
+    {
+        $ssh = $this->standIn("exec yes private-output\n");
+        $started = microtime(true);
+        $finding = (new SshFilesystemAbsenceProof($ssh))->check(self::USER, self::DOMAIN);
+
+        self::assertSame(['outcome' => 'unconfirmed', 'residue' => []], $finding);
+        self::assertLessThan(3.0, microtime(true) - $started);
     }
 
     public function testMissingBinaryIsUnconfirmed(): void
