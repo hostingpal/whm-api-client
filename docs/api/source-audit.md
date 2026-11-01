@@ -8848,3 +8848,32 @@ No live call, capture, source fetch, credential creation/use, login, session/mai
 write or server cleanup was performed for this integration. The completed owner
 165-call pass was not replayed. Combined offline validation is recorded separately
 with exact product-input attribution; it cannot prove new server or wire behavior.
+
+
+## Account search filtering caveats (2026-11-01)
+
+Bead `whm-api-client-2g3`; attributed evidence from
+[PR122 review 5727369824](https://github.com/hostingpal/whm-api-client/pull/122#pullrequestreview-5727369824)
+of revision `08b16f259abaa934e625f9c18c8379002db48431` on 11.138.0.19.
+The reviewer reported read-only WHM GET calls with a root token on a server with
+one visible hosted account. A nonexistent name supplied as `search`, alone or
+with either `searchmethod` but without `searchtype`, still returned that account.
+Invalid regular expressions with `searchtype: user` or `domain`, and an empty
+search with `searchtype: user`, also returned it. These are match-all cases,
+not successful examples of a filter finding a matching account.
+
+The reviewer inspected `Whostmgr::Accounts::List::listaccts`: filtering is inside
+`searchtype` branches, and an empty or unparseable regular expression falls back
+to match-all. The pinned `search`/`searchtype` prose says to supply both values;
+it does not describe invalid-regex fallback. The generated PHPDoc and README now
+make these observed failure-to-filter cases explicit. Use a nonempty search with
+its search type, choose `exact` for literal identifiers, and verify returned
+identities before applying mutations. No local filtering, regex validation,
+input rejection or outcome-policy change is added.
+
+This documentation change performs no live request or independent server-source
+inspection, and adds no raw capture or universal version/reseller guarantee.
+The original review and historical evidence remain unchanged. Its recommendation
+to keep exact-user misses as errors was separately superseded by the accepted
+[account-search absence reconciliation](#account-search-absence-reconciliation-2026-11-01);
+confirmed no-match searches still return `[]`, with their original response metadata.

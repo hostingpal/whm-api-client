@@ -1174,6 +1174,14 @@ access log.
   These WHM GET forms were observed on 11.138.0.19 (omission) and recorded on
   11.138.0.15 (successful exact-domain null; structural diagnostics only). See the
   [reconciliation](docs/api/source-audit.md#account-search-absence-reconciliation-2026-11-01).
+- **Check account-search filters before using results for mutations.** On
+  11.138.0.19, `search` was ignored without `searchtype`, even with `searchmethod`
+  supplied. Invalid regex searches with `user` or `domain`, and an empty search
+  with `user`, also matched all visible accounts in reviewer tests. Supply a
+  nonempty `search` and its `searchtype`; for a literal username, also set
+  `searchmethod: 'exact'`. Verify returned account identities before changing them.
+  The client forwards the inputs without local filtering or rejection. See the
+  [observed filtering caveats](docs/api/source-audit.md#account-search-filtering-caveats-2026-11-01).
 - `createAccount()`, `changePassword()` and `modifyAccount()` return `null` when the
   server sends no data, and the documented array otherwise.
 - `suspendAccount()`, `unsuspendAccount()`, `removeAccount()` and `changePackage()`
