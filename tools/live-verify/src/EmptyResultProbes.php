@@ -18,19 +18,83 @@ use HostingPal\WhmApiClient\Api\Whm\Spec\ServerSpec;
 use HostingPal\WhmApiClient\Api\Whm\Spec\WebServerSpec;
 use HostingPal\WhmApiClient\Client;
 use HostingPal\WhmApiClient\UapiClient;
+use LogicException;
 
 /**
  * Bounded no-match audit: 15 curated read-only operations, each given one impossible or absent criterion.
  *
  * Selection follows pinned operation semantics and documented filters, never parameter names alone. The
  * catalog keeps listaccts as the fixed-path control and accountsummary as the entity-lookup control, which
- * must still fail. An API error on any probe therefore fails the strict section assessment by design:
- * the artifact records the observed form, and classification is reviewed per operation.
+ * must still fail.
+ *
+ * Each probe declares the outcome the 2026-11-01 capture recorded for it, and a record is assessed against
+ * that declaration. The status therefore means something: a pass reproduces the recorded forms, and a client
+ * exception, a populated result or a success where a failure was recorded fails. A declaration is an observed
+ * form, not a contract, and a pass establishes no no-match semantics. Classification is reviewed per operation.
  *
  * No request targets another account, changes state or uses a live-derived value.
  */
 final class EmptyResultProbes
 {
+    /**
+     * Recipe label. v2 changed the assessment, not the requests: v1 applied the strict rule, which the catalog
+     * cannot pass. Each label has one committed capture under docs/api/evidence.
+     */
+    public const RECIPE = 'empty-results-v2';
+
+    /** The provenance read returned normally. */
+    public const OUTCOME_VALUE = 'value';
+
+    /** The typed method returned, with exactly the declared empty container and no discrepancy. */
+    public const OUTCOME_EMPTY = 'empty';
+
+    /**
+     * listaccts only: the typed method returned from a response that omits data.
+     *
+     * The client's fixed path takes that form on result 0 with its exact diagnostic and on result 1, and the
+     * record keeps neither value, so this names the path taken, not what the API reported. The discrepancy it
+     * requires stays on the record: declaring it does not remove or waive it.
+     */
+    public const OUTCOME_FIXED_PATH_EMPTY = 'fixed_path_empty';
+
+    /** The typed method raised ApiErrorException. The record keeps no upstream text, so no cause is established. */
+    public const OUTCOME_API_FAILURE = 'api_failure';
+
+    /**
+     * Declared outcome and payload form per `operation|argument label`.
+     *
+     * The form maps payload paths to the one type each must hold. Both UAPI routes recorded the same result, so
+     * they share a row.
+     *
+     * @var array<string, array{self::OUTCOME_*, array<string, string>}>
+     */
+    private const DECLARED = [
+        'whm1:version|' => [self::OUTCOME_VALUE, []],
+        'whm1:listaccts|fixed-path-control' => [self::OUTCOME_FIXED_PATH_EMPTY, ['$' => 'missing']],
+        'whm1:showbw|absent-user-pcre' => [self::OUTCOME_EMPTY, ['$.acct' => 'empty-list']],
+        'whm1:matchpkgs|absent-feature-list' => [self::OUTCOME_EMPTY, ['$.pkg' => 'empty-list']],
+        'whm1:emailtrack_search|all-event-types-off' => [self::OUTCOME_EMPTY, ['$.records' => 'empty-list']],
+        'whm1:emailtrack_user_stats|absent-sender-past-window' => [
+            self::OUTCOME_EMPTY,
+            ['$.records' => 'empty-list'],
+        ],
+        'whm1:get_unique_sender_recipient_count_per_user|past-window' => [
+            self::OUTCOME_EMPTY,
+            ['$.payload' => 'empty-list'],
+        ],
+        'whm1:php_get_vhosts_by_version|absent-php-package' => [self::OUTCOME_EMPTY, ['$.vhosts' => 'empty-list']],
+        'whm1:accountsummary|entity-lookup-control' => [self::OUTCOME_API_FAILURE, ['$.acct' => 'null']],
+        'uapi:Email/list_pops|absent-regex' => [self::OUTCOME_EMPTY, ['$' => 'empty-list']],
+        'uapi:Email/list_pops_with_disk|absent-regex' => [self::OUTCOME_EMPTY, ['$' => 'empty-list']],
+        'uapi:Email/list_pops_with_disk|absent-domain' => [self::OUTCOME_EMPTY, ['$' => 'empty-list']],
+        'uapi:SubDomain/listsubdomains|absent-regex' => [self::OUTCOME_EMPTY, ['$' => 'empty-list']],
+        'uapi:Features/list_features_like|absent-substring' => [self::OUTCOME_EMPTY, ['$' => 'empty-list']],
+        'uapi:Fileman/autocompletedir|absent-prefix' => [self::OUTCOME_EMPTY, ['$' => 'empty-list']],
+        'uapi:Bandwidth/query|absent-domain' => [self::OUTCOME_API_FAILURE, ['$' => 'null']],
+        'uapi:Bandwidth/query|past-window' => [self::OUTCOME_EMPTY, ['$' => 'empty-object']],
+        'uapi:SSL/list_ssl_items|absent-domain' => [self::OUTCOME_EMPTY, ['$' => 'empty-list']],
+    ];
+
     /** Unused account-name, regex and path-prefix criterion; contains nothing that needs URL encoding. */
     public const ABSENT = 'wzzemptyaudit';
 
@@ -209,6 +273,63 @@ final class EmptyResultProbes
         }
 
         return $probes;
+    }
+
+    /**
+     * Name the outcome this catalog declares for a probe.
+     *
+     * @return self::OUTCOME_*
+     * @throws LogicException If the probe has no declaration, so a catalog change cannot pass undeclared.
+     */
+    public static function declaredOutcome(Probe $probe): string
+    {
+        return self::declared($probe)[0];
+    }
+
+    /**
+     * Report whether a record shows its probe's declared outcome and payload form.
+     *
+     * This is the per-probe rule ReadOnlySectionRunner::passes() applies for this recipe; provenance stays there.
+     * Records are untrusted evidence, so anything absent or malformed fails closed.
+     *
+     * @param array<mixed> $record
+     * @throws LogicException If the probe has no declaration.
+     */
+    public static function matchesDeclaredOutcome(Probe $probe, array $record): bool
+    {
+        [$outcome, $form] = self::declared($probe);
+        $returned = ['api_outcome' => 'success', 'payload_validation' => 'passed', 'probe_outcome' => 'passed',
+            'failure_kind' => null];
+        $expected = match ($outcome) {
+            self::OUTCOME_API_FAILURE => ['api_outcome' => 'failure', 'payload_validation' => 'not_checked',
+                'probe_outcome' => 'failed', 'failure_kind' => 'api_failure', 'discrepancies' => []],
+            self::OUTCOME_FIXED_PATH_EMPTY => $returned
+                + ['discrepancies' => [['path' => '$', 'kind' => 'missing_required']]],
+            default => $returned + ['discrepancies' => []],
+        };
+        foreach ($expected as $key => $value) {
+            if (!array_key_exists($key, $record) || $record[$key] !== $value) {
+                return false;
+            }
+        }
+        $paths = $record['payload_paths'] ?? null;
+        foreach ($form as $path => $type) {
+            if (!is_array($paths) || ($paths[$path] ?? null) !== [$type]) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * @return array{self::OUTCOME_*, array<string, string>}
+     * @throws LogicException If the probe has no declaration.
+     */
+    private static function declared(Probe $probe): array
+    {
+        return self::DECLARED[$probe->operation . '|' . ($probe->argumentVariant ?? '')]
+            ?? throw new LogicException('Every no-match probe must declare its outcome.');
     }
 
     /**

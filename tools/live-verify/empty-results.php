@@ -11,6 +11,7 @@ require $root . '/vendor/autoload.php';
 exit(ReadOnlySectionCommand::run(
     array_slice($argv, 1),
     $root,
-    'empty-results-v1',
+    EmptyResultProbes::RECIPE,
     static fn (): array => EmptyResultProbes::load(),
+    EmptyResultProbes::matchesDeclaredOutcome(...),
 ));
