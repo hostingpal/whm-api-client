@@ -8848,3 +8848,128 @@ No live call, capture, source fetch, credential creation/use, login, session/mai
 write or server cleanup was performed for this integration. The completed owner
 165-call pass was not replayed. Combined offline validation is recorded separately
 with exact product-input attribution; it cannot prove new server or wire behavior.
+
+
+### 2026-11-01: Complete UAPI ServiceProxy and paired backend setter
+
+Delivery `whm-api-client-8x0.4.28` adds the three pinned ServiceProxy operations and
+one generated convenience method against Task1 foundation
+`a8501a7111fa8ce318e8c5f120018f4f0cdea505`. The source is the immutable
+`docs/api/sources/2026-10-13/cpanel.openapi.json.gz`, version 11.138.0.10,
+decompressed SHA-256
+`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`.
+Each exact `/paths/~1ServiceProxy~1<function>/get` selection binds source evidence.
+All three are available from cPanel 96. Inventory has x-readonly=true and stays
+GET; set/unset have x-readonly=false and x-rollback=none and use form POST through
+direct UAPI or the WHM bridge. Ordinary Flag outcomes, outer-WHM precedence,
+metadata, transport and response validation remain unchanged.
+
+The canonical optional scalar setter inputs remain general, service_group and
+service_group_backend, in that order, defaulting to null in PHP. Omitted settings
+preserve existing configuration. Null optional scalars omit; empty strings remain
+values, including general-only calls. Counterpart requirements in parameter 1/2
+prose are documented without adding a canonical cross-field guard. Source Mail is
+retained in prose; the existing operation-scoped `enum_doc:false` policy keeps
+serviceGroup PHPDoc a plain string without new enum validation or source-schema
+widening. No alternative group's server acceptance is established. Address
+routability and rejection of loopback/RFC 1918/CGNAT/cloud-metadata addresses and
+obfuscated encodings remain server-enforced; no local lookup/coercion is added.
+
+`setBackends(backends, general)` maps a nonempty sequential list of complete
+`ServiceProxyBackendInput` string records onto the same canonical operation.
+serviceGroup/backend map to service_group/service_group_backend. Both use start 0,
+separator '-', first_unsuffixed=true, so row 0 is bare and row 1 is suffixed -1.
+Each field's required:true is a convenience collection policy supported by the
+source conditional counterpart prose, not a canonical requiredness change.
+Every mapping, including general passthrough, binds the exact source hash and
+parameter 0/1/2 pointers. Rows preserve bytes, order and duplicates without an
+upstream duplicate-resolution guarantee; unknown/partial/null/wrong-type rows
+fail locally with metadata reset and zero dispatches. Formal service_group and
+explicit naming prose use underscores; the parameter 1 multiple example instead
+uses service-group-1/-2. That contradiction is preserved and the formal names/prose
+are selected, with no source edits or live acceptance claim.
+
+Inventory is a nonnullable list of objects with optional string backend and
+optional string|null service_group; explicit null means general backend while
+omission remains absent. Both mutation roots are nullable opaque objects: unknown
+fields and explicit null remain intact and missing data mismatches. The existing
+object validator also accepts an empty JSON array as an empty map/object; the
+decoder still distinguishes JSON {} from []. No response normalization, invented
+warning/success field or payload weakening is added. Backend/general inputs and
+the entire record collection are sensitive. Returned infrastructure configuration
+and mismatch payloads remain private data; actual runner tests cover response and
+input trace protection while preserving the third-party transport boundary.
+
+With Web Server role active, set/unset rebuild user vhosts and restart the web
+server. Rebuild failure may still return API success with failure warning metadata;
+inspect responseMeta warnings/raw metadata and do not infer confirmed application
+or persistence. Unset removes all selected-account service-proxy configuration.
+No implicit read, merge, save/restore, retry, rollback, DNS/IP validation, backend
+contact, live API request, credential use or server/account configuration change
+occurred. Examples and test fixtures are synthetic only.
+
+Independent literal fixtures cover exact method/auth/URL/query/form/header on both
+routes for all canonical operations and the alias; omission/empty/unusual bytes,
+singleton/two/three records, duplicate order, malformed collections, strict response
+shapes, opaque/null/absent payload distinctions, warnings on success and valid
+payloads on status 0, actual transport/HTTP/JSON/outer-WHM/API/payload failures,
+metadata reset, native-before-entry TypeErrors, sensitive frames and no retries.
+Coverage is 1,191 operations (603 UAPI, 588 WHM), 104 groups, one additional method
+counted once canonically, and 211 outputs (210 PHP files plus coverage).
+Prior generated contracts/accessors/overlays, pinned sources/evidence/checksum,
+schema copies and historical audit text are preserved. All 55 inherited pinned
+source diagnostics remain unwaived. Delivery and live verification are separate:
+`8x0.2.70` and the full API goal remain OPEN; offline tests establish no live POST,
+rebuild, routing, persistence or backend reachability behavior.
+
+
+### PR103 ServiceProxy review correction and approved-master integration (2026-11-01)
+
+This correction normally merges approved master
+`760ca6826d0ce2dbe569dcaf0c77bfe8349fedbf` into original PR103
+`4462b68f73730ede842dd617a926bba23565af04`. The entire approved-master audit prefix and
+original PR103-only appendix above remain byte-identical. The original appendix's
+implementation-time no-live/duplicate-resolution limits are historical; only the
+bounded reviewer observations below supersede their blanket current wording.
+
+[Review 5725574081](https://github.com/hostingpal/whm-api-client/pull/103#pullrequestreview-5725574081)
+at that original commit reports direct UAPI success for all three canonical
+ServiceProxy operations and the generated setBackends alias on cPanel
+`11.138.0.19`. WHM bridge calls failed with ApiErrorException because ServiceProxy
+could not be loaded. The reviewer reports an absent on-disk ServiceProxy module
+and a compiled-binary/direct versus disk-loader explanation from their own
+server-source inspection. That explanation is attributed inspection, not local
+authenticated source, a wire-derived cause, or newly committed runtime evidence.
+No route is restricted from this one build; offline bridge fixtures and ordinary
+Flag/outer-WHM/metadata behavior remain intact. `8x0.2.70` remains OPEN.
+
+The direct two-Mail-row setter stored the second backend, establishing bare first
+and underscore -1 field acceptance and last-duplicate behavior for that tested
+case on this build. The client preserves duplicate order and exact bytes; no
+universal resolution or atomicity promise follows. The pinned service-group-1/-2
+example still contradicts the formal underscore names and naming prose. The
+review also reports generic log-ID-only failures for tested loopback, RFC 1918
+and cloud-metadata literals, without a caller-visible cause; server-log investigation
+uses that ID and does not diagnose untested destinations. The no-argument
+canonical setter and general empty string both returned explicit null without a
+stored-value change. Null success alone does not establish configuration change.
+No precheck, fallback, extra read, retry, coercion or rollback is introduced.
+
+All eight original source evidence records remain exactly serialized against
+pinned UAPI SHA-256
+`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`.
+New observed notes cite the original review and build separately. The three
+canonical methods and generated alias receive the route note through the overlay
+and official regeneration. Executable declarations/bodies, optional scalars,
+strict paired records, sensitive parameters, response null/absence/optional-field
+contracts and all original independent fixtures remain preserved. Approved-master
+account-search runtime and Webmail guidance, shared toolchain guidance, source
+artifacts, schema mirrors and historical evidence remain preserved. Aliases add
+no canonical operation count. Combined coverage and offline validation are
+reported separately from the reviewer's live/source and cleanup observations.
+
+No API/server/SSH/backend/URL contact, source refresh, credentials, replay or
+new capture was used for this integration. The owner's completed 165-call phase
+is not replayed and does not establish current combined-HEAD ServiceProxy proof.
+Existing 55 source diagnostics and the separate runtime/transport/source gaps
+remain open and unwaived.
