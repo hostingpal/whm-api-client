@@ -17,7 +17,8 @@ $command = static function (#[SensitiveParameter] array $arguments): int {
         if ($arguments === ['--help']) {
             fwrite(STDOUT, "Usage: php tools/live-verify/fileman-upload.php --output=PATH\n"
                 . "Requires WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 WHM_API_LIVE_ACCOUNT=wlupload "
-                . "WHM_API_LIVE_DOMAIN=wlupload.example.com and OBLAK_TEST_WHM_KEY.\n");
+                . "WHM_API_LIVE_DOMAIN=wlupload.example.com and OBLAK_TEST_WHM_KEY.\n"
+                . "WHM_API_LIVE_FS_CHECK=1 adds the read-only filesystem proof over SSH.\n");
 
             return 0;
         }
@@ -61,6 +62,7 @@ $command = static function (#[SensitiveParameter] array $arguments): int {
             new StreamingCurlClient(),
             $whm,
             $context,
+            SshFilesystemAbsenceProof::fromEnvironment(),
         ))->run();
         $json = json_encode(
             ['schema_version' => 1, 'fileman_upload' => $scenario],

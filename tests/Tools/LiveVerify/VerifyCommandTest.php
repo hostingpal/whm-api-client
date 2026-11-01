@@ -239,7 +239,7 @@ final class VerifyCommandTest extends TestCase
         self::assertIsArray($document['finite_quota']);
         self::assertIsArray($document['finite_quota']['fixture']);
         self::assertIsArray($document['finite_quota']['discrepancy_review']);
-        self::assertSame('finite-quota-disposable-v1', $document['finite_quota']['scenario']);
+        self::assertSame('finite-quota-disposable-v2', $document['finite_quota']['scenario']);
         self::assertSame('disposable-test-account', $document['finite_quota']['target_role']);
         self::assertSame($fixtureStatus, $document['finite_quota']['fixture']['status']);
         self::assertSame($finiteStatus, $document['finite_quota']['discrepancy_review']['status']);
@@ -257,6 +257,28 @@ final class VerifyCommandTest extends TestCase
         yield 'finite discrepancies' => ['quota-discrepancy', 'passed', 'failed', 1];
         yield 'capture failure' => ['quota-capture-failure', 'failed', 'failed', 1];
         yield 'baseline discrepancies' => ['discrepancy', 'passed', 'passed', 1];
+    }
+
+    #[DataProvider('filesystemOptIns')]
+    public function testFiniteQuotaReceivesTheFilesystemProofOnlyWhenOptedIn(string $value, string $expected): void
+    {
+        $root = $this->fixtureHarness();
+        [$status] = self::executeCli(
+            ['--finite-quota-fixture', '--output=' . $root . '/observed.json'],
+            array_replace(self::finiteQuotaEnvironment(), ['WHM_API_LIVE_FS_CHECK' => $value]),
+            $root,
+        );
+
+        self::assertSame(0, $status);
+        self::assertSame($expected, file_get_contents($root . '/finite-filesystem-proof'));
+    }
+
+    /** @return iterable<string, array{string, string}> */
+    public static function filesystemOptIns(): iterable
+    {
+        yield 'explicit opt-in' => ['1', 'supplied'];
+        yield 'empty' => ['', 'none'];
+        yield 'anything else' => ['true', 'none'];
     }
 
     public function testFiniteQuotaCleanupCompletesBeforeOutputWriteFailure(): void
@@ -920,13 +942,21 @@ final class FiniteQuotaEvidence
         ];
     }
 }
+final class SshFilesystemAbsenceProof
+{
+    public static function fromEnvironment(): ?self
+    {
+        return getenv('WHM_API_LIVE_FS_CHECK') === '1' ? new self() : null;
+    }
+}
 final class FiniteQuotaFixture
 {
-    public function __construct(object $client, string $token) {}
+    public function __construct(object $client, string $token, private ?SshFilesystemAbsenceProof $filesystem) {}
     public function run(\Closure $capture): array
     {
         $root = dirname(__DIR__);
         $case = getenv('CLI_FIXTURE_CASE');
+        file_put_contents($root . '/finite-filesystem-proof', $this->filesystem === null ? 'none' : 'supplied');
         $result = $capture(new CurlClient(), getenv('CLI_PRIVATE_MARKER'));
         $timing = file_exists($root . '/observed.json') ? 'too-late' : 'before-output';
         file_put_contents($root . '/finite-cleaned', $timing);
@@ -935,7 +965,7 @@ final class FiniteQuotaFixture
         }
         unset($result['expectations']);
         return [
-            'scenario' => 'finite-quota-disposable-v1',
+            'scenario' => 'finite-quota-disposable-v2',
             'target_role' => 'disposable-test-account',
             ...$result,
             'fixture' => ['status' => in_array($case, [
