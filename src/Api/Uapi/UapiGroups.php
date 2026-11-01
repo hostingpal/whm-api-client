@@ -169,6 +169,8 @@ trait UapiGroups
 
     private ?WordPressRestore $wordPressRestoreGroup = null;
 
+    private ?Wpx $wpxGroup = null;
+
     /**
      * Select the AccountEnhancements operations without making a request.
      *
@@ -961,5 +963,15 @@ trait UapiGroups
     public function wordPressRestore(): WordPressRestore
     {
         return $this->wordPressRestoreGroup ??= new WordPressRestore($this->run(...));
+    }
+
+    /**
+     * Select the WPX operations without making a request.
+     *
+     * Selected-account WordPress inventory, provisioning, administrator access, progress and removal.
+     */
+    public function wpx(): Wpx
+    {
+        return $this->wpxGroup ??= new Wpx($this->run(...));
     }
 }

@@ -8314,3 +8314,172 @@ PR95 I1/qrk remains IMPORTANT OPEN and is not repaired retroactively by prospect
 local execution records. Reviewer cleanup reports do not establish combined-tree
 runtime, container health or independently verified cleanup. Withdrawn ZIP path
 and server-category review notes require no change; existing notes already cover them.
+
+
+### 2026-10-31: complete generated UAPI WPX WordPress lifecycle
+
+Added all fourteen pinned WPX operations as `Wpx` / `uapi()->wpx()`, using the
+unchanged generated-client architecture. Source:
+`docs/api/sources/2026-10-13/cpanel.openapi.json.gz`, decompressed SHA-256
+`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`.
+Every overlay operation binds documentation evidence to its exact selected
+`/paths/~1WPX~1<function>/<method>/description`; all six formal POSTs additionally
+bind the required form `requestBody`. Existing automatic `formBody` extraction
+supplies exact fields and body/schema requiredness. Multipart `body_fields` is
+unrelated and is not used. No source, schema, generator, runtime or dependency
+changes were needed.
+
+Seven effective GET reads and seven form POST operations preserve the ordinary
+Flag UAPI outcome on both routes. `get_credentials` selects its formal GET source
+but uses effective form POST under the controller's mutation policy because the
+exact operation description says every call mints a new single-use token. This
+is a deliberate transport policy, not a source-method correction or live result.
+Compatibility cost: a GET-only server fails until route-specific evidence corrects
+transport; no live POST acceptance is claimed.
+
+Exact `colorScheme` and `promptToken` casing, body-only password/source credentials,
+canonical argument order, optional omission/false/zero/empty semantics and every
+formal optional response shape remain intact. The eight designated private inputs
+are sensitive; `passwordType` additionally retains the existing conservative
+password-name heuristic. No sensitivity override or response correction is added.
+`get_website` accepts explicit null while absent data fails; list rows remain
+nonnullable. Strict native integer flags and integer fields do not newly coerce
+strings or booleans. Singleton changed/removed enums retain the existing integer
+lowering rather than receiving an invented singleton validator.
+
+Generated notes and module guidance distinguish collision/no queued work, queued
+or running from installation completion/health, queue membership from retained
+progress, and Nova token/magic-link creation from the later import callback.
+Server prerequisites, URL/prompt limits, session fallback, private-file password
+handling and Nova-failure token revocation are attributed pinned documentation.
+The client does not resolve source URLs, consume returned links, poll, delete on
+collision, retry, restore or roll back. Destructive deletion and overwrite remain
+explicit caller operations, without live activity in this slice.
+
+Independent synthetic fixtures exercise all fourteen operations on both routes,
+literal PSR method/URI/auth/query/form/content-type, optional/default/native
+boundaries, nullable/absent payloads, strict known types, optional nested shapes,
+unknown sibling filtering, collision/running/progress/queue results, failure
+ordering, response metadata and exception-frame/snapshot privacy. Expected fixtures
+are authored independently of generated specs and overlay output.
+
+Compared with `4ab5b80587f8d524bbc0ccf5129f9901ef9ab8df`, canonical coverage adds
+exactly fourteen operations: 1,177 total (589 UAPI, 588 WHM), 99 groups and 201
+generated outputs (200 PHP files plus coverage). The 55 inherited map diagnostics
+remain visible and unwaived. Prior pinned sources, overlays, generated methods,
+map checksum and historical audit prefix are unchanged except the additive cached
+WPX accessor/property and coverage regeneration. Delivery `8x0.4.25` and live
+follow-up `8x0.2.67` stay separate. No live calls, installation/import/login,
+remote-address resolution, quota behavior, token consumption/revocation, language
+or health behavior, deletion or cleanup are established by offline validation.
+
+
+## WPX review corrections (2026-11-01)
+
+This appendix supersedes only the active WPX compatibility and POST-acceptance
+statements above; every historical byte is retained. The candidate is a normal
+uncommitted merge of original WPX `a4d31458ec2763fc1b2261adff47b6fa9a79441d` and
+approved master `2356ddc6c9ef759ea090898d1bbed35cc4a81775`. The original whole
+WPX appendix from `4ab5b80587f8d524bbc0ccf5129f9901ef9ab8df..a4d3145` follows
+the exact untrimmed approved-master prefix, before this correction appendix.
+
+The immutable UAPI gzip still decompresses to SHA-256
+`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`.
+All fourteen original selected operations, signatures, arguments, methods and
+ordinary Flag outcomes remain. Only four response specs change: percentage in
+get_task_progress, and eleven optional properties in each of create_website,
+create_nova_for_wordpress_website and import_website. No get_php_compatibility
+endpoint, engine/schema change, broad map/mixed contract or source refresh is added.
+
+PR100 formal review 5725396130 is scoped to `4ab5b80..a4d3145` on
+`11.138.0.19`. Its wire observations used a disposable reviewer account and
+seeded both progress-log formats documented by Cpanel/WPX/ProgressLog.pm; they
+were not real installations. Direct GET percentage was quoted 20/10/40 on the
+running/failed paths; bridge GET returned integers. No-log 0 and complete 100
+were integers on both routes. Only this field accepts the existing canonical
+bounded integer numeric-string grammar and normalizes to int. The documented
+0..100 range stays descriptive. Overflow, noncanonical strings, floats, booleans,
+null and containers fail; adjacent fields keep their exact types. This evidence
+is a prior reviewer report, not a newly captured raw response or new live run.
+
+The unsupported_php correction is SOURCE-ONLY, separately from those wire
+observations. Existing local source-output extracts were recovered read-only
+from the already-present Claude reviewer transcript
+`1b989dcd-07b1-40cc-b988-5111975fb7f6.jsonl` under the local Claude project for
+this repository. They concern the reviewed 11.138.0.19 build at original a4d3145.
+No new server source fetch/capture, SSH or runtime call occurred in this task.
+These are hashes of extracted output bytes, not complete source-file hashes.
+Some original lines are horizontally truncated and remain so; missing tails are
+not reconstructed. The exact local extraction manifest is
+`/tmp/pr100-existing-source-provenance.json` and files are
+`/tmp/pr100-existing-source-record-<line>.txt`.
+
+| Transcript line | UUID if supplied | Extracted-output SHA-256 |
+| --- | --- | --- |
+| 17647 | b4653af0-15bf-426d-83a1-d2e8608b6e86 | `c9b9c9e0f830820c752c2e8265e7a1ba98fb6b7eca7db83ad70761fce12a8f35` |
+| 17665 | d29e3379-58dd-4021-8221-3d826a3ca68b | `0d4fefc8c98b73b40ba3b0d354a3d705c68780b7ed88747cb520998d24f8f64a` |
+| 17666 | ffcbd593-01a9-458a-8e15-ed50fd90384c | `fc3d709c5796d0c2c1e8517127286e821663f0742db1258503f3420437c3d895` |
+| 17702 | f3effb0f-b21b-42e7-b267-94074e8040c7 | `97a6bd10aa5a74136ca80e788e791626140c22c1bf8b618d60b1ff26345bd776` |
+| 17759 | 19902949-2b09-45f9-ac86-a006bb4ec045 | `3d8606b09f0ed68b40f5fdc4dd3e992437ff26677df7806eeb8ce2cba7e0117a` |
+| 17631 | not supplied in extraction manifest | `0bd6fe6b00e56bf6bd4d9040d09b726c648c6bfd3f65461ba9a1edbe2250baaf` |
+| 17649 | not supplied in extraction manifest | `8d1180e53928f95acb6c7687ad24266f977f576cf9c119e22cc1214bf818fcdf` |
+
+Cpanel/API/WPX.pm lines 1997–2007 (record 17649) delegate to
+Cpanel/WPX/PhpCompat.pm check_compatibility() and preserve every compatibility
+key via `%$compat` plus status=unsupported_php. Record 17759 shows the exact
+returned keys, literal native compatible/is_fallback flags, nullable lookups and
+string blocked_by list; record 17647 lines 754–766 documents the field types and
+undef values. Record 17702 supplies Constants.pm's literal
+WORDPRESS_MIN_PHP_VERSION `7.4`. These establish eleven NEW OPTIONAL fields:
+
+| Fields | Effective type when present |
+| --- | --- |
+| compatible, is_fallback | strict native 0|1 integers |
+| required_version | string; source constant is `7.4`, no closed literal validator |
+| blocked_by | list<string>; empty and future string values remain allowed |
+| effective_version | string|null; lowest known, undef when none known |
+| system_default_package, system_default_version | string|null; failed/unknown lookup may be undef |
+| domain_package, domain_version, domain_version_source, domain_version_vhost | string|null; unknown/inherited lookup may be undef |
+
+Existing domain/status remain their pinned nonnullable string fields. The
+separate get_php_compatibility no-domain null case does not widen creators:
+all three require domain and pass their defined lowercase domain into the helper.
+No closed blocked_by or domain_version_source enum is inferred. All new fields
+remain optional to preserve ordinary collision/running/Nova magic-link responses.
+
+Record 17631 lines 185–187 shows create_website's early refusal before queueing
+at 205. Record 17666 lines 1122–1124 shows Nova's refusal before token minting
+at 1144; import refuses at 1277–1281 before credential reads, SSRF resolution and
+queueing at 1342. This is successful-envelope data, queues nothing and creates
+no installation task. Callers must inspect status, not infer running from
+noncollision. Nova's normal magic-link path also queues no installation task.
+Record 17647 lines 769–773 attributes the domain remedy to the applicable MultiPHP
+Manager row, and system_default to contacting the provider. No local version
+validation, repair, polling, source fetch, queue or token action is added.
+
+Records 17631/17666 and 17647 lines 990–998 show the wp-toolkit-site-import
+feature for Nova/import and the shared Nova entitlement's ai-app-builder extension.
+These source-derived gates are no live entitlement or install guarantee.
+
+The same prior formal review reports get_credentials form POST reaching the
+adminbin on direct UAPI and the WHM bridge, then failing because the WP Toolkit
+binary was missing. That narrowly supersedes the old unestablished-POST claim.
+Successful login/token payloads remain unobserved. The formal GET source identity,
+effective POST policy, body-only private parameters and no fallback/retry stay
+unchanged. No universal route acceptance, token creation or login is established.
+
+Independent synthetic fixtures reproduce quoted-20 rejection and dropped creator
+diagnostics before correction, then validate all four targets on both routes.
+The privacy oracle retains rendered snapshots, raw mismatch payloads, actual
+sensitive-frame checks and ini restoration, but reports bounded scalar facts only
+after restoration. Explicit private POST/no-query checks give the two authorized
+GET mutants ordinary PHPUnit assertion summaries; no memory ceiling or library
+runtime changes. The original review killed only four of six mutants cleanly;
+the original two no-summary/resource-failure outcomes are not rewritten as kills.
+This task's two synthetic controls are separate evidence. Runtime issue 8x0.2.67
+and all prior server/install/token/URL/cleanup limits remain open.
+
+Combined generation is 1,214 canonical operations (618 UAPI, 596 WHM), 107 groups,
+217 outputs including 216 PHP files and coverage. The 55 inherited diagnostics
+remain visible and unwaived. No new committed capture, source, evidence artifact,
+schema mirror, annotation, map checksum, runtime or tooling change is made.
