@@ -159,6 +159,8 @@ trait UapiGroups
 
     private ?UserManager $userManagerGroup = null;
 
+    private ?UserTasks $userTasksGroup = null;
+
     private ?Users $usersGroup = null;
 
     private ?Variables $variablesGroup = null;
@@ -937,6 +939,18 @@ trait UapiGroups
     public function userManager(): UserManager
     {
         return $this->userManagerGroup ??= new UserManager($this->run(...));
+    }
+
+    /**
+     * Select the UserTasks operations without making a request.
+     *
+     * Selected-account user task queue inventory and deletion, available from cPanel 72. Task IDs and queue payloads
+     * are private. The client preserves identifier bytes and performs no task execution, polling, retry, restore or
+     * rollback. Offline source-backed coverage only; live follow-up whm-api-client-8x0.2.72 remains open.
+     */
+    public function userTasks(): UserTasks
+    {
+        return $this->userTasksGroup ??= new UserTasks($this->run(...));
     }
 
     /**

@@ -9492,3 +9492,131 @@ separate retained PR104 correction records; historical original-head approvals
 and gates do not approve this combined candidate. All 55 inherited map diagnostics
 remain unwaived. Pins, schema mirrors, annotations, historical evidence and old
 captures remain unchanged. Publication and current-head acceptance are separate.
+
+
+### UserTasks complete source-backed slice (2026-11-01)
+
+Delivery `whm-api-client-8x0.4.30` selects both UserTasks operations from the original
+pinned `2026-10-13/cpanel.openapi.json.gz` (OpenAPI 11.138.0.10), decompressed SHA-256
+`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`.
+Selection, method, naming and task-ID sensitivity policy bind to
+`/paths/~1UserTasks~1retrieve/get`, `/paths/~1UserTasks~1delete/get` and the latter's
+`/parameters/0`. Both functions are available from cPanel 72 and operate on the
+selected account's separate queue. No endpoint exclusion, schema correction,
+requiredness override, optional-payload rule, void, unwrap or alias was added.
+
+`listTasks()` maps retrieve to GET with no parameters. Its nonnullable list
+preserves order/empty lists and optional action, args, id and subsystem fields.
+Present args is a nonnullable known-field object with optional string
+repository_root; no dynamic arguments are inferred from prose. The source's
+create/VersionControl string enums stay documented under existing runtime string
+policy. Unknown fields follow existing filtering. Empty objects and inherited
+empty-array object compatibility are retained; JSON object/array decoding stays
+distinct. metadata.transformed remains envelope metadata, not a new task field.
+
+`deleteTask(#[SensitiveParameter] string $id): ?array` maps the selected GET variant
+to form POST because x-readonly=false and x-rollback=none. Requiredness, id naming
+and exact bytes remain unchanged. Literal backslash/slash and slash-only source
+examples are distinct; percent escapes, Unicode, plus and empty strings also pass
+through one form encoding without normalization or repair. SensitiveParameter is
+client privacy policy for private queue work, not evidence of authentication.
+The source's nullable fieldless object lowers through existing map<mixed> support:
+unknown/nested fields and explicit null survive; missing data fails. Flag outcome
+and one-request runtime are unchanged. No implicit inventory, execution, polling,
+retry, restore or rollback was added. Queue deletion proves neither completion
+nor termination of a running process.
+
+Independent HTTP-boundary fixtures cover literal direct/bridge methods, auth,
+paths, queries, headers and form bytes; optional/private nested fields, string
+enum policy and filtering; missing/null/object/list/type distinctions; native
+signature failures before entry; metadata clearing/replacement and transformed/
+warnings retention; transport/HTTP/JSON/API/outer-WHM/payload precedence and actual
+library trace privacy. Task IDs, arguments, repository paths and explicit payload/
+metadata access are private; returned paths are never opened. Offline coverage
+establishes no live queue behavior or POST acceptance. Live follow-up
+`whm-api-client-8x0.2.72` remains OPEN; the full API goal remains OPEN.
+
+Generated coverage is 1,203 canonical operations (615 UAPI, 588 WHM), 106 groups
+and 215 outputs (214 PHP plus coverage). Existing generated contracts, overlays
+and accessors are preserved except the additive cached userTasks accessor and
+coverage row/counts. Pinned sources, evidence, map checksum, schema copies and
+historical source-audit prefix are unchanged. All 55 inherited diagnostics remain
+unwaived. PHP 8.3 is the supported minimum; local validation uses PHP 8.4.26 and
+exact-head PHP 8.3 CI remains a publication gate.
+
+## UserTasks identification correction and approved-master integration (2026-11-01)
+
+This appendix supersedes only the original UserTasks narrow-field and
+create/VersionControl-only effective guidance above. Historical original105 text
+is preserved byte-for-byte after the exact approved-master prefix. The normal
+merge integrates original `76c7b5a21265ae2a6be6361605fcab3914d8d3bc` with approved
+master `2b3e61c0abbc9e2556d81c8253767c67f6f0113a`; original/local reviews and CI are
+history, not acceptance of this combined candidate.
+
+Formal review [5725807972](https://github.com/hostingpal/whm-api-client/pull/105#pullrequestreview-5725807972)
+and complete existing-material answer
+[6560200145](https://github.com/hostingpal/whm-api-client/pull/105#issuecomment-6560200145)
+attribute the excerpts to cPanel 11.138.0.19. They are reviewer-retained source
+excerpts, not authenticated raw Perl files or hash-bound server source snapshots.
+The retained answer has SHA-256
+`e9dd31c6eb9c103ab062e4bbabed73b565920ef45a1aaa8ad60f5a90e2aea443`.
+The pinned decompressed OpenAPI SHA-256 remains
+`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`;
+its retrieve-description pointer anchors identity, not a schema for added fields.
+All three original overlay evidence entries and every pinned source remain exact.
+The new evidence is kind:doc attributed-source-review, with no invented live entry.
+
+`Cpanel::UserTasks::get()` decorates rows when args.log_file is truthy.
+`get_sse_url` concatenates `/sse/UserTasks`, a slash-normalized task ID and the
+basename of the log file. WPX `_queue_wp_task` passes domain, a sprintf-built
+install_id with dots replaced by hyphens, and LogPath::build_path's log_file into
+args. The retained create_website handler requires and lowercases domain.
+UserTasks' schema calls exclusive string, its POD permits integer 1 or an arbitrary
+key, and add() defaults undefined exclusive to integer 0. WPX omits exclusive.
+These are producer expressions/defaults, not observed JSON primitive guarantees.
+
+R1 explicitly adopts five optional nonnullable SOURCE-INFERRED COMPATIBILITY
+leaves: string sse_url; string args.domain, args.install_id and args.log_file;
+and exclusive union(string,int), preserving primitives without coercion or flag,
+enum or integer bounds. Other types, including explicit null, reject at these
+leaves. Directory::Queue::Normal persistence/serialization and
+Cpanel::UserTasksCore::Task->adopt were not inspected. Exact wire primitives and
+universal nullability remain unknown. Native integer extremes in tests exercise
+the declared compatibility policy, not source-observed values. Live follow-up
+8x0.2.72 and dedicated serialization follow-up 8x0.2.72.1 remain OPEN; root's R1
+choice does not erase this uncertainty or replace current-head review.
+
+R2 retains closed named args with the original optional string repository_root;
+all old retrieve fields, root/list/args compatibility and delete specs remain
+unchanged. No title, site_settings, nova or free-map contract is introduced.
+Retained WPX source queues install and import, contradicting the pinned closed
+create/VersionControl prose without defining an exhaustive action/subsystem enum.
+WebApp source was not retained; the ClamScanner scan row was manually injected.
+Neither is used as producer evidence here. WPX import stores site_settings as
+opaque JSON including source_password, with a source comment saying queue args
+are carried verbatim. Typed filtering does not parse or expose that field.
+Raw responses, generic call() results and explicit mismatch payloads may retain
+the password. Envelope metadata does not always contain task data;
+metadata.transformed stays envelope metadata. Returned progress/repository paths
+are never opened or fetched. Delete's exact sensitive ID, one form POST, nullable
+opaque result, no retry and no process-termination/rollback inference stay intact.
+
+Independent SYNTHETIC WPX/install and VersionControl/create HTTP-double fixtures
+first failed with four actual field-loss assertion failures on both routes, then
+passed after official generation. They are source-inferred regression data,
+not real queued WPX execution or capture. The reviewer likewise disclosed that
+injected rows bypassed Cpanel::UserTasks::add and used supplied values. Old empty
+root GET evidence proves no item fields. No live call, SSH/server/source fetch,
+queue injection, runner, returned-path access, capture or replay occurred here.
+Runtime success, held locks, completion, cleanup and serializer behavior remain
+unproven; historical boundaries and refusals persist.
+
+Official generation produces 1,240 canonical operations (644 UAPI, 596 WHM),
+114 groups and 231 outputs (230 PHP plus coverage): two original operations and
+one group over approved master, zero endpoint inflation from the five fields.
+Fresh combined offline gate and preservation evidence is retained separately in
+the PR105 task report/records; original gates are not relabeled. All 55 inherited
+map diagnostics remain explicit and unwaived. Pins, schema mirrors, annotations,
+checksum, runtime, generator, tooling, historical evidence and failed captures
+are preserved from the appropriate parent. Local PHP 8.4 cannot establish the
+PHP 8.3 floor CI. Stress, consumer, Windows, parity and release gaps remain.
