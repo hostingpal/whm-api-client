@@ -1780,7 +1780,8 @@ WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 \
 ```
 
 Use a new output path. Run it once; a failed run keeps its artifact and is never
-rerun to obtain a better one. The output is written only after cleanup, as a
+rerun to obtain a better one. Correcting a recipe needs evidence of what was wrong, a
+new scenario version and a new output path. The output is written only after cleanup, as a
 new-only protected file; if publication fails the complete report stays beside the
 destination and its path is printed. Exit 0 requires the lifecycle and the strict
 discrepancy review to pass.
@@ -1846,10 +1847,12 @@ without a conversion library. The mapping is injective, so an added encoding lay
 replacement character, truncation or dropped NUL differs; size is never enough. The
 first file holds all 256 byte values plus extra NUL and CRLF bytes. Every read follows
 both refusals, so one match proves both byte fidelity and that `overwrite=0` kept the
-original. The returned charset must echo the request exactly. `from_char`/`to_char`
-are the documented echoes; their schema-less `from_charset`/`to_charset` twins are read
-only when those are absent. A differing echo over exact content fails the run at its
-end without stopping it, since it cannot affect how later uploads are read.
+original. The returned charset must be exactly the requested label or its lowercase
+form, because charset labels are case-insensitive, and evidence records `exact`,
+`lowercase` or `other`. `from_char`/`to_char` are the documented echoes; their
+schema-less `from_charset`/`to_charset` twins are read only when those are absent. Any
+other echo over exact content fails the run at its end without stopping it, since it
+cannot affect how later uploads are read.
 
 **Ownership and cleanup.** A file is owned only after fresh directory absence, its
 original validated row and a matching readback for this run. Capture stops at the
@@ -1872,12 +1875,14 @@ covers the observed filenames, sizes and server version on the direct route. It
 establishes no raw-download identity, antivirus or archive behavior, null or empty
 status-0 observation, memory benchmark, or WHM or bridged upload coverage.
 
-The [committed capture](../../docs/api/evidence/2026-11-01-fileman-upload.json) at
-`aa84150` on `11.138.0.19` is a **failed run**: exit 1, kept unchanged and not rerun.
-Its only failure is the exact charset echo. `from_char`/`to_char` are absent on this
-server, and `from_charset`/`to_charset` differ from the requested spellings, with the
-values deliberately not retained. All five uploads passed their row, count and framing
-expectations, including the status-0 batch. Content matched the oracle exactly for all
-six files, and token, account, domain and zone cleanup are confirmed through the API.
-See the [source audit](../../docs/api/source-audit.md#multipart-compatibility-audit-and-owned-fileman-capture-2026-11-01)
-for what this does and does not establish. A rerun needs a separate decision.
+The [corrected capture](../../docs/api/evidence/2026-11-01-fileman-upload-v2.json) at
+`1c8bbce` on `11.138.0.19` is a **passed run**, exit 0. All five uploads passed their
+row, count and framing expectations, including the status-0 batch. Content matched the
+oracle exactly for all six files, every echo was `lowercase`, and token, account,
+domain and zone cleanup are confirmed through the API.
+
+The [first capture](../../docs/api/evidence/2026-11-01-fileman-upload.json) at `aa84150`
+is a **failed run**, exit 1, kept unchanged. It required the exact requested spelling,
+but this server omits `from_char`/`to_char` and lowercases `from_charset`/`to_charset`.
+See the [source audit](../../docs/api/source-audit.md#charset-echo-classification-and-corrected-capture)
+for what these captures do and do not establish.

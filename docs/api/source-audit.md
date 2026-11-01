@@ -8879,10 +8879,10 @@ It did find false-failure and emptiness-proof problems, which were corrected fir
 It suggested continuing mutation after a readback mismatch. That conflicts with the
 bead's stop rule, so capture order changed instead: the row batches run first.
 
-The single capture ran at `aa84150664d6e5c48e1668cc833bb9220e11a1bf` on `11.138.0.19`.
+The first capture ran at `aa84150664d6e5c48e1668cc833bb9220e11a1bf` on `11.138.0.19`.
 The [artifact](evidence/2026-11-01-fileman-upload.json), SHA-256
 `34e31bfd989c84deee7568a5d8fca72b1b6c657346cf5d81dcd3f760c7f2f41a`, records a **failed
-run**, exit 1. It is kept unchanged and was not rerun. Its `fixture.status` and
+run**, exit 1. It is kept unchanged, and that recipe was not rerun. Its `fixture.status` and
 `discrepancy_review.status` are both `failed`, for one reason: all six readbacks failed
 the required exact charset echo. All other phases passed their expectations, with no
 structural discrepancy.
@@ -8930,7 +8930,31 @@ establishes no null or empty status-0 live observation, antivirus or archive beh
 memory benchmark, WHM or bridged upload, or other Fileman coverage. The observed
 statuses for partial and all-failed batches are not a universal contract.
 
-Open for the owner to decide: whether to record the absent `from_char`/`to_char` as an
-overlay note; whether a later authorized capture should classify the charset echo, for
-example exact, case-variant or other, so the difference can be named; and whether
-filenames should reject C1 controls.
+### Charset echo classification and corrected capture
+
+A read-only check after that run named the difference. Two direct GETs on `npr` read an
+existing zero-byte file with the same charset parameters and printed classifications
+only, so no file content or name left memory. `from_char` and `to_char` were absent.
+`from_charset` and `to_charset` were `iso-8859-1` and `utf-8`, the lowercase forms of the
+request. Charset labels are case-insensitive, so the first recipe's byte-exact comparison
+was stricter than what it needed to show.
+
+Recipe `fileman-upload-disposable-v2` accepts exactly the requested label or its
+lowercase form, and records `exact`, `lowercase` or `other` in place of a boolean.
+Anything else still fails the run, and exact content is still required. This is a
+corrected recipe, not a replay: the first artifact stays as captured, and its failure
+stands for what that recipe checked. The second run used a new output path, and the
+same exact account and domain after the first run's cleanup.
+
+The corrected capture ran once at `1c8bbce3325f5b758837e1615cdcba199f3bd2ce` on
+`11.138.0.19`. The [artifact](evidence/2026-11-01-fileman-upload-v2.json), SHA-256
+`10eecbe1be592a3872fc59d74f2e24187fad98bb4f0e3c700f38af9afcd874d3`, records a **passed
+run**, exit 0, with `fixture.status` and `discrepancy_review.status` both `passed` and
+no findings. All five uploads repeated the row, count and framing outcomes above.
+Content was exact for all six files, and every echo on both fields was `lowercase`,
+which confirms that the first failure had no other cause. Token, account, domain and
+zone are `confirmed_absent` through the API. This is API absence only, and
+`filesystem_cleanup` stays `not_claimed`. The same scope limits apply.
+
+Tracked separately: `whm-api-client-6su` records the observed echo as an overlay note,
+and `whm-api-client-9yu` decides whether filenames should reject C1 controls.
