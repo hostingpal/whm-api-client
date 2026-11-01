@@ -1,0 +1,72 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "Personalization",
+  "operations": {
+    "uapi:Personalization/get": {
+      "name": "get",
+      "variant": "POST",
+      "body": "json",
+      "json_body": {
+        "php": "query",
+        "alias": "PersonalizationQueryInput",
+        "routes": "direct"
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 74 and later. Retrieves per-account NVData using a required JSON object body on direct cPanel UAPI only. names is an optional nonnullable string list; omission, an empty list, empty strings, duplicates and ordering are preserved without inferring server defaults. NVData keys and values have documented limits of 128 and 2048 bytes; the client adds no byte or format checks."
+        },
+        {
+          "kind": "documented",
+          "text": "The formal response is an object with an optional personalization map, although the pinned data example uses direct keys. Preserve the formal wrapper and optional reason, native integer success 0/1 and nullable string value fields. A row success of 0 is returned data under envelope status 1; envelope status 0 is an API error. Keep names, values and upstream reasons private; do not log mismatch payloads or fetch returned values."
+        },
+        {
+          "kind": "documented",
+          "text": "The separate 2026-11-01 protocol probe on 11.138.0.19 observed only structural personalization rows in a bare direct-UAPI envelope. Its temporary parser incorrectly read result.status/data, so the retained api_or_http_failure classification is a probe error and establishes no API outcome, row identity, successful live typed coverage or missing-key semantics. No implicit read, retry or fallback is added. Personalization/set remains excluded under 8x0.29.6."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Personalization~1get/post/requestBody",
+          "note": "The pinned x-readonly=true operation has a required application/json object request body and optional names array of strings. Select source POST with existing direct-only JSON metadata; apply no request corrections."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Personalization~1get/post/requestBody/content/application~1json/schema",
+          "note": "The pinned x-readonly=true operation has a required application/json object request body and optional names array of strings. Select source POST with existing direct-only JSON metadata; apply no request corrections."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Personalization~1get/post/responses/200/content/application~1json/schema/properties/result/properties/data",
+          "note": "Formal data.personalization has additionalProperties object values with optional reason:string, success:integer enum[0,1], value:string nullable. Its data example omits the wrapper; select the formal schema without an example-derived union or response correction. The separate failed protocol probe supports only structural wrapper observation, not API outcome or typed live success."
+        }
+      ]
+    },
+    "uapi:Personalization/set": {
+      "exclude": {
+        "reason": "Getter-only adoption. Setter selection, response, persistence and an owned-write lifecycle remain independently deferred under whm-api-client-8x0.29.6; generic callJson is not typed or live coverage.",
+        "evidence": [
+          {
+            "kind": "doc",
+            "version": "pinned 2026-10-13",
+            "date": "2026-11-01",
+            "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+            "pointer": "/paths/~1Personalization~1set/post/requestBody/content/application~1json/schema",
+            "note": "The pinned setter has an independent JSON-body contract. Getter source and the limited protocol probe do not establish setter response, safe writes or persistence; no setter is generated."
+          }
+        ]
+      }
+    }
+  }
+}
