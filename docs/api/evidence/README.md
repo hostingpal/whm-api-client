@@ -1317,3 +1317,19 @@ stays as captured. `DiscrepancyPolicy` now uses this file as its reference, whic
 later code change and not a change to this artifact. Masked Quota keys establish neither
 names nor counts, and empty addon, parked and subdomain lists establish no row fields.
 SHA-256: `4138dbf1d083ddfe6d109c86bb8beb449abde6937e93b2452693d47b2b792b81`.
+
+## Disposable-account Fileman upload evidence
+
+The [corrected capture](2026-11-01-fileman-upload-v2.json) at
+`1c8bbce3325f5b758837e1615cdcba199f3bd2ce` on `11.138.0.19` passes recipe
+`fileman-upload-disposable-v2`, exit 0: five multipart uploads, six exact content
+readbacks through the Latin-1 oracle, and token, account, domain and zone absence
+confirmed through the API. It claims no filesystem cleanup, raw-download identity, or
+WHM or bridged upload coverage. SHA-256:
+`10eecbe1be592a3872fc59d74f2e24187fad98bb4f0e3c700f38af9afcd874d3`.
+
+The [first capture](2026-11-01-fileman-upload.json) at
+`aa84150664d6e5c48e1668cc833bb9220e11a1bf` is a failed run, exit 1, kept unchanged. It
+required the exact requested charset spelling, which this server does not return. See
+the [source audit](../source-audit.md#charset-echo-classification-and-corrected-capture).
+SHA-256: `34e31bfd989c84deee7568a5d8fca72b1b6c657346cf5d81dcd3f760c7f2f41a`.
