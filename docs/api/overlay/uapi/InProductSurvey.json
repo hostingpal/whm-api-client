@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "InProductSurvey",
+  "class": "InProductSurvey",
+  "accessor": "inProductSurvey",
+  "description": "Complete pinned InProductSurvey module for the selected account. Offline coverage only; live follow-up whm-api-client-8x0.2.77 remains open.",
+  "operations": {
+    "uapi:InProductSurvey/get_in_product_survey_url": {
+      "name": "getInProductSurveyUrl",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1InProductSurvey~1get_in_product_survey_url/get",
+          "note": "Select complete get_in_product_survey_url as getInProductSurveyUrl with no parameters, literal 11.32 and ordinary Flag outcome. Source GET x-readonly:false/x-rollback:none selects effective empty form POST. Formal quoted string 0/1 enums follow existing generator integer-flag normalization; preserve max_dismiss strict string, all seven optional fields and the whole data example without response overrides."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Pinned availability is literal 11.32. Parameterless source GET explicitly declares x-readonly:false and x-rollback:none; effective form POST has an empty body under existing mutation policy."
+        },
+        {
+          "kind": "policy",
+          "text": "display/new_user use the existing generated flag-enum policy: exact quoted 0/1 and native integer 0/1 normalize to integer 0|1; reject other strings, booleans, floats and null. This is existing source policy, not an overlay response correction or live observation. max_dismiss stays strict string without integer coercion; link, submit_event, server_type and user_type stay optional strings with general string enums open. All seven formal fields and the whole source example remain represented."
+        },
+        {
+          "kind": "documented",
+          "text": "Source display 0 means do not render the banner; consumers compare normalized integer 0. The source selects a link template for authenticated webmail versus cPanel/Team users. This account-bound client adds no authentication mode/session route, UI rendering or analytics event; offline account fixtures establish no webmail credential/session coverage."
+        },
+        {
+          "kind": "policy",
+          "text": "One invocation makes one immediate request on the selected account through direct or WHM-bridged UAPI, with ordinary Flag outcome. Selectors are lazy and cached without I/O or metadata reset. No implicit rendering, HTML/script evaluation, URL navigation/fetch/fallback, local file access, path normalization, extra request, cache of server data, retry or rollback."
+        },
+        {
+          "kind": "policy",
+          "text": "Data is a required nonnull object with optional known fields; empty objects are valid, absent data or explicit null mismatches. Existing empty JSON array object compatibility and unknown-field filtering remain unchanged. UAPI status 0 and outer WHM failures still throw before payload validation. Inspect responseMeta() warnings and raw metadata, including after a mismatch."
+        },
+        {
+          "kind": "policy",
+          "text": "Inputs are ordinary noncredential selectors; returned content, paths, URLs and metadata may be private. Existing SensitiveParameter protections cover library-owned response frames, not caller-readable payloads, mismatch payloads or third-party transport traces. Offline fixtures establish no server acceptance, live UI/session behavior or POST compatibility; live follow-up whm-api-client-8x0.2.77 remains open."
+        }
+      ]
+    }
+  }
+}

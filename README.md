@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 110 generated typed groups cover 1,214 documented operations (see
+The 115 generated typed groups cover 1,219 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, DNS zone and DNSSEC
 management, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -4396,3 +4396,93 @@ outputs (222 PHP plus coverage). The deprecated `ensure_domains_can_pass_dcv`
 exclusion remains uncounted. Delivery `whm-api-client-8x0.4.34` is synthetic offline
 coverage only. Live follow-up `whm-api-client-8x0.2.76` remains OPEN; no live DCV,
 DNS propagation or certificate issuance is established.
+
+
+## UI and application discovery
+
+Five account-bound groups expose theme content, path and application discovery,
+survey banner data and plugin promotion visibility:
+
+```php
+// Synthetic selectors; each explicit operation executes one request immediately.
+$account = $client->uapi('example');
+$theme = $account->chrome()->getDom(pageTitle: 'Example page');
+$firstFile = $account->parser()->getFirstFileRelativeUri();
+$application = $account->integration()->fetchUrl(app: 'applicationname');
+$survey = $account->inProductSurvey()->getInProductSurveyUrl();
+$promotions = $account->plugins()->canShowPromotions(plugin: 'koality');
+// Values remain payload data; this example does not render markup or follow URLs.
+$bannerRequested = ($survey['display'] ?? null) === 1;
+$promotionsVisible = ($promotions['can_show_promotions'] ?? null) === 1;
+```
+
+Chrome and Parser cover their complete pinned modules, available from cPanel
+11.42; both use GET. Chrome requires `pageTitle`, encoded once as query
+`page_title`, and returns optional string `header` and `footer`. Empty values,
+line breaks, arbitrary markup and scripts remain exact. The title is plain input;
+the library supplies no HTML safety or server rendering guarantee. Parser is
+parameterless and returns optional string `uri`. Its method/prose says relative
+to the cPanel base, its summary says session relative, while the formal field and
+`/usr/local/cpanel/base/favicon.ico` example specify an absolute server path.
+That source contradiction remains unresolved; the client returns bytes unchanged
+without resolving a base, normalizing a path or accessing the filesystem.
+
+Integration (cPanel 54) and InProductSurvey (pinned literal version `11.32`) also
+cover their complete modules. Their source GET operations declare
+`x-readonly:false` and `x-rollback:none`, so the existing policy selects form POST.
+Integration requires `app`; all supplied operation parameters stay in the body
+and only standard routing stays in the URL. Optional string `redirect_url` is the
+documented primary public application redirect and `url` is the documented
+fallback if the primary is unavailable. Both survive independently, including
+empty strings. The client performs no local URL validation or automatic
+navigation, fetching or fallback. Survey is a parameterless POST with an empty
+body.
+
+Survey preserves all seven optional fields. The existing generator policy
+normalizes exact quoted `'0'`/`'1'` and native integer 0/1 in `display` and
+`new_user` to integer `0|1`. Other strings, booleans, floats and null fail; this
+is source flag-enum policy, not a new response correction or live observation.
+`max_dismiss` remains strict string, including zero-like strings, with no integer
+coercion. `link`, `submit_event`, `server_type` and `user_type` remain strings;
+general string enums remain open. Source display 0 means do not render a banner;
+compare normalized integer 0. The source selects link templates for authenticated
+webmail versus cPanel/Team users. These account-bound methods add no authentication
+mode or session route, and offline fixtures establish no webmail session coverage,
+UI behavior or analytics submission.
+
+Plugins requires the `Plugins` plugin, with pinned integer availability 110, and
+exposes only `canShowPromotions(plugin)`. Its summary says “Enable plugin
+promotions”, while its description and result describe visibility without an
+enabled argument. Source readonly/rollback annotations are absent: risk remains
+UNKNOWN and rollback is not established. Existing unknown-risk policy selects
+form POST despite source GET; neither read-only safety nor a known enabling
+mutation is claimed. Formal `plugin` is required although CLI/URL snippets omit
+it. Only `koality` is documented; the string signature stays open without claiming
+server acceptance of alternatives. Optional `can_show_promotions` is strict native
+integer `0|1`; quoted values, booleans, floats and null fail. Payload 0 under UAPI
+status 1 is a normal result; UAPI status 0 fails even if payload is 1. Plugins
+remains incomplete: `create_user` is absent and uncounted under source/input gate
+`whm-api-client-8x0.1.22`.
+
+All three required string inputs preserve empty, whitespace, Unicode, percent,
+ampersand and plus bytes without localization, splitting or normalization. Every
+result root is a required nonnull object with optional fields; an empty object is
+valid, absent/null data mismatches, and omitted fields remain omitted. Existing
+empty JSON array object compatibility (`whm-api-client-8x0.2.50`) and known-object
+unknown-field filtering remain unchanged. Ordinary Flag outcomes and outer WHM
+failures are preserved. Inspect `responseMeta()` warnings and raw metadata even
+after a payload mismatch; native argument type errors retain the prior snapshot.
+
+Selectors remain lazy, cached and account-bound, without I/O or metadata reset.
+Every invocation makes one immediate request and returns plain payload, with no
+cache of server data, rendering, script evaluation, URL navigation/fetch/fallback,
+local file access, extra request, retry or rollback. Returned content, paths, URLs
+and metadata may be private. Existing SensitiveParameter protections conceal
+library-owned response arguments; caller-readable results, mismatch payloads and
+third-party transport traces remain outside that guarantee.
+
+Coverage is 1,219 canonical operations (631 UAPI, 588 WHM), 115 groups and 233
+outputs (232 PHP plus coverage). Delivery `whm-api-client-8x0.4.35` uses synthetic
+offline fixtures only. Live follow-up `whm-api-client-8x0.2.77` remains OPEN; no
+live GET/POST acceptance, server UI/session behavior, rendering, redirect/fallback,
+plugin visibility or survey behavior is established.

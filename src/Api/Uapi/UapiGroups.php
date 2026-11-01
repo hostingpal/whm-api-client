@@ -35,6 +35,8 @@ trait UapiGroups
 
     private ?Ccs $ccsGroup = null;
 
+    private ?Chrome $chromeGroup = null;
+
     private ?ClamScanner $clamScannerGroup = null;
 
     private ?ContactInformation $contactInformationGroup = null;
@@ -89,6 +91,10 @@ trait UapiGroups
 
     private ?ImageManager $imageManagerGroup = null;
 
+    private ?InProductSurvey $inProductSurveyGroup = null;
+
+    private ?Integration $integrationGroup = null;
+
     private ?KnownHosts $knownHostsGroup = null;
 
     private ?LangPhp $langPhpGroup = null;
@@ -113,9 +119,13 @@ trait UapiGroups
 
     private ?Park $parkGroup = null;
 
+    private ?Parser $parserGroup = null;
+
     private ?PassengerApps $passengerAppsGroup = null;
 
     private ?PasswdStrength $passwdStrengthGroup = null;
+
+    private ?Plugins $pluginsGroup = null;
 
     private ?Postgresql $postgresqlGroup = null;
 
@@ -297,6 +307,17 @@ trait UapiGroups
     public function ccs(): Ccs
     {
         return $this->ccsGroup ??= new Ccs($this->run(...));
+    }
+
+    /**
+     * Select the Chrome operations without making a request.
+     *
+     * Complete pinned Chrome module for the selected account. Offline coverage only; live follow-up
+     * whm-api-client-8x0.2.77 remains open.
+     */
+    public function chrome(): Chrome
+    {
+        return $this->chromeGroup ??= new Chrome($this->run(...));
     }
 
     /**
@@ -572,6 +593,28 @@ trait UapiGroups
     }
 
     /**
+     * Select the InProductSurvey operations without making a request.
+     *
+     * Complete pinned InProductSurvey module for the selected account. Offline coverage only; live follow-up
+     * whm-api-client-8x0.2.77 remains open.
+     */
+    public function inProductSurvey(): InProductSurvey
+    {
+        return $this->inProductSurveyGroup ??= new InProductSurvey($this->run(...));
+    }
+
+    /**
+     * Select the Integration operations without making a request.
+     *
+     * Complete pinned Integration module for the selected account. Offline coverage only; live follow-up
+     * whm-api-client-8x0.2.77 remains open.
+     */
+    public function integration(): Integration
+    {
+        return $this->integrationGroup ??= new Integration($this->run(...));
+    }
+
+    /**
      * Select the KnownHosts operations without making a request.
      *
      * The KnownHosts module for UAPI.
@@ -693,6 +736,17 @@ trait UapiGroups
     }
 
     /**
+     * Select the Parser operations without making a request.
+     *
+     * Complete pinned Parser module for the selected account. Offline coverage only; live follow-up
+     * whm-api-client-8x0.2.77 remains open.
+     */
+    public function parser(): Parser
+    {
+        return $this->parserGroup ??= new Parser($this->run(...));
+    }
+
+    /**
      * Select the PassengerApps operations without making a request.
      *
      * The PassengerApps module for UAPI.
@@ -710,6 +764,17 @@ trait UapiGroups
     public function passwdStrength(): PasswdStrength
     {
         return $this->passwdStrengthGroup ??= new PasswdStrength($this->run(...));
+    }
+
+    /**
+     * Select the Plugins operations without making a request.
+     *
+     * Partial Plugins module: one of two pinned operations; create_user remains source/input-gated under
+     * whm-api-client-8x0.1.22. Offline coverage only; live follow-up whm-api-client-8x0.2.77 remains open.
+     */
+    public function plugins(): Plugins
+    {
+        return $this->pluginsGroup ??= new Plugins($this->run(...));
     }
 
     /**

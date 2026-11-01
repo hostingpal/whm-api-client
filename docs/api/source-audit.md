@@ -7774,3 +7774,93 @@ operation/spec changes are introduced. Offline coverage establishes no live POST
 acceptance, DCV behavior, DNS propagation or certificate issuance. Live follow-up
 `whm-api-client-8x0.2.76` remains OPEN. Local validation uses PHP 8.4.26; exact-head
 PHP 8.3 CI remains an external controller gate.
+
+
+## 2026-11-01 — UAPI UI and application discovery (8x0.4.35)
+
+Added five canonical operations from the original pinned cPanel source, verified
+against decompressed SHA256
+`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`
+(release 2026-10-13, 11.138.0.10). Five operation pointers and three parameter
+pointers bind selection, naming, transport, requiredness and contradictions:
+
+| Operation pointer (under `/paths/`) | PHP selection | Effective transport |
+| --- | --- | --- |
+| `~1Chrome~1get_dom/get` | chrome()->getDom(pageTitle) | GET |
+| `~1Parser~1firstfile_relative_uri/get` | parser()->getFirstFileRelativeUri() | GET |
+| `~1Integration~1fetch_url/get` | integration()->fetchUrl(app) | form POST |
+| `~1InProductSurvey~1get_in_product_survey_url/get` | inProductSurvey()->getInProductSurveyUrl() | empty form POST |
+| `~1Plugins~1can_show_promotions/get` | plugins()->canShowPromotions(plugin) | form POST |
+
+Every operation remains ordinary Flag outcome, canonical source variant GET.
+Chrome/Parser explicitly x-readonly:true retain GET and cPanel 11.42. Integration
+(cPanel 54) and Survey (literal 11.32) declare x-readonly:false/x-rollback:none,
+selecting existing form POST policy. Plugins omits both annotations, retaining
+UNKNOWN source risk and no established rollback; existing default POST applies.
+This corrects a provisional GET assumption without a generator change. Its
+summary Enable conflicts with visibility description/parameter/result and no
+enabled argument. Do not infer read-only safety or a known enabling mutation.
+Plugins requires the Plugins plugin and pinned integer version 110.
+
+Chrome, Integration and Plugins `/get/parameters/0` pointers preserve formally
+required page_title/app/plugin strings without unsupported type, requiredness or
+sensitivity overrides. Chrome maps pageTitle, query encoded once; Integration and
+Plugins inputs stay in form bodies with routing only in URLs. Preserve empty,
+whitespace, Unicode, percent, ampersand and plus bytes without local validation,
+localization, splitting or normalization. Plugins snippets omit required plugin;
+formal requiredness prevails. Only koality is documented, but the open string
+signature is no server acceptance claim for alternatives. Parser's explicit
+readable method name leaves its relative cPanel-base prose/session-relative
+summary versus absolute uri description/example contradiction unresolved.
+
+All thirteen response fields remain optional in required nonnull objects.
+Chrome footer/header preserve exact inert markup/scripts/line breaks/empty strings;
+Parser uri remains unchanged string; Integration redirect_url and url are
+independent primary/fallback strings without local validation or automatic action.
+Survey retains display, new_user, max_dismiss, link, submit_event, server_type and
+user_type plus its whole-data example. Source quoted string 0/1 enums follow
+existing effective/schemas.go flag handling: exact quoted/native 0/1 normalize
+to int 0|1. This supersedes a provisional raw-string assumption without an
+overlay response replacement, live observation or shared change. max_dismiss
+stays strict string and general string enums stay open. Source display 0 means
+do not render; normalized output compares integer 0. Authenticated webmail versus
+cPanel/Team link selection establishes no client authentication mode/session route
+or live webmail session coverage. Plugins can_show_promotions stays strict native
+integer 0|1, without quoted/bool/float/null coercion. Payload 0 under status 1
+is valid; UAPI status 0 and outer WHM failure still take precedence. Existing
+status-1/contradictory-errors interpretation remains unchanged.
+
+Empty objects, omission, known-object filtering and inherited empty JSON array
+object compatibility (8x0.2.50) stay unchanged; absent/null data mismatches.
+Metadata/warnings/raw snapshots and native pre-entry TypeError reset boundaries
+are preserved. Lazy cached account selectors make no request or reset; method
+invocations return plain payload with one immediate request, no server-data cache,
+rendering, evaluation, URL navigation/fetch/fallback, local file access, retry or
+rollback. Response arguments keep existing SensitiveParameter protections;
+caller-readable content/metadata/mismatch payload and third-party traces may
+contain private data.
+
+Independent synthetic PSR fixtures cover literal direct/bridge paths, routing,
+auth, content type, query/body bytes and empty parameterless GET/POST. They cover
+all formal fields, the Survey whole example and normalized flags, full/minimal/
+empty objects, inert strings, unknown filtering, strict field/null/root mismatches,
+Survey versus Plugins flags, strict max_dismiss and open nonflag enums. They also
+cover API/outer-WHM/invalid-envelope precedence, transport/HTTP/JSON failures,
+metadata reset at I/O, warnings/raw snapshots, native input failure, one attempt,
+fresh payloads across repeated calls and library-owned response trace privacy.
+Focused RED fails on absent accessors before overlays/generation; final focused
+GREEN records 178 tests and 1,054 assertions. No live, network, browser, DNS,
+filesystem target, credential, account, mail or analytics action ran.
+
+Coverage is 1,219 canonical operations (631 UAPI, 588 WHM), 115 groups and 233
+outputs (232 PHP plus coverage). Four modules are complete; Plugins is one of two,
+with create_user absent/uncounted under 8x0.1.22 and no new exclusion/waiver.
+Original source/evidence and every earlier overlay/operation/spec remain unchanged;
+this audit's historical bytes remain an unchanged prefix. No dependencies,
+source refresh, shared engine/core/generator edits or map checksum changes occur;
+all 55 inherited source diagnostics remain visible and unwaived. Rebuilt map
+SHA256 stays `f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8`.
+Delivery is offline synthetic coverage only; live acceptance, POST compatibility,
+rendering/session/redirect/fallback/plugin/survey behavior remain unverified under
+OPEN live follow-up `whm-api-client-8x0.2.77`. Local PHP 8.4.26 validation does not
+establish PHP 8.3; exact-head external CI remains a controller gate.

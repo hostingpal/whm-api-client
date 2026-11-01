@@ -1,0 +1,54 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "Chrome",
+  "class": "Chrome",
+  "accessor": "chrome",
+  "description": "Complete pinned Chrome module for the selected account. Offline coverage only; live follow-up whm-api-client-8x0.2.77 remains open.",
+  "operations": {
+    "uapi:Chrome/get_dom": {
+      "name": "getDom",
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Chrome~1get_dom/get",
+          "note": "Select the complete pinned get_dom as getDom with required page_title, original nonnull optional string fields, cPanel 11.42 and ordinary Flag outcome. Source GET explicitly x-readonly:true retains effective GET."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Chrome~1get_dom/get/parameters/0",
+          "note": "Retain formally required page_title as pageTitle:string with exact bytes and one query encoding; no unsupported type, requiredness or sensitivity override."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 11.42. Source GET explicitly declares x-readonly:true; effective GET retains page_title in the query."
+        },
+        {
+          "kind": "policy",
+          "text": "pageTitle is a required plain string title, including empty, whitespace, Unicode, percent, ampersand and plus bytes. Encode once without validation, localization, splitting or normalization. It is not HTML safety enforcement or a server rendering guarantee. Optional footer/header strings preserve exact arbitrary HTML, scripts, line breaks and empty values without sanitization, parsing or evaluation."
+        },
+        {
+          "kind": "policy",
+          "text": "One invocation makes one immediate request on the selected account through direct or WHM-bridged UAPI, with ordinary Flag outcome. Selectors are lazy and cached without I/O or metadata reset. No implicit rendering, HTML/script evaluation, URL navigation/fetch/fallback, local file access, path normalization, extra request, cache of server data, retry or rollback."
+        },
+        {
+          "kind": "policy",
+          "text": "Data is a required nonnull object with optional known fields; empty objects are valid, absent data or explicit null mismatches. Existing empty JSON array object compatibility and unknown-field filtering remain unchanged. UAPI status 0 and outer WHM failures still throw before payload validation. Inspect responseMeta() warnings and raw metadata, including after a mismatch."
+        },
+        {
+          "kind": "policy",
+          "text": "Inputs are ordinary noncredential selectors; returned content, paths, URLs and metadata may be private. Existing SensitiveParameter protections cover library-owned response frames, not caller-readable payloads, mismatch payloads or third-party transport traces. Offline fixtures establish no server acceptance, live UI/session behavior or POST compatibility; live follow-up whm-api-client-8x0.2.77 remains open."
+        }
+      ]
+    }
+  }
+}

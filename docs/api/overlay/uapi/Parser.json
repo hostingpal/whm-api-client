@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "Parser",
+  "class": "Parser",
+  "accessor": "parser",
+  "description": "Complete pinned Parser module for the selected account. Offline coverage only; live follow-up whm-api-client-8x0.2.77 remains open.",
+  "operations": {
+    "uapi:Parser/firstfile_relative_uri": {
+      "name": "getFirstFileRelativeUri",
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Parser~1firstfile_relative_uri/get",
+          "note": "Select complete firstfile_relative_uri under the explicit readable method getFirstFileRelativeUri; cPanel 11.42, source/effective GET, x-readonly:true, no parameters and ordinary Flag outcome. Keep the absolute formal field versus relative method/prose/summary contradiction visible without inferring path semantics."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 11.42. Parameterless source GET explicitly declares x-readonly:true and remains effective GET."
+        },
+        {
+          "kind": "documented",
+          "text": "The method/prose says relative to the cPanel base, the summary says session relative, while the formal uri description and /usr/local/cpanel/base/favicon.ico example specify an absolute server path. This contradiction is unresolved. getFirstFileRelativeUri returns the optional string unchanged; no local path interpretation, base resolution or normalization."
+        },
+        {
+          "kind": "policy",
+          "text": "One invocation makes one immediate request on the selected account through direct or WHM-bridged UAPI, with ordinary Flag outcome. Selectors are lazy and cached without I/O or metadata reset. No implicit rendering, HTML/script evaluation, URL navigation/fetch/fallback, local file access, path normalization, extra request, cache of server data, retry or rollback."
+        },
+        {
+          "kind": "policy",
+          "text": "Data is a required nonnull object with optional known fields; empty objects are valid, absent data or explicit null mismatches. Existing empty JSON array object compatibility and unknown-field filtering remain unchanged. UAPI status 0 and outer WHM failures still throw before payload validation. Inspect responseMeta() warnings and raw metadata, including after a mismatch."
+        },
+        {
+          "kind": "policy",
+          "text": "Inputs are ordinary noncredential selectors; returned content, paths, URLs and metadata may be private. Existing SensitiveParameter protections cover library-owned response frames, not caller-readable payloads, mismatch payloads or third-party transport traces. Offline fixtures establish no server acceptance, live UI/session behavior or POST compatibility; live follow-up whm-api-client-8x0.2.77 remains open."
+        }
+      ]
+    }
+  }
+}

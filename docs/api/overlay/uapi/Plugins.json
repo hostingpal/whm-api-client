@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "Plugins",
+  "class": "Plugins",
+  "accessor": "plugins",
+  "description": "Partial Plugins module: one of two pinned operations; create_user remains source/input-gated under whm-api-client-8x0.1.22. Offline coverage only; live follow-up whm-api-client-8x0.2.77 remains open.",
+  "operations": {
+    "uapi:Plugins/can_show_promotions": {
+      "name": "canShowPromotions",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Plugins~1can_show_promotions/get",
+          "note": "Select only complete can_show_promotions as canShowPromotions with formally required plugin, strict native integer flag result, integer version 110, Plugins plugin and ordinary Flag outcome. Missing readonly/rollback keeps source risk UNKNOWN and existing default effective POST despite source GET. Preserve enabling-summary versus visibility-description contradiction and missing required plugin in CLI/URL samples; no enabling or read-only claim."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Plugins~1can_show_promotions/get/parameters/0",
+          "note": "Formal plugin is required string despite CLI/URL samples omitting it. Only koality is documented; keep signature open and exact supplied bytes including empty without enum guards, default insertion or server acceptance claims; form POST follows existing unknown-risk default."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from pinned integer version 110 and requires the Plugins plugin. Summary says Enable plugin promotions, while description determines visibility and parameter/result describe visibility without an enabled argument. Source omits readonly/rollback annotations: risk remains UNKNOWN and rollback is not established; effective default form POST differs from source GET. Do not infer read-only safety or a known enabling mutation."
+        },
+        {
+          "kind": "documented",
+          "text": "plugin is formally required string; CLI/URL snippets omit it, an unresolved source discrepancy. Only koality is documented. Preserve requiredness and an open string signature without a client enum guard or a claim that alternatives are server-accepted. Empty, whitespace, Unicode, percent, ampersand and plus bytes encode once in the form body."
+        },
+        {
+          "kind": "policy",
+          "text": "Optional can_show_promotions is strict native integer 0|1, rejecting quoted flags, booleans, floats and null. Payload 0 with UAPI status 1 is a normal result; status 0 still fails even with payload 1. Plugins is incomplete: create_user remains absent and uncounted under source/input gate whm-api-client-8x0.1.22; no new exclusion or waiver."
+        },
+        {
+          "kind": "policy",
+          "text": "One invocation makes one immediate request on the selected account through direct or WHM-bridged UAPI, with ordinary Flag outcome. Selectors are lazy and cached without I/O or metadata reset. No implicit rendering, HTML/script evaluation, URL navigation/fetch/fallback, local file access, path normalization, extra request, cache of server data, retry or rollback."
+        },
+        {
+          "kind": "policy",
+          "text": "Data is a required nonnull object with optional known fields; empty objects are valid, absent data or explicit null mismatches. Existing empty JSON array object compatibility and unknown-field filtering remain unchanged. UAPI status 0 and outer WHM failures still throw before payload validation. Inspect responseMeta() warnings and raw metadata, including after a mismatch."
+        },
+        {
+          "kind": "policy",
+          "text": "Inputs are ordinary noncredential selectors; returned content, paths, URLs and metadata may be private. Existing SensitiveParameter protections cover library-owned response frames, not caller-readable payloads, mismatch payloads or third-party transport traces. Offline fixtures establish no server acceptance, live UI/session behavior or POST compatibility; live follow-up whm-api-client-8x0.2.77 remains open."
+        }
+      ]
+    }
+  }
+}
