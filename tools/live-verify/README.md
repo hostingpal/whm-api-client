@@ -2148,6 +2148,8 @@ $outcome = (new DisposableAccountLifecycle(
     },
     // Optional: remove what the recipe made inside the account, returning failure labels.
     fn (): array => $this->removeOwnFiles(),
+    // Optional: once the proven account reads removed, settle what removal takes or leaves, returning labels.
+    fn (): array => $this->proveExtraDomainsAbsent(),
 );
 ```
 
@@ -2220,6 +2222,17 @@ uncertain step fails `cleanup`; the resource fields still say what each one show
 cleanup remains unconfirmed, inspect the explicitly selected test account and domain
 privately and confirm ownership before manual recovery. A rerun refuses preexisting
 resources and is not a cleanup mechanism.
+
+**Removed resources.** Some things a recipe makes live outside the account and go only
+with its removal, such as an addon domain's zone, and a removal can leave things behind.
+Both can only be settled after removal, so `run()` takes an optional third callback. It is
+called at most once, and only when the marker proved the account this run's and the
+account then read `confirmed_absent` after removal: after the lifecycle's own domain and
+zone reads and before the filesystem proof. It returns failure labels, which fail
+`cleanup` and the run; if it throws, the run fails with
+`removed_resource_absence_unconfirmed`. Otherwise, after a refused, lost or unreadable
+removal or an account never proven, it is never called, and the lifecycle's own failures
+already fail the run. A recipe that passes nothing is unaffected.
 
 **Reads.** Every decision reads the account inventory afresh. Each domain check reuses the
 account read just before it, because nothing changed in between and each read is the
@@ -2444,6 +2457,275 @@ is a **failed run**, exit 1, kept unchanged. It required the exact requested spe
 but this server omits `from_char`/`to_char` and lowercases `from_charset`/`to_charset`.
 See the [source audit](../../docs/api/source-audit.md#charset-echo-classification-and-corrected-capture)
 for what these captures do and do not establish.
+
+## Disposable-account domain rows and multi-value DNS reads
+
+`domain-rows.php` reads every DomainInfo record kind and the multi-value DNS reads with two
+distinct owned domains, once, on a fresh disposable account. It writes to no other account,
+reads only `OBLAK_TEST_WHM_KEY` and creates its own short-lived writable token:
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 WHM_API_LIVE_FS_CHECK=1 \
+  WHM_API_LIVE_ACCOUNT=wldomains WHM_API_LIVE_DOMAIN=wldomains.example.com \
+  php tools/live-verify/domain-rows.php \
+  --output=docs/api/evidence/YYYY-MM-DD-domain-rows.json
+```
+
+Use a new output path and run it once. Publication, exit status and the failed-run rule
+are the same as for the [Fileman upload fixture](#disposable-account-fileman-upload-fixture).
+
+**Account.** The shared [lifecycle](#disposable-account-lifecycle) owns the account, token
+and cleanup. Every extra name is fixed in `DomainRowsRecipe` and is an RFC 2606 name under
+`example.com` carrying the recipe's prefix: addon `wldomains-addon.example.com` on label
+`wldaddon`, alias `wldomains-alias.example.com` and subdomain `wldsub.wldomains.example.com`.
+Before any of them is made, each name and zone must read absent in the server-wide
+`get_domain_info` and `listzones` inventories, which must be nonempty, and the account's
+marker is read again. Only then does WHM `modifyacct` raise this account's own limits
+(`MAXADDON=1`, `MAXFTP=2`, `MAXPARK=1`, `MAXSUB=2`), and the account's own token creates the
+addon, the alias on the main domain and the subdomain, each once. Each creation is followed
+by the inventories its names depend on: `get_domain_info` always, and `listzones` only after
+the addon and the alias, which make zones. A name counts as made only once it is listed for
+this account. An explicit refusal is a known outcome; after a lost reply a name stays
+unconfirmed for good.
+`DomainRowsGuard` admits the binding's control requests and exactly these four mutations,
+each once, the direct ones only with the account's token.
+
+**Reads.** Nothing is retried, and a failed read never stops the others.
+
+| Operation | Routes | Arguments |
+| --- | --- | --- |
+| `has_local_authority` | WHM, direct, bridged | main and addon, both orders |
+| `ensure_domains_reside_only_locally` | direct, bridged | main and addon, both orders |
+| `ensure_domains_use_recognized_nameservers` | direct, bridged | main and addon, both orders |
+| `fetch_ds_records_for_domains` | WHM | main and addon, both orders |
+| `list_domains` | direct, bridged | none |
+| `domains_data` | direct, bridged | `format=hash`, then `format=list` |
+| `single_domain_data` | direct, bridged | main, addon, alias, subdomain |
+
+The addon sorts before the main domain, so neither order is also the sorted one. Each DNS
+read must return two results, and where results name their domain they must be exactly the
+two requested; `dns_results` records each sample's order as `request`, `reverse`, `other` or
+`not_observable`, and `dns_order_samples` counts them. The `ensure_*` results name no
+domain, so their order is never observable. No general order is claimed from any sample.
+`export_zone_files` is not called with more than one zone, after an earlier refused raw
+export. Every inventory must list the main domain, addon and subdomain, and every one but
+`domains_data` `format=list` must list the alias, which that form has held no row for on
+`11.138.0.19`. `domain_kinds` records what each inventory lists, including the subdomain an
+addon is parked on, which is never required. Each single-domain read must return the record
+of exactly the domain it asked for; `single_domain` records `requested_domain`, or which other
+of the run's records came back (`main_domain`, `addon_subdomain`) or `other`, which fails the
+expectation.
+
+**Cleanup.** Account removal takes every extra domain and zone. Once the proven account
+reads removed, the lifecycle's removed-resource proof reads `get_domain_info` and `listzones`
+once each and requires every attempted name and zone to be absent; an unreadable inventory
+or a lost creation leaves it `unconfirmed`. After any other cleanup the lifecycle never calls
+the proof, so every attempted name and zone, and each extra filesystem claim whose control
+ran, stays `unconfirmed`. With `WHM_API_LIVE_FS_CHECK=1`, the unchanged read-only proof also runs for the
+addon and the alias, the two extra domains with zones of their own: a control while they
+exist, then a final check after removal. Each extra domain's absence counts only after its
+own passed control, and `extra_filesystem` reports both. A subdomain has no zone of its own,
+and its `/etc/userdomains` line is already counted by owner.
+
+**Inspection.** `--inspect-names` runs the same recipe with the same cleanup but writes no
+artifact. It prints, for each phase, the undeclared key names and JSON types that
+`DomainRowsInspection` finds against the effective contract, then the sanitized outcome
+labels. A key's name is printed only for an undeclared key in an object whose contract
+declares named fields, and only as a plain identifier. Every key beneath an undeclared key,
+in an object declaring no fields, or at a map position prints as `<key>` or `*`, as such keys
+can be data such as user or token names. No value, path, token or upstream text is printed. It is the private step before typing a
+field, and its output is never committed.
+
+The current scenario is `domain-rows-disposable-v2`, and **no v2 capture exists**. v2 means
+something different from v1: a single-domain read must return exactly the requested record,
+no zone inventory follows the subdomain's creation, the removed-resource proof runs only once
+the proven account reads removed, and the unreachable expected-refusal support is gone.
+
+The [v1 capture](../../docs/api/evidence/2026-11-02-domain-rows.json) at `e6df465` on
+`11.138.0.19` is a **passed run**, exit 0, and stays the valid record of what ran at that
+revision. Its `single_domain` labels show every single-domain read returning the requested
+record, which v1 recorded without requiring. See the
+[source audit](../../docs/api/source-audit.md#disposable-domain-rows-and-multi-value-dns-reads-2026-11-02).
+
+## Disposable-account user task queue fixture
+
+`user-tasks.php` observes one real `UserTasks` queue entry through both routes and deletes it,
+once, on a fresh disposable account, with no write to `npr` or any other account. It runs at
+committed code, reads only `OBLAK_TEST_WHM_KEY`, and creates its own short-lived writable token:
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 WHM_API_LIVE_FS_CHECK=1 \
+  WHM_API_LIVE_ACCOUNT=wltasks WHM_API_LIVE_DOMAIN=wltasks.example.com \
+  php tools/live-verify/user-tasks.php \
+  --output=docs/api/evidence/YYYY-MM-DD-user-tasks.json
+```
+
+Use a new output path and run it once; a failed run keeps its artifact and is never rerun to
+obtain a better one. The output is written only after cleanup, as a new-only protected file.
+Exit 0 requires the lifecycle and the strict UserTasks review to pass. The shared
+[disposable-account lifecycle](#disposable-account-lifecycle) owns identity, ownership, the
+900-second writable token and account cleanup. `UserTasksGuard` checks both opt-ins and the
+exact account and domain on every request, then the exact method, URI, complete header set and
+body. Each mutation is consumed once, even when refused.
+
+**Producer.** The run queues one clone of a local repository inside the disposable account, and
+cPanel's own queue runner processes it. First a plain `VersionControl/create` makes an empty
+repository there, which queues nothing. Then a second `VersionControl/create` clones it by
+absolute path, with no scheme, host or credential, which queues one `VersionControl`/`create`
+task. The fixture neither starts nor stops that work. The installed source says a local path
+needs no network transport, so the source was chosen for that; network traffic is not
+monitored, and no absence of contact is claimed. Nothing is installed and no server setting
+changes. Both creates go through generic `call()`, because they are fixture steps rather than
+the subject. The producer rests on the installed sources of `11.138.0.19`, inspected read-only
+for this recipe: see the
+[source audit](../../docs/api/source-audit.md#user-task-queue-fixture-2026-11-02).
+
+**Requests**, in order, all on the direct route unless named bridged:
+
+| Phase | Request | Gate |
+| --- | --- | --- |
+| `version` | WHM version | usable version |
+| `home` | `Variables/get_user_information` for `home`, generic GET | exactly `/home/wltasks` |
+| `tasks_initial_direct`, `tasks_initial_bridged` | typed `listTasks()` | an empty JSON list |
+| `source_create` | `VersionControl/create`, no source, generic POST | its own root, no task rows |
+| `clone_create` | `VersionControl/create` from the local path, generic POST | API success |
+| `tasks_queued_direct`, `tasks_queued_bridged` | typed `listTasks()` | recorded |
+| `delete_owned` | typed `deleteTask()`, only while the latest read shows the owned row | recorded |
+| `tasks_after_direct`, `tasks_after_bridged` | typed `listTasks()` | recorded |
+
+Capture stops at the first unexpected state before the producer, so nothing is created on an
+account that does not look as planned. After the producer nothing stops capture: every read
+still runs, and unmet expectations are recorded and fail the run.
+
+**Ownership and the one delete.** Both routes must read an empty queue first, but ownership
+still needs an exact `VersionControl` subsystem, `create` action and this run's clone root,
+read from the original JSON, never from typed results. Task creation is `confirmed` only when
+the producer's response or a queue read showed that row; API success alone leaves it
+`unconfirmed`.
+
+The delete is sent only when the latest readable queue read showed the owned row, by the one ID
+that the producer response and every read agree on, and only if it is a
+`Directory::Queue::Normal` element name. Otherwise it is `not_attempted`, with
+`deletion.reason` saying why:
+
+| `reason` | Meaning |
+| --- | --- |
+| `owned_row_never_seen` | Neither the producer response nor any read showed the row. |
+| `owned_row_not_seen_by_reads` | Only the producer response showed it. |
+| `owned_row_absent_from_latest_read` | An earlier read showed it; the latest readable read did not. |
+| `owned_task_ambiguous` | Several distinct owned IDs; `ownership.distinct_owned_ids` says how many. |
+| `owned_id_not_queue_element` | The one owned ID is no queue element name. |
+
+So a race with the runner is an expectation outcome, `owned_delete_not_attempted`, and never a
+contract failure: the subject review then expects no delete record. Exactly one delete is ever
+authorized, by its literal body, and a refusal is recorded and never retried.
+`deletion.owned_row_in_latest_reads` gives each route's latest queued read, null when that read
+was unreadable. Apart from the producer and that one delete, no queued work is started,
+polled, cancelled or otherwise touched, and other rows are only counted. Deletion proves
+neither completion nor that a process stopped. Both repositories stay for account removal,
+which takes the whole home directory.
+
+**Evidence.** `user_tasks` holds structural probe records, per-read counts (`rows`,
+`owned_rows`, `foreign_rows`), the ownership proof and the delete's outcome, reason and data
+type. Payload paths carry each queue field's wire type; no task ID, argument, path, name, token
+or upstream text is persisted. `expectation_findings` names every unmet expectation by fixed
+label, and each finding fails the expectation of the one record it concerns, or none when it
+concerns the run as a whole. A read after the delete that still shows the row records
+`owned_row_present_after_delete`, or `owned_row_still_queued` when no delete was sent. Task
+`cleanup` keeps `present` when a read saw it; only an unsettled cleanup becomes
+`absent_with_account` once the account is gone.
+
+Two reviews read the records. `discrepancy_review`, policy
+`user-tasks-subject-no-acknowledgments-v2`, gates the run: every planned UserTasks phase and the
+version must appear once, in order, with its contract and route, a successful outcome, UAPI
+status 1 and no discrepancy. `producer_review`, policy `user-tasks-producer-structure-v2`, holds
+the home read and both creates to the same rule with validation `not_checked`. Their
+discrepancies are Variables and VersionControl evidence: they fail that review and are
+reported, but never gate the UserTasks result.
+
+The current scenario is `user-tasks-disposable-v2`, and **no v2 capture exists**. It differs
+from v1 in meaning: v1 deleted on the producer response's word alone, confirmed creation on API
+success, could rewrite observed residue as `absent_with_account`, blamed findings on whichever
+record came last, and reported only the bridged route's latest read. See the
+[source audit](../../docs/api/source-audit.md#user-task-review-corrections-2026-11-02).
+
+The [v1 capture](../../docs/api/evidence/2026-11-02-user-tasks.json) at `fea2d7d` on
+`11.138.0.19` is a **failed run**, exit 1, kept unchanged and not rerun. The producer response
+listed the owned task, then every queue read through both routes was an empty list, and the
+delete v1 sent by that ID returned UAPI status 0. Cleanup and the filesystem proof passed. A
+populated read needs a task that is still queued at the next read, which this producer did not
+give on this server; that is a new recipe, not a rerun. See the
+[source audit](../../docs/api/source-audit.md#user-task-queue-capture).
+
+## Disposable-account LangPHP setters
+
+`php-mutations.php` proves the three LangPHP setters once, on a fresh disposable account,
+through the generated client on direct and WHM-bridged UAPI, with no write to `npr` or any
+other account. It runs at committed code, reads only `OBLAK_TEST_WHM_KEY`, and creates its
+own short-lived writable token:
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 WHM_API_LIVE_FS_CHECK=1 \
+  WHM_API_LIVE_ACCOUNT=wlphpset WHM_API_LIVE_DOMAIN=wlphpset.example.com \
+  php tools/live-verify/php-mutations.php \
+  --output=docs/api/evidence/YYYY-MM-DD-langphp-mutations.json
+```
+
+Use a new output path and run it once; a failed run keeps its artifact. The output is
+written only after cleanup, as a new-only protected file, and exit 0 requires the lifecycle
+and the strict review to pass. The shared [lifecycle](#disposable-account-lifecycle) owns
+identity, ownership, the 900-second token, cleanup and the filesystem proof.
+`LangPhpMutationGuard` checks both opt-ins and the exact account and domain on every
+request, then the exact method, URI, header set and body. Reads come from a fixed list. Each
+mutation needs a single-use authorization naming its phase, and `LangPhpMutationRecipe`
+spells its body independently of the client's encoder.
+
+**Phases.** Preflight reads installed versions, all vhost versions, home basic directives
+and home INI content through both routes, and both routes must agree before anything
+changes. Three groups follow, each writing and then reading back through the matching
+getter on the same route:
+
+| Group | Direct UAPI | WHM bridge | Readback |
+| --- | --- | --- | --- |
+| directives | one scalar `directive` | a numbered `directive`/`directive-1` pair | basic directives must show exactly the written values |
+| content | home INI text | other home INI text | content through the oracle, and the directive getter must show the text's `max_input_vars` and none of the earlier directive values |
+| content `host` | the pinned enum's `type=host` | the same | must be an explicit API refusal, and the home content must read back unchanged |
+| versions | the main domain to another installed version | to a third | `php_get_vhost_versions` with the vhost selector must show the new version |
+
+A group stops at its first unexpected state, and the later groups still run, because they
+touch separate state or replace it whole. No mutation in a group follows an unexpected
+outcome in that group, and nothing repeats. A group whose original state cannot show its
+change, such as a directive already at its target or fewer than two other installed
+versions, sends nothing and blames the preflight read. Everything the run changes lives
+inside the account, so account removal is its only cleanup.
+
+**Content oracle.** The content setter HTML-entity-decodes on write, every write prepends
+the server's comment block, and the getter HTML-entity-encodes on read: this is the
+reviewed 11.138.0.19 handler. Each text holds `+`, `%41`, a quoted word and `&amp;`, so a
+second URL decode, a missing decode on write and a missing encode on read each give a
+different reply. `classifyContent()` reports `verbatim`, `entity_model`, either of those
+`_after_server_comments`, `other` or `absent`, and counts the comment and blank lines in
+front without depending on their wording. Only `other` and `absent` fail.
+
+**Evidence.** `langphp_mutations` holds the structural probe records, the original state,
+the outcome of each change by route, the `host` outcomes, the vhost readback root, and the
+lifecycle report. No account names, versions, paths, directive values, INI content, tokens
+or upstream text are persisted. The two `host` records stay failed probes with `api_failure`
+and UAPI status 0, while their expectations pass. Policy
+`langphp-mutations-no-acknowledgments-v1` has no acknowledgment mechanism.
+
+Readback proves what the API stores and reports, not what PHP does at runtime. The run
+covers the home INI scope only, one main domain with no FPM or impacted-domain variants,
+and one server version.
+
+The [first capture](../../docs/api/evidence/2026-11-02-langphp-mutations.json) at `c4a124a`
+on `11.138.0.19` is a **passed run**, exit 0, with the filesystem proof enabled. All 27
+phases passed with no review findings. Both directive encodings read back exactly, both
+content writes classified as `entity_model_after_server_comments` behind four comment lines
+and a blank line, `host` was refused on both routes with the content unchanged, and both
+version writes read back as a single object. Account, token, domain, zone and filesystem
+cleanup are `confirmed_absent`. See the
+[source audit](../../docs/api/source-audit.md#disposable-account-langphp-setters-2026-11-02).
 
 ## Disposable-account Mime and directory-access mutations
 
