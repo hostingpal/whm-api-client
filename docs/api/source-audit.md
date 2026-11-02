@@ -10934,3 +10934,52 @@ Tests that failed first cover a clean double run that removes its files and now 
 failed deletion that fails `cleanup` and the run, a callback the lifecycle never calls (a
 refused or lost account removal, or an account never created) that touches nothing, and each
 gate and outcome label. No live run and no SSH write of any kind accompanied this change.
+
+### Webmail session second review corrections (2026-11-02)
+
+A second independent review of the branch found eight issues. Each was confirmed and fixed,
+with tests that failed first; none was rejected. No live run and no SSH write of any kind
+accompanied these corrections, and the v1 artifact is unchanged.
+
+- **A failed deletion lost its report.** A deletion that find reported as failed, for
+  example on an immutable file or a refused folder, left `deleted=` blank, so the whole report
+  was refused and its counts were lost. The removal now reports `attempted` and
+  `deletion_failed` beside both classifications. The fixture fails with
+  `session_file_deletion_failed` and keeps the counts.
+- **One failed run blocks every later run.** This fail-safe stays: the cleanup never deletes a
+  file the current run did not create, so a session name seen before the exercise refuses it.
+  The manual recovery is now documented in the recipe README. The owner confirms that no
+  `wlsession` account exists and no other account's name contains `wlsession`. They remove by
+  hand only regular files under `/var/cpanel/sessions` whose names begin with `wlsession:`, or
+  with `box`, 16 lowercase hexadecimal characters and `@wlsession.example.com:` or
+  `%40wlsession.example.com:`. They leave anything else for investigation, and continue only
+  when the read-only proof reads `confirmed_absent`.
+- **The AGENTS.md conflict.** Until the owner decides whether AGENTS.md should carry an
+  exception, the root deletion does not run automatically. It needs its own opt-in,
+  `WHM_API_LIVE_SESSION_CLEANUP=1`, separate from `WHM_API_LIVE_FS_CHECK`, checked by
+  `SshSessionFileCleanup::remove()` itself before any process starts. Without it, the callback
+  only reads the residue once and fails with `session_files_left_for_owner`, so the run fails
+  as before. AGENTS.md is unchanged.
+- **A duplicated control rule.** `ControlRecordingProof` copied the lifecycle's control rule.
+  `DisposableAccountLifecycle` now passes its recorded `filesystem_control`, `status` and
+  `counts`, to the removed-resource callback, and the fixture gates on that. The class is
+  removed. Existing callbacks declare no parameter, so the domain-rows recipe and its tests are
+  unchanged. A commit-order slip removed the class files one commit before the fixture stopped
+  using it; the commit message says so, and the branch head is consistent.
+- **A stale docblock.** `SshFilesystemAbsenceProof` still said nothing had shown how session
+  files are named. It now matches the README.
+- **Paths in records.** Anchored records printed their folder path, which carried a
+  directory's name and let a newline in it split a record. They now print the depth, reported
+  as `top_level` and `in_subfolders`. A test shows that a folder whose name holds a newline and
+  a forged record changes only its own honest counts.
+- **An extra walk.** The opted-in path no longer sends the read-only observation first. The
+  removal script already counts before it deletes and stops if it cannot, so no gate is
+  weaker, and one connection and one walk are saved.
+- **Dead state.** The constructor no longer sets `session_files` only for `run()` to overwrite
+  it.
+
+The report changed meaning again, so the scenario is `webmail-sessions-disposable-v4`. The
+review policy `webmail-sessions-no-acknowledgments-v1` is unchanged. **No v4 capture exists**,
+and neither do v2 or v3 ones; the v1 artifact remains the valid record of what ran at
+`f930653`. The review's note on a third copy of raw-envelope decoding is left for
+`whm-api-client-bis`.

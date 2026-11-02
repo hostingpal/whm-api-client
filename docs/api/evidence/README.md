@@ -1491,8 +1491,10 @@ first positive control for the proof's session check. The scoped cleanup removed
 the rerun proof read `confirmed_absent`. See the
 [source audit](../source-audit.md#disposable-webmail-session-capture-2026-11-02). SHA-256:
 `d0751e2b059d574583bfa216441e370058a3233de685180e0f8b9f4bcb68acd6`. It stays the valid record
-of what ran at that revision. The fixture has since moved to `webmail-sessions-disposable-v3`,
-whose session-file cleanup runs inside the lifecycle before its final proof and whose report
-differs, and no v2 or v3 capture exists; see the
-[review corrections](../source-audit.md#webmail-session-review-corrections-2026-11-02) and
-[the cleanup move](../source-audit.md#webmail-session-cleanup-inside-the-lifecycle-2026-11-02).
+of what ran at that revision. The fixture has since moved to `webmail-sessions-disposable-v4`,
+whose session-file cleanup runs inside the lifecycle before its final proof, only with its own
+opt-in `WHM_API_LIVE_SESSION_CLEANUP=1`, and whose report differs. No v2, v3 or v4 capture
+exists; see the [review corrections](../source-audit.md#webmail-session-review-corrections-2026-11-02),
+[the cleanup move](../source-audit.md#webmail-session-cleanup-inside-the-lifecycle-2026-11-02)
+and the
+[second review](../source-audit.md#webmail-session-second-review-corrections-2026-11-02).
