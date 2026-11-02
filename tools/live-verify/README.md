@@ -220,13 +220,13 @@ linked pair, for 69 read observations across 38 operations. It then removes only
 and verifies their absence. It requires an additional mutation opt-in:
 
 ```sh
-WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 php tools/live-verify/verify.php \
+WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 composer live:verify -- \
   --mysql-fixture --output=docs/api/evidence/mysql-populated.json
 ```
 
-Run fixtures with `php` directly, never through `composer live:verify`. Composer stops
-a script after 300 seconds by default, and that limit can end a mutation run between
-creating its resources and removing them.
+`composer live:verify` first calls `Composer\Config::disableProcessTimeout`. Composer
+otherwise stops a script after 300 seconds, which could end a mutation run between creating
+its resources and removing them. Keep that call first in the script.
 
 The recipe uses the existing cPanel token for `npr`; it never creates or deletes
 the cPanel account. Proposed resource names must be absent before any mutation.
@@ -311,12 +311,13 @@ must be explicitly selected, with both live opt-ins:
 ```sh
 WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 \
   WHM_API_LIVE_ACCOUNT=wqfinite WHM_API_LIVE_DOMAIN=wqfinite.example.com \
-  php tools/live-verify/verify.php --finite-quota-fixture \
+  composer live:verify -- --finite-quota-fixture \
   --output=docs/api/evidence/finite-quota.json
 ```
 
-This runs the 67-probe baseline before the fixture, which is why it goes straight to `php`:
-Composer's 300-second script limit could otherwise end it with the account still in place.
+This runs the 67-probe baseline before the fixture, which can take longer than Composer's
+default 300-second script limit; the script disables that limit, so the run is never cut off
+with the account still in place.
 
 The account, domain and DNS zone must be absent before creation. The recipe
 creates an account with a finite 64 MB disk quota, no shell or dedicated IP,
