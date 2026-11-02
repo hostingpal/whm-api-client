@@ -17,9 +17,13 @@ namespace HostingPal\WhmApiClient\Tools\LiveVerify;
  * A search that fails prints no count, and the strict parser refuses a report with a blank one, so an unreadable place
  * can never read as absent. That covers a subtree a top-level inventory cannot see. Each location also reports its own
  * inventory beside the match, because an empty place cannot show absence either: no match in an empty `/etc/passwd`
- * proves nothing. The session match is deliberately wide, any name containing the account name, because nothing has
- * shown how session files are named. A connection, exit status, timeout or reply that is not exactly the expected
- * report is `unconfirmed`. Standard error is read and discarded, never logged.
+ * proves nothing. Names are matched as whole fields wherever the format is known: `/etc/passwd` by its first field,
+ * and `/etc/userdomains`, whose lines are `<domain>: <owner>`, by either field, compared exactly. The session match
+ * is deliberately wide, any name containing the account name, because nothing has shown how session files are named.
+ * Its cost is false residue: another account whose name contains this one makes a run fail, never pass. A
+ * connection, exit status, timeout or reply that is not exactly the expected report is `unconfirmed`. Standard error
+ * is read and discarded, never logged. The process is killed only while it is still running: once reaped, its number
+ * can belong to another process.
  *
  * @phpstan-import-type Finding from FilesystemAbsenceProof
  */
@@ -29,7 +33,8 @@ final class SshFilesystemAbsenceProof implements FilesystemAbsenceProof
      * Each read stays one printed count; the positional account name and domain are `$1` and `$2`.
      *
      * `matches` keeps find's own exit status, which a pipe into a counter would lose, and `lines` treats grep's exit 1
-     * as the answer zero and 2 as no answer. A failed read prints nothing, leaving the blank the parser refuses.
+     * as the answer zero and 2 as no answer. `owners` compares both userdomains fields exactly, as a domain's dots
+     * would be wildcards to grep. A failed read prints nothing, leaving the blank the parser refuses.
      */
     public const SCRIPT = <<<'SCRIPT'
         matches() {
@@ -40,6 +45,10 @@ final class SshFilesystemAbsenceProof implements FilesystemAbsenceProof
             count=$(grep -c "$@")
             [ "$?" -le 1 ] && printf '%s' "$count"
         }
+        owners() {
+            found=$(awk -F ': ' -v user="$1" -v domain="$2" '$1 == domain || $2 == user' /etc/userdomains) || return 1
+            printf '%s' "$found" | grep -c ''
+        }
         printf 'home_inventory=%s\n' "$(matches /home -mindepth 1 -maxdepth 1)"
         printf 'home=%s\n' "$(matches /home -mindepth 1 -maxdepth 1 -name "$1")"
         printf 'users_inventory=%s\n' "$(matches /var/cpanel/users -mindepth 1 -maxdepth 1)"
@@ -47,7 +56,7 @@ final class SshFilesystemAbsenceProof implements FilesystemAbsenceProof
         printf 'userdata_inventory=%s\n' "$(matches /var/cpanel/userdata -mindepth 1 -maxdepth 1)"
         printf 'userdata=%s\n' "$(matches /var/cpanel/userdata -mindepth 1 -maxdepth 1 -name "$1")"
         printf 'userdomains_inventory=%s\n' "$(lines '' /etc/userdomains)"
-        printf 'userdomains=%s\n' "$(lines -F -e "$1" -e "$2" /etc/userdomains)"
+        printf 'userdomains=%s\n' "$(owners "$1" "$2")"
         printf 'passwd_inventory=%s\n' "$(lines '' /etc/passwd)"
         printf 'passwd=%s\n' "$(lines "^$1:" /etc/passwd)"
         printf 'zones_inventory=%s\n' "$(matches /var/named -mindepth 1 -maxdepth 1 -name '*.db')"
@@ -175,7 +184,11 @@ final class SshFilesystemAbsenceProof implements FilesystemAbsenceProof
         foreach ($open as $pipe) {
             fclose($pipe);
         }
-        proc_terminate($process, 9);
+        // A reaped process's number may already belong to another process, so kill only one still running.
+        // proc_get_status() caches the exit status since PHP 8.3, so it never reports a reaped process as running.
+        if (proc_get_status($process)['running']) {
+            proc_terminate($process, 9);
+        }
         proc_close($process);
 
         return $exit === 0 && strlen($stdout) <= self::MAXIMUM_OUTPUT ? $stdout : null;

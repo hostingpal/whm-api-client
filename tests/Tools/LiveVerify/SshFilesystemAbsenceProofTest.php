@@ -32,8 +32,15 @@ final class SshFilesystemAbsenceProofTest extends TestCase
 
     private string|false $savedToken = false;
 
+    public static function setUpBeforeClass(): void
+    {
+        // Must load before the proof's first call, which binds the function it resolves.
+        require_once __DIR__ . '/ProcessSignalSpy.php';
+    }
+
     protected function setUp(): void
     {
+        self::signals(reset: true);
         $this->directory = sys_get_temp_dir() . '/ssh-proof-' . bin2hex(random_bytes(8));
         mkdir($this->directory, 0700);
         $optIn = getenv('WHM_API_LIVE_FS_CHECK');
@@ -122,12 +129,17 @@ final class SshFilesystemAbsenceProofTest extends TestCase
             '    count=$(grep -c "$@")',
             "    [ \"\$?\" -le 1 ] && printf '%s' \"\$count\"",
             '}',
-        ], array_splice($lines, 0, 8));
+            'owners() {',
+            "    found=$(awk -F ': ' -v user=\"\$1\" -v domain=\"\$2\" '\$1 == domain || \$2 == user' "
+                . '/etc/userdomains) || return 1',
+            "    printf '%s' \"\$found\" | grep -c ''",
+            '}',
+        ], array_splice($lines, 0, 12));
         self::assertSame("printf 'complete=1\\n'", array_pop($lines));
         self::assertCount(14, $lines);
         foreach ($lines as $line) {
             self::assertMatchesRegularExpression(
-                '/\Aprintf \'[a-z_]+=%s\\\\n\' "\$\((?:matches|lines) [^;&|<>`]+\)"\z/',
+                '/\Aprintf \'[a-z_]+=%s\\\\n\' "\$\((?:matches [^;&|<>`]+|lines [^;&|<>`]+|owners "\$1" "\$2")\)"\z/',
                 $line,
             );
             self::assertDoesNotMatchRegularExpression(
@@ -232,6 +244,66 @@ final class SshFilesystemAbsenceProofTest extends TestCase
 
         self::assertSame(
             ['outcome' => 'confirmed_absent', 'residue' => []],
+            $this->realScript($tree)->check(self::USER, self::DOMAIN),
+        );
+    }
+
+    /**
+     * userdomains is compared by whole field, `<domain>: <owner>`: a name inside another field is someone else's.
+     *
+     * @param non-empty-string $line
+     */
+    #[DataProvider('otherAccountsDomainLines')]
+    public function testAnotherAccountsDomainLineIsNeitherResidueNorPresence(string $line): void
+    {
+        $tree = $this->tree();
+        file_put_contents($tree . '/etc/userdomains', $line . "\n", FILE_APPEND);
+
+        self::assertSame(
+            ['outcome' => 'confirmed_absent', 'residue' => []],
+            $this->realScript($tree)->check(self::USER, self::DOMAIN),
+        );
+    }
+
+    /** @return iterable<string, array{non-empty-string}> */
+    public static function otherAccountsDomainLines(): iterable
+    {
+        yield 'owner extends the name' => ['other.example.com: wluploadextra'];
+        yield 'owner contains the name' => ['other.example.com: xwlupload'];
+        yield 'domain contains the name' => ['wlupload.example.com.other.test: other'];
+        yield 'domain extends ours on the left' => ['sub.wlupload.example.com: other'];
+        yield 'dots not taken as wildcards' => ['wluploadxexamplexcom: other'];
+        yield 'owner name as a domain label' => ['wlupload.other.test: other'];
+    }
+
+    /** The same exact fields find every line the account really holds, and nothing it does not. */
+    public function testOwnedDomainLinesCountOncePerLine(): void
+    {
+        $tree = $this->tree();
+        file_put_contents(
+            $tree . '/etc/userdomains',
+            "wlupload.example.com: wlupload\nsub.wlupload.example.com: wlupload\nother.example.com: wluploadextra\n",
+            FILE_APPEND,
+        );
+
+        self::assertSame(
+            ['outcome' => 'present', 'residue' => ['userdomains' => 2]],
+            $this->realScript($tree)->check(self::USER, self::DOMAIN),
+        );
+    }
+
+    /**
+     * The session match stays wide, as nothing has shown how session files are named. Its known cost: any session
+     * name that merely contains the account name, such as another account's, reads as residue. It fails a run, never
+     * passes one.
+     */
+    public function testSessionMatchIsWideEnoughToCatchAnotherAccountsSession(): void
+    {
+        $tree = $this->tree();
+        file_put_contents($tree . '/var/cpanel/sessions/raw/wluploadextra:abc', 'x');
+
+        self::assertSame(
+            ['outcome' => 'present', 'residue' => ['sessions' => 1]],
             $this->realScript($tree)->check(self::USER, self::DOMAIN),
         );
     }
@@ -453,6 +525,48 @@ final class SshFilesystemAbsenceProofTest extends TestCase
         self::assertSame(['outcome' => 'unconfirmed', 'residue' => []], $proof->check(self::USER, self::DOMAIN));
     }
 
+    /** A process that already exited and was reaped is never signalled: its number may now name another process. */
+    public function testAProcessThatHasExitedIsNeverSignalled(): void
+    {
+        $ssh = $this->standIn('cat > /dev/null' . "\n" . 'printf ' . escapeshellarg(self::CLEAN) . "\n");
+        $finding = (new SshFilesystemAbsenceProof($ssh))->check(self::USER, self::DOMAIN);
+
+        self::assertSame(['outcome' => 'confirmed_absent', 'residue' => []], $finding);
+        self::assertSame([], self::signals());
+    }
+
+    /** A failing reply that still exited is not signalled either; only a live process can be. */
+    public function testAFailedExitIsNeverSignalled(): void
+    {
+        $ssh = $this->standIn("cat > /dev/null\nexit 255\n");
+        (new SshFilesystemAbsenceProof($ssh))->check(self::USER, self::DOMAIN);
+
+        self::assertSame([], self::signals());
+    }
+
+    /** A process still running at the bound is killed, once, and is gone before the check returns. */
+    #[DataProvider('liveProcesses')]
+    public function testAProcessStillRunningIsKilled(string $body, float $timeout): void
+    {
+        $pidFile = $this->directory . '/pid';
+        $ssh = $this->standIn('echo $$ > ' . escapeshellarg($pidFile) . "\n" . $body);
+        $finding = (new SshFilesystemAbsenceProof($ssh, $timeout))->check(self::USER, self::DOMAIN);
+
+        self::assertSame(['outcome' => 'unconfirmed', 'residue' => []], $finding);
+        self::assertSame([9], self::signals());
+        $pid = (int) file_get_contents($pidFile);
+        self::assertGreaterThan(1, $pid);
+        self::assertFalse(posix_kill($pid, 0));
+    }
+
+    /** @return iterable<string, array{string, float}> */
+    public static function liveProcesses(): iterable
+    {
+        yield 'timed out' => ["exec sleep 5\n", 0.2];
+        yield 'closed its output and kept running' => ["exec >&- 2>&-\nexec sleep 5\n", 0.2];
+        yield 'too much output' => ["exec yes private-output\n", 30.0];
+    }
+
     /** A stalled connection must end the check in bounded time, whether it holds its output open or closes it. */
     #[DataProvider('stalledConnections')]
     public function testStalledConnectionIsUnconfirmedInBoundedTime(string $body): void
@@ -593,5 +707,15 @@ final class SshFilesystemAbsenceProofTest extends TestCase
             $entry->isDir() ? rmdir($entry->getPathname()) : unlink($entry->getPathname());
         }
         rmdir($path);
+    }
+
+    /**
+     * Signals the proof sent since the last reset, as recorded by the test-only proc_terminate() shadow.
+     *
+     * @return list<int>
+     */
+    private static function signals(bool $reset = false): array
+    {
+        return \HostingPal\WhmApiClient\Tools\LiveVerify\sentSignals(reset: $reset);
     }
 }
