@@ -159,9 +159,20 @@ final class WebmailSessionCommandTest extends TestCase
 
             return $lines . 'complete=1\n';
         };
-        $observed = 'inventory=40\nwide=' . $left . '\nown=' . intdiv($left, 2) . '\nmailbox_encoded='
-            . ($left - intdiv($left, 2)) . '\nmailbox_literal=0\nanchored=' . $left . '\nunexplained=0\ntoken_suffix='
-            . $left . '\ndirectories=' . ($left === 0 ? 0 : 2) . '\ncomplete=1\n';
+        $classified = static function (string $prefix, int $files) use ($left): string {
+            $counts = ['inventory' => 40 - $left + $files, 'wide' => $files, 'own' => 0, 'mailbox_encoded' => 0,
+                'mailbox_literal' => $files, 'anchored_other' => 0, 'unexplained' => 0, 'token_suffix' => 0,
+                'directories' => $files === 0 ? 0 : 2];
+            $lines = '';
+            foreach ($counts as $label => $count) {
+                $lines .= $prefix . $label . '=' . $count . '\n';
+            }
+
+            return $lines;
+        };
+        $observed = $classified('', $left) . 'complete=1\n';
+        $removed = $classified('before_', $left) . 'deleted=' . $left . '\n' . $classified('after_', 0)
+            . 'complete=1\n';
         $calls = escapeshellarg($directory . '/ssh-calls');
         file_put_contents($directory . '/bin/ssh', "#!/bin/sh\nscript=$(cat)\n"
             . 'case "$script" in' . "\n"
@@ -173,8 +184,7 @@ final class WebmailSessionCommandTest extends TestCase
             . "      1) printf '" . $report(0, $left) . "' ;;\n"
             . "      *) printf '" . $report(0, 0) . "' ;;\n"
             . "    esac ;;\n"
-            . "  *-delete*) echo remove >> " . $calls . "; printf 'before=" . $left . '\ndeleted=' . $left
-            . "\\nafter=0\\nwide_after=0\\ncomplete=1\\n' ;;\n"
+            . "  *-delete*) echo remove >> " . $calls . "; printf '" . $removed . "' ;;\n"
             . "  *) echo observe >> " . $calls . "; printf '" . $observed . "' ;;\n"
             . "esac\n");
         chmod($directory . '/bin/ssh', 0700);

@@ -87,7 +87,7 @@ use Throwable;
  *     filesystem_control: FilesystemControl
  * }
  * @phpstan-type Scenario array{
- *     scenario: 'webmail-sessions-disposable-v1', target_role: 'disposable-test-account', probes: list<Observation>,
+ *     scenario: 'webmail-sessions-disposable-v2', target_role: 'disposable-test-account', probes: list<Observation>,
  *     credentials: array<string, Credential>, active_sessions: ActiveSessions, session_files: SessionFiles,
  *     discrepancy_review: Assessment, fixture: Report, limitations: list<string>
  * }
@@ -116,8 +116,6 @@ final class WebmailSessionFixture
 
     /** @var SessionFiles */
     private array $sessionFiles;
-
-    private ?Client $direct = null;
 
     /** @var list<Observation> */
     private array $records = [];
@@ -224,11 +222,10 @@ final class WebmailSessionFixture
         try {
             $this->guard->bindToken($token);
             $factory = new Psr17Factory();
-            $this->direct = new Client([
+            $this->exercise(new Client([
                 'host' => self::HOST, 'port' => 2083, 'authType' => 'cpanel',
                 'username' => WebmailSessionRecipe::ACCOUNT, 'token' => $token,
-            ], new HttpTransport($this->capture, $factory, $factory));
-            $this->exercise($this->direct);
+            ], new HttpTransport($this->capture, $factory, $factory)));
             $finished = true;
         } catch (Throwable) {
             $this->report['stopped_at'] = $this->current;
@@ -379,7 +376,8 @@ final class WebmailSessionFixture
      *
      * Every gate must hold: the proof and the cleanup were supplied, the marker proved the account and its removal was
      * read as absent, the control passed and saw no session name before the exercise, and the observation is readable.
-     * Only anchored regular files are removed; anything unexplained stays and is reported. Nothing here repeats.
+     * Only anchored regular files are removed; every other anchored entry and unexplained name stays and is reported.
+     * Nothing here repeats.
      *
      * @param Outcome $outcome
      * @return SessionFiles
@@ -412,9 +410,10 @@ final class WebmailSessionFixture
         if ($observed === null) {
             return self::sessionFiles('unconfirmed', 'observation_unreadable');
         }
-        if ($observed['own'] + $observed['mailbox_encoded'] + $observed['mailbox_literal'] === 0) {
-            return $observed['wide'] === 0 ? self::sessionFiles('not_required', null, $observed)
-                : self::sessionFiles('residue_left', 'no_anchored_files', $observed);
+        if (self::anchoredFiles($observed) === 0) {
+            return $observed['wide'] === 0 && self::otherNames($observed) === 0
+                ? self::sessionFiles('not_required', null, $observed)
+                : self::sessionFiles('residue_left', 'no_anchored_regular_files', $observed);
         }
         try {
             $removal = $cleanup->remove($user, $domain, $this->recipe->mailbox);
@@ -428,14 +427,36 @@ final class WebmailSessionFixture
         }
         [$status, $reason] = match (true) {
             $removal === null => ['unconfirmed', 'removal_unreadable'],
-            $removal['after'] !== 0 || $removal['deleted'] !== $removal['before']
+            self::anchoredFiles($removal['after']) !== 0
+                || $removal['deleted'] !== self::anchoredFiles($removal['before'])
                 => ['residue_left', 'anchored_files_remain'],
-            $removal['wide_after'] !== 0 => ['residue_left', 'unexplained_names_remain'],
+            $removal['after']['wide'] !== 0 || self::otherNames($removal['after']) !== 0
+                => ['residue_left', 'other_names_remain'],
             $reproof['outcome'] !== 'confirmed_absent' => ['unconfirmed', 'reproof_not_absent'],
             default => ['removed', null],
         };
 
         return self::sessionFiles($status, $reason, $observed, $removal, $reproof);
+    }
+
+    /**
+     * The anchored regular files: the only entries the removal deletes.
+     *
+     * @param FileObservation $counts
+     */
+    private static function anchoredFiles(array $counts): int
+    {
+        return $counts['own'] + $counts['mailbox_encoded'] + $counts['mailbox_literal'];
+    }
+
+    /**
+     * Anchored entries that are not regular files, and unexplained names: reported, never deleted.
+     *
+     * @param FileObservation $counts
+     */
+    private static function otherNames(array $counts): int
+    {
+        return $counts['anchored_other'] + $counts['unexplained'];
     }
 
     /**
@@ -456,17 +477,20 @@ final class WebmailSessionFixture
             'reproof' => $reproof];
     }
 
-    /** Build one phase's probe; argument values stay inside its closure and never reach the record. */
-    private function probe(string $phase): Probe
+    /**
+     * The one typed call of a phase; argument values stay inside the closure and never reach the record.
+     *
+     * @return Closure(Client): mixed
+     */
+    private function invoker(string $phase): Closure
     {
         $recipe = $this->recipe;
-        $contract = WebmailSessionEvidence::contract($phase);
-        $route = WebmailSessionRecipe::route($phase);
-        $account = $route === 'bridged-uapi' ? WebmailSessionRecipe::ACCOUNT : null;
+        $account = WebmailSessionRecipe::route($phase) === 'bridged-uapi' ? WebmailSessionRecipe::ACCOUNT : null;
         $creator = WebmailSessionRecipe::creator($phase);
         $domain = WebmailSessionRecipe::DOMAIN;
         $address = WebmailSessionRecipe::REMOTE_ADDRESS;
-        $invoke = match (true) {
+
+        return match (true) {
             $phase === 'version' => static fn (Client $client): mixed => $client->whm()->server()->version(),
             str_starts_with($phase, 'sessions_') => static fn (Client $client): mixed =>
                 $client->uapi($account)->activeSessions()->listActiveSessions(),
@@ -494,13 +518,30 @@ final class WebmailSessionFixture
                 ),
             default => throw new LogicException('Unknown Webmail session phase.'),
         };
+    }
 
-        return new Probe(
+    /**
+     * Capture one call through the shared runner, returning its typed result for expectations only.
+     *
+     * The phase's one probe keeps the result in memory; the runner clears prior capture and never retries, and the
+     * record carries only structural evidence.
+     */
+    private function observe(string $phase, Client $client): mixed
+    {
+        $this->current = $phase;
+        $contract = WebmailSessionEvidence::contract($phase);
+        $route = WebmailSessionRecipe::route($phase);
+        $creator = WebmailSessionRecipe::creator($phase);
+        $invoke = $this->invoker($phase);
+        $result = null;
+        $record = $this->runner->capture(new Probe(
             $contract['operation'],
             $route,
             $contract['spec'],
-            $recipe->request($phase)['uri'],
-            $invoke,
+            $this->recipe->request($phase)['uri'],
+            static function (#[SensitiveParameter] Client $client) use ($invoke, &$result): mixed {
+                return $result = $invoke($client);
+            },
             null,
             $contract['variant'],
             match (true) {
@@ -508,34 +549,8 @@ final class WebmailSessionFixture
                 $phase === 'create_mailbox' => 'welcome-mail-disabled',
                 default => null,
             },
-        );
-    }
-
-    /**
-     * Capture one call through the shared runner, returning its typed result for expectations only.
-     *
-     * The runner clears prior capture and never retries; the record carries only structural evidence.
-     */
-    private function observe(string $phase, Client $client): mixed
-    {
-        $this->current = $phase;
-        $probe = $this->probe($phase);
-        $result = null;
-        $invoke = $probe->invoke;
-        $wrapped = new Probe(
-            $probe->operation,
-            $probe->route,
-            $probe->spec,
-            $probe->uri,
-            static function (#[SensitiveParameter] Client $client) use ($invoke, &$result): mixed {
-                return $result = $invoke($client);
-            },
-            null,
-            $probe->sourceVariant,
-            $probe->argumentVariant,
-        );
-        $record = $this->runner->capture($wrapped, $this->capture, $client);
-        $metadata = match ($probe->route) {
+        ), $this->capture, $client);
+        $metadata = match ($route) {
             'direct-uapi' => $client->uapi()->responseMeta(),
             'bridged-uapi' => $client->uapi(WebmailSessionRecipe::ACCOUNT)->responseMeta(),
             default => null,
@@ -634,7 +649,7 @@ final class WebmailSessionFixture
         $removed = $this->sessionFiles['status'] === 'removed';
 
         return [
-            'scenario' => 'webmail-sessions-disposable-v1',
+            'scenario' => 'webmail-sessions-disposable-v2',
             'target_role' => 'disposable-test-account',
             'probes' => $records,
             'credentials' => $this->credentials,

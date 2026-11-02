@@ -19,10 +19,18 @@ final class RecordingSessionFileCleanup implements SessionFileCleanup
     /** What a removed account's own files look like: two self and two encoded mailbox files in two folders. */
     public const OBSERVED = [
         'inventory' => 40, 'wide' => 4, 'own' => 2, 'mailbox_encoded' => 2, 'mailbox_literal' => 0,
-        'anchored' => 4, 'unexplained' => 0, 'token_suffix' => 4, 'directories' => 2,
+        'anchored_other' => 0, 'unexplained' => 0, 'token_suffix' => 4, 'directories' => 2,
     ];
 
-    public const REMOVED = ['before' => 4, 'deleted' => 4, 'after' => 0, 'wide_after' => 0];
+    /** All four removed, and nothing anchored or containing the account name left. */
+    public const REMOVED = [
+        'before' => self::OBSERVED,
+        'deleted' => 4,
+        'after' => [
+            'inventory' => 36, 'wide' => 0, 'own' => 0, 'mailbox_encoded' => 0, 'mailbox_literal' => 0,
+            'anchored_other' => 0, 'unexplained' => 0, 'token_suffix' => 0, 'directories' => 0,
+        ],
+    ];
 
     /** @var list<array{string, string, string, string}> Step, user, domain and mailbox of every call. */
     public array $calls = [];

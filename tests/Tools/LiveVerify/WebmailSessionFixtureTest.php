@@ -18,6 +18,8 @@ use Psr\Http\Message\RequestInterface;
  * @phpstan-import-type Observation from WebmailSessionFixture
  * @phpstan-import-type Context from EvidenceRunner
  * @phpstan-import-type Finding from FilesystemAbsenceProof
+ * @phpstan-import-type Observation from SessionFileCleanup as FileObservation
+ * @phpstan-import-type Removal from SessionFileCleanup
  */
 final class WebmailSessionFixtureTest extends TestCase
 {
@@ -58,7 +60,7 @@ final class WebmailSessionFixtureTest extends TestCase
         $fixture = $scenario['fixture'];
 
         self::assertSame('passed', $fixture['status'], (string) json_encode($fixture['failures']));
-        self::assertSame('webmail-sessions-disposable-v1', $scenario['scenario']);
+        self::assertSame('webmail-sessions-disposable-v2', $scenario['scenario']);
         self::assertSame(
             ['policy' => 'webmail-sessions-no-acknowledgments-v1', 'status' => 'passed', 'findings' => []],
             $scenario['discrepancy_review'],
@@ -456,9 +458,9 @@ final class WebmailSessionFixtureTest extends TestCase
     }
 
     /**
-     * @param array<string, int>|null $observed
-     * @param array<string, int>|null $removed
-     * @param array{outcome: string, residue: array<string, int>}|null $reproof
+     * @param FileObservation|null $observed
+     * @param Removal|null $removed
+     * @param Finding|null $reproof
      * @param list<string> $steps
      */
     #[DataProvider('sessionCleanupOutcomes')]
@@ -470,15 +472,11 @@ final class WebmailSessionFixtureTest extends TestCase
         ?string $reason,
         array $steps,
     ): void {
-        /** @var array{inventory: int, wide: int, own: int, mailbox_encoded: int, mailbox_literal: int,
-         *     anchored: int, unexplained: int, token_suffix: int, directories: int}|null $observed */
-        /** @var array{before: int, deleted: int, after: int, wide_after: int}|null $removed */
         $cleanup = new RecordingSessionFileCleanup($observed, $removed);
         $findings = [RecordingFilesystemProof::PRESENT, ['outcome' => 'present', 'residue' => ['sessions' => 4]]];
         if ($reproof !== null) {
             $findings[] = $reproof;
         }
-        /** @var list<Finding> $findings */
         $scenario = self::scenario(new WebmailSessionServer(), new RecordingFilesystemProof($findings), $cleanup);
         $files = $scenario['session_files'];
 
@@ -490,36 +488,46 @@ final class WebmailSessionFixtureTest extends TestCase
     }
 
     /**
+     * Every outcome uses the same classification: regular anchored files are removed, and every other anchored entry
+     * or unexplained name is reported as remaining, never lost.
+     *
      * @return iterable<string, array{
-     *     array<string, int>|null, array<string, int>|null, array{outcome: string, residue: array<string, int>}|null,
-     *     string, string|null, list<string>
+     *     FileObservation|null, Removal|null, Finding|null, string, string|null, list<string>
      * }>
      */
     public static function sessionCleanupOutcomes(): iterable
     {
         $observed = RecordingSessionFileCleanup::OBSERVED;
         $removed = RecordingSessionFileCleanup::REMOVED;
+        $after = $removed['after'];
         $absent = ['outcome' => 'confirmed_absent', 'residue' => []];
         $none = ['inventory' => 40, 'wide' => 0, 'own' => 0, 'mailbox_encoded' => 0, 'mailbox_literal' => 0,
-            'anchored' => 0, 'unexplained' => 0, 'token_suffix' => 0, 'directories' => 0];
+            'anchored_other' => 0, 'unexplained' => 0, 'token_suffix' => 0, 'directories' => 0];
+        $both = ['observe', 'remove'];
         yield 'nothing to remove' => [$none, $removed, null, 'not_required', null, ['observe']];
         yield 'only unexplained names' => [
         [...$none, 'wide' => 2, 'unexplained' => 2], $removed, null,
-            'residue_left', 'no_anchored_files', ['observe']];
-        yield 'anchored symlink only' => [
-        [...$none, 'wide' => 1, 'anchored' => 1], $removed, null, 'residue_left',
-            'no_anchored_files', ['observe']];
+            'residue_left', 'no_anchored_regular_files', ['observe']];
+        yield 'only an anchored link' => [
+        [...$none, 'wide' => 1, 'anchored_other' => 1], $removed, null,
+            'residue_left', 'no_anchored_regular_files', ['observe']];
         yield 'unreadable observation' => [null, $removed, null, 'unconfirmed', 'observation_unreadable', ['observe']];
-        yield 'unreadable removal' => [$observed, null, $absent, 'unconfirmed', 'removal_unreadable',
-            ['observe', 'remove']];
-        yield 'anchored files remain' => [$observed, [...$removed, 'deleted' => 3, 'after' => 1], $absent,
-            'residue_left', 'anchored_files_remain', ['observe', 'remove']];
-        yield 'unexplained names remain' => [
+        yield 'unreadable removal' => [$observed, null, $absent, 'unconfirmed', 'removal_unreadable', $both];
+        yield 'an anchored file remains' => [$observed,
+            [...$removed, 'deleted' => 3, 'after' => [...$after, 'wide' => 1, 'own' => 1]], $absent,
+            'residue_left', 'anchored_files_remain', $both];
+        yield 'fewer deleted than counted before' => [$observed, [...$removed, 'deleted' => 3], $absent,
+            'residue_left', 'anchored_files_remain', $both];
+        yield 'an unexplained name remains' => [
         [...$observed, 'wide' => 5, 'unexplained' => 1],
-            [...$removed, 'wide_after' => 1], ['outcome' => 'present', 'residue' => ['sessions' => 1]],
-            'residue_left', 'unexplained_names_remain', ['observe', 'remove']];
+            [...$removed, 'after' => [...$after, 'wide' => 1, 'unexplained' => 1]],
+            ['outcome' => 'present', 'residue' => ['sessions' => 1]], 'residue_left', 'other_names_remain', $both];
+        yield 'an anchored link remains' => [
+        [...$observed, 'wide' => 5, 'anchored_other' => 1],
+            [...$removed, 'after' => [...$after, 'wide' => 1, 'anchored_other' => 1]],
+            ['outcome' => 'present', 'residue' => ['sessions' => 1]], 'residue_left', 'other_names_remain', $both];
         yield 'reproof not absent' => [$observed, $removed, ['outcome' => 'unconfirmed', 'residue' => []],
-            'unconfirmed', 'reproof_not_absent', ['observe', 'remove']];
+            'unconfirmed', 'reproof_not_absent', $both];
     }
 
     public function testACleanupThatThrowsIsUnreadableNeverAbsent(): void

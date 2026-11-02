@@ -24,10 +24,27 @@ final class SshSessionFileCleanupTest extends TestCase
 
     private const MAILBOX = 'box0123456789abcdef';
 
-    private const OBSERVED = "inventory=9\nwide=4\nown=2\nmailbox_encoded=2\nmailbox_literal=0\nanchored=4\n"
-        . "unexplained=0\ntoken_suffix=4\ndirectories=2\ncomplete=1\n";
+    private const OBSERVED = "inventory=12\nwide=8\nown=0\nmailbox_encoded=0\nmailbox_literal=8\nanchored_other=0\n"
+        . "unexplained=0\ntoken_suffix=0\ndirectories=2\ncomplete=1\n";
 
-    private const REMOVED = "before=4\ndeleted=4\nafter=0\nwide_after=0\ncomplete=1\n";
+    private const REMOVED = "before_inventory=12\nbefore_wide=8\nbefore_own=0\nbefore_mailbox_encoded=0\n"
+        . "before_mailbox_literal=8\nbefore_anchored_other=0\nbefore_unexplained=0\nbefore_token_suffix=0\n"
+        . "before_directories=2\ndeleted=8\nafter_inventory=4\nafter_wide=0\nafter_own=0\n"
+        . "after_mailbox_encoded=0\nafter_mailbox_literal=0\nafter_anchored_other=0\nafter_unexplained=0\n"
+        . "after_token_suffix=0\nafter_directories=0\ncomplete=1\n";
+
+    /** What the populated tree holds: every entry has one class, and one file-type rule splits anchored names. */
+    private const POPULATED = [
+        'inventory' => 14, 'wide' => 9, 'own' => 2, 'mailbox_encoded' => 2, 'mailbox_literal' => 1,
+        'anchored_other' => 2, 'unexplained' => 2, 'token_suffix' => 4, 'directories' => 2,
+    ];
+
+    private const CLEAN = [
+        'inventory' => 5, 'wide' => 0, 'own' => 0, 'mailbox_encoded' => 0, 'mailbox_literal' => 0,
+        'anchored_other' => 0, 'unexplained' => 0, 'token_suffix' => 0, 'directories' => 0,
+    ];
+
+    private const NEWLINE_NAME = "raw/wlsession:new\nmailbox_literal f 1 1 x";
 
     private string $directory = '';
 
@@ -60,11 +77,11 @@ final class SshSessionFileCleanupTest extends TestCase
     {
         $ssh = $this->standIn('printf \'%s\n\' "$@" >> ' . escapeshellarg($this->directory . '/argv') . "\n"
             . 'script=$(cat)' . "\n"
-            . 'case "$script" in *deleted=*) printf ' . escapeshellarg(self::REMOVED) . ' ;; '
+            . 'case "$script" in *-delete*) printf ' . escapeshellarg(self::REMOVED) . ' ;; '
             . '*) printf ' . escapeshellarg(self::OBSERVED) . ' ;; esac' . "\n");
         $cleanup = new SshSessionFileCleanup($ssh);
-        $cleanup->observe(self::USER, self::DOMAIN, self::MAILBOX);
-        $cleanup->remove(self::USER, self::DOMAIN, self::MAILBOX);
+        self::assertNotNull($cleanup->observe(self::USER, self::DOMAIN, self::MAILBOX));
+        self::assertNotNull($cleanup->remove(self::USER, self::DOMAIN, self::MAILBOX));
 
         $command = "-T\n-o\nBatchMode=yes\n-o\nStrictHostKeyChecking=yes\n-o\nConnectTimeout=10\n"
             . "-o\nUpdateHostKeys=no\n-o\nControlMaster=no\n-o\nControlPath=none\n"
@@ -86,31 +103,37 @@ final class SshSessionFileCleanupTest extends TestCase
         }
     }
 
-    /** The observation can only read: no deleting, writing or executing find action and no redirection anywhere. */
-    public function testTheObservationScriptCanOnlyReadAndCount(): void
+    /** The observation reads only, and walks the sessions tree once: one find, classified by one awk program. */
+    public function testTheObservationWalksTheTreeOnceAndCanOnlyRead(): void
     {
+        $script = SshSessionFileCleanup::OBSERVE;
+        self::assertSame(1, substr_count($script, 'find '));
+        self::assertSame(1, substr_count($script, 'find /var/cpanel/sessions -mindepth 1 '));
+        self::assertSame(1, substr_count($script, "\nclassify '' || exit 1\n"));
         self::assertDoesNotMatchRegularExpression(
             '/-(?:delete|exec|execdir|ok|okdir|fprint|fprint0|fprintf|fls)\b|\brm\b|\bmv\b|\bunlink\b|>/',
-            str_replace(['2>/dev/null'], '', SshSessionFileCleanup::OBSERVE),
+            $script,
         );
-        self::assertStringNotContainsString('>', SshSessionFileCleanup::OBSERVE);
     }
 
-    /** The removal can delete only through one find action, bound to regular files and the anchored names. */
-    public function testTheRemovalScriptDeletesOnlyThroughOneBoundFindAction(): void
+    /** The removal classifies once before and once after one find action bound to anchored regular files. */
+    public function testTheRemovalDeletesOnlyThroughOneBoundFindAction(): void
     {
         $script = SshSessionFileCleanup::REMOVE;
         self::assertSame(1, substr_count($script, '-delete'));
+        self::assertSame(2, substr_count($script, 'find '));
+        self::assertSame(1, substr_count(
+            $script,
+            'find /var/cpanel/sessions -type f \( -name "$own*" -o -name "$encoded*" '
+                . "-o -name \"\$literal*\" \\) \\\n        -printf 'deleted\\n' -delete\n",
+        ));
+        self::assertSame(1, substr_count($script, "\nclassify before_ || exit 1\n"));
+        self::assertSame(1, substr_count($script, "\nclassify after_ || exit 1\n"));
+        self::assertLessThan(strpos($script, '-delete'), strpos($script, 'classify before_'));
         self::assertDoesNotMatchRegularExpression(
             '/-(?:exec|execdir|ok|okdir|fprint|fprint0|fprintf|fls)\b|\brm\b|\bmv\b|\bunlink\b|>/',
             $script,
         );
-        self::assertSame(1, substr_count($script, '"$(owned -print -delete)"'));
-        self::assertSame(1, substr_count(
-            $script,
-            "\n    count -type f \\( -name \"\$own*\" -o -name \"\$encoded*\" -o -name \"\$literal*\" \\) \"\$@\"\n",
-        ));
-        self::assertSame(1, substr_count($script, 'find /var/cpanel/sessions '));
     }
 
     #[DataProvider('unsafeArguments')]
@@ -139,15 +162,19 @@ final class SshSessionFileCleanupTest extends TestCase
         }
     }
 
-    public function testRealObservationClassifiesNamesByCountAndChangesNothing(): void
+    /**
+     * Every entry gets exactly one class: the anchored directory and link are reported as anchored_other rather than
+     * lost between a regular-file count and an any-type one, and the classes add up to the wide count.
+     */
+    public function testRealObservationGivesEveryEntryOneClassAndChangesNothing(): void
     {
         $tree = $this->tree();
         $before = $this->snapshot($tree);
+        $observed = $this->realScript($tree)->observe(self::USER, self::DOMAIN, self::MAILBOX);
 
-        self::assertSame([
-            'inventory' => 14, 'wide' => 9, 'own' => 2, 'mailbox_encoded' => 2, 'mailbox_literal' => 1,
-            'anchored' => 7, 'unexplained' => 2, 'token_suffix' => 4, 'directories' => 2,
-        ], $this->realScript($tree)->observe(self::USER, self::DOMAIN, self::MAILBOX));
+        self::assertSame(self::POPULATED, $observed);
+        self::assertSame(self::POPULATED['wide'], self::POPULATED['own'] + self::POPULATED['mailbox_encoded']
+            + self::POPULATED['mailbox_literal'] + self::POPULATED['anchored_other'] + self::POPULATED['unexplained']);
         self::assertSame($before, $this->snapshot($tree));
     }
 
@@ -156,10 +183,12 @@ final class SshSessionFileCleanupTest extends TestCase
         $tree = $this->tree();
         $before = $this->snapshot($tree);
 
-        self::assertSame(
-            ['before' => 5, 'deleted' => 5, 'after' => 0, 'wide_after' => 4],
-            $this->realScript($tree)->remove(self::USER, self::DOMAIN, self::MAILBOX),
-        );
+        self::assertSame([
+            'before' => self::POPULATED,
+            'deleted' => 5,
+            'after' => ['inventory' => 9, 'wide' => 4, 'own' => 0, 'mailbox_encoded' => 0, 'mailbox_literal' => 0,
+                'anchored_other' => 2, 'unexplained' => 2, 'token_suffix' => 0, 'directories' => 0],
+        ], $this->realScript($tree)->remove(self::USER, self::DOMAIN, self::MAILBOX));
         $sessions = $tree . '/var/cpanel/sessions/';
         $removed = [
             'raw/wlsession:AbC123', 'cache/wlsession:AbC123', 'raw/' . self::MAILBOX . '%40' . self::DOMAIN . ':Xy_9',
@@ -182,9 +211,43 @@ final class SshSessionFileCleanupTest extends TestCase
         $before = $this->snapshot($tree);
 
         self::assertSame(
-            ['before' => 0, 'deleted' => 0, 'after' => 0, 'wide_after' => 0],
+            ['before' => self::CLEAN, 'deleted' => 0, 'after' => self::CLEAN],
             $this->realScript($tree)->remove(self::USER, self::DOMAIN, self::MAILBOX),
         );
+        self::assertSame($before, $this->snapshot($tree));
+    }
+
+    /** Names are never printed, so a newline inside one cannot split or forge a record. */
+    public function testANameHoldingANewlineIsCountedOnceAndRemoved(): void
+    {
+        $tree = $this->tree();
+        $path = $tree . '/var/cpanel/sessions/' . self::NEWLINE_NAME;
+        file_put_contents($path, 'x');
+
+        self::assertSame(
+            [...self::POPULATED, 'inventory' => 15, 'wide' => 10, 'own' => 3],
+            $this->realScript($tree)->observe(self::USER, self::DOMAIN, self::MAILBOX),
+        );
+        $removal = $this->realScript($tree)->remove(self::USER, self::DOMAIN, self::MAILBOX);
+        self::assertNotNull($removal);
+        self::assertSame(6, $removal['deleted']);
+        self::assertFileDoesNotExist($path);
+    }
+
+    /**
+     * A folder name with a newline splits its record, so the whole report is refused, and removal stops before it
+     * deletes anything, because it cannot count first.
+     */
+    public function testAnUnreadableRecordRefusesTheReportAndRemovalDeletesNothing(): void
+    {
+        $tree = $this->tree();
+        $folder = $tree . "/var/cpanel/sessions/odd\nname";
+        mkdir($folder, 0700);
+        file_put_contents($folder . '/wlsession:Zz9', 'x');
+        $before = $this->snapshot($tree);
+
+        self::assertNull($this->realScript($tree)->observe(self::USER, self::DOMAIN, self::MAILBOX));
+        self::assertNull($this->realScript($tree)->remove(self::USER, self::DOMAIN, self::MAILBOX));
         self::assertSame($before, $this->snapshot($tree));
     }
 
@@ -193,10 +256,10 @@ final class SshSessionFileCleanupTest extends TestCase
     {
         $tree = $this->tree();
         $before = $this->snapshot($tree);
+        $unsafe = [
+            ['*', self::DOMAIN, self::MAILBOX], [self::USER, '*', self::MAILBOX], [self::USER, self::DOMAIN, '*'],
+        ];
         foreach ([SshSessionFileCleanup::OBSERVE, SshSessionFileCleanup::REMOVE] as $script) {
-            $unsafe = [
-            ['*', self::DOMAIN, self::MAILBOX], [self::USER, '*', self::MAILBOX],
-                [self::USER, self::DOMAIN, '*']];
             foreach ($unsafe as $arguments) {
                 $moved = str_replace(' /var/', ' ' . $tree . '/var/', $script);
                 $output = [];
@@ -209,13 +272,16 @@ final class SshSessionFileCleanupTest extends TestCase
         self::assertSame($before, $this->snapshot($tree));
     }
 
+    /** A search that fails after printing some records gives no count, and removal deletes nothing. */
     public function testAFailedSearchNeverGivesACount(): void
     {
         $tree = $this->tree();
-        $shims = $this->shim('find', 'exit 1');
+        $before = $this->snapshot($tree);
+        $shims = $this->shim('find', "printf 'unrelated d 0 0\\n'\nexit 1");
 
         self::assertNull($this->realScript($tree, $shims)->observe(self::USER, self::DOMAIN, self::MAILBOX));
         self::assertNull($this->realScript($tree, $shims)->remove(self::USER, self::DOMAIN, self::MAILBOX));
+        self::assertSame($before, $this->snapshot($tree));
     }
 
     public function testAnEmptySessionStoreCannotBeObserved(): void
@@ -241,8 +307,10 @@ final class SshSessionFileCleanupTest extends TestCase
     {
         yield 'connection refused' => ["exit 255\n"];
         yield 'empty' => [''];
-        yield 'blank count' => ["printf 'inventory=\\nbefore=\\n'\n"];
+        yield 'blank count' => ["printf 'inventory=\\nbefore_inventory=\\n'\n"];
         yield 'incomplete' => ["printf 'inventory=9\\nwide=1\\n'\n"];
+        yield 'earlier labels' => ["printf 'inventory=9\\nwide=4\\nown=2\\nmailbox_encoded=2\\nmailbox_literal=0\\n"
+            . "anchored=4\\nunexplained=0\\ntoken_suffix=4\\ndirectories=2\\ncomplete=1\\n'\n"];
         yield 'bad exit after a report' => ['printf ' . escapeshellarg(self::OBSERVED . self::REMOVED) . "\nexit 2\n"];
         yield 'extra line' => ['printf ' . escapeshellarg(self::OBSERVED . "private\n") . "\n"];
         yield 'timeout' => ["sleep 5\n"];
@@ -253,11 +321,12 @@ final class SshSessionFileCleanupTest extends TestCase
         $ssh = $this->standIn(
             "cat > /dev/null\necho private-warning >&2\nprintf " . escapeshellarg(self::REMOVED) . "\n",
         );
+        $removal = (new SshSessionFileCleanup($ssh))->remove(self::USER, self::DOMAIN, self::MAILBOX);
 
-        self::assertSame(
-            ['before' => 4, 'deleted' => 4, 'after' => 0, 'wide_after' => 0],
-            (new SshSessionFileCleanup($ssh))->remove(self::USER, self::DOMAIN, self::MAILBOX),
-        );
+        self::assertNotNull($removal);
+        self::assertSame(8, $removal['deleted']);
+        self::assertSame(8, $removal['before']['mailbox_literal']);
+        self::assertSame(4, $removal['after']['inventory']);
     }
 
     public function testCredentialsStayOutOfTheChildEnvironment(): void
@@ -318,9 +387,10 @@ final class SshSessionFileCleanupTest extends TestCase
     /**
      * A session store holding this account's files beside other accounts' and lookalikes that must survive.
      *
-     * Anchored: two own, two encoded and one literal mailbox file (one with a comma), plus an own-named directory and
-     * symlink that are never regular files. Unexplained: another account whose name only contains this one, and a
-     * mailbox on a domain that only extends this one. Unrelated: npr and a session that holds the name in its contents.
+     * Anchored regular files: two own, two encoded and one literal mailbox file (one with a comma). Anchored but not
+     * regular: an own-named directory and symlink. Unexplained: another account whose name only contains this one, and
+     * a mailbox on a domain that only extends this one. Unrelated: three folders, npr, and a session that holds the
+     * name only in its contents.
      */
     private function tree(bool $populated = true): string
     {
