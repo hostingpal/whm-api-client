@@ -1415,4 +1415,7 @@ The run fails only `filesystem_residue_present`: account removal left 8 session 
 first positive control for the proof's session check. The scoped cleanup removed all 8 and
 the rerun proof read `confirmed_absent`. See the
 [source audit](../source-audit.md#disposable-webmail-session-capture-2026-11-02). SHA-256:
-`d0751e2b059d574583bfa216441e370058a3233de685180e0f8b9f4bcb68acd6`.
+`d0751e2b059d574583bfa216441e370058a3233de685180e0f8b9f4bcb68acd6`. It stays the valid record
+of what ran at that revision. The fixture has since moved to `webmail-sessions-disposable-v2`,
+whose session-file report differs, and no v2 capture exists; see the
+[review corrections](../source-audit.md#webmail-session-review-corrections-2026-11-02).

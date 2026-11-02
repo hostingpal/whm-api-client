@@ -2472,8 +2472,10 @@ output is written only after every cleanup step, as a new-only protected file.
 owns identity, ownership, the 900-second writable token, account cleanup and the run's
 status. `WebmailSessionGuard` checks both opt-ins and the exact account and domain on every
 request, then the exact method, URI, complete header set and body. Reads may repeat; each
-mutation is admitted once, and an inexact one consumes nothing. Only the two API ports and
-the recipe's URIs exist in the guard, so a returned credential can never reach Webmail.
+mutation is admitted once. Consuming it is the last step, after the headers and token binding
+are checked too, so a request that differs in any part consumes nothing. Only the two API
+ports and the recipe's URIs exist in the guard, so a returned credential can never reach
+Webmail.
 
 **Requests.** In order, all through the typed client:
 
@@ -2488,9 +2490,9 @@ the recipe's URIs exist in the guard, so a returned credential can never reach W
 The mailbox name is `box` plus 16 hexadecimal characters of per-run entropy, so it never
 contains the account name, and its random password stays in memory. `send_welcome_email=0`
 suppresses the client configuration instructions, the one message the pinned `add_pop`
-parameters control; the recipe sends and delivers no mail. Every creator call carries `remote_address=192.0.2.10`, an
-RFC 5737 documentation address, because the bridge needed an explicit address on the
-reviewed build. The mail-user creators name the owned mailbox, and the checking creator its
+parameters control; the recipe sends and delivers no mail. Every creator call carries
+`remote_address=192.0.2.10`, an RFC 5737 documentation address, because the bridge needed an
+explicit address on the reviewed build. The mail-user creators name the owned mailbox, and the checking creator its
 correct password. Locale is omitted.
 
 **Credentials are never used.** Nothing logs in, posts to Webmail on port 2096 or fetches a
@@ -2505,24 +2507,36 @@ or `tfa_verified` equal to 1, rows whose address is the supplied documentation a
 rows with an empty address. `appeared` compares final with initial rows per route. An empty
 list cannot separate no sessions from an unreadable store.
 
-**Session files.** After `run()` returns, and only when every gate holds, the fixture
-removes this account's session files once and reruns the read-only proof:
+**Session files: a root filesystem write.** This cleanup deletes files as root over SSH. It
+may delete only regular files under `/var/cpanel/sessions` whose names begin with this run's
+exact account name followed by `:`, or with this run's owned mailbox address followed by `:`,
+the `@` either literal or encoded as `%40`. It runs only after the lifecycle has confirmed the
+account removed, and it counts before and after the deletion. AGENTS.md says never to restore
+the server automatically; whether this bounded cleanup needs a recorded exception there is the
+owner's decision, and AGENTS.md is unchanged. After `run()` returns, and only when every gate
+holds, the fixture removes the files once and reruns the read-only proof:
 
 1. The proof and `SshSessionFileCleanup` were both supplied.
 2. The marker proved the account and its removal was read `confirmed_absent`.
 3. The filesystem control passed and saw no session name before the exercise.
-4. One fixed read-only script classifies, by count only, every name under
-   `/var/cpanel/sessions` that contains the account name against three anchored prefixes:
-   `<account>:`, `<mailbox>%40<domain>:` and `<mailbox>@<domain>:`.
-5. If anchored regular files exist, one fixed script deletes only those, through a single
-   `find -type f ... -delete` bound to `/var/cpanel/sessions`, counting before, deleted,
-   after, and every name still containing the account name. Directories, symbolic links and
-   unexplained names are never touched.
+4. One fixed read-only script walks `/var/cpanel/sessions` once and gives every entry the
+   first class it matches: `own` (`<account>:`), `mailbox_encoded` (`<mailbox>%40<domain>:`),
+   `mailbox_literal` (`<mailbox>@<domain>:`), `unexplained` (any other name containing the
+   account name) or unrelated. One type rule splits the anchored classes: regular files count
+   by class, and any other anchored entry is `anchored_other`. Records carry fixed tokens and
+   an anchored entry's folder, never a name, and find's exit status follows them, so a failed
+   or unparseable walk gives no count.
+5. If anchored regular files exist, one fixed script classifies once, stops if it cannot,
+   deletes only those files through a single `find -type f ... -delete` bound to
+   `/var/cpanel/sessions`, and classifies once more. Directories, symbolic links and
+   unexplained names are never touched; they are reported as remaining.
 
-The scripts arrive on standard input, hold no name, and re-check their arguments; the
-connection uses the proof's strict options. `session_files` reports `status` (`not_run`,
-`not_required`, `removed`, `residue_left` or `unconfirmed`), a fixed `reason`, the counts and
-the rerun proof's finding. It never changes the lifecycle's outcome. The lifecycle has no
+The scripts arrive on standard input, hold no name, and re-check their arguments. The
+connection is `SshScriptRunner`'s, shared with the filesystem proof: its fixed options,
+argument check, environment whitelist, bounds, kill-only-while-running rule and strict
+`label=count` parsing. `session_files` reports `status` (`not_run`, `not_required`,
+`removed`, `residue_left` or `unconfirmed`), a fixed `reason`, the counts before and after,
+the number deleted and the rerun proof's finding. It never changes the lifecycle's outcome. The lifecycle has no
 step after removal, so a run whose creators leave files reports `filesystem_residue_present`
 and fails, even when the cleanup then removes them all; exit 0 needs the lifecycle and the
 strict review to pass and the session files to be `not_required` or `removed`.
@@ -2533,7 +2547,14 @@ session values, passwords, addresses or upstream text are persisted. Its
 `discrepancy_review`, policy `webmail-sessions-no-acknowledgments-v1`, requires every phase
 once, in order, on its own route and contract, with UAPI status 1 and no discrepancy.
 
-The [2026-11-02 capture](../../docs/api/evidence/2026-11-02-webmail-sessions.json) at
+The current scenario is `webmail-sessions-disposable-v2`, and **no v2 capture exists**. v2's
+report means something different from v1's: the session-file counts carry `anchored_other`
+instead of v1's any-type `anchored`, and the removal reports a full classification before and
+after with the number deleted, where v1 reported four counts. A request refused for its
+headers no longer consumes its mutation. The v1 artifact stays the valid record of what ran at
+its revision.
+
+The [2026-11-02 v1 capture](../../docs/api/evidence/2026-11-02-webmail-sessions.json) at
 `f930653` on `11.138.0.19` exits 1. All twelve phases pass with no review findings: all six
 creators returned status 1, a null `hostname` and nonempty `session` and `token`, and the
 inventory went from 0 to 2 populated rows on each route. Account, token, domain and zone are

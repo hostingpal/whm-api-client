@@ -10269,16 +10269,18 @@ structural discrepancies, so the strict review passed with no findings.
   used or fetched: nothing logged in, posted to port 2096 or followed a URL.
 - `ActiveSessions/list_active_sessions` returned an empty list on both routes before the
   creators, and two populated rows on each route after them. These are the first committed
-  populated session rows. All six documented fields were present in every row, with no
-  unknown field: `ip_address` an empty string, `is_current`, `is_possessed` and
-  `tfa_verified` integers, `last_active` an integer and `login_theme` a string. Both rows had
-  `is_current` 0, `is_possessed` 0 and `tfa_verified` 1, and neither carried the supplied
-  address.
+  populated session rows. The artifact records each field's types as a union over a route's
+  rows, not row by row: `ip_address` only as an empty string, `is_current`, `is_possessed`,
+  `tfa_verified` and `last_active` only as integers, and `login_theme` only as a string, with
+  no unknown field. The fingerprint records `missing` for a row that omits an optional field,
+  and none is recorded. The counts add that 2 of 2 rows had `tfa_verified` equal to 1, none had
+  `is_current` or `is_possessed` equal to 1, none carried the supplied address and both had an
+  empty one. The artifact does not record the other flag values themselves.
 
 No live response contradicts a typed contract, so no overlay or generated code changed. Two
 rows after six creations is a count only: the evidence does not say which creators' sessions
-they are. An empty address despite the supplied one, and `tfa_verified` 1 on sessions that
-never authenticated, are recorded as observed values without an inferred meaning.
+they are. An empty address despite the supplied one, and `tfa_verified` 1 on sessions this run
+never logged in to, are recorded as observed values without an inferred meaning.
 
 ### Session files after account removal
 
@@ -10293,9 +10295,9 @@ Then, with every gate held, one fixed read-only script counted names under
 `/var/cpanel/sessions` and classified them in memory; no name was printed, logged or kept. Of
 12 entries, 8 contained the account name. All 8 were regular files whose names begin with the
 owned mailbox's address with a literal `@`, followed by a colon. None began with
-`<account>:`, none used `%40`, and none was unexplained by the anchored prefixes. Every suffix
-after the colon contains at least one character outside letters, digits and underscore. The
-8 files sit in 2 directories, which fits each of the four mail-user sessions leaving one
+`<account>:`, none used `%40`, and none was unexplained by the anchored prefixes. None had a
+nonempty suffix after the colon made only of letters, digits and underscores; the counts do
+not say whether a suffix was empty or held another character. The 8 files sit in 2 directories, which fits each of the four mail-user sessions leaving one
 file in each, though counts alone do not prove that pairing. No file named for the account
 itself remained, so whether the self sessions left none or lost theirs with the account is
 not shown.
@@ -10324,3 +10326,50 @@ password, suspended mailbox or role restriction; no non-null hostname; and no
 creators leave files fails by its own truth even when the scoped cleanup removes them; adding
 such a step would change the shared lifecycle and is left for a separate decision. Follow-up
 `8x0.2.69` keeps the remaining variants.
+
+### Webmail session review corrections (2026-11-02)
+
+An independent review of the branch found eight issues. Seven were confirmed and fixed with
+tests that failed first; one is deferred. No live run and no SSH write of any kind accompanied
+these corrections, and the v1 artifact is unchanged.
+
+- **Guard consumption.** `WebmailSessionGuard` consumed a mutation before comparing the
+  header set, so a request with the right body but wrong headers, or a direct one sent before
+  the token was bound, was refused yet used its one slot. Every check now runs first, and
+  consuming the mutation is the last step before the transport.
+- **Exit status.** The cleanup runs after the lifecycle has already recorded the residue, so a
+  run whose creators leave files cannot exit 0. Deferred: a separate branch adds an optional
+  lifecycle step after account removal and before the final proof, and the cleanup moves into
+  it once that branch is on master. No second hook is built here.
+- **Overclaims.** The inventory and session-file statements above now say only what the
+  artifact establishes. Field types are unions over a route's rows; the flag values other than
+  `tfa_verified` equal to 1 are not recorded; and no counted suffix was all letters, digits and
+  underscores, which does not show what each suffix held.
+- **Copied SSH handling.** `SshSessionFileCleanup` had copied about ninety lines of process
+  handling from `SshFilesystemAbsenceProof`, and the copies had drifted. `SshScriptRunner` now
+  owns the fixed options, the positional-argument check, the environment whitelist, the output
+  and time bounds, the kill-only-while-running rule and strict `label=count` parsing, and both
+  classes use it. The proof's behaviour and its tests are unchanged.
+- **Root filesystem write.** The session-file cleanup is a root filesystem write over SSH. It
+  may delete only regular files under `/var/cpanel/sessions` whose names begin with the run's
+  exact account name followed by `:`, or with the run's owned mailbox address followed by `:`,
+  the `@` literal or encoded as `%40`. It runs only after the lifecycle has confirmed the
+  account removed, and it counts before and after. AGENTS.md says never to restore the server
+  automatically; whether this cleanup needs a recorded exception there is the owner's decision,
+  and AGENTS.md is unchanged.
+- **Inconsistent classification.** The prefix counts covered regular files while `anchored`
+  and the `unexplained` exclusions covered every type, so a non-regular anchored entry could
+  fall between them. Every entry now takes exactly one class, and one type rule splits the
+  anchored classes: regular files by class, everything else as `anchored_other`.
+- **Ten traversals.** The observation walked the tree ten times. One find walk now prints a
+  fixed record per entry, never a name, and one awk program counts the records. find's exit
+  status follows the records, so a failed or unparseable walk gives no count. The removal
+  classifies once before, stops if it cannot, deletes through one find action, and classifies
+  once after.
+- **Duplicate probe and dead state.** The fixture built each probe twice and kept the direct
+  client as an unused property. It now builds one probe per call and keeps the client local.
+
+The report shape changed, so the scenario is `webmail-sessions-disposable-v2`; the review
+policy `webmail-sessions-no-acknowledgments-v1` is unchanged. No v2 capture exists, and the
+v1 artifact remains the valid record of what ran at `f930653`. Consolidating the duplicated
+entry points and helpers across recipes stays with `whm-api-client-bis`.
