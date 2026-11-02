@@ -212,6 +212,12 @@
                           "items": {
                             "type": "string"
                           }
+                        },
+                        "phpopenbasedirprotect": {
+                          "type": "mixed"
+                        },
+                        "status": {
+                          "type": "mixed"
                         }
                       }
                     }
@@ -862,6 +868,12 @@
                           "items": {
                             "type": "string"
                           }
+                        },
+                        "phpopenbasedirprotect": {
+                          "type": "mixed"
+                        },
+                        "status": {
+                          "type": "mixed"
                         }
                       }
                     }
@@ -1056,6 +1068,12 @@
                       "items": {
                         "type": "string"
                       }
+                    },
+                    "phpopenbasedirprotect": {
+                      "type": "mixed"
+                    },
+                    "status": {
+                      "type": "mixed"
                     }
                   }
                 }
@@ -1080,6 +1098,12 @@
               "version": "11.138.0.19",
               "date": "2026-11-01",
               "note": "One-off read-only name inspection on 2026-11-01 from revision 760ca68: one direct UAPI GET as npr printed only key names and structural types, never values. The format=hash main_domain object carried phpopenbasedirprotect as a numeric string, and phpversion and status as non-numeric strings. None is declared by the pinned domains_data schema or its examples. All three are optional mixed and deliberately unvalidated, because a value outside a declared type must not fail the whole read. phpversion and status have no pinned meaning, so claiming a type from one observation would invent a contract. phpopenbasedirprotect has a pinned 0/1 meaning on single_domain_data and WHM domainuserdata, but domains_data does not promise it, and the sibling forms do not bound it: single_domain_data accepts 0, 1, \"0\" and \"1\", userdirprotect adds only the empty string, and pinned WHM domainuserdata documents userdirprotect as On or Off. A flag would still fail on null, 2, booleans or such strings. mixed keeps the value as sent, so a quoted form is not normalized here as it is in singleDomainData(). Addon, parked and subdomain rows were empty and format=list was not requested, so those records are unchanged."
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-11-02",
+              "note": "Private name inspection on 2026-11-02 from revision c12695b: the domain-rows recipe in --inspect-names mode created a disposable wldomains account with an addon domain, an alias of its main domain and a subdomain, read every record kind through direct UAPI and the WHM bridge, printed only undeclared key names and JSON types, never values, and then removed the account. Requests: format=hash and format=list, hide_temporary_domains=0, return_https_redirects_status=0. Through both routes, the format=hash addon_domains and sub_domains rows and every format=list row carried phpopenbasedirprotect as a numeric string and status as a non-numeric string; none carried phpversion, and no other undeclared key appeared. Both are optional mixed and deliberately unvalidated, as on main_domain: status has no pinned meaning, and domains_data does not promise phpopenbasedirprotect, whose sibling flag forms do not bound it. The format=list response held no row for the alias, and the main_domain list form and parked rows were not observed with these fields, so those records are unchanged."
             }
           ]
         }
@@ -1095,11 +1119,11 @@
         },
         {
           "kind": "observed",
-          "text": "On cPanel 11.138.0.19 the format=hash main_domain object, one record through both direct and bridged UAPI, also carries phpopenbasedirprotect as a numeric string and phpversion and status as non-numeric strings. Addon, parked, subdomain and format=list records were not observed with these fields and keep their documented shape."
+          "text": "On cPanel 11.138.0.19 the format=hash main_domain object, one record through both direct and bridged UAPI, also carries phpopenbasedirprotect as a numeric string and phpversion and status as non-numeric strings. Populated format=hash addon and subdomain rows and format=list rows carry phpopenbasedirprotect as a numeric string and status as a non-numeric string, but not phpversion. A format=list response held no row for an alias of the main domain. The main_domain list form and parked rows were not observed with these fields and keep their documented shape."
         },
         {
           "kind": "policy",
-          "text": "main_domain phpopenbasedirprotect, phpversion and status are optional and deliberately unvalidated: any JSON value, including null, reaches the caller unchanged and cannot fail the read. phpversion and status have unknown meaning. phpopenbasedirprotect is documented on singleDomainData() but not promised by domains_data, so a quoted value stays a string here and is not normalized to an integer."
+          "text": "phpopenbasedirprotect and status on main_domain, addon and subdomain rows and format=list rows, and main_domain phpversion, are optional and deliberately unvalidated: any JSON value, including null, reaches the caller unchanged and cannot fail the read. phpversion and status have unknown meaning. phpopenbasedirprotect is documented on singleDomainData() but not promised by domains_data, so a quoted value stays a string here and is not normalized to an integer."
         }
       ],
       "probe": {
@@ -1156,6 +1180,14 @@
         {
           "kind": "policy",
           "text": "phpversion and status are optional and deliberately unvalidated because their meaning is unknown: any JSON value, including null, reaches the caller unchanged and cannot fail the read. Only an account main domain was observed, so nothing is claimed for other domain kinds."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19 a query for an alias of the account's main domain succeeded through both direct and bridged UAPI and returned a result naming the alias, despite the documented note above; which record it reads is not established. Addon and subdomain results also carry ipv6 as null and no_cache_update as a quoted flag."
+        },
+        {
+          "kind": "policy",
+          "text": "ipv6 and no_cache_update are optional and keep the pinned DomainInfo record types also used on domainsData() rows: ipv6 is a nullable string, and no_cache_update an integer 0/1 flag that also accepts quoted 0 or 1 and normalizes it."
         }
       ],
       "probe": {
@@ -1396,6 +1428,36 @@
               "note": "One-off read-only name inspection on 2026-11-01 from revision 760ca68: one direct UAPI GET as npr printed only key names and structural types, never values. The npr.rs result carried status as a non-numeric string. The pinned single_domain_data schema does not declare it. Its meaning, allowed values and requiredness are unknown and only an account main domain was observed, so it is optional mixed and deliberately unvalidated: claiming a type from one observation would invent a contract. It is a payload field, unrelated to the UAPI envelope status."
             }
           ]
+        },
+        "ipv6": {
+          "add": {
+            "type": "string",
+            "nullable": true
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-11-02",
+              "note": "Private name inspection on 2026-11-02 from revision c12695b: the domain-rows recipe in --inspect-names mode created a disposable wldomains account with an addon domain, an alias of its main domain and a subdomain, read every record kind through direct UAPI and the WHM bridge, printed only undeclared key names and JSON types, never values, and then removed the account. Through both routes, single_domain_data for the addon domain and for the subdomain carried ipv6 as null; the main domain and alias results did not carry it. The pinned single_domain_data schema does not declare it, but the pinned DomainInfo record components Contents and MainDomainContents, which domains_data rows use and which describe the same user-data record, document it with a type and a meaning, so it keeps validation rather than becoming mixed. Pinned Contents/properties/ipv6 is a nullable string, the domain's IPv6 address, null when the account does not use IPv6; the same nullable string as on domains_data rows. Only null was observed, so the non-null form follows the pinned string without live evidence."
+            }
+          ]
+        },
+        "no_cache_update": {
+          "add": {
+            "type": "flag",
+            "accept": [
+              "string-flag"
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-11-02",
+              "note": "Private name inspection on 2026-11-02 from revision c12695b: the domain-rows recipe in --inspect-names mode created a disposable wldomains account with an addon domain, an alias of its main domain and a subdomain, read every record kind through direct UAPI and the WHM bridge, printed only undeclared key names and JSON types, never values, and then removed the account. Through both routes, single_domain_data for the addon domain and for the subdomain carried no_cache_update as a numeric string; the main domain and alias results did not carry it. The pinned single_domain_data schema does not declare it, but the pinned DomainInfo record components Contents and MainDomainContents, which domains_data rows use and which describe the same user-data record, document it with a type and a meaning, so it keeps validation rather than becoming mixed. Pinned Contents/properties/no_cache_update is the integer 1/0 flag for whether the domain updates caches. It takes the shared domains_data flag compatibility, accepting only quoted 0 or 1 beside the integers and normalizing them to integers; other strings, null and booleans remain invalid."
+            }
+          ]
         }
       },
       "evidence": [
@@ -1424,6 +1486,12 @@
           "date": "2026-11-01",
           "note": "The 67-probe read-only capture at revision 5f9b001 ran both direct UAPI and WHM-bridged GET observations with phpversion, status and customlog[].format typed as strings. All three appear as named string paths. Both routes passed HTTP, API, payload and probe checks with no unknown_field at the formerly masked paths. phpversion and status became mixed after this capture, so the artifact's effective contract hash for this operation records that earlier contract, while its string observations stay true. Immutable artifact SHA-256 4138dbf1d083ddfe6d109c86bb8beb449abde6937e93b2452693d47b2b792b81. Structural evidence establishes no values or meaning.",
           "fingerprint": "docs/api/evidence/2026-11-01-read-only-11.138.0.19.json"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-11-02",
+          "note": "Private name inspection on 2026-11-02 from revision c12695b: the domain-rows recipe in --inspect-names mode created a disposable wldomains account with an addon domain, an alias of its main domain and a subdomain, read every record kind through direct UAPI and the WHM bridge, printed only undeclared key names and JSON types, never values, and then removed the account. Requests: domain set to the main domain, the addon, the alias and the subdomain in turn, hide_temporary_domains=0, return_https_redirect_status=0. All eight reads succeeded with UAPI status 1, and each result named the requested domain, the alias included, although the documented note says an alias has no user-data file. Addon and subdomain results also carried ipv6 and no_cache_update. This establishes neither that aliases have their own user-data file nor which record an alias query reads."
         }
       ]
     }

@@ -244,17 +244,20 @@ final class DomainPhpObservedFieldsTest extends TestCase
         $single = static fn (UapiClient $u): array => $u->domainInfo()->singleDomainData(domain: 'example.test');
         $extra = '"domain":"example.test","phpopenbasedirprotect":"1","phpversion":"fixture-a","status":"fixture-b"';
         $row = ['domain' => 'example.test'];
+        // The 2026-11-02 populated-row inspection observed phpopenbasedirprotect and status on these three record
+        // kinds, but never phpversion; DomainRowsObservedFieldsTest covers what they now carry.
+        $carried = ['domain' => 'example.test', 'phpopenbasedirprotect' => '1', 'status' => 'fixture-b'];
         foreach (['wrapped', 'bare', 'bridge'] as $route) {
             yield $route . ' addon row' => [
-                $route, $domains, '{"addon_domains":[{' . $extra . '}]}', ['addon_domains' => [$row]],
+                $route, $domains, '{"addon_domains":[{' . $extra . '}]}', ['addon_domains' => [$carried]],
             ];
             yield $route . ' subdomain row' => [
-                $route, $domains, '{"sub_domains":[{' . $extra . '}]}', ['sub_domains' => [$row]],
+                $route, $domains, '{"sub_domains":[{' . $extra . '}]}', ['sub_domains' => [$carried]],
             ];
             yield $route . ' main domain list form' => [
                 $route, $domains, '{"main_domain":[{' . $extra . '}]}', ['main_domain' => [$row]],
             ];
-            yield $route . ' list format row' => [$route, $list, '[{' . $extra . '}]', [$row]];
+            yield $route . ' list format row' => [$route, $list, '[{' . $extra . '}]', [$carried]];
             yield $route . ' customlog object form' => [
                 $route,
                 $single,

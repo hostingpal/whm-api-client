@@ -46,6 +46,7 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  *         owner?: string,
  *         parked_capable_of_https_redirects?: list<string>,
  *         parked_with_https_redirects?: list<string>,
+ *         phpopenbasedirprotect?: mixed,
  *         port?: int,
  *         scriptalias?: array{
  *             path?: string,
@@ -57,6 +58,7 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  *         serveradmin?: string,
  *         serveralias?: string,
  *         servername?: string,
+ *         status?: mixed,
  *         type?: string,
  *         usecanonicalname?: string,
  *         user?: string,
@@ -201,6 +203,7 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  *         owner?: string,
  *         parked_capable_of_https_redirects?: list<string>,
  *         parked_with_https_redirects?: list<string>,
+ *         phpopenbasedirprotect?: mixed,
  *         port?: int,
  *         scriptalias?: array{
  *             path?: string,
@@ -212,6 +215,7 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  *         serveradmin?: string,
  *         serveralias?: string,
  *         servername?: string,
+ *         status?: mixed,
  *         type?: string,
  *         usecanonicalname?: string,
  *         user?: string,
@@ -244,6 +248,7 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  *     owner?: string,
  *     parked_capable_of_https_redirects?: list<string>,
  *     parked_with_https_redirects?: list<string>,
+ *     phpopenbasedirprotect?: mixed,
  *     port?: int,
  *     scriptalias?: array{
  *         path?: string,
@@ -255,6 +260,7 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  *     serveradmin?: string,
  *     serveralias?: string,
  *     servername?: string,
+ *     status?: mixed,
  *     type?: string,
  *     usecanonicalname?: string,
  *     user?: string,
@@ -288,8 +294,10 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  *         group?: string,
  *     },
  *     ip?: string,
+ *     ipv6?: string|null,
  *     is_https_redirecting?: 0|1,
  *     is_temporary?: 0|1,
+ *     no_cache_update?: 0|1,
  *     options?: string,
  *     owner?: string,
  *     phpopenbasedirprotect?: 0|1,
@@ -339,13 +347,16 @@ final readonly class DomainInfo
      *
      * Observed: On cPanel 11.138.0.19 the format=hash main_domain object, one record through both direct and bridged
      * UAPI, also carries phpopenbasedirprotect as a numeric string and phpversion and status as non-numeric strings.
-     * Addon, parked, subdomain and format=list records were not observed with these fields and keep their documented
-     * shape.
+     * Populated format=hash addon and subdomain rows and format=list rows carry phpopenbasedirprotect as a numeric
+     * string and status as a non-numeric string, but not phpversion. A format=list response held no row for an alias of
+     * the main domain. The main_domain list form and parked rows were not observed with these fields and keep their
+     * documented shape.
      *
-     * Policy: main_domain phpopenbasedirprotect, phpversion and status are optional and deliberately unvalidated: any
-     * JSON value, including null, reaches the caller unchanged and cannot fail the read. phpversion and status have
-     * unknown meaning. phpopenbasedirprotect is documented on singleDomainData() but not promised by domains_data, so a
-     * quoted value stays a string here and is not normalized to an integer.
+     * Policy: phpopenbasedirprotect and status on main_domain, addon and subdomain rows and format=list rows, and
+     * main_domain phpversion, are optional and deliberately unvalidated: any JSON value, including null, reaches the
+     * caller unchanged and cannot fail the read. phpversion and status have unknown meaning. phpopenbasedirprotect is
+     * documented on singleDomainData() but not promised by domains_data, so a quoted value stays a string here and is
+     * not normalized to an integer.
      *
      * API-map identity: uapi:DomainInfo/domains_data#GET (wire name domains_data).
      *
@@ -474,6 +485,14 @@ final readonly class DomainInfo
      * Policy: phpversion and status are optional and deliberately unvalidated because their meaning is unknown: any
      * JSON value, including null, reaches the caller unchanged and cannot fail the read. Only an account main domain
      * was observed, so nothing is claimed for other domain kinds.
+     *
+     * Observed: On cPanel 11.138.0.19 a query for an alias of the account's main domain succeeded through both direct
+     * and bridged UAPI and returned a result naming the alias, despite the documented note above; which record it reads
+     * is not established. Addon and subdomain results also carry ipv6 as null and no_cache_update as a quoted flag.
+     *
+     * Policy: ipv6 and no_cache_update are optional and keep the pinned DomainInfo record types also used on
+     * domainsData() rows: ipv6 is a nullable string, and no_cache_update an integer 0/1 flag that also accepts quoted 0
+     * or 1 and normalizes it.
      *
      * API-map identity: uapi:DomainInfo/single_domain_data#GET (wire name single_domain_data).
      *
