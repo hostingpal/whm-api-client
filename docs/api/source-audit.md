@@ -10236,3 +10236,91 @@ every count 0 and every inventory usable. The `zones` count of 4 is higher than 
 for `wlupload`; it counts zone files and is not explained further here. **Sessions read 0
 for an existing account too**, so they still have no positive control. No account was
 created, and nothing was written.
+
+## Disposable Webmail session capture (2026-11-02)
+
+Scenario `webmail-sessions-disposable-v1`, assessed under policy
+`webmail-sessions-no-acknowledgments-v1`, ran once at
+`f9306532f2d0c0b5a5831be27ec2d2cac9af0e0c` on cPanel `11.138.0.19`, against the pinned UAPI
+source `172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`. It used the fresh
+disposable account `wlsession` through `DisposableAccountLifecycle` with the filesystem proof,
+which this recipe requires. No other account was written. The artifact is
+[2026-11-02-webmail-sessions.json](evidence/2026-11-02-webmail-sessions.json), SHA-256
+`d0751e2b059d574583bfa216441e370058a3233de685180e0f8b9f4bcb68acd6`. The command exited 1.
+
+Before the capture, the proof and the session observation ran once, read-only, for the
+account before it existed: `confirmed_absent`, and no session name containing the account
+name. That showed both scripts run on the server and nothing named for the account
+preexisted. Nothing was written.
+
+### Creators and inventory
+
+All twelve phases passed HTTP, API, typed validation and their expectations, with zero
+structural discrepancies, so the strict review passed with no findings.
+
+- `Email/add_pop` created one mailbox on the account's own domain, by direct POST with
+  `send_welcome_email=0`, and returned the exact `<mailbox>+<domain>` string.
+- All six creator calls, `create_webmail_session_for_self`,
+  `create_webmail_session_for_mail_user` and
+  `create_webmail_session_for_mail_user_check_password` on direct UAPI and on the WHM bridge,
+  were form POSTs with `remote_address=192.0.2.10`, an RFC 5737 documentation address. Each
+  returned status 1 with `hostname` null and nonempty `session` and `token` strings. The
+  password-checking creator used the mailbox's correct password. No returned value was kept,
+  used or fetched: nothing logged in, posted to port 2096 or followed a URL.
+- `ActiveSessions/list_active_sessions` returned an empty list on both routes before the
+  creators, and two populated rows on each route after them. These are the first committed
+  populated session rows. All six documented fields were present in every row, with no
+  unknown field: `ip_address` an empty string, `is_current`, `is_possessed` and
+  `tfa_verified` integers, `last_active` an integer and `login_theme` a string. Both rows had
+  `is_current` 0, `is_possessed` 0 and `tfa_verified` 1, and neither carried the supplied
+  address.
+
+No live response contradicts a typed contract, so no overlay or generated code changed. Two
+rows after six creations is a count only: the evidence does not say which creators' sessions
+they are. An empty address despite the supplied one, and `tfa_verified` 1 on sessions that
+never authenticated, are recorded as observed values without an inferred meaning.
+
+### Session files after account removal
+
+The filesystem control after setup passed with `home=1, users=1, userdata=1,
+userdomains=1, passwd=1, zones=2` and no session name. After cleanup, token, account, domain
+and zone were `confirmed_absent`, and the lifecycle's final proof read `present` with
+`sessions=8`. That fails the run with `filesystem_residue_present`, and it is the first
+observation of session files for a known account: the positive control the session check
+lacked.
+
+Then, with every gate held, one fixed read-only script counted names under
+`/var/cpanel/sessions` and classified them in memory; no name was printed, logged or kept. Of
+12 entries, 8 contained the account name. All 8 were regular files whose names begin with the
+owned mailbox's address with a literal `@`, followed by a colon. None began with
+`<account>:`, none used `%40`, and none was unexplained by the anchored prefixes. Every suffix
+after the colon contains at least one character outside letters, digits and underscore. The
+8 files sit in 2 directories, which fits each of the four mail-user sessions leaving one
+file in each, though counts alone do not prove that pairing. No file named for the account
+itself remained, so whether the self sessions left none or lost theirs with the account is
+not shown.
+
+One fixed removal script then deleted the anchored regular files once: 8 before, 8 deleted,
+0 after, and 0 names still containing the account name. The read-only proof, rerun, read
+`confirmed_absent`. This was the only SSH write, scoped to regular files under
+`/var/cpanel/sessions` named with this run's own mailbox at this account's domain or the
+account's own name; no other account's file was touched.
+
+### Whether the proof's session match can be tightened
+
+`SshFilesystemAbsenceProof` matches any name containing the account name. It found all 8
+files only through the domain inside the mailbox address. A match anchored on `<account>:`
+alone would have missed every one of them and read absent. A tighter rule would need at
+least `*@<domain>:*`, any local part at the account's domain followed by a colon, plus
+`<account>:*`, which no residue has shown yet; addon and parked domains are not known to the
+proof. The wide match is unchanged here; that decision is separate.
+
+### Scope limits
+
+The run establishes API creation and inventory only. It establishes no login, session
+activity, Webmail access or mail delivery; no locale variant or omitted address; no wrong
+password, suspended mailbox or role restriction; no non-null hostname; and no
+`Session/create_temp_user`. The lifecycle has no step after account removal, so a recipe whose
+creators leave files fails by its own truth even when the scoped cleanup removes them; adding
+such a step would change the shared lifecycle and is left for a separate decision. Follow-up
+`8x0.2.69` keeps the remaining variants.
