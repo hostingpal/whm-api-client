@@ -1473,3 +1473,24 @@ and readback only, not PHP runtime behavior, vhost-scope INI files, FPM pools or
 impacted-domain variants. See the
 [source audit](../source-audit.md#disposable-account-langphp-setters-2026-11-02). SHA-256:
 `66af9e3c509fbb9cf51c91d72a56eb25c6509f97b0dd4667a3881f20c7124748`.
+
+## Disposable-account Mime and directory-access evidence
+
+The [capture](2026-11-02-mime-directory.json) at
+`965b329e5befee939ff47ac6117a4d3bf03472e5` on `11.138.0.19` is a **passed run**, exit 0, of
+recipe `mime-directory-disposable-v1` on the disposable account `wlmime`, with the
+filesystem proof enabled. All 73 phases passed and the strict review, policy
+`mime-directory-no-acknowledgments-v1`, has no findings. The eight Mime mutations and the
+four directory-access mutations each ran on direct UAPI and the WHM bridge, each read back
+on its own route, including the first committed populated MIME type and redirect rows.
+Token, account, domain and zone cleanup are `confirmed_absent`, the directory is
+`absent_with_account`, the filesystem control passed and `filesystem_cleanup` is
+`confirmed_absent`. It establishes no HTTP redirect, indexing, authentication or hotlink
+enforcement, and leech protection only as a read, through direct UAPI before the changes
+and the bridge after them. See the
+[source audit](../source-audit.md#disposable-account-mime-and-directory-access-mutations-2026-11-02).
+SHA-256: `03797505ac97f67a384d8da4c9741eaec0e12f2f4aa6785d2d03d1c6447573cb`. It stays the
+valid record of what ran at that revision. The fixture has since moved to
+`mime-directory-disposable-v2`, which also requires null data from the 20 Mime and
+protected-user mutations, and no v2 capture exists; see the
+[source audit](../source-audit.md#review-corrections-to-the-mime-and-directory-recipe-2026-11-02).

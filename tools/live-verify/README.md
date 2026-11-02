@@ -2726,3 +2726,117 @@ and a blank line, `host` was refused on both routes with the content unchanged, 
 version writes read back as a single object. Account, token, domain, zone and filesystem
 cleanup are `confirmed_absent`. See the
 [source audit](../../docs/api/source-audit.md#disposable-account-langphp-setters-2026-11-02).
+
+## Disposable-account Mime and directory-access mutations
+
+`mime-directory.php` proves the eight Mime mutations and the four directory-access
+mutations once, through the generated client on both UAPI routes, on a fresh disposable
+account. It writes to no other account. It runs at committed code, reads only
+`OBLAK_TEST_WHM_KEY`, and creates its own short-lived writable token:
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 WHM_API_LIVE_FS_CHECK=1 \
+  WHM_API_LIVE_ACCOUNT=wlmime WHM_API_LIVE_DOMAIN=wlmime.example.com \
+  php tools/live-verify/mime-directory.php \
+  --output=docs/api/evidence/YYYY-MM-DD-mime-directory.json
+```
+
+Use a new output path and run it once. A failed run keeps its artifact and is never rerun
+for a better one; correcting the recipe needs evidence of what was wrong, a new scenario
+version and a new output path. Publication follows `fileman-upload.php`: a protected
+new-only file, written after cleanup. Exit 0 requires the lifecycle and the strict review
+to pass.
+
+**Lifecycle.** The shared [disposable-account lifecycle](#disposable-account-lifecycle)
+owns identity, ownership, the 1200-second writable token and account cleanup. The recipe
+passes no cleanup callback: everything it changes lives inside the account, and account
+removal takes whatever a stopped section left. The directory is reported
+`absent_with_account` once the account reads `confirmed_absent`.
+
+**Guard.** `MimeDirectoryGuard` checks both opt-ins and the exact account and domain on
+every request. Each fixture request needs the single-use authorization of its phase, then
+must equal that phase's method, URI, complete header set and body, which
+`MimeDirectoryRecipe` spells by hand rather than through the client's encoder. A phase is
+consumed even when its request is refused, so nothing below the guard can retry a mutation
+or repeat a read. Outside a phase only the lifecycle's control requests pass. The one
+multipart upload streams through `StreamingCurlClient` and is compared with its
+hand-assembled body as it goes.
+
+**Mime section.** Fresh baselines on direct UAPI show none of this run's names: user MIME
+types, user handlers, redirects, the domain redirect (`redirection_enabled` 0, `url` null)
+and hotlink protection (disabled, `redirect_url` null). Then each kind runs two rounds:
+round a adds through direct UAPI and removes through the WHM bridge, round b the reverse.
+Every mutation is followed by a read on its own route that must show exactly the expected
+row or its absence, so each route reads back a populated row and its removal:
+
+| Kind | Round a (add direct, remove bridged) | Round b (add bridged, remove direct) |
+| --- | --- | --- |
+| MIME type | `addMime`, `deleteMime(type)` | same, another type |
+| Handler | `addHandler`, `deleteHandler(extension)` | same, another extension |
+| Redirect | `addRedirect(domain, redirect, src)`, `deleteRedirect(domain, src)` | `addRedirect` with `redirectWildcard: false`, `redirectWww: 0`, `type: 'temp'`; `deleteRedirect` with `docroot` |
+| Hotlink | `addHotlink(..., allowNull: true)`, one referrer | `addHotlink(..., allowNull: false)`, two referrers and two extensions |
+
+Each of these mutations must itself return null data, as the inspected server source sets
+none. Redirect readbacks check the `list_redirects` row and `get_redirect`. Targets use the
+reserved `example.net` domain. Hotlink protection is account-wide, which is acceptable on
+this run's own account.
+
+**Directory section.** A generic listing of `public_html` must be a real listing without the
+fresh directory: a JSON list, or the documented object holding both `dirs` and `files` lists.
+An empty `{}` decodes like an empty list, so it is refused. Uploading one synthetic file then creates it: `Fileman/upload_files`
+is the only documented API that creates a directory, and the setting calls require an
+existing one. An unfiltered inventory with hidden entries must show exactly that file. Then:
+
+| Step | Direct UAPI | WHM bridge |
+| --- | --- | --- |
+| Indexing | `setIndexing('disabled')`, then `'inherit'` | `setIndexing('fancy')`, plus the indexes listing |
+| Protection | enable with realm a, disable | disable, enable with realm b |
+| Protected users | add user one, remove user two | add user two, remove user one |
+
+Each change is read back on its own route with `getIndexing()`, `isDirectoryProtected()`,
+the privacy listing or `listUsers()`. The two passwords come from fresh randomness, live in
+memory only and reach the server only in their own `add_user` body. Each protected-user
+mutation must return null data; `setIndexing()` must echo the requested type and
+protection must return its new state. Leech protection has no UAPI mutation in the pinned
+surface, so `DirectoryProtection/list_directories` reads it through direct UAPI at the
+start and through the bridge at the end, and both must show 0.
+
+**Sections and capture.** Within a section, capture stops at the first unexpected state.
+The sections share no state, so a stopped Mime section does not withhold the directory
+section. `sections` records each section's `capture`, `expectations` and `stopped_at`, and
+failures carry `mime_` or `directory_` labels; a failed server-version read is
+`capture_failure` and runs neither. Absence is never judged from `{}`: every typed list
+contract here refuses it as a payload mismatch, which stops the section as a capture
+failure before any expectation runs.
+
+**Evidence.** `mime_directory` holds the structural records of all 73 phases, each
+mutation's result kind with its message and warning counts, list row counts and upload
+transfer statistics. No names, paths, passwords, URLs, values or upstream text are
+persisted. The discrepancy review, policy `mime-directory-no-acknowledgments-v1`, requires
+every phase once, in order, with its contract, UAPI status 1, a passed expectation and no
+discrepancy, and has no acknowledgment mechanism. Only the generic `public_html` listing
+reports `payload_validation: not_checked`.
+
+**Limits.** API readback is not enforcement. Nothing fetches a URL, so the run shows no
+HTTP redirect, indexing, password authentication or hotlink blocking. It covers the
+argument variants above on one server version, and leech protection only as a read. The
+filesystem proof, when enabled, covers its fixed locations at one moment.
+
+The scenario is `mime-directory-disposable-v2`, and **no v2 capture exists**. v2 adds the
+null-data checks on the 20 Mime and protected-user mutations, so a v2 record's passed
+expectation on those phases means its result was checked, which a v1 record's does not. The
+v1 capture below ran before that change and stays the valid record of what ran at its
+revision. Its own structural paths record a null root for all 20 of those mutations and a
+JSON `empty-list` for every empty read.
+
+The [capture](../../docs/api/evidence/2026-11-02-mime-directory.json) at `965b329` on
+`11.138.0.19` is a **passed run**, exit 0, with the filesystem proof enabled. All 73 phases
+passed with no review findings and both sections finished. Every mutation returned null data
+except `set_indexing`, `configure_directory_protection` and the upload, and each
+`add_redirect` carried one message. Both
+disables returned null `auth_name` and `auth_type`, as the existing correction expects.
+Token, account, domain and zone cleanup are `confirmed_absent`, the directory is
+`absent_with_account`, the control passed with
+`home=1, users=1, userdata=1, userdomains=1, passwd=1, zones=2`, and `filesystem_cleanup` is
+`confirmed_absent`. See the
+[source audit](../../docs/api/source-audit.md#disposable-account-mime-and-directory-access-mutations-2026-11-02).
