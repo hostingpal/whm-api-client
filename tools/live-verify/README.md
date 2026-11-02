@@ -2466,13 +2466,16 @@ Exit 0 requires the lifecycle and the strict UserTasks review to pass. The share
 exact account and domain on every request, then the exact method, URI, complete header set and
 body. Each mutation is consumed once, even when refused.
 
-**Producer.** A `VersionControl/create` clone queues a `VersionControl`/`create` task. Its
-source is an empty repository this run creates first, inside the same account, with a plain
-`VersionControl/create` that queues nothing. The clone URL is that repository's absolute
-path, with no scheme, host or credential, so the server's git clones a local path and contacts
-no network. Nothing is installed and no server setting changes. Both creates go through
-generic `call()`, because they are fixture steps rather than the subject. The producer rests
-on the installed sources of `11.138.0.19`, inspected read-only for this recipe: see the
+**Producer.** The run queues one clone of a local repository inside the disposable account, and
+cPanel's own queue runner processes it. First a plain `VersionControl/create` makes an empty
+repository there, which queues nothing. Then a second `VersionControl/create` clones it by
+absolute path, with no scheme, host or credential, which queues one `VersionControl`/`create`
+task. The fixture neither starts nor stops that work. The installed source says a local path
+needs no network transport, so the source was chosen for that; network traffic is not
+monitored, and no absence of contact is claimed. Nothing is installed and no server setting
+changes. Both creates go through generic `call()`, because they are fixture steps rather than
+the subject. The producer rests on the installed sources of `11.138.0.19`, inspected read-only
+for this recipe: see the
 [source audit](../../docs/api/source-audit.md#user-task-queue-fixture-2026-11-02).
 
 **Requests**, in order, all on the direct route unless named bridged:
@@ -2485,44 +2488,69 @@ on the installed sources of `11.138.0.19`, inspected read-only for this recipe: 
 | `source_create` | `VersionControl/create`, no source, generic POST | its own root, no task rows |
 | `clone_create` | `VersionControl/create` from the local path, generic POST | API success |
 | `tasks_queued_direct`, `tasks_queued_bridged` | typed `listTasks()` | recorded |
-| `delete_owned` | typed `deleteTask()` with the owned ID | recorded |
+| `delete_owned` | typed `deleteTask()`, only while the latest read shows the owned row | recorded |
 | `tasks_after_direct`, `tasks_after_bridged` | typed `listTasks()` | recorded |
 
 Capture stops at the first unexpected state before the producer, so nothing is created on an
-account that does not look as planned. After the producer nothing stops capture: every read and
-the delete still run, and their unmet expectations are recorded and fail the run.
+account that does not look as planned. After the producer nothing stops capture: every read
+still runs, and unmet expectations are recorded and fail the run.
 
-**Ownership and the one delete.** Both routes must read an empty queue first, so every later
-row is this run's, but ownership still needs an exact `VersionControl` subsystem, `create`
-action and this run's clone root, read from the original JSON, never from typed results. The
-ID comes from the producer's own response, which lists the queue rows for its root, or failing
-that from a queue read, and it must be a `Directory::Queue::Normal` element name. Exactly one
-delete is ever authorized, of that ID, by its literal body. It runs even if the task already
-finished, because the runner races this run and nothing controls it; a refusal is then
-recorded and never retried. Other rows are only counted. No queued work is executed, polled,
-cancelled or otherwise touched, and deletion proves neither completion nor that a process
-stopped. Both repositories stay for account removal, which takes the whole home directory.
+**Ownership and the one delete.** Both routes must read an empty queue first, but ownership
+still needs an exact `VersionControl` subsystem, `create` action and this run's clone root,
+read from the original JSON, never from typed results. Task creation is `confirmed` only when
+the producer's response or a queue read showed that row; API success alone leaves it
+`unconfirmed`.
+
+The delete is sent only when the latest readable queue read showed the owned row, by the one ID
+that the producer response and every read agree on, and only if it is a
+`Directory::Queue::Normal` element name. Otherwise it is `not_attempted`, with
+`deletion.reason` saying why:
+
+| `reason` | Meaning |
+| --- | --- |
+| `owned_row_never_seen` | Neither the producer response nor any read showed the row. |
+| `owned_row_not_seen_by_reads` | Only the producer response showed it. |
+| `owned_row_absent_from_latest_read` | An earlier read showed it; the latest readable read did not. |
+| `owned_task_ambiguous` | Several distinct owned IDs; `ownership.distinct_owned_ids` says how many. |
+| `owned_id_not_queue_element` | The one owned ID is no queue element name. |
+
+So a race with the runner is an expectation outcome, `owned_delete_not_attempted`, and never a
+contract failure: the subject review then expects no delete record. Exactly one delete is ever
+authorized, by its literal body, and a refusal is recorded and never retried.
+`deletion.owned_row_in_latest_reads` gives each route's latest queued read, null when that read
+was unreadable. Apart from the producer and that one delete, no queued work is started,
+polled, cancelled or otherwise touched, and other rows are only counted. Deletion proves
+neither completion nor that a process stopped. Both repositories stay for account removal,
+which takes the whole home directory.
 
 **Evidence.** `user_tasks` holds structural probe records, per-read counts (`rows`,
-`owned_rows`, `foreign_rows`), the ownership proof and the delete's outcome and data type.
-Payload paths carry each queue field's wire type; no task ID, argument, path, name, token or
-upstream text is persisted. `expectation_findings` names every unmet expectation by fixed
-label, such as `owned_row_absent:tasks_queued_bridged` when the task finished before that read.
+`owned_rows`, `foreign_rows`), the ownership proof and the delete's outcome, reason and data
+type. Payload paths carry each queue field's wire type; no task ID, argument, path, name, token
+or upstream text is persisted. `expectation_findings` names every unmet expectation by fixed
+label, and each finding fails the expectation of the one record it concerns, or none when it
+concerns the run as a whole. A read after the delete that still shows the row records
+`owned_row_present_after_delete`, or `owned_row_still_queued` when no delete was sent. Task
+`cleanup` keeps `present` when a read saw it; only an unsettled cleanup becomes
+`absent_with_account` once the account is gone.
 
 Two reviews read the records. `discrepancy_review`, policy
-`user-tasks-subject-no-acknowledgments-v1`, gates the run: every UserTasks phase and the
+`user-tasks-subject-no-acknowledgments-v2`, gates the run: every planned UserTasks phase and the
 version must appear once, in order, with its contract and route, a successful outcome, UAPI
-status 1 and no discrepancy. `producer_review`, policy `user-tasks-producer-structure-v1`, holds
+status 1 and no discrepancy. `producer_review`, policy `user-tasks-producer-structure-v2`, holds
 the home read and both creates to the same rule with validation `not_checked`. Their
 discrepancies are Variables and VersionControl evidence: they fail that review and are
-reported, but never gate the UserTasks result. The queue's own `exclusive` key, which the
-VersionControl create contract does not declare, is expected to appear there.
+reported, but never gate the UserTasks result.
 
-The current scenario is `user-tasks-disposable-v1`.
+The current scenario is `user-tasks-disposable-v2`, and **no v2 capture exists**. It differs
+from v1 in meaning: v1 deleted on the producer response's word alone, confirmed creation on API
+success, could rewrite observed residue as `absent_with_account`, blamed findings on whichever
+record came last, and reported only the bridged route's latest read. See the
+[source audit](../../docs/api/source-audit.md#user-task-review-corrections-2026-11-02).
+
 The [v1 capture](../../docs/api/evidence/2026-11-02-user-tasks.json) at `fea2d7d` on
-`11.138.0.19` is a **failed run**, exit 1, kept unchanged and not rerun. The producer worked
-and its response listed the owned task, but the runner removed the task before the next read,
-so every queue read through both routes was empty and the delete by its exact ID was refused.
-Cleanup and the filesystem proof passed. Seeing a populated row needs a task that outlives the
-next read; that is a new recipe version, not a rerun. See the
+`11.138.0.19` is a **failed run**, exit 1, kept unchanged and not rerun. The producer response
+listed the owned task, then every queue read through both routes was an empty list, and the
+delete v1 sent by that ID returned UAPI status 0. Cleanup and the filesystem proof passed. A
+populated read needs a task that is still queued at the next read, which this producer did not
+give on this server; that is a new recipe, not a rerun. See the
 [source audit](../../docs/api/source-audit.md#user-task-queue-capture).
