@@ -24,8 +24,9 @@ use Throwable;
  * is added it reads every extra name absent server-wide and reads the account's marker again; then it raises this
  * account's own addon, alias and subdomain limits and creates an addon domain, an alias of the main domain and a
  * subdomain, each once, through the account's own token. A creation counts only once the server's inventory lists it
- * for this account. Account removal takes them all, so after removal it reads that every extra domain and zone this
- * run made is gone, through the lifecycle's removed-resource proof.
+ * for this account. Account removal takes them all, so once the proven account reads removed it reads that every
+ * extra domain and zone this run made is gone, through the lifecycle's removed-resource proof; after any other cleanup
+ * they stay unconfirmed.
  *
  * The reads mutate nothing, so every planned read runs even after one fails, and each records its own outcome. The DNS
  * reads send the main domain and the addon, two distinct owned domains, in both orders. Where a result names its
@@ -73,7 +74,7 @@ use Throwable;
  *     extra_filesystem: array{addon_domain: ExtraFilesystem, alias_domain: ExtraFilesystem}
  * }
  * @phpstan-type Scenario array{
- *     scenario: 'domain-rows-disposable-v1', target_role: 'disposable-test-account', probes: list<Observation>,
+ *     scenario: 'domain-rows-disposable-v2', target_role: 'disposable-test-account', probes: list<Observation>,
  *     dns_results: array<string, DnsResult>,
  *     dns_order_samples: array<string, array{request: int, reverse: int, other: int, not_observable: int}>,
  *     domain_kinds: array<string, Kinds>, single_domain: array<string, string>,
@@ -137,6 +138,9 @@ final class DomainRowsFixture
 
     private bool $expectationFailed = false;
 
+    /** Whether the lifecycle called the removed-resource proof, which it does only for a proven, removed account. */
+    private bool $proofRan = false;
+
     private ?string $stopLabel = null;
 
     /**
@@ -199,6 +203,7 @@ final class DomainRowsFixture
 
             return $this->scenario();
         }
+        $this->settleUnprovenRemoval();
         $lifecycle = DisposableAccountLifecycle::reportFields($outcome);
         $this->report = [
             ...$this->report,
@@ -303,9 +308,11 @@ final class DomainRowsFixture
         if ($record['api_outcome'] !== 'success') {
             $this->stop('extra_identity_creation_failure');
         }
+        $zoned = array_intersect($labels, array_keys(DomainRowsRecipe::ZONES)) !== [];
         try {
             $domains = $this->domainRows();
-            $zones = $this->zoneRows();
+            // Only a creation that can make a zone is followed by a zone read, so no other read can stop the capture.
+            $zones = $zoned ? $this->zoneRows() : [];
         } catch (Throwable $failure) {
             $this->stop('extra_identity_inventory_unusable', $failure);
         }
@@ -351,12 +358,6 @@ final class DomainRowsFixture
     {
         $result = null;
         $record = $this->observe($phase, $direct, $result);
-        if (in_array($phase, DomainRowsRecipe::expectedRefusals(), true)) {
-            $this->singles[$phase] = $record['failure_kind'] === 'api_failure' ? 'api_refusal' : 'not_refused';
-            $this->judge($record['failure_kind'] === 'api_failure');
-
-            return;
-        }
         if ($record['probe_outcome'] !== 'passed') {
             if (str_contains($phase, '_single_')) {
                 $this->singles[$phase] = 'not_observed';
@@ -383,8 +384,10 @@ final class DomainRowsFixture
             default => $result,
         };
         if (!is_array($rows) || !array_is_list($rows)) {
-            $this->dns[$phase] = ['requested' => 2, 'returned' => null, 'identities' => 'not_observable',
-                'order' => 'not_observable'];
+            $this->dns[$phase] = [
+                'requested' => count($requested), 'returned' => null, 'identities' => 'not_observable',
+                'order' => 'not_observable',
+            ];
             $this->judge(false);
 
             return;
@@ -404,12 +407,13 @@ final class DomainRowsFixture
             $order = match (true) {
                 $identities === 'mismatch' => 'other',
                 $names === $requested => 'request',
-                default => 'reverse',
+                $names === array_reverse($requested) => 'reverse',
+                default => 'other',
             };
         }
-        $this->dns[$phase] = ['requested' => 2, 'returned' => count($rows), 'identities' => $identities,
+        $this->dns[$phase] = ['requested' => count($requested), 'returned' => count($rows), 'identities' => $identities,
             'order' => $order];
-        $this->judge(count($rows) === 2 && $identities !== 'mismatch');
+        $this->judge(count($rows) === count($requested) && $identities !== 'mismatch');
     }
 
     /**
@@ -457,7 +461,12 @@ final class DomainRowsFixture
         );
     }
 
-    /** Record which of this run's names a single-domain read returned; it must be one of them. */
+    /**
+     * Record which of this run's names a single-domain read returned; it must be exactly the one requested.
+     *
+     * Another of the run's records, the main domain's or the addon's underlying subdomain's, is named in the report
+     * and fails the expectation, as a read that answers with the wrong record is not a row of the requested kind.
+     */
     private function judgeSingle(string $phase, #[SensitiveParameter] mixed $result): void
     {
         $domain = is_array($result) ? ($result['domain'] ?? null) : null;
@@ -473,7 +482,7 @@ final class DomainRowsFixture
             DomainRowsRecipe::DOMAIN => 'main_domain',
             default => 'other',
         };
-        $this->judge($this->singles[$phase] !== 'other');
+        $this->judge($this->singles[$phase] === 'requested_domain');
     }
 
     /** True when a list of plain names holds the name. */
@@ -514,12 +523,15 @@ final class DomainRowsFixture
     }
 
     /**
-     * After account removal, read that every extra domain and zone this run attempted is gone; mutates nothing.
+     * Once the proven account reads removed, read that every extra domain and zone this run attempted is gone.
+     *
+     * The lifecycle calls this only then; it mutates nothing.
      *
      * @return list<string> Failure labels for the lifecycle's report.
      */
     private function proveRemoved(): array
     {
+        $this->proofRan = true;
         $attempted = array_keys(array_filter(
             $this->report['resources'],
             static fn (array $outcome): bool => $outcome['creation'] !== 'not_attempted',
@@ -559,6 +571,30 @@ final class DomainRowsFixture
         }
 
         return [...$failures, ...$this->proveFilesystemAbsence()];
+    }
+
+    /**
+     * Leave every extra name and zone this run attempted unconfirmed when the lifecycle never called the proof.
+     *
+     * The lifecycle calls it only once the proven account reads removed. After any other cleanup nothing here was
+     * read, so nothing can be called absent, and each extra filesystem claim whose control ran stays unconfirmed.
+     * The lifecycle's own failures already fail the run.
+     */
+    private function settleUnprovenRemoval(): void
+    {
+        if ($this->proofRan) {
+            return;
+        }
+        foreach ([...array_keys(DomainRowsRecipe::DOMAINS), ...array_keys(DomainRowsRecipe::ZONES)] as $label) {
+            if ($this->report['resources'][$label]['creation'] !== 'not_attempted') {
+                $this->report['resources'][$label]['cleanup'] = 'unconfirmed';
+            }
+        }
+        foreach (array_keys(self::FILESYSTEM_DOMAINS) as $label) {
+            if ($this->report['extra_filesystem'][$label]['control']['status'] !== 'not_run') {
+                $this->report['extra_filesystem'][$label]['cleanup'] = 'unconfirmed';
+            }
+        }
     }
 
     /**
@@ -677,8 +713,7 @@ final class DomainRowsFixture
     /**
      * Capture one phase through the shared runner, keeping its result in memory for the judgment that follows.
      *
-     * The runner clears prior capture and never retries; the record carries only structural evidence. A phase whose
-     * documented outcome is an API refusal passes its expectation only when it was exactly that.
+     * The runner clears prior capture and never retries; the record carries only structural evidence.
      *
      * @return Observation
      */
@@ -712,10 +747,8 @@ final class DomainRowsFixture
             'bridged-uapi' => $this->root->uapi(DomainRowsRecipe::ACCOUNT),
             default => null,
         };
-        $refusal = in_array($phase, DomainRowsRecipe::expectedRefusals(), true)
-            && $record['failure_kind'] === 'api_failure';
         $observation = [...$record, 'phase' => $phase, 'uapi_status' => $handle?->responseMeta()?->uapiStatus(),
-            'expectation' => $record['probe_outcome'] === 'passed' || $refusal ? 'passed' : 'not_checked'];
+            'expectation' => $record['probe_outcome'] === 'passed' ? 'passed' : 'not_checked'];
         $this->records[] = $observation;
 
         return $observation;
@@ -797,7 +830,7 @@ final class DomainRowsFixture
         }
 
         return [
-            'scenario' => 'domain-rows-disposable-v1',
+            'scenario' => 'domain-rows-disposable-v2',
             'target_role' => 'disposable-test-account',
             'probes' => $records,
             'dns_results' => $this->dns,

@@ -58,7 +58,7 @@ final class DomainRowsCommandTest extends TestCase
         self::assertIsArray($report);
         self::assertSame(1, $report['schema_version']);
         self::assertIsArray($report['domain_rows']);
-        self::assertSame('domain-rows-disposable-v1', $report['domain_rows']['scenario']);
+        self::assertSame('domain-rows-disposable-v2', $report['domain_rows']['scenario']);
         foreach (['private', 'wldomains', 'example.com', 'WHMTOKEN'] as $value) {
             self::assertStringNotContainsString($value, $json);
         }

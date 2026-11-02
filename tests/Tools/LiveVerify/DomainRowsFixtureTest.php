@@ -62,7 +62,7 @@ final class DomainRowsFixtureTest extends TestCase
         $fixture = $scenario['fixture'];
 
         self::assertSame('passed', $fixture['status'], (string) json_encode($fixture['failures']));
-        self::assertSame('domain-rows-disposable-v1', $scenario['scenario']);
+        self::assertSame('domain-rows-disposable-v2', $scenario['scenario']);
         self::assertSame('passed', $scenario['discrepancy_review']['status'], (string) json_encode(
             $scenario['discrepancy_review']['findings'],
         ));
@@ -107,12 +107,136 @@ final class DomainRowsFixtureTest extends TestCase
             );
         }
         self::assertCount(6, $scenario['domain_kinds']);
-        self::assertSame('requested_domain', $scenario['single_domain']['bridged_single_sub']);
+        foreach (DomainRowsRecipe::DOMAIN_INFO_PHASES as $phase) {
+            if (str_contains($phase, '_single_')) {
+                self::assertSame('requested_domain', $scenario['single_domain'][$phase], $phase);
+            }
+        }
+        foreach ($scenario['dns_results'] as $result) {
+            self::assertSame(2, $result['requested']);
+        }
         self::assertSame(
             ['request' => 2, 'reverse' => 0, 'other' => 0, 'not_observable' => 0],
             $scenario['dns_order_samples']['whm1:has_local_authority@whm'],
         );
         self::assertPrivate($scenario);
+    }
+
+    /**
+     * A single-domain read must return the record of exactly the domain it asked for. Another of the run's own records,
+     * the main domain's or the addon's underlying subdomain's, is recorded by name and fails the expectation.
+     */
+    #[DataProvider('otherRecords')]
+    public function testASingleDomainReadOfAnotherRecordFailsItsExpectation(
+        string $requested,
+        string $returned,
+        string $phase,
+        string $label,
+    ): void {
+        $http = new DomainRowsServer();
+        $http->singleDomain[$requested] = $returned;
+        $scenario = self::scenario($http);
+
+        self::assertSame(['expectation_failure'], $scenario['fixture']['failures']);
+        self::assertSame($label, $scenario['single_domain'][$phase]);
+        self::assertSame('failed', self::observation($scenario, $phase)['expectation']);
+        self::assertContains('unsuccessful_phase:' . $phase, $scenario['discrepancy_review']['findings']);
+        self::assertSame(DomainRowsRecipe::PHASES, array_column($scenario['probes'], 'phase'));
+    }
+
+    /** @return iterable<string, array{string, string, string, string}> */
+    public static function otherRecords(): iterable
+    {
+        yield 'addon as the main domain' => [
+            DomainRowsRecipe::ADDON, DomainRowsRecipe::DOMAIN, 'direct_single_addon', 'main_domain',
+        ];
+        yield 'addon as its subdomain' => [
+            DomainRowsRecipe::ADDON, DomainRowsRecipe::ADDON_SUBDOMAIN, 'direct_single_addon', 'addon_subdomain',
+        ];
+        yield 'alias as the main domain' => [
+            DomainRowsRecipe::ALIAS, DomainRowsRecipe::DOMAIN, 'direct_single_alias', 'main_domain',
+        ];
+        yield 'subdomain as the main domain' => [
+            DomainRowsRecipe::SUBDOMAIN, DomainRowsRecipe::DOMAIN, 'direct_single_sub', 'main_domain',
+        ];
+        yield 'subdomain as a foreign name' => [
+            DomainRowsRecipe::SUBDOMAIN, 'existing.example', 'direct_single_sub', 'other',
+        ];
+    }
+
+    /** A refused alias read is an ordinary failed observation: no refusal is expected anywhere. */
+    public function testARefusedAliasReadFailsTheCapture(): void
+    {
+        $http = new DomainRowsServer();
+        $http->failures['direct:DomainInfo/single_domain_data:3'] = 'api_before';
+        $scenario = self::scenario($http);
+
+        self::assertSame(['capture_failure'], $scenario['fixture']['failures']);
+        self::assertSame('not_observed', $scenario['single_domain']['direct_single_alias']);
+        self::assertSame('not_checked', self::observation($scenario, 'direct_single_alias')['expectation']);
+        self::assertContains('unsuccessful_phase:direct_single_alias', $scenario['discrepancy_review']['findings']);
+    }
+
+    /**
+     * Each creation reads only the inventories its labels depend on: the subdomain makes no zone, so no zone
+     * inventory follows it, and a failure there cannot stop the capture.
+     */
+    public function testTheSubdomainCreationReadsNoZoneInventory(): void
+    {
+        $http = new DomainRowsServer();
+        $scenario = self::scenario($http);
+
+        self::assertSame('passed', $scenario['fixture']['status']);
+        // Lifecycle preflight, fixture preflight, after the addon, after the alias, lifecycle final check, proof.
+        self::assertSame(6, $http->counts['listzones']);
+        // The same, plus the read after the subdomain.
+        self::assertSame(7, $http->counts['get_domain_info']);
+        $functions = array_map(
+            static fn (RequestInterface $request): string => basename($request->getUri()->getPath()),
+            $http->requests,
+        );
+        $after = array_slice($functions, (int) array_search('addsubdomain', $functions, true) + 1, 2);
+        self::assertSame('get_domain_info', $after[0]);
+        self::assertNotSame('listzones', $after[1]);
+    }
+
+    /**
+     * The lifecycle calls the removed-resource proof only once the proven account reads removed. Otherwise no extra
+     * name or zone is read, and each one this run attempted stays unconfirmed, as does each extra filesystem claim.
+     */
+    #[DataProvider('unsettledRemovals')]
+    public function testAnUnsettledRemovalLeavesEveryExtraNameUnconfirmed(string $step, string $mode): void
+    {
+        $http = new DomainRowsServer();
+        $http->failures[$step] = $mode;
+        $absent = ['outcome' => 'confirmed_absent', 'residue' => []];
+        $present = RecordingFilesystemProof::PRESENT;
+        $proof = new RecordingFilesystemProof([$present, $present, $present, $absent]);
+        $fixture = self::scenario($http, $proof)['fixture'];
+
+        self::assertSame('failed', $fixture['status']);
+        // Lifecycle preflight, fixture preflight, one per creation and the lifecycle's own final check; no proof read.
+        self::assertSame(6, $http->counts['get_domain_info']);
+        foreach (self::EXTRA as $resource) {
+            self::assertSame(
+                ['creation' => 'confirmed', 'cleanup' => 'unconfirmed'],
+                $fixture['resources'][$resource],
+                $resource,
+            );
+        }
+        foreach (['addon_domain', 'alias_domain'] as $label) {
+            self::assertSame('passed', $fixture['extra_filesystem'][$label]['control']['status']);
+            self::assertSame('unconfirmed', $fixture['extra_filesystem'][$label]['cleanup']);
+        }
+        // The lifecycle's own control and final check only; no extra final check ran.
+        self::assertCount(4, $proof->calls);
+    }
+
+    /** @return iterable<string, array{string, string}> */
+    public static function unsettledRemovals(): iterable
+    {
+        yield 'removal refused' => ['removeacct:1', 'api_before'];
+        yield 'account unreadable after removal' => ['listaccts:7', 'invalid_before'];
     }
 
     /** Every field a clean lifecycle reports reaches this report unchanged, so a new one cannot be left out. */

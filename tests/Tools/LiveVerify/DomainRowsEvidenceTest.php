@@ -11,6 +11,7 @@ use HostingPal\WhmApiClient\Tools\LiveVerify\DomainRowsEvidence;
 use HostingPal\WhmApiClient\Tools\LiveVerify\DomainRowsFixture;
 use HostingPal\WhmApiClient\Tools\LiveVerify\DomainRowsRecipe;
 use PHPUnit\Framework\TestCase;
+use ReflectionMethod;
 
 /** @phpstan-import-type Observation from DomainRowsFixture */
 final class DomainRowsEvidenceTest extends TestCase
@@ -66,34 +67,15 @@ final class DomainRowsEvidenceTest extends TestCase
         }
     }
 
-    /** An API refusal passes only where an observation recorded it as the documented outcome. */
-    public function testAnApiRefusalPassesOnlyWhereItIsTheExpectedOutcome(): void
+    /** No refusal is an expected outcome anywhere, so an API refusal fails its phase on every read. */
+    public function testAnApiRefusalNeverPasses(): void
     {
-        $records = self::changed('direct_single_alias', self::refused(...));
-        self::assertSame(
-            ['unsuccessful_phase:direct_single_alias', 'unexpected_uapi_status:direct_single_alias'],
-            self::assess($records)['findings'],
-        );
-        $expected = DomainRowsEvidence::assess($records, self::context(), ['direct_single_alias']);
-        self::assertSame([], $expected['findings']);
-        self::assertSame(
-            ['unsuccessful_phase:direct_single_alias', 'unexpected_uapi_status:direct_single_alias'],
-            DomainRowsEvidence::assess(self::records(), self::context(), ['direct_single_alias'])['findings'],
-        );
-    }
-
-    public function testExpectedRefusalStillNeedsAnHttpSuccessAndAnApiFailureOnly(): void
-    {
-        $records = self::changed('bridged_single_alias', static function (array $record): array {
-            $record = self::refused($record);
-            $record['failure_kind'] = 'request_failure';
-
-            return $record;
-        });
-        self::assertSame(
-            ['unsuccessful_phase:bridged_single_alias'],
-            DomainRowsEvidence::assess($records, self::context(), ['bridged_single_alias'])['findings'],
-        );
+        foreach (['direct_single_alias', 'bridged_single_alias', 'whm_ds_forward'] as $phase) {
+            $records = self::changed($phase, self::refused(...));
+            $findings = self::assess($records)['findings'];
+            self::assertContains('unsuccessful_phase:' . $phase, $findings, $phase);
+        }
+        self::assertSame(2, (new ReflectionMethod(DomainRowsEvidence::class, 'assess'))->getNumberOfParameters());
     }
 
     public function testContractsBindEveryPhaseToItsReviewedOperationAndRoute(): void
@@ -197,7 +179,7 @@ final class DomainRowsEvidenceTest extends TestCase
      */
     private static function assess(array $records): array
     {
-        return DomainRowsEvidence::assess($records, self::context(), []);
+        return DomainRowsEvidence::assess($records, self::context());
     }
 
     /**

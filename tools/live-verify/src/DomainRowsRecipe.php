@@ -118,16 +118,6 @@ final readonly class DomainRowsRecipe
     }
 
     /**
-     * Phases whose expected outcome is an API refusal; none, unless a recorded observation says otherwise.
-     *
-     * @return list<string>
-     */
-    public static function expectedRefusals(): array
-    {
-        return [];
-    }
-
-    /**
      * The route of one phase, as EvidenceRunner names it.
      *
      * @return 'whm'|'direct-uapi'|'bridged-uapi'

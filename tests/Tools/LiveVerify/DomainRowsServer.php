@@ -56,9 +56,6 @@ final class DomainRowsServer implements ClientInterface
     /** Whether the inventories list the subdomain an addon is parked on; cPanel 11.138.0.19 listed it nowhere. */
     public bool $listAddonSubdomain = false;
 
-    /** Whether single_domain_data refuses an alias, as aliases have no user-data file. */
-    public bool $refuseAlias = true;
-
     /** @var array<string, string> Replacement domain a single_domain_data read reports, by requested domain. */
     public array $singleDomain = [];
 
@@ -86,11 +83,6 @@ final class DomainRowsServer implements ClientInterface
     private string $contactEmail = '';
 
     private int $expiresAt = 0;
-
-    public function __construct()
-    {
-        $this->refuseAlias = in_array('direct_single_alias', DomainRowsRecipe::expectedRefusals(), true);
-    }
 
     public function sendRequest(RequestInterface $request): ResponseInterface
     {
@@ -303,9 +295,6 @@ final class DomainRowsServer implements ClientInterface
     /** @return array<string, mixed>|false */
     private function single(string $domain): array|false
     {
-        if ($domain === DomainRowsRecipe::ALIAS && $this->refuseAlias) {
-            return false;
-        }
         if ($domain !== self::M && !isset($this->domains[$domain])) {
             return false;
         }

@@ -19,8 +19,7 @@ use LogicException;
  *
  * Original records are never altered. Every phase must appear once, in order, with its reviewed contract and route, a
  * passed expectation and no discrepancy, so an undeclared key on any populated row fails the run. Every phase is a
- * typed call and must report passed payload validation, except a phase whose API refusal a recorded observation made
- * its expected outcome: that one must be exactly an API refusal over HTTP success, with UAPI status 0. The contracts
+ * typed call and must report passed payload validation; no phase has a refusal as its expected outcome. The contracts
  * here are written out independently of the recipe's probes, which the tests compare.
  *
  * @phpstan-import-type Context from EvidenceRunner
@@ -81,15 +80,12 @@ final class DomainRowsEvidence
      *
      * @param list<Observation> $records
      * @param Context $context
-     * @param list<string>|null $expectedRefusals Phases expected to be refused; null takes the recipe's own.
      * @return Assessment
      */
     public static function assess(
         array $records,
         array $context,
-        ?array $expectedRefusals = null,
     ): array {
-        $expectedRefusals ??= DomainRowsRecipe::expectedRefusals();
         $versions = array_values(array_filter($records, static fn (array $record): bool =>
             $record['phase'] === 'version' && self::usableVersion($record['server_version'])));
         $version = count($versions) === 1 ? $versions[0]['server_version'] : null;
@@ -114,8 +110,7 @@ final class DomainRowsEvidence
             ) {
                 $findings[] = 'contract_mismatch:' . $phase;
             }
-            $refusal = in_array($phase, $expectedRefusals, true);
-            if (!($refusal ? self::refused($record) : self::successful($record))) {
+            if (!self::successful($record)) {
                 $findings[] = 'unsuccessful_phase:' . $phase;
             }
             if ($record['discrepancies'] !== []) {
@@ -124,7 +119,7 @@ final class DomainRowsEvidence
             if ($record['server_version'] !== $version) {
                 $findings[] = 'unusable_server_version';
             }
-            $status = $contract['route'] === 'whm' ? null : ($refusal ? 0 : 1);
+            $status = $contract['route'] === 'whm' ? null : 1;
             if ($record['uapi_status'] !== $status) {
                 $findings[] = 'unexpected_uapi_status:' . $phase;
             }
@@ -164,14 +159,6 @@ final class DomainRowsEvidence
         return $record['probe_outcome'] === 'passed' && $record['api_outcome'] === 'success'
             && $record['payload_validation'] === 'passed' && $record['expectation'] === 'passed'
             && $record['failure_kind'] === null && self::httpSuccess($record);
-    }
-
-    /** @param Observation $record */
-    private static function refused(array $record): bool
-    {
-        return $record['probe_outcome'] === 'failed' && $record['api_outcome'] === 'failure'
-            && $record['payload_validation'] === 'not_checked' && $record['expectation'] === 'passed'
-            && $record['failure_kind'] === 'api_failure' && self::httpSuccess($record);
     }
 
     /** @param Observation $record */
