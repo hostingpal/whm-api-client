@@ -49,8 +49,8 @@ use Throwable;
  * absence are each read independently. A failed or uncertain step fails `cleanup`, and the fields still say what each
  * resource showed.
  *
- * Removed resources. What a recipe made outside the account that only removal takes, such as an extra domain's zone,
- * is proven absent by the recipe's own read-only check, which runs after removal and the lifecycle's reads.
+ * Removed resources. What only the account's removal takes or leaves, such as an extra domain's zone, is settled by
+ * the recipe's own callback, called only once the marker proved the account and the account then read absent.
  *
  * Filesystem. An optional proof runs twice. After setup, it must show the account in every location it can always be
  * found, which is the positive control that ties the proof to the server this run changed. If setup stopped after
@@ -142,10 +142,12 @@ final class DisposableAccountLifecycle
      * ExerciseFailure to name it; anything else is reported as `exercise_failure`. $cleanOwned, if given, removes what
      * the exercise made inside the account: it runs only once the marker proves the account, before the token is
      * revoked so the token still works, and even when the exercise failed. It returns failure labels for the report.
-     * $proveRemoved, if given, proves absent what the exercise made outside the account that only the account's
-     * removal takes, such as an extra domain's zone. It runs once, after the removal attempt and the lifecycle's own
-     * absence reads and before the filesystem proof, whenever cleanup ran, and returns failure labels for the report;
-     * if it throws, `removed_resource_absence_unconfirmed` is reported. It must not mutate anything.
+     * $proveRemoved, if given, settles what the account's removal takes or leaves behind outside the account, such as
+     * an extra domain's zone. It runs at most once, only when the marker proved the account this run's and the account
+     * then read confirmed absent after removal, after the lifecycle's own domain and zone reads and before the
+     * filesystem proof. Its failure labels fail `cleanup`; if it throws, `removed_resource_absence_unconfirmed` is
+     * reported. In every other case, a failed or unreadable removal included, it is never called, and the
+     * lifecycle's own failures already fail the run. Omitting it changes nothing.
      * Anything any callback throws stops nothing. The result's `status` is `passed` only if setup, exercise and
      * cleanup all passed, and it is the run's only status.
      *
@@ -460,6 +462,8 @@ final class DisposableAccountLifecycle
         }
         // The latest account read, kept only while nothing has changed since, so a domain check can reuse it.
         $rows = null;
+        // Set only once the marker proved the account this run's and the account then read absent after removal.
+        $ownedRemoved = false;
         try {
             $rows = $this->ownershipRows();
             if ($this->owns($rows)) {
@@ -486,6 +490,7 @@ final class DisposableAccountLifecycle
                 }
                 $rows = $this->ownershipRows();
                 $this->outcome['account']['cleanup'] = $this->owns($rows) ? 'present' : 'confirmed_absent';
+                $ownedRemoved = $this->outcome['account']['cleanup'] === 'confirmed_absent';
             } elseif ($this->creationOutcomeUnknown) {
                 $this->cleanupFailure('account_creation_outcome_unknown');
             } else {
@@ -506,12 +511,17 @@ final class DisposableAccountLifecycle
             'domain',
         );
         $this->outcome['zone_cleanup'] = $this->independentAbsence($this->zoneExists(...), 'zone');
-        $this->proveRemoved($proveRemoved);
+        if ($ownedRemoved) {
+            $this->proveRemoved($proveRemoved);
+        }
         $this->proveFilesystemAbsence();
     }
 
     /**
-     * Let the recipe prove absent what only the account's removal takes; nothing it does or throws stops the proof.
+     * Let the recipe settle what only the removal of its proven account takes or leaves behind.
+     *
+     * Called only for an account the marker proved this run's and that then read absent; nothing the callback does
+     * or throws stops the filesystem proof.
      *
      * @param (Closure(): list<string>)|null $proveRemoved
      */

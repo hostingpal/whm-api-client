@@ -1186,25 +1186,61 @@ final class DisposableAccountLifecycleTest extends TestCase
         self::assertPrivate($outcome);
     }
 
-    /** After a failed removal the proof still runs, as it then shows what really remains. */
-    public function testRemovedResourceProofStillRunsAfterAFailedRemoval(): void
+    /**
+     * The callback may change what the removed account left behind, so it runs only for an account the marker proved
+     * this run's and that then read absent. Anything less, including a removal that failed or cannot be read back,
+     * skips it entirely; the lifecycle's own failures already fail the run.
+     *
+     * @param array<string, string> $failures
+     * @param array<string, string> $overrides
+     */
+    #[DataProvider('unprovenRemovals')]
+    public function testRemovedResourceProofNeverRunsUnlessTheOwnedAccountReadsRemoved(
+        array $failures,
+        array $overrides,
+    ): void {
+        $http = new DisposableAccountServer();
+        $http->failures = $failures;
+        $http->overrides = $overrides;
+        $ran = false;
+        $outcome = self::lifecycle($http)->run(self::noop(), null, static function () use (&$ran): array {
+            $ran = true;
+
+            return [];
+        });
+
+        self::assertFalse($ran);
+        self::assertSame('failed', $outcome['status']);
+        self::assertNotContains('removed_resource_absence_unconfirmed', $outcome['failures']);
+    }
+
+    /** @return iterable<string, array{array<string, string>, array<string, string>}> */
+    public static function unprovenRemovals(): iterable
+    {
+        yield 'removal refused' => [['removeacct:1' => 'api_before'], []];
+        yield 'removal lost before taking effect' => [['removeacct:1' => 'throw_before'], []];
+        yield 'ownership unreadable before removal' => [['listaccts:5' => 'invalid_before'], []];
+        yield 'account unreadable after removal' => [['listaccts:6' => 'invalid_before'], []];
+        yield 'foreign marker at the cleanup gate' => [[], ['listaccts:3' => self::FOREIGN]];
+        yield 'creation refused' => [['createacct:1' => 'api_before'], []];
+        yield 'creation lost' => [['createacct:1' => 'throw_before'], []];
+    }
+
+    /** A removal whose reply was lost still counts once the owned account reads absent. */
+    public function testRemovedResourceProofRunsWhenALostRemovalReadsAbsent(): void
     {
         $http = new DisposableAccountServer();
-        $http->failures['removeacct:1'] = 'api_before';
-        $accounts = [];
-        $outcome = self::lifecycle($http)->run(
-            self::noop(),
-            null,
-            static function () use ($http, &$accounts): array {
-                $accounts[] = $http->account;
+        $http->failures['removeacct:1'] = 'throw_after';
+        $ran = 0;
+        $outcome = self::lifecycle($http)->run(self::noop(), null, static function () use (&$ran): array {
+            ++$ran;
 
-                return ['extra_domain_still_present'];
-            },
-        );
+            return [];
+        });
 
-        self::assertSame([true], $accounts);
-        self::assertContains('account_remove_failure', $outcome['failures']);
-        self::assertContains('extra_domain_still_present', $outcome['failures']);
+        self::assertSame(1, $ran);
+        self::assertSame(['creation' => 'confirmed', 'cleanup' => 'confirmed_absent'], $outcome['account']);
+        self::assertSame(['account_remove_failure'], $outcome['failures']);
     }
 
     public function testRemovedResourceProofNeverRunsWhenSetupNeverCreatedAnything(): void
