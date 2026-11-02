@@ -1104,6 +1104,13 @@
               "version": "11.138.0.19",
               "date": "2026-11-02",
               "note": "Private name inspection on 2026-11-02 from revision c12695b: the domain-rows recipe in --inspect-names mode created a disposable wldomains account with an addon domain, an alias of its main domain and a subdomain, read every record kind through direct UAPI and the WHM bridge, printed only undeclared key names and JSON types, never values, and then removed the account. Requests: format=hash and format=list, hide_temporary_domains=0, return_https_redirects_status=0. Through both routes, the format=hash addon_domains and sub_domains rows and every format=list row carried phpopenbasedirprotect as a numeric string and status as a non-numeric string; none carried phpversion, and no other undeclared key appeared. Both are optional mixed and deliberately unvalidated, as on main_domain: status has no pinned meaning, and domains_data does not promise phpopenbasedirprotect, whose sibling flag forms do not bound it. The format=list response held no row for the alias, and the main_domain list form and parked rows were not observed with these fields, so those records are unchanged."
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-11-02",
+              "note": "The domain-rows capture at revision e6df465 on 11.138.0.19 ran once, with these fields typed, on a fresh disposable wldomains account holding a main domain, an addon, an alias of the main domain and a subdomain, all removed afterwards. All 35 observations passed HTTP, API, payload, probe and expectation checks, and its strict review, which has no acknowledgment mechanism, passed with zero discrepancies. format=hash and format=list GETs through both direct UAPI and the WHM bridge report addon_domains[] and sub_domains[] phpopenbasedirprotect as named numeric-string paths and status as named string paths, and the same two fields on every list-format row, with no unknown_field anywhere. parked_domains[] entries are strings in the hash form, the list-format response holds no alias row, and userdirprotect is the exact empty string on addon and subdomain rows in both forms while the main domain omits it. Immutable artifact SHA-256 031e989c1035966b2696fec08975b8846e07381ec0c5fd1e5718992c7f547f16. Structural evidence establishes no values or meaning.",
+              "fingerprint": "docs/api/evidence/2026-11-02-domain-rows.json"
             }
           ]
         }
@@ -1440,6 +1447,13 @@
               "version": "11.138.0.19",
               "date": "2026-11-02",
               "note": "Private name inspection on 2026-11-02 from revision c12695b: the domain-rows recipe in --inspect-names mode created a disposable wldomains account with an addon domain, an alias of its main domain and a subdomain, read every record kind through direct UAPI and the WHM bridge, printed only undeclared key names and JSON types, never values, and then removed the account. Through both routes, single_domain_data for the addon domain and for the subdomain carried ipv6 as null; the main domain and alias results did not carry it. The pinned single_domain_data schema does not declare it, but the pinned DomainInfo record components Contents and MainDomainContents, which domains_data rows use and which describe the same user-data record, document it with a type and a meaning, so it keeps validation rather than becoming mixed. Pinned Contents/properties/ipv6 is a nullable string, the domain's IPv6 address, null when the account does not use IPv6; the same nullable string as on domains_data rows. Only null was observed, so the non-null form follows the pinned string without live evidence."
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-11-02",
+              "note": "The domain-rows capture at revision e6df465 on 11.138.0.19 ran once, with these fields typed, on a fresh disposable wldomains account holding a main domain, an addon, an alias of the main domain and a subdomain, all removed afterwards. All 35 observations passed HTTP, API, payload, probe and expectation checks, and its strict review, which has no acknowledgment mechanism, passed with zero discrepancies. single_domain_data GETs for the main domain, addon, alias and subdomain through both routes report $.ipv6 as a named path that is null or missing, with no unknown_field. No non-null value was observed. Immutable artifact SHA-256 031e989c1035966b2696fec08975b8846e07381ec0c5fd1e5718992c7f547f16. Structural evidence establishes no values or meaning.",
+              "fingerprint": "docs/api/evidence/2026-11-02-domain-rows.json"
             }
           ]
         },
@@ -1456,6 +1470,13 @@
               "version": "11.138.0.19",
               "date": "2026-11-02",
               "note": "Private name inspection on 2026-11-02 from revision c12695b: the domain-rows recipe in --inspect-names mode created a disposable wldomains account with an addon domain, an alias of its main domain and a subdomain, read every record kind through direct UAPI and the WHM bridge, printed only undeclared key names and JSON types, never values, and then removed the account. Through both routes, single_domain_data for the addon domain and for the subdomain carried no_cache_update as a numeric string; the main domain and alias results did not carry it. The pinned single_domain_data schema does not declare it, but the pinned DomainInfo record components Contents and MainDomainContents, which domains_data rows use and which describe the same user-data record, document it with a type and a meaning, so it keeps validation rather than becoming mixed. Pinned Contents/properties/no_cache_update is the integer 1/0 flag for whether the domain updates caches. It takes the shared domains_data flag compatibility, accepting only quoted 0 or 1 beside the integers and normalizing them to integers; other strings, null and booleans remain invalid."
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-11-02",
+              "note": "The domain-rows capture at revision e6df465 on 11.138.0.19 ran once, with these fields typed, on a fresh disposable wldomains account holding a main domain, an addon, an alias of the main domain and a subdomain, all removed afterwards. All 35 observations passed HTTP, API, payload, probe and expectation checks, and its strict review, which has no acknowledgment mechanism, passed with zero discrepancies. single_domain_data GETs for the main domain, addon, alias and subdomain through both routes report $.no_cache_update as a named path that is a numeric string or missing, normalized by the quoted-flag rule, with no unknown_field. Immutable artifact SHA-256 031e989c1035966b2696fec08975b8846e07381ec0c5fd1e5718992c7f547f16. Structural evidence establishes no values or meaning.",
+              "fingerprint": "docs/api/evidence/2026-11-02-domain-rows.json"
             }
           ]
         }
@@ -1492,6 +1513,13 @@
           "version": "11.138.0.19",
           "date": "2026-11-02",
           "note": "Private name inspection on 2026-11-02 from revision c12695b: the domain-rows recipe in --inspect-names mode created a disposable wldomains account with an addon domain, an alias of its main domain and a subdomain, read every record kind through direct UAPI and the WHM bridge, printed only undeclared key names and JSON types, never values, and then removed the account. Requests: domain set to the main domain, the addon, the alias and the subdomain in turn, hide_temporary_domains=0, return_https_redirect_status=0. All eight reads succeeded with UAPI status 1, and each result named the requested domain, the alias included, although the documented note says an alias has no user-data file. Addon and subdomain results also carried ipv6 and no_cache_update. This establishes neither that aliases have their own user-data file nor which record an alias query reads."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-11-02",
+          "note": "The domain-rows capture at revision e6df465 on 11.138.0.19 ran once, with these fields typed, on a fresh disposable wldomains account holding a main domain, an addon, an alias of the main domain and a subdomain, all removed afterwards. All 35 observations passed HTTP, API, payload, probe and expectation checks, and its strict review, which has no acknowledgment mechanism, passed with zero discrepancies. All eight single_domain_data GETs, for the main domain, the addon, the alias and the subdomain through both routes, succeeded with UAPI status 1, and each result named the requested domain, the alias included. Immutable artifact SHA-256 031e989c1035966b2696fec08975b8846e07381ec0c5fd1e5718992c7f547f16. Structural evidence establishes no values or meaning.",
+          "fingerprint": "docs/api/evidence/2026-11-02-domain-rows.json"
         }
       ]
     }
