@@ -560,7 +560,8 @@ realm name when enabling it. `addUser()` keeps its password sensitive throughout
 the request. User mutations preserve nullable opaque results and reject an absent
 payload. Directory fields retain optional presence; only `auth_name` and
 `auth_type` in the configure response additionally accept explicit null, based on
-the reviewer's successful disable calls. Read-operation field types are unchanged.
+the reviewer's successful disable calls and the committed 2026-11-02 disables on
+both routes below. Read-operation field types are unchanged.
 
 The 2026-10-30 directory-access capture at `e3aa06b` on `11.138.0.19`: All 13 GET observations passed HTTP, API, payload and probe checks, with zero discrepancies and a passed strict assessment.
 Directory records were present, but every captured `auth_name` and `passwd_file`
@@ -568,6 +569,14 @@ was an empty string, and the privacy-user list was empty. This capture made no
 indexing, password-protection or leech-protection changes and establishes no
 mutation or HTTP-enforcement coverage. Separate reviewer mutation observations
 are recorded in the source audit; they are not part of this artifact. Follow-up `8x0.2.22` remains open.
+
+The committed [2026-11-02 disposable-account capture](docs/api/evidence/2026-11-02-mime-directory.json)
+at `965b329` on `11.138.0.19` runs all four directory mutations through direct UAPI
+and the WHM bridge on a fresh `wlmime` directory, each read back on its own route,
+with zero discrepancies and populated protection and user states. Leech protection
+has no UAPI mutation and was only read: through direct UAPI before the changes and
+through the bridge after them. HTTP indexing, authentication and leech enforcement
+remain unverified.
 
 The resource and web statistics slice exposes eleven GET operations across
 `bandwidth()`, `resourceUsage()`, `statsBar()`, `stats()` and `statsManager()`.
@@ -936,7 +945,11 @@ Separate [Claude reviewer evidence](https://github.com/hostingpal/whm-api-client
 at `933e4de` reports all eight mutations and populated MIME, handler and redirect
 rows passing on `npr` through both routes, with the original `.htaccess` SHA-256
 restored. Keep those reviewer observations separate from the committed read-only
-captures; HTTP redirect delivery and hotlink enforcement remain unverified.
+captures. The committed [2026-11-02 disposable-account capture](docs/api/evidence/2026-11-02-mime-directory.json)
+at `965b329` on `11.138.0.19` runs all eight mutations through both routes on `wlmime`,
+each read back on its own route, with populated MIME, handler and redirect rows, null
+mutation data and zero discrepancies. HTTP redirect delivery and hotlink enforcement
+remain unverified.
 Only `get_redirect.url` and `list_hotlinks.redirect_url` gained evidenced nullable
 compatibility. Keep initial `9262564` failures unchanged, null distinct from
 omission/string, and follow-up `8x0.2.21` open.
