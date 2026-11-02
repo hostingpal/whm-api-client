@@ -119,7 +119,11 @@ $verifyCommand = static function (#[SensitiveParameter] array $arguments) use ($
         $review = $policy->assess($records);
         $finiteQuota = null;
         if ($finiteQuotaFixture) {
-            $fixture = new FiniteQuotaFixture(new CurlClient(allowFormPost: true), $tokens['whm']);
+            $fixture = new FiniteQuotaFixture(
+                new CurlClient(allowFormPost: true),
+                $tokens['whm'],
+                SshFilesystemAbsenceProof::fromEnvironment(),
+            );
             $finiteQuota = $fixture->run(
                 static fn (#[SensitiveParameter] $http, #[SensitiveParameter] string $token): array =>
                     (new FiniteQuotaEvidence($http, $context))->run($probes, $tokens['whm'], $token),

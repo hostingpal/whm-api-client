@@ -356,8 +356,10 @@ final class FilemanUploadServer implements ClientInterface
                 [['domain' => 'existing.example', 'zonefile' => 'private.db']],
                 $this->zone ? [['domain' => 'wlupload.example.com', 'zonefile' => 'private.db']] : [],
             )],
-            'get_domain_info' => ['domains' => $this->account
-                ? [['domain' => 'wlupload.example.com', 'user' => 'wlupload']] : []],
+            'get_domain_info' => ['domains' => array_merge(
+                [['domain' => 'existing.example', 'user' => 'existing']],
+                $this->account ? [['domain' => 'wlupload.example.com', 'user' => 'wlupload']] : [],
+            )],
             'Tokens/list' => array_map(fn (string $name): array => array_replace([
                 'name' => $name, 'expires_at' => (string) $this->expiresAt, 'has_full_access' => 1,
             ], $this->tokenFields), $this->tokens),

@@ -9725,7 +9725,8 @@ A passing run still sends the same requests in the same order. It no longer reco
 same values, though, and the assessment no longer accepts what the artifacts recorded. Two
 artifacts under one label must not disagree, so the scenario is now
 `fileman-upload-disposable-v3` and the policy `fileman-upload-no-acknowledgments-v2`. No
-correction ran live, and **no v3 capture exists yet**.
+correction ran live, and **no v3 capture exists yet**. The first one is recorded under the
+[shared disposable-account lifecycle](#shared-disposable-account-lifecycle-2026-11-01).
 
 - Only an explicit API refusal is a known `createacct` outcome. A 502 or an unreadable body
   could previously report `confirmed_absent` and `cleanup: passed` while creation was still
@@ -9748,7 +9749,6 @@ correction ran live, and **no v3 capture exists yet**.
   Policy v2 requires `not_checked` on these three records, so it would report findings on
   either artifact. Both were assessed under policy v1: their recorded results stand, and
   policy v2 does not judge them retroactively.
-
 
 ### Trash complete source-backed slice (2026-11-01)
 
@@ -9880,7 +9880,6 @@ generation yields1242canonical/115groups/646U596W/233outputs. All55 diagnostics 
 unwaived. Local combined offline gates are recorded separately; PHP8.3 CI and
 exact-HEAD Claude4g9/adh dispositions remain publication requirements. No worker
 commit/push/Beads mutation or acceptance is claimed.
-
 
 ### UserData complete source-backed slice (2026-11-01)
 
@@ -10024,3 +10023,216 @@ and direct Git master refs at M and stored M tree 6634d5b5 with ordered parents
 97a251fc/659da467. The discrepancy's cause remains unknown; explicit immutable M
 is the integration authority. This is no relaxation of future exact-head
 approval/CI/protection/actual stored-tree and SHA-guarded merge requirements.
+
+## Shared disposable-account lifecycle (2026-11-01)
+
+`FilemanUploadFixture` and `FiniteQuotaFixture` held near-verbatim copies of their account,
+token, domain and zone handling, and the review of PR 137 found that hardening had reached
+only the Fileman copy. Both now use `DisposableAccountLifecycle`, which every account-scoped
+recipe builds on. The [live-verify notes](../../tools/live-verify/README.md#disposable-account-lifecycle)
+state its rules. `DisposableAccount` binds the exact identities and marker and spells the
+control requests each guard admits.
+
+The finite-Quota copy had these gaps. Each is closed, and each has a test that failed
+against the old fixture before the migration:
+
+- A lost, gateway-failed or unreadable `createacct` could report `confirmed_absent` while
+  creation was still possible.
+- An empty account or zone list proved absence, at preflight as well as after cleanup.
+- An unreadable token listing withheld the revoke of a token the run had confirmed creating.
+- One lost ownership read abandoned the account and its token.
+
+No existing finite-Quota test assertion pinned these gaps, and none changed. The one
+unsafe thing pinned was in its test double, which returned empty zone and domain lists; it
+now lists other resources, as a real server does.
+
+Both fixtures gained one stricter rule: an empty `get_domain_info` list no longer proves
+absence. The manual-domain inventory was the one server-wide list the Fileman copy still
+accepted empty. Earlier captures observed populated `$.domains[]` rows on this server. A
+token list stays the exception, because a fresh account really can hold no tokens.
+
+### Scenario versions
+
+`finite-quota-disposable-v1` became `-v2`: a v1 capture exists, and this report means
+something different. `fileman-upload-disposable-v3` kept its version, because no capture
+carried it, so nothing recorded under it could be misread. Policies are unchanged.
+
+### Filesystem proof
+
+`WHM_API_LIVE_FS_CHECK=1` adds a read-only check after API cleanup, over the `oblak.test`
+SSH alias, which is the same machine as `test.oblak.host`. One fixed script prints only
+labels and counts. `filesystem_cleanup` stays `not_claimed` unless it ran.
+
+Each location reports its own inventory beside its match, so absence needs a usable place
+to be absent from. This is the same rule as for identity lists. `present` or `unconfirmed`
+fails `cleanup` and the run but never causes a mutation or retry, and the API fields keep
+what the API showed. A filesystem result can therefore turn a passed API cleanup into a
+failed run. That is deliberate: the run opted into a claim it could not prove.
+
+Offline tests run the real script against synthetic trees, including a check that it leaves
+them unchanged. A synthetic tree cannot show that a path is spelled as the server spells it,
+so a run of the committed proof was polled read-only while `wlupload` existed. It reported
+`home=1, users=1, userdata=1, userdomains=1, passwd=1, zones=2`, and sessions `0`. That one
+ad hoc observation is the positive control for those six spellings. It is not in either
+artifact. **Sessions still have no positive control**, which is why the wide name match stays.
+
+### Captures
+
+Both ran once at `b3bfc1474729fb2ce60207d9b3d5a3d0bbe51232` on `11.138.0.19`, with the
+filesystem proof enabled. The same proof read `confirmed_absent` for both accounts before
+either run, so nothing below is residue from earlier ones, and again after both finished.
+
+The [Fileman v3 capture](evidence/2026-11-01-fileman-upload-v3.json), SHA-256
+`7f5f46ccd0c02d0d883d1221c6e80c8219406766a261f1a7552b4b853e750a90`, is a **passed run**,
+exit 0. All 25 phases passed with no review findings, and all six files were proven owned
+and deleted. Token, account, directory, domain and zone cleanup are `confirmed_absent`,
+as is `filesystem_cleanup`.
+
+The [finite-Quota v2 capture](evidence/2026-11-01-finite-quota-v2.json), SHA-256
+`82fe5c4f332f37cc444e588e57496f20d7d15f00db6495b52c0e1aad263d758a`, is a **failed run**,
+exit 1. Its setup, capture, finite expectations and cleanup all pass, token, account, domain
+and zone are `confirmed_absent`, as is `filesystem_cleanup`, and both local limits read
+`binary-mib`. The 67-probe baseline passes with two acknowledgments, none unexpected and none
+stale. It fails only the strict finite assessment, on `$.*` `unknown_field` for
+`uapi:Quota/get_quota_info` on both routes, exactly the two observations of the
+[v1 artifact](evidence/2026-10-17-finite-quota.json). That assessment has no acknowledgment
+mechanism by design, so this exit is the recipe working. The owner accepted these extras as
+expected, undocumented and nonblocking for `npr`; that decision does not extend here. It was
+not rerun.
+
+### Scope limits
+
+These captures exercise the shared lifecycle's success path live. Its failure paths are
+established offline only: no live run met a lost `createacct`, an unreadable listing, a failed
+removal or filesystem residue. The proof covers its fixed locations at one moment. It does not
+cover other paths, backups, logs or mail queues. Deferred or asynchronous cPanel work after
+the check is not excluded, and nothing shows how session files are named.
+
+### Review corrections and the v4 capture
+
+An independent review of this branch at `fb8ad12` found ten issues. Each was confirmed
+against the code, shown failing first, and corrected at `e309912`. The v3 and v2 artifacts
+above keep what they recorded at `b3bfc14`. Neither carries a positive control, so their
+`filesystem_cleanup` values are not bound to the changed server by anything in the artifact.
+
+- A lost `Tokens/create_full_access` followed by an absent listing reported `confirmed_absent`,
+  the reasoning already refused for `createacct`. It is now `unconfirmed`, with
+  `token_creation_outcome_unknown`. No artifact met this path.
+- After an unknown `createacct`, the domain, zone and filesystem reads could report
+  `confirmed_absent` though creation might still land. They now stay `unconfirmed` until the
+  marker settles the outcome. No artifact met this path.
+- Nothing tied `oblak.test` to the server the API changed, so `confirmed_absent` could have
+  described the wrong machine. Each run now requires a positive control after setup, in
+  every location but sessions, or a later absence is `unconfirmed`. This replaces the ad hoc
+  poll above and is recorded in the artifact.
+- `find | wc -l` lost the search's exit status, so an unreadable subtree read as 0 beneath a
+  healthy top-level inventory. A failed search now prints no count, and the strict parser
+  refuses the report. The script stays read-only. A failed search now also hides residue
+  elsewhere: such a report is `unconfirmed`, never `present`.
+- A user-level `ControlMaster` or `ControlPersist` could hold standard error open and turn a
+  clean run into `unconfirmed`. Sharing is off, and only standard output ends the read. This
+  machine's configuration sets neither, so the captures were not affected.
+- Both recipes swallowed failures, so the lifecycle reported `exercise: passed` and
+  `status: passed` for a failed capture, and neither recipe read those fields. Recipes now
+  record their detail and throw `ExerciseFailure`, and copy `status`, `setup` and `failures`
+  from the outcome. A token that cannot be bound is now a capture failure, not a setup one,
+  because the lifecycle's setup had passed.
+- Only `fresh()` limited token lifetime, and no production code called it. The constructor
+  now enforces the bound, and both recipes use `fresh()`, so their markers now carry its
+  `fixture-` prefix. `FiniteQuotaGuard` takes the binding, refuses any other, and consumes each
+  mutation once, as `FilemanUploadGuard` does.
+- `FilemanUploadCommandTest` inherited its environment, so `WHM_API_LIVE_FS_CHECK=1 composer
+  test` started real `ssh` from the offline suite. It now clears the variable, and tests fail
+  if the opt-in reaches `ssh` through either command.
+- The API-only limitation was dropped whenever `filesystem_cleanup` was not `not_claimed`,
+  including after a failed proof. Only `confirmed_absent` now replaces it.
+
+Two earlier test expectations pinned these bugs and were changed deliberately.
+`testEveryFailurePathCleansUpWithoutRetrying` expected `confirmed_absent` for a lost token
+creation, and `testRealResidueIsReportedEvenBesideAnUnusableInventory` expected `present` beside
+what is now a failed search.
+
+The scenario moved to `fileman-upload-disposable-v4` and the finite one to
+`finite-quota-disposable-v3`, because captures exist under the old names and these reports mean
+something different. Assessment policies are unchanged.
+
+The [Fileman v4 capture](evidence/2026-11-01-fileman-upload-v4.json), SHA-256
+`239e3417565c511c9177a2d298bfed883d738b102dc653fc2bd8e5ae980ce780`, ran once at
+`e309912ba42d20988c0f32e2c9355b3ac9c5007c` on `11.138.0.19` and is a **passed run**, exit 0. All
+25 phases passed with no review findings, all six files were proven owned and deleted, and
+token, account, directory, domain and zone cleanup are `confirmed_absent`. Its
+`filesystem_control` passed with `home=1, users=1, userdata=1, userdomains=1, passwd=1, zones=2`,
+and `filesystem_cleanup` is `confirmed_absent`. The rewritten script read `confirmed_absent`
+read-only before the run and again after it.
+
+This is the first run with a control inside its own artifact. It shows those six spellings
+finding this run's account on this server. Sessions read 0, so **they still have no positive
+control**, and the wide match stays. It exercises the success path only, including the control
+and the rewritten script. A failed control, a failed search and a held standard error are
+established offline only.
+
+Finite Quota was not rerun. These corrections change its behaviour, so
+`finite-quota-disposable-v3` has no capture, and the
+[v2 artifact](evidence/2026-11-01-finite-quota-v2.json) stays the record of what ran at `b3bfc14`.
+
+### Re-review corrections (2026-11-02)
+
+A re-review of PR 143 at `34f2c0d` found nine issues. Each was confirmed against the code
+and none was rejected. Each correction has a test that failed first, and every defect seeded
+into the new code afterwards was caught by the offline suite.
+
+- The SSH proof sent `SIGKILL` even after `proc_get_status()` had collected the child's
+  exit, when its process number could already belong to another process. It now kills only
+  a process still running: after a timeout, closed output or too much output.
+- `/etc/userdomains` was matched as substrings, so another account's line containing this
+  name or domain counted. On `11.138.0.19` every line has the form `<domain>: <owner>`,
+  checked by counting alone, and the script now compares those two fields whole with `awk`.
+  `/etc/passwd` was already matched on its whole first field. The session match stays wide,
+  because nothing shows how session files are named; another account's session whose name
+  contains this one reads as residue, which can fail a run but never pass one.
+- A setup that stopped after creating the account never took the filesystem control, so a
+  later absence could only be `unconfirmed`. Cleanup now takes it once the marker proves the
+  account and before `removeacct`.
+- A token that no listing could settle stayed unconfirmed even after its account was proven
+  gone. It is now `absent_with_account`, recording that its absence follows from the
+  account's removal. While the account remains it is still a failure, and a revoke that
+  failed or did not take effect keeps its failure label.
+- Composer's default 300-second limit could stop a fixture between creation and cleanup.
+  `live:verify` now calls `Composer\Config::disableProcessTimeout` first, and the notes
+  recommend Composer again. A throwaway project showed a three-second script outliving a
+  one-second limit with that call and timing out without it.
+- Each guard kept its own copy of the control posts and its own consume-once logic.
+  `ControlPostAdmission` now does both, and both guards delegate to it. A new guard test
+  also closes an older gap: a control post sent while a delete was pending was refused only
+  by an untested condition.
+- Both fixtures copied the outcome field by field. `DisposableAccountLifecycle::reportFields()`
+  now carries every field but `exercise`, and both fixtures spread it into their reports.
+- The marker was a public property of the binding, and the guards kept copies of the
+  createacct body. It now lives in a private map off the binding, and a test walks every
+  public object and report, by JSON encoding, `var_export` and array cast, for the marker.
+- The domain check read accounts again just after an ownership read. It now reuses the read
+  just before it while nothing has changed since and that read gave rows. A clean run makes
+  six account reads instead of eight.
+
+Several earlier test expectations changed deliberately. Cases that expected a token no
+listing could settle to stay `unconfirmed`, or to fail with `token_absence_unconfirmed`, after
+the account was proven absent now expect `absent_with_account`; the same cases with the
+account still present keep the failure. Read counts, and the index of every later account
+read, moved by the two reads removed. Provider rows for those reads were removed: the account
+list of the separate preflight domain read, and the domain check's own account read after
+removal, whose unusable cases now target the fresh read the check makes when the read before
+it gave no rows.
+
+`fileman-upload-disposable-v4` became `-v5`, because a v4 capture exists and token cleanup can
+now read `absent_with_account`. `finite-quota-disposable-v3` has no capture and keeps its
+name. Report field names and shape are unchanged. No fixture ran, and no artifact changed.
+
+The rewritten proof then ran once, read-only, against two fixed pairs, through a throwaway
+script outside the committed tree. For `npr` and `npr.rs` it read `present`, with
+`home=1, users=1, userdata=1, userdomains=1, passwd=1, zones=4, sessions=0`: the account in
+every account location, and one `userdomains` line, as an account with no addon, parked or
+subdomain should have. For `wlnone` and `wlnone.example.com` it read `confirmed_absent`, with
+every count 0 and every inventory usable. The `zones` count of 4 is higher than the 2 seen
+for `wlupload`; it counts zone files and is not explained further here. **Sessions read 0
+for an existing account too**, so they still have no positive control. No account was
+created, and nothing was written.

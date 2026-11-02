@@ -1,0 +1,686 @@
+<?php
+
+declare(strict_types=1);
+
+namespace HostingPal\WhmApiClient\Tools\LiveVerify;
+
+use Closure;
+use HostingPal\WhmApiClient\Api\RequestMethod;
+use HostingPal\WhmApiClient\Client;
+use HostingPal\WhmApiClient\Exception\ApiErrorException;
+use HostingPal\WhmApiClient\Exception\TransportException;
+use HostingPal\WhmApiClient\UapiClient;
+use HostingPal\WhmApiClient\WhmClient;
+use LogicException;
+use RuntimeException;
+use SensitiveParameter;
+use stdClass;
+use Throwable;
+
+/**
+ * Create one disposable account and token, hand the token to a recipe, then remove everything and prove it.
+ *
+ * run() is the whole surface, so cleanup cannot be forgotten: it always runs, every step of it. Every account-scoped
+ * recipe builds on this and keeps only its own domain logic. The recipe's guard admits the binding's control requests.
+ *
+ * Ownership. Account, domain and zone inventories must prove initial absence. The server always hosts others, so an
+ * empty list proves nothing and neither does `{}`. An existing account is never adopted. The random contact-email
+ * marker, held only in memory, is the sole proof that an account is this run's; it is read again at every gate, and
+ * nothing is mutated on an account it does not prove. Only an explicit API refusal is a known `createacct` outcome.
+ * After a lost response, gateway error or unreadable body an absent read cannot rule out a creation still in flight,
+ * so the account stays unconfirmed, and so do its domain, zone and files, until the marker proves otherwise.
+ *
+ * Token. A short-lived token lives only in memory and is confirmed before the recipe sees it. Its name is fixed and
+ * proves nothing alone: a revoke needs the marker read again plus a listing that shows it, or this run's own confirmed
+ * creation, since setup read the name absent just before its one create. An unreadable listing therefore cannot
+ * withhold the revoke of a token this run created, while a lost creation that no listing can show is never revoked and
+ * is not settled by a listing: as with the account, only an explicit refusal is a known outcome. A token cannot outlive
+ * its account, though, so once the account reads confirmed absent, a token the listing could not settle becomes
+ * `absent_with_account`: absent by the account's removal, not by any token listing. A revoke that failed or did not
+ * take effect stays a failure even then, because the token was proven present after it.
+ *
+ * Reads. Every decision reads accounts afresh. Each domain check reuses the account read just before it, as nothing
+ * changed in between and each read is the server's full account inventory; with no rows from such a read, it reads
+ * afresh.
+ *
+ * Cleanup. No mutation repeats. Only the ownership read that gates a cleanup decision repeats, at most three reads and
+ * only after a TransportException, so one lost read cannot abandon an account and its token. Anything the server
+ * returned is final, however unusable. Failure at one resource never stops the next. Token, account, domain and zone
+ * absence are each read independently. A failed or uncertain step fails `cleanup`, and the fields still say what each
+ * resource showed.
+ *
+ * Filesystem. An optional proof runs twice. After setup, it must show the account in every location it can always be
+ * found, which is the positive control that ties the proof to the server this run changed. If setup stopped after
+ * creation, cleanup takes the control instead, once the marker proves the account and before removal. Last, it looks
+ * for what remains. Without a passed control, a later absence is unconfirmed. It is read-only and repeats nothing, so
+ * its outcome only changes the report.
+ *
+ * One truth. `status`, `setup` and `failures` here are the only ones a run has. A recipe spreads reportFields() into
+ * its report rather than copying fields one by one, so every field the lifecycle gains reaches every report. An
+ * exercise never swallows a failure: it records its detail and throws, naming it with ExerciseFailure.
+ *
+ * Results carry fixed labels only. Credentials, names, raw payloads and exception text never leave memory.
+ *
+ * @phpstan-import-type Finding from FilesystemAbsenceProof
+ * @phpstan-type CleanupOutcome 'not_required'|'confirmed_absent'|'present'|'unconfirmed'
+ * @phpstan-type ResourceOutcome array{
+ *     creation: 'not_attempted'|'confirmed'|'unconfirmed', cleanup: CleanupOutcome
+ * }
+ * @phpstan-type TokenOutcome array{
+ *     creation: 'not_attempted'|'confirmed'|'unconfirmed', cleanup: CleanupOutcome|'absent_with_account'
+ * }
+ * @phpstan-type FilesystemOutcome 'not_claimed'|'confirmed_absent'|'present'|'unconfirmed'
+ * @phpstan-type FilesystemControl array{status: 'not_run'|'passed'|'failed', counts: array<string, int>}
+ * @phpstan-type Outcome array{
+ *     status: 'passed'|'failed', setup: 'passed'|'failed', exercise: 'passed'|'failed'|'not_run',
+ *     cleanup: 'passed'|'failed'|'not_required', failures: list<string>,
+ *     account: ResourceOutcome, token: TokenOutcome,
+ *     domain_cleanup: CleanupOutcome, zone_cleanup: CleanupOutcome,
+ *     filesystem_cleanup: FilesystemOutcome, filesystem_residue: array<string, int>,
+ *     filesystem_control: FilesystemControl
+ * }
+ * @phpstan-type ReportFields array{
+ *     status: 'passed'|'failed', setup: 'passed'|'failed', cleanup: 'passed'|'failed'|'not_required',
+ *     failures: list<string>, domain_cleanup: CleanupOutcome, zone_cleanup: CleanupOutcome,
+ *     filesystem_cleanup: FilesystemOutcome, filesystem_residue: array<string, int>,
+ *     filesystem_control: FilesystemControl, resources: array{account: ResourceOutcome, token: TokenOutcome}
+ * }
+ */
+final class DisposableAccountLifecycle
+{
+    private const IDENTITY_READS = 3;
+
+    private const REREAD_PAUSE_MICROSECONDS = 250000;
+
+    private readonly WhmClient $whm;
+
+    private readonly UapiClient $tokens;
+
+    /** @var Outcome */
+    private array $outcome = [
+        'status' => 'failed', 'setup' => 'failed', 'exercise' => 'not_run', 'cleanup' => 'not_required',
+        'failures' => [],
+        'account' => ['creation' => 'not_attempted', 'cleanup' => 'not_required'],
+        'token' => ['creation' => 'not_attempted', 'cleanup' => 'not_required'],
+        'domain_cleanup' => 'not_required', 'zone_cleanup' => 'not_required',
+        'filesystem_cleanup' => 'not_claimed', 'filesystem_residue' => [],
+        'filesystem_control' => ['status' => 'not_run', 'counts' => []],
+    ];
+
+    private bool $creationOutcomeUnknown = false;
+
+    private bool $tokenCreationOutcomeUnknown = false;
+
+    /** @var list<string> Token uncertainties that only the account's own confirmed absence can still settle. */
+    private array $unsettledToken = [];
+
+    private bool $used = false;
+
+    /**
+     * Bind one account to the root client whose guarded transport is $capture; performs no I/O.
+     *
+     * The lifecycle reads each identity list from the capture of that same response, so a client on another transport
+     * fails safely as unreadable. A null $filesystem leaves `filesystem_cleanup` at `not_claimed`.
+     */
+    public function __construct(
+        private readonly DisposableAccount $account,
+        private readonly CaptureClient $capture,
+        Client $root,
+        private readonly ?FilesystemAbsenceProof $filesystem = null,
+    ) {
+        $this->whm = $root->whm();
+        $this->tokens = $root->uapi($account->user);
+    }
+
+    /**
+     * Provision, call $exercise with the memory-only token, clean up, and report every resource. Single-use.
+     *
+     * $exercise runs only after setup fully passed. It throws on any failure, a failed expectation included, using
+     * ExerciseFailure to name it; anything else is reported as `exercise_failure`. $cleanOwned, if given, removes what
+     * the exercise made inside the account: it runs only once the marker proves the account, before the token is
+     * revoked so the token still works, and even when the exercise failed. It returns failure labels for the report.
+     * Anything either callback throws stops nothing. The result's `status` is `passed` only if setup, exercise and
+     * cleanup all passed, and it is the run's only status.
+     *
+     * @param Closure(string): void $exercise
+     * @param (Closure(): list<string>)|null $cleanOwned
+     * @return Outcome
+     * @throws LogicException A second call or a missing live opt-in, before any request.
+     */
+    public function run(#[SensitiveParameter] Closure $exercise, ?Closure $cleanOwned = null): array
+    {
+        if ($this->used) {
+            throw new LogicException('Disposable account lifecycle is single-use.');
+        }
+        $this->account->requireLiveOptIn();
+        $this->used = true;
+        try {
+            $token = $this->provision();
+            $this->outcome['setup'] = 'passed';
+            $this->outcome['exercise'] = 'failed';
+        } catch (Throwable) {
+            $this->outcome['failures'][] = 'setup_failure';
+            $token = null;
+        }
+        if ($token !== null) {
+            $this->observeFilesystemControl();
+            try {
+                $exercise($token);
+                $this->outcome['exercise'] = 'passed';
+            } catch (ExerciseFailure $failure) {
+                array_push($this->outcome['failures'], ...$failure->labels);
+            } catch (Throwable) {
+                $this->outcome['failures'][] = 'exercise_failure';
+            }
+        }
+        unset($token);
+        $this->cleanUp($cleanOwned);
+        $this->outcome['failures'] = array_values(array_unique($this->outcome['failures']));
+        if (
+            $this->outcome['setup'] === 'passed' && $this->outcome['exercise'] === 'passed'
+            && $this->outcome['cleanup'] === 'passed'
+        ) {
+            $this->outcome['status'] = 'passed';
+        }
+
+        return $this->outcome;
+    }
+
+    /**
+     * The outcome as a recipe reports it: every field except `exercise`, which a recipe reports as its own phases,
+     * with the account and token moved under `resources`. Spread the result into the report, and merge `resources`
+     * with the recipe's own resources, so no lifecycle field is ever left behind.
+     *
+     * @param Outcome $outcome
+     * @return ReportFields
+     */
+    public static function reportFields(array $outcome): array
+    {
+        $resources = ['account' => $outcome['account'], 'token' => $outcome['token']];
+        unset($outcome['exercise'], $outcome['account'], $outcome['token']);
+
+        return [...$outcome, 'resources' => $resources];
+    }
+
+    /** Prove absence, create the account and token once each, confirm both, and return the token. */
+    private function provision(): string
+    {
+        $accounts = $this->accounts();
+        if ($this->owns($accounts) || $this->domainListed($accounts) || $this->zoneExists()) {
+            throw new RuntimeException('Disposable account identity is already present.');
+        }
+        $this->outcome['account']['creation'] = 'unconfirmed';
+        try {
+            $this->whm->call('createacct', $this->account->createAccountParameters(), RequestMethod::Post);
+        } catch (ApiErrorException $refusal) {
+            // The server answered and refused: a known outcome, so a later absent read is final.
+            throw $refusal;
+        } catch (Throwable $failure) {
+            $this->creationOutcomeUnknown = true;
+            throw $failure;
+        }
+        $this->outcome['account']['creation'] = 'confirmed';
+        if (!$this->owns($this->accounts()) || $this->tokenExists()) {
+            throw new RuntimeException('Disposable account setup identities are unusable.');
+        }
+        $this->outcome['token']['creation'] = 'unconfirmed';
+        $parameters = ['name' => $this->account->tokenName, 'expires_at' => $this->account->tokenExpiresAt];
+        try {
+            $result = $this->tokens->call(
+                'Tokens',
+                'create_full_access',
+                $this->account->readOnlyToken ? [...$parameters, 'readonly' => 1] : $parameters,
+                RequestMethod::Post,
+            );
+        } catch (ApiErrorException $refusal) {
+            throw $refusal;
+        } catch (Throwable $failure) {
+            $this->tokenCreationOutcomeUnknown = true;
+            throw $failure;
+        }
+        $this->outcome['token']['creation'] = 'confirmed';
+        $token = is_array($result->data) ? ($result->data['token'] ?? null) : null;
+        if (!is_string($token)) {
+            throw new RuntimeException('Disposable account token was not returned.');
+        }
+        $this->confirmTokenCapabilities();
+
+        return $token;
+    }
+
+    /**
+     * Judge exact account ownership in one account read; another primary domain or marker cannot authorize anything.
+     *
+     * @param list<stdClass> $accounts
+     */
+    private function owns(array $accounts): bool
+    {
+        $rows = array_values(array_filter($accounts, fn (stdClass $row): bool =>
+            $row->user === $this->account->user));
+        if ($rows === []) {
+            return false;
+        }
+        if (
+            count($rows) !== 1 || $rows[0]->domain !== $this->account->domain
+            || !$this->account->isContactMarker($rows[0]->email ?? null)
+        ) {
+            throw new RuntimeException('Disposable account ownership is unconfirmed.');
+        }
+
+        return true;
+    }
+
+    /**
+     * Read the account inventory for a cleanup decision, surviving a transient failed request.
+     *
+     * Only this read repeats, and only when the request itself failed: anything the server returned is final, so a
+     * result-0, HTTP or unreadable reply is never read twice. A foreign marker or unusable rows are judged by the
+     * caller from this one read, never read again.
+     *
+     * @return list<stdClass>
+     * @phpstan-impure
+     */
+    private function ownershipRows(): array
+    {
+        for ($attempt = 1; $attempt < self::IDENTITY_READS; ++$attempt) {
+            try {
+                return $this->accounts();
+            } catch (TransportException) {
+                usleep(self::REREAD_PAUSE_MICROSECONDS);
+            }
+        }
+
+        return $this->accounts();
+    }
+
+    /**
+     * Check main and manually configured addon/alias/subdomain identities, without persisting inventory.
+     *
+     * Main domains come from the caller's account read, which must be the latest one with no change since.
+     *
+     * @param list<stdClass> $accounts
+     * @phpstan-impure
+     */
+    private function domainListed(array $accounts): bool
+    {
+        $this->whm->call('get_domain_info', [], RequestMethod::Get);
+        $payload = $this->rawPayload(false);
+        $rows = self::identityRows($payload instanceof stdClass ? ($payload->domains ?? null) : null, 'domain', 'user');
+        if ($rows === []) {
+            throw new RuntimeException('Disposable account domain inventory cannot prove absence.');
+        }
+
+        return in_array($this->account->domain, array_column($accounts, 'domain'), true)
+            || in_array($this->account->domain, array_column($rows, 'domain'), true);
+    }
+
+    /**
+     * Validate every row before exact local filtering; a failed, null or empty lookup cannot prove absence.
+     *
+     * @return list<stdClass>
+     */
+    private function accounts(): array
+    {
+        $this->whm->call('listaccts', ['want' => 'user,domain,email'], RequestMethod::Get);
+        $payload = $this->rawPayload(false);
+        $rows = self::identityRows($payload instanceof stdClass ? ($payload->acct ?? null) : null, 'user', 'domain');
+        if ($rows === []) {
+            throw new RuntimeException('Disposable account inventory cannot prove absence.');
+        }
+
+        return $rows;
+    }
+
+    /** @phpstan-impure */
+    private function zoneExists(): bool
+    {
+        $this->whm->call('listzones', [], RequestMethod::Get);
+        $payload = $this->rawPayload(false);
+        $rows = self::identityRows($payload instanceof stdClass ? ($payload->zone ?? null) : null, 'domain');
+        if ($rows === []) {
+            throw new RuntimeException('Disposable account zone inventory cannot prove absence.');
+        }
+
+        return in_array($this->account->domain, array_column($rows, 'domain'), true);
+    }
+
+    /**
+     * Read exact token presence; unlike the server-wide lists, a fresh account really can hold no tokens.
+     *
+     * @phpstan-impure
+     */
+    private function tokenExists(): bool
+    {
+        $this->tokens->call('Tokens', 'list', [], RequestMethod::Get);
+        $rows = self::identityRows($this->rawPayload(true), 'name');
+
+        return in_array($this->account->tokenName, array_column($rows, 'name'), true);
+    }
+
+    /**
+     * Confirm the requested access and exact expiry once during setup; cleanup needs usable identities only.
+     *
+     * The source says readonly is absent or 0 on a writable token. A reviewed setup returned expires_at as the exact
+     * requested decimal string, which is accepted without numeric coercion.
+     */
+    private function confirmTokenCapabilities(): void
+    {
+        $expected = $this->account->tokenExpiresAt;
+        $this->tokens->call('Tokens', 'list', [], RequestMethod::Get);
+        foreach (self::identityRows($this->rawPayload(true), 'name') as $row) {
+            if ($row->name === $this->account->tokenName) {
+                $expiresAt = $row->expires_at ?? null;
+                $access = $this->account->readOnlyToken
+                    ? ($row->readonly ?? null) === 1 : ($row->readonly ?? 0) === 0;
+                if ($access && ($expiresAt === $expected || $expiresAt === (string) $expected)) {
+                    return;
+                }
+                break;
+            }
+        }
+        throw new RuntimeException('Disposable account token capabilities are unconfirmed.');
+    }
+
+    /**
+     * Inspect the same successful generic response while retaining JSON object/list distinctions.
+     *
+     * The generic call has already validated the envelope and outcome, and no typed optional-field mismatch can
+     * prevent identity cleanup. An empty JSON object cannot prove an empty list.
+     */
+    private function rawPayload(bool $bridge): mixed
+    {
+        $raw = $this->capture->rawBody();
+        if ($raw === null) {
+            throw new RuntimeException('Disposable account identity inventory was not captured.');
+        }
+        $document = json_decode($raw, false, 512, JSON_THROW_ON_ERROR);
+        $payload = $document instanceof stdClass ? ($document->data ?? null) : null;
+        if ($bridge) {
+            $uapi = $payload instanceof stdClass ? ($payload->uapi ?? null) : null;
+
+            return $uapi instanceof stdClass ? ($uapi->data ?? null) : null;
+        }
+
+        return $payload;
+    }
+
+    /** @return list<stdClass> */
+    private static function identityRows(
+        #[SensitiveParameter] mixed $rows,
+        string $identity,
+        ?string $related = null,
+    ): array {
+        if (!is_array($rows) || !array_is_list($rows)) {
+            throw new RuntimeException('Disposable account identity inventory must be a list.');
+        }
+        $identities = [];
+        $checked = [];
+        foreach ($rows as $row) {
+            $name = $row instanceof stdClass ? ($row->{$identity} ?? null) : null;
+            $owner = $row instanceof stdClass && $related !== null ? ($row->{$related} ?? null) : '';
+            if (
+                !$row instanceof stdClass || !is_string($name) || $name === '' || in_array($name, $identities, true)
+                || !is_string($owner) || ($related !== null && $owner === '')
+            ) {
+                throw new RuntimeException('Disposable account inventory identities are unusable.');
+            }
+            $identities[] = $name;
+            $checked[] = $row;
+        }
+
+        return $checked;
+    }
+
+    /**
+     * Reconcile every attempted resource, removing only what this run proved it owns.
+     *
+     * @param (Closure(): list<string>)|null $cleanOwned
+     */
+    private function cleanUp(?Closure $cleanOwned): void
+    {
+        if ($this->outcome['account']['creation'] === 'not_attempted') {
+            return;
+        }
+        $this->outcome['cleanup'] = 'passed';
+        $this->outcome['account']['cleanup'] = 'unconfirmed';
+        if ($this->outcome['token']['creation'] !== 'not_attempted') {
+            $this->outcome['token']['cleanup'] = 'unconfirmed';
+        }
+        // The latest account read, kept only while nothing has changed since, so a domain check can reuse it.
+        $rows = null;
+        try {
+            $rows = $this->ownershipRows();
+            if ($this->owns($rows)) {
+                $rows = null;
+                $this->outcome['account']['creation'] = 'confirmed';
+                $this->creationOutcomeUnknown = false;
+                if ($this->outcome['filesystem_control']['status'] === 'not_run') {
+                    // Setup stopped before its control; the marker has just proven the account, so take it now.
+                    $this->observeFilesystemControl();
+                }
+                $this->cleanOwned($cleanOwned);
+                $this->cleanUpToken();
+                $rows = $this->ownershipRows();
+                if (!$this->owns($rows)) {
+                    throw new RuntimeException('Disposable account ownership changed during cleanup.');
+                }
+                $rows = null;
+                try {
+                    $this->whm->call('removeacct', [
+                        'username' => $this->account->user, 'keepdns' => 0,
+                    ], RequestMethod::Post);
+                } catch (Throwable) {
+                    $this->cleanupFailure('account_remove_failure');
+                }
+                $rows = $this->ownershipRows();
+                $this->outcome['account']['cleanup'] = $this->owns($rows) ? 'present' : 'confirmed_absent';
+            } elseif ($this->creationOutcomeUnknown) {
+                $this->cleanupFailure('account_creation_outcome_unknown');
+            } else {
+                $this->outcome['account']['cleanup'] = 'confirmed_absent';
+                if ($this->outcome['token']['creation'] !== 'not_attempted') {
+                    $this->unsettledToken[] = 'token_absence_unconfirmed';
+                }
+            }
+            if ($this->outcome['account']['cleanup'] === 'present') {
+                $this->cleanupFailure('account_still_present');
+            }
+        } catch (Throwable) {
+            $this->cleanupFailure('account_identity_unconfirmed');
+        }
+        $this->settleToken();
+        $this->outcome['domain_cleanup'] = $this->independentAbsence(
+            fn (): bool => $this->domainListed($rows ?? $this->accounts()),
+            'domain',
+        );
+        $this->outcome['zone_cleanup'] = $this->independentAbsence($this->zoneExists(...), 'zone');
+        $this->proveFilesystemAbsence();
+    }
+
+    /**
+     * Read one resource after cleanup; what it shows stands, but an unknown creation forbids calling it absent.
+     *
+     * @param Closure(): bool $exists
+     * @return 'confirmed_absent'|'present'|'unconfirmed'
+     */
+    private function independentAbsence(Closure $exists, string $resource): string
+    {
+        try {
+            $present = $exists();
+        } catch (Throwable) {
+            $present = null;
+        }
+        if ($present === true) {
+            $this->cleanupFailure($resource . '_still_present');
+
+            return 'present';
+        }
+        if ($present === null || $this->creationOutcomeUnknown) {
+            $this->cleanupFailure($resource . '_absence_unconfirmed');
+
+            return 'unconfirmed';
+        }
+
+        return 'confirmed_absent';
+    }
+
+    /**
+     * Let the recipe remove its own resources; nothing it does or throws can stop token or account cleanup.
+     *
+     * @param (Closure(): list<string>)|null $cleanOwned
+     */
+    private function cleanOwned(?Closure $cleanOwned): void
+    {
+        if ($cleanOwned === null) {
+            return;
+        }
+        try {
+            foreach ($cleanOwned() as $failure) {
+                $this->cleanupFailure($failure);
+            }
+        } catch (Throwable) {
+            $this->cleanupFailure('owned_resource_cleanup_failure');
+        }
+    }
+
+    /** Revoke this run's token once, then read its absence; only expiry would otherwise end it. */
+    private function cleanUpToken(): void
+    {
+        if ($this->outcome['token']['creation'] === 'not_attempted') {
+            return;
+        }
+        try {
+            $listed = $this->tokenExists();
+        } catch (Throwable) {
+            $listed = null;
+        }
+        if ($listed === false) {
+            if ($this->tokenCreationOutcomeUnknown) {
+                $this->unsettledToken[] = 'token_creation_outcome_unknown';
+            } else {
+                $this->outcome['token']['cleanup'] = 'confirmed_absent';
+            }
+
+            return;
+        }
+        if ($listed === true) {
+            $this->outcome['token']['creation'] = 'confirmed';
+        }
+        if ($this->outcome['token']['creation'] !== 'confirmed') {
+            $this->unsettledToken[] = 'token_absence_unconfirmed';
+
+            return;
+        }
+        try {
+            if (!$this->owns($this->ownershipRows())) {
+                throw new RuntimeException('Disposable account token ownership changed during cleanup.');
+            }
+            try {
+                $this->tokens->call('Tokens', 'revoke', [
+                    'name' => $this->account->tokenName,
+                ], RequestMethod::Post);
+            } catch (Throwable) {
+                $this->cleanupFailure('token_revoke_failure');
+            }
+            $this->outcome['token']['cleanup'] = $this->tokenExists() ? 'present' : 'confirmed_absent';
+            if ($this->outcome['token']['cleanup'] === 'present') {
+                $this->cleanupFailure('token_still_present');
+            }
+        } catch (Throwable) {
+            $this->unsettledToken[] = 'token_absence_unconfirmed';
+        }
+    }
+
+    /**
+     * Settle the token by its account: a token cannot outlive the account that holds it.
+     *
+     * Only the account's confirmed absence settles it, recorded as `absent_with_account` so no reader mistakes it for a
+     * token listing. Uncertainties that it settles are dropped. While the account may remain, they become failures.
+     * Failures that prove the token outlived a revoke are never held here, so they always stay visible.
+     */
+    private function settleToken(): void
+    {
+        if ($this->outcome['token']['creation'] === 'not_attempted') {
+            return;
+        }
+        if ($this->outcome['account']['cleanup'] === 'confirmed_absent') {
+            if ($this->outcome['token']['cleanup'] !== 'confirmed_absent') {
+                $this->outcome['token']['cleanup'] = 'absent_with_account';
+            }
+        } else {
+            foreach ($this->unsettledToken as $label) {
+                $this->cleanupFailure($label);
+            }
+        }
+        $this->unsettledToken = [];
+    }
+
+    /**
+     * Require the proof to see this run's account in every location, while it exists, before trusting a later absence.
+     *
+     * A failure here costs only the filesystem claim, so the exercise still runs. Only labels and counts are kept.
+     */
+    private function observeFilesystemControl(): void
+    {
+        if ($this->filesystem === null) {
+            return;
+        }
+        $finding = $this->readFilesystem($this->filesystem);
+        $missing = array_diff(FilesystemAbsenceProof::ACCOUNT_LOCATIONS, array_keys($finding['residue']));
+        $this->outcome['filesystem_control'] = [
+            'status' => $finding['outcome'] === 'present' && $missing === [] ? 'passed' : 'failed',
+            'counts' => $finding['residue'],
+        ];
+    }
+
+    /** Run the final proof once, last; it only reports, and anything short of proven absence fails the claim. */
+    private function proveFilesystemAbsence(): void
+    {
+        if ($this->filesystem === null) {
+            return;
+        }
+        $finding = $this->readFilesystem($this->filesystem);
+        $control = $this->outcome['filesystem_control']['status'];
+        if ($control === 'failed') {
+            $this->cleanupFailure('filesystem_control_failed');
+        }
+        if ($finding['outcome'] === 'confirmed_absent' && $control !== 'passed') {
+            $finding = ['outcome' => 'unconfirmed', 'residue' => []];
+        }
+        $this->outcome['filesystem_cleanup'] = $finding['outcome'];
+        $this->outcome['filesystem_residue'] = $finding['residue'];
+        if ($finding['outcome'] === 'present') {
+            $this->cleanupFailure('filesystem_residue_present');
+        } elseif ($finding['outcome'] === 'unconfirmed') {
+            $this->cleanupFailure('filesystem_absence_unconfirmed');
+        }
+    }
+
+    /** @return Finding */
+    private function readFilesystem(FilesystemAbsenceProof $filesystem): array
+    {
+        try {
+            return $filesystem->check($this->account->user, $this->account->domain);
+        } catch (Throwable) {
+            return ['outcome' => 'unconfirmed', 'residue' => []];
+        }
+    }
+
+    private function cleanupFailure(string $kind): void
+    {
+        $this->outcome['cleanup'] = 'failed';
+        $this->outcome['failures'][] = $kind;
+    }
+
+    /** @return array{} */
+    public function __debugInfo(): array
+    {
+        return [];
+    }
+
+    /** Lifecycle state holds the run's ownership marker and cannot be persisted. */
+    public function __serialize(): never
+    {
+        throw new LogicException('Disposable account lifecycle state cannot be serialized.');
+    }
+}
