@@ -119,6 +119,20 @@ final class FilemanUploadFixtureTest extends TestCase
         }
     }
 
+    /** The fixture, its guard, recipe, lifecycle and scenario never keep the marker; only the server double saw it. */
+    public function testNoPublicObjectHoldsTheMarker(): void
+    {
+        $http = new FilemanUploadServer();
+        $streaming = $http->streaming();
+        $fixture = new FilemanUploadFixture($http, $streaming, 'WHMTOKEN', self::context());
+        $scenario = $fixture->run();
+        $marker = self::sentMarker($http->requests);
+        foreach ([$marker, rawurlencode($marker)] as $form) {
+            MarkerExposure::assertNeverExposed($form, $scenario);
+            MarkerExposure::assertNeverExposed($form, $fixture, $http, $streaming);
+        }
+    }
+
     public function testRowsCoverSuccessPartialAndStatusZeroBatchesThroughTheMergedRule(): void
     {
         $scenario = self::scenario(new FilemanUploadServer());
@@ -1505,6 +1519,26 @@ final class FilemanUploadFixtureTest extends TestCase
         }
 
         return $paths;
+    }
+
+    /**
+     * The marker the fixture sent in its one createacct request.
+     *
+     * @param list<RequestInterface> $requests
+     */
+    private static function sentMarker(array $requests): string
+    {
+        foreach ($requests as $request) {
+            if (str_contains((string) $request->getUri(), '/createacct?')) {
+                parse_str((string) $request->getBody(), $fields);
+                $marker = $fields['contactemail'] ?? null;
+                self::assertIsString($marker);
+                self::assertStringStartsWith('fixture-', $marker);
+
+                return $marker;
+            }
+        }
+        self::fail('The fixture sent no createacct request.');
     }
 
     /** @return Scenario */

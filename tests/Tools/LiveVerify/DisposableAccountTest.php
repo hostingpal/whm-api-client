@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace HostingPal\WhmApiClient\Tests\Tools\LiveVerify;
 
+use Error;
 use HostingPal\WhmApiClient\Tools\LiveVerify\DisposableAccount;
 use InvalidArgumentException;
 use LogicException;
@@ -43,11 +44,11 @@ final class DisposableAccountTest extends TestCase
         $first = self::fresh();
         $second = self::fresh();
 
-        self::assertMatchesRegularExpression(
-            '/\Afixture-[0-9a-f]{32}@wdisposable\.example\.com\z/',
-            $first->contactEmail,
-        );
-        self::assertNotSame($first->contactEmail, $second->contactEmail);
+        $marker = $first->createAccountParameters()['contactemail'];
+        self::assertMatchesRegularExpression('/\Afixture-[0-9a-f]{32}@wdisposable\.example\.com\z/', $marker);
+        self::assertNotSame($marker, $second->createAccountParameters()['contactemail']);
+        self::assertTrue($first->isContactMarker($marker));
+        self::assertFalse($second->isContactMarker($marker));
         self::assertGreaterThanOrEqual($before + 900, $first->tokenExpiresAt);
         self::assertLessThanOrEqual(time() + 900, $first->tokenExpiresAt);
         self::assertFalse($first->readOnlyToken);
@@ -176,6 +177,57 @@ final class DisposableAccountTest extends TestCase
         foreach (array_keys(self::liveEnvironment()) as $key) {
             yield $key => [$key];
         }
+    }
+
+    /** The marker is no property, so no encoding, export, cast or dump of the binding can show it. */
+    public function testNoViewOfTheBindingShowsItsMarker(): void
+    {
+        $account = self::bound(false);
+        MarkerExposure::assertNeverExposed(self::MARKER, $account);
+        MarkerExposure::assertNeverExposed('0123456789abcdef', $account);
+        ob_start();
+        var_dump($account);
+        $dump = (string) ob_get_clean();
+        self::assertStringNotContainsString('0123456789abcdef', $dump);
+        self::assertStringContainsString('wdisposable', print_r((array) $account, true));
+    }
+
+    /** Exactly this run's marker matches; another run's, a near miss or a non-string never does. */
+    #[DataProvider('markerCandidates')]
+    public function testOnlyTheExactMarkerMatches(mixed $candidate, bool $matches): void
+    {
+        self::assertSame($matches, self::bound(false)->isContactMarker($candidate));
+    }
+
+    /** @return iterable<string, array{mixed, bool}> */
+    public static function markerCandidates(): iterable
+    {
+        yield 'this run' => [self::MARKER, true];
+        yield 'another run' => ['fixture-00000000000000000000000000000000@wdisposable.example.com', false];
+        yield 'upper case' => [strtoupper(self::MARKER), false];
+        yield 'trailing space' => [self::MARKER . ' ', false];
+        yield 'prefix only' => ['fixture-0123456789abcdef0123456789abcdef', false];
+        yield 'empty' => ['', false];
+        yield 'null' => [null, false];
+        yield 'list' => [[self::MARKER], false];
+        yield 'integer' => [0, false];
+    }
+
+    public function testCreationParametersCarryTheMarkerForTheOneCreateacctCall(): void
+    {
+        self::assertSame([
+            'username' => 'wdisposable', 'domain' => 'wdisposable.example.com', 'contactemail' => self::MARKER,
+            'quota' => 64, 'forcedns' => 0, 'hasshell' => 0, 'ip' => 'n',
+        ], self::bound(false)->createAccountParameters());
+    }
+
+    /** A copy would carry no marker, so it cannot be made. */
+    public function testABindingCannotBeCloned(): void
+    {
+        $account = self::bound(false);
+        $this->expectException(Error::class);
+        $this->expectExceptionMessage('__clone');
+        self::assertNotSame($account, clone $account);
     }
 
     public function testBindingNeverPrintsOrPersistsItsMarker(): void

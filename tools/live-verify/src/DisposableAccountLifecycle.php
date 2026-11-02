@@ -211,11 +211,7 @@ final class DisposableAccountLifecycle
         }
         $this->outcome['account']['creation'] = 'unconfirmed';
         try {
-            $this->whm->call('createacct', [
-                'username' => $this->account->user, 'domain' => $this->account->domain,
-                'contactemail' => $this->account->contactEmail,
-                'quota' => 64, 'forcedns' => 0, 'hasshell' => 0, 'ip' => 'n',
-            ], RequestMethod::Post);
+            $this->whm->call('createacct', $this->account->createAccountParameters(), RequestMethod::Post);
         } catch (ApiErrorException $refusal) {
             // The server answered and refused: a known outcome, so a later absent read is final.
             throw $refusal;
@@ -266,7 +262,7 @@ final class DisposableAccountLifecycle
         }
         if (
             count($rows) !== 1 || $rows[0]->domain !== $this->account->domain
-            || ($rows[0]->email ?? null) !== $this->account->contactEmail
+            || !$this->account->isContactMarker($rows[0]->email ?? null)
         ) {
             throw new RuntimeException('Disposable account ownership is unconfirmed.');
         }

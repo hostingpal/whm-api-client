@@ -204,6 +204,25 @@ final class DisposableAccountLifecycleTest extends TestCase
         self::assertSame('unconfirmed', $fields['zone_cleanup']);
     }
 
+    /** Neither the lifecycle nor what it returns keeps the marker, before or after a run; only the server saw it. */
+    public function testNoPublicObjectHoldsTheMarker(): void
+    {
+        $http = new DisposableAccountServer();
+        $account = self::account();
+        $marker = $account->createAccountParameters()['contactemail'];
+        $lifecycle = self::lifecycle($http, null, $account);
+        MarkerExposure::assertNeverExposed($marker, $lifecycle, $http);
+
+        $outcome = $lifecycle->run(self::noop());
+        self::assertSame($marker, $http->contactEmail);
+        foreach ([$marker, rawurlencode($marker)] as $form) {
+            MarkerExposure::assertNeverExposed($form, $outcome);
+            MarkerExposure::assertNeverExposed($form, DisposableAccountLifecycle::reportFields($outcome));
+            MarkerExposure::assertNeverExposed($form, $lifecycle, $http);
+            MarkerExposure::assertNeverExposed($form, $account);
+        }
+    }
+
     public function testEveryRequestMatchesTheBindingsExactGuardAllowlist(): void
     {
         $http = new DisposableAccountServer();

@@ -7,17 +7,23 @@ namespace HostingPal\WhmApiClient\Tools\LiveVerify;
 use InvalidArgumentException;
 use LogicException;
 use SensitiveParameter;
+use WeakMap;
 
 /**
  * The exact identity of one disposable account and its token, for one run on the test server.
  *
  * It holds the per-run contact-email marker that alone proves an account is this run's, so it stays in memory and is
- * never printed or persisted. Start a recipe from fresh(), which draws the marker. A recipe's guard admits exactly
+ * never printed or persisted. The marker is no property: it lives in a private map keyed by the binding, so no JSON
+ * encoding, var_export, array cast, print_r or var_dump of a binding shows it, and a binding cannot be cloned. Only
+ * the requests that must carry it reveal it: createAccountParameters() for the lifecycle's one createacct call and
+ * controlPosts() for the guard's comparison. Anything else that needs it asks isContactMarker().
+ *
+ * Start a recipe from fresh(), which draws the marker. A recipe's guard admits exactly
  * controlPosts(), each at most once through controlPostAdmission(), and controlReads(), plus its own requests. Those
  * strings are spelled here independently of the client's encoder, so the guard keeps comparing two representations of
  * each request.
  */
-final readonly class DisposableAccount
+final class DisposableAccount
 {
     /** A token outlives a lost run by this much at most; cleanup still revokes it. */
     public const MAXIMUM_TOKEN_LIFETIME = 3600;
@@ -30,19 +36,22 @@ final readonly class DisposableAccount
 
     private const WHM = 'https://test.oblak.host:2087/json-api/';
 
+    /** @var WeakMap<self, string>|null Each binding's marker, kept off the binding itself. */
+    private static ?WeakMap $markers = null;
+
     /**
      * Bind exact identities; each is validated, so nothing unsafe can reach a request. Performs no I/O.
      *
      * A recipe should use fresh(), which also draws the marker. The token bound holds here, for every binding.
      */
     public function __construct(
-        public string $user,
-        public string $domain,
-        public string $tokenName,
+        public readonly string $user,
+        public readonly string $domain,
+        public readonly string $tokenName,
         #[SensitiveParameter]
-        public string $contactEmail,
-        public int $tokenExpiresAt,
-        public bool $readOnlyToken,
+        string $contactEmail,
+        public readonly int $tokenExpiresAt,
+        public readonly bool $readOnlyToken,
     ) {
         $marker = '/\A[a-z]+-[0-9a-f]{32}@' . preg_quote($domain, '/') . '\z/';
         $now = time();
@@ -53,6 +62,8 @@ final readonly class DisposableAccount
         ) {
             throw new InvalidArgumentException('Disposable account binding is invalid.');
         }
+        self::$markers ??= new WeakMap();
+        self::$markers[$this] = $contactEmail;
     }
 
     /**
@@ -88,8 +99,31 @@ final readonly class DisposableAccount
         }
     }
 
+    /** Whether $email is exactly this run's marker; anything else, another run's marker included, is not. */
+    public function isContactMarker(#[SensitiveParameter] mixed $email): bool
+    {
+        return is_string($email) && hash_equals($this->marker(), $email);
+    }
+
+    /**
+     * The one createacct call's parameters. They carry the marker: send them, never keep or print them.
+     *
+     * @return array{
+     *     username: string, domain: string, contactemail: string, quota: int, forcedns: int, hasshell: int, ip: string
+     * }
+     */
+    public function createAccountParameters(): array
+    {
+        return [
+            'username' => $this->user, 'domain' => $this->domain, 'contactemail' => $this->marker(),
+            'quota' => 64, 'forcedns' => 0, 'hasshell' => 0, 'ip' => 'n',
+        ];
+    }
+
     /**
      * Every mutation the lifecycle may send, as exact form body by exact URI.
+     *
+     * The createacct body carries the marker, so a guard admits these through controlPostAdmission() and keeps no copy.
      *
      * @return array<string, string>
      */
@@ -97,7 +131,7 @@ final readonly class DisposableAccount
     {
         return [
             self::WHM . 'createacct?api.version=1' => 'username=' . $this->user . '&domain=' . $this->domain
-                . '&contactemail=' . rawurlencode($this->contactEmail) . '&quota=64&forcedns=0&hasshell=0&ip=n',
+                . '&contactemail=' . rawurlencode($this->marker()) . '&quota=64&forcedns=0&hasshell=0&ip=n',
             self::WHM . 'removeacct?api.version=1' => 'username=' . $this->user . '&keepdns=0',
             $this->tokenFunction('create_full_access') => 'name=' . $this->tokenName
                 . '&expires_at=' . $this->tokenExpiresAt . ($this->readOnlyToken ? '&readonly=1' : ''),
@@ -126,6 +160,11 @@ final readonly class DisposableAccount
         return new ControlPostAdmission($this);
     }
 
+    private function marker(): string
+    {
+        return self::$markers[$this] ?? throw new LogicException('Disposable account binding has no marker.');
+    }
+
     private function tokenFunction(string $function): string
     {
         return self::WHM . 'uapi_cpanel?api.version=1&cpanel.user=' . $this->user . '&cpanel.module=Tokens'
@@ -136,6 +175,11 @@ final readonly class DisposableAccount
     public function __debugInfo(): array
     {
         return [];
+    }
+
+    /** A copy would carry no marker, so a binding is never cloned. */
+    private function __clone(): void
+    {
     }
 
     /** The binding holds the run's ownership marker and cannot be persisted. */

@@ -97,6 +97,19 @@ final class FiniteQuotaFixtureTest extends TestCase
         }
     }
 
+    /** The fixture, its guard, its lifecycle and its report never keep the marker; only the server double saw it. */
+    public function testNoPublicObjectHoldsTheMarker(): void
+    {
+        $http = new FiniteQuotaServer();
+        $fixture = new FiniteQuotaFixture($http, 'private-whm-token');
+        $report = $fixture->run(self::capture());
+        $marker = self::sentMarker($http->requests);
+        foreach ([$marker, rawurlencode($marker)] as $form) {
+            MarkerExposure::assertNeverExposed($form, $report);
+            MarkerExposure::assertNeverExposed($form, $fixture, $http);
+        }
+    }
+
     public function testDiscrepanciesDoNotFalsifySuccessfulFixtureAndCleanupOutcomes(): void
     {
         $report = (new FiniteQuotaFixture(new FiniteQuotaServer(), 'private-whm-token'))->run(self::capture());
@@ -751,6 +764,26 @@ final class FiniteQuotaFixtureTest extends TestCase
         self::assertSame('passed', $report['fixture']['cleanup']);
         self::assertSame('binary-mib', $report['unit_relationships']['direct-uapi']);
         self::assertSame('failed', $report['fixture']['status']);
+    }
+
+    /**
+     * The marker the fixture sent in its one createacct request.
+     *
+     * @param list<RequestInterface> $requests
+     */
+    private static function sentMarker(array $requests): string
+    {
+        foreach ($requests as $request) {
+            if (str_contains((string) $request->getUri(), '/createacct?')) {
+                parse_str((string) $request->getBody(), $fields);
+                $marker = $fields['contactemail'] ?? null;
+                self::assertIsString($marker);
+                self::assertStringStartsWith('fixture-', $marker);
+
+                return $marker;
+            }
+        }
+        self::fail('The fixture sent no createacct request.');
     }
 
     /**

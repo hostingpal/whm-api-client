@@ -85,6 +85,19 @@ final class ControlPostAdmissionTest extends TestCase
         self::assertTrue($account->controlPostAdmission()->admit(self::CREATE, self::CREATE_BODY));
     }
 
+    /** Admission spells the bodies afresh each time and keeps only consumed URIs, never the marker. */
+    public function testAdmissionNeverHoldsTheMarker(): void
+    {
+        $account = self::account();
+        $admission = $account->controlPostAdmission();
+        MarkerExposure::assertNeverExposed(self::MARKER, $admission);
+        foreach ($account->controlPosts() as $uri => $body) {
+            $admission->admit($uri, $body);
+        }
+        MarkerExposure::assertNeverExposed(self::MARKER, $admission);
+        MarkerExposure::assertNeverExposed(rawurlencode(self::MARKER), $admission);
+    }
+
     public function testAdmissionNeverPrintsOrPersists(): void
     {
         $admission = self::account()->controlPostAdmission();
