@@ -10237,6 +10237,197 @@ for `wlupload`; it counts zone files and is not explained further here. **Sessio
 for an existing account too**, so they still have no positive control. No account was
 created, and nothing was written.
 
+## User task queue fixture, 2026-11-02
+
+Bead `whm-api-client-8x0.2.72` asks for a populated `UserTasks` inventory through both routes
+and the deletion of a task the run owns; its child `8x0.2.72.1` asks how queue rows are
+serialized. Both need a real producer. The constraint for this run was that the producer use
+only resources on the server itself, need no outbound network contact, install nothing and
+change no server setting.
+
+**Authorization.** The text of bead `8x0.2.72` says it is not authorization to clone
+repositories or execute queued tasks. This run relied instead on the standing disposable-account
+authorization in `AGENTS.md` and on the owner's approval of the wave of disposable-account
+fixtures it belongs to. Within that, it restricted itself to a local source inside its own
+disposable account, chosen so that no outbound contact is needed. The producer queued one clone
+of that local repository, and cPanel's own queue runner processed it; the run neither started
+nor stopped that work.
+
+**Pinned source.** The pinned `UserTasks/retrieve` and `UserTasks/delete` text names
+`VersionControl::create` as the queue's user, and `VersionControl/create` says a source
+repository is cloned through the task queue while omitting it creates an empty repository.
+Its only URL example is `ssh://`. The pinned text does not say whether a local path is an
+acceptable clone source, so it cannot settle the producer alone.
+
+**Installed source.** The installed Perl modules of `11.138.0.19` on `test.oblak.host` were
+therefore read over the `oblak.test` SSH alias, read-only, with `grep`, `sed` and `sha256sum`;
+nothing was written and no process was started on the server. These are agent-inspected
+excerpts, not pinned sources:
+
+| Module | SHA-256 |
+| --- | --- |
+| `Cpanel/VersionControl/git/Remote.pm` | `319419a57552e38890347914534e2fa047d08ee7d8d65af096a5dc63afe009f0` |
+| `Cpanel/VersionControl/git.pm` | `864bbff2acc7aa4db4f36096409fcba6ae561cead938247fea5f397b9eb3f16b` |
+| `Cpanel/API/VersionControl.pm` | `b531fb8fe076021e757fa7673326ee84a06bc0f566837493bbaf2f79f77f08bc` |
+| `Cpanel/Validate/URL.pm` | `116efd1266ac7415ceef7b7c11c14a83f9952fb3d7ac509ccdc49dea31a09980` |
+| `Cpanel/UserTasks.pm` | `fac7718639acdf5929bd00dd6953250707b582ff43723017d9fa82f8bfacbab1` |
+| `Cpanel/UserTasks/VersionControl.pm` | `d9846322078c2f2ac1b5d3e4f8f1b88026c6f8f9abf35862139db0eced93e080` |
+| `Cpanel/UserTasksCore/Task.pm` | `76f2364adcebffb2576f3e5634cdd9b9377ccb8955aaa37e0ff650b63843ce58` |
+| `Cpanel/API/UserTasks.pm` | `d280eb3065ad82d527af28f7b990c4295fb7bb8eb079c18fec0bca957dbe77c1` |
+| `3rdparty/perl/542/cpanel-lib/Directory/Queue/Normal.pm` (2.2) | `017ade2ae3a9bead074d4683ba6a7ccc24231b0cf9a246377e4733092ca15e91` |
+| `3rdparty/perl/542/cpanel-lib/Directory/Queue.pm` | `fa3429e68028741f829f83e091492c3bf83c507b526584b11da63d1c1f366d00` |
+
+What they show:
+
+- `Remote::_validate_source_url` refuses only a URL with an embedded password and one with a
+  character outside `Cpanel::Validate::URL::is_valid_url`, which is a character-set check. An
+  absolute local path passes. `Remote::new` caches the repository, queues
+  `{subsystem: VersionControl, action: create, args: {repository_root, log_file}}` through
+  `Cpanel::UserTasks->new()->add()`, and the task later runs `git clone --origin=<remote>
+  <url> <dir>`. Git clones a local path without any network transport.
+- Without `source_repository`, `git::new` creates the repository at once with `git init` and
+  cPanel's deployment template, and queues nothing. Its only active hook is `post-receive`,
+  which runs on a push, never on a clone.
+- `API::VersionControl::create` needs the `version_control` feature, accepts a root only below
+  the account home, and fills `tasks` from the queue rows for that root at response time. A
+  field whose method dies, such as `available_branches` before the clone exists, becomes null.
+- `UserTasks::add()` defaults `exclusive` to integer 0, stores the task through
+  `Directory::Queue::Normal` with schema `subsystem`, `action` and `exclusive` as `string` and
+  `args` as `table`, and starts the compiled `process_user_tasks` runner at once. `get()` adds
+  `sse_url` when `args.log_file` is set. `get()` and `remove()` retry the element lock for up to
+  0.5 seconds, then die.
+- `Directory::Queue::Normal` 2.2 writes every `string` field as UTF-8 text and reads it back by
+  decoding, and a `table` as tab-separated lines whose values come back as strings;
+  `_hash2string` refuses an undefined value. Element names match `[0-9a-f]{8}/[0-9a-f]{14}`,
+  and `_check_element` refuses anything else.
+- `UserTasksCore::Task->adopt` only blesses the hash, and its `TO_JSON` returns a shallow copy.
+  `API::UserTasks::retrieve` reads each element with `get()` and adds its `id`; `delete`
+  requires `id` and calls `remove()`.
+
+The runner is a compiled binary; its logic was not inspected. These excerpts predict that every
+row scalar of a `VersionControl` task, `exclusive` included, reaches JSON as a string, and that
+args carry no null. Only a capture can show what the wire carries, and it says nothing about
+the WPX fields `domain` and `install_id`.
+
+**Recipe.** `tools/live-verify/user-tasks.php`, scenario `user-tasks-disposable-v1`, ran on the
+disposable account `wltasks` through the shared lifecycle. It creates an empty source
+repository, then a clone of it by absolute path, reads the queue through both routes, deletes
+the one task proven its own by its exact ID, and reads again. The
+[recipe notes](../../tools/live-verify/README.md#disposable-account-user-task-queue-fixture)
+give the phases, gates and ownership rules. The runner starts with the task and nothing
+controls it, so the task may finish before any read; each read records what it held. In v1 the
+one delete ran even then, on the producer response's word alone, with its outcome recorded and
+never retried; v2 withholds it, as the
+[review corrections](#user-task-review-corrections-2026-11-02) describe. Deleting a queue entry
+proves neither completion nor that a process stopped.
+
+`discrepancy_review` gates the UserTasks phases with no acknowledgment mechanism.
+`producer_review` reports the home read and both creates, sent through generic `call()`, by the
+same rule. Their discrepancies are Variables and VersionControl evidence and never gate the
+UserTasks result. The create rows are expected to carry `exclusive`, which the VersionControl
+create contract does not declare.
+
+### User task queue capture
+
+The [capture](evidence/2026-11-02-user-tasks.json) at
+`fea2d7d612acd215c452f5d710b5d0813f3e590b` on `11.138.0.19`, scenario `user-tasks-disposable-v1`,
+is a **failed run**, exit 1, kept unchanged and not rerun. All 11 phases ran over HTTP 200 and
+`capture` passed, but no `UserTasks/retrieve` read listed a row, so the bead's goal was not
+met. SHA-256: `470a6271daedbf78ab07b0769ffa967251c7ca1619940780d65ac0f26fda4e6c`.
+
+**Observed**, in the artifact:
+
+- Both routes read an empty JSON list before the producer.
+- The empty source repository and the local-path clone were both created with UAPI status 1.
+  The clone's own response listed exactly one task row for the clone root, and that row's ID
+  was a queue element name.
+- All four queue reads after the producer, through both routes, read an empty list. The first
+  began within two seconds of the clone request, by the records' whole-second timestamps. The
+  run records `owned_row_absent:tasks_queued_direct` and `owned_row_absent:tasks_queued_bridged`.
+- v1 then sent its one delete, by that ID. It returned UAPI status 0 with a string error list
+  and `data: null`, so the typed method raised `ApiErrorException`, and it was not retried.
+  `owned_delete_not_confirmed` records it, and the strict review fails on
+  `unsuccessful_phase:delete_owned` and `unexpected_uapi_status:delete_owned`.
+- Through that direct create response the task row carried string `action`, `subsystem`, `id`
+  and `sse_url`, an `args` object with string `repository_root` and `log_file`, and one further
+  key, masked because the VersionControl contract does not declare it, whose value was a
+  numeric string. The wildcard names neither the key nor a count.
+- Setup and cleanup passed: token, account, domain and zone are `confirmed_absent`, the
+  repositories went with the account, and the filesystem control passed with
+  `home=1, users=1, userdata=1, userdomains=1, passwd=1, zones=2` before
+  `filesystem_cleanup` read `confirmed_absent`. Sessions read 0 again.
+
+**Inferred**, not observed:
+
+- That the queue runner removed the task before the first read. The evidence shows only that
+  the reads listed no row; it does not show why, or whether the clone finished or succeeded.
+- That the delete was refused because the element no longer existed. The sanitized evidence
+  keeps no error text, so the cause is not shown.
+
+**Expected from the inspected source**, not verified by this run:
+
+- That the clone needed no network transport, because its source was a local path. Network
+  traffic was not monitored, so no absence of contact is claimed.
+- That the masked key is `exclusive`, the only undeclared field `get()` returns, stored as
+  integer 0 and read back as text. That would agree with the `string|int` UserTasks contract.
+- That `remove()` fails for an element it cannot lock, including a missing one, which would
+  explain the status 0.
+- That the create response's `tasks` rows come from the same `Cpanel::UserTasks::get()` that
+  `UserTasks/retrieve` calls.
+
+No typed UserTasks contract was contradicted, so no overlay correction follows.
+
+**What it does not establish.** No `UserTasks/retrieve` row, on either route, and no
+successful delete or its data. Whether bridged rows match direct ones. The `exclusive` wire
+type through `retrieve` itself. Clone success, the runner's behavior, and WPX rows. The two
+masked VersionControl create fields, an integer on both creates and a null on the source create,
+fail `producer_review` with `unacknowledged_discrepancy:source_create` and
+`unacknowledged_discrepancy:clone_create`. They belong to VersionControl follow-up `8x0.2.27`
+and stay unwaived.
+
+**Follow-up design, not run.** A run that sees the row needs the task to still be queued at the
+next read, which this producer did not give on this server. A larger local source might slow
+the clone, but cloning a local path hardlinks objects, and building one needs an upload of a
+prepared repository and probably a larger quota. The UserTasks read could instead start
+concurrently with the producer. Either is a new recipe version with a new output path, decided
+by the owner; nothing here was rerun.
+
+## User task review corrections, 2026-11-02
+
+An independent review of the branch found seven issues in the v1 recipe and its notes. Each was
+confirmed against the code and none was rejected. Each code correction has a test that failed
+first. No live run accompanies them: this producer's task did not outlive the next read on
+this server, so a rerun would add nothing. The v1 artifact is unchanged.
+
+- The notes said no queued work was executed, but the clone ran through cPanel's queue runner.
+  They now say that the producer queued one clone of a local repository inside the disposable
+  account and that cPanel's own runner processed it, and the authorization above is recorded.
+- v1 deleted by the producer response's ID even when no queue read had shown the row, which
+  turned an expected race into a contract failure. v2 sends the delete only when the latest
+  readable queue read showed the owned row. Otherwise it records `not_attempted` with
+  `deletion.reason` and the finding `owned_delete_not_attempted`, and the subject review
+  expects no delete record, so the race stays an expectation outcome.
+- Task creation was `confirmed` on API success alone. It is now `confirmed` only when the
+  producer response or a read showed the owned row, and `unconfirmed` otherwise.
+- The capture notes stated inferences as observations: that no network was contacted, that the
+  runner had removed the task, and that deleting a finished element fails. They are now split
+  into observed facts, inferences and source-based expectations, above and in the evidence index.
+- Account removal could rewrite an observed `present` task cleanup as `absent_with_account`.
+  Now only an unsettled cleanup is settled that way; observed residue stays `present`.
+- A finding marked whichever record came last. Each finding now marks the record it concerns,
+  such as the delete record for `owned_delete_not_confirmed`, or none when it concerns the run
+  as a whole. A row still listed after no delete was sent reads `owned_row_still_queued`, not
+  `owned_row_present_after_delete`.
+- `owned_row_in_latest_read` reported the bridged read only, and several owned IDs read as
+  `id_is_queue_element: false`. `deletion.owned_row_in_latest_reads` now gives both routes, and
+  `ownership.owned_task` reads `ambiguous` with `distinct_owned_ids`, leaving
+  `id_is_queue_element` null unless exactly one ID was owned.
+
+The report's meaning changed, so the scenario is now `user-tasks-disposable-v2` and the
+policies `user-tasks-subject-no-acknowledgments-v2` and `user-tasks-producer-structure-v2`.
+**No v2 capture exists.** The shared entrypoint and observe-helper duplication was left for a
+follow-up that consolidates it across every recipe.
+
 ## Disposable Webmail session capture (2026-11-02)
 
 Scenario `webmail-sessions-disposable-v1`, assessed under policy
