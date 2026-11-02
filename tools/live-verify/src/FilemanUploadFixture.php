@@ -53,6 +53,7 @@ use Throwable;
  * @phpstan-import-type Assessment from FilemanUploadEvidence
  * @phpstan-import-type CleanupOutcome from DisposableAccountLifecycle
  * @phpstan-import-type ResourceOutcome from DisposableAccountLifecycle
+ * @phpstan-import-type TokenOutcome from DisposableAccountLifecycle
  * @phpstan-import-type FilesystemOutcome from DisposableAccountLifecycle
  * @phpstan-import-type FilesystemControl from DisposableAccountLifecycle
  * @phpstan-type Observation array{
@@ -80,7 +81,7 @@ use Throwable;
  *     expectations: 'passed'|'failed'|'not_run', cleanup: 'passed'|'failed'|'not_required', failures: list<string>,
  *     stopped_at: string|null,
  *     resources: array{
- *         account: ResourceOutcome, token: ResourceOutcome, directory: ResourceOutcome,
+ *         account: ResourceOutcome, token: TokenOutcome, directory: ResourceOutcome,
  *         files: array{proven_owned: int, deleted: int}
  *     },
  *     domain_cleanup: CleanupOutcome, zone_cleanup: CleanupOutcome,
@@ -88,7 +89,7 @@ use Throwable;
  *     filesystem_control: FilesystemControl
  * }
  * @phpstan-type Scenario array{
- *     scenario: 'fileman-upload-disposable-v4', target_role: 'disposable-test-account', probes: list<Observation>,
+ *     scenario: 'fileman-upload-disposable-v5', target_role: 'disposable-test-account', probes: list<Observation>,
  *     uploads: array<string, UploadSummary>, byte_oracle: array<string, OracleResult>,
  *     borrowed_streams: array<string, bool>, discrepancy_review: Assessment, fixture: Report, limitations: list<string>
  * }
@@ -969,7 +970,7 @@ final class FilemanUploadFixture
         unset($record);
 
         return [
-            'scenario' => 'fileman-upload-disposable-v4',
+            'scenario' => 'fileman-upload-disposable-v5',
             'target_role' => 'disposable-test-account',
             'probes' => $records,
             'uploads' => $this->uploads,

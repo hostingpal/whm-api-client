@@ -59,7 +59,7 @@ final class FilemanUploadFixtureTest extends TestCase
         $fixture = $scenario['fixture'];
 
         self::assertSame('passed', $fixture['status'], (string) json_encode($fixture['failures']));
-        self::assertSame('fileman-upload-disposable-v4', $scenario['scenario']);
+        self::assertSame('fileman-upload-disposable-v5', $scenario['scenario']);
         self::assertSame('fileman-upload-no-acknowledgments-v2', $scenario['discrepancy_review']['policy']);
         self::assertSame([], $scenario['discrepancy_review']['findings']);
         self::assertSame('passed', $scenario['discrepancy_review']['status']);
@@ -259,7 +259,7 @@ final class FilemanUploadFixtureTest extends TestCase
             '{"acct":[{"user":"wlupload","domain":"wlupload.example.com","email":"private@example.com"}]}'];
         yield 'existing account other domain' => ['listaccts:1',
             '{"acct":[{"user":"wlupload","domain":"private.test"}]}'];
-        yield 'domain owned elsewhere' => ['listaccts:2',
+        yield 'domain owned elsewhere' => ['listaccts:1',
             '{"acct":[{"user":"other","domain":"wlupload.example.com"}]}'];
         yield 'addon domain elsewhere' => ['get_domain_info:1',
             '{"domains":[{"user":"other","domain":"wlupload.example.com"}]}'];
@@ -343,8 +343,8 @@ final class FilemanUploadFixtureTest extends TestCase
     public function testTransientIdentityReadCannotAbandonTheAccountOrItsToken(): void
     {
         $http = new FilemanUploadServer();
+        $http->failures['listaccts:3'] = 'throw_before';
         $http->failures['listaccts:4'] = 'throw_before';
-        $http->failures['listaccts:5'] = 'throw_before';
         $scenario = self::scenario($http);
         self::assertSame('passed', $scenario['fixture']['status']);
         self::assertFalse($http->account);
@@ -358,10 +358,10 @@ final class FilemanUploadFixtureTest extends TestCase
     public function testIdentityReplyThatIsNotALostRequestIsNeverReadAgain(string $mode): void
     {
         $http = new FilemanUploadServer();
-        $http->failures['listaccts:4'] = $mode;
+        $http->failures['listaccts:3'] = $mode;
         $scenario = self::scenario($http);
-        // Three setup reads, the one final cleanup read, and the separate domain check.
-        self::assertSame(5, $http->counts['listaccts']);
+        // Two setup reads, the one final cleanup read, and the domain check's own read: no rows to reuse.
+        self::assertSame(4, $http->counts['listaccts']);
         self::assertContains('account_identity_unconfirmed', $scenario['fixture']['failures']);
         self::assertSame('unconfirmed', $scenario['fixture']['resources']['account']['cleanup']);
         self::assertArrayNotHasKey('removeacct', $http->counts);
@@ -383,7 +383,7 @@ final class FilemanUploadFixtureTest extends TestCase
     public function testExhaustedIdentityReadsStopAllMutationAndReportTheRealState(): void
     {
         $http = new FilemanUploadServer();
-        foreach ([4, 5, 6] as $count) {
+        foreach ([3, 4, 5] as $count) {
             $http->failures['listaccts:' . $count] = 'throw_before';
         }
         $scenario = self::scenario($http);
@@ -397,18 +397,19 @@ final class FilemanUploadFixtureTest extends TestCase
         self::assertSame('unconfirmed', $fixture['resources']['directory']['cleanup']);
         self::assertSame(['proven_owned' => 6, 'deleted' => 0], $fixture['resources']['files']);
         self::assertSame('failed', $fixture['cleanup']);
-        // Three setup reads, the three bounded cleanup reads, and the separate domain check.
-        self::assertSame(7, $http->counts['listaccts']);
+        // Two setup reads, the three bounded cleanup reads, and the domain check's own read: no rows to reuse.
+        self::assertSame(6, $http->counts['listaccts']);
     }
 
     /** A returned inventory is final: only a failed request is read again. */
     public function testForeignMarkerIsNeverReadTwice(): void
     {
         $http = new FilemanUploadServer();
-        $http->overrides['listaccts:4'] = '{"acct":[{"user":"wlupload","domain":"wlupload.example.com",'
+        $http->overrides['listaccts:3'] = '{"acct":[{"user":"wlupload","domain":"wlupload.example.com",'
             . '"email":"private-foreign@example.com"}]}';
         $scenario = self::scenario($http);
-        self::assertSame(5, $http->counts['listaccts']);
+        // Two setup reads and the one final cleanup read, whose rows the domain check reuses: nothing changed since.
+        self::assertSame(3, $http->counts['listaccts']);
         self::assertArrayNotHasKey('removeacct', $http->counts);
         self::assertSame('unconfirmed', $scenario['fixture']['resources']['account']['cleanup']);
     }
@@ -429,7 +430,7 @@ final class FilemanUploadFixtureTest extends TestCase
     /** @return iterable<string, array{array<string, string>, string}> */
     public static function emptyIdentityLists(): iterable
     {
-        yield 'accounts during cleanup' => [['listaccts:4' => '{"acct":[]}'], 'account'];
+        yield 'accounts during cleanup' => [['listaccts:3' => '{"acct":[]}'], 'account'];
         yield 'zones after removal' => [['listzones:2' => '{"zone":[]}'], 'zone'];
     }
 
@@ -621,11 +622,11 @@ final class FilemanUploadFixtureTest extends TestCase
         self::assertSame('confirmed_absent', $fixture['resources']['account']['cleanup']);
         self::assertSame('confirmed_absent', $fixture['domain_cleanup']);
         self::assertSame('confirmed_absent', $fixture['zone_cleanup']);
-        // A lost token creation that no listing shows may still land, so it can never read as absent.
+        // A lost token creation that no listing shows is settled only by its account's confirmed removal.
         $unknownToken = $step === 'Tokens/create_full_access:1'
             && in_array($mode, ['throw_before', 'http_before', 'invalid_before'], true);
         self::assertSame(
-            $unknownToken ? 'unconfirmed' : 'confirmed_absent',
+            $unknownToken ? 'absent_with_account' : 'confirmed_absent',
             $fixture['resources']['token']['cleanup'],
         );
         self::assertPrivate($scenario);
@@ -715,7 +716,7 @@ final class FilemanUploadFixtureTest extends TestCase
     public function testLostOwnershipReadAtTheTokenGateStillRevokesTheToken(): void
     {
         $http = new FilemanUploadServer();
-        $http->failures['listaccts:5'] = 'throw_before';
+        $http->failures['listaccts:4'] = 'throw_before';
         $http->failures['removeacct:1'] = 'api_before';
         $scenario = self::scenario($http);
         self::assertSame(1, $http->counts['Tokens/revoke']);
@@ -769,8 +770,8 @@ final class FilemanUploadFixtureTest extends TestCase
             . '"email":"private-foreign@example.com"}]}';
         $http = new FilemanUploadServer();
         $http->failures = $failures;
+        $http->overrides['listaccts:4'] = $foreign;
         $http->overrides['listaccts:5'] = $foreign;
-        $http->overrides['listaccts:6'] = $foreign;
         $scenario = self::scenario($http);
         self::assertArrayNotHasKey('Tokens/revoke', $http->counts);
         self::assertArrayNotHasKey('removeacct', $http->counts);
@@ -1444,7 +1445,7 @@ final class FilemanUploadFixtureTest extends TestCase
     public function testAccountOwnershipChangingBeforeCleanupStopsAllMutationThere(): void
     {
         $http = new FilemanUploadServer();
-        $http->overrides['listaccts:4'] = '{"acct":[{"user":"wlupload","domain":"wlupload.example.com",'
+        $http->overrides['listaccts:3'] = '{"acct":[{"user":"wlupload","domain":"wlupload.example.com",'
             . '"email":"private-foreign@example.com"}]}';
         $scenario = self::scenario($http);
         self::assertArrayNotHasKey('removeacct', $http->counts);

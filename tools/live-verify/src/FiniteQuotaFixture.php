@@ -26,13 +26,14 @@ use Throwable;
  * @phpstan-import-type UnitRelationship from FiniteQuotaEvidence
  * @phpstan-import-type CleanupOutcome from DisposableAccountLifecycle
  * @phpstan-import-type ResourceOutcome from DisposableAccountLifecycle
+ * @phpstan-import-type TokenOutcome from DisposableAccountLifecycle
  * @phpstan-import-type FilesystemOutcome from DisposableAccountLifecycle
  * @phpstan-import-type FilesystemControl from DisposableAccountLifecycle
  * @phpstan-type Report array{
  *     status: 'passed'|'failed', setup: 'passed'|'failed'|'not_started',
  *     capture: 'passed'|'failed'|'not_run', expectations: 'passed'|'failed'|'not_run',
  *     cleanup: 'passed'|'failed'|'not_required', failures: list<string>,
- *     resources: array{account: ResourceOutcome, token: ResourceOutcome},
+ *     resources: array{account: ResourceOutcome, token: TokenOutcome},
  *     domain_cleanup: CleanupOutcome, zone_cleanup: CleanupOutcome,
  *     filesystem_cleanup: FilesystemOutcome, filesystem_residue: array<string, int>,
  *     filesystem_control: FilesystemControl

@@ -84,6 +84,79 @@ final class DisposableAccountLifecycleTest extends TestCase
         self::assertPrivate($outcome);
     }
 
+    /**
+     * Every decision reads accounts fresh, but each domain check reuses the account read just before it: nothing
+     * changed in between, and each read is the full server inventory.
+     */
+    public function testDomainChecksReuseTheAccountReadJustBeforeThem(): void
+    {
+        $http = new DisposableAccountServer();
+        $outcome = self::execute($http);
+
+        self::assertSame('confirmed_absent', $outcome['domain_cleanup']);
+        // Preflight, after creation, the cleanup gate, the token gate, before removal and after removal.
+        self::assertSame(6, $http->counts['listaccts']);
+        self::assertSame(2, $http->counts['get_domain_info']);
+    }
+
+    public function testPreflightReadsTheAccountInventoryOnce(): void
+    {
+        $http = new DisposableAccountServer();
+        $http->overrides['listzones:1'] = '{"zone":[{"domain":"wdisposable.example.com"}]}';
+        self::execute($http);
+
+        self::assertSame(1, $http->counts['listaccts']);
+        self::assertSame(1, $http->counts['get_domain_info']);
+    }
+
+    /** Reuse needs rows: when the read after removal gave none, the domain check reads afresh rather than guess. */
+    public function testDomainCheckReadsAfreshWhenTheLastAccountReadGaveNoRows(): void
+    {
+        $http = new DisposableAccountServer();
+        $http->overrides['listaccts:6'] = '{"acct":{}}';
+        $outcome = self::execute($http);
+
+        self::assertContains('account_identity_unconfirmed', $outcome['failures']);
+        self::assertSame('confirmed_absent', $outcome['domain_cleanup']);
+        self::assertSame(7, $http->counts['listaccts']);
+    }
+
+    /** A read from before a mutation is never reused: with the reads after the revoke lost, the check reads afresh. */
+    public function testDomainCheckNeverReusesAReadFromBeforeAMutation(): void
+    {
+        $http = new DisposableAccountServer();
+        foreach ([5, 6, 7] as $read) {
+            $http->failures['listaccts:' . $read] = 'throw_before';
+        }
+        $outcome = self::execute($http);
+
+        self::assertSame(1, $http->counts['Tokens/revoke']);
+        self::assertArrayNotHasKey('removeacct', $http->counts);
+        self::assertSame('present', $outcome['domain_cleanup']);
+        // Two setup reads, the cleanup gate, the token gate, three lost reads before removal, and the check's own.
+        self::assertSame(8, $http->counts['listaccts']);
+    }
+
+    /** @param array<string, string> $overrides */
+    #[DataProvider('unusableFreshMainDomainReads')]
+    public function testUnusableFreshMainDomainReadLeavesTheDomainUnconfirmed(array $overrides): void
+    {
+        $http = new DisposableAccountServer();
+        $http->overrides = $overrides;
+        $outcome = self::execute($http);
+
+        self::assertSame('unconfirmed', $outcome['domain_cleanup']);
+        self::assertContains('domain_absence_unconfirmed', $outcome['failures']);
+        self::assertSame(2, $http->counts['listzones']);
+    }
+
+    /** @return iterable<string, array{array<string, string>}> */
+    public static function unusableFreshMainDomainReads(): iterable
+    {
+        yield 'row without identity' => [['listaccts:6' => '{"acct":{}}', 'listaccts:7' => '{"acct":[{}]}']];
+        yield 'empty list' => [['listaccts:6' => '{"acct":{}}', 'listaccts:7' => '{"acct":[]}']];
+    }
+
     public function testExerciseReceivesTheLiveTokenWhileTheAccountExists(): void
     {
         $http = new DisposableAccountServer();
@@ -229,13 +302,12 @@ final class DisposableAccountLifecycleTest extends TestCase
             '{"acct":[{"user":"wdisposable","domain":"wdisposable.example.com"}]}'];
         yield 'existing account on another domain' => ['listaccts:1',
             '{"acct":[{"user":"wdisposable","domain":"private.test"}]}'];
-        yield 'another account owns the domain' => ['listaccts:2',
+        yield 'another account owns the domain' => ['listaccts:1',
             '{"acct":[{"user":"other","domain":"wdisposable.example.com"}]}'];
         yield 'addon domain on another account' => ['get_domain_info:1',
             '{"domains":[{"user":"other","domain":"wdisposable.example.com"}]}'];
         yield 'existing zone' => ['listzones:1', '{"zone":[{"domain":"wdisposable.example.com"}]}'];
         yield 'empty account list' => ['listaccts:1', '{"acct":[]}'];
-        yield 'empty account list at the domain read' => ['listaccts:2', '{"acct":[]}'];
         yield 'empty zone list' => ['listzones:1', '{"zone":[]}'];
         yield 'empty domain list' => ['get_domain_info:1', '{"domains":[]}'];
         yield 'empty object for accounts' => ['listaccts:1', '{"acct":{}}'];
@@ -402,8 +474,8 @@ final class DisposableAccountLifecycleTest extends TestCase
     public function testConfirmedCreationWithAForeignMarkerStopsBeforeAnyToken(): void
     {
         $http = new DisposableAccountServer();
+        $http->overrides['listaccts:2'] = self::FOREIGN;
         $http->overrides['listaccts:3'] = self::FOREIGN;
-        $http->overrides['listaccts:4'] = self::FOREIGN;
         $outcome = self::execute($http);
 
         self::assertSame('failed', $outcome['setup']);
@@ -434,13 +506,13 @@ final class DisposableAccountLifecycleTest extends TestCase
     public static function unusableMarkers(): iterable
     {
         $row = '{"acct":[{"user":"wdisposable","domain":"wdisposable.example.com"';
-        yield 'missing' => [['listaccts:4' => $row . '}]}']];
-        yield 'null' => [['listaccts:4' => $row . ',"email":null}]}']];
-        yield 'list' => [['listaccts:4' => $row . ',"email":[]}]}']];
-        yield 'foreign' => [['listaccts:4' => self::FOREIGN]];
-        yield 'another domain' => [['listaccts:4' => '{"acct":[{"user":"wdisposable","domain":"o.test",'
+        yield 'missing' => [['listaccts:3' => $row . '}]}']];
+        yield 'null' => [['listaccts:3' => $row . ',"email":null}]}']];
+        yield 'list' => [['listaccts:3' => $row . ',"email":[]}]}']];
+        yield 'foreign' => [['listaccts:3' => self::FOREIGN]];
+        yield 'another domain' => [['listaccts:3' => '{"acct":[{"user":"wdisposable","domain":"o.test",'
             . '"email":"private@example.com"}]}']];
-        yield 'empty list' => [['listaccts:4' => '{"acct":[]}']];
+        yield 'empty list' => [['listaccts:3' => '{"acct":[]}']];
     }
 
     /** The marker alone is not enough: this exact row keeps the real marker and changes only the primary domain. */
@@ -448,7 +520,7 @@ final class DisposableAccountLifecycleTest extends TestCase
     {
         $http = new DisposableAccountServer();
         $http->afterEffect = static function (DisposableAccountServer $server, string $step): void {
-            if ($step === 'listaccts:3') {
+            if ($step === 'listaccts:2') {
                 $server->listedDomain = 'private-other.test';
             }
         };
@@ -464,7 +536,7 @@ final class DisposableAccountLifecycleTest extends TestCase
     public function testOwnershipIsReadAgainRightBeforeRemovingTheAccount(): void
     {
         $http = new DisposableAccountServer();
-        $http->overrides['listaccts:6'] = self::FOREIGN;
+        $http->overrides['listaccts:5'] = self::FOREIGN;
         $outcome = self::execute($http);
 
         self::assertSame(1, $http->counts['Tokens/revoke']);
@@ -488,23 +560,23 @@ final class DisposableAccountLifecycleTest extends TestCase
         self::assertFalse($http->account);
         self::assertSame(1, $http->counts['removeacct']);
         self::assertSame(1, $http->counts['Tokens/revoke']);
-        // Eight planned reads, plus the two that were lost.
-        self::assertSame(10, $http->counts['listaccts']);
+        // Six planned reads, plus the two that were lost.
+        self::assertSame(8, $http->counts['listaccts']);
     }
 
     /** @return iterable<string, array{int}> */
     public static function ownershipGates(): iterable
     {
-        yield 'first gate' => [4];
-        yield 'token gate' => [5];
-        yield 'removal gate' => [6];
-        yield 'after removal' => [7];
+        yield 'first gate' => [3];
+        yield 'token gate' => [4];
+        yield 'removal gate' => [5];
+        yield 'after removal' => [6];
     }
 
     public function testExhaustedOwnershipReadsStopAllMutationAtThreeReads(): void
     {
         $http = new DisposableAccountServer();
-        foreach ([4, 5, 6] as $read) {
+        foreach ([3, 4, 5] as $read) {
             $http->failures['listaccts:' . $read] = 'throw_before';
         }
         $outcome = self::execute($http);
@@ -515,8 +587,8 @@ final class DisposableAccountLifecycleTest extends TestCase
         self::assertSame('unconfirmed', $outcome['account']['cleanup']);
         self::assertSame('unconfirmed', $outcome['token']['cleanup']);
         self::assertContains('account_identity_unconfirmed', $outcome['failures']);
-        // Three setup reads, the three bounded cleanup reads, and the separate domain check.
-        self::assertSame(7, $http->counts['listaccts']);
+        // Two setup reads, the three bounded cleanup reads, and the domain check's own read: no rows to reuse.
+        self::assertSame(6, $http->counts['listaccts']);
     }
 
     /** Only a request that failed is read again: anything the server returned is final. */
@@ -524,11 +596,11 @@ final class DisposableAccountLifecycleTest extends TestCase
     public function testAReturnedInventoryIsNeverReadAgain(string $mode): void
     {
         $http = new DisposableAccountServer();
-        $http->failures['listaccts:4'] = $mode;
+        $http->failures['listaccts:3'] = $mode;
         $outcome = self::execute($http);
 
-        // Three setup reads, the one final cleanup read, and the separate domain check.
-        self::assertSame(5, $http->counts['listaccts']);
+        // Two setup reads, the one final cleanup read, and the domain check's own read: no rows to reuse.
+        self::assertSame(4, $http->counts['listaccts']);
         self::assertContains('account_identity_unconfirmed', $outcome['failures']);
         self::assertArrayNotHasKey('removeacct', $http->counts);
         self::assertArrayNotHasKey('Tokens/revoke', $http->counts);
@@ -547,9 +619,10 @@ final class DisposableAccountLifecycleTest extends TestCase
     public function testForeignMarkerIsNeverReadTwice(): void
     {
         $http = new DisposableAccountServer();
-        $http->overrides['listaccts:4'] = self::FOREIGN;
+        $http->overrides['listaccts:3'] = self::FOREIGN;
         self::execute($http);
-        self::assertSame(5, $http->counts['listaccts']);
+        // Two setup reads and the one final cleanup read, whose rows the domain check reuses: nothing changed since.
+        self::assertSame(3, $http->counts['listaccts']);
     }
 
     /** Only the ownership gate repeats: token, domain and zone reads stay single reads even when the request is lost. */
@@ -564,13 +637,12 @@ final class DisposableAccountLifecycleTest extends TestCase
         $planned = ['Tokens/list' => 4, 'listzones' => 2, 'get_domain_info' => 2];
         self::assertSame($planned[$function], $http->counts[$function]);
         self::assertContains($outcome, $result['failures']);
-        self::assertSame('unconfirmed', $field === 'token' ? $result['token']['cleanup'] : $result[$field]);
+        self::assertSame('unconfirmed', $result[$field]);
     }
 
-    /** @return iterable<string, array{string, string, string}> */
+    /** @return iterable<string, array{string, string, 'domain_cleanup'|'zone_cleanup'}> */
     public static function singleReads(): iterable
     {
-        yield 'token after revoke' => ['Tokens/list:4', 'token_absence_unconfirmed', 'token'];
         yield 'domain' => ['get_domain_info:2', 'domain_absence_unconfirmed', 'domain_cleanup'];
         yield 'zone' => ['listzones:2', 'zone_absence_unconfirmed', 'zone_cleanup'];
     }
@@ -621,23 +693,82 @@ final class DisposableAccountLifecycleTest extends TestCase
         self::assertSame('failed', $outcome['cleanup']);
     }
 
-    /** A create still in flight can land after a listing that shows nothing, exactly as for the account. */
+    /**
+     * A create still in flight can land after a listing that shows nothing, so the listing alone settles nothing.
+     * Nothing of an account outlives its confirmed removal, though, and that settles the token too.
+     */
     #[DataProvider('unusableCreationReplies')]
-    public function testLostTokenCreationIsNeverReportedAsAbsent(string $failure): void
+    public function testLostTokenCreationIsSettledByTheAccountsConfirmedRemoval(string $failure): void
     {
         $http = new DisposableAccountServer();
         $http->failures['Tokens/create_full_access:1'] = $failure . '_before';
+        $outcome = self::execute($http);
+
+        self::assertSame(['creation' => 'unconfirmed', 'cleanup' => 'absent_with_account'], $outcome['token']);
+        self::assertSame(['setup_failure'], $outcome['failures']);
+        self::assertSame('passed', $outcome['cleanup']);
+        self::assertSame('confirmed_absent', $outcome['account']['cleanup']);
+        self::assertArrayNotHasKey('Tokens/revoke', $http->counts);
+        self::assertSame(1, $http->counts['Tokens/create_full_access']);
+        self::assertSame(1, $http->counts['removeacct']);
+        self::assertFalse($http->account);
+        self::assertPrivate($outcome);
+    }
+
+    /** While the account remains, a lost create is still unknown, and nothing is ever revoked on a guess. */
+    #[DataProvider('unusableCreationReplies')]
+    public function testLostTokenCreationStaysUnconfirmedWhileTheAccountRemains(string $failure): void
+    {
+        $http = new DisposableAccountServer();
+        $http->failures['Tokens/create_full_access:1'] = $failure . '_before';
+        $http->failures['removeacct:1'] = 'api_before';
         $outcome = self::execute($http);
 
         self::assertSame(['creation' => 'unconfirmed', 'cleanup' => 'unconfirmed'], $outcome['token']);
         self::assertContains('token_creation_outcome_unknown', $outcome['failures']);
         self::assertSame('failed', $outcome['cleanup']);
         self::assertArrayNotHasKey('Tokens/revoke', $http->counts);
-        self::assertSame(1, $http->counts['Tokens/create_full_access']);
-        // The unknown token stops nothing else: the account still goes, and with it any late token.
-        self::assertSame(1, $http->counts['removeacct']);
-        self::assertFalse($http->account);
-        self::assertPrivate($outcome);
+        self::assertTrue($http->account);
+    }
+
+    /** @param array<string, string> $failures */
+    #[DataProvider('lostListingsAfterRevoke')]
+    public function testUnreadableListingAfterRevokeIsSettledByTheAccountsConfirmedRemoval(
+        array $failures,
+        string $override,
+    ): void {
+        $http = new DisposableAccountServer();
+        $http->failures = $failures;
+        if ($override !== '') {
+            $http->overrides['Tokens/list:4'] = $override;
+        }
+        $outcome = self::execute($http);
+
+        self::assertSame(['creation' => 'confirmed', 'cleanup' => 'absent_with_account'], $outcome['token']);
+        self::assertNotContains('token_absence_unconfirmed', $outcome['failures']);
+        self::assertSame('passed', $outcome['cleanup']);
+        self::assertSame(1, $http->counts['Tokens/revoke']);
+        self::assertSame(4, $http->counts['Tokens/list']);
+    }
+
+    /** @return iterable<string, array{array<string, string>, string}> */
+    public static function lostListingsAfterRevoke(): iterable
+    {
+        yield 'lost request' => [['Tokens/list:4' => 'throw_before'], ''];
+        yield 'unusable reply' => [[], '{}'];
+    }
+
+    /** A listing that later reads the account absent settles its token just as a confirmed removal does. */
+    public function testTokenOfAnAccountReadAbsentIsSettledWithIt(): void
+    {
+        $http = new DisposableAccountServer();
+        $http->overrides['listaccts:3'] = '{"acct":[{"user":"existing","domain":"existing.example"}]}';
+        $outcome = self::execute($http);
+
+        self::assertSame('confirmed_absent', $outcome['account']['cleanup']);
+        self::assertSame('absent_with_account', $outcome['token']['cleanup']);
+        self::assertNotContains('token_absence_unconfirmed', $outcome['failures']);
+        self::assertArrayNotHasKey('Tokens/revoke', $http->counts);
     }
 
     public function testRefusedTokenCreationIsAKnownAbsence(): void
@@ -678,8 +809,8 @@ final class DisposableAccountLifecycleTest extends TestCase
     {
         $http = new DisposableAccountServer();
         $http->failures = $failures;
+        $http->overrides['listaccts:4'] = self::FOREIGN;
         $http->overrides['listaccts:5'] = self::FOREIGN;
-        $http->overrides['listaccts:6'] = self::FOREIGN;
         $outcome = self::execute($http);
 
         self::assertArrayNotHasKey('Tokens/revoke', $http->counts);
@@ -744,15 +875,12 @@ final class DisposableAccountLifecycleTest extends TestCase
     /** @return iterable<string, array{string, string, string}> */
     public static function finalInventoryFailures(): iterable
     {
-        yield 'account object' => ['listaccts:7', '{"acct":{}}', 'account_identity_unconfirmed'];
-        yield 'empty accounts after removal' => ['listaccts:7', '{"acct":[]}', 'account_identity_unconfirmed'];
-        yield 'main domain' => ['listaccts:8', '{"acct":[{}]}', 'domain_absence_unconfirmed'];
-        yield 'empty main domains' => ['listaccts:8', '{"acct":[]}', 'domain_absence_unconfirmed'];
+        yield 'account object' => ['listaccts:6', '{"acct":{}}', 'account_identity_unconfirmed'];
+        yield 'empty accounts after removal' => ['listaccts:6', '{"acct":[]}', 'account_identity_unconfirmed'];
         yield 'manual domain' => ['get_domain_info:2', '{"domains":[{}]}', 'domain_absence_unconfirmed'];
         yield 'empty manual domains' => ['get_domain_info:2', '{"domains":[]}', 'domain_absence_unconfirmed'];
         yield 'zone' => ['listzones:2', '{"zone":null}', 'zone_absence_unconfirmed'];
         yield 'empty zones' => ['listzones:2', '{"zone":[]}', 'zone_absence_unconfirmed'];
-        yield 'token' => ['Tokens/list:4', '{}', 'token_absence_unconfirmed'];
     }
 
     public function testZoneResidueIsReportedWithoutAnyFurtherMutation(): void
@@ -794,13 +922,18 @@ final class DisposableAccountLifecycleTest extends TestCase
         self::assertSame(1, $http->counts['removeacct']);
     }
 
-    public function testRevokedTokenThatStillListsIsReportedPresent(): void
+    /**
+     * A token proven present after a failed revoke is settled by the account's removal, but the failed revoke stays a
+     * failure: the token outlived its revoke until then, and the evidence says so.
+     */
+    public function testRevokeThatDidNotTakeEffectStaysAFailureAfterSettlement(): void
     {
         $http = new DisposableAccountServer();
         $http->failures['Tokens/revoke:1'] = 'api_before';
         $outcome = self::execute($http);
 
-        self::assertSame('present', $outcome['token']['cleanup']);
+        self::assertSame('absent_with_account', $outcome['token']['cleanup']);
+        self::assertSame('failed', $outcome['cleanup']);
         self::assertContains('token_revoke_failure', $outcome['failures']);
         self::assertContains('token_still_present', $outcome['failures']);
         self::assertFalse($http->account);
@@ -855,7 +988,8 @@ final class DisposableAccountLifecycleTest extends TestCase
         );
 
         self::assertTrue($live);
-        self::assertSame(4, $reads);
+        // Two setup reads, then the cleanup gate.
+        self::assertSame(3, $reads);
         self::assertSame('passed', $outcome['status']);
     }
 
@@ -913,7 +1047,7 @@ final class DisposableAccountLifecycleTest extends TestCase
     public function testOwnedCleanupNeverRunsOnAnAccountTheMarkerDoesNotProve(): void
     {
         $http = new DisposableAccountServer();
-        $http->overrides['listaccts:4'] = self::FOREIGN;
+        $http->overrides['listaccts:3'] = self::FOREIGN;
         $ran = false;
         self::lifecycle($http)->run(self::noop(), static function () use (&$ran): array {
             $ran = true;
@@ -1102,7 +1236,43 @@ final class DisposableAccountLifecycleTest extends TestCase
     public static function setupsWithoutAControl(): iterable
     {
         yield 'creation refused' => ['createacct:1', 'api_before'];
+        yield 'creation lost' => ['createacct:1', 'throw_before'];
+    }
+
+    /**
+     * Setup stopped after creation, before the control, so cleanup takes it: it proves the account first, then reads
+     * the filesystem before removal. Without it a clean removal could never be called absent.
+     */
+    #[DataProvider('setupsStoppedAfterCreation')]
+    public function testControlIsTakenInCleanupWhenSetupStoppedAfterCreation(string $step, string $mode): void
+    {
+        $http = new DisposableAccountServer();
+        $http->failures[$step] = $mode;
+        $seen = [];
+        $proof = RecordingFilesystemProof::after(
+            self::finding('confirmed_absent'),
+            static function () use ($http, &$seen): void {
+                $seen[] = [$http->account, $http->counts['removeacct'] ?? 0];
+            },
+        );
+        $outcome = self::lifecycle($http, $proof)->run(self::noop());
+
+        self::assertSame('failed', $outcome['setup']);
+        self::assertSame(
+            ['status' => 'passed', 'counts' => RecordingFilesystemProof::PRESENT['residue']],
+            $outcome['filesystem_control'],
+        );
+        // The control saw the account before removal; the final proof saw it gone.
+        self::assertSame([[true, 0], [false, 1]], $seen);
+        self::assertSame('confirmed_absent', $outcome['filesystem_cleanup']);
+        self::assertNotContains('filesystem_absence_unconfirmed', $outcome['failures']);
+    }
+
+    /** @return iterable<string, array{string, string}> */
+    public static function setupsStoppedAfterCreation(): iterable
+    {
         yield 'token refused' => ['Tokens/create_full_access:1', 'api_before'];
+        yield 'token reply lost' => ['Tokens/create_full_access:1', 'throw_after'];
         yield 'token capability read lost' => ['Tokens/list:2', 'throw_before'];
     }
 
