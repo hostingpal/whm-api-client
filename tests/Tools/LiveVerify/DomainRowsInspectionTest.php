@@ -46,13 +46,45 @@ final class DomainRowsInspectionTest extends TestCase
         self::assertSame([
             'undeclared $[].nested.<key>: int',
             'undeclared $[].nested.<key>: null',
-            'undeclared $[].nested.inner: string',
+            'undeclared $[].nested.<key>: string',
             'undeclared $[].nested: object',
             'undeclared $[].phpversion: string',
             'undeclared $[].status: string',
         ], $lines);
         $output = implode("\n", $lines);
-        foreach (['private', 'dotted', '12345', '80'] as $value) {
+        foreach (['private', 'dotted', '12345', '80', 'inner'] as $value) {
+            self::assertStringNotContainsString($value, $output);
+        }
+    }
+
+    /**
+     * A key is printed only where the reviewed contract declares named fields. A key that is really data, such as a
+     * username or token name, can sit beneath an undeclared key, at a map position or in an object without declared
+     * fields, and is masked in all three.
+     */
+    public function testAUsernameLikeDynamicKeyNeverReachesTheOutput(): void
+    {
+        $type = ['type' => 'object', 'fields' => [
+            'users' => ['type' => 'map', 'values' => ['type' => 'object', 'fields' => ['quota' => ['type' => 'int']]]],
+            'opaque' => ['type' => 'object', 'fields' => []],
+        ]];
+        $raw = (string) json_encode(['status' => 1, 'data' => [
+            'tokens' => ['jdoe_private' => ['jdoe_token' => 'private-secret']],
+            'users' => ['jdoe_owner' => ['quota' => 1, 'extra_field' => 'private-value']],
+            'opaque' => ['jdoe_opaque' => 'private-value'],
+        ]]);
+
+        $lines = DomainRowsInspection::undeclared('direct-uapi', $raw, $type);
+
+        self::assertSame([
+            'undeclared $.opaque.<key>: string',
+            'undeclared $.tokens.<key>.<key>: string',
+            'undeclared $.tokens.<key>: object',
+            'undeclared $.tokens: object',
+            'undeclared $.users.*.extra_field: string',
+        ], $lines);
+        $output = implode("\n", $lines);
+        foreach (['jdoe_private', 'jdoe_token', 'jdoe_owner', 'jdoe_opaque', 'private'] as $value) {
             self::assertStringNotContainsString($value, $output);
         }
     }

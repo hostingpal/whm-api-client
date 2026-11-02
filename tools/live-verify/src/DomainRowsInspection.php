@@ -19,8 +19,10 @@ use stdClass;
  * This is the private inspection step that precedes typing a field: the strict review masks undeclared keys, so
  * only a reading of the original response can say what they are called. It walks one payload against its effective
  * return spec as Fingerprint does, choosing a union's first validating branch, and lists each undeclared key's path
- * and observed type, and each declared path whose value does not fit. Only plain identifiers are printed as names;
- * any other key, such as a domain name or a number, is shown as `<key>`. Values, upstream text and raw bodies never
+ * and observed type, and each declared path whose value does not fit. A key's name is printed only where the reviewed
+ * contract declares named fields and only when it is a plain identifier: an undeclared key in such an object. Every
+ * key beneath an undeclared key, in an object that declares no fields, or at a map position is shown as `<key>` or
+ * `*`, as such keys can be data, such as domain, user or token names. Values, upstream text and raw bodies never
  * appear in the result, which a caller may print but never persists.
  *
  * @internal Development evidence tooling; never used by the package runtime.
@@ -97,7 +99,7 @@ final class DomainRowsInspection
                 } elseif (is_array($type['values'] ?? null)) {
                     $this->visit($item, $type['values'], $path . '.*');
                 } else {
-                    $this->describe($item, $path . '.' . self::name($name));
+                    $this->describe($item, $path . '.' . ($fields === [] ? '<key>' : self::name($name)));
                 }
             }
 
@@ -124,13 +126,13 @@ final class DomainRowsInspection
         }
     }
 
-    /** List an undeclared subtree by name and type only. */
+    /** List an undeclared subtree by type only; nothing beneath an undeclared key is a declared name. */
     private function describe(#[SensitiveParameter] mixed $value, string $path): void
     {
         $this->lines['undeclared ' . $path . ': ' . self::kind($value)] = true;
         if ($value instanceof stdClass) {
-            foreach (get_object_vars($value) as $name => $item) {
-                $this->describe($item, $path . '.' . self::name((string) $name));
+            foreach (get_object_vars($value) as $item) {
+                $this->describe($item, $path . '.<key>');
             }
         } elseif (is_array($value)) {
             foreach ($value as $item) {
