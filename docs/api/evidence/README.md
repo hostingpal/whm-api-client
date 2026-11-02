@@ -1352,7 +1352,10 @@ passed with `home=1, users=1, userdata=1, userdomains=1, passwd=1, zones=2`, whi
 `filesystem_cleanup: confirmed_absent` to the server the run changed. Sessions read 0, so
 their naming stays unobserved. See the
 [source audit](../source-audit.md#review-corrections-and-the-v4-capture). SHA-256:
-`239e3417565c511c9177a2d298bfed883d738b102dc653fc2bd8e5ae980ce780`.
+`239e3417565c511c9177a2d298bfed883d738b102dc653fc2bd8e5ae980ce780`. It stays the valid record
+of what ran at that revision. The fixture has since moved to `fileman-upload-disposable-v5`,
+and no v5 capture exists; see the
+[source audit](../source-audit.md#re-review-corrections-2026-11-02).
 
 The [v3 capture](2026-11-01-fileman-upload-v3.json) at
 `b3bfc1474729fb2ce60207d9b3d5a3d0bbe51232` on `11.138.0.19` passes recipe
@@ -1393,4 +1396,5 @@ observations as the [v1 artifact](2026-10-17-finite-quota.json). See the
 [source audit](../source-audit.md#shared-disposable-account-lifecycle-2026-11-01). SHA-256:
 `82fe5c4f332f37cc444e588e57496f20d7d15f00db6495b52c0e1aad263d758a`. It stays the valid record
 of what ran at that revision, including its `filesystem_cleanup`, which predates the control.
-The fixture has since moved to `finite-quota-disposable-v3`, and no v3 capture exists.
+The fixture has since moved to `finite-quota-disposable-v3`, and no v3 capture exists; see
+the [source audit](../source-audit.md#re-review-corrections-2026-11-02).

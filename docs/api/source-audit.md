@@ -10031,3 +10031,65 @@ established offline only.
 Finite Quota was not rerun. These corrections change its behaviour, so
 `finite-quota-disposable-v3` has no capture, and the
 [v2 artifact](evidence/2026-11-01-finite-quota-v2.json) stays the record of what ran at `b3bfc14`.
+
+### Re-review corrections (2026-11-02)
+
+A re-review of PR 143 at `34f2c0d` found nine issues. Each was confirmed against the code
+and none was rejected. Each correction has a test that failed first, and every defect seeded
+into the new code afterwards was caught by the offline suite.
+
+- The SSH proof sent `SIGKILL` even after `proc_get_status()` had collected the child's
+  exit, when its process number could already belong to another process. It now kills only
+  a process still running: after a timeout, closed output or too much output.
+- `/etc/userdomains` was matched as substrings, so another account's line containing this
+  name or domain counted. On `11.138.0.19` every line has the form `<domain>: <owner>`,
+  checked by counting alone, and the script now compares those two fields whole with `awk`.
+  `/etc/passwd` was already matched on its whole first field. The session match stays wide,
+  because nothing shows how session files are named; another account's session whose name
+  contains this one reads as residue, which can fail a run but never pass one.
+- A setup that stopped after creating the account never took the filesystem control, so a
+  later absence could only be `unconfirmed`. Cleanup now takes it once the marker proves the
+  account and before `removeacct`.
+- A token that no listing could settle stayed unconfirmed even after its account was proven
+  gone. It is now `absent_with_account`, recording that its absence follows from the
+  account's removal. While the account remains it is still a failure, and a revoke that
+  failed or did not take effect keeps its failure label.
+- Composer's default 300-second limit could stop a fixture between creation and cleanup.
+  `live:verify` now calls `Composer\Config::disableProcessTimeout` first, and the notes
+  recommend Composer again. A throwaway project showed a three-second script outliving a
+  one-second limit with that call and timing out without it.
+- Each guard kept its own copy of the control posts and its own consume-once logic.
+  `ControlPostAdmission` now does both, and both guards delegate to it. A new guard test
+  also closes an older gap: a control post sent while a delete was pending was refused only
+  by an untested condition.
+- Both fixtures copied the outcome field by field. `DisposableAccountLifecycle::reportFields()`
+  now carries every field but `exercise`, and both fixtures spread it into their reports.
+- The marker was a public property of the binding, and the guards kept copies of the
+  createacct body. It now lives in a private map off the binding, and a test walks every
+  public object and report, by JSON encoding, `var_export` and array cast, for the marker.
+- The domain check read accounts again just after an ownership read. It now reuses the read
+  just before it while nothing has changed since and that read gave rows. A clean run makes
+  six account reads instead of eight.
+
+Several earlier test expectations changed deliberately. Cases that expected a token no
+listing could settle to stay `unconfirmed`, or to fail with `token_absence_unconfirmed`, after
+the account was proven absent now expect `absent_with_account`; the same cases with the
+account still present keep the failure. Read counts, and the index of every later account
+read, moved by the two reads removed. Provider rows for those reads were removed: the account
+list of the separate preflight domain read, and the domain check's own account read after
+removal, whose unusable cases now target the fresh read the check makes when the read before
+it gave no rows.
+
+`fileman-upload-disposable-v4` became `-v5`, because a v4 capture exists and token cleanup can
+now read `absent_with_account`. `finite-quota-disposable-v3` has no capture and keeps its
+name. Report field names and shape are unchanged. No fixture ran, and no artifact changed.
+
+The rewritten proof then ran once, read-only, against two fixed pairs, through a throwaway
+script outside the committed tree. For `npr` and `npr.rs` it read `present`, with
+`home=1, users=1, userdata=1, userdomains=1, passwd=1, zones=4, sessions=0`: the account in
+every account location, and one `userdomains` line, as an account with no addon, parked or
+subdomain should have. For `wlnone` and `wlnone.example.com` it read `confirmed_absent`, with
+every count 0 and every inventory usable. The `zones` count of 4 is higher than the 2 seen
+for `wlupload`; it counts zone files and is not explained further here. **Sessions read 0
+for an existing account too**, so they still have no positive control. No account was
+created, and nothing was written.

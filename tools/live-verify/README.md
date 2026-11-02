@@ -361,7 +361,9 @@ The current scenario is `finite-quota-disposable-v3`, and **no v3 capture exists
 version's report means something different. v2 moved onto the shared lifecycle, added the
 filesystem fields, and stopped calling a lost `createacct` `confirmed_absent`. v3 keeps the
 domain, zone and files `unconfirmed` after one, adds the filesystem control, and takes
-`status`, `setup` and `failures` from the lifecycle. The
+`status`, `setup` and `failures` from the lifecycle. Since then, still unreleased, v3 also
+settles token cleanup as `absent_with_account` once the account is confirmed absent, takes a
+missed filesystem control in cleanup, and matches `/etc/userdomains` by whole fields. The
 [v1 artifact](../../docs/api/evidence/2026-10-17-finite-quota.json) stands as the record of
 what ran then.
 
@@ -2157,8 +2159,12 @@ built. A second `run()`, or a missing opt-in, throws `LogicException` before any
 so a fixture needs no check of its own. The recipe's guard still re-checks every request.
 
 `$outcome` is the only truth about a run. `status` is `passed` only if setup, the exercise
-and cleanup all passed. A recipe copies `status`, `setup`, `failures` and the rest into its
-report and never computes its own. So an exercise never swallows a failure: it records the
+and cleanup all passed. A recipe never computes its own: it spreads
+`DisposableAccountLifecycle::reportFields($outcome)` into its report, merging `resources`
+with its own. That carries every field except `exercise`, which a recipe reports as its own
+phases, so a field the lifecycle gains reaches every report. Never copy fields one by one.
+
+Because the outcome is the only truth, an exercise never swallows a failure: it records the
 detail its report needs, then throws, even for a failed expectation in a capture that
 finished. `ExerciseFailure` names the failure with the recipe's own labels, and anything
 else that escapes is `exercise_failure`. Binding the token is the exercise's first step, so
@@ -2174,11 +2180,14 @@ server always hosts others, so an empty list proves nothing, and neither does `{
 existing account is never adopted.
 
 **Ownership.** The random contact-email marker, held only in memory, is the sole proof
-that an account is this run's. It is read again at every gate, and nothing is mutated on
-an account it does not prove. Only an explicit API refusal is a known `createacct`
-outcome. After a lost response, gateway error or unreadable body, an absent read cannot
-rule out a creation still in flight, so the account stays `unconfirmed` and fails with
-`account_creation_outcome_unknown`. Its domain, zone and files would arrive with it, so they
+that an account is this run's. It is no property of the binding, so no JSON encoding,
+`var_export`, array cast or dump of any public object shows it, and a binding cannot be
+cloned. Only `createAccountParameters()`, for the one `createacct` call, and
+`controlPosts()` carry it; anything else asks `isContactMarker()`. It is read again at
+every gate, and nothing is mutated on an account it does not prove. Only an explicit API
+refusal is a known `createacct` outcome. After a lost response, gateway error or unreadable
+body, an absent read cannot rule out a creation still in flight, so the account stays
+`unconfirmed` and fails with `account_creation_outcome_unknown`. Its domain, zone and files would arrive with it, so they
 stay `unconfirmed` too, unless a list shows them `present`. The marker settles the outcome:
 once it proves the account, its removal can be proven as usual.
 
@@ -2189,8 +2198,15 @@ shows the token or this run's own confirmed creation: setup read the name absent
 before its one create. An unreadable listing therefore cannot withhold the revoke of a
 token this run created, which matters if account removal then fails too. As with the
 account, only an explicit refusal is a known outcome, so a lost creation that no listing
-can show is never revoked and never reported absent: it stays `unconfirmed` and fails with
-`token_creation_outcome_unknown`.
+can show is never revoked and never reported absent by a listing.
+
+A token cannot outlive its account. So once the account reads `confirmed_absent`, a token
+that no listing could settle, after a lost creation or an unreadable listing, has `cleanup`
+`absent_with_account`: absent through the account's removal, never shown absent by a token
+listing. While the account remains, the same token stays `unconfirmed` and fails with
+`token_creation_outcome_unknown` or `token_absence_unconfirmed`. A revoke that failed or did
+not take effect keeps `token_revoke_failure` or `token_still_present` as a failure even after
+the account is gone, because the token was proven present when it was revoked.
 
 **Cleanup.** No mutation repeats. The ownership read that gates a cleanup decision is the
 only request ever repeated, at most three reads per decision and only after a
@@ -2199,10 +2215,17 @@ anything the server returned is final, including a result-0, HTTP or unreadable 
 Failure at one resource never stops the next. The recipe's cleanup runs first, only on an
 account the marker proves and while the token still works, then the token is revoked and
 the account removed, and token, account, domain and zone absence are each read
-independently. A failed or uncertain step fails `cleanup`; the resource fields still say
-what each one showed. If cleanup remains unconfirmed, inspect the explicitly selected test
-account and domain privately and confirm ownership before manual recovery. A rerun refuses
-preexisting resources and is not a cleanup mechanism.
+independently, except that a token is settled by its account as above. A failed or
+uncertain step fails `cleanup`; the resource fields still say what each one showed. If
+cleanup remains unconfirmed, inspect the explicitly selected test account and domain
+privately and confirm ownership before manual recovery. A rerun refuses preexisting
+resources and is not a cleanup mechanism.
+
+**Reads.** Every decision reads the account inventory afresh. Each domain check reuses the
+account read just before it, because nothing changed in between and each read is the
+server's full inventory; when that read gave no rows, or a mutation came after it, the
+check reads again. A clean run makes six account reads: preflight, after creation, the
+cleanup gate, the token gate, before removal and after removal.
 
 **Filesystem proof.** `WHM_API_LIVE_FS_CHECK=1` adds a read-only check, run twice: once
 after setup as a positive control, and once after API cleanup. It runs one fixed script
@@ -2222,8 +2245,15 @@ so the check never accepts or changes one. Connection sharing is off too, as a s
 master can outlive the session and hold its output open. It checks `/home/<user>`,
 `/var/cpanel/users/<user>`, `/var/cpanel/userdata/<user>`, `/etc/userdomains`,
 `/etc/passwd`, zone files under `/var/named`, and any file whose name contains the account
-name under `/var/cpanel/sessions`. That match is deliberately wide, because nothing has
-shown how session files are named.
+name under `/var/cpanel/sessions`.
+
+`/etc/userdomains` lines are `<domain>: <owner>`. A line counts only when its domain field
+equals the domain or its owner field equals the account, compared whole with `awk`, so
+another account whose name or domain merely contains these never counts; a domain's dots
+are literal. `/etc/passwd` is matched on its whole first field. The session match stays
+deliberately wide, because nothing has shown how session files are named. Its cost is
+stated plainly: a session name that merely contains this account's name, such as another
+account's, reads as residue. That can fail a run, but never pass one.
 
 A search that fails prints no count, and the strict parser refuses a report with a blank
 one, so an unreadable place can never read as absent. That reaches subtrees no top-level
@@ -2233,11 +2263,16 @@ inventory, because an empty place cannot show absence, just as an empty identity
 cannot.
 
 Nothing else ties `oblak.test` to the server the API changed, so the control runs right
-after setup, before the exercise. It must show the account in `home`, `users`, `userdata`,
+after setup, before the exercise. If setup stopped after creating the account, cleanup
+takes the control instead, once the marker proves the account and before `removeacct`. It
+must show the account in `home`, `users`, `userdata`,
 `userdomains`, `passwd` and `zones`. Sessions are excepted, because nothing has shown how
 they are named. `filesystem_control` records its `status`, `not_run`, `passed` or `failed`,
 and its `counts` by fixed label. A failed control fails with `filesystem_control_failed` but
 costs only the filesystem claim: the exercise still runs and API cleanup stays exact.
+The check kills its `ssh` process only while it is still running, after a timeout or too
+much output, never after its exit was collected, so a reused process number is never
+signalled.
 
 `filesystem_cleanup` is `not_claimed` unless the final check ran:
 
@@ -2372,11 +2407,15 @@ The evidence covers the observed filenames, sizes and server version on the dire
 It establishes no raw-download identity, antivirus or archive behavior, null or empty
 status-0 observation, memory benchmark, or WHM or bridged upload coverage.
 
-The current scenario is `fileman-upload-disposable-v4`, assessed under policy
-`fileman-upload-no-acknowledgments-v2`. A v3 capture exists, and v4's report means something
-different: it adds `filesystem_control`, a proof without one is never `confirmed_absent`,
-`status` and `setup` come from the lifecycle, and a failed proof keeps the API-only
-limitation. Earlier artifacts stay the valid record of what ran at their revisions.
+The current scenario is `fileman-upload-disposable-v5`, assessed under policy
+`fileman-upload-no-acknowledgments-v2`, and **no v5 capture exists**. A v4 capture exists, and
+v5's report means something different: token `cleanup` can read `absent_with_account`, a
+setup that stopped after creation takes the filesystem control in cleanup, the `userdomains`
+count matches whole fields only, and the account is read six times rather than eight. v4 had
+added `filesystem_control`, made a proof without
+one never `confirmed_absent`, taken `status` and `setup` from the lifecycle and kept the
+API-only limitation for a failed proof. Earlier artifacts stay the valid record of what ran
+at their revisions.
 
 The [v4 capture](../../docs/api/evidence/2026-11-01-fileman-upload-v4.json) at `e309912` on
 `11.138.0.19` is a **passed run**, exit 0, with the filesystem proof enabled. All 25 phases
