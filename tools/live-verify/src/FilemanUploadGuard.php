@@ -15,11 +15,11 @@ use SensitiveParameter;
  * Confine the upload fixture to one disposable account, one temporary token and the recipe's exact requests.
  *
  * Every request requires both opt-ins and the exact account and domain, then an exact method, URI, header set and
- * body. Each mutation is consumed once, even on rejection, so nothing below this guard can retry one. Uploads and
- * deletes also need a prior single-use authorization from the fixture; a delete names one exact path whose ownership
- * the fixture proved. Multipart bodies are compared with an independently assembled expectation as they stream, and
- * reach only the streaming transport. Every other request goes through the ordinary client. Failure text carries no
- * request data.
+ * body. Each mutation is consumed once, even on rejection, so nothing below this guard can retry one: the binding's
+ * ControlPostAdmission admits each control mutation, and this guard consumes its own uploads and deletes. Those also
+ * need a prior single-use authorization from the fixture; a delete names one exact path whose ownership the fixture
+ * proved. Multipart bodies are compared with an independently assembled expectation as they stream, and reach only the
+ * streaming transport. Every other request goes through the ordinary client. Failure text carries no request data.
  *
  * @phpstan-import-type UploadPhase from FilemanUploadRecipe
  * @phpstan-import-type Transfer from FilemanUploadBodyStream
@@ -42,8 +42,7 @@ final class FilemanUploadGuard implements ClientInterface
     /** @var array<string, array{transfer: Transfer, framing: Framing|null}> */
     private array $transfers = [];
 
-    /** @var array<string, string> */
-    private readonly array $controlPosts;
+    private readonly ControlPostAdmission $controlPosts;
 
     /** @var array<string, true> */
     private readonly array $readOnly;
@@ -62,7 +61,7 @@ final class FilemanUploadGuard implements ClientInterface
         if ($whmToken === '') {
             throw new LogicException('Fileman upload fixture configuration is invalid.');
         }
-        $this->controlPosts = $recipe->account->controlPosts();
+        $this->controlPosts = $recipe->account->controlPostAdmission();
         $reads = [
             self::WHM . 'version?api.version=1' => true,
             $recipe->homeListUri() => true,
@@ -158,10 +157,7 @@ final class FilemanUploadGuard implements ClientInterface
             $allowed = $delete !== null && $uri === $this->recipe->deleteUri()
                 && $body === 'path=' . rawurlencode($delete);
         } else {
-            $allowed = $delete === null && ($this->controlPosts[$uri] ?? null) === $body;
-            if ($allowed) {
-                $this->consume('post:' . $uri);
-            }
+            $allowed = $delete === null && $this->controlPosts->admit($uri, $body);
         }
         $this->requireHeaders($request, $allowed, $direct, 'application/x-www-form-urlencoded');
 

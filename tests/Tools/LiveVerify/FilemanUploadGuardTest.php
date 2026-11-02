@@ -273,6 +273,17 @@ final class FilemanUploadGuardTest extends TestCase
         $guard->authorizeDelete($path);
     }
 
+    /** A pending delete authorizes only that delete: a control mutation sent in its place is refused and not spent. */
+    public function testPendingDeleteAdmitsNoControlMutation(): void
+    {
+        $guard = $this->guard(true);
+        $control = $this->approvedControlPosts()[0];
+        $guard->authorizeDelete($this->recipe->relativePath('bytes'));
+        $this->assertRefused($guard, $control);
+        $guard->sendRequest($control);
+        self::assertCount(1, $this->sent);
+    }
+
     public function testDeleteAuthorizationCoversOnlyItsOwnPath(): void
     {
         $guard = $this->guard(true);

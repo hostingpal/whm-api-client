@@ -13,8 +13,9 @@ use SensitiveParameter;
  *
  * It holds the per-run contact-email marker that alone proves an account is this run's, so it stays in memory and is
  * never printed or persisted. Start a recipe from fresh(), which draws the marker. A recipe's guard admits exactly
- * controlPosts() and controlReads(), plus its own requests. Those strings are spelled here independently of the
- * client's encoder, so the guard keeps comparing two representations of each request.
+ * controlPosts(), each at most once through controlPostAdmission(), and controlReads(), plus its own requests. Those
+ * strings are spelled here independently of the client's encoder, so the guard keeps comparing two representations of
+ * each request.
  */
 final readonly class DisposableAccount
 {
@@ -117,6 +118,12 @@ final readonly class DisposableAccount
             self::WHM . 'get_domain_info?api.version=1',
             $this->tokenFunction('list'),
         ];
+    }
+
+    /** Admit this binding's control mutations, each at most once, for one guard; every guard asks its own. */
+    public function controlPostAdmission(): ControlPostAdmission
+    {
+        return new ControlPostAdmission($this);
     }
 
     private function tokenFunction(string $function): string

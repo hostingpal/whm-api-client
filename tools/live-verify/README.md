@@ -2120,9 +2120,11 @@ $account = DisposableAccount::fresh(
     tokenLifetime: 900,
     readOnlyToken: false,
 );
-// On every request: $account->requireLiveOptIn(), then admit only $account->controlPosts() and
-// controlReads() plus the recipe's own requests, consuming each mutation once. FiniteQuotaGuard
-// is the smallest example.
+// On every request: $account->requireLiveOptIn(). Admit each POST only if
+// $posts->admit($uri, $body) says so, where $posts = $account->controlPostAdmission() is made
+// once per guard: it admits each exact control mutation once and never keeps the marker. Admit
+// only controlReads() plus the recipe's own requests otherwise. FiniteQuotaGuard is the
+// smallest example.
 $guard = new ExampleGuard($http, $whmToken, $account);
 $capture = new CaptureClient($guard);
 $factory = new Psr17Factory();

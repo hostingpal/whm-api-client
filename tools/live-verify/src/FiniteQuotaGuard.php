@@ -16,7 +16,8 @@ use SensitiveParameter;
  * Every request requires both opt-ins and the exact account/domain environment values. Canonical
  * URI/body/header comparisons reject extra or duplicate parameters, alias target fields, control-token
  * revocation and other accounts before I/O. Direct Quota reads require the token returned by setup.
- * Each mutation is consumed once, even on rejection, so nothing below this guard can retry one.
+ * The binding's ControlPostAdmission admits each mutation once, even on rejection, so nothing below this guard can
+ * retry one.
  */
 final class FiniteQuotaGuard implements ClientInterface
 {
@@ -34,14 +35,10 @@ final class FiniteQuotaGuard implements ClientInterface
 
     private ?string $cpanelToken = null;
 
-    /** @var array<string, string> */
-    private readonly array $posts;
+    private readonly ControlPostAdmission $posts;
 
     /** @var list<string> */
     private readonly array $reads;
-
-    /** @var array<string, true> */
-    private array $consumed = [];
 
     /** Bind the root control credential and this recipe's one account; construction sends nothing. */
     public function __construct(
@@ -58,7 +55,7 @@ final class FiniteQuotaGuard implements ClientInterface
         ) {
             throw new LogicException('Finite quota fixture configuration is invalid.');
         }
-        $this->posts = $account->controlPosts();
+        $this->posts = $account->controlPostAdmission();
         $this->reads = [
             ...$account->controlReads(),
             self::WHM . 'version?api.version=1',
@@ -88,13 +85,7 @@ final class FiniteQuotaGuard implements ClientInterface
         $approved = $request->getMethod() === 'GET' && (string) $request->getBody() === ''
             && in_array($uri, $this->reads, true);
         if ($post) {
-            $approved = isset($this->posts[$uri]) && (string) $request->getBody() === $this->posts[$uri];
-            if ($approved && isset($this->consumed[$uri])) {
-                throw new LogicException('Request outside the finite quota fixture boundary.');
-            }
-            if ($approved) {
-                $this->consumed[$uri] = true;
-            }
+            $approved = $this->posts->admit($uri, (string) $request->getBody());
         }
         $headers = [
             'host' => ['test.oblak.host:' . ($direct ? '2083' : '2087')],
