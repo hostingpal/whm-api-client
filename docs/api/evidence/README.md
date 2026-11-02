@@ -1494,3 +1494,28 @@ valid record of what ran at that revision. The fixture has since moved to
 `mime-directory-disposable-v2`, which also requires null data from the 20 Mime and
 protected-user mutations, and no v2 capture exists; see the
 [source audit](../source-audit.md#review-corrections-to-the-mime-and-directory-recipe-2026-11-02).
+
+## Disposable-account Webmail session evidence
+
+The [Webmail session capture](2026-11-02-webmail-sessions.json) at
+`f9306532f2d0c0b5a5831be27ec2d2cac9af0e0c` on `11.138.0.19` is a failed run, exit 1, kept
+unchanged. Scenario `webmail-sessions-disposable-v1` ran on the fresh `wlsession` account
+through the shared lifecycle with the filesystem proof. All twelve phases pass, and the
+strict review passes with no findings: one mailbox created with welcome mail disabled, all
+three `Session/*` creators on direct UAPI and the WHM bridge with a null `hostname` and
+nonempty credential strings, and the session inventory going from 0 to 2 populated rows on
+each route, with all six row fields observed. No returned credential was used and no URL was
+fetched. Account, token, domain and zone are `confirmed_absent`.
+
+The run fails only `filesystem_residue_present`: account removal left 8 session files, the
+first positive control for the proof's session check. The scoped cleanup removed all 8 and
+the rerun proof read `confirmed_absent`. See the
+[source audit](../source-audit.md#disposable-webmail-session-capture-2026-11-02). SHA-256:
+`d0751e2b059d574583bfa216441e370058a3233de685180e0f8b9f4bcb68acd6`. It stays the valid record
+of what ran at that revision. The fixture has since moved to `webmail-sessions-disposable-v4`,
+whose session-file cleanup runs inside the lifecycle before its final proof, only with its own
+opt-in `WHM_API_LIVE_SESSION_CLEANUP=1`, and whose report differs. No v2, v3 or v4 capture
+exists; see the [review corrections](../source-audit.md#webmail-session-review-corrections-2026-11-02),
+[the cleanup move](../source-audit.md#webmail-session-cleanup-inside-the-lifecycle-2026-11-02)
+and the
+[second review](../source-audit.md#webmail-session-second-review-corrections-2026-11-02).

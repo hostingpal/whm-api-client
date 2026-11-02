@@ -1243,6 +1243,62 @@ final class DisposableAccountLifecycleTest extends TestCase
         self::assertSame(['account_remove_failure'], $outcome['failures']);
     }
 
+    /**
+     * The callback receives the lifecycle's recorded control, so a recipe can gate on it without a copy of the rule.
+     *
+     * @param list<Finding|null>|null $findings
+     * @param array<string, string> $failures
+     * @param array{status: string, counts: array<string, int>} $control
+     */
+    #[DataProvider('recordedControls')]
+    public function testRemovedResourceProofReceivesTheRecordedControl(
+        ?array $findings,
+        array $failures,
+        array $control,
+    ): void {
+        $http = new DisposableAccountServer();
+        $http->failures = $failures;
+        $received = [];
+        $outcome = self::lifecycle($http, $findings === null ? null : new RecordingFilesystemProof($findings))->run(
+            self::noop(),
+            null,
+            static function (mixed ...$arguments) use (&$received): array {
+                $received[] = $arguments;
+
+                return [];
+            },
+        );
+
+        self::assertSame([[$control]], $received);
+        self::assertSame($control, $outcome['filesystem_control']);
+    }
+
+    /**
+     * @return iterable<string, array{
+     *     list<Finding|null>|null, array<string, string>, array{status: string, counts: array<string, int>}
+     * }>
+     */
+    public static function recordedControls(): iterable
+    {
+        $absent = self::finding('confirmed_absent');
+        $sessions = ['outcome' => 'present', 'residue' => [...RecordingFilesystemProof::PRESENT['residue'],
+            'sessions' => 2]];
+        yield 'no filesystem proof' => [null, [], ['status' => 'not_run', 'counts' => []]];
+        yield 'passed control' => [
+        [RecordingFilesystemProof::PRESENT, $absent], [],
+            ['status' => 'passed', 'counts' => RecordingFilesystemProof::PRESENT['residue']]];
+        yield 'control that saw session names' => [
+        [$sessions, $absent], [],
+            ['status' => 'passed', 'counts' => $sessions['residue']]];
+        yield 'failed control' => [
+        [self::finding('unconfirmed'), $absent], [],
+            ['status' => 'failed', 'counts' => []]];
+        yield 'control taken in cleanup after setup stopped' => [
+        [RecordingFilesystemProof::PRESENT, $absent],
+            ['Tokens/create_full_access:1' => 'api_before'],
+            ['status' => 'passed', 'counts' => RecordingFilesystemProof::PRESENT['residue']]];
+    }
+
     public function testRemovedResourceProofNeverRunsWhenSetupNeverCreatedAnything(): void
     {
         $http = new DisposableAccountServer();

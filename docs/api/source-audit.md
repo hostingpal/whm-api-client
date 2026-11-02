@@ -10889,3 +10889,229 @@ The first change alters what a passed mutation record means, so the recipe is no
 artifact stays the valid record of what ran at `965b329`. Its own structural paths record a
 `null` root for all 20 of those mutations and a JSON `empty-list` for every empty read, so
 the results it captured meet the v2 checks; that is a reading of the artifact, not a run.
+
+## Disposable Webmail session capture (2026-11-02)
+
+Scenario `webmail-sessions-disposable-v1`, assessed under policy
+`webmail-sessions-no-acknowledgments-v1`, ran once at
+`f9306532f2d0c0b5a5831be27ec2d2cac9af0e0c` on cPanel `11.138.0.19`, against the pinned UAPI
+source `172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`. It used the fresh
+disposable account `wlsession` through `DisposableAccountLifecycle` with the filesystem proof,
+which this recipe requires. No other account was written. The artifact is
+[2026-11-02-webmail-sessions.json](evidence/2026-11-02-webmail-sessions.json), SHA-256
+`d0751e2b059d574583bfa216441e370058a3233de685180e0f8b9f4bcb68acd6`. The command exited 1.
+
+Before the capture, the proof and the session observation ran once, read-only, for the
+account before it existed: `confirmed_absent`, and no session name containing the account
+name. That showed both scripts run on the server and nothing named for the account
+preexisted. Nothing was written.
+
+### Creators and inventory
+
+All twelve phases passed HTTP, API, typed validation and their expectations, with zero
+structural discrepancies, so the strict review passed with no findings.
+
+- `Email/add_pop` created one mailbox on the account's own domain, by direct POST with
+  `send_welcome_email=0`, and returned the exact `<mailbox>+<domain>` string.
+- All six creator calls, `create_webmail_session_for_self`,
+  `create_webmail_session_for_mail_user` and
+  `create_webmail_session_for_mail_user_check_password` on direct UAPI and on the WHM bridge,
+  were form POSTs with `remote_address=192.0.2.10`, an RFC 5737 documentation address. Each
+  returned status 1 with `hostname` null and nonempty `session` and `token` strings. The
+  password-checking creator used the mailbox's correct password. No returned value was kept,
+  used or fetched: nothing logged in, posted to port 2096 or followed a URL.
+- `ActiveSessions/list_active_sessions` returned an empty list on both routes before the
+  creators, and two populated rows on each route after them. These are the first committed
+  populated session rows. The artifact records each field's types as a union over a route's
+  rows, not row by row: `ip_address` only as an empty string, `is_current`, `is_possessed`,
+  `tfa_verified` and `last_active` only as integers, and `login_theme` only as a string, with
+  no unknown field. The fingerprint records `missing` for a row that omits an optional field,
+  and none is recorded. The counts add that 2 of 2 rows had `tfa_verified` equal to 1, none had
+  `is_current` or `is_possessed` equal to 1, none carried the supplied address and both had an
+  empty one. The artifact does not record the other flag values themselves.
+
+No live response contradicts a typed contract, so no overlay or generated code changed. Two
+rows after six creations is a count only: the evidence does not say which creators' sessions
+they are. An empty address despite the supplied one, and `tfa_verified` 1 on sessions this run
+never logged in to, are recorded as observed values without an inferred meaning.
+
+### Session files after account removal
+
+The filesystem control after setup passed with `home=1, users=1, userdata=1,
+userdomains=1, passwd=1, zones=2` and no session name. After cleanup, token, account, domain
+and zone were `confirmed_absent`, and the lifecycle's final proof read `present` with
+`sessions=8`. That fails the run with `filesystem_residue_present`, and it is the first
+observation of session files for a known account: the positive control the session check
+lacked.
+
+Then, with every gate held, one fixed read-only script counted names under
+`/var/cpanel/sessions` and classified them in memory; no name was printed, logged or kept. Of
+12 entries, 8 contained the account name. All 8 were regular files whose names begin with the
+owned mailbox's address with a literal `@`, followed by a colon. None began with
+`<account>:`, none used `%40`, and none was unexplained by the anchored prefixes. None had a
+nonempty suffix after the colon made only of letters, digits and underscores; the counts do
+not say whether a suffix was empty or held another character. The 8 files sit in 2 directories, which fits each of the four mail-user sessions leaving one
+file in each, though counts alone do not prove that pairing. No file named for the account
+itself remained, so whether the self sessions left none or lost theirs with the account is
+not shown.
+
+One fixed removal script then deleted the anchored regular files once: 8 before, 8 deleted,
+0 after, and 0 names still containing the account name. The read-only proof, rerun, read
+`confirmed_absent`. This was the only SSH write, scoped to regular files under
+`/var/cpanel/sessions` named with this run's own mailbox at this account's domain or the
+account's own name; no other account's file was touched.
+
+### Whether the proof's session match can be tightened
+
+`SshFilesystemAbsenceProof` matches any name containing the account name. It found all 8
+files only through the domain inside the mailbox address. A match anchored on `<account>:`
+alone would have missed every one of them and read absent. A tighter rule would need at
+least `*@<domain>:*`, any local part at the account's domain followed by a colon, plus
+`<account>:*`, which no residue has shown yet; addon and parked domains are not known to the
+proof. The wide match is unchanged here; that decision is separate.
+
+### Scope limits
+
+The run establishes API creation and inventory only. It establishes no login, session
+activity, Webmail access or mail delivery; no locale variant or omitted address; no wrong
+password, suspended mailbox or role restriction; no non-null hostname; and no
+`Session/create_temp_user`. At this capture the lifecycle had no step after account removal, so
+a recipe whose creators leave files failed by its own truth even when the scoped cleanup
+removed them. The cleanup has since moved into the lifecycle's removed-resource step; see
+[the cleanup's move](#webmail-session-cleanup-inside-the-lifecycle-2026-11-02). Follow-up
+`8x0.2.69` keeps the remaining variants.
+
+### Webmail session review corrections (2026-11-02)
+
+An independent review of the branch found eight issues. Seven were confirmed and fixed with
+tests that failed first; one is deferred. No live run and no SSH write of any kind accompanied
+these corrections, and the v1 artifact is unchanged.
+
+- **Guard consumption.** `WebmailSessionGuard` consumed a mutation before comparing the
+  header set, so a request with the right body but wrong headers, or a direct one sent before
+  the token was bound, was refused yet used its one slot. Every check now runs first, and
+  consuming the mutation is the last step before the transport.
+- **Exit status.** The cleanup runs after the lifecycle has already recorded the residue, so a
+  run whose creators leave files cannot exit 0. Deferred: a separate branch adds an optional
+  lifecycle step after account removal and before the final proof, and the cleanup moves into
+  it once that branch is on master. No second hook is built here. That branch merged as
+  `00e9a63`, and the move is recorded below.
+- **Overclaims.** The inventory and session-file statements above now say only what the
+  artifact establishes. Field types are unions over a route's rows; the flag values other than
+  `tfa_verified` equal to 1 are not recorded; and no counted suffix was all letters, digits and
+  underscores, which does not show what each suffix held.
+- **Copied SSH handling.** `SshSessionFileCleanup` had copied about ninety lines of process
+  handling from `SshFilesystemAbsenceProof`, and the copies had drifted. `SshScriptRunner` now
+  owns the fixed options, the positional-argument check, the environment whitelist, the output
+  and time bounds, the kill-only-while-running rule and strict `label=count` parsing, and both
+  classes use it. The proof's behaviour and its tests are unchanged.
+- **Root filesystem write.** The session-file cleanup is a root filesystem write over SSH. It
+  may delete only regular files under `/var/cpanel/sessions` whose names begin with the run's
+  exact account name followed by `:`, or with the run's owned mailbox address followed by `:`,
+  the `@` literal or encoded as `%40`. It runs only after the lifecycle has confirmed the
+  account removed, and it counts before and after. AGENTS.md says never to restore the server
+  automatically; whether this cleanup needs a recorded exception there is the owner's decision,
+  and AGENTS.md is unchanged.
+- **Inconsistent classification.** The prefix counts covered regular files while `anchored`
+  and the `unexplained` exclusions covered every type, so a non-regular anchored entry could
+  fall between them. Every entry now takes exactly one class, and one type rule splits the
+  anchored classes: regular files by class, everything else as `anchored_other`.
+- **Ten traversals.** The observation walked the tree ten times. One find walk now prints a
+  fixed record per entry, never a name, and one awk program counts the records. find's exit
+  status follows the records, so a failed or unparseable walk gives no count. The removal
+  classifies once before, stops if it cannot, deletes through one find action, and classifies
+  once after.
+- **Duplicate probe and dead state.** The fixture built each probe twice and kept the direct
+  client as an unused property. It now builds one probe per call and keeps the client local.
+
+The report shape changed, so the scenario is `webmail-sessions-disposable-v2`; the review
+policy `webmail-sessions-no-acknowledgments-v1` is unchanged. No v2 capture exists, and the
+v1 artifact remains the valid record of what ran at `f930653`. Consolidating the duplicated
+entry points and helpers across recipes stays with `whm-api-client-bis`.
+
+### Webmail session cleanup inside the lifecycle (2026-11-02)
+
+PR 147, merged as `00e9a63`, added an optional third callback to
+`DisposableAccountLifecycle::run()`. The lifecycle calls it at most once, only after the
+marker proved the account this run's and the account then read `confirmed_absent`, after its
+own domain and zone reads and before its final filesystem proof. Its failure labels fail
+`cleanup`, and an exception becomes `removed_resource_absence_unconfirmed`. The deferred
+exit-status finding is now fixed: the Webmail session fixture offers its session-file cleanup
+as that callback, so it never runs unless the lifecycle calls it, and the lifecycle's own
+final proof is the proof after the cleanup. A run that removes every session file its
+creators left can pass; the separate rerun of the proof is gone.
+
+The cleanup is still a root filesystem write over SSH, bounded exactly as before. It may
+delete only regular files under `/var/cpanel/sessions` whose names begin with the run's exact
+account name followed by `:`, or with the run's owned mailbox address followed by `:`, the
+`@` literal or encoded as `%40`, and it counts before and after the deletion. When called, it
+still refuses unless the lifecycle's control passed and saw no session name before the
+exercise. The lifecycle exposes the control only after `run()` returns, so
+`ControlRecordingProof` passes every check through to the proof unchanged and remembers the
+first finding; it adds no read and writes nothing. Its failure labels are
+`session_file_removal_refused` for a failed gate, `session_files_unconfirmed` for an
+unreadable observation or removal, and `session_files_remain` for anchored files, other
+anchored entries or unexplained names left behind. AGENTS.md says never to restore the server
+automatically; whether this bounded cleanup needs a recorded exception there remains the
+owner's decision, and AGENTS.md is unchanged.
+
+The report changed meaning, so the scenario is now `webmail-sessions-disposable-v3`:
+`filesystem_cleanup` reflects the state after the cleanup, `session_files` has no `reproof`,
+its failures are lifecycle failures, and its reason is `not_called` when the lifecycle never
+called it. The review policy `webmail-sessions-no-acknowledgments-v1` is unchanged. **No v3
+capture exists**, and neither does a v2 one; the v1 artifact remains the valid record of what
+ran at `f930653`.
+
+Tests that failed first cover a clean double run that removes its files and now exits 0, a
+failed deletion that fails `cleanup` and the run, a callback the lifecycle never calls (a
+refused or lost account removal, or an account never created) that touches nothing, and each
+gate and outcome label. No live run and no SSH write of any kind accompanied this change.
+
+### Webmail session second review corrections (2026-11-02)
+
+A second independent review of the branch found eight issues. Each was confirmed and fixed,
+with tests that failed first; none was rejected. No live run and no SSH write of any kind
+accompanied these corrections, and the v1 artifact is unchanged.
+
+- **A failed deletion lost its report.** A deletion that find reported as failed, for
+  example on an immutable file or a refused folder, left `deleted=` blank, so the whole report
+  was refused and its counts were lost. The removal now reports `attempted` and
+  `deletion_failed` beside both classifications. The fixture fails with
+  `session_file_deletion_failed` and keeps the counts.
+- **One failed run blocks every later run.** This fail-safe stays: the cleanup never deletes a
+  file the current run did not create, so a session name seen before the exercise refuses it.
+  The manual recovery is now documented in the recipe README. The owner confirms that no
+  `wlsession` account exists and no other account's name contains `wlsession`. They remove by
+  hand only regular files under `/var/cpanel/sessions` whose names begin with `wlsession:`, or
+  with `box`, 16 lowercase hexadecimal characters and `@wlsession.example.com:` or
+  `%40wlsession.example.com:`. They leave anything else for investigation, and continue only
+  when the read-only proof reads `confirmed_absent`.
+- **The AGENTS.md conflict.** Until the owner decides whether AGENTS.md should carry an
+  exception, the root deletion does not run automatically. It needs its own opt-in,
+  `WHM_API_LIVE_SESSION_CLEANUP=1`, separate from `WHM_API_LIVE_FS_CHECK`, checked by
+  `SshSessionFileCleanup::remove()` itself before any process starts. Without it, the callback
+  only reads the residue once and fails with `session_files_left_for_owner`, so the run fails
+  as before. AGENTS.md is unchanged.
+- **A duplicated control rule.** `ControlRecordingProof` copied the lifecycle's control rule.
+  `DisposableAccountLifecycle` now passes its recorded `filesystem_control`, `status` and
+  `counts`, to the removed-resource callback, and the fixture gates on that. The class is
+  removed. Existing callbacks declare no parameter, so the domain-rows recipe and its tests are
+  unchanged. A commit-order slip removed the class files one commit before the fixture stopped
+  using it; the commit message says so, and the branch head is consistent.
+- **A stale docblock.** `SshFilesystemAbsenceProof` still said nothing had shown how session
+  files are named. It now matches the README.
+- **Paths in records.** Anchored records printed their folder path, which carried a
+  directory's name and let a newline in it split a record. They now print the depth, reported
+  as `top_level` and `in_subfolders`. A test shows that a folder whose name holds a newline and
+  a forged record changes only its own honest counts.
+- **An extra walk.** The opted-in path no longer sends the read-only observation first. The
+  removal script already counts before it deletes and stops if it cannot, so no gate is
+  weaker, and one connection and one walk are saved.
+- **Dead state.** The constructor no longer sets `session_files` only for `run()` to overwrite
+  it.
+
+The report changed meaning again, so the scenario is `webmail-sessions-disposable-v4`. The
+review policy `webmail-sessions-no-acknowledgments-v1` is unchanged. **No v4 capture exists**,
+and neither do v2 or v3 ones; the v1 artifact remains the valid record of what ran at
+`f930653`. The review's note on a third copy of raw-envelope decoding is left for
+`whm-api-client-bis`.

@@ -50,7 +50,8 @@ use Throwable;
  * resource showed.
  *
  * Removed resources. What only the account's removal takes or leaves, such as an extra domain's zone, is settled by
- * the recipe's own callback, called only once the marker proved the account and the account then read absent.
+ * the recipe's own callback, called only once the marker proved the account and the account then read absent. It
+ * receives the recorded filesystem control, so a recipe gates on the lifecycle's own control rather than a copy.
  *
  * Filesystem. An optional proof runs twice. After setup, it must show the account in every location it can always be
  * found, which is the positive control that ties the proof to the server this run changed. If setup stopped after
@@ -147,13 +148,15 @@ final class DisposableAccountLifecycle
      * then read confirmed absent after removal, after the lifecycle's own domain and zone reads and before the
      * filesystem proof. Its failure labels fail `cleanup`; if it throws, `removed_resource_absence_unconfirmed` is
      * reported. In every other case, a failed or unreadable removal included, it is never called, and the
-     * lifecycle's own failures already fail the run. Omitting it changes nothing.
+     * lifecycle's own failures already fail the run. Omitting it changes nothing. It receives the recorded
+     * `filesystem_control`, `status` and `counts` as reported, which is final by then: the control is taken after
+     * setup or, if setup stopped after creation, in cleanup before removal. A callback may ignore the argument.
      * Anything any callback throws stops nothing. The result's `status` is `passed` only if setup, exercise and
      * cleanup all passed, and it is the run's only status.
      *
      * @param Closure(string): void $exercise
      * @param (Closure(): list<string>)|null $cleanOwned
-     * @param (Closure(): list<string>)|null $proveRemoved
+     * @param (Closure(FilesystemControl): list<string>)|null $proveRemoved
      * @return Outcome
      * @throws LogicException A second call or a missing live opt-in, before any request.
      */
@@ -448,7 +451,7 @@ final class DisposableAccountLifecycle
      * Reconcile every attempted resource, removing only what this run proved it owns.
      *
      * @param (Closure(): list<string>)|null $cleanOwned
-     * @param (Closure(): list<string>)|null $proveRemoved
+     * @param (Closure(FilesystemControl): list<string>)|null $proveRemoved
      */
     private function cleanUp(?Closure $cleanOwned, ?Closure $proveRemoved): void
     {
@@ -520,10 +523,10 @@ final class DisposableAccountLifecycle
     /**
      * Let the recipe settle what only the removal of its proven account takes or leaves behind.
      *
-     * Called only for an account the marker proved this run's and that then read absent; nothing the callback does
-     * or throws stops the filesystem proof.
+     * Called only for an account the marker proved this run's and that then read absent, with the recorded filesystem
+     * control; nothing the callback does or throws stops the filesystem proof.
      *
-     * @param (Closure(): list<string>)|null $proveRemoved
+     * @param (Closure(FilesystemControl): list<string>)|null $proveRemoved
      */
     private function proveRemoved(?Closure $proveRemoved): void
     {
@@ -531,7 +534,7 @@ final class DisposableAccountLifecycle
             return;
         }
         try {
-            foreach ($proveRemoved() as $failure) {
+            foreach ($proveRemoved($this->outcome['filesystem_control']) as $failure) {
                 $this->cleanupFailure($failure);
             }
         } catch (Throwable) {
