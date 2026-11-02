@@ -19,7 +19,9 @@ namespace HostingPal\WhmApiClient\Tools\LiveVerify;
  * inventory beside the match, because an empty place cannot show absence either: no match in an empty `/etc/passwd`
  * proves nothing. Names are matched as whole fields wherever the format is known: `/etc/passwd` by its first field,
  * and `/etc/userdomains`, whose lines are `<domain>: <owner>`, by either field, compared exactly. The session match
- * is deliberately wide, any name containing the account name, because nothing has shown how session files are named.
+ * stays deliberately wide, any name containing the account name. The Webmail session capture showed a mailbox's
+ * session files named with its address at the account's domain, which contain the account name only through that
+ * domain, so a match anchored on the account name alone would miss them; whether to tighten it is a separate decision.
  * Its cost is false residue: another account whose name contains this one makes a run fail, never pass. A
  * connection, exit status, timeout or reply that is not exactly the expected report is `unconfirmed`. Standard error
  * is read and discarded, never logged. The process is killed only while it is still running: once reaped, its number
