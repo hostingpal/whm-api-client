@@ -8,8 +8,11 @@ use HostingPal\WhmApiClient\Tools\LiveVerify\EvidenceRunner;
 use HostingPal\WhmApiClient\Tools\LiveVerify\FilesystemAbsenceProof;
 use HostingPal\WhmApiClient\Tools\LiveVerify\MimeDirectoryFixture;
 use HostingPal\WhmApiClient\Tools\LiveVerify\MimeDirectoryRecipe;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
+use ReflectionParameter;
+use SensitiveParameter;
 
 /**
  * @phpstan-import-type Scenario from MimeDirectoryFixture
@@ -62,7 +65,7 @@ final class MimeDirectoryFixtureTest extends TestCase
         $fixture = $scenario['fixture'];
 
         self::assertSame('passed', $fixture['status'], (string) json_encode($fixture['failures']));
-        self::assertSame('mime-directory-disposable-v1', $scenario['scenario']);
+        self::assertSame('mime-directory-disposable-v2', $scenario['scenario']);
         self::assertSame('mime-directory-no-acknowledgments-v1', $scenario['discrepancy_review']['policy']);
         self::assertSame([], $scenario['discrepancy_review']['findings']);
         self::assertSame('passed', $scenario['discrepancy_review']['status']);
@@ -331,6 +334,102 @@ final class MimeDirectoryFixtureTest extends TestCase
             $scenario['discrepancy_review']['findings'],
         );
         self::assertPrivate($scenario);
+    }
+
+    /**
+     * Decoded to arrays, `{}` equals an empty list, but the typed list contracts refuse it before any expectation.
+     *
+     * Absence is therefore never judged from `{}`: the read fails as a payload mismatch and stops its section.
+     *
+     * @param 'mime'|'directory' $section
+     */
+    #[DataProvider('emptyObjects')]
+    public function testAnEmptyObjectStopsAsAPayloadMismatchBeforeAbsenceIsJudged(
+        string $step,
+        string $section,
+        string $phase,
+    ): void {
+        $http = new MimeDirectoryServer();
+        $http->overrides[$step] = '{}';
+        $scenario = self::scenario($http);
+        $fixture = $scenario['fixture'];
+        $record = self::observation($scenario, $phase);
+
+        self::assertSame(
+            ['capture' => 'failed', 'expectations' => 'not_run', 'stopped_at' => $phase],
+            $fixture['sections'][$section],
+        );
+        self::assertSame([$section . '_capture_failure'], $fixture['failures']);
+        self::assertSame('payload_mismatch', $record['failure_kind']);
+        self::assertSame([['path' => '$', 'kind' => 'type_mismatch']], $record['discrepancies']);
+    }
+
+    /** @return iterable<string, array{string, 'mime'|'directory', string}> */
+    public static function emptyObjects(): iterable
+    {
+        yield 'baseline' => ['direct:Mime/list_mime:1', 'mime', 'mime_types_baseline'];
+        yield 'bridged removal' => ['Mime/list_mime:1', 'mime', 'mime_types_after_delete_bridged'];
+        yield 'direct removal' => ['direct:Mime/list_redirects:3', 'mime', 'redirects_after_delete_direct'];
+        yield 'handler removal' => ['Mime/list_handlers:1', 'mime', 'handlers_after_delete_bridged'];
+        yield 'last user removal' => ['direct:DirectoryPrivacy/list_users:2', 'directory', 'users_after_delete_direct'];
+    }
+
+    public function testAnEmptyObjectNeverProvesADirectoryHasNoSubdirectories(): void
+    {
+        $http = new MimeDirectoryServer();
+        $http->childrenAsObject = true;
+        $scenario = self::scenario($http);
+        $record = self::observation($scenario, 'leech_initial');
+
+        self::assertSame('leech_initial', $scenario['fixture']['sections']['directory']['stopped_at']);
+        self::assertSame(['directory_capture_failure'], $scenario['fixture']['failures']);
+        self::assertSame('payload_mismatch', $record['failure_kind']);
+        self::assertSame([['path' => '$.children', 'kind' => 'type_mismatch']], $record['discrepancies']);
+    }
+
+    /**
+     * The recipe expects null data from every Mime and protected-user mutation, as the server source returns.
+     *
+     * @param 'mime'|'directory' $section
+     */
+    #[DataProvider('unexpectedResults')]
+    public function testAMutationResultOtherThanNullFailsItsExpectation(
+        string $step,
+        string $payload,
+        string $section,
+        string $phase,
+    ): void {
+        $http = new MimeDirectoryServer();
+        $http->overrides[$step] = $payload;
+        $scenario = self::scenario($http);
+        $fixture = $scenario['fixture'];
+
+        self::assertSame(
+            ['capture' => 'failed', 'expectations' => 'failed', 'stopped_at' => $phase],
+            $fixture['sections'][$section],
+        );
+        self::assertSame([$section . '_expectation_failure'], $fixture['failures']);
+        self::assertSame('failed', self::observation($scenario, $phase)['expectation']);
+    }
+
+    /** @return iterable<string, array{string, string, 'mime'|'directory', string}> */
+    public static function unexpectedResults(): iterable
+    {
+        yield 'object from a MIME addition' => ['direct:Mime/add_mime:1', '{"private":"x"}', 'mime', 'add_mime_direct'];
+        yield 'empty object from a handler removal' => ['Mime/delete_handler:1', '{}', 'mime',
+            'delete_handler_bridged'];
+        yield 'scalar from a hotlink removal' => ['Mime/delete_hotlink:1', '1', 'mime', 'delete_hotlink_bridged'];
+        yield 'object from a user addition' => ['direct:DirectoryPrivacy/add_user:1', '{"private":"x"}',
+            'directory', 'add_user_direct'];
+        yield 'object from a user removal' => ['DirectoryPrivacy/delete_user:1', '{"private":"x"}', 'directory',
+            'delete_user_bridged'];
+    }
+
+    /** Listing rows carry account file names, so library and PHP traces must never show them. */
+    public function testTheListingHelperKeepsItsArgumentOutOfTraces(): void
+    {
+        $parameter = new ReflectionParameter([MimeDirectoryFixture::class, 'named'], 'listing');
+        self::assertCount(1, $parameter->getAttributes(SensitiveParameter::class));
     }
 
     public function testAMissingOptInSendsNothing(): void

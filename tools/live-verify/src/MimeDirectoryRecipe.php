@@ -42,6 +42,13 @@ final readonly class MimeDirectoryRecipe
     /** Synthetic, nonsecret bytes of the one file whose upload creates the fixture directory. */
     public const UPLOAD_BYTES = "Synthetic directory-access fixture file.\n";
 
+    /**
+     * Each Mime round's add and remove routes: round a adds directly and removes through the bridge, round b reverses.
+     *
+     * @var array{a: array{'direct', 'bridged'}, b: array{'bridged', 'direct'}}
+     */
+    public const ROUNDS = ['a' => ['direct', 'bridged'], 'b' => ['bridged', 'direct']];
+
     /** The hotlink referrer URLs each round protects, sorted as list_hotlinks reports them. */
     public const HOTLINK_URLS = [
         'a' => ['http://wlmime.example.com'],

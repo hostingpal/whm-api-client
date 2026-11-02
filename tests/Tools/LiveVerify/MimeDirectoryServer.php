@@ -13,6 +13,7 @@ use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use RuntimeException;
+use stdClass;
 
 /**
  * Independent account, token, Mime and directory state double for the disposable Mime and directory fixture.
@@ -54,6 +55,9 @@ final class MimeDirectoryServer implements ClientInterface
 
     /** @var array<string, Directory> */
     public array $directories = [];
+
+    /** Whether directory listings send an empty `children` as `{}`, which decodes like an empty list. */
+    public bool $childrenAsObject = false;
 
     /** Whether a mutation really changes state; false models a server that accepts and ignores it. */
     public bool $applyDeleteMime = true;
@@ -490,7 +494,7 @@ final class MimeDirectoryServer implements ClientInterface
         $plain = ['files' => [], 'index' => 'inherit', 'auth' => null, 'users' => []];
 
         return [
-            'children' => [],
+            'children' => $this->childrenAsObject ? new stdClass() : [],
             'current' => ['path' => $dir, 'state' => $state($directory)],
             'home' => ['path' => self::HOME, 'state' => $state($plain)],
             'parent' => ['path' => self::DOCROOT, 'state' => $state($plain)],

@@ -27,7 +27,8 @@ use Throwable;
  * The Mime section adds and removes a MIME type, a handler, a redirect and hotlink protection, each twice: round a
  * adds through direct UAPI and removes through the WHM bridge, round b the reverse. Every mutation is followed by a
  * read on the same route that must show exactly the expected row, or its absence, so each route reads back a populated
- * row and its removal. Hotlink protection is account-wide, which is acceptable on this run's own account.
+ * row and its removal. Each of these mutations, and each protected-user mutation, must itself return null data, as the
+ * inspected server source sets none. Hotlink protection is account-wide, which is acceptable on this run's own account.
  *
  * The directory section creates one fresh directory under public_html by uploading one synthetic file, the only
  * documented API that creates a directory, and proves it held nothing else. It then changes indexing three times,
@@ -83,7 +84,7 @@ use Throwable;
  *     filesystem_control: FilesystemControl
  * }
  * @phpstan-type Scenario array{
- *     scenario: 'mime-directory-disposable-v1', target_role: 'disposable-test-account', probes: list<Observation>,
+ *     scenario: 'mime-directory-disposable-v2', target_role: 'disposable-test-account', probes: list<Observation>,
  *     mutations: array<string, MutationSummary>, list_rows: array<string, int>, upload: UploadSummary|null,
  *     discrepancy_review: Assessment, fixture: Report, limitations: list<string>
  * }
@@ -259,7 +260,8 @@ final class MimeDirectoryFixture
             $own = array_slice($this->records, $this->sectionStart);
             $last = array_key_last($own);
             $report['stopped_at'] = $last === null ? null : $own[$last]['phase'];
-            if (!$this->expectationFailed() || in_array('failed', array_column($own, 'probe_outcome'), true)) {
+            // A stop with no failed expectation came from a failed observation or anything else unexpected.
+            if (!$this->expectationFailed()) {
                 $failures[] = $section . '_capture_failure';
             }
         }
@@ -285,7 +287,7 @@ final class MimeDirectoryFixture
         $this->expectDomainRedirect('redirect_domain_baseline', null);
         $this->expectHotlinks('hotlinks_baseline', null);
 
-        foreach (['a' => ['direct', 'bridged'], 'b' => ['bridged', 'direct']] as $round => [$add, $remove]) {
+        foreach (MimeDirectoryRecipe::ROUNDS as $round => [$add, $remove]) {
             $type = $recipe->mimeTypes[$round];
             $extension = $recipe->mimeExtensions[$round];
             $this->mutate('add_mime_' . $add, static fn (UapiClient $account): mixed =>
@@ -299,7 +301,7 @@ final class MimeDirectoryFixture
                 === 0);
         }
 
-        foreach (['a' => ['direct', 'bridged'], 'b' => ['bridged', 'direct']] as $round => [$add, $remove]) {
+        foreach (MimeDirectoryRecipe::ROUNDS as $round => [$add, $remove]) {
             $extension = $recipe->handlerExtensions[$round];
             $handler = $recipe->handlers[$round];
             $this->mutate('add_handler_' . $add, static fn (UapiClient $account): mixed =>
@@ -315,7 +317,7 @@ final class MimeDirectoryFixture
             ) === 0);
         }
 
-        foreach (['a' => ['direct', 'bridged'], 'b' => ['bridged', 'direct']] as $round => [$add, $remove]) {
+        foreach (MimeDirectoryRecipe::ROUNDS as $round => [$add, $remove]) {
             $source = $recipe->redirectSources[$round];
             $target = $recipe->redirectTargets[$round];
             $this->mutate('add_redirect_' . $add, $round === 'a'
@@ -356,7 +358,7 @@ final class MimeDirectoryFixture
             $this->expectDomainRedirect('redirect_domain_after_delete_' . $remove, null);
         }
 
-        foreach (['a' => ['direct', 'bridged'], 'b' => ['bridged', 'direct']] as $round => [$add, $remove]) {
+        foreach (MimeDirectoryRecipe::ROUNDS as $round => [$add, $remove]) {
             $extensions = $recipe->hotlinkExtensions[$round];
             $target = $recipe->hotlinkTargets[$round];
             $urls = $recipe->hotlinkUrls($round);
@@ -394,7 +396,7 @@ final class MimeDirectoryFixture
                 dir: $recipe->uploadDirectory(),
                 overwrite: false,
                 permissions: MimeDirectoryRecipe::UPLOAD_PERMISSIONS,
-            ));
+            ), false);
         $this->expect($this->uploadStored($result));
 
         $inventory = $this->named($this->call('directory_inventory', static fn (UapiClient $account): mixed =>
@@ -416,7 +418,7 @@ final class MimeDirectoryFixture
                 'restore_indexing_direct' => ['indexing_after_restore_direct', 'inherit']] as $phase => [$read, $type]
         ) {
             $set = $this->mutate($phase, static fn (UapiClient $account): mixed =>
-                $account->directoryIndexes()->setIndexing(dir: $absolute, type: $type));
+                $account->directoryIndexes()->setIndexing(dir: $absolute, type: $type), false);
             $this->expect($set === $type);
             $this->expectIndexing($read, $type);
             if ($phase === 'set_indexing_bridged') {
@@ -469,7 +471,7 @@ final class MimeDirectoryFixture
                 dir: $absolute,
                 enabled: $realm !== null,
                 authname: $realm,
-            ));
+            ), false);
         $state = is_array($result) ? $result : [];
         $this->expect($realm === null
             ? ($state['protected'] ?? null) === 0
@@ -669,7 +671,7 @@ final class MimeDirectoryFixture
      *
      * @return array<string, array<mixed>>
      */
-    private function named(mixed $listing): array
+    private function named(#[SensitiveParameter] mixed $listing): array
     {
         $this->expect(is_array($listing));
         /** @var array<mixed> $listing */
@@ -693,11 +695,15 @@ final class MimeDirectoryFixture
     }
 
     /**
-     * Send one mutation phase and record only the kind of its result and how many messages and warnings it carried.
+     * Send one mutation phase, record only the kind of its result and how many messages and warnings it carried, and
+     * by default require null data.
+     *
+     * The inspected server source sets no data for the eight Mime mutations or the two protected-user mutations, so
+     * the recipe expects null from each. A caller whose phase returns data passes false and checks the result itself.
      *
      * @param Closure(UapiClient): mixed $invoke
      */
-    private function mutate(string $phase, Closure $invoke): mixed
+    private function mutate(string $phase, Closure $invoke, bool $nullResult = true): mixed
     {
         $result = $this->call($phase, $invoke);
         $metadata = $this->handle(MimeDirectoryRecipe::PHASES[$phase][1])->responseMeta();
@@ -712,6 +718,9 @@ final class MimeDirectoryFixture
             'messages' => $metadata === null ? 0 : count($metadata->uapiMessages()),
             'warnings' => $metadata === null ? 0 : count($metadata->uapiWarnings()),
         ];
+        if ($nullResult) {
+            $this->expect($result === null);
+        }
 
         return $result;
     }
@@ -848,7 +857,7 @@ final class MimeDirectoryFixture
         unset($record);
 
         return [
-            'scenario' => 'mime-directory-disposable-v1',
+            'scenario' => 'mime-directory-disposable-v2',
             'target_role' => 'disposable-test-account',
             'probes' => $records,
             'mutations' => $this->mutations,

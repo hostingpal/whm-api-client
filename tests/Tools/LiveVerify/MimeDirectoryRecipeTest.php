@@ -160,6 +160,21 @@ final class MimeDirectoryRecipeTest extends TestCase
         }
     }
 
+    /** Each round's routes name real phases on those routes, reversed between the rounds, for every Mime kind. */
+    public function testRoundsReverseTheirRoutesAndNameEveryMimePhase(): void
+    {
+        self::assertSame(['a' => ['direct', 'bridged'], 'b' => ['bridged', 'direct']], MimeDirectoryRecipe::ROUNDS);
+        foreach (['mime', 'handler', 'redirect', 'hotlink'] as $kind) {
+            foreach (MimeDirectoryRecipe::ROUNDS as [$add, $remove]) {
+                self::assertSame($add . '-uapi', MimeDirectoryRecipe::PHASES['add_' . $kind . '_' . $add][1]);
+                self::assertSame(
+                    $remove . '-uapi',
+                    MimeDirectoryRecipe::PHASES['delete_' . $kind . '_' . $remove][1],
+                );
+            }
+        }
+    }
+
     public function testUploadBodyIsAssembledByHand(): void
     {
         self::assertSame(
