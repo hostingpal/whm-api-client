@@ -422,10 +422,13 @@ unchanged and cannot fail the read, so check the type before using one. A quoted
 `phpGetVhostVersions()` returns a list, or a single record when `vhost` is supplied.
 INI setters and PHP version changes use form POST. INI content and directives are
 sensitive parameters; retain a configuration backup before overwriting content.
-The content setter's pinned enum says `host|vhost` while its prose says `home|vhost`;
-this contradiction remains open, so its argument has plain `string` PHPDoc.
-The client form-encodes supplied content once; the pinned example is percent-encoded
-and the server write/read round trip remains unverified.
+The content setter's pinned enum says `host|vhost` while its prose says `home|vhost`,
+so its argument keeps plain `string` PHPDoc. On cPanel 11.138.0.19 `home` was accepted
+and `host` refused through both routes; use `home` or `vhost`.
+The client form-encodes supplied content once, so pass the INI text itself, not the
+pinned example's percent-encoded form. The server decodes HTML entities before
+writing and prepends a comment block, and `phpIniGetUserContent()` returns the file
+HTML-entity-encoded: decode it to recover the text.
 
 `features()->hasFeature(name: 'autossl')` preserves its nullable object or observed
 integer payload; the integer's meaning is unspecified.
@@ -1081,8 +1084,10 @@ All 67 GET-only catalog API/payload checks pass, including both normalized mailb
 counts. Its strict review failed: 12 unknown-field entries across 10 observations,
 zero acknowledgments and two stale Quota acknowledgments. No mutation ran.
 The empty-string `userdirprotect` variant remains documentation/offline coverage
-because the live responses omit that field. PHP setters and the INI write/read
-round trip remain offline-only; see the [source audit](docs/api/source-audit.md).
+because the live responses omit that field. The
+[disposable-account setter capture](docs/api/evidence/2026-11-02-langphp-mutations.json)
+at `c4a124a` later passed the three PHP setters and the home INI write/read round trip
+through both routes; see the [source audit](docs/api/source-audit.md).
 The later [default-catalog capture](docs/api/evidence/2026-11-01-read-only-11.138.0.19.json)
 at `5f9b001` passes the same 67 GETs with those DomainInfo and INI fields declared. Its only
 discrepancies are the two masked Quota observations, which stay outside typed results.

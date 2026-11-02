@@ -289,8 +289,14 @@ final readonly class LangPhp
      * Documented: Requires EasyApache 4 and the WebServer role; INI operations additionally require MultiPHP enabled.
      * Requests act through the selected account.
      *
-     * Documented: Returns raw INI text in the optional content field. Treat the text as account payload data,
-     * potentially containing secrets; no INI parsing or extra URL decoding is performed.
+     * Documented: Returns the INI text in the optional content field; the pinned example shows HTML entities such as
+     * &quot;. Treat the text as account payload data, potentially containing secrets; the client performs no INI
+     * parsing, entity decoding or extra URL decoding.
+     *
+     * Observed: On cPanel 11.138.0.19, type=home returned HTML-entity-encoded text through direct UAPI and the WHM
+     * bridge: a stored double quote read back as &quot; and an ampersand as &amp;, while plus signs, percent sequences
+     * and line breaks were unchanged. A fresh account with no home php.ini read back an empty string. Decode the
+     * entities to recover the file text.
      *
      * API-map identity: uapi:LangPHP/php_ini_get_user_content#GET (wire name php_ini_get_user_content).
      *
@@ -356,6 +362,13 @@ final readonly class LangPhp
      * Documented: The pinned data schema is unconstrained: preserve any present JSON payload, including null, false,
      * zero or opaque objects. An absent data member is a mismatch; this method does not discard the response.
      *
+     * Observed: On cPanel 11.138.0.19 with type=home, a scalar directive through direct UAPI and a numbered
+     * directive/directive-1 pair through the WHM bridge each took effect: phpIniGetUserBasicDirectives() read back
+     * exactly the written values, other directives were unchanged, and both writes returned null data. The server's
+     * handler collects, deduplicates and sorts the key:value strings before applying them, so list order sets no
+     * precedence; each write also regenerates .user.ini and a marked .htaccess section beside php.ini. API readback
+     * does not establish PHP runtime behavior.
+     *
      * API-map identity: uapi:LangPHP/php_ini_set_user_basic_directives#GET (wire name
      * php_ini_set_user_basic_directives).
      *
@@ -394,14 +407,25 @@ final readonly class LangPhp
      * Requests act through the selected account.
      *
      * Documented: Replaces the selected INI content; there is no rollback. The client form-encodes the supplied content
-     * once. The pinned example is percent-encoded, and the server write/read round trip remains unverified. The content
-     * argument is sensitive; empty text is sent rather than omitted.
+     * once; the pinned example is percent-encoded. The content argument is sensitive; empty text is sent rather than
+     * omitted.
      *
-     * Documented: The pinned type description says home/vhost while its enum says host/vhost. This discrepancy is not
-     * silently resolved; the method forwards the supplied string. With type=vhost, supply vhost.
+     * Documented: The pinned type description says home/vhost while its enum says host/vhost. The method forwards the
+     * supplied string without local validation. With type=vhost, supply vhost.
      *
      * Documented: The response prose says always null, but its schema permits a nullable object. Preserve null or
      * opaque object fields; absent data remains a mismatch.
+     *
+     * Observed: On cPanel 11.138.0.19, type=home was accepted through direct UAPI and the WHM bridge, and type=host was
+     * refused on both with UAPI status 0, leaving the content unchanged: use home or vhost, not the pinned enum's host.
+     * vhost was not exercised. The server's handler accepts only home or vhost.
+     *
+     * Observed: On cPanel 11.138.0.19 the write replaced the whole home php.ini and returned null data. Pass the INI
+     * text itself, not the pinned example's percent-encoded form: plus signs and percent sequences were stored
+     * unchanged. The server decodes HTML entities before writing, so a literal &amp; is stored as &, and prepends a
+     * comment block of four comment lines and a blank line unless the text holds it; phpIniGetUserContent() returns the
+     * result entity-encoded. Each write also regenerates .user.ini and a marked .htaccess section beside php.ini. API
+     * readback does not establish PHP runtime behavior.
      *
      * API-map identity: uapi:LangPHP/php_ini_set_user_content#GET (wire name php_ini_set_user_content).
      *
@@ -438,6 +462,13 @@ final readonly class LangPhp
      * Documented: Requires EasyApache 4 and the WebServer role. Changes the PHP version for the supplied account-owned
      * virtual hosts; the operation declares no rollback. Duplicate vhost keys encode the vhosts list. The optional
      * vhosts result field lists changed virtual hosts; no version package-name enum is inferred.
+     *
+     * Observed: On cPanel 11.138.0.19 one write through direct UAPI and one through the WHM bridge each moved a main
+     * domain to another installed version; vhosts listed exactly that domain, and phpGetVhostVersions(vhost: ...) read
+     * back the new version. The server's handler also changes domains that share a requested document root and lists
+     * them in vhosts, and a per-vhost failure is reported as an error after earlier vhosts changed, so a failure does
+     * not mean nothing changed: read phpGetVhostVersions() again before deciding. API readback does not establish which
+     * PHP serves requests.
      *
      * API-map identity: uapi:LangPHP/php_set_vhost_versions#GET (wire name php_set_vhost_versions).
      *
