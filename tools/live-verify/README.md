@@ -2483,8 +2483,10 @@ Before any of them is made, each name and zone must read absent in the server-wi
 marker is read again. Only then does WHM `modifyacct` raise this account's own limits
 (`MAXADDON=1`, `MAXFTP=2`, `MAXPARK=1`, `MAXSUB=2`), and the account's own token creates the
 addon, the alias on the main domain and the subdomain, each once. Each creation is followed
-by an inventory read: a name counts as made only once it is listed for this account. An
-explicit refusal is a known outcome; after a lost reply a name stays unconfirmed for good.
+by the inventories its names depend on: `get_domain_info` always, and `listzones` only after
+the addon and the alias, which make zones. A name counts as made only once it is listed for
+this account. An explicit refusal is a known outcome; after a lost reply a name stays
+unconfirmed for good.
 `DomainRowsGuard` admits the binding's control requests and exactly these four mutations,
 each once, the direct ones only with the account's token.
 
@@ -2509,13 +2511,17 @@ domain, so their order is never observable. No general order is claimed from any
 export. Every inventory must list the main domain, addon and subdomain, and every one but
 `domains_data` `format=list` must list the alias, which that form has held no row for on
 `11.138.0.19`. `domain_kinds` records what each inventory lists, including the subdomain an
-addon is parked on, which is never required. `single_domain` records which of the run's
-names each single-domain read returned.
+addon is parked on, which is never required. Each single-domain read must return the record
+of exactly the domain it asked for; `single_domain` records `requested_domain`, or which other
+of the run's records came back (`main_domain`, `addon_subdomain`) or `other`, which fails the
+expectation.
 
-**Cleanup.** Account removal takes every extra domain and zone. After it, the lifecycle's
-removed-resource proof reads `get_domain_info` and `listzones` once each and requires every
-attempted name and zone to be absent; an unreadable inventory or a lost creation leaves it
-`unconfirmed`. With `WHM_API_LIVE_FS_CHECK=1`, the unchanged read-only proof also runs for the
+**Cleanup.** Account removal takes every extra domain and zone. Once the proven account
+reads removed, the lifecycle's removed-resource proof reads `get_domain_info` and `listzones`
+once each and requires every attempted name and zone to be absent; an unreadable inventory
+or a lost creation leaves it `unconfirmed`. After any other cleanup the lifecycle never calls
+the proof, so every attempted name and zone, and each extra filesystem claim whose control
+ran, stays `unconfirmed`. With `WHM_API_LIVE_FS_CHECK=1`, the unchanged read-only proof also runs for the
 addon and the alias, the two extra domains with zones of their own: a control while they
 exist, then a final check after removal. Each extra domain's absence counts only after its
 own passed control, and `extra_filesystem` reports both. A subdomain has no zone of its own,
@@ -2524,10 +2530,19 @@ and its `/etc/userdomains` line is already counted by owner.
 **Inspection.** `--inspect-names` runs the same recipe with the same cleanup but writes no
 artifact. It prints, for each phase, the undeclared key names and JSON types that
 `DomainRowsInspection` finds against the effective contract, then the sanitized outcome
-labels. Names appear only as plain identifiers; any other key prints as `<key>`, and no
-value, path, token or upstream text is printed. It is the private step before typing a
+labels. A key's name is printed only for an undeclared key in an object whose contract
+declares named fields, and only as a plain identifier. Every key beneath an undeclared key,
+in an object declaring no fields, or at a map position prints as `<key>` or `*`, as such keys
+can be data such as user or token names. No value, path, token or upstream text is printed. It is the private step before typing a
 field, and its output is never committed.
 
-The [capture](../../docs/api/evidence/2026-11-02-domain-rows.json) at `e6df465` on
-`11.138.0.19` is a **passed run**, exit 0, scenario `domain-rows-disposable-v1`. See the
+The current scenario is `domain-rows-disposable-v2`, and **no v2 capture exists**. v2 means
+something different from v1: a single-domain read must return exactly the requested record,
+no zone inventory follows the subdomain's creation, the removed-resource proof runs only once
+the proven account reads removed, and the unreachable expected-refusal support is gone.
+
+The [v1 capture](../../docs/api/evidence/2026-11-02-domain-rows.json) at `e6df465` on
+`11.138.0.19` is a **passed run**, exit 0, and stays the valid record of what ran at that
+revision. Its `single_domain` labels show every single-domain read returning the requested
+record, which v1 recorded without requiring. See the
 [source audit](../../docs/api/source-audit.md#disposable-domain-rows-and-multi-value-dns-reads-2026-11-02).

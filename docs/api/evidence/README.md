@@ -1414,4 +1414,8 @@ control. The eight DNS results that name their domain, `has_local_authority` on 
 and `fetch_ds_records_for_domains` on WHM, each in both orders, all came back in request
 order; that is recorded per sample and is not a general ordering claim. See the
 [source audit](../source-audit.md#disposable-domain-rows-and-multi-value-dns-reads-2026-11-02).
-SHA-256: `031e989c1035966b2696fec08975b8846e07381ec0c5fd1e5718992c7f547f16`.
+SHA-256: `031e989c1035966b2696fec08975b8846e07381ec0c5fd1e5718992c7f547f16`. It stays the
+valid record of what ran at that revision. Its `single_domain` labels show every single-domain
+read returning the requested record, which v1 recorded without requiring. The recipe has
+since moved to `domain-rows-disposable-v2`, and no v2 capture exists; see the
+[source audit](../source-audit.md#review-corrections-2026-11-02).

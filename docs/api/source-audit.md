@@ -10248,12 +10248,13 @@ one capture. Nothing here touched `npr` or any account but `wldomains`.
 
 ### Shared change
 
-`DisposableAccountLifecycle::run()` takes an optional third callback (`eac0493c`). It runs
-once, after the removal attempt and the lifecycle's own absence reads and before the
-filesystem proof, whenever cleanup ran; its labels fail `cleanup`, and a throw becomes
-`removed_resource_absence_unconfirmed`. A recipe uses it to read that what only account
-removal takes, such as an addon's zone, is gone. Existing callers are unchanged; the change
-is in its own commit because other recipes build on the same file.
+`DisposableAccountLifecycle::run()` takes an optional third callback (`eac0493c`, narrowed
+in `063ad9e`; see the review corrections below). It runs at most once, only after the marker
+proved the account this run's and the account then read confirmed absent, after the
+lifecycle's own domain and zone reads and before the filesystem proof; its labels fail
+`cleanup`, and a throw becomes `removed_resource_absence_unconfirmed`. A recipe uses it to
+settle what account removal takes or leaves, such as an addon's zone. Existing callers are
+unchanged; the change is in its own commits because other recipes build on the same file.
 
 ### Recipe
 
@@ -10311,7 +10312,8 @@ them offline with synthetic values; the earlier observed-fields test now expects
 subdomain and list rows to carry the two new fields.
 
 The inspection also showed a `single_domain_data` query for the alias succeeding on both
-routes and naming the alias, although the pinned note says an alias has no user-data file.
+routes with a result whose `domain` field named the alias, although the pinned note says an
+alias has no user-data file.
 It is recorded as an observed note only; which record such a query reads is not established.
 
 The recipe was corrected before the capture: `domains_data` `format=list` no longer has to
@@ -10346,8 +10348,9 @@ meaning this capture does not interpret.
 addon, alias and subdomain on both routes, the hash form giving the alias as a plain string.
 `format=list` held rows for the main domain, addon and subdomain, and again none for the
 alias. No inventory listed the subdomain the addon is parked on, though `get_domain_info`
-did. Each of the eight `single_domain_data` reads named the requested domain, the alias
-included. The new fields appear as named paths with no `unknown_field`. `userdirprotect`
+did. The run's `single_domain` labels show each of the eight `single_domain_data` results
+naming the requested domain in its `domain` field, the alias included; v1 recorded this
+without requiring it. The new fields appear as named paths with no `unknown_field`. `userdirprotect`
 was the exact empty string on addon and subdomain rows in both forms and in their
 single-domain results, while the main domain and the alias omitted it; `phpversion` was
 absent throughout on this fresh account.
@@ -10367,3 +10370,47 @@ final check read `confirmed_absent`.
 - `export_zone_files` with more than one zone stays excluded after the earlier refusal.
 - The filesystem proof covers its fixed locations at one moment; sessions are still never
   required by a control.
+
+### Review corrections (2026-11-02)
+
+An independent review of the branch found seven issues. Each was checked against the code;
+all seven are fixed, except one part of the fifth, as follows. No live request ran, and the
+v1 artifact is unchanged.
+
+- **The callback contract** (shared, `063ad9e`). It is now called only for a proven account
+  that reads confirmed absent after removal; it was called after a failed or unreadable
+  removal too. That makes it safe for a recipe that settles residue, as another recipe will.
+  Its labels still fail `cleanup`, and callers that pass nothing are unaffected. The
+  domain-rows fixture reports every attempted extra name, zone and extra filesystem claim as
+  `unconfirmed` when the proof was never called.
+- **A wrong single-domain record could pass.** v1 accepted the main domain's record, or the
+  addon's underlying subdomain's, for an addon, alias or subdomain read. v2 requires exactly
+  the requested domain and records any other as a failed expectation. The v1 capture's
+  `single_domain` labels were all `requested_domain`, so its result stands, but the overlay
+  evidence, this audit and the README now say v1 recorded that without requiring it.
+- **Stale documentation.** The root README still said the empty-string `userdirprotect` was
+  documentation-only coverage, and the `singleDomainData()` policy note still said only a
+  main domain was observed. Both now match the evidence; `status` was a string on all four
+  single-domain records, where `phpversion` was absent.
+- **Inspection could print data.** Beneath an undeclared key, every plain-identifier key was
+  printed, and such a key can be a username or token name. A name is now printed only for an
+  undeclared key in an object whose contract declares named fields; every key beneath it, in
+  an object declaring no fields, or at a map position is masked. The 2026-11-02 inspection
+  output contained no nested undeclared keys, so nothing was exposed then.
+- **Reads after creation.** The subdomain's creation was followed by a `listzones` read that
+  no label needed, so a transient failure there could stop the capture. Each creation now
+  reads `listzones` only when it can make a zone. The other part, reusing the lifecycle's own
+  absence reads, is **rejected**: they are private to the lifecycle, and the preflight ones
+  precede `createacct` and the token creation, which the lifecycle's own rule forbids reusing
+  across. Reusing the post-removal ones would need a further shared change or reliance on the
+  capture's last response.
+- **Unreachable refusal support** was removed from the recipe, fixture, evidence gate and
+  server double. No recorded observation makes a refusal the expected outcome.
+- **A hardcoded count.** `dns_results.requested` and its comparison now use the requested
+  list's length.
+
+These change what a report means, so the scenario is now `domain-rows-disposable-v2`, and no
+v2 capture exists. The review policy stays `domain-rows-no-acknowledgments-v1`: with no
+expected refusals, it assesses every record exactly as before. Duplicated inventory parsing
+and the inspection's copy of `Fingerprint`'s schema walk stay as they are; consolidating them
+is bead `whm-api-client-bis`.

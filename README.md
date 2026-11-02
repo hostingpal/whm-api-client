@@ -418,7 +418,10 @@ meaning, and `domainsData()` does not promise `phpopenbasedirprotect`, so these 
 as `mixed` and deliberately unvalidated: any JSON value, including null, reaches the caller
 unchanged and cannot fail the read, so check the type before using one. A quoted `main_domain`
 `phpopenbasedirprotect` stays a string, unlike the pinned flag in `singleDomainData()`, and
-`is_suspended` is not a documented suspension flag.
+`is_suspended` is not a documented suspension flag. Populated addon, subdomain and list-format
+`domainsData()` rows carry `phpopenbasedirprotect` and `status` the same way. Addon and
+subdomain `singleDomainData()` results add `ipv6` (string or null) and `no_cache_update`
+(0/1, quoted forms normalized), which the pinned DomainInfo records document and validate.
 `phpGetVhostVersions()` returns a list, or a single record when `vhost` is supplied.
 INI setters and PHP version changes use form POST. INI content and directives are
 sensitive parameters; retain a configuration backup before overwriting content.
@@ -1080,8 +1083,10 @@ at `27abfe6` observed all ten new reads through both routes on cPanel 11.138.0.1
 All 67 GET-only catalog API/payload checks pass, including both normalized mailbox
 counts. Its strict review failed: 12 unknown-field entries across 10 observations,
 zero acknowledgments and two stale Quota acknowledgments. No mutation ran.
-The empty-string `userdirprotect` variant remains documentation/offline coverage
-because the live responses omit that field. PHP setters and the INI write/read
+The main domain omits `userdirprotect`; the 2026-11-02
+[domain-rows capture](docs/api/evidence/2026-11-02-domain-rows.json) observed the exact
+empty string on addon and subdomain rows in both `domainsData()` forms and in their
+`singleDomainData()` results. PHP setters and the INI write/read
 round trip remain offline-only; see the [source audit](docs/api/source-audit.md).
 The later [default-catalog capture](docs/api/evidence/2026-11-01-read-only-11.138.0.19.json)
 at `5f9b001` passes the same 67 GETs with those DomainInfo and INI fields declared. Its only
