@@ -2774,8 +2774,8 @@ contains the account name, and its random password stays in memory. `send_welcom
 suppresses the client configuration instructions, the one message the pinned `add_pop`
 parameters control; the recipe sends and delivers no mail. Every creator call carries
 `remote_address=192.0.2.10`, an RFC 5737 documentation address, because the bridge needed an
-explicit address on the reviewed build. The mail-user creators name the owned mailbox, and the checking creator its
-correct password. Locale is omitted.
+explicit address on the reviewed build. The mail-user creators name the owned mailbox, and the
+checking creator its correct password. Locale is omitted.
 
 **Credentials are never used.** Nothing logs in, posts to Webmail on port 2096 or fetches a
 URL. From each creator only the kind of `hostname`, `session` and `token` leaves memory:
@@ -2795,12 +2795,21 @@ exact account name followed by `:`, or with this run's owned mailbox address fol
 the `@` either literal or encoded as `%40`. It runs only after the lifecycle has confirmed the
 account removed, and it counts before and after the deletion. AGENTS.md says never to restore
 the server automatically; whether this bounded cleanup needs a recorded exception there is the
-owner's decision, and AGENTS.md is unchanged. After `run()` returns, and only when every gate
-holds, the fixture removes the files once and reruns the read-only proof:
+owner's decision, and AGENTS.md is unchanged.
 
-1. The proof and `SshSessionFileCleanup` were both supplied.
-2. The marker proved the account and its removal was read `confirmed_absent`.
+The fixture offers the cleanup to the lifecycle as its [removed-resource
+callback](#disposable-account-lifecycle), and it never runs unless the lifecycle calls it. The
+lifecycle calls it at most once, only after the marker proved the account this run's and the
+account then read `confirmed_absent`, after its own domain and zone reads and before its final
+filesystem proof. So that final proof is the proof after the cleanup: no separate rerun is
+needed, and a run that removes every session file its creators left can pass. When called, the
+cleanup still requires every gate below, then removes the files once:
+
+1. The proof and `SshSessionFileCleanup` were both supplied, so the callback was offered.
+2. The lifecycle called it: the marker proved the account and its removal read `confirmed_absent`.
 3. The filesystem control passed and saw no session name before the exercise.
+   `ControlRecordingProof` passes every check through to the proof and remembers the first
+   finding, the control, since the lifecycle exposes it only after `run()` returns.
 4. One fixed read-only script walks `/var/cpanel/sessions` once and gives every entry the
    first class it matches: `own` (`<account>:`), `mailbox_encoded` (`<mailbox>%40<domain>:`),
    `mailbox_literal` (`<mailbox>@<domain>:`), `unexplained` (any other name containing the
@@ -2817,11 +2826,15 @@ The scripts arrive on standard input, hold no name, and re-check their arguments
 connection is `SshScriptRunner`'s, shared with the filesystem proof: its fixed options,
 argument check, environment whitelist, bounds, kill-only-while-running rule and strict
 `label=count` parsing. `session_files` reports `status` (`not_run`, `not_required`,
-`removed`, `residue_left` or `unconfirmed`), a fixed `reason`, the counts before and after,
-the number deleted and the rerun proof's finding. It never changes the lifecycle's outcome. The lifecycle has no
-step after removal, so a run whose creators leave files reports `filesystem_residue_present`
-and fails, even when the cleanup then removes them all; exit 0 needs the lifecycle and the
-strict review to pass and the session files to be `not_required` or `removed`.
+`removed`, `residue_left` or `unconfirmed`), a fixed `reason`, and the counts before and after
+with the number deleted. Its `reason` is `not_called` when the lifecycle never called it, and
+`filesystem_proof_not_enabled` when it was never offered. Its failure labels reach the
+lifecycle and fail `cleanup` and the run: `session_file_removal_refused` for a failed gate,
+`session_files_unconfirmed` for an unreadable observation or removal, and
+`session_files_remain` when anchored files, other anchored entries or unexplained names
+remain. An exception from it would be the lifecycle's `removed_resource_absence_unconfirmed`.
+Exit 0 needs the lifecycle and the strict review to pass and the session files to be
+`not_required` or `removed`.
 
 **Evidence.** `webmail_sessions` holds structural probe records, credential kinds,
 inventory counts, the session-file counts and lifecycle results. No names, paths, tokens,
@@ -2829,17 +2842,21 @@ session values, passwords, addresses or upstream text are persisted. Its
 `discrepancy_review`, policy `webmail-sessions-no-acknowledgments-v1`, requires every phase
 once, in order, on its own route and contract, with UAPI status 1 and no discrepancy.
 
-The current scenario is `webmail-sessions-disposable-v2`, and **no v2 capture exists**. v2's
-report means something different from v1's: the session-file counts carry `anchored_other`
-instead of v1's any-type `anchored`, and the removal reports a full classification before and
-after with the number deleted, where v1 reported four counts. A request refused for its
-headers no longer consumes its mutation. The v1 artifact stays the valid record of what ran at
-its revision.
+The current scenario is `webmail-sessions-disposable-v3`, and **no v3 capture exists**. v3's
+report means something different from v2's: the cleanup runs inside the lifecycle before its
+final proof, so `filesystem_cleanup` now reflects the state after it, `session_files` has no
+separate `reproof`, its failures are lifecycle failures, and `not_called` is a new reason. v2,
+which also has no capture, had changed v1's report: the session-file counts carry
+`anchored_other` instead of v1's any-type `anchored`, the removal reports a full
+classification before and after with the number deleted, where v1 reported four counts, and a
+request refused for its headers no longer consumes its mutation. The v1 artifact stays the
+valid record of what ran at its revision.
 
 The [2026-11-02 v1 capture](../../docs/api/evidence/2026-11-02-webmail-sessions.json) at
 `f930653` on `11.138.0.19` exits 1. All twelve phases pass with no review findings: all six
 creators returned status 1, a null `hostname` and nonempty `session` and `token`, and the
 inventory went from 0 to 2 populated rows on each route. Account, token, domain and zone are
-`confirmed_absent`. The lifecycle's final proof found 8 session files, which fails the run
-by design; the cleanup removed all 8 and the rerun proof read `confirmed_absent`. See the
+`confirmed_absent`. At v1 the cleanup ran after the lifecycle, so the lifecycle's final proof
+found 8 session files and failed the run; the cleanup then removed all 8 and its separate rerun
+of the proof read `confirmed_absent`. See the
 [source audit](../../docs/api/source-audit.md#disposable-webmail-session-capture-2026-11-02).

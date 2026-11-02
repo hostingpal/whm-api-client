@@ -10843,9 +10843,10 @@ proof. The wide match is unchanged here; that decision is separate.
 The run establishes API creation and inventory only. It establishes no login, session
 activity, Webmail access or mail delivery; no locale variant or omitted address; no wrong
 password, suspended mailbox or role restriction; no non-null hostname; and no
-`Session/create_temp_user`. The lifecycle has no step after account removal, so a recipe whose
-creators leave files fails by its own truth even when the scoped cleanup removes them; adding
-such a step would change the shared lifecycle and is left for a separate decision. Follow-up
+`Session/create_temp_user`. At this capture the lifecycle had no step after account removal, so
+a recipe whose creators leave files failed by its own truth even when the scoped cleanup
+removed them. The cleanup has since moved into the lifecycle's removed-resource step; see
+[the cleanup's move](#webmail-session-cleanup-inside-the-lifecycle-2026-11-02). Follow-up
 `8x0.2.69` keeps the remaining variants.
 
 ### Webmail session review corrections (2026-11-02)
@@ -10861,7 +10862,8 @@ these corrections, and the v1 artifact is unchanged.
 - **Exit status.** The cleanup runs after the lifecycle has already recorded the residue, so a
   run whose creators leave files cannot exit 0. Deferred: a separate branch adds an optional
   lifecycle step after account removal and before the final proof, and the cleanup moves into
-  it once that branch is on master. No second hook is built here.
+  it once that branch is on master. No second hook is built here. That branch merged as
+  `00e9a63`, and the move is recorded below.
 - **Overclaims.** The inventory and session-file statements above now say only what the
   artifact establishes. Field types are unions over a route's rows; the flag values other than
   `tfa_verified` equal to 1 are not recorded; and no counted suffix was all letters, digits and
@@ -10894,3 +10896,41 @@ The report shape changed, so the scenario is `webmail-sessions-disposable-v2`; t
 policy `webmail-sessions-no-acknowledgments-v1` is unchanged. No v2 capture exists, and the
 v1 artifact remains the valid record of what ran at `f930653`. Consolidating the duplicated
 entry points and helpers across recipes stays with `whm-api-client-bis`.
+
+### Webmail session cleanup inside the lifecycle (2026-11-02)
+
+PR 147, merged as `00e9a63`, added an optional third callback to
+`DisposableAccountLifecycle::run()`. The lifecycle calls it at most once, only after the
+marker proved the account this run's and the account then read `confirmed_absent`, after its
+own domain and zone reads and before its final filesystem proof. Its failure labels fail
+`cleanup`, and an exception becomes `removed_resource_absence_unconfirmed`. The deferred
+exit-status finding is now fixed: the Webmail session fixture offers its session-file cleanup
+as that callback, so it never runs unless the lifecycle calls it, and the lifecycle's own
+final proof is the proof after the cleanup. A run that removes every session file its
+creators left can pass; the separate rerun of the proof is gone.
+
+The cleanup is still a root filesystem write over SSH, bounded exactly as before. It may
+delete only regular files under `/var/cpanel/sessions` whose names begin with the run's exact
+account name followed by `:`, or with the run's owned mailbox address followed by `:`, the
+`@` literal or encoded as `%40`, and it counts before and after the deletion. When called, it
+still refuses unless the lifecycle's control passed and saw no session name before the
+exercise. The lifecycle exposes the control only after `run()` returns, so
+`ControlRecordingProof` passes every check through to the proof unchanged and remembers the
+first finding; it adds no read and writes nothing. Its failure labels are
+`session_file_removal_refused` for a failed gate, `session_files_unconfirmed` for an
+unreadable observation or removal, and `session_files_remain` for anchored files, other
+anchored entries or unexplained names left behind. AGENTS.md says never to restore the server
+automatically; whether this bounded cleanup needs a recorded exception there remains the
+owner's decision, and AGENTS.md is unchanged.
+
+The report changed meaning, so the scenario is now `webmail-sessions-disposable-v3`:
+`filesystem_cleanup` reflects the state after the cleanup, `session_files` has no `reproof`,
+its failures are lifecycle failures, and its reason is `not_called` when the lifecycle never
+called it. The review policy `webmail-sessions-no-acknowledgments-v1` is unchanged. **No v3
+capture exists**, and neither does a v2 one; the v1 artifact remains the valid record of what
+ran at `f930653`.
+
+Tests that failed first cover a clean double run that removes its files and now exits 0, a
+failed deletion that fails `cleanup` and the run, a callback the lifecycle never calls (a
+refused or lost account removal, or an account never created) that touches nothing, and each
+gate and outcome label. No live run and no SSH write of any kind accompanied this change.
