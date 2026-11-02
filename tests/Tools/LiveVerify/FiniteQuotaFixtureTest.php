@@ -82,6 +82,21 @@ final class FiniteQuotaFixtureTest extends TestCase
         self::assertPrivate($report);
     }
 
+    /** Every field a clean lifecycle reports reaches this report unchanged, so a new one cannot be left out. */
+    public function testReportCarriesEveryLifecycleField(): void
+    {
+        $report = (new FiniteQuotaFixture(new FiniteQuotaServer(), 'private-whm-token'))->run(self::capture());
+        foreach (CleanLifecycleRun::reportFields() as $field => $value) {
+            if ($field === 'resources') {
+                foreach ($value as $resource => $outcome) {
+                    self::assertSame($outcome, $report['fixture']['resources'][$resource], $resource);
+                }
+                continue;
+            }
+            self::assertSame($value, $report['fixture'][$field], $field);
+        }
+    }
+
     public function testDiscrepanciesDoNotFalsifySuccessfulFixtureAndCleanupOutcomes(): void
     {
         $report = (new FiniteQuotaFixture(new FiniteQuotaServer(), 'private-whm-token'))->run(self::capture());

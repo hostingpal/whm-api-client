@@ -55,8 +55,9 @@ use Throwable;
  * for what remains. Without a passed control, a later absence is unconfirmed. It is read-only and repeats nothing, so
  * its outcome only changes the report.
  *
- * One truth. `status`, `setup` and `failures` here are the only ones a run has, and recipes copy them. An exercise
- * never swallows a failure: it records its detail and throws, naming it with ExerciseFailure.
+ * One truth. `status`, `setup` and `failures` here are the only ones a run has. A recipe spreads reportFields() into
+ * its report rather than copying fields one by one, so every field the lifecycle gains reaches every report. An
+ * exercise never swallows a failure: it records its detail and throws, naming it with ExerciseFailure.
  *
  * Results carry fixed labels only. Credentials, names, raw payloads and exception text never leave memory.
  *
@@ -77,6 +78,12 @@ use Throwable;
  *     domain_cleanup: CleanupOutcome, zone_cleanup: CleanupOutcome,
  *     filesystem_cleanup: FilesystemOutcome, filesystem_residue: array<string, int>,
  *     filesystem_control: FilesystemControl
+ * }
+ * @phpstan-type ReportFields array{
+ *     status: 'passed'|'failed', setup: 'passed'|'failed', cleanup: 'passed'|'failed'|'not_required',
+ *     failures: list<string>, domain_cleanup: CleanupOutcome, zone_cleanup: CleanupOutcome,
+ *     filesystem_cleanup: FilesystemOutcome, filesystem_residue: array<string, int>,
+ *     filesystem_control: FilesystemControl, resources: array{account: ResourceOutcome, token: TokenOutcome}
  * }
  */
 final class DisposableAccountLifecycle
@@ -177,6 +184,22 @@ final class DisposableAccountLifecycle
         }
 
         return $this->outcome;
+    }
+
+    /**
+     * The outcome as a recipe reports it: every field except `exercise`, which a recipe reports as its own phases,
+     * with the account and token moved under `resources`. Spread the result into the report, and merge `resources`
+     * with the recipe's own resources, so no lifecycle field is ever left behind.
+     *
+     * @param Outcome $outcome
+     * @return ReportFields
+     */
+    public static function reportFields(array $outcome): array
+    {
+        $resources = ['account' => $outcome['account'], 'token' => $outcome['token']];
+        unset($outcome['exercise'], $outcome['account'], $outcome['token']);
+
+        return [...$outcome, 'resources' => $resources];
     }
 
     /** Prove absence, create the account and token once each, confirm both, and return the token. */

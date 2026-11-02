@@ -170,6 +170,40 @@ final class DisposableAccountLifecycleTest extends TestCase
         self::assertTrue($live);
     }
 
+    /**
+     * A recipe spreads these into its report, so they must carry every outcome field but `exercise`, which recipes
+     * report as their own phases. The loop runs over the outcome itself, so a new field is covered without an edit.
+     */
+    public function testReportFieldsCarryEveryOutcomeFieldButTheExercise(): void
+    {
+        $http = new DisposableAccountServer();
+        $http->failures['listzones:2'] = 'throw_before';
+        $proof = RecordingFilesystemProof::after(RecordingFilesystemProof::PRESENT);
+        $outcome = self::lifecycle($http, $proof)->run(self::noop());
+        $fields = DisposableAccountLifecycle::reportFields($outcome);
+
+        self::assertSame(
+            ['status', 'setup', 'cleanup', 'failures', 'domain_cleanup', 'zone_cleanup', 'filesystem_cleanup',
+                'filesystem_residue', 'filesystem_control', 'resources'],
+            array_keys($fields),
+        );
+        foreach ($outcome as $field => $value) {
+            if ($field === 'exercise') {
+                continue;
+            }
+            $carried = $field === 'account' || $field === 'token' ? $fields['resources'][$field] : $fields[$field];
+            self::assertSame($value, $carried, $field);
+        }
+        self::assertSame(['account', 'token'], array_keys($fields['resources']));
+        // This run's values differ from the defaults, so a field copied from anywhere else would show.
+        self::assertSame('failed', $fields['status']);
+        self::assertSame(
+            ['status' => 'passed', 'counts' => RecordingFilesystemProof::PRESENT['residue']],
+            $fields['filesystem_control'],
+        );
+        self::assertSame('unconfirmed', $fields['zone_cleanup']);
+    }
+
     public function testEveryRequestMatchesTheBindingsExactGuardAllowlist(): void
     {
         $http = new DisposableAccountServer();

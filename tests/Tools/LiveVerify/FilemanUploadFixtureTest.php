@@ -104,6 +104,21 @@ final class FilemanUploadFixtureTest extends TestCase
         self::assertPrivate($scenario);
     }
 
+    /** Every field a clean lifecycle reports reaches this report unchanged, so a new one cannot be left out. */
+    public function testReportCarriesEveryLifecycleField(): void
+    {
+        $fixture = self::scenario(new FilemanUploadServer())['fixture'];
+        foreach (CleanLifecycleRun::reportFields() as $field => $value) {
+            if ($field === 'resources') {
+                foreach ($value as $resource => $outcome) {
+                    self::assertSame($outcome, $fixture['resources'][$resource], $resource);
+                }
+                continue;
+            }
+            self::assertSame($value, $fixture[$field], $field);
+        }
+    }
+
     public function testRowsCoverSuccessPartialAndStatusZeroBatchesThroughTheMergedRule(): void
     {
         $scenario = self::scenario(new FilemanUploadServer());

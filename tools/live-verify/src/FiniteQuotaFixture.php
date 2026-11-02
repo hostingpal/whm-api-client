@@ -121,16 +121,12 @@ final class FiniteQuotaFixture
 
             return $this->scenario();
         }
-        $this->report['status'] = $outcome['status'];
-        $this->report['setup'] = $outcome['setup'];
-        $this->report['cleanup'] = $outcome['cleanup'];
-        $this->report['failures'] = $outcome['failures'];
-        $this->report['resources'] = ['account' => $outcome['account'], 'token' => $outcome['token']];
-        $this->report['domain_cleanup'] = $outcome['domain_cleanup'];
-        $this->report['zone_cleanup'] = $outcome['zone_cleanup'];
-        $this->report['filesystem_cleanup'] = $outcome['filesystem_cleanup'];
-        $this->report['filesystem_residue'] = $outcome['filesystem_residue'];
-        $this->report['filesystem_control'] = $outcome['filesystem_control'];
+        $lifecycle = DisposableAccountLifecycle::reportFields($outcome);
+        $this->report = [
+            ...$this->report,
+            ...$lifecycle,
+            'resources' => [...$this->report['resources'], ...$lifecycle['resources']],
+        ];
 
         return $this->scenario();
     }
