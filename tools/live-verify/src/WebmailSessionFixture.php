@@ -31,11 +31,13 @@ use Throwable;
  * none is retried. In the report, `capture` says whether every planned observation finished and succeeded, and
  * `expectations` whether they held.
  *
- * Removing an account leaves its Webmail session files behind, so the lifecycle's final filesystem proof is expected
- * to find them. Then, only with the proof enabled, the account proven removed, a passed control that saw no session
- * name before the exercise, and a readable observation, the session-file cleanup deletes this account's anchored
- * regular files once and the read-only proof runs again. That remediation is reported beside the lifecycle's own
- * truth and never changes it.
+ * Removing an account leaves its mailbox's Webmail session files behind. With the proof enabled, the fixture offers the
+ * session-file cleanup to the lifecycle as its removed-resource callback, so it runs only when the lifecycle calls it:
+ * at most once, after the marker proved the account and the account then read absent, and before the lifecycle's own
+ * final filesystem proof, which therefore shows what the cleanup left. The cleanup is a root filesystem write over
+ * SSH, bounded to this account's anchored regular files. It also needs the lifecycle's control to have passed and to
+ * have seen no session name before the exercise, which ControlRecordingProof remembers, and a readable observation.
+ * Its failure labels fail the lifecycle's `cleanup`, so a clean run that removes every file it left passes.
  *
  * @phpstan-import-type Alternative from EvidenceRunner
  * @phpstan-import-type Context from EvidenceRunner
@@ -45,8 +47,6 @@ use Throwable;
  * @phpstan-import-type CleanupOutcome from DisposableAccountLifecycle
  * @phpstan-import-type FilesystemOutcome from DisposableAccountLifecycle
  * @phpstan-import-type FilesystemControl from DisposableAccountLifecycle
- * @phpstan-import-type Outcome from DisposableAccountLifecycle
- * @phpstan-import-type Finding from FilesystemAbsenceProof
  * @phpstan-import-type Observation from SessionFileCleanup as FileObservation
  * @phpstan-import-type Removal from SessionFileCleanup
  * @phpstan-type Observation array{
@@ -70,7 +70,7 @@ use Throwable;
  * }
  * @phpstan-type SessionFiles array{
  *     status: 'not_run'|'not_required'|'removed'|'residue_left'|'unconfirmed', reason: string|null,
- *     observed: FileObservation|null, removal: Removal|null, reproof: Finding|null
+ *     observed: FileObservation|null, removal: Removal|null
  * }
  * @phpstan-type MailboxOutcome array{
  *     creation: 'not_attempted'|'confirmed'|'unconfirmed', cleanup: 'not_required'|'absent_with_account'|'unconfirmed'
@@ -87,7 +87,7 @@ use Throwable;
  *     filesystem_control: FilesystemControl
  * }
  * @phpstan-type Scenario array{
- *     scenario: 'webmail-sessions-disposable-v2', target_role: 'disposable-test-account', probes: list<Observation>,
+ *     scenario: 'webmail-sessions-disposable-v3', target_role: 'disposable-test-account', probes: list<Observation>,
  *     credentials: array<string, Credential>, active_sessions: ActiveSessions, session_files: SessionFiles,
  *     discrepancy_review: Assessment, fixture: Report, limitations: list<string>
  * }
@@ -130,12 +130,15 @@ final class WebmailSessionFixture
 
     private ?string $current = null;
 
+    /** The lifecycle's proof, remembering its control for the session-file cleanup; null without the opt-in. */
+    private readonly ?ControlRecordingProof $proof;
+
     /**
      * Bind the fixed disposable account, a fresh mailbox name and password, and a token expiration, without I/O.
      *
      * The client must support form POST, verify TLS and refuse redirects and retries. Live callers must obtain
      * committed context through RepositoryContext first. Without a filesystem proof, nothing is claimed about the
-     * server's files and the session-file cleanup never runs.
+     * server's files and the session-file cleanup is never offered to the lifecycle.
      *
      * @param Context $context
      */
@@ -143,7 +146,7 @@ final class WebmailSessionFixture
         #[SensitiveParameter] ClientInterface $http,
         #[SensitiveParameter] string $whmToken,
         private readonly array $context,
-        private readonly ?FilesystemAbsenceProof $filesystem = null,
+        ?FilesystemAbsenceProof $filesystem = null,
         private readonly ?SessionFileCleanup $sessionFileCleanup = null,
     ) {
         $this->recipe = new WebmailSessionRecipe(
@@ -164,18 +167,19 @@ final class WebmailSessionFixture
         $this->root = new Client([
             'host' => self::HOST, 'port' => 2087, 'authType' => 'whm', 'username' => 'root', 'token' => $whmToken,
         ], new HttpTransport($this->capture, $factory, $factory));
+        $this->proof = $filesystem === null ? null : new ControlRecordingProof($filesystem);
         $this->lifecycle = new DisposableAccountLifecycle(
             $this->recipe->account,
             $this->capture,
             $this->root,
-            $filesystem,
+            $this->proof,
         );
         $this->report = self::report();
         $this->sessionFiles = self::sessionFiles('not_run', 'run_not_started');
     }
 
     /**
-     * Set up, capture, clean up, remove this account's session files when every gate holds, and return the evidence.
+     * Set up, capture, clean up, and return the evidence; the lifecycle calls the session-file cleanup, if offered.
      *
      * This instance is single-use. Exception messages, raw payloads, returned credentials, the mailbox name, its
      * password and addresses never enter the result; fixture success and the strict discrepancy assessment stay
@@ -185,11 +189,15 @@ final class WebmailSessionFixture
      */
     public function run(): array
     {
+        $offered = $this->proof !== null && $this->sessionFileCleanup !== null;
+        $this->sessionFiles = self::sessionFiles('not_run', $offered ? 'not_called' : 'filesystem_proof_not_enabled');
         try {
             $outcome = $this->lifecycle->run(
                 function (#[SensitiveParameter] string $token): void {
                     $this->capture($token);
                 },
+                null,
+                $offered ? fn (): array => $this->removeSessionFiles() : null,
             );
         } catch (LogicException) {
             $this->report['failures'][] = 'configuration_failure';
@@ -206,7 +214,6 @@ final class WebmailSessionFixture
             $this->report['resources']['mailbox']['cleanup'] = $outcome['account']['cleanup'] === 'confirmed_absent'
                 ? 'absent_with_account' : 'unconfirmed';
         }
-        $this->sessionFiles = $this->removeSessionFiles($outcome);
 
         return $this->scenario();
     }
@@ -372,33 +379,32 @@ final class WebmailSessionFixture
     }
 
     /**
-     * Gate, observe and remove this account's session files once, then rerun the read-only proof.
+     * The lifecycle's removed-resource callback: observe and remove this account's session files once.
      *
-     * Every gate must hold: the proof and the cleanup were supplied, the marker proved the account and its removal was
-     * read as absent, the control passed and saw no session name before the exercise, and the observation is readable.
-     * Only anchored regular files are removed; every other anchored entry and unexplained name stays and is reported.
-     * Nothing here repeats.
+     * The lifecycle calls it at most once, only after the marker proved the account this run's and the account then
+     * read absent, and before its own final filesystem proof. It still refuses unless the control passed and saw no
+     * session name before the exercise, as such a name could predate this run. Only anchored regular files are
+     * removed; every other anchored entry and unexplained name stays and is reported. Nothing here repeats, and an
+     * exception from the cleanup reads as an unreadable answer.
      *
-     * @param Outcome $outcome
-     * @return SessionFiles
+     * @return list<string> Failure labels, which fail the lifecycle's `cleanup`.
      */
-    private function removeSessionFiles(array $outcome): array
+    private function removeSessionFiles(): array
     {
         $cleanup = $this->sessionFileCleanup;
-        $proof = $this->filesystem;
+        $proof = $this->proof;
         if ($cleanup === null || $proof === null) {
-            return self::sessionFiles('not_run', 'filesystem_proof_not_enabled');
+            return [];
         }
-        $control = $outcome['filesystem_control'];
         $reason = match (true) {
-            $outcome['account'] !== ['creation' => 'confirmed', 'cleanup' => 'confirmed_absent']
-                => 'account_removal_unproven',
-            $control['status'] !== 'passed' => 'filesystem_control_not_passed',
-            isset($control['counts']['sessions']) => 'session_names_before_exercise',
+            !$proof->controlPassed() => 'filesystem_control_not_passed',
+            $proof->controlSawSessions() => 'session_names_before_exercise',
             default => null,
         };
         if ($reason !== null) {
-            return self::sessionFiles('not_run', $reason);
+            $this->sessionFiles = self::sessionFiles('not_run', $reason);
+
+            return ['session_file_removal_refused'];
         }
         $user = WebmailSessionRecipe::ACCOUNT;
         $domain = WebmailSessionRecipe::DOMAIN;
@@ -408,35 +414,34 @@ final class WebmailSessionFixture
             $observed = null;
         }
         if ($observed === null) {
-            return self::sessionFiles('unconfirmed', 'observation_unreadable');
+            $this->sessionFiles = self::sessionFiles('unconfirmed', 'observation_unreadable');
+
+            return ['session_files_unconfirmed'];
         }
         if (self::anchoredFiles($observed) === 0) {
-            return $observed['wide'] === 0 && self::otherNames($observed) === 0
-                ? self::sessionFiles('not_required', null, $observed)
+            $clean = $observed['wide'] === 0 && self::otherNames($observed) === 0;
+            $this->sessionFiles = $clean ? self::sessionFiles('not_required', null, $observed)
                 : self::sessionFiles('residue_left', 'no_anchored_regular_files', $observed);
+
+            return $clean ? [] : ['session_files_remain'];
         }
         try {
             $removal = $cleanup->remove($user, $domain, $this->recipe->mailbox);
         } catch (Throwable) {
             $removal = null;
         }
-        try {
-            $reproof = $proof->check($user, $domain);
-        } catch (Throwable) {
-            $reproof = ['outcome' => 'unconfirmed', 'residue' => []];
-        }
-        [$status, $reason] = match (true) {
-            $removal === null => ['unconfirmed', 'removal_unreadable'],
+        [$status, $reason, $labels] = match (true) {
+            $removal === null => ['unconfirmed', 'removal_unreadable', ['session_files_unconfirmed']],
             self::anchoredFiles($removal['after']) !== 0
                 || $removal['deleted'] !== self::anchoredFiles($removal['before'])
-                => ['residue_left', 'anchored_files_remain'],
+                => ['residue_left', 'anchored_files_remain', ['session_files_remain']],
             $removal['after']['wide'] !== 0 || self::otherNames($removal['after']) !== 0
-                => ['residue_left', 'other_names_remain'],
-            $reproof['outcome'] !== 'confirmed_absent' => ['unconfirmed', 'reproof_not_absent'],
-            default => ['removed', null],
+                => ['residue_left', 'other_names_remain', ['session_files_remain']],
+            default => ['removed', null, []],
         };
+        $this->sessionFiles = self::sessionFiles($status, $reason, $observed, $removal);
 
-        return self::sessionFiles($status, $reason, $observed, $removal, $reproof);
+        return $labels;
     }
 
     /**
@@ -463,7 +468,6 @@ final class WebmailSessionFixture
      * @param 'not_run'|'not_required'|'removed'|'residue_left'|'unconfirmed' $status
      * @param FileObservation|null $observed
      * @param Removal|null $removal
-     * @param Finding|null $reproof
      * @return SessionFiles
      */
     private static function sessionFiles(
@@ -471,10 +475,8 @@ final class WebmailSessionFixture
         ?string $reason,
         ?array $observed = null,
         ?array $removal = null,
-        ?array $reproof = null,
     ): array {
-        return ['status' => $status, 'reason' => $reason, 'observed' => $observed, 'removal' => $removal,
-            'reproof' => $reproof];
+        return ['status' => $status, 'reason' => $reason, 'observed' => $observed, 'removal' => $removal];
     }
 
     /**
@@ -646,10 +648,8 @@ final class WebmailSessionFixture
             $summary = $this->inventories[$phase] ?? null;
             $finalRows[] = $summary === null ? null : $summary['rows'];
         }
-        $removed = $this->sessionFiles['status'] === 'removed';
-
         return [
-            'scenario' => 'webmail-sessions-disposable-v2',
+            'scenario' => 'webmail-sessions-disposable-v3',
             'target_role' => 'disposable-test-account',
             'probes' => $records,
             'credentials' => $this->credentials,
@@ -668,14 +668,11 @@ final class WebmailSessionFixture
                 'no_wrong_password_suspended_mailbox_or_role_restriction_case',
                 in_array(0, $finalRows, true) || in_array(null, $finalRows, true)
                     ? 'empty_session_inventory_cannot_separate_no_sessions_from_unreadable_store' : null,
-                match (true) {
-                    $removed => 'filesystem_proof_after_session_file_removal_covers_fixed_locations_at_one_moment',
-                    $this->report['filesystem_cleanup'] === 'confirmed_absent'
-                        => 'filesystem_proof_covers_fixed_locations_at_one_moment',
-                    default => 'api_absence_only_no_filesystem_or_session_file_claim',
-                },
+                $this->report['filesystem_cleanup'] === 'confirmed_absent'
+                    ? 'filesystem_proof_covers_fixed_locations_at_one_moment'
+                    : 'api_absence_only_no_filesystem_or_session_file_claim',
                 $this->sessionFiles['removal'] !== null
-                    ? 'session_file_removal_is_scoped_ssh_remediation_outside_the_lifecycle' : null,
+                    ? 'session_file_removal_is_a_bounded_root_filesystem_write_before_the_final_proof' : null,
             ])),
         ];
     }

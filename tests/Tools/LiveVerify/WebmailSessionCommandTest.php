@@ -14,8 +14,8 @@ use SplFileInfo;
  * The real entry script, run as a process against an offline server double and a recording `ssh` first on PATH.
  *
  * The stand-in answers each fixed script by what it reads on standard input, as the server would: the proof's control
- * sees the account, its final check sees the session files account removal left, and the rerun after removal sees
- * nothing. Every call is recorded, so no real connection can start.
+ * sees the account, and its final check, which the lifecycle runs after the session-file cleanup, sees the files
+ * account removal left unless a removal took effect. Every call is recorded, so no real connection can start.
  */
 final class WebmailSessionCommandTest extends TestCase
 {
@@ -38,18 +38,21 @@ final class WebmailSessionCommandTest extends TestCase
         }
     }
 
-    /** The lifecycle's own truth stands: removal left session files, so the run fails even after they are removed. */
-    public function testRemovesLeftSessionFilesAndPublishesProtectedEvidence(): void
+    /**
+     * The lifecycle calls the cleanup after account removal and before its final proof, so a run whose creators left
+     * session files, and whose cleanup removed them, passes and publishes protected evidence.
+     */
+    public function testACleanRunThatRemovesItsSessionFilesExitsZero(): void
     {
         $directory = $this->sandbox();
         $result = self::runCommand($directory, ['PATH' => self::standInSsh($directory, 4)]);
 
-        self::assertSame(1, $result['status'], implode("\n", $result['output']));
+        self::assertSame(0, $result['status'], implode("\n", $result['output']));
         self::assertSame([
-            'Webmail session fixture: failed', 'Webmail session discrepancy review: passed',
+            'Webmail session fixture: passed', 'Webmail session discrepancy review: passed',
             'Webmail session files: removed',
         ], $result['output']);
-        self::assertSame(['proof', 'proof', 'observe', 'remove', 'proof'], self::sshCalls($directory));
+        self::assertSame(['proof', 'observe', 'remove', 'proof'], self::sshCalls($directory));
         $file = $directory . '/evidence.json';
         self::assertSame(0600, fileperms($file) & 0777);
         $json = file_get_contents($file);
@@ -62,12 +65,32 @@ final class WebmailSessionCommandTest extends TestCase
         self::assertSame(1, $report['schema_version']);
         self::assertIsArray($report['webmail_sessions']);
         $scenario = $report['webmail_sessions'];
+        self::assertSame('webmail-sessions-disposable-v3', $scenario['scenario']);
         self::assertIsArray($scenario['fixture']);
-        self::assertSame(['filesystem_residue_present'], $scenario['fixture']['failures']);
-        self::assertSame(['sessions' => 4], $scenario['fixture']['filesystem_residue']);
+        self::assertSame([], $scenario['fixture']['failures']);
+        self::assertSame('confirmed_absent', $scenario['fixture']['filesystem_cleanup']);
         self::assertIsArray($scenario['session_files']);
-        self::assertSame(['outcome' => 'confirmed_absent', 'residue' => []], $scenario['session_files']['reproof']);
+        self::assertSame('removed', $scenario['session_files']['status']);
+        self::assertArrayNotHasKey('reproof', $scenario['session_files']);
         self::assertSame([], glob($directory . '/.webmail-sessions-*'));
+    }
+
+    /** A deletion that fails fails the lifecycle's cleanup, and the final proof still finds the files. */
+    public function testAFailedDeletionFailsCleanupAndTheRun(): void
+    {
+        $directory = $this->sandbox();
+        $result = self::runCommand($directory, ['PATH' => self::standInSsh($directory, 4, removalFails: true)]);
+
+        self::assertSame(1, $result['status'], implode("\n", $result['output']));
+        self::assertSame([
+            'Webmail session fixture: failed', 'Webmail session discrepancy review: passed',
+            'Webmail session files: unconfirmed',
+        ], $result['output']);
+        self::assertSame(['proof', 'observe', 'remove', 'proof'], self::sshCalls($directory));
+        $fixture = self::fixtureReport($directory);
+        self::assertSame('failed', $fixture['cleanup']);
+        self::assertSame(['session_files_unconfirmed', 'filesystem_residue_present'], $fixture['failures']);
+        self::assertSame(['sessions' => 4], $fixture['filesystem_residue']);
     }
 
     public function testACleanRemovalNeedsNoSessionFileCleanupAndPasses(): void
@@ -80,7 +103,7 @@ final class WebmailSessionCommandTest extends TestCase
             'Webmail session fixture: passed', 'Webmail session discrepancy review: passed',
             'Webmail session files: not_required',
         ], $result['output']);
-        self::assertSame(['proof', 'proof', 'observe'], self::sshCalls($directory));
+        self::assertSame(['proof', 'observe', 'proof'], self::sshCalls($directory));
     }
 
     public function testRefusesToOverwriteEvidenceBeforeAnyTransport(): void
@@ -145,9 +168,10 @@ final class WebmailSessionCommandTest extends TestCase
     /**
      * Put a recording `ssh` first on PATH. It names each fixed script it reads, and answers like the server.
      *
-     * @param int $left Session files the final proof finds after account removal.
+     * The control sees the account and no session. Account removal leaves $left session files, which the final proof
+     * finds unless a removal took effect first; a failing removal exits 1 and removes nothing.
      */
-    private static function standInSsh(string $directory, int $left): string
+    private static function standInSsh(string $directory, int $left, bool $removalFails = false): string
     {
         mkdir($directory . '/bin', 0700);
         $report = static function (int $account, int $sessions): string {
@@ -174,6 +198,7 @@ final class WebmailSessionCommandTest extends TestCase
         $removed = $classified('before_', $left) . 'deleted=' . $left . '\n' . $classified('after_', 0)
             . 'complete=1\n';
         $calls = escapeshellarg($directory . '/ssh-calls');
+        $effect = escapeshellarg($directory . '/removal-took-effect');
         file_put_contents($directory . '/bin/ssh', "#!/bin/sh\nscript=$(cat)\n"
             . 'case "$script" in' . "\n"
             . "  *home_inventory*)\n"
@@ -181,15 +206,29 @@ final class WebmailSessionCommandTest extends TestCase
             . "    echo proof >> " . $calls . "\n"
             . '    case "$proofs" in' . "\n"
             . "      ''|0) printf '" . $report(1, 0) . "' ;;\n"
-            . "      1) printf '" . $report(0, $left) . "' ;;\n"
-            . "      *) printf '" . $report(0, 0) . "' ;;\n"
+            . '      *) if [ -e ' . $effect . " ]; then printf '" . $report(0, 0) . "'; "
+            . "else printf '" . $report(0, $left) . "'; fi ;;\n"
             . "    esac ;;\n"
-            . "  *-delete*) echo remove >> " . $calls . "; printf '" . $removed . "' ;;\n"
+            . "  *-delete*) echo remove >> " . $calls . '; '
+            . ($removalFails ? 'exit 1' : 'touch ' . $effect . "; printf '" . $removed . "'") . " ;;\n"
             . "  *) echo observe >> " . $calls . "; printf '" . $observed . "' ;;\n"
             . "esac\n");
         chmod($directory . '/bin/ssh', 0700);
 
         return $directory . '/bin:' . getenv('PATH');
+    }
+
+    /** @return array<mixed> */
+    private static function fixtureReport(string $directory): array
+    {
+        $json = file_get_contents($directory . '/evidence.json');
+        self::assertIsString($json);
+        $report = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+        self::assertIsArray($report);
+        self::assertIsArray($report['webmail_sessions']);
+        self::assertIsArray($report['webmail_sessions']['fixture']);
+
+        return $report['webmail_sessions']['fixture'];
     }
 
     /** @return list<string> */

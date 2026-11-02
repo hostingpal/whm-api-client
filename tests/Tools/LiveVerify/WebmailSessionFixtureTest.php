@@ -60,7 +60,7 @@ final class WebmailSessionFixtureTest extends TestCase
         $fixture = $scenario['fixture'];
 
         self::assertSame('passed', $fixture['status'], (string) json_encode($fixture['failures']));
-        self::assertSame('webmail-sessions-disposable-v2', $scenario['scenario']);
+        self::assertSame('webmail-sessions-disposable-v3', $scenario['scenario']);
         self::assertSame(
             ['policy' => 'webmail-sessions-no-acknowledgments-v1', 'status' => 'passed', 'findings' => []],
             $scenario['discrepancy_review'],
@@ -370,114 +370,162 @@ final class WebmailSessionFixtureTest extends TestCase
         self::assertSame('not_run', $scenario['session_files']['status']);
     }
 
-    /** Session files are read and removed only after the account is gone, then the read-only proof runs again. */
-    public function testSessionFilesAreRemovedAfterAccountRemovalAndTheProofRerun(): void
+    /**
+     * The lifecycle calls the cleanup after account removal and before its own final proof, so a run whose creators
+     * left session files, and whose cleanup removed them all, passes: the final proof is the proof after removal.
+     */
+    public function testACleanRunThatRemovesItsSessionFilesPasses(): void
     {
         $http = new WebmailSessionServer();
-        $seen = [];
-        $cleanup = new RecordingSessionFileCleanup(observe: static function (string $step) use ($http, &$seen): void {
-            $seen[] = [$step, $http->account, $http->tokens];
+        $order = [];
+        $cleanup = new RecordingSessionFileCleanup(observe: static function (string $step) use ($http, &$order): void {
+            $order[] = $step . ($http->account ? ':account_present' : ':account_absent');
         });
-        $proof = new RecordingFilesystemProof([
-            RecordingFilesystemProof::PRESENT,
-            ['outcome' => 'present', 'residue' => ['sessions' => 4]],
-            ['outcome' => 'confirmed_absent', 'residue' => []],
-        ]);
+        $proof = new RecordingFilesystemProof(
+            [RecordingFilesystemProof::PRESENT, ['outcome' => 'confirmed_absent', 'residue' => []]],
+            static function () use (&$order): void {
+                $order[] = 'proof';
+            },
+        );
         $scenario = self::scenario($http, $proof, $cleanup);
         $fixture = $scenario['fixture'];
 
-        self::assertSame([['observe', false, []], ['remove', false, []]], $seen);
+        self::assertSame(['proof', 'observe:account_absent', 'remove:account_absent', 'proof'], $order);
         $mailbox = self::sentMailbox($http->requests);
         self::assertSame([
-        ['observe', 'wlsession', 'wlsession.example.com', $mailbox],
-            ['remove', 'wlsession', 'wlsession.example.com', $mailbox]], $cleanup->calls);
-        self::assertCount(3, $proof->calls);
-        // The lifecycle's own truth stands: account removal left session files behind.
-        self::assertSame('failed', $fixture['status']);
-        self::assertSame(['filesystem_residue_present'], $fixture['failures']);
-        self::assertSame('present', $fixture['filesystem_cleanup']);
-        self::assertSame(['sessions' => 4], $fixture['filesystem_residue']);
+            ['observe', 'wlsession', 'wlsession.example.com', $mailbox],
+            ['remove', 'wlsession', 'wlsession.example.com', $mailbox],
+        ], $cleanup->calls);
+        self::assertSame('passed', $fixture['status'], (string) json_encode($fixture['failures']));
+        self::assertSame('passed', $fixture['cleanup']);
+        self::assertSame([], $fixture['failures']);
+        self::assertSame('confirmed_absent', $fixture['filesystem_cleanup']);
         self::assertSame([
             'status' => 'removed', 'reason' => null, 'observed' => RecordingSessionFileCleanup::OBSERVED,
             'removal' => RecordingSessionFileCleanup::REMOVED,
-            'reproof' => ['outcome' => 'confirmed_absent', 'residue' => []],
         ], $scenario['session_files']);
+        self::assertContains('filesystem_proof_covers_fixed_locations_at_one_moment', $scenario['limitations']);
         self::assertContains(
-            'filesystem_proof_after_session_file_removal_covers_fixed_locations_at_one_moment',
+            'session_file_removal_is_a_bounded_root_filesystem_write_before_the_final_proof',
             $scenario['limitations'],
         );
         self::assertSame('passed', $scenario['discrepancy_review']['status']);
     }
 
-    /** @param list<array<mixed>|null> $findings */
-    #[DataProvider('refusedSessionCleanups')]
-    public function testSessionFilesAreNeverTouchedWithoutEveryGate(
-        array $findings,
-        ?string $removeacct,
-        string $reason,
-    ): void {
+    /** A failed deletion fails `cleanup` through the lifecycle, and the final proof still shows what remains. */
+    public function testAFailedDeletionFailsCleanup(): void
+    {
+        $cleanup = new RecordingSessionFileCleanup(removal: null);
+        $proof = RecordingFilesystemProof::after(['outcome' => 'present', 'residue' => ['sessions' => 4]]);
+        $scenario = self::scenario(new WebmailSessionServer(), $proof, $cleanup);
+        $fixture = $scenario['fixture'];
+
+        self::assertSame(['observe', 'remove'], array_column($cleanup->calls, 0));
+        self::assertSame('failed', $fixture['status']);
+        self::assertSame('failed', $fixture['cleanup']);
+        self::assertSame(['session_files_unconfirmed', 'filesystem_residue_present'], $fixture['failures']);
+        self::assertSame('unconfirmed', $scenario['session_files']['status']);
+        self::assertSame('removal_unreadable', $scenario['session_files']['reason']);
+    }
+
+    /**
+     * The cleanup runs only when the lifecycle calls it: never for an account not proven created and then removed.
+     *
+     * @param array<string, string> $failures
+     */
+    #[DataProvider('accountsNeverProvenRemoved')]
+    public function testACleanupTheLifecycleNeverCallsDeletesNothing(array $failures): void
+    {
         $http = new WebmailSessionServer();
-        if ($removeacct !== null) {
-            $http->failures['removeacct:1'] = $removeacct;
-        }
+        $http->failures = $failures;
         $cleanup = new RecordingSessionFileCleanup();
-        /** @var list<Finding|null> $findings */
-        $scenario = self::scenario($http, new RecordingFilesystemProof($findings), $cleanup);
+        $proof = RecordingFilesystemProof::after(['outcome' => 'present', 'residue' => ['sessions' => 4]]);
+        $scenario = self::scenario($http, $proof, $cleanup);
 
         self::assertSame([], $cleanup->calls);
         self::assertSame(
-            ['status' => 'not_run', 'reason' => $reason, 'observed' => null, 'removal' => null, 'reproof' => null],
+            ['status' => 'not_run', 'reason' => 'not_called', 'observed' => null, 'removal' => null],
             $scenario['session_files'],
         );
+        self::assertSame('failed', $scenario['fixture']['status']);
     }
 
-    /** @return iterable<string, array{list<array<mixed>|null>, string|null, string}> */
+    /** @return iterable<string, array{array<string, string>}> */
+    public static function accountsNeverProvenRemoved(): iterable
+    {
+        yield 'account removal refused' => [['removeacct:1' => 'api_before']];
+        yield 'account removal outcome lost' => [['removeacct:1' => 'throw_before']];
+        yield 'account never created' => [['createacct:1' => 'api_before']];
+    }
+
+    /**
+     * Called by the lifecycle, the cleanup still refuses without a passed control that saw no session name before the
+     * exercise; the refusal fails `cleanup` and nothing is touched.
+     *
+     * @param list<Finding> $findings
+     */
+    #[DataProvider('refusedSessionCleanups')]
+    public function testTheCleanupRefusesWithoutAUsableControl(array $findings, string $reason): void
+    {
+        $cleanup = new RecordingSessionFileCleanup();
+        $scenario = self::scenario(new WebmailSessionServer(), new RecordingFilesystemProof($findings), $cleanup);
+
+        self::assertSame([], $cleanup->calls);
+        self::assertSame(
+            ['status' => 'not_run', 'reason' => $reason, 'observed' => null, 'removal' => null],
+            $scenario['session_files'],
+        );
+        self::assertContains('session_file_removal_refused', $scenario['fixture']['failures']);
+        self::assertSame('failed', $scenario['fixture']['cleanup']);
+    }
+
+    /** @return iterable<string, array{list<Finding>, string}> */
     public static function refusedSessionCleanups(): iterable
     {
         $residue = ['outcome' => 'present', 'residue' => ['sessions' => 4]];
         yield 'session names before the exercise' => [[['outcome' => 'present', 'residue' => [
             ...RecordingFilesystemProof::PRESENT['residue'], 'sessions' => 1,
-        ]], $residue], null, 'session_names_before_exercise'];
+        ]], $residue], 'session_names_before_exercise'];
         yield 'failed control' => [
-        [['outcome' => 'unconfirmed', 'residue' => []], $residue], null,
+        [['outcome' => 'unconfirmed', 'residue' => []], $residue],
             'filesystem_control_not_passed'];
-        yield 'account still present' => [
-        [RecordingFilesystemProof::PRESENT, $residue], 'api_before',
-            'account_removal_unproven'];
-        yield 'account removal outcome lost' => [
-        [RecordingFilesystemProof::PRESENT, $residue], 'throw_before',
-            'account_removal_unproven'];
+        yield 'control missing a location' => [
+        [['outcome' => 'present', 'residue' => ['home' => 1]], $residue],
+            'filesystem_control_not_passed'];
     }
 
-    public function testNoCleanupWithoutTheFilesystemProof(): void
+    public function testNoCleanupIsOfferedWithoutTheFilesystemProof(): void
     {
         $cleanup = new RecordingSessionFileCleanup();
         $scenario = self::scenario(new WebmailSessionServer(), null, $cleanup);
+
         self::assertSame([], $cleanup->calls);
         self::assertSame('filesystem_proof_not_enabled', $scenario['session_files']['reason']);
+        self::assertSame('passed', $scenario['fixture']['status']);
     }
 
     /**
+     * Every outcome uses the same classification and reaches the lifecycle as failure labels: regular anchored files
+     * are removed, and every other anchored entry or unexplained name is reported as remaining, never lost.
+     *
      * @param FileObservation|null $observed
      * @param Removal|null $removed
-     * @param Finding|null $reproof
      * @param list<string> $steps
+     * @param list<string> $labels
      */
     #[DataProvider('sessionCleanupOutcomes')]
-    public function testSessionCleanupOutcomesAreReportedExactly(
+    public function testSessionCleanupOutcomesReachTheLifecycle(
         ?array $observed,
         ?array $removed,
-        ?array $reproof,
         string $status,
         ?string $reason,
         array $steps,
+        array $labels,
     ): void {
         $cleanup = new RecordingSessionFileCleanup($observed, $removed);
-        $findings = [RecordingFilesystemProof::PRESENT, ['outcome' => 'present', 'residue' => ['sessions' => 4]]];
-        if ($reproof !== null) {
-            $findings[] = $reproof;
-        }
-        $scenario = self::scenario(new WebmailSessionServer(), new RecordingFilesystemProof($findings), $cleanup);
+        // The final proof reads absent, so the failures are the cleanup's own labels alone.
+        $proof = RecordingFilesystemProof::after(['outcome' => 'confirmed_absent', 'residue' => []]);
+        $scenario = self::scenario(new WebmailSessionServer(), $proof, $cleanup);
         $files = $scenario['session_files'];
 
         self::assertSame($status, $files['status']);
@@ -485,14 +533,13 @@ final class WebmailSessionFixtureTest extends TestCase
         self::assertSame($steps, array_column($cleanup->calls, 0));
         self::assertSame($observed, $files['observed']);
         self::assertSame($steps === ['observe', 'remove'] ? $removed : null, $files['removal']);
+        self::assertSame($labels, $scenario['fixture']['failures']);
+        self::assertSame($labels === [] ? 'passed' : 'failed', $scenario['fixture']['cleanup']);
     }
 
     /**
-     * Every outcome uses the same classification: regular anchored files are removed, and every other anchored entry
-     * or unexplained name is reported as remaining, never lost.
-     *
      * @return iterable<string, array{
-     *     FileObservation|null, Removal|null, Finding|null, string, string|null, list<string>
+     *     FileObservation|null, Removal|null, string, string|null, list<string>, list<string>
      * }>
      */
     public static function sessionCleanupOutcomes(): iterable
@@ -500,34 +547,35 @@ final class WebmailSessionFixtureTest extends TestCase
         $observed = RecordingSessionFileCleanup::OBSERVED;
         $removed = RecordingSessionFileCleanup::REMOVED;
         $after = $removed['after'];
-        $absent = ['outcome' => 'confirmed_absent', 'residue' => []];
         $none = ['inventory' => 40, 'wide' => 0, 'own' => 0, 'mailbox_encoded' => 0, 'mailbox_literal' => 0,
             'anchored_other' => 0, 'unexplained' => 0, 'token_suffix' => 0, 'directories' => 0];
         $both = ['observe', 'remove'];
-        yield 'nothing to remove' => [$none, $removed, null, 'not_required', null, ['observe']];
+        $remain = ['session_files_remain'];
+        $unconfirmed = ['session_files_unconfirmed'];
+        yield 'removed' => [$observed, $removed, 'removed', null, $both, []];
+        yield 'nothing to remove' => [$none, $removed, 'not_required', null, ['observe'], []];
         yield 'only unexplained names' => [
-        [...$none, 'wide' => 2, 'unexplained' => 2], $removed, null,
-            'residue_left', 'no_anchored_regular_files', ['observe']];
+        [...$none, 'wide' => 2, 'unexplained' => 2], $removed,
+            'residue_left', 'no_anchored_regular_files', ['observe'], $remain];
         yield 'only an anchored link' => [
-        [...$none, 'wide' => 1, 'anchored_other' => 1], $removed, null,
-            'residue_left', 'no_anchored_regular_files', ['observe']];
-        yield 'unreadable observation' => [null, $removed, null, 'unconfirmed', 'observation_unreadable', ['observe']];
-        yield 'unreadable removal' => [$observed, null, $absent, 'unconfirmed', 'removal_unreadable', $both];
+        [...$none, 'wide' => 1, 'anchored_other' => 1], $removed,
+            'residue_left', 'no_anchored_regular_files', ['observe'], $remain];
+        yield 'unreadable observation' => [null, $removed, 'unconfirmed', 'observation_unreadable', ['observe'],
+            $unconfirmed];
+        yield 'unreadable removal' => [$observed, null, 'unconfirmed', 'removal_unreadable', $both, $unconfirmed];
         yield 'an anchored file remains' => [$observed,
-            [...$removed, 'deleted' => 3, 'after' => [...$after, 'wide' => 1, 'own' => 1]], $absent,
-            'residue_left', 'anchored_files_remain', $both];
-        yield 'fewer deleted than counted before' => [$observed, [...$removed, 'deleted' => 3], $absent,
-            'residue_left', 'anchored_files_remain', $both];
+            [...$removed, 'deleted' => 3, 'after' => [...$after, 'wide' => 1, 'own' => 1]],
+            'residue_left', 'anchored_files_remain', $both, $remain];
+        yield 'fewer deleted than counted before' => [$observed, [...$removed, 'deleted' => 3],
+            'residue_left', 'anchored_files_remain', $both, $remain];
         yield 'an unexplained name remains' => [
         [...$observed, 'wide' => 5, 'unexplained' => 1],
             [...$removed, 'after' => [...$after, 'wide' => 1, 'unexplained' => 1]],
-            ['outcome' => 'present', 'residue' => ['sessions' => 1]], 'residue_left', 'other_names_remain', $both];
+            'residue_left', 'other_names_remain', $both, $remain];
         yield 'an anchored link remains' => [
         [...$observed, 'wide' => 5, 'anchored_other' => 1],
             [...$removed, 'after' => [...$after, 'wide' => 1, 'anchored_other' => 1]],
-            ['outcome' => 'present', 'residue' => ['sessions' => 1]], 'residue_left', 'other_names_remain', $both];
-        yield 'reproof not absent' => [$observed, $removed, ['outcome' => 'unconfirmed', 'residue' => []],
-            'unconfirmed', 'reproof_not_absent', $both];
+            'residue_left', 'other_names_remain', $both, $remain];
     }
 
     public function testACleanupThatThrowsIsUnreadableNeverAbsent(): void
@@ -535,9 +583,11 @@ final class WebmailSessionFixtureTest extends TestCase
         $cleanup = new RecordingSessionFileCleanup(throw: true);
         $proof = RecordingFilesystemProof::after(['outcome' => 'present', 'residue' => ['sessions' => 4]]);
         $scenario = self::scenario(new WebmailSessionServer(), $proof, $cleanup);
+
         self::assertSame('unconfirmed', $scenario['session_files']['status']);
         self::assertSame('observation_unreadable', $scenario['session_files']['reason']);
         self::assertSame(['observe'], array_column($cleanup->calls, 0));
+        self::assertSame(['session_files_unconfirmed', 'filesystem_residue_present'], $scenario['fixture']['failures']);
     }
 
     /**
