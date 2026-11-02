@@ -82,6 +82,9 @@ final class LangPhpMutationServer implements ClientInterface
     /** Whether a vhost-selected read returns one object rather than a one-row list. */
     public bool $vhostObject = true;
 
+    /** Whether a read without a vhost selector returns the account's one row as an object, a form the union admits. */
+    public bool $allVhostsAsObject = false;
+
     /** @var list<string>|null Replacement vhosts list a version write reports. */
     public ?array $reportedVhosts = null;
 
@@ -197,7 +200,7 @@ final class LangPhpMutationServer implements ClientInterface
             'vhost' => 'wlphpset.example.com',
         ];
         if ($vhost === null) {
-            return [$row];
+            return $this->allVhostsAsObject ? $row : [$row];
         }
         if ($vhost !== 'wlphpset.example.com') {
             throw new RuntimeException('Cannot find vhost.');

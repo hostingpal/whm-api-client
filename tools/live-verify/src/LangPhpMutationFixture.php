@@ -313,8 +313,13 @@ final class LangPhpMutationFixture
         foreach (self::ROUTES as $route => $short) {
             $result = $this->succeed('vhosts_' . $short, static fn (#[SensitiveParameter] Client $client): mixed =>
                 self::lang($client, $route)->phpGetVhostVersions());
-            $this->original['vhosts_root'][$route] = $this->rootShape();
-            $rows = is_array($result) && array_is_list($result) ? $result : [];
+            $shape = $this->rootShape();
+            $this->original['vhosts_root'][$route] = $shape;
+            $rows = match ($shape) {
+                'object' => is_array($result) ? [$result] : [],
+                'list' => is_array($result) ? array_values($result) : [],
+                default => [],
+            };
             $this->original['vhost_rows'][$route] = count($rows);
             $versions[$route] = self::vhostVersion($rows);
         }
@@ -336,8 +341,7 @@ final class LangPhpMutationFixture
         );
         $this->original['directive_routes_agree'] = $values['direct-uapi'] === $values['bridged-uapi'];
         $this->original['directive_targets_distinct'] = $this->original['directives_found']
-            && !in_array($this->directiveValues['max_execution_time'], ['37', '41'], true)
-            && $this->directiveValues['max_input_time'] !== '43';
+            && !self::holdsTarget($this->directiveValues);
         $this->expect($this->original['directives_found'] && $this->original['directive_routes_agree']);
 
         $contents = [];
@@ -401,9 +405,7 @@ final class LangPhpMutationFixture
 
             $values = $this->readDirectives('read_content_directives_' . $short, $route);
             $crosscheck = $values['max_input_vars'] === LangPhpMutationRecipe::CONTENT_INPUT_VARS[$label];
-            $replaced = $this->original['directive_targets_distinct']
-                ? !in_array($values['max_execution_time'], ['37', '41'], true) && $values['max_input_time'] !== '43'
-                : null;
+            $replaced = $this->original['directive_targets_distinct'] ? !self::holdsTarget($values) : null;
             $checks = ['directive_crosscheck' => $crosscheck, 'earlier_directives_replaced' => $replaced];
             $this->contentRoundTrips[$route] = [...$finding, ...$checks];
             $this->expect($crosscheck && $replaced !== false);
@@ -417,8 +419,9 @@ final class LangPhpMutationFixture
      * Send `host` once on a route, then require the home content to read back unchanged.
      *
      * Only an explicit API refusal is a refusal; a lost or unreadable reply leaves the outcome unknown and stops the
-     * group. An accepted write is unexpected: the content is still read, so the report shows what it did, and then the
-     * group stops at the write.
+     * group. A write the API confirmed is accepted, even when its payload then fails validation, which is also a
+     * failed observation. An accepted write is unexpected: the content is still read, so the report shows what it
+     * did, and then the group stops at the write.
      *
      * @param Route $route
      */
@@ -436,10 +439,12 @@ final class LangPhpMutationFixture
         } finally {
             $this->guard->clearPending();
         }
-        $accepted = $record['probe_outcome'] === 'passed';
+        $accepted = $record['api_outcome'] === 'success';
         $refused = $record['failure_kind'] === 'api_failure' && $record['uapi_status'] === 0;
-        if (!$accepted && !$refused) {
+        if ($record['probe_outcome'] !== 'passed' && !$refused) {
             $this->observationFailed = true;
+        }
+        if (!$accepted && !$refused) {
             throw new RuntimeException('LangPHP host attempt outcome is unknown.');
         }
         $outcome = $accepted ? 'accepted' : 'refused';
@@ -499,6 +504,24 @@ final class LangPhpMutationFixture
             ];
             $this->expect($matches);
         }
+    }
+
+    /**
+     * Whether any watched directive already holds a value the recipe writes for it, so that change could not show.
+     *
+     * @param array<string, string|null> $values
+     */
+    private static function holdsTarget(array $values): bool
+    {
+        foreach (LangPhpMutationRecipe::DIRECTIVES as $directives) {
+            foreach ($directives as $key => $target) {
+                if (($values[$key] ?? null) === $target) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**

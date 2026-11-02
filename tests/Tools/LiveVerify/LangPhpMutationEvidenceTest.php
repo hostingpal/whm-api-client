@@ -9,6 +9,7 @@ use HostingPal\WhmApiClient\Api\Whm\Spec\ServerSpec;
 use HostingPal\WhmApiClient\Tools\LiveVerify\EvidenceRunner;
 use HostingPal\WhmApiClient\Tools\LiveVerify\LangPhpMutationEvidence;
 use HostingPal\WhmApiClient\Tools\LiveVerify\LangPhpMutationFixture;
+use HostingPal\WhmApiClient\Tools\LiveVerify\LangPhpMutationRecipe;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -64,6 +65,29 @@ final class LangPhpMutationEvidenceTest extends TestCase
             'read_version_bridged bridged-uapi php_get_vhost_versions selected-vhost',
         ], $plan);
         self::assertSame(['set_content_host_direct', 'set_content_host_bridged'], LangPhpMutationEvidence::REFUSED);
+    }
+
+    /**
+     * The gate's plan and the recipe's mutation table name the same phases, functions and routes, in the same order.
+     *
+     * Either one changing alone fails here, so the guard can never authorize a phase the gate does not expect.
+     */
+    public function testPlanAndRecipeMutationsAgree(): void
+    {
+        $planned = [];
+        foreach (LangPhpMutationEvidence::PLAN as $phase => [$route, $function]) {
+            if (str_starts_with($function, 'php_ini_set_') || str_starts_with($function, 'php_set_')) {
+                $planned[$phase] = [$function, $route];
+            }
+        }
+        self::assertSame(LangPhpMutationRecipe::MUTATIONS, $planned);
+        foreach (array_keys(LangPhpMutationEvidence::PLAN) as $phase) {
+            self::assertSame(
+                isset(LangPhpMutationRecipe::MUTATIONS[$phase]),
+                str_starts_with($phase, 'set_'),
+                $phase,
+            );
+        }
     }
 
     public function testContractsBindTheGeneratedSpecsAndPinnedGetVariants(): void

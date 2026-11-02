@@ -8,6 +8,7 @@ use HostingPal\WhmApiClient\Tools\LiveVerify\EvidenceRunner;
 use HostingPal\WhmApiClient\Tools\LiveVerify\FilesystemAbsenceProof;
 use HostingPal\WhmApiClient\Tools\LiveVerify\LangPhpMutationEvidence;
 use HostingPal\WhmApiClient\Tools\LiveVerify\LangPhpMutationFixture;
+use HostingPal\WhmApiClient\Tools\LiveVerify\LangPhpMutationRecipe;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
@@ -453,6 +454,73 @@ final class LangPhpMutationFixtureTest extends TestCase
         yield 'lost' => ['throw_before'];
         yield 'gateway' => ['http_before'];
         yield 'unreadable' => ['invalid_before'];
+    }
+
+    /**
+     * An API-confirmed host write is accepted even when its payload then fails validation, and is still read back.
+     *
+     * The payload failure is a failed observation, and the acceptance a failed expectation; both are reported.
+     */
+    public function testConfirmedHostWriteWithAMismatchedPayloadIsAcceptedAndReadBack(): void
+    {
+        $http = new LangPhpMutationServer();
+        $http->acceptHost = true;
+        $http->overrides['direct:LangPHP/' . self::SET_CONTENT . ':2'] = '"private payload"';
+        $scenario = self::scenario($http);
+        $record = self::observation($scenario, 'set_content_host_direct');
+
+        self::assertSame('payload_mismatch', $record['failure_kind']);
+        self::assertSame('success', $record['api_outcome']);
+        self::assertSame('failed', $record['expectation']);
+        self::assertSame('accepted', $scenario['content_type_host']['direct-uapi']['outcome']);
+        self::assertFalse($scenario['content_type_host']['direct-uapi']['content_unchanged']);
+        self::assertSame('passed', self::observation($scenario, 'read_content_host_direct')['probe_outcome']);
+        self::assertSame('set_content_host_direct', $scenario['fixture']['stopped_at']['content']);
+        self::assertSame(['capture_failure', 'expectation_failure'], $scenario['fixture']['failures']);
+        self::assertSame(1, $http->counts['LangPHP/' . self::SET_CONTENT]);
+        self::assertNull($scenario['fixture']['stopped_at']['versions']);
+    }
+
+    /** The union admits a single object without the selector too, so preflight reads its one row from either shape. */
+    public function testPreflightReadsTheVhostRowFromEitherDocumentedShape(): void
+    {
+        $http = new LangPhpMutationServer();
+        $http->allVhostsAsObject = true;
+        $scenario = self::scenario($http);
+
+        self::assertSame('passed', $scenario['fixture']['status'], (string) json_encode(
+            $scenario['fixture']['failures'],
+        ));
+        self::assertSame(['direct-uapi' => 'object', 'bridged-uapi' => 'object'], $scenario['original_state'][
+            'vhosts_root'
+        ]);
+        self::assertSame(['direct-uapi' => 1, 'bridged-uapi' => 1], $scenario['original_state']['vhost_rows']);
+        self::assertTrue($scenario['original_state']['vhost_row_found']);
+        self::assertSame('ea-php84', $http->vhostVersion);
+    }
+
+    /** Every directive target the recipe writes is checked against the original state, wherever it is declared. */
+    #[DataProvider('directiveTargets')]
+    public function testAnyDirectiveTargetAlreadyInPlaceSendsNoDirectiveWrite(string $key, string $value): void
+    {
+        $http = new LangPhpMutationServer();
+        $http->systemDirectives[$key] = $value;
+        $scenario = self::scenario($http);
+
+        self::assertFalse($scenario['original_state']['directive_targets_distinct']);
+        self::assertArrayNotHasKey('direct:LangPHP/' . self::SET_DIRECTIVES, $http->counts);
+        self::assertNull($scenario['content_round_trips']['bridged-uapi']['earlier_directives_replaced']);
+        self::assertTrue($scenario['content_round_trips']['bridged-uapi']['directive_crosscheck']);
+    }
+
+    /** @return iterable<string, array{string, string}> */
+    public static function directiveTargets(): iterable
+    {
+        foreach (LangPhpMutationRecipe::DIRECTIVES as $route => $directives) {
+            foreach ($directives as $key => $value) {
+                yield $route . ' ' . $key => [$key, $value];
+            }
+        }
     }
 
     public function testHostRefusalThatStillChangedTheContentFails(): void
