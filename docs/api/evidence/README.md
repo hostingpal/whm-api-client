@@ -1398,3 +1398,17 @@ observations as the [v1 artifact](2026-10-17-finite-quota.json). See the
 of what ran at that revision, including its `filesystem_cleanup`, which predates the control.
 The fixture has since moved to `finite-quota-disposable-v3`, and no v3 capture exists; see
 the [source audit](../source-audit.md#re-review-corrections-2026-11-02).
+
+## Disposable-account user task queue evidence
+
+The [capture](2026-11-02-user-tasks.json) at `fea2d7d612acd215c452f5d710b5d0813f3e590b` on
+`11.138.0.19` is a **failed run**, exit 1, kept unchanged. Scenario
+`user-tasks-disposable-v1` queued one VersionControl clone task from a local path in the
+disposable account `wltasks`, with no network contact, and proved its ID from the producer's
+own response. The runner removed the task before the next read, within two seconds: all six `UserTasks/retrieve`
+reads, through both routes, returned an empty list, and the one delete by the exact ID returned
+UAPI status 0. Setup and cleanup passed, and `filesystem_cleanup` is `confirmed_absent` after a
+passed control. Both reviews fail: the UserTasks review on the refused delete, the producer
+review on masked VersionControl create fields. It establishes no populated `retrieve` row and no
+successful delete. See the [source audit](../source-audit.md#user-task-queue-capture). SHA-256:
+`470a6271daedbf78ab07b0769ffa967251c7ca1619940780d65ac0f26fda4e6c`.

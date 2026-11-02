@@ -2519,3 +2519,10 @@ reported, but never gate the UserTasks result. The queue's own `exclusive` key, 
 VersionControl create contract does not declare, is expected to appear there.
 
 The current scenario is `user-tasks-disposable-v1`.
+The [v1 capture](../../docs/api/evidence/2026-11-02-user-tasks.json) at `fea2d7d` on
+`11.138.0.19` is a **failed run**, exit 1, kept unchanged and not rerun. The producer worked
+and its response listed the owned task, but the runner removed the task before the next read,
+so every queue read through both routes was empty and the delete by its exact ID was refused.
+Cleanup and the filesystem proof passed. Seeing a populated row needs a task that outlives the
+next read; that is a new recipe version, not a rerun. See the
+[source audit](../../docs/api/source-audit.md#user-task-queue-capture).

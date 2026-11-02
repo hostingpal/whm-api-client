@@ -10316,3 +10316,55 @@ proves neither completion nor that a process stopped.
 same rule. Their discrepancies are Variables and VersionControl evidence and never gate the
 UserTasks result. The create rows are expected to carry `exclusive`, which the VersionControl
 create contract does not declare.
+
+### User task queue capture
+
+The [capture](evidence/2026-11-02-user-tasks.json) at
+`fea2d7d612acd215c452f5d710b5d0813f3e590b` on `11.138.0.19` is a **failed run**, exit 1, kept
+unchanged and not rerun. All 11 phases ran over HTTP 200 and `capture` passed, but the queue
+was never seen populated through `UserTasks/retrieve`, so the bead's goal was not met.
+SHA-256: `470a6271daedbf78ab07b0769ffa967251c7ca1619940780d65ac0f26fda4e6c`.
+
+- Both routes read an empty JSON list before the producer, so the queue held nothing else.
+- The empty source repository and the local-path clone were both created with UAPI status 1.
+  The clone's own response listed exactly one task row for the clone root, so ownership of
+  its ID was proven from the producer response, and the ID was a queue element name.
+- All four queue reads after the producer, through both routes, read an empty list. The first
+  began within two seconds of the clone request, by the records' whole-second timestamps. The
+  runner had already removed the task. The run records
+  `owned_row_absent:tasks_queued_direct` and `owned_row_absent:tasks_queued_bridged`.
+- The one delete, by that exact ID, returned UAPI status 0 with a string error list and
+  `data: null`, so the typed method raised `ApiErrorException`. The installed `remove()` dies
+  when it cannot lock a missing element, which matches, though the sanitized evidence cannot
+  show the cause. It was not retried. `owned_delete_not_confirmed` records it, and the strict
+  review fails on `unsuccessful_phase:delete_owned` and `unexpected_uapi_status:delete_owned`.
+- Setup and cleanup passed: token, account, domain and zone are `confirmed_absent`, the
+  repositories went with the account, and the filesystem control passed with
+  `home=1, users=1, userdata=1, userdomains=1, passwd=1, zones=2` before
+  `filesystem_cleanup` read `confirmed_absent`. Sessions read 0 again.
+
+**What the run establishes.** The producer works without network contact on this server, and
+its task left the queue before the next request, which began within two seconds. The clone's response
+`tasks` rows are built by the same `Cpanel::UserTasks::get()` that `UserTasks/retrieve` calls,
+and through that direct response they carried string `action`, `subsystem`, `id` and `sse_url`,
+an `args` object with string `repository_root` and `log_file`, and one further key, masked
+because the VersionControl contract does not declare it, whose value was a numeric string. The
+inspected schema leaves only `exclusive` for that key, stored as integer 0 and read back as
+text, which agrees with the `string|int` UserTasks contract; the wildcard alone names neither
+the key nor a count. A deleted or finished queue element's delete is an API failure. No typed
+UserTasks contract was contradicted, so no overlay correction follows.
+
+**What it does not establish.** No `UserTasks/retrieve` row, on either route, and no
+successful delete or its data. Whether bridged rows match direct ones. The `exclusive` wire
+type through `retrieve` itself. Clone success, the runner's behavior, and WPX rows. The two
+masked VersionControl create fields, an integer on both creates and a null on the source create,
+fail `producer_review` with `unacknowledged_discrepancy:source_create` and
+`unacknowledged_discrepancy:clone_create`. They belong to VersionControl follow-up `8x0.2.27`
+and stay unwaived.
+
+**Follow-up design, not run.** A run that sees the row needs the task to outlive the next
+read, which this producer does not do on this server. A larger local source would slow the
+clone, but cloning a local path hardlinks objects, and building one needs an upload of a
+prepared repository and probably a larger quota. The UserTasks read could instead start
+concurrently with the producer. Either is a new recipe version with a new output path, decided
+by the owner; nothing here was rerun.
