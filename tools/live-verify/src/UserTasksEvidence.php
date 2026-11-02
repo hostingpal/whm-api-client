@@ -26,7 +26,7 @@ use HostingPal\WhmApiClient\Api\Whm\Spec\ServerSpec;
  */
 final class UserTasksEvidence
 {
-    /** Every phase in execution order. */
+    /** Every phase in execution order; delete_owned is planned only when a queue read showed the owned row. */
     public const PHASES = [
         'version', 'home', 'tasks_initial_direct', 'tasks_initial_bridged', 'source_create', 'clone_create',
         'tasks_queued_direct', 'tasks_queued_bridged', 'delete_owned', 'tasks_after_direct', 'tasks_after_bridged',
@@ -62,14 +62,19 @@ final class UserTasksEvidence
     /**
      * Require the complete ordered recipe from one server version, retaining every original discrepancy.
      *
-     * An empty or partial run, including a setup failure before capture, fails with its missing phases.
+     * An empty or partial run, including a setup failure before capture, fails with its missing phases. The delete is
+     * planned only when a queue read showed the owned row, so $deleteAttempted says whether delete_owned belongs to the
+     * plan. A delete the fixture withheld is a recorded race outcome, judged by its expectations, not a missing phase;
+     * a delete record in a run that withheld it is unexpected.
      *
      * @param list<Observation> $records
      * @param Context $context
      * @return array{discrepancy_review: Assessment, producer_review: Assessment}
      */
-    public static function assess(array $records, array $context): array
+    public static function assess(array $records, array $context, bool $deleteAttempted): array
     {
+        $planned = $deleteAttempted ? self::PHASES
+            : array_values(array_filter(self::PHASES, static fn (string $phase): bool => $phase !== 'delete_owned'));
         $versions = array_values(array_filter($records, static fn (array $record): bool =>
             $record['phase'] === 'version' && self::usableVersion($record['server_version'])));
         $version = count($versions) === 1 ? $versions[0]['server_version'] : null;
@@ -83,7 +88,7 @@ final class UserTasksEvidence
                 $findings[] = 'duplicate_phase:' . $phase;
             }
             $seen[$phase] = true;
-            if (!in_array($phase, self::PHASES, true)) {
+            if (!in_array($phase, $planned, true)) {
                 $subject[] = 'unexpected_phase';
                 continue;
             }
@@ -122,19 +127,19 @@ final class UserTasksEvidence
                 array_push($subject, ...$findings);
             }
         }
-        foreach (self::PHASES as $phase) {
+        foreach ($planned as $phase) {
             if (!isset($seen[$phase])) {
                 $missing = 'missing_phase:' . $phase;
                 in_array($phase, self::PRODUCER_PHASES, true) ? $producer[] = $missing : $subject[] = $missing;
             }
         }
-        if (array_column($records, 'phase') !== self::PHASES && array_diff(self::PHASES, array_keys($seen)) === []) {
+        if (array_column($records, 'phase') !== $planned && array_diff($planned, array_keys($seen)) === []) {
             $subject[] = 'phase_order_mismatch';
         }
 
         return [
-            'discrepancy_review' => self::assessment('user-tasks-subject-no-acknowledgments-v1', $subject),
-            'producer_review' => self::assessment('user-tasks-producer-structure-v1', $producer),
+            'discrepancy_review' => self::assessment('user-tasks-subject-no-acknowledgments-v2', $subject),
+            'producer_review' => self::assessment('user-tasks-producer-structure-v2', $producer),
         ];
     }
 

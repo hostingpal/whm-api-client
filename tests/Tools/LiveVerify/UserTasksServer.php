@@ -52,6 +52,9 @@ final class UserTasksServer implements ClientInterface
     /** Queue reads, the create response's own included, after which a clone task finishes; null never finishes. */
     public ?int $finishAfterReads = null;
 
+    /** Whether a successful delete really removes the element; false models residue the reads must expose. */
+    public bool $deleteRemoves = true;
+
     /** Whether create responses carry the stored exclusive key in their task rows, as get() returns it. */
     public bool $producerRowsCarryExclusive = true;
 
@@ -187,7 +190,9 @@ final class UserTasksServer implements ClientInterface
                 if (!is_string($id) || !isset($this->queue[$id])) {
                     return false;
                 }
-                unset($this->queue[$id]);
+                if ($this->deleteRemoves) {
+                    unset($this->queue[$id]);
+                }
 
                 return null;
             case 'UserTasks/retrieve':

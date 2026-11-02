@@ -25,19 +25,26 @@ use Throwable;
  * DisposableAccountLifecycle owns identity, ownership, the short-lived writable token, account cleanup and the run's
  * status, and states their rules. This fixture holds the producer, the queue reads and the one deletion.
  *
- * The producer is a VersionControl clone whose source is an empty repository this run creates first, inside the same
- * account, so the server's git clones a local path: no network is contacted, nothing is installed and no server
- * setting changes. Both queue routes must read empty before the producer runs, so every later row is this run's;
- * ownership still needs an exact subsystem, action and clone root. The task ID comes from the producer's own response
- * or, failing that, from a queue read, always from the original JSON. Exactly one owned queue element is deleted, once,
- * by that ID, even if the task already finished: a refusal then is recorded, never retried. Deletion proves neither
- * completion nor that a process stopped. No queued work is executed, polled, cancelled or otherwise touched, and other
- * rows are only counted. Repositories stay for account removal, which takes the whole home directory.
+ * The producer queues one clone of a local repository inside the disposable account: this run first creates an empty
+ * repository there, then asks VersionControl to clone it by absolute path. cPanel's own queue runner then processes
+ * that clone; this fixture neither starts nor stops it. The source is a local path chosen so that git needs no network
+ * transport, according to the installed source; network traffic is not monitored, so no absence of contact is
+ * claimed. Nothing is installed and no server setting changes. Both queue routes must read empty before the producer
+ * runs; ownership still needs an exact subsystem, action and clone root, read from the original JSON.
+ *
+ * The one delete is sent only when the latest readable queue read showed the owned row, by the single owned ID the
+ * producer response and the reads agree on. A row only the producer response showed, a row the latest read no longer
+ * showed and several owned IDs are each recorded with their reason and never deleted, so a race with the runner stays
+ * an expectation outcome rather than a contract failure. A refusal is recorded, never retried. Deletion proves neither
+ * completion nor that a process stopped. Apart from the producer and that delete, no queued work is started, polled,
+ * cancelled or otherwise touched, and other rows are only counted. Repositories stay for account removal, which takes
+ * the whole home directory.
  *
  * Capture stops at the first unexpected state before the producer, so nothing is created on an account that does not
- * look as planned. After the producer, every read and the delete still run, as each says what remains; their failures
- * and unmet expectations are recorded and fail the run. In the report, capture says whether every planned observation
- * finished and passed, expectations whether the plan held, with its findings by fixed label.
+ * look as planned. After the producer, every read still runs, as each says what remains; their failures and unmet
+ * expectations are recorded and fail the run. In the report, capture says whether every planned observation finished
+ * and passed, expectations whether the plan held, with its findings by fixed label, each marking only the record it is
+ * about. Task creation is confirmed only by a response or read that showed the owned row.
  *
  * @phpstan-import-type Alternative from EvidenceRunner
  * @phpstan-import-type Context from EvidenceRunner
@@ -63,11 +70,14 @@ use Throwable;
  * }
  * @phpstan-type Ownership array{
  *     initial_queue_empty: bool, producer_rows: int|null, producer_owned_rows: int|null,
- *     owned_task: 'not_attempted'|'proven'|'not_proven'|'ambiguous',
- *     id_source: 'producer_response'|'inventory'|null, id_is_queue_element: bool|null
+ *     owned_task: 'not_attempted'|'seen_by_reads'|'producer_response_only'|'not_seen'|'ambiguous',
+ *     distinct_owned_ids: int|null, id_is_queue_element: bool|null
  * }
  * @phpstan-type Deletion array{
- *     attempted: bool, outcome: string, data: string|null, owned_row_in_latest_read: bool
+ *     attempted: bool, outcome: string,
+ *     reason: 'owned_row_never_seen'|'owned_row_not_seen_by_reads'|'owned_row_absent_from_latest_read'
+ *         |'owned_task_ambiguous'|'owned_id_not_queue_element'|null,
+ *     data: string|null, owned_row_in_latest_reads: array{direct: bool|null, bridged: bool|null}
  * }
  * @phpstan-type Report array{
  *     status: 'passed'|'failed', setup: 'passed'|'failed'|'not_started', capture: 'passed'|'failed'|'not_run',
@@ -89,7 +99,7 @@ use Throwable;
  *     filesystem_control: FilesystemControl
  * }
  * @phpstan-type Scenario array{
- *     scenario: 'user-tasks-disposable-v1', target_role: 'disposable-test-account',
+ *     scenario: 'user-tasks-disposable-v2', target_role: 'disposable-test-account',
  *     producer: 'version-control-local-path-clone', probes: list<Observation>, queue: array<string, QueueRead>,
  *     ownership: Ownership, deletion: Deletion, discrepancy_review: Assessment, producer_review: Assessment,
  *     fixture: Report, limitations: list<string>
@@ -128,12 +138,13 @@ final class UserTasksFixture
     /** @var Ownership */
     private array $ownership = [
         'initial_queue_empty' => false, 'producer_rows' => null, 'producer_owned_rows' => null,
-        'owned_task' => 'not_attempted', 'id_source' => null, 'id_is_queue_element' => null,
+        'owned_task' => 'not_attempted', 'distinct_owned_ids' => null, 'id_is_queue_element' => null,
     ];
 
     /** @var Deletion */
     private array $deletion = [
-        'attempted' => false, 'outcome' => 'not_attempted', 'data' => null, 'owned_row_in_latest_read' => false,
+        'attempted' => false, 'outcome' => 'not_attempted', 'reason' => null, 'data' => null,
+        'owned_row_in_latest_reads' => ['direct' => null, 'bridged' => null],
     ];
 
     /** @var list<string> */
@@ -208,8 +219,10 @@ final class UserTasksFixture
         if ($this->report['resources']['repositories']['creation'] !== 'not_attempted') {
             $this->report['resources']['repositories']['cleanup'] = $removed ? 'absent_with_account' : 'unconfirmed';
         }
+        // Account removal settles only an unsettled task; observed residue stays `present`, as a read saw it.
         $task = $this->report['resources']['task'];
-        if ($task['creation'] !== 'not_attempted' && $task['cleanup'] !== 'confirmed_absent') {
+        $unsettled = in_array($task['cleanup'], ['not_required', 'unconfirmed'], true);
+        if ($task['creation'] !== 'not_attempted' && $unsettled) {
             $this->report['resources']['task']['cleanup'] = $removed ? 'absent_with_account' : 'unconfirmed';
         }
 
@@ -285,13 +298,21 @@ final class UserTasksFixture
             'home-field',
         ), $direct, false);
         $this->gate($this->passed());
-        $this->gate(is_array($home) && ($home['home'] ?? null) === UserTasksRecipe::HOME, 'home_mismatch:home');
+        $this->gate(
+            is_array($home) && ($home['home'] ?? null) === UserTasksRecipe::HOME,
+            'home_mismatch:home',
+            'home',
+        );
 
         foreach (['tasks_initial_direct' => false, 'tasks_initial_bridged' => true] as $phase => $bridged) {
             $owned = $this->readQueue($phase, $bridged);
             $this->gate($this->passed());
             $read = $this->queue[$phase];
-            $this->gate($owned === [] && $read['list'] && $read['rows'] === 0, 'initial_queue_not_empty:' . $phase);
+            $this->gate(
+                $owned === [] && $read['list'] && $read['rows'] === 0,
+                'initial_queue_not_empty:' . $phase,
+                $phase,
+            );
         }
         $this->ownership['initial_queue_empty'] = true;
 
@@ -303,20 +324,21 @@ final class UserTasksFixture
             $source instanceof stdClass && ($source->repository_root ?? null) === $recipe->sourceRoot()
                 && ($source->tasks ?? null) === [],
             'source_unexpected:source_create',
+            'source_create',
         );
         $this->report['resources']['repositories']['creation'] = 'confirmed';
 
+        // API success alone confirms no task: only a response or read that shows the owned row does.
         $this->report['resources']['task']['creation'] = 'unconfirmed';
         $this->create('clone_create', 'clone');
         $this->gate($this->passed());
-        $this->report['resources']['task']['creation'] = 'confirmed';
         $clone = $this->rawData();
         $rows = $clone instanceof stdClass ? ($clone->tasks ?? null) : null;
         $producer = is_array($rows) ? $this->ownedIds($rows) : [];
         $this->ownership['producer_rows'] = is_array($rows) ? count($rows) : null;
         $this->ownership['producer_owned_rows'] = is_array($rows) ? count($producer) : null;
         if (!$clone instanceof stdClass || ($clone->repository_root ?? null) !== $recipe->cloneRoot()) {
-            $this->finding('clone_unexpected');
+            $this->finding('clone_unexpected', 'clone_create');
         }
 
         // After the producer nothing stops capture: every read says what remains, and the delete is bound to an ID.
@@ -325,8 +347,9 @@ final class UserTasksFixture
             array_push($inventory, ...$this->readQueue($phase, $bridged));
             $this->judgeRead($phase, false);
         }
-        $latest = $this->queue['tasks_queued_bridged'];
-        $this->deletion['owned_row_in_latest_read'] = ($latest['owned_rows'] ?? 0) > 0;
+        if ($producer !== [] || $inventory !== []) {
+            $this->report['resources']['task']['creation'] = 'confirmed';
+        }
         $this->deleteOwned($producer, $inventory);
         $absent = true;
         foreach (['tasks_after_direct' => false, 'tasks_after_bridged' => true] as $phase => $bridged) {
@@ -381,20 +404,29 @@ final class UserTasksFixture
     {
         $read = $this->queue[$phase];
         if (!$read['list']) {
-            $this->finding('queue_unreadable:' . $phase);
+            $this->finding('queue_unreadable:' . $phase, $phase);
 
             return;
         }
         if ($afterDelete ? $read['owned_rows'] !== 0 : $read['owned_rows'] === 0) {
-            $this->finding(($afterDelete ? 'owned_row_present_after_delete:' : 'owned_row_absent:') . $phase);
+            $label = match (true) {
+                !$afterDelete => 'owned_row_absent:',
+                $this->deletion['attempted'] => 'owned_row_present_after_delete:',
+                default => 'owned_row_still_queued:',
+            };
+            $this->finding($label . $phase, $phase);
         }
         if ($read['foreign_rows'] !== 0) {
-            $this->finding('foreign_row_present:' . $phase);
+            $this->finding('foreign_row_present:' . $phase, $phase);
         }
     }
 
     /**
-     * Delete the one proven-owned queue element once, by its exact ID; nothing else is ever authorized.
+     * Delete the one owned queue element once, by its exact ID, only while the latest readable read still shows it.
+     *
+     * The producer's word alone is never enough: a row only its response showed, a row the latest read no longer
+     * showed, several owned IDs or an ID that is no queue element each withhold the delete, with the reason recorded.
+     * Nothing else is ever authorized.
      *
      * @param list<string> $producer IDs from the producer's own response.
      * @param list<string> $inventory IDs from the queue reads that followed it.
@@ -402,22 +434,40 @@ final class UserTasksFixture
     private function deleteOwned(array $producer, array $inventory): void
     {
         $ids = array_values(array_unique([...$producer, ...$inventory]));
-        if ($ids === []) {
-            $this->ownership['owned_task'] = 'not_proven';
-            $this->finding('owned_task_not_proven');
+        $this->ownership['distinct_owned_ids'] = count($ids);
+        $latest = null;
+        foreach (['direct' => 'tasks_queued_direct', 'bridged' => 'tasks_queued_bridged'] as $route => $phase) {
+            $read = $this->queue[$phase];
+            $this->deletion['owned_row_in_latest_reads'][$route] = $read['list'] ? $read['owned_rows'] > 0 : null;
+            $latest = $read['list'] ? $read : $latest;
+        }
+        $this->ownership['owned_task'] = match (true) {
+            count($ids) > 1 => 'ambiguous',
+            $inventory !== [] => 'seen_by_reads',
+            $producer !== [] => 'producer_response_only',
+            default => 'not_seen',
+        };
+        if (count($ids) === 1) {
+            $this->ownership['id_is_queue_element'] = UserTasksRecipe::isTaskId($ids[0]);
+        }
+        $reason = match (true) {
+            $this->ownership['owned_task'] === 'ambiguous' => 'owned_task_ambiguous',
+            $this->ownership['owned_task'] === 'not_seen' => 'owned_row_never_seen',
+            $this->ownership['owned_task'] === 'producer_response_only' => 'owned_row_not_seen_by_reads',
+            $this->ownership['id_is_queue_element'] !== true => 'owned_id_not_queue_element',
+            ($latest['owned_rows'] ?? 0) === 0 => 'owned_row_absent_from_latest_read',
+            default => null,
+        };
+        if ($reason !== null) {
+            if ($reason === 'owned_task_ambiguous' || $reason === 'owned_id_not_queue_element') {
+                $this->finding($reason);
+            }
+            $this->deletion['reason'] = $reason;
+            $this->finding('owned_delete_not_attempted');
 
             return;
         }
         $id = $ids[0];
-        $this->ownership['id_is_queue_element'] = count($ids) === 1 && UserTasksRecipe::isTaskId($id);
-        if (!$this->ownership['id_is_queue_element']) {
-            $this->ownership['owned_task'] = 'ambiguous';
-            $this->finding('owned_task_ambiguous');
-
-            return;
-        }
-        $this->ownership['owned_task'] = 'proven';
-        $this->ownership['id_source'] = $producer !== [] ? 'producer_response' : 'inventory';
         $this->deletion['attempted'] = true;
         try {
             $this->guard->authorizeDelete($id);
@@ -440,7 +490,7 @@ final class UserTasksFixture
             ? 'deleted' : ($record['failure_kind'] ?? 'unexpected_outcome');
         $this->deletion['data'] = $this->rawDataType();
         if ($this->deletion['outcome'] !== 'deleted') {
-            $this->finding('owned_delete_not_confirmed');
+            $this->finding('owned_delete_not_confirmed', 'delete_owned');
         }
     }
 
@@ -581,25 +631,35 @@ final class UserTasksFixture
     }
 
     /** Before the producer, stop at the first unexpected state; a label also records an unmet expectation. */
-    private function gate(bool $condition, ?string $label = null): void
+    private function gate(bool $condition, ?string $label = null, ?string $phase = null): void
     {
         if ($condition) {
             return;
         }
         if ($label !== null) {
-            $this->finding($label);
+            $this->finding($label, $phase);
         }
         $this->stoppedAt = $this->last()['phase'];
         throw new RuntimeException('User task capture stopped.');
     }
 
-    /** Record an unmet expectation by fixed label, failing the latest observation's expectation. */
-    private function finding(string $label): void
+    /**
+     * Record an unmet expectation by fixed label, failing the expectation of the one record it is about, if any.
+     *
+     * A finding about the run as a whole, such as an ambiguous owner or a withheld delete, marks no record.
+     */
+    private function finding(string $label, ?string $phase = null): void
     {
         $this->findings[] = $label;
-        $index = array_key_last($this->records);
-        if ($index !== null && $this->records[$index]['probe_outcome'] === 'passed') {
-            $this->records[$index]['expectation'] = 'failed';
+        if ($phase === null) {
+            return;
+        }
+        for ($index = array_key_last($this->records); $index !== null && $index >= 0; --$index) {
+            if ($this->records[$index]['phase'] === $phase) {
+                $this->records[$index]['expectation'] = 'failed';
+
+                return;
+            }
         }
     }
 
@@ -659,10 +719,10 @@ final class UserTasksFixture
             $record['server_version'] ??= is_string($versions[0] ?? null) ? $versions[0] : null;
         }
         unset($record);
-        $reviews = UserTasksEvidence::assess($records, $this->context);
+        $reviews = UserTasksEvidence::assess($records, $this->context, $this->deletion['attempted']);
 
         return [
-            'scenario' => 'user-tasks-disposable-v1',
+            'scenario' => 'user-tasks-disposable-v2',
             'target_role' => 'disposable-test-account',
             'producer' => 'version-control-local-path-clone',
             'probes' => $records,
@@ -677,6 +737,7 @@ final class UserTasksFixture
                 'race_with_the_queue_runner_is_uncontrolled_and_unrepeated',
                 'deletion_establishes_neither_task_completion_nor_process_termination',
                 'clone_outcome_and_runner_behavior_unobserved',
+                'local_source_chosen_to_need_no_network_transport_traffic_not_monitored',
                 'wpx_and_other_producer_rows_unobserved',
                 $this->report['filesystem_cleanup'] === 'confirmed_absent'
                     ? 'filesystem_proof_covers_fixed_locations_at_one_moment'

@@ -27,12 +27,32 @@ final class UserTasksEvidenceTest extends TestCase
     {
         $review = self::assess(self::records());
         self::assertSame(UserTasksEvidence::PHASES, self::PHASES);
-        self::assertSame('user-tasks-subject-no-acknowledgments-v1', $review['discrepancy_review']['policy']);
+        self::assertSame('user-tasks-subject-no-acknowledgments-v2', $review['discrepancy_review']['policy']);
         self::assertSame('passed', $review['discrepancy_review']['status']);
         self::assertSame([], $review['discrepancy_review']['findings']);
-        self::assertSame('user-tasks-producer-structure-v1', $review['producer_review']['policy']);
+        self::assertSame('user-tasks-producer-structure-v2', $review['producer_review']['policy']);
         self::assertSame('passed', $review['producer_review']['status']);
         self::assertSame([], $review['producer_review']['findings']);
+    }
+
+    /**
+     * A delete the fixture rightly withheld, because no read showed the owned row, is a recorded race outcome.
+     *
+     * It must not read as a contract failure, so the subject review then expects no delete record at all.
+     */
+    public function testAWithheldDeleteIsNotAContractFailure(): void
+    {
+        $records = array_values(array_filter(
+            self::records(),
+            static fn (array $record): bool => $record['phase'] !== 'delete_owned',
+        ));
+        $review = UserTasksEvidence::assess($records, FilemanUploadFixtureTest::context(), false);
+        self::assertSame('passed', $review['discrepancy_review']['status']);
+        self::assertSame([], $review['discrepancy_review']['findings']);
+        $withheld = UserTasksEvidence::assess(self::records(), FilemanUploadFixtureTest::context(), false);
+        self::assertContains('unexpected_phase', $withheld['discrepancy_review']['findings']);
+        $attempted = UserTasksEvidence::assess($records, FilemanUploadFixtureTest::context(), true);
+        self::assertSame(['missing_phase:delete_owned'], $attempted['discrepancy_review']['findings']);
     }
 
     public function testAnEmptyRunFailsWithEveryPhaseMissing(): void
@@ -200,7 +220,7 @@ final class UserTasksEvidenceTest extends TestCase
      */
     private static function assess(array $records): array
     {
-        return UserTasksEvidence::assess($records, FilemanUploadFixtureTest::context());
+        return UserTasksEvidence::assess($records, FilemanUploadFixtureTest::context(), true);
     }
 
     /**

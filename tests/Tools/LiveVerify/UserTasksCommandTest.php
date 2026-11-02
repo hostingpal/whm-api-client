@@ -75,7 +75,7 @@ final class UserTasksCommandTest extends TestCase
         $result = self::runCommand($directory);
         self::assertSame(1, $result['status']);
         self::assertSame([
-            'User task fixture: failed', 'User task discrepancy review: failed', 'User task producer review: passed',
+            'User task fixture: failed', 'User task discrepancy review: passed', 'User task producer review: passed',
         ], $result['output']);
         $report = self::fixtureReport($directory);
         self::assertSame('failed', $report['status']);

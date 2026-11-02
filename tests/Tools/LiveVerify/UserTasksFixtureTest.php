@@ -51,7 +51,7 @@ final class UserTasksFixtureTest extends TestCase
         $fixture = $scenario['fixture'];
 
         self::assertSame('passed', $fixture['status'], (string) json_encode($fixture['failures']));
-        self::assertSame('user-tasks-disposable-v1', $scenario['scenario']);
+        self::assertSame('user-tasks-disposable-v2', $scenario['scenario']);
         self::assertSame('version-control-local-path-clone', $scenario['producer']);
         self::assertSame('passed', $scenario['discrepancy_review']['status']);
         self::assertSame([], $scenario['discrepancy_review']['findings']);
@@ -75,11 +75,9 @@ final class UserTasksFixtureTest extends TestCase
         ], $scenario['queue']);
         self::assertSame([
             'initial_queue_empty' => true, 'producer_rows' => 1, 'producer_owned_rows' => 1,
-            'owned_task' => 'proven', 'id_source' => 'producer_response', 'id_is_queue_element' => true,
+            'owned_task' => 'seen_by_reads', 'distinct_owned_ids' => 1, 'id_is_queue_element' => true,
         ], $scenario['ownership']);
-        self::assertSame([
-            'attempted' => true, 'outcome' => 'deleted', 'data' => 'null', 'owned_row_in_latest_read' => true,
-        ], $scenario['deletion']);
+        self::assertSame(self::deletion(true, 'deleted', null, 'null', true, true), $scenario['deletion']);
         foreach (['account', 'token'] as $resource) {
             self::assertSame(
                 ['creation' => 'confirmed', 'cleanup' => 'confirmed_absent'],
@@ -131,52 +129,158 @@ final class UserTasksFixtureTest extends TestCase
         self::assertSame('passed', self::scenario($http)['producer_review']['status']);
     }
 
-    /** A task that finished before the bridged read is recorded as such; the delete then finds nothing to remove. */
-    public function testTaskFinishingBeforeTheBridgedReadIsRecordedHonestly(): void
+    /**
+     * The live race: the producer's response lists the owned row, then no read shows it.
+     *
+     * The delete is withheld, never sent on the producer's word alone, so the race is a recorded expectation outcome
+     * and not a contract failure: the subject review passes, and the creation is still confirmed by the response.
+     */
+    public function testRowSeenOnlyInTheProducerResponseIsNeverDeleted(): void
+    {
+        $http = new UserTasksServer();
+        $http->finishAfterReads = 1;
+        $scenario = self::scenario($http);
+        $fixture = $scenario['fixture'];
+
+        self::assertNotContains(self::DELETE, $http->mutations);
+        self::assertSame(
+            self::deletion(false, 'not_attempted', 'owned_row_not_seen_by_reads', null, false, false),
+            $scenario['deletion'],
+        );
+        self::assertSame('producer_response_only', $scenario['ownership']['owned_task']);
+        self::assertSame(1, $scenario['ownership']['producer_owned_rows']);
+        self::assertSame([
+            'owned_row_absent:tasks_queued_direct', 'owned_row_absent:tasks_queued_bridged',
+            'owned_delete_not_attempted',
+        ], $fixture['expectation_findings']);
+        self::assertSame(['expectation_failure'], $fixture['failures']);
+        self::assertSame(
+            ['failed', 'passed', 'failed'],
+            [$fixture['status'], $fixture['capture'], $fixture['expectations']],
+        );
+        self::assertSame('passed', $scenario['discrepancy_review']['status']);
+        self::assertSame([], $scenario['discrepancy_review']['findings']);
+        self::assertNotContains('delete_owned', array_column($scenario['probes'], 'phase'));
+        self::assertSame(['creation' => 'confirmed', 'cleanup' => 'confirmed_absent'], $fixture['resources']['task']);
+        self::assertSame('passed', $fixture['cleanup']);
+    }
+
+    /** A row the direct read showed but the later bridged read did not is gone by the latest read: never deleted. */
+    public function testRowAbsentFromTheLatestReadIsNeverDeleted(): void
     {
         $http = new UserTasksServer();
         $http->finishAfterReads = 2;
         $scenario = self::scenario($http);
-        $fixture = $scenario['fixture'];
 
-        self::assertSame('failed', $fixture['status']);
-        self::assertSame('passed', $fixture['capture']);
-        self::assertSame('failed', $fixture['expectations']);
-        self::assertSame(['expectation_failure'], $fixture['failures']);
-        self::assertSame(
-            ['owned_row_absent:tasks_queued_bridged', 'owned_delete_not_confirmed'],
-            $fixture['expectation_findings'],
-        );
+        self::assertNotContains(self::DELETE, $http->mutations);
         self::assertSame(self::read('direct', 1, 1, 0), $scenario['queue']['tasks_queued_direct']);
         self::assertSame(self::read('bridged', 0, 0, 0), $scenario['queue']['tasks_queued_bridged']);
-        self::assertSame([
-            'attempted' => true, 'outcome' => 'api_failure', 'data' => 'null', 'owned_row_in_latest_read' => false,
-        ], $scenario['deletion']);
-        self::assertContains('unsuccessful_phase:delete_owned', $scenario['discrepancy_review']['findings']);
-        self::assertSame(['creation' => 'confirmed', 'cleanup' => 'confirmed_absent'], $fixture['resources']['task']);
-        self::assertSame('passed', $fixture['cleanup']);
-        self::assertSame(1, count(array_keys($http->mutations, self::DELETE, true)));
+        self::assertSame(
+            self::deletion(false, 'not_attempted', 'owned_row_absent_from_latest_read', null, true, false),
+            $scenario['deletion'],
+        );
+        self::assertSame('seen_by_reads', $scenario['ownership']['owned_task']);
+        self::assertSame(
+            ['owned_row_absent:tasks_queued_bridged', 'owned_delete_not_attempted'],
+            $scenario['fixture']['expectation_findings'],
+        );
+        self::assertSame('passed', $scenario['discrepancy_review']['status']);
     }
 
-    /** Neither the producer response nor any read showed the task, so there is nothing to delete and nothing is. */
-    public function testTaskThatNoReadShowedIsNeverDeleted(): void
+    /** Neither the producer response nor any read showed the task: its creation is unconfirmed and nothing is sent. */
+    public function testTaskThatNothingShowedIsUnconfirmedAndNeverDeleted(): void
     {
         $http = new UserTasksServer();
         $http->finishAfterReads = 0;
         $scenario = self::scenario($http);
 
         self::assertSame([
-            'owned_row_absent:tasks_queued_direct', 'owned_row_absent:tasks_queued_bridged', 'owned_task_not_proven',
+            'owned_row_absent:tasks_queued_direct', 'owned_row_absent:tasks_queued_bridged',
+            'owned_delete_not_attempted',
         ], $scenario['fixture']['expectation_findings']);
         self::assertNotContains(self::DELETE, $http->mutations);
         self::assertSame(
-            ['attempted' => false, 'outcome' => 'not_attempted', 'data' => null, 'owned_row_in_latest_read' => false],
+            self::deletion(false, 'not_attempted', 'owned_row_never_seen', null, false, false),
             $scenario['deletion'],
         );
-        self::assertSame('not_proven', $scenario['ownership']['owned_task']);
-        self::assertNull($scenario['ownership']['id_source']);
+        self::assertSame('not_seen', $scenario['ownership']['owned_task']);
+        self::assertSame(0, $scenario['ownership']['distinct_owned_ids']);
+        self::assertNull($scenario['ownership']['id_is_queue_element']);
         self::assertSame(0, $scenario['ownership']['producer_owned_rows']);
-        self::assertSame(['missing_phase:delete_owned'], $scenario['discrepancy_review']['findings']);
+        self::assertSame('passed', $scenario['discrepancy_review']['status']);
+        self::assertSame(
+            ['creation' => 'unconfirmed', 'cleanup' => 'confirmed_absent'],
+            $scenario['fixture']['resources']['task'],
+        );
+    }
+
+    /** Two owned IDs are ambiguity, reported as such, never a queue-element verdict, and nothing is deleted. */
+    public function testSeveralOwnedIdsAreReportedAsAmbiguityAndNeverDeleted(): void
+    {
+        $http = new UserTasksServer();
+        $http->afterEffect = static function (UserTasksServer $server, string $step): void {
+            if ($step === 'direct:VersionControl/create:2') {
+                $server->queueForeign((string) array_search('clone', $server->repositories, true));
+            }
+        };
+        $scenario = self::scenario($http);
+
+        self::assertNotContains(self::DELETE, $http->mutations);
+        self::assertSame('ambiguous', $scenario['ownership']['owned_task']);
+        self::assertSame(2, $scenario['ownership']['distinct_owned_ids']);
+        self::assertNull($scenario['ownership']['id_is_queue_element']);
+        self::assertSame(
+            self::deletion(false, 'not_attempted', 'owned_task_ambiguous', null, true, true),
+            $scenario['deletion'],
+        );
+        // Both rows stay queued, as nothing was deleted; that is said plainly, never as a failed delete.
+        self::assertSame([
+            'owned_task_ambiguous', 'owned_delete_not_attempted',
+            'owned_row_still_queued:tasks_after_direct', 'owned_row_still_queued:tasks_after_bridged',
+        ], $scenario['fixture']['expectation_findings']);
+        // Ambiguity is about the run, not a read: no read record is blamed for it.
+        self::assertSame('passed', self::probe($scenario, 'tasks_queued_bridged')['expectation']);
+        self::assertSame(
+            ['creation' => 'confirmed', 'cleanup' => 'present'],
+            $scenario['fixture']['resources']['task'],
+        );
+    }
+
+    /** A refused delete after a read showed the row is blamed on the delete record, not on the last record. */
+    public function testRefusedDeleteFindingMarksTheDeleteRecord(): void
+    {
+        $http = new UserTasksServer();
+        $http->failures = [self::DELETE . ':1' => 'api_before'];
+        $scenario = self::scenario($http);
+
+        self::assertSame([
+            'owned_delete_not_confirmed', 'owned_row_present_after_delete:tasks_after_direct',
+            'owned_row_present_after_delete:tasks_after_bridged',
+        ], $scenario['fixture']['expectation_findings']);
+        self::assertSame('failed', self::probe($scenario, 'delete_owned')['expectation']);
+        self::assertSame('passed', self::probe($scenario, 'tasks_queued_bridged')['expectation']);
+        // Each read that still showed the row carries its own finding, and only its own.
+        self::assertSame('failed', self::probe($scenario, 'tasks_after_direct')['expectation']);
+        self::assertSame('failed', self::probe($scenario, 'tasks_after_bridged')['expectation']);
+        self::assertSame('api_failure', $scenario['deletion']['outcome']);
+    }
+
+    /** A row still listed after the delete is residue: account removal never rewrites what a read observed. */
+    public function testObservedResidueIsNeverRewrittenAsAbsentWithTheAccount(): void
+    {
+        $http = new UserTasksServer();
+        $http->deleteRemoves = false;
+        $scenario = self::scenario($http);
+
+        self::assertSame('deleted', $scenario['deletion']['outcome']);
+        self::assertSame([
+            'owned_row_present_after_delete:tasks_after_direct', 'owned_row_present_after_delete:tasks_after_bridged',
+        ], $scenario['fixture']['expectation_findings']);
+        self::assertSame('confirmed_absent', $scenario['fixture']['resources']['account']['cleanup']);
+        self::assertSame(
+            ['creation' => 'confirmed', 'cleanup' => 'present'],
+            $scenario['fixture']['resources']['task'],
+        );
     }
 
     /** A queue the run did not fill is never touched: no producer runs, and nothing is deleted. */
@@ -236,7 +340,7 @@ final class UserTasksFixtureTest extends TestCase
         self::assertSame('payload_mismatch', self::probe($scenario, 'tasks_queued_direct')['failure_kind']);
         self::assertSame('payload_mismatch', self::probe($scenario, 'tasks_queued_bridged')['failure_kind']);
         self::assertSame('deleted', $scenario['deletion']['outcome']);
-        self::assertSame('producer_response', $scenario['ownership']['id_source']);
+        self::assertSame('seen_by_reads', $scenario['ownership']['owned_task']);
         self::assertSame('failed', $fixture['capture']);
         self::assertSame(['capture_failure'], $fixture['failures']);
         self::assertNull($fixture['stopped_at']);
@@ -380,6 +484,24 @@ final class UserTasksFixtureTest extends TestCase
         self::assertSame([], $http->requests);
         self::assertSame(['configuration_failure'], $scenario['fixture']['failures']);
         self::assertSame('failed', $scenario['fixture']['status']);
+    }
+
+    /**
+     * @return array{
+     *     attempted: bool, outcome: string, reason: string|null, data: string|null,
+     *     owned_row_in_latest_reads: array{direct: bool|null, bridged: bool|null}
+     * }
+     */
+    private static function deletion(
+        bool $attempted,
+        string $outcome,
+        ?string $reason,
+        ?string $data,
+        ?bool $direct,
+        ?bool $bridged,
+    ): array {
+        return ['attempted' => $attempted, 'outcome' => $outcome, 'reason' => $reason, 'data' => $data,
+            'owned_row_in_latest_reads' => ['direct' => $direct, 'bridged' => $bridged]];
     }
 
     /** @return array{route: string, observed: bool, list: bool, rows: int, owned_rows: int, foreign_rows: int} */

@@ -11,8 +11,9 @@ use stdClass;
 /**
  * The exact requests and identities of one UserTasks queue run on its own disposable account.
  *
- * The producer is a VersionControl clone whose source is an empty repository this run creates inside the same account,
- * so the server's git clones a local path and contacts no network. Every name derives from 128 bits of run entropy.
+ * The producer queues one clone of a local repository inside the disposable account: an empty repository this run
+ * creates there, cloned by absolute path, which cPanel's own queue runner then processes. The local path is chosen so
+ * that git needs no network transport; nothing here monitors traffic. Every name derives from 128 bits of run entropy.
  * Bodies are spelled literally here, independently of the client's encoder, so the guard compares two spellings of
  * each request. Nothing here performs I/O.
  *
