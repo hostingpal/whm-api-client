@@ -483,12 +483,14 @@ final readonly class DomainInfo
      * key was absent from them. format is typed for list items only.
      *
      * Policy: phpversion and status are optional and deliberately unvalidated because their meaning is unknown: any
-     * JSON value, including null, reaches the caller unchanged and cannot fail the read. Only an account main domain
-     * was observed, so nothing is claimed for other domain kinds.
+     * JSON value, including null, reaches the caller unchanged and cannot fail the read. phpversion was observed only
+     * on an account main domain. status was also observed as a non-numeric string on main, addon, alias and subdomain
+     * results of a fresh account, where phpversion was absent; nothing more is claimed about either.
      *
      * Observed: On cPanel 11.138.0.19 a query for an alias of the account's main domain succeeded through both direct
-     * and bridged UAPI and returned a result naming the alias, despite the documented note above; which record it reads
-     * is not established. Addon and subdomain results also carry ipv6 as null and no_cache_update as a quoted flag.
+     * and bridged UAPI and returned a result whose domain field named the alias, despite the documented note above;
+     * which record it reads is not established. Addon and subdomain results also carry ipv6 as null and no_cache_update
+     * as a quoted flag.
      *
      * Policy: ipv6 and no_cache_update are optional and keep the pinned DomainInfo record types also used on
      * domainsData() rows: ipv6 is a nullable string, and no_cache_update an integer 0/1 flag that also accepts quoted 0
