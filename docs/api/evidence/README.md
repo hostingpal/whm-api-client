@@ -1398,3 +1398,19 @@ observations as the [v1 artifact](2026-10-17-finite-quota.json). See the
 of what ran at that revision, including its `filesystem_cleanup`, which predates the control.
 The fixture has since moved to `finite-quota-disposable-v3`, and no v3 capture exists; see
 the [source audit](../source-audit.md#re-review-corrections-2026-11-02).
+
+## Disposable-account Mime and directory-access evidence
+
+The [capture](2026-11-02-mime-directory.json) at
+`965b329e5befee939ff47ac6117a4d3bf03472e5` on `11.138.0.19` is a **passed run**, exit 0, of
+recipe `mime-directory-disposable-v1` on the disposable account `wlmime`, with the
+filesystem proof enabled. All 73 phases passed and the strict review, policy
+`mime-directory-no-acknowledgments-v1`, has no findings. The eight Mime mutations and the
+four directory-access mutations each ran on direct UAPI and the WHM bridge, each read back
+on its own route, including the first committed populated MIME type and redirect rows.
+Token, account, domain and zone cleanup are `confirmed_absent`, the directory is
+`absent_with_account`, the filesystem control passed and `filesystem_cleanup` is
+`confirmed_absent`. It establishes no HTTP redirect, indexing, authentication or hotlink
+enforcement, and leech protection only as a read. See the
+[source audit](../source-audit.md#disposable-account-mime-and-directory-access-mutations-2026-11-02).
+SHA-256: `03797505ac97f67a384d8da4c9741eaec0e12f2f4aa6785d2d03d1c6447573cb`.

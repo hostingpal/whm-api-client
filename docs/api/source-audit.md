@@ -10236,3 +10236,98 @@ every count 0 and every inventory usable. The `zones` count of 4 is higher than 
 for `wlupload`; it counts zone files and is not explained further here. **Sessions read 0
 for an existing account too**, so they still have no positive control. No account was
 created, and nothing was written.
+
+## Disposable-account Mime and directory-access mutations (2026-11-02)
+
+Recipe `mime-directory-disposable-v1` proves the eight Mime mutations and the four
+directory-access mutations through the generated client on both UAPI routes, on a fresh
+disposable account `wlmime` / `wlmime.example.com` built on the shared lifecycle. The
+[live-verify notes](../../tools/live-verify/README.md#disposable-account-mime-and-directory-access-mutations)
+describe it. It wrote to no other account and fetched no URL.
+
+### Design inputs
+
+Before writing the recipe, the agent read server source on `11.138.0.19`, read-only, over
+the `oblak.test` SSH alias: `Cpanel/API/Mime.pm`, `Cpanel/API/DirectoryPrivacy.pm`,
+`Cpanel/API/DirectoryIndexes.pm`, `Cpanel/API/Fileman.pm`, `Cpanel/Htaccess.pm`,
+`Cpanel/HttpUtils/Htaccess.pm` and `Cpanel/HttpUtils/Htpasswd.pm`. These are
+agent-inspected implementation facts, not pinned sources, and they changed no contract.
+They shaped the recipe as follows:
+
+- The directory-access setters require an existing directory, and `save_file_content`
+  requires one too. Only `Fileman/upload_files` documents creating a missing directory, so
+  the recipe creates its directory by uploading one synthetic file.
+- `delete_redirect` without `args` removes the rewrite rule whose pattern matches `src` for
+  the domain's conditions, which is how `add_redirect` clears its own predecessor. The recipe
+  therefore removes each redirect by `domain` and `src`, once without and once with `docroot`.
+- `list_hotlinks` reads only `public_html/.htaccess` and reports default URLs, extensions and
+  a null `redirect_url` while protection is disabled.
+- `DirectoryProtection` exposes only `list_directories`. Leech protection is set through API 2
+  `LeechProtect`, outside this client, so the recipe reads it and changes nothing.
+
+### Capture
+
+The [capture](evidence/2026-11-02-mime-directory.json) ran once at
+`965b329e5befee939ff47ac6117a4d3bf03472e5` on `11.138.0.19`, with the filesystem proof
+enabled. It is a **passed run**, exit 0. SHA-256:
+`03797505ac97f67a384d8da4c9741eaec0e12f2f4aa6785d2d03d1c6447573cb`.
+
+All 73 phases passed with UAPI status 1, and the strict review, policy
+`mime-directory-no-acknowledgments-v1`, has no findings. Both sections finished. Every one
+of the 28 recipe mutations returned and was read back as expected on its own route:
+
+| Operation | Direct UAPI | WHM bridge |
+| --- | --- | --- |
+| `add_mime`, `delete_mime` | round a add, round b removal | round b add, round a removal |
+| `add_handler`, `delete_handler` | same pattern | same pattern |
+| `add_redirect`, `delete_redirect` | default options; removal with `docroot` | `temp`, wildcard 0, www 0; removal by `src` |
+| `add_hotlink`, `delete_hotlink` | `allow_null` 1, one referrer | `allow_null` 0, two referrers, two extensions |
+| `set_indexing` | `disabled`, then `inherit` | `fancy` |
+| `configure_directory_protection` | enable, then disable | disable, then enable |
+| `add_user`, `delete_user` | add user one, remove user two | add user two, remove user one |
+
+The upload created the directory with one stored row and exact framing, and the inventory
+held only that file. Token, account, domain and zone cleanup are `confirmed_absent`, and the
+directory is `absent_with_account`. The filesystem control passed with
+`home=1, users=1, userdata=1, userdomains=1, passwd=1, zones=2`, and `filesystem_cleanup` is
+`confirmed_absent`.
+
+### What the capture establishes
+
+These are the first committed observations of populated MIME type and redirect rows; the
+corrected read capture had already observed populated handler rows on `npr`. On both routes,
+`list_mime` rows held string `extension`, `origin` and `type`; `list_handlers` rows held
+string `extension`, `handler` and `origin`; and `list_redirects` rows held all seventeen
+typed fields, with `statuscode` a numeric string, `matchwww` and `wildcard` native
+integers and an empty `wildcard_text`. `get_redirect` returned a string `url` with
+`redirection_enabled` 1 while a redirect existed, and null with 0 after its removal.
+`list_hotlinks` returned a string `redirect_url` while enabled and null after removal.
+On the fresh account the three list baselines were empty, user handlers included, the
+domain had no redirect and hotlink protection was disabled.
+
+Every Mime mutation returned null data, on both routes. For `add_mime` and `add_handler`
+this matches the pinned null-only enum; the generated validator still accepts a nullable
+opaque object without enforcing that enum, which stays the documented `8x0.18` limitation
+and is not changed here. Each `add_redirect` carried one upstream message; the text is not
+recorded. The other mutations carried none.
+
+`configure_directory_protection` returned explicit null `auth_name` and `auth_type` on both
+disables, through both routes, which the existing correction accepts. Enabling returned
+string `auth_name`, `auth_type` and `passwd_file` with an integer `protected` flag. After a
+disable, `is_directory_protected`
+returned empty strings for `auth_name` and `passwd_file`. `list_users` returned populated
+string lists, then an empty list. The directory listings held populated `current`,
+`parent` and `home` states with an empty `children` list. `has_leech_protection` read 0 on
+both routes, before and after.
+
+No live response contradicted a typed contract, so no overlay correction was made.
+
+### Scope limits
+
+API readback is not enforcement. Nothing fetched a URL, so the capture shows no HTTP
+redirect, indexing, password authentication or hotlink blocking. It covers one server
+version and only the argument variants above: no `args` form of `delete_redirect`, no
+wildcard redirect, no `redirect_www` 1 or 2, no `standard` index type and no relative
+directory path. Leech
+protection is covered as a read only. `8x0.2.21` and `8x0.2.22` still hold HTTP enforcement
+and the remaining variants.

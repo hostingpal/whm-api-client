@@ -2535,3 +2535,15 @@ argument variants above on one server version, and leech protection only as a re
 filesystem proof, when enabled, covers its fixed locations at one moment.
 
 The scenario is `mime-directory-disposable-v1`.
+
+The [capture](../../docs/api/evidence/2026-11-02-mime-directory.json) at `965b329` on
+`11.138.0.19` is a **passed run**, exit 0, with the filesystem proof enabled. All 73 phases
+passed with no review findings and both sections finished. Every mutation returned null data
+except `set_indexing`, `configure_directory_protection` and the upload, and each
+`add_redirect` carried one message. Both
+disables returned null `auth_name` and `auth_type`, as the existing correction expects.
+Token, account, domain and zone cleanup are `confirmed_absent`, the directory is
+`absent_with_account`, the control passed with
+`home=1, users=1, userdata=1, userdomains=1, passwd=1, zones=2`, and `filesystem_cleanup` is
+`confirmed_absent`. See the
+[source audit](../../docs/api/source-audit.md#disposable-account-mime-and-directory-access-mutations-2026-11-02).
