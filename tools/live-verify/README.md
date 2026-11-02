@@ -2148,6 +2148,8 @@ $outcome = (new DisposableAccountLifecycle(
     },
     // Optional: remove what the recipe made inside the account, returning failure labels.
     fn (): array => $this->removeOwnFiles(),
+    // Optional: after removal, read that what only removal takes is gone, returning failure labels.
+    fn (): array => $this->proveExtraDomainsAbsent(),
 );
 ```
 
@@ -2220,6 +2222,14 @@ uncertain step fails `cleanup`; the resource fields still say what each one show
 cleanup remains unconfirmed, inspect the explicitly selected test account and domain
 privately and confirm ownership before manual recovery. A rerun refuses preexisting
 resources and is not a cleanup mechanism.
+
+**Removed resources.** Some things a recipe makes live outside the account and go only
+with its removal, such as an addon domain's zone. Their absence can only be read after
+removal, so `run()` takes an optional third callback that proves it. It runs once, after
+the removal attempt and the lifecycle's own absence reads and before the filesystem proof,
+whenever cleanup ran, even after a failed removal, when it shows what really remains. It
+returns failure labels, which fail `cleanup` and the run, and it must not mutate anything.
+If it throws, the run fails with `removed_resource_absence_unconfirmed`.
 
 **Reads.** Every decision reads the account inventory afresh. Each domain check reuses the
 account read just before it, because nothing changed in between and each read is the

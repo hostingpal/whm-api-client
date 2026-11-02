@@ -49,6 +49,9 @@ use Throwable;
  * absence are each read independently. A failed or uncertain step fails `cleanup`, and the fields still say what each
  * resource showed.
  *
+ * Removed resources. What a recipe made outside the account that only removal takes, such as an extra domain's zone,
+ * is proven absent by the recipe's own read-only check, which runs after removal and the lifecycle's reads.
+ *
  * Filesystem. An optional proof runs twice. After setup, it must show the account in every location it can always be
  * found, which is the positive control that ties the proof to the server this run changed. If setup stopped after
  * creation, cleanup takes the control instead, once the marker proves the account and before removal. Last, it looks
@@ -139,16 +142,24 @@ final class DisposableAccountLifecycle
      * ExerciseFailure to name it; anything else is reported as `exercise_failure`. $cleanOwned, if given, removes what
      * the exercise made inside the account: it runs only once the marker proves the account, before the token is
      * revoked so the token still works, and even when the exercise failed. It returns failure labels for the report.
-     * Anything either callback throws stops nothing. The result's `status` is `passed` only if setup, exercise and
+     * $proveRemoved, if given, proves absent what the exercise made outside the account that only the account's
+     * removal takes, such as an extra domain's zone. It runs once, after the removal attempt and the lifecycle's own
+     * absence reads and before the filesystem proof, whenever cleanup ran, and returns failure labels for the report;
+     * if it throws, `removed_resource_absence_unconfirmed` is reported. It must not mutate anything.
+     * Anything any callback throws stops nothing. The result's `status` is `passed` only if setup, exercise and
      * cleanup all passed, and it is the run's only status.
      *
      * @param Closure(string): void $exercise
      * @param (Closure(): list<string>)|null $cleanOwned
+     * @param (Closure(): list<string>)|null $proveRemoved
      * @return Outcome
      * @throws LogicException A second call or a missing live opt-in, before any request.
      */
-    public function run(#[SensitiveParameter] Closure $exercise, ?Closure $cleanOwned = null): array
-    {
+    public function run(
+        #[SensitiveParameter] Closure $exercise,
+        ?Closure $cleanOwned = null,
+        ?Closure $proveRemoved = null,
+    ): array {
         if ($this->used) {
             throw new LogicException('Disposable account lifecycle is single-use.');
         }
@@ -174,7 +185,7 @@ final class DisposableAccountLifecycle
             }
         }
         unset($token);
-        $this->cleanUp($cleanOwned);
+        $this->cleanUp($cleanOwned, $proveRemoved);
         $this->outcome['failures'] = array_values(array_unique($this->outcome['failures']));
         if (
             $this->outcome['setup'] === 'passed' && $this->outcome['exercise'] === 'passed'
@@ -435,8 +446,9 @@ final class DisposableAccountLifecycle
      * Reconcile every attempted resource, removing only what this run proved it owns.
      *
      * @param (Closure(): list<string>)|null $cleanOwned
+     * @param (Closure(): list<string>)|null $proveRemoved
      */
-    private function cleanUp(?Closure $cleanOwned): void
+    private function cleanUp(?Closure $cleanOwned, ?Closure $proveRemoved): void
     {
         if ($this->outcome['account']['creation'] === 'not_attempted') {
             return;
@@ -494,7 +506,27 @@ final class DisposableAccountLifecycle
             'domain',
         );
         $this->outcome['zone_cleanup'] = $this->independentAbsence($this->zoneExists(...), 'zone');
+        $this->proveRemoved($proveRemoved);
         $this->proveFilesystemAbsence();
+    }
+
+    /**
+     * Let the recipe prove absent what only the account's removal takes; nothing it does or throws stops the proof.
+     *
+     * @param (Closure(): list<string>)|null $proveRemoved
+     */
+    private function proveRemoved(?Closure $proveRemoved): void
+    {
+        if ($proveRemoved === null) {
+            return;
+        }
+        try {
+            foreach ($proveRemoved() as $failure) {
+                $this->cleanupFailure($failure);
+            }
+        } catch (Throwable) {
+            $this->cleanupFailure('removed_resource_absence_unconfirmed');
+        }
     }
 
     /**
