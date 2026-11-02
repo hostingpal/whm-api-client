@@ -2148,6 +2148,8 @@ $outcome = (new DisposableAccountLifecycle(
     },
     // Optional: remove what the recipe made inside the account, returning failure labels.
     fn (): array => $this->removeOwnFiles(),
+    // Optional: once the proven account reads removed, settle what removal takes or leaves, returning labels.
+    fn (): array => $this->proveExtraDomainsAbsent(),
 );
 ```
 
@@ -2220,6 +2222,17 @@ uncertain step fails `cleanup`; the resource fields still say what each one show
 cleanup remains unconfirmed, inspect the explicitly selected test account and domain
 privately and confirm ownership before manual recovery. A rerun refuses preexisting
 resources and is not a cleanup mechanism.
+
+**Removed resources.** Some things a recipe makes live outside the account and go only
+with its removal, such as an addon domain's zone, and a removal can leave things behind.
+Both can only be settled after removal, so `run()` takes an optional third callback. It is
+called at most once, and only when the marker proved the account this run's and the
+account then read `confirmed_absent` after removal: after the lifecycle's own domain and
+zone reads and before the filesystem proof. It returns failure labels, which fail
+`cleanup` and the run; if it throws, the run fails with
+`removed_resource_absence_unconfirmed`. Otherwise, after a refused, lost or unreadable
+removal or an account never proven, it is never called, and the lifecycle's own failures
+already fail the run. A recipe that passes nothing is unaffected.
 
 **Reads.** Every decision reads the account inventory afresh. Each domain check reuses the
 account read just before it, because nothing changed in between and each read is the
@@ -2444,6 +2457,95 @@ is a **failed run**, exit 1, kept unchanged. It required the exact requested spe
 but this server omits `from_char`/`to_char` and lowercases `from_charset`/`to_charset`.
 See the [source audit](../../docs/api/source-audit.md#charset-echo-classification-and-corrected-capture)
 for what these captures do and do not establish.
+
+## Disposable-account domain rows and multi-value DNS reads
+
+`domain-rows.php` reads every DomainInfo record kind and the multi-value DNS reads with two
+distinct owned domains, once, on a fresh disposable account. It writes to no other account,
+reads only `OBLAK_TEST_WHM_KEY` and creates its own short-lived writable token:
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 WHM_API_LIVE_FS_CHECK=1 \
+  WHM_API_LIVE_ACCOUNT=wldomains WHM_API_LIVE_DOMAIN=wldomains.example.com \
+  php tools/live-verify/domain-rows.php \
+  --output=docs/api/evidence/YYYY-MM-DD-domain-rows.json
+```
+
+Use a new output path and run it once. Publication, exit status and the failed-run rule
+are the same as for the [Fileman upload fixture](#disposable-account-fileman-upload-fixture).
+
+**Account.** The shared [lifecycle](#disposable-account-lifecycle) owns the account, token
+and cleanup. Every extra name is fixed in `DomainRowsRecipe` and is an RFC 2606 name under
+`example.com` carrying the recipe's prefix: addon `wldomains-addon.example.com` on label
+`wldaddon`, alias `wldomains-alias.example.com` and subdomain `wldsub.wldomains.example.com`.
+Before any of them is made, each name and zone must read absent in the server-wide
+`get_domain_info` and `listzones` inventories, which must be nonempty, and the account's
+marker is read again. Only then does WHM `modifyacct` raise this account's own limits
+(`MAXADDON=1`, `MAXFTP=2`, `MAXPARK=1`, `MAXSUB=2`), and the account's own token creates the
+addon, the alias on the main domain and the subdomain, each once. Each creation is followed
+by the inventories its names depend on: `get_domain_info` always, and `listzones` only after
+the addon and the alias, which make zones. A name counts as made only once it is listed for
+this account. An explicit refusal is a known outcome; after a lost reply a name stays
+unconfirmed for good.
+`DomainRowsGuard` admits the binding's control requests and exactly these four mutations,
+each once, the direct ones only with the account's token.
+
+**Reads.** Nothing is retried, and a failed read never stops the others.
+
+| Operation | Routes | Arguments |
+| --- | --- | --- |
+| `has_local_authority` | WHM, direct, bridged | main and addon, both orders |
+| `ensure_domains_reside_only_locally` | direct, bridged | main and addon, both orders |
+| `ensure_domains_use_recognized_nameservers` | direct, bridged | main and addon, both orders |
+| `fetch_ds_records_for_domains` | WHM | main and addon, both orders |
+| `list_domains` | direct, bridged | none |
+| `domains_data` | direct, bridged | `format=hash`, then `format=list` |
+| `single_domain_data` | direct, bridged | main, addon, alias, subdomain |
+
+The addon sorts before the main domain, so neither order is also the sorted one. Each DNS
+read must return two results, and where results name their domain they must be exactly the
+two requested; `dns_results` records each sample's order as `request`, `reverse`, `other` or
+`not_observable`, and `dns_order_samples` counts them. The `ensure_*` results name no
+domain, so their order is never observable. No general order is claimed from any sample.
+`export_zone_files` is not called with more than one zone, after an earlier refused raw
+export. Every inventory must list the main domain, addon and subdomain, and every one but
+`domains_data` `format=list` must list the alias, which that form has held no row for on
+`11.138.0.19`. `domain_kinds` records what each inventory lists, including the subdomain an
+addon is parked on, which is never required. Each single-domain read must return the record
+of exactly the domain it asked for; `single_domain` records `requested_domain`, or which other
+of the run's records came back (`main_domain`, `addon_subdomain`) or `other`, which fails the
+expectation.
+
+**Cleanup.** Account removal takes every extra domain and zone. Once the proven account
+reads removed, the lifecycle's removed-resource proof reads `get_domain_info` and `listzones`
+once each and requires every attempted name and zone to be absent; an unreadable inventory
+or a lost creation leaves it `unconfirmed`. After any other cleanup the lifecycle never calls
+the proof, so every attempted name and zone, and each extra filesystem claim whose control
+ran, stays `unconfirmed`. With `WHM_API_LIVE_FS_CHECK=1`, the unchanged read-only proof also runs for the
+addon and the alias, the two extra domains with zones of their own: a control while they
+exist, then a final check after removal. Each extra domain's absence counts only after its
+own passed control, and `extra_filesystem` reports both. A subdomain has no zone of its own,
+and its `/etc/userdomains` line is already counted by owner.
+
+**Inspection.** `--inspect-names` runs the same recipe with the same cleanup but writes no
+artifact. It prints, for each phase, the undeclared key names and JSON types that
+`DomainRowsInspection` finds against the effective contract, then the sanitized outcome
+labels. A key's name is printed only for an undeclared key in an object whose contract
+declares named fields, and only as a plain identifier. Every key beneath an undeclared key,
+in an object declaring no fields, or at a map position prints as `<key>` or `*`, as such keys
+can be data such as user or token names. No value, path, token or upstream text is printed. It is the private step before typing a
+field, and its output is never committed.
+
+The current scenario is `domain-rows-disposable-v2`, and **no v2 capture exists**. v2 means
+something different from v1: a single-domain read must return exactly the requested record,
+no zone inventory follows the subdomain's creation, the removed-resource proof runs only once
+the proven account reads removed, and the unreachable expected-refusal support is gone.
+
+The [v1 capture](../../docs/api/evidence/2026-11-02-domain-rows.json) at `e6df465` on
+`11.138.0.19` is a **passed run**, exit 0, and stays the valid record of what ran at that
+revision. Its `single_domain` labels show every single-domain read returning the requested
+record, which v1 recorded without requiring. See the
+[source audit](../../docs/api/source-audit.md#disposable-domain-rows-and-multi-value-dns-reads-2026-11-02).
 
 ## Disposable-account user task queue fixture
 

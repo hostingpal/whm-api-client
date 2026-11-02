@@ -323,8 +323,9 @@ hashes for those operations differ from the current specs. Of those eight fields
 list-form `customlog[].format` stays validated: `main_domain.phpopenbasedirprotect` is
 also `mixed` because domains_data does not promise it, while the pinned
 single_domain_data flag and other documented fields keep their validation.
-Empty-string userdirprotect remains documentation/offline coverage because
-the live field is omitted. The 2026-11-02 disposable-account capture at c4a124a on
+The main domain omits userdirprotect; the 2026-11-02 domain-rows capture observed
+the exact empty string on addon and subdomain rows in both domains_data forms
+and in their single-domain results. The 2026-11-02 disposable-account capture at c4a124a on
 11.138.0.19 passed the three PHP setters and the home INI write/read round trip
 through both routes. Vhost-scope INI, FPM and impacted-domain variants and PHP
 runtime behavior remain unverified under `whm-api-client-2dj`; the vhost-versions

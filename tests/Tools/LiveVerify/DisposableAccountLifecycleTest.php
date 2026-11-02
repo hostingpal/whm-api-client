@@ -1125,6 +1125,139 @@ final class DisposableAccountLifecycleTest extends TestCase
         self::assertFalse($ran);
     }
 
+    /**
+     * What a recipe made outside the account's home, such as an extra domain's zone, is only gone once the account is.
+     * Its proof therefore runs after removal and after the lifecycle's own absence reads, and before the filesystem.
+     */
+    public function testRemovedResourceProofRunsOnceAfterRemovalAndTheLifecycleReads(): void
+    {
+        $http = new DisposableAccountServer();
+        $seen = [];
+        $proof = RecordingFilesystemProof::after(self::finding('confirmed_absent'));
+        $outcome = self::lifecycle($http, $proof)->run(
+            self::noop(),
+            null,
+            static function () use ($http, $proof, &$seen): array {
+                $seen[] = [$http->account, $http->tokens, $http->counts['removeacct'] ?? 0,
+                    $http->counts['listzones'], count($proof->calls)];
+
+                return [];
+            },
+        );
+
+        self::assertSame('passed', $outcome['status']);
+        // Preflight and final zone reads both came first; only the filesystem control had run.
+        self::assertSame([[false, [], 1, 2, 1]], $seen);
+        self::assertCount(2, $proof->calls);
+    }
+
+    public function testRemovedResourceProofFailuresFailTheRunWithTheirOwnLabels(): void
+    {
+        $http = new DisposableAccountServer();
+        $outcome = self::lifecycle($http)->run(
+            self::noop(),
+            null,
+            static fn (): array => ['extra_domain_still_present', 'extra_zone_absence_unconfirmed'],
+        );
+
+        self::assertSame('failed', $outcome['status']);
+        self::assertSame('failed', $outcome['cleanup']);
+        self::assertSame(['extra_domain_still_present', 'extra_zone_absence_unconfirmed'], $outcome['failures']);
+        self::assertSame(['creation' => 'confirmed', 'cleanup' => 'confirmed_absent'], $outcome['account']);
+        self::assertSame('confirmed_absent', $outcome['domain_cleanup']);
+    }
+
+    public function testThrowingRemovedResourceProofIsUnconfirmedAndStopsNoFilesystemProof(): void
+    {
+        $http = new DisposableAccountServer();
+        $proof = RecordingFilesystemProof::after(self::finding('confirmed_absent'));
+        $outcome = self::lifecycle($http, $proof)->run(
+            self::noop(),
+            null,
+            static function (): array {
+                throw new RuntimeException('private removed resource failure');
+            },
+        );
+
+        self::assertSame(['removed_resource_absence_unconfirmed'], $outcome['failures']);
+        self::assertSame('failed', $outcome['cleanup']);
+        self::assertSame('confirmed_absent', $outcome['filesystem_cleanup']);
+        self::assertCount(2, $proof->calls);
+        self::assertPrivate($outcome);
+    }
+
+    /**
+     * The callback may change what the removed account left behind, so it runs only for an account the marker proved
+     * this run's and that then read absent. Anything less, including a removal that failed or cannot be read back,
+     * skips it entirely; the lifecycle's own failures already fail the run.
+     *
+     * @param array<string, string> $failures
+     * @param array<string, string> $overrides
+     */
+    #[DataProvider('unprovenRemovals')]
+    public function testRemovedResourceProofNeverRunsUnlessTheOwnedAccountReadsRemoved(
+        array $failures,
+        array $overrides,
+    ): void {
+        $http = new DisposableAccountServer();
+        $http->failures = $failures;
+        $http->overrides = $overrides;
+        $ran = false;
+        $outcome = self::lifecycle($http)->run(self::noop(), null, static function () use (&$ran): array {
+            $ran = true;
+
+            return [];
+        });
+
+        self::assertFalse($ran);
+        self::assertSame('failed', $outcome['status']);
+        self::assertNotContains('removed_resource_absence_unconfirmed', $outcome['failures']);
+    }
+
+    /** @return iterable<string, array{array<string, string>, array<string, string>}> */
+    public static function unprovenRemovals(): iterable
+    {
+        yield 'removal refused' => [['removeacct:1' => 'api_before'], []];
+        yield 'removal lost before taking effect' => [['removeacct:1' => 'throw_before'], []];
+        yield 'ownership unreadable before removal' => [['listaccts:5' => 'invalid_before'], []];
+        yield 'account unreadable after removal' => [['listaccts:6' => 'invalid_before'], []];
+        yield 'foreign marker at the cleanup gate' => [[], ['listaccts:3' => self::FOREIGN]];
+        yield 'creation refused' => [['createacct:1' => 'api_before'], []];
+        yield 'creation lost' => [['createacct:1' => 'throw_before'], []];
+    }
+
+    /** A removal whose reply was lost still counts once the owned account reads absent. */
+    public function testRemovedResourceProofRunsWhenALostRemovalReadsAbsent(): void
+    {
+        $http = new DisposableAccountServer();
+        $http->failures['removeacct:1'] = 'throw_after';
+        $ran = 0;
+        $outcome = self::lifecycle($http)->run(self::noop(), null, static function () use (&$ran): array {
+            ++$ran;
+
+            return [];
+        });
+
+        self::assertSame(1, $ran);
+        self::assertSame(['creation' => 'confirmed', 'cleanup' => 'confirmed_absent'], $outcome['account']);
+        self::assertSame(['account_remove_failure'], $outcome['failures']);
+    }
+
+    public function testRemovedResourceProofNeverRunsWhenSetupNeverCreatedAnything(): void
+    {
+        $http = new DisposableAccountServer();
+        $http->overrides['listzones:1'] = '{"zone":[{"domain":"wdisposable.example.com"}]}';
+        $ran = false;
+        $outcome = self::lifecycle($http)->run(self::noop(), null, static function () use (&$ran): array {
+            $ran = true;
+
+            return [];
+        });
+
+        self::assertFalse($ran);
+        self::assertSame('not_required', $outcome['cleanup']);
+    }
+
     public function testNoFilesystemProofLeavesTheClaimOpenWithoutFailingTheRun(): void
     {
         self::assertSame('not_claimed', self::execute(new DisposableAccountServer())['filesystem_cleanup']);
