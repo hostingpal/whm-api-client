@@ -2494,12 +2494,14 @@ row or its absence, so each route reads back a populated row and its removal:
 | Redirect | `addRedirect(domain, redirect, src)`, `deleteRedirect(domain, src)` | `addRedirect` with `redirectWildcard: false`, `redirectWww: 0`, `type: 'temp'`; `deleteRedirect` with `docroot` |
 | Hotlink | `addHotlink(..., allowNull: true)`, one referrer | `addHotlink(..., allowNull: false)`, two referrers and two extensions |
 
-Redirect readbacks check the `list_redirects` row and `get_redirect`. Targets use the
+Each of these mutations must itself return null data, as the inspected server source sets
+none. Redirect readbacks check the `list_redirects` row and `get_redirect`. Targets use the
 reserved `example.net` domain. Hotlink protection is account-wide, which is acceptable on
 this run's own account.
 
-**Directory section.** A generic listing of `public_html` must be a real JSON list without
-the fresh directory. Uploading one synthetic file then creates it: `Fileman/upload_files`
+**Directory section.** A generic listing of `public_html` must be a real listing without the
+fresh directory: a JSON list, or the documented object holding both `dirs` and `files` lists.
+An empty `{}` decodes like an empty list, so it is refused. Uploading one synthetic file then creates it: `Fileman/upload_files`
 is the only documented API that creates a directory, and the setting calls require an
 existing one. An unfiltered inventory with hidden entries must show exactly that file. Then:
 
@@ -2511,15 +2513,19 @@ existing one. An unfiltered inventory with hidden entries must show exactly that
 
 Each change is read back on its own route with `getIndexing()`, `isDirectoryProtected()`,
 the privacy listing or `listUsers()`. The two passwords come from fresh randomness, live in
-memory only and reach the server only in their own `add_user` body. Leech protection has no
-UAPI mutation in the pinned surface, so `DirectoryProtection/list_directories` reads it at
-the start and end and both must show 0.
+memory only and reach the server only in their own `add_user` body. Each protected-user
+mutation must return null data; `setIndexing()` must echo the requested type and
+protection must return its new state. Leech protection has no UAPI mutation in the pinned
+surface, so `DirectoryProtection/list_directories` reads it through direct UAPI at the
+start and through the bridge at the end, and both must show 0.
 
 **Sections and capture.** Within a section, capture stops at the first unexpected state.
 The sections share no state, so a stopped Mime section does not withhold the directory
 section. `sections` records each section's `capture`, `expectations` and `stopped_at`, and
 failures carry `mime_` or `directory_` labels; a failed server-version read is
-`capture_failure` and runs neither.
+`capture_failure` and runs neither. Absence is never judged from `{}`: every typed list
+contract here refuses it as a payload mismatch, which stops the section as a capture
+failure before any expectation runs.
 
 **Evidence.** `mime_directory` holds the structural records of all 73 phases, each
 mutation's result kind with its message and warning counts, list row counts and upload
@@ -2534,7 +2540,12 @@ HTTP redirect, indexing, password authentication or hotlink blocking. It covers 
 argument variants above on one server version, and leech protection only as a read. The
 filesystem proof, when enabled, covers its fixed locations at one moment.
 
-The scenario is `mime-directory-disposable-v1`.
+The scenario is `mime-directory-disposable-v2`, and **no v2 capture exists**. v2 adds the
+null-data checks on the 20 Mime and protected-user mutations, so a v2 record's passed
+expectation on those phases means its result was checked, which a v1 record's does not. The
+v1 capture below ran before that change and stays the valid record of what ran at its
+revision. Its own structural paths record a null root for all 20 of those mutations and a
+JSON `empty-list` for every empty read.
 
 The [capture](../../docs/api/evidence/2026-11-02-mime-directory.json) at `965b329` on
 `11.138.0.19` is a **passed run**, exit 0, with the filesystem proof enabled. All 73 phases

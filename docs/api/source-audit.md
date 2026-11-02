@@ -10317,8 +10317,8 @@ string `auth_name`, `auth_type` and `passwd_file` with an integer `protected` fl
 disable, `is_directory_protected`
 returned empty strings for `auth_name` and `passwd_file`. `list_users` returned populated
 string lists, then an empty list. The directory listings held populated `current`,
-`parent` and `home` states with an empty `children` list. `has_leech_protection` read 0 on
-both routes, before and after.
+`parent` and `home` states with an empty `children` list. `has_leech_protection` read 0
+through direct UAPI before the directory changes and through the bridge after them.
 
 No live response contradicted a typed contract, so no overlay correction was made.
 
@@ -10331,3 +10331,40 @@ wildcard redirect, no `redirect_www` 1 or 2, no `standard` index type and no rel
 directory path. Leech
 protection is covered as a read only. `8x0.2.21` and `8x0.2.22` still hold HTTP enforcement
 and the remaining variants.
+
+### Review corrections to the Mime and directory recipe (2026-11-02)
+
+An independent review of the branch raised eight points. Each was checked against the code
+and the artifact; nothing was rerun, and the artifact is unchanged.
+
+- **Mutation results were unchecked.** Fixed. `mutate()` recorded a passed expectation for
+  the 16 Mime and 4 protected-user mutations without looking at their data. It now requires
+  null, as the inspected source sets none; the upload, `set_indexing` and protection
+  setters keep their own result checks. A regression per kind failed before the fix.
+- **Absence could be judged from `{}`.** Rejected. Decoded to arrays, `{}` equals an empty
+  list, but every list read involved (the Mime baselines, the removal readbacks, the final
+  `listUsers()` and the listings' `children`) is a typed list contract, and the validator
+  refuses `{}` as a `payload_mismatch` with `type_mismatch` before any expectation runs.
+  The section then stops as a capture failure, so `{}` never proves absence. Regression
+  tests now pin that for each kind. The `8x0.2.50` ambiguity is the opposite direction:
+  object contracts accepting `[]`.
+- **Leech protection was overstated.** Fixed above: it was read through direct UAPI before
+  the changes and through the bridge after them, not on both routes each time.
+- **The README disagreed with the code** on the `public_html` listing. Fixed in the README:
+  the code accepts a JSON list or the documented object holding both `dirs` and `files`
+  lists, like the Fileman upload fixture, and refuses `{}`.
+- **`named()` had lost `#[SensitiveParameter]`** on the listing it reads. Restored, with a
+  reflection test that failed first.
+- **A dead clause.** Removed. A section stops at its first throw, and `expect()` runs only
+  after a passed observation, so a failed expectation never shares a section with a failed
+  probe; the capture-failure label depends on the expectation flag alone.
+- **A repeated literal.** The four copies of the round routes are now
+  `MimeDirectoryRecipe::ROUNDS`, with a test that each round names real phases on its routes.
+- **AGENTS.md** said only reviewer evidence covered these mutations. Updated to name this
+  committed capture, with HTTP enforcement still explicitly unverified.
+
+The first change alters what a passed mutation record means, so the recipe is now
+`mime-directory-disposable-v2`, and no v2 capture exists. The policy is unchanged. The v1
+artifact stays the valid record of what ran at `965b329`. Its own structural paths record a
+`null` root for all 20 of those mutations and a JSON `empty-list` for every empty read, so
+the results it captured meet the v2 checks; that is a reading of the artifact, not a run.

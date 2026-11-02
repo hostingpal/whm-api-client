@@ -1411,6 +1411,11 @@ on its own route, including the first committed populated MIME type and redirect
 Token, account, domain and zone cleanup are `confirmed_absent`, the directory is
 `absent_with_account`, the filesystem control passed and `filesystem_cleanup` is
 `confirmed_absent`. It establishes no HTTP redirect, indexing, authentication or hotlink
-enforcement, and leech protection only as a read. See the
+enforcement, and leech protection only as a read, through direct UAPI before the changes
+and the bridge after them. See the
 [source audit](../source-audit.md#disposable-account-mime-and-directory-access-mutations-2026-11-02).
-SHA-256: `03797505ac97f67a384d8da4c9741eaec0e12f2f4aa6785d2d03d1c6447573cb`.
+SHA-256: `03797505ac97f67a384d8da4c9741eaec0e12f2f4aa6785d2d03d1c6447573cb`. It stays the
+valid record of what ran at that revision. The fixture has since moved to
+`mime-directory-disposable-v2`, which also requires null data from the 20 Mime and
+protected-user mutations, and no v2 capture exists; see the
+[source audit](../source-audit.md#review-corrections-to-the-mime-and-directory-recipe-2026-11-02).
