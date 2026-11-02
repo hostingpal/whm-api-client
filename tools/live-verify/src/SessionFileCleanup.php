@@ -16,15 +16,16 @@ namespace HostingPal\WhmApiClient\Tools\LiveVerify;
  * (mailbox_encoded) or literal (mailbox_literal), any other name containing the account name (unexplained), or
  * anything else (unrelated, counted only in `inventory`). The three anchored classes count regular files; any other
  * anchored entry is `anchored_other`. `wide` counts what the filesystem proof counts, any name containing the account
- * name. Removal deletes only anchored regular files, never a directory, symbolic link or unexplained name, and reports
- * the same classification before and after with the number deleted. A null result is an unreadable answer: it never
- * reads as zero.
+ * name. Anchored regular files are also counted at the top level or in subfolders. Removal deletes only anchored
+ * regular files, never a directory, symbolic link or unexplained name, and reports the same classification before and
+ * after, the deletions attempted, and whether the deletion failed; a failed deletion still carries every count. A null
+ * result is an unreadable answer: it never reads as zero.
  *
  * @phpstan-type Observation array{
  *     inventory: int, wide: int, own: int, mailbox_encoded: int, mailbox_literal: int, anchored_other: int,
- *     unexplained: int, token_suffix: int, directories: int
+ *     unexplained: int, token_suffix: int, top_level: int, in_subfolders: int
  * }
- * @phpstan-type Removal array{before: Observation, deleted: int, after: Observation}
+ * @phpstan-type Removal array{before: Observation, attempted: int, deletion_failed: bool, after: Observation}
  */
 interface SessionFileCleanup
 {
