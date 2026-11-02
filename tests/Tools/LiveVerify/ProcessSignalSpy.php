@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-// Test-only: shadows proc_terminate() inside the tools namespace, so a test can see every signal the SSH proof sends.
+// Test-only: shadows proc_terminate() inside the tools namespace, so a test can see every signal the SSH runner sends.
 // PHP resolves the unqualified call to this function when it exists, then delivers the real signal unchanged.
-// SshFilesystemAbsenceProofTest loads this file before its first test; nothing in production ever does.
+// Every test file that reaches SshScriptRunner loads this file before its first test, because the first call binds
+// the function it resolves; nothing in production ever does.
 
 namespace HostingPal\WhmApiClient\Tools\LiveVerify;
 

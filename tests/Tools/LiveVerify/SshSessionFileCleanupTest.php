@@ -31,6 +31,12 @@ final class SshSessionFileCleanupTest extends TestCase
 
     private string $directory = '';
 
+    public static function setUpBeforeClass(): void
+    {
+        // Must load before the shared runner's first call, which binds the function it resolves.
+        require_once __DIR__ . '/ProcessSignalSpy.php';
+    }
+
     protected function setUp(): void
     {
         $this->directory = sys_get_temp_dir() . '/session-cleanup-' . bin2hex(random_bytes(8));

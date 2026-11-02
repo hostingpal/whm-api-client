@@ -9,10 +9,10 @@ namespace HostingPal\WhmApiClient\Tools\LiveVerify;
  *
  * The script is constant: it reads, counts and prints `label=count` lines and nothing else, and it holds no account
  * name. The name and domain are checked against narrow patterns, then passed as positional arguments of a fixed remote
- * command, so unvalidated text can never reach a shell. An invalid name starts no process. Host keys are never accepted
- * or changed: strict checking refuses unknown or changed keys and key updates are disabled. Connection sharing is off,
- * so a user's ControlMaster setting cannot reuse or outlive the session. No connection is repeated, and credentials
- * stay out of the child's environment.
+ * command, so unvalidated text can never reach a shell. An invalid name starts no process. The connection, its fixed
+ * options, bounds, environment and strict report parsing belong to SshScriptRunner, shared with the session-file
+ * cleanup: host keys are never accepted or changed, connection sharing is off, no connection is repeated, and
+ * credentials stay out of the child's environment.
  *
  * A search that fails prints no count, and the strict parser refuses a report with a blank one, so an unreadable place
  * can never read as absent. That covers a subtree a top-level inventory cannot see. Each location also reports its own
@@ -67,23 +67,15 @@ final class SshFilesystemAbsenceProof implements FilesystemAbsenceProof
 
         SCRIPT;
 
-    private const HOST = 'oblak.test';
-
-    private const OPTIONS = [
-        '-T', '-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=yes', '-o', 'ConnectTimeout=10',
-        '-o', 'UpdateHostKeys=no', '-o', 'ControlMaster=no', '-o', 'ControlPath=none',
-    ];
-
     /** Reported in this order, each as its inventory then its matches. */
     private const LOCATIONS = [...self::ACCOUNT_LOCATIONS, 'sessions'];
 
-    private const MAXIMUM_OUTPUT = 4096;
+    private readonly SshScriptRunner $runner;
 
     /** The second value bounds the whole check; only connecting is bounded by ConnectTimeout. */
-    public function __construct(
-        private readonly string $ssh = 'ssh',
-        private readonly float $timeout = 30.0,
-    ) {
+    public function __construct(string $ssh = 'ssh', float $timeout = 30.0)
+    {
+        $this->runner = new SshScriptRunner($ssh, $timeout);
     }
 
     /** Return the proof when `WHM_API_LIVE_FS_CHECK=1` opts in, otherwise null so nothing is claimed. */
@@ -94,34 +86,32 @@ final class SshFilesystemAbsenceProof implements FilesystemAbsenceProof
 
     public function check(string $user, string $domain): array
     {
-        $stdout = preg_match(DisposableAccount::USER_PATTERN, $user) === 1
+        $labels = [];
+        foreach (self::LOCATIONS as $location) {
+            $labels[] = $location . '_inventory';
+            $labels[] = $location;
+        }
+        $counts = preg_match(DisposableAccount::USER_PATTERN, $user) === 1
             && preg_match(DisposableAccount::DOMAIN_PATTERN, $domain) === 1
-            ? $this->remoteOutput('sh -s -- ' . $user . ' ' . $domain) : null;
+            ? $this->runner->counts(self::SCRIPT, [$user, $domain], $labels) : null;
 
-        return $stdout === null ? self::unconfirmed() : self::finding($stdout);
+        return $counts === null ? self::unconfirmed() : self::finding($counts);
     }
 
     /**
      * Read the strict report: a location with a match is residue, and absence needs every inventory to be usable.
      *
+     * @param array<string, int> $counts
      * @return Finding
      */
-    private static function finding(string $stdout): array
+    private static function finding(array $counts): array
     {
-        $pattern = '/\A';
-        foreach (self::LOCATIONS as $location) {
-            $pattern .= $location . '_inventory=([0-9]{1,9})\n' . $location . '=([0-9]{1,9})\n';
-        }
-        if (preg_match($pattern . 'complete=1\n\z/', $stdout, $counts) !== 1) {
-            return self::unconfirmed();
-        }
         $residue = [];
         $inventories = true;
-        foreach (self::LOCATIONS as $index => $location) {
-            $inventories = $inventories && (int) $counts[2 * $index + 1] > 0;
-            $matches = (int) $counts[2 * $index + 2];
-            if ($matches > 0) {
-                $residue[$location] = $matches;
+        foreach (self::LOCATIONS as $location) {
+            $inventories = $inventories && $counts[$location . '_inventory'] > 0;
+            if ($counts[$location] > 0) {
+                $residue[$location] = $counts[$location];
             }
         }
         if ($residue !== []) {
@@ -135,98 +125,5 @@ final class SshFilesystemAbsenceProof implements FilesystemAbsenceProof
     private static function unconfirmed(): array
     {
         return ['outcome' => 'unconfirmed', 'residue' => []];
-    }
-
-    /**
-     * Run the one fixed connection without a local shell; null unless it exits 0 within the bound.
-     *
-     * Only standard output ends the read. Standard error can outlive the process, as anything it started may inherit
-     * it, so the report is complete at output's end and the wait then needs only the process itself.
-     */
-    private function remoteOutput(string $command): ?string
-    {
-        $pipes = [];
-        $process = @proc_open(
-            [$this->ssh, ...self::OPTIONS, self::HOST, $command],
-            [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']],
-            $pipes,
-            null,
-            self::environment(),
-        );
-        if ($process === false) {
-            return null;
-        }
-        $deadline = microtime(true) + $this->timeout;
-        @fwrite($pipes[0], self::SCRIPT);
-        fclose($pipes[0]);
-        stream_set_blocking($pipes[1], false);
-        stream_set_blocking($pipes[2], false);
-        $stdout = '';
-        $open = [1 => $pipes[1], 2 => $pipes[2]];
-        while (isset($open[1]) && strlen($stdout) <= self::MAXIMUM_OUTPUT && microtime(true) < $deadline) {
-            $ready = $open;
-            $write = $except = null;
-            if (@stream_select($ready, $write, $except, 0, 50000) === false) {
-                break;
-            }
-            foreach ($ready as $index => $pipe) {
-                $chunk = fread($pipe, 8192);
-                if ($index === 1 && is_string($chunk)) {
-                    $stdout .= $chunk;
-                }
-                if (feof($pipe)) {
-                    fclose($pipe);
-                    unset($open[$index]);
-                }
-            }
-        }
-        $exit = isset($open[1]) ? null : self::exitStatus($process, $deadline);
-        foreach ($open as $pipe) {
-            fclose($pipe);
-        }
-        // A reaped process's number may already belong to another process, so kill only one still running.
-        // proc_get_status() caches the exit status since PHP 8.3, so it never reports a reaped process as running.
-        if (proc_get_status($process)['running']) {
-            proc_terminate($process, 9);
-        }
-        proc_close($process);
-
-        return $exit === 0 && strlen($stdout) <= self::MAXIMUM_OUTPUT ? $stdout : null;
-    }
-
-    /**
-     * Wait for the exit status until the deadline, as a process can close its pipes and keep running.
-     *
-     * @param resource $process
-     */
-    private static function exitStatus($process, float $deadline): ?int
-    {
-        do {
-            $status = proc_get_status($process);
-            if (!$status['running']) {
-                return $status['exitcode'];
-            }
-            usleep(10000);
-        } while (microtime(true) < $deadline);
-
-        return null;
-    }
-
-    /**
-     * Pass only what ssh needs to find its configuration and keys; credentials stay out of the child.
-     *
-     * @return array<string, string>
-     */
-    private static function environment(): array
-    {
-        $environment = [];
-        foreach (['PATH', 'HOME', 'USER', 'LOGNAME', 'SSH_AUTH_SOCK'] as $name) {
-            $value = getenv($name);
-            if (is_string($value)) {
-                $environment[$name] = $value;
-            }
-        }
-
-        return $environment;
     }
 }
