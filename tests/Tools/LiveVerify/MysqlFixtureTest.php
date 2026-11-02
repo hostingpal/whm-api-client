@@ -213,7 +213,10 @@ final class MysqlFixtureTest extends TestCase
             'set_privileges_on_database:1', 'bridge:set_privileges_on_database:1'] as $step
         ) {
             foreach (['throw_before', 'throw_after', 'api_before', 'api_after'] as $mode) {
-                yield $step . ' ' . $mode => [$step, $mode];
+                // A create rejected after taking effect is retained; see rejectedCreations().
+                if ($mode !== 'api_after' || !str_contains($step, 'create_')) {
+                    yield $step . ' ' . $mode => [$step, $mode];
+                }
             }
         }
     }
@@ -267,8 +270,124 @@ final class MysqlFixtureTest extends TestCase
         self::assertSame('not_checked', $matches[0]['payload_validation']);
         self::assertSame('api_failure', $matches[0]['failure_kind']);
         self::assertSame([], $http->databases);
-        self::assertSame([], $http->users);
+        self::assertSame(['npr_wva1b2c3v' => []], $http->users);
         self::assertPrivate($report, $http);
+    }
+
+    /**
+     * Another process takes the exact name after preflight, or our rejected create took effect anyway.
+     *
+     * Both causes send the same status 0 and leave the same inventory, so neither may be adopted.
+     * Earlier creations this run owns are still removed; later ones are never attempted.
+     *
+     * @param 'linked_database'|'unlinked_database'|'linked_user'|'unlinked_user' $role
+     * @param list<string> $owned Removed in this exact order.
+     */
+    #[DataProvider('rejectedCreations')]
+    public function testRejectedCreationIsNeverAdoptedEvenWhenItsNameIsPresent(
+        string $step,
+        string $role,
+        string $name,
+        array $owned,
+        string $cause,
+    ): void {
+        $http = new MysqlFixtureServer();
+        $database = str_ends_with($role, 'database');
+        if ($cause === 'competitor') {
+            $http->before[$step] = static function () use ($http, $database, $name): void {
+                if ($database) {
+                    $http->databases[$name] = [];
+                } else {
+                    $http->users[$name] = [];
+                }
+            };
+        } else {
+            $http->failures[$step] = $cause;
+        }
+
+        $report = self::fixture($http)->run(self::probes(), self::capture($http));
+
+        self::assertSame($owned, $http->deleted);
+        self::assertSame($database ? [$name => []] : [], $http->databases);
+        self::assertSame($database ? [] : [$name => []], $http->users);
+        self::assertSame(1, $http->counts[substr($step, 0, -2)]);
+        $fixture = $report['mysql_fixture'];
+        self::assertSame('failed', $fixture['status']);
+        self::assertSame('failed', $fixture['setup']);
+        self::assertSame('not_run', $fixture['capture']);
+        self::assertSame('failed', $fixture['cleanup']);
+        self::assertSame(['setup_failure', 'ownership_unconfirmed'], $fixture['failures']);
+        self::assertSame(['creation' => 'rejected', 'cleanup' => 'present'], $fixture['resources'][$role]);
+        $failed = array_values(array_filter($report['mysql_mutations'], static fn (array $record): bool =>
+            $record['probe_outcome'] === 'failed'));
+        self::assertCount(1, $failed);
+        self::assertSame('failure', $failed[0]['api_outcome']);
+        self::assertSame('api_failure', $failed[0]['failure_kind']);
+        self::assertPrivate($report, $http);
+    }
+
+    /** @return iterable<string, array{string, string, string, list<string>, string}> */
+    public static function rejectedCreations(): iterable
+    {
+        foreach (
+            [
+                'create_database:1' => ['linked_database', 'npr_wva1b2c3d', []],
+                'bridge:create_database:1' => ['unlinked_database', 'npr_wva1b2c3e', ['npr_wva1b2c3d']],
+                'create_user:1' => ['linked_user', 'npr_wva1b2c3u', ['npr_wva1b2c3e', 'npr_wva1b2c3d']],
+                'bridge:create_user:1' => [
+                    'unlinked_user', 'npr_wva1b2c3v', ['npr_wva1b2c3u', 'npr_wva1b2c3e', 'npr_wva1b2c3d'],
+                ],
+            ] as $step => [$role, $name, $owned]
+        ) {
+            foreach (['competitor', 'api_after'] as $cause) {
+                yield $step . ' ' . $cause => [$step, $role, $name, $owned, $cause];
+            }
+        }
+    }
+
+    public function testRejectedCreationWithNothingPresentNeedsNoDeletion(): void
+    {
+        $http = new MysqlFixtureServer();
+        $http->failures['create_database:1'] = 'api_before';
+
+        $report = self::fixture($http)->run(self::probes(), self::capture($http));
+
+        self::assertSame([], $http->deleted);
+        self::assertSame('failed', $report['mysql_fixture']['status']);
+        self::assertSame('passed', $report['mysql_fixture']['cleanup']);
+        self::assertSame(['setup_failure'], $report['mysql_fixture']['failures']);
+        self::assertSame(
+            ['creation' => 'rejected', 'cleanup' => 'confirmed_absent'],
+            $report['mysql_fixture']['resources']['linked_database'],
+        );
+    }
+
+    /**
+     * The documented residual race, pinned so a change to it is deliberate.
+     *
+     * Without an API outcome, a competitor is indistinguishable from our own creation taking effect.
+     * Reconciliation keeps removing the exact run identity, so this case is not a safety guarantee.
+     */
+    public function testUncertainCreationStillReconcilesExactIdentityIncludingACompetitor(): void
+    {
+        $http = new MysqlFixtureServer();
+        $http->before['create_database:1'] = static function () use ($http): void {
+            $http->databases['npr_wva1b2c3d'] = [];
+        };
+        $http->failures['create_database:1'] = 'throw_before';
+
+        $report = self::fixture($http)->run(self::probes(), self::capture($http));
+
+        self::assertSame(['npr_wva1b2c3d'], $http->deleted);
+        self::assertSame([], $http->databases);
+        self::assertSame(1, $http->counts['create_database']);
+        self::assertSame('failed', $report['mysql_fixture']['status']);
+        self::assertSame('passed', $report['mysql_fixture']['cleanup']);
+        self::assertSame(['setup_failure'], $report['mysql_fixture']['failures']);
+        self::assertSame(
+            ['creation' => 'confirmed', 'cleanup' => 'confirmed_absent'],
+            $report['mysql_fixture']['resources']['linked_database'],
+        );
     }
 
     public function testUnknownCreationIsNotDeletedWhenReconciliationCannotIdentifyIt(): void

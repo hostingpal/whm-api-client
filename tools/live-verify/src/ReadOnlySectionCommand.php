@@ -15,15 +15,19 @@ final class ReadOnlySectionCommand
 {
     /**
      * Entrypoints bind their reviewed recipe and catalog; command arguments select only a new output path.
+     * Omitting $outcome keeps the strict assessment and its console output; see ReadOnlySectionRunner::passes().
+     * With $outcome, a failed run also names its deviating probes on stdout. The published report is unchanged.
      *
      * @param list<string> $arguments
      * @param Closure(): list<Probe> $catalog
+     * @param (Closure(Probe, array<mixed>): bool)|null $outcome
      */
     public static function run(
         #[SensitiveParameter] array $arguments,
         string $root,
         string $recipe,
         Closure $catalog,
+        ?Closure $outcome = null,
     ): int {
         $temporary = null;
         $recovery = null;
@@ -70,11 +74,13 @@ final class ReadOnlySectionCommand
             if (dirname($temporary) !== realpath($directory) || !@chmod($temporary, 0600)) {
                 throw new RuntimeException('Evidence file protection unavailable.');
             }
+            $probes = $catalog();
             $report = (new ReadOnlySectionRunner(new CurlClient(), $context))->run(
-                $catalog(),
+                $probes,
                 $recipe,
                 $optIn,
                 ['whm' => $whm, 'cpanel' => $cpanel],
+                $outcome,
             );
             $json = json_encode(
                 ['schema_version' => 1, 'read_only_section' => $report],
@@ -93,6 +99,11 @@ final class ReadOnlySectionCommand
             $recovery = null;
             $passed = $report['status'] === 'passed';
             fwrite(STDOUT, 'Read-only section verification: ' . ($passed ? 'passed' : 'failed') . ".\n");
+            if (!$passed && $outcome !== null) {
+                foreach (ReadOnlySectionRunner::deviations($probes, $report['probes'], $outcome) as $line) {
+                    fwrite(STDOUT, $line . "\n");
+                }
+            }
 
             return $passed ? 0 : 1;
         } catch (Throwable $error) {

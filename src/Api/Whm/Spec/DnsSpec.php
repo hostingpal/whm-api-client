@@ -624,7 +624,7 @@ final class DnsSpec
         'returns' => [
             'type' => 'object',
             'fields' => [
-                'new_serial' => ['type' => 'int'],
+                'new_serial' => ['type' => 'int', 'accept' => ['numeric-string']],
             ],
         ],
     ];

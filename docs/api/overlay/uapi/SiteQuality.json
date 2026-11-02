@@ -22,15 +22,19 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available in cPanel 110 and later; operates on the selected cPanel account. Response roots are nonnullable objects with optional fields. Omission is distinct from explicit null; only documented nullable fields accept null. Payload flags do not replace UAPI envelope status. Inspect responseMeta() warnings and raw metadata."
+          "text": "Available in cPanel 110 and later; operates on the selected cPanel account. The response root is a nonnullable object. Payload data does not replace UAPI envelope status. Inspect responseMeta() warnings and raw metadata."
         },
         {
           "kind": "documented",
-          "text": "Creates a monitoring project that bundles URLs sharing a domain. Optional standardAlerting is bool|null: false sends 0, true sends 1, null omits; the pinned null default means no standard alerts. Omitted systemType retains the Website default; supplied strings stay open. URL input is sensitive and is never fetched or locally format-validated. Empty strings remain values. The nested system_type.id is formally untyped (mixed), not inferred from its example/default 1. fixedComponents is a native bool; optional description is string|null. Preserve nested presence, list order and empty systems."
+          "text": "Creates a monitoring project that bundles URLs sharing a domain. Optional standardAlerting is bool|null: false sends 0, true sends 1, null omits; the pinned null default means no standard alerts. Omitted systemType retains the Website default; supplied strings stay open. URL input is sensitive and is never fetched or locally format-validated. Empty strings remain values."
         },
         {
           "kind": "policy",
           "text": "One explicit request and one attempt only. No implicit read, retry, polling, account action, activation email, login, token exchange, URL fetch, restore or rollback. Returned URLs, tokens and data are payload only; API success alone does not establish external application or persistence. Avoid logging token-bearing responses or PayloadMismatchException::$payload."
+        },
+        {
+          "kind": "policy",
+          "text": "Source-review correction: attributed 11.138.0.19 excerpts return required project and component keys rather than the pinned root fields. project is a nullable opaque provider row; the 403 reuse path returns null even when component creation succeeds. No inner field schema is established. component preserves the entire decoded provider JSON, including its envelope, or integer 1 for an empty body. This source-only policy preserves all inner values and unknown members, filters unknown wrapper siblings, and accepts inherited empty-array project compatibility; no provider success was observed."
         }
       ],
       "evidence": [
@@ -81,8 +85,47 @@
           "note": "Preserve the complete formal object with optional fields, nullable string description, native bool fixedComponents and formally untyped system_type.id. Examples/defaults do not establish an integer type.",
           "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
           "pointer": "/paths/~1SiteQuality~1create_project/post/responses/200/content/application~1json/schema/properties/result/properties/data"
+        },
+        {
+          "kind": "doc",
+          "version": "11.138.0.19 attributed implementation-source review",
+          "date": "2026-11-01",
+          "note": "Attributed excerpts from Claude review 5725684971 of original 9d84cf26b8655644f4d1099ef339e4e9b91b6e19 and source clarification 6558865496, cPanel 11.138.0.19; not root-authenticated implementation bytes/hash or provider wire observations. No new live call or capture. create_project returns { project => $proj_response, component => $comp_response }; Project returns an unmodified provider row, undefined on 403 reuse. create_component returns ApiClient.run(): entire decoded JSON, or integer 1 on empty body. Require both wrapper keys; nullable opaque map project and mixed component. No inferred nested field schema.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/104#issuecomment-6558865496"
         }
-      ]
+      ],
+      "response": {
+        "": {
+          "replace": {
+            "type": "object",
+            "fields": {
+              "project": {
+                "type": "map",
+                "nullable": true,
+                "values": {
+                  "type": "mixed"
+                }
+              },
+              "component": {
+                "type": "mixed"
+              }
+            },
+            "required": [
+              "project",
+              "component"
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19 attributed implementation-source review",
+              "date": "2026-11-01",
+              "note": "Attributed excerpts from Claude review 5725684971 of original 9d84cf26b8655644f4d1099ef339e4e9b91b6e19 and source clarification 6558865496, cPanel 11.138.0.19; not root-authenticated implementation bytes/hash or provider wire observations. No new live call or capture. create_project returns { project => $proj_response, component => $comp_response }; Project returns an unmodified provider row, undefined on 403 reuse. create_component returns ApiClient.run(): entire decoded JSON, or integer 1 on empty body. Require both wrapper keys; nullable opaque map project and mixed component. No inferred nested field schema.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/104#issuecomment-6558865496"
+            }
+          ]
+        }
+      }
     },
     "uapi:SiteQuality/create_site_quality_user": {
       "name": "createSiteQualityUser",
@@ -103,11 +146,15 @@
         },
         {
           "kind": "documented",
-          "text": "Creates an external Site Quality Monitoring account associated with the cPanel account. Password is optional and sensitive: omitted/null password lets the server generate one; empty string is sent and is not omission. The source says the system does not save the password. Email is ordinary account input. The optional app_token is a long-lived authentication credential; pinned text says a lost token requires a new account. username is optional string and enabled is optional native bool|null, unlike the integer enabled flag on isSiteQualityUserEnabled(). Registration email and account actions are server side effects of this explicit call; the client initiates no additional action."
+          "text": "Creates an external Site Quality Monitoring account associated with the cPanel account. Password is optional and sensitive: omitted/null password lets the server generate one; empty string is sent and is not omission. The source says the system does not save the password. Email is ordinary account input. The optional app_token is a long-lived authentication credential; pinned text says a lost token requires a new account. username is optional string and enabled remains optional bool|null in the public result; native integer flags normalize as described below. Registration email and account actions are server side effects of this explicit call; the client initiates no additional action."
         },
         {
           "kind": "policy",
           "text": "One explicit request and one attempt only. No implicit read, retry, polling, account action, activation email, login, token exchange, URL fetch, restore or rollback. Returned URLs, tokens and data are payload only; API success alone does not establish external application or persistence. Avoid logging token-bearing responses or PayloadMismatchException::$payload."
+        },
+        {
+          "kind": "policy",
+          "text": "Source-review correction: attributed 11.138.0.19 excerpts return User.enabled, whose new-user default is native integer 0. Keep pinned booleans and public bool|null, normalizing only native integer 0/1 to false/true with the existing bounded flag rule. Integer 1 is compatibility policy, not a provider observation. Null and omission stay distinct; strings, floats, other integers and containers fail. Source inspection is separate from provider wire evidence."
         }
       ],
       "evidence": [
@@ -142,8 +189,31 @@
           "note": "Retain optional app_token/username strings and optional nullable native boolean enabled. Treat returned tokens as sensitive authentication data.",
           "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
           "pointer": "/paths/~1SiteQuality~1create_site_quality_user/post/responses/200/content/application~1json/schema/properties/result/properties/data"
+        },
+        {
+          "kind": "doc",
+          "version": "11.138.0.19 attributed implementation-source review",
+          "date": "2026-11-01",
+          "note": "Attributed excerpts from Claude review 5725684971 of original 9d84cf26b8655644f4d1099ef339e4e9b91b6e19 and source clarification 6558865496, cPanel 11.138.0.19; not root-authenticated implementation bytes/hash or provider wire observations. No new live call or capture. create_site_quality_user returns $user->enabled; Auth.create_user supplies no enabled value and User declares default => 0. Only this optional nullable boolean leaf accepts native integer 0/1 and normalizes to bool; the default establishes 0, while 1 is the bounded existing compatibility family, not observed provider data.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/104#pullrequestreview-5725684971"
         }
-      ]
+      ],
+      "response": {
+        "enabled": {
+          "accept": [
+            "int-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19 attributed implementation-source review",
+              "date": "2026-11-01",
+              "note": "Attributed excerpts from Claude review 5725684971 of original 9d84cf26b8655644f4d1099ef339e4e9b91b6e19 and source clarification 6558865496, cPanel 11.138.0.19; not root-authenticated implementation bytes/hash or provider wire observations. No new live call or capture. create_site_quality_user returns $user->enabled; Auth.create_user supplies no enabled value and User declares default => 0. Only this optional nullable boolean leaf accepts native integer 0/1 and normalizes to bool; the default establishes 0, while 1 is the bounded existing compatibility family, not observed provider data.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/104#pullrequestreview-5725684971"
+            }
+          ]
+        }
+      }
     },
     "uapi:SiteQuality/delete_site_quality_user": {
       "name": "deleteSiteQualityUser",
@@ -160,6 +230,10 @@
         {
           "kind": "policy",
           "text": "One explicit request and one attempt only. No implicit read, retry, polling, account action, activation email, login, token exchange, URL fetch, restore or rollback. Returned URLs, tokens and data are payload only; API success alone does not establish external application or persistence. Avoid logging token-bearing responses or PayloadMismatchException::$payload."
+        },
+        {
+          "kind": "policy",
+          "text": "Attributed 11.138.0.19 source review says delete_user always resets local configuration even if remote deletion fails. A deleted=0 result may accompany a cleared local link while the external account remains; do not infer remote deletion from local disconnection."
         }
       ],
       "evidence": [
@@ -178,6 +252,13 @@
           "note": "Initiates deletion of the associated external Site Quality Monitoring account. This is not a promise of immediate deletion. Optional deleted is an integer 0|1 payload flag: 0 under UAPI status 1 remains a payload result, not envelope failure.",
           "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
           "pointer": "/paths/~1SiteQuality~1delete_site_quality_user/get/description"
+        },
+        {
+          "kind": "doc",
+          "version": "11.138.0.19 attributed implementation-source review",
+          "date": "2026-11-01",
+          "note": "Attributed excerpts from Claude review 5725684971 of original 9d84cf26b8655644f4d1099ef339e4e9b91b6e19 and source clarification 6558865496, cPanel 11.138.0.19; not root-authenticated implementation bytes/hash or provider wire observations. No new live call or capture. Attributed 11.138.0.19 source review says delete_user always resets local configuration even if remote deletion fails. A deleted=0 result may accompany a cleared local link while the external account remains; do not infer remote deletion from local disconnection.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/104#pullrequestreview-5725684971"
         }
       ]
     },
@@ -263,7 +344,7 @@
         },
         {
           "kind": "documented",
-          "text": "Reports whether koality enabled the associated account as optional integer 0|1 enabled. This differs from createSiteQualityUser() enabled bool|null; do not coerce either contract."
+          "text": "Reports whether koality enabled the associated account as optional integer 0|1 enabled. This differs from createSiteQualityUser() enabled bool|null; this read retains native integer flags without coercion."
         },
         {
           "kind": "policy",
@@ -299,11 +380,15 @@
         },
         {
           "kind": "documented",
-          "text": "Removes the local Site Quality Monitoring association/configuration and prevents automatic login. It does not delete the external koality account. Optional reset is an integer 0|1 payload flag independent from the envelope status."
+          "text": "Disconnects the active local Site Quality Monitoring association/configuration and prevents automatic login. It does not delete the external koality account. Optional reset is an integer 0|1 payload flag independent from the envelope status."
         },
         {
           "kind": "policy",
           "text": "One explicit request and one attempt only. No implicit read, retry, polling, account action, activation email, login, token exchange, URL fetch, restore or rollback. Returned URLs, tokens and data are payload only; API success alone does not establish external application or persistence. Avoid logging token-bearing responses or PayloadMismatchException::$payload."
+        },
+        {
+          "kind": "policy",
+          "text": "Attributed 11.138.0.19 source review says reset_config renames the active ~/.koality/config to config.<time>, retaining a token-bearing backup. It disconnects the active local association and prevents automatic login without deleting the external account; this is not secure token deletion."
         }
       ],
       "evidence": [
@@ -322,6 +407,13 @@
           "note": "Removes the local Site Quality Monitoring association/configuration and prevents automatic login. It does not delete the external koality account. Optional reset is an integer 0|1 payload flag independent from the envelope status.",
           "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
           "pointer": "/paths/~1SiteQuality~1reset_config/get/description"
+        },
+        {
+          "kind": "doc",
+          "version": "11.138.0.19 attributed implementation-source review",
+          "date": "2026-11-01",
+          "note": "Attributed excerpts from Claude review 5725684971 of original 9d84cf26b8655644f4d1099ef339e4e9b91b6e19 and source clarification 6558865496, cPanel 11.138.0.19; not root-authenticated implementation bytes/hash or provider wire observations. No new live call or capture. Attributed 11.138.0.19 source review says reset_config renames the active ~/.koality/config to config.<time>, retaining a token-bearing backup. It disconnects the active local association and prevents automatic login without deleting the external account; this is not secure token deletion.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/104#pullrequestreview-5725684971"
         }
       ]
     },
@@ -380,6 +472,10 @@
         {
           "kind": "policy",
           "text": "One explicit request and one attempt only. No implicit read, retry, polling, account action, activation email, login, token exchange, URL fetch, restore or rollback. Returned URLs, tokens and data are payload only; API success alone does not establish external application or persistence. Avoid logging token-bearing responses or PayloadMismatchException::$payload."
+        },
+        {
+          "kind": "policy",
+          "text": "Attributed 11.138.0.19 source review says a matching project is renamed before system lookup; failure can follow partial action. A no-match status 0 reason is in messages while errors() may be empty; inspect responseMeta() messages. No retry or rollback is implied."
         }
       ],
       "evidence": [
@@ -414,6 +510,13 @@
           "note": "Map required new_domain to the second public newDomain argument and second form field; preserve source name/type/requiredness despite formal source order.",
           "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
           "pointer": "/paths/~1SiteQuality~1update_domain/post/parameters/0"
+        },
+        {
+          "kind": "doc",
+          "version": "11.138.0.19 attributed implementation-source review",
+          "date": "2026-11-01",
+          "note": "Attributed excerpts from Claude review 5725684971 of original 9d84cf26b8655644f4d1099ef339e4e9b91b6e19 and source clarification 6558865496, cPanel 11.138.0.19; not root-authenticated implementation bytes/hash or provider wire observations. No new live call or capture. Attributed 11.138.0.19 source review says a matching project is renamed before system lookup; failure can follow partial action. A no-match status 0 reason is in messages while errors() may be empty; inspect responseMeta() messages. No retry or rollback is implied.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/104#pullrequestreview-5725684971"
         }
       ]
     },

@@ -239,7 +239,7 @@ final class UapiWpxTest extends TestCase
             'import_website' => ['null', '{"existing_installations":[{"url":null}]}', '{"existing_installations":{}}'],
             'create_nova_for_wordpress_website' => ['null', '{"magic_link":null}',
                 '{"existing_installations":[{"id":false}]}'],
-            'get_task_progress' => ['null', '{"percentage":"0"}', '{"percentage":0.5}', '{"status":null}',
+            'get_task_progress' => ['null', '{"percentage":"not-an-integer"}', '{"percentage":0.5}', '{"status":null}',
                 '{"message":7}'],
             'get_task_status' => ['null', '{"status":1}', '{"message":null}'],
             'change_admin_password' => ['null', '{"changed":"1"}', '{"id":null}', '{"login":false}'],
@@ -412,30 +412,46 @@ final class UapiWpxTest extends TestCase
             });
         }
         $old = ini_get('zend.exception_ignore_args');
+        $caught = null;
+        $messageLeaks = false;
+        $snapshotLeaks = false;
+        $leakingFrames = [];
+        $frames = 0;
         ini_set('zend.exception_ignore_args', '0');
         try {
             self::privateCall($client->uapi('npr')->wpx(), $method, $secret);
-            self::fail('Synthetic failure must throw.');
         } catch (ApiException $error) {
-            self::assertStringNotContainsString($secret, $error->getMessage());
-            self::assertStringNotContainsString($secret, print_r($error, true));
-            if ($error instanceof PayloadMismatchException) {
-                self::assertSame($secret, $error->payload);
-            }
-            $frames = 0;
+            $caught = $error;
+            // Keep the full rendering check, but never give its object graph to a failure exporter.
+            $messageLeaks = str_contains($error->getMessage(), $secret);
+            $snapshotLeaks = str_contains(print_r($error, true), $secret);
             foreach ($error->getTrace() as $frame) {
                 if (str_starts_with($frame['class'] ?? '', 'HostingPal\\WhmApiClient\\')) {
                     $frames++;
                     $seen = [];
-                    self::assertFalse(self::hasSecret($frame['args'] ?? [], $secret, $seen));
+                    $leakingFrames[] = self::hasSecret($frame['args'] ?? [], $secret, $seen);
                 }
             }
-            self::assertGreaterThan(0, $frames);
         } finally {
             if ($old !== false) {
                 ini_set('zend.exception_ignore_args', $old);
             }
         }
+        // Report only bounded scalar evidence, after restoring the caller's argument setting.
+        self::assertInstanceOf(ApiException::class, $caught, 'Synthetic failure must throw.');
+        $request = $http->getLastRequest();
+        self::assertInstanceOf(RequestInterface::class, $request);
+        self::assertSame('POST', $request->getMethod(), 'Private WPX inputs require POST.');
+        self::assertStringNotContainsString($secret, $request->getUri()->getQuery(), 'Private WPX input in query.');
+        self::assertFalse($messageLeaks, 'Private input in exception message.');
+        self::assertFalse($snapshotLeaks, 'Private input in rendered exception snapshot.');
+        if ($caught instanceof PayloadMismatchException) {
+            self::assertSame($secret, $caught->payload);
+        }
+        foreach ($leakingFrames as $leaks) {
+            self::assertFalse($leaks, 'Private input in library frame arguments.');
+        }
+        self::assertGreaterThan(0, $frames);
         self::assertCount(1, $http->getRequests());
     }
 

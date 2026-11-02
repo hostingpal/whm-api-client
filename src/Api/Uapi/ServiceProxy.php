@@ -17,7 +17,9 @@ use SensitiveParameter;
  * Selected-account service proxy backend inventory and configuration. Backend/general address inputs and paired records
  * are sensitive; read results reveal infrastructure information. Writes may rebuild vhosts and restart the web server,
  * with API-success rebuild warnings retained in responseMeta(). No backend contact, DNS/IP validation, retry or
- * rollback is performed. Offline source-backed coverage only; live follow-up whm-api-client-8x0.2.70 remains open.
+ * rollback is performed. Review 5725574081 at original 4462b68 reports direct UAPI success and WHM bridge module-load
+ * failure on 11.138.0.19; this build-scoped reviewer observation does not restrict supported routes. Live follow-up
+ * whm-api-client-8x0.2.70 remains open.
  *
  * Each method executes one request immediately for this handle's cPanel account, through direct cPanel access or WHM
  * according to the configured credentials, with a single attempt and no retries. The handle clears responseMeta()
@@ -59,6 +61,12 @@ final readonly class ServiceProxy
      * optional nullable string. Explicit null service_group denotes the general backend; omission remains distinct.
      * Empty inventory remains an empty list.
      *
+     * Observed: Review 5725574081 of original commit 4462b68f73730ede842dd617a926bba23565af04
+     * (https://github.com/hostingpal/whm-api-client/pull/103#pullrequestreview-5725574081) reports direct UAPI success
+     * for all three ServiceProxy operations, including setBackends(), on cPanel 11.138.0.19. The WHM bridge failed to
+     * load ServiceProxy and raised ApiErrorException for each operation on that build. This is reviewer-observed
+     * behavior, not a universal route restriction or a new local capture; whm-api-client-8x0.2.70 remains open.
+     *
      * API-map identity: uapi:ServiceProxy/get_service_proxy_backends#GET (wire name get_service_proxy_backends).
      *
      * @return GetServiceProxyBackendsResult
@@ -94,13 +102,14 @@ final readonly class ServiceProxy
      * Policy: setBackends() accepts a nonempty sequential list of complete serviceGroup/backend string pairs, with
      * optional general after the rows. Both fields are required per convenience row as a collection policy supported by
      * the source conditional requirements; canonical requiredness is unchanged. First fields are service_group and
-     * service_group_backend; later rows use -1, -2. Preserve duplicates, input order, case and bytes without promising
-     * upstream duplicate resolution. Unknown members, null fields, partial pairs and wrong scalar types fail locally
-     * before I/O.
+     * service_group_backend; later rows use -1, -2. Preserve duplicates, input order, case and bytes. The bounded
+     * duplicate observation below does not establish behavior on every version or server-side atomicity. Unknown
+     * members, null fields, partial pairs and wrong scalar types fail locally before I/O.
      *
      * Policy: The formal service_group name and explicit incrementing prose use underscores. The multiple service-group
      * example contradicts them with service-group-1/service-group-2. This mapping chooses the formal names and naming
-     * prose, preserves that source conflict and makes no live acceptance claim.
+     * prose and preserves that historical source conflict; the bounded direct-UAPI observation below records acceptance
+     * on the reviewed build.
      *
      * Policy: The pinned parameter names Mail as the documented service group. serviceGroup remains a plain string in
      * PHP and PHPDoc; the client does not enforce a closed set or claim that another service group is accepted by the
@@ -119,6 +128,26 @@ final readonly class ServiceProxy
      *
      * Documented: Returns a nullable object without pinned fields. Preserve opaque object fields and explicit null; an
      * absent data member is a payload mismatch. No success or warning payload field is inferred.
+     *
+     * Observed: Review 5725574081 of original commit 4462b68f73730ede842dd617a926bba23565af04
+     * (https://github.com/hostingpal/whm-api-client/pull/103#pullrequestreview-5725574081) reports direct UAPI success
+     * for all three ServiceProxy operations, including setBackends(), on cPanel 11.138.0.19. The WHM bridge failed to
+     * load ServiceProxy and raised ApiErrorException for each operation on that build. This is reviewer-observed
+     * behavior, not a universal route restriction or a new local capture; whm-api-client-8x0.2.70 remains open.
+     *
+     * Observed: In that direct-UAPI review on 11.138.0.19, setBackends() with two Mail rows stored the second backend.
+     * This establishes acceptance of the bare first service_group/service_group_backend fields followed by
+     * underscore-named -1 fields, and last-duplicate behavior for that tested case only. Input order and duplicates
+     * remain preserved; other versions and server-side atomicity are not established.
+     *
+     * Observed: In that direct-UAPI review on 11.138.0.19, the tested loopback, RFC 1918 and cloud-metadata IP literals
+     * were rejected with generic request-failed log-ID text and no caller-visible cause. Use the error ID with server
+     * logs when investigating such failures; this observation does not diagnose failures for untested destinations.
+     *
+     * Observed: In that direct-UAPI review on 11.138.0.19, setServiceProxyBackends() with no arguments and with general
+     * set to an empty string returned null without changing stored values. Omitted/null arguments and explicit empty
+     * strings retain their forwarding behavior. A null result with API success alone does not prove a configuration
+     * change; the client adds no automatic readback.
      *
      * API-map identity: uapi:ServiceProxy/set_service_proxy_backends#GET (wire name set_service_proxy_backends).
      *
@@ -169,13 +198,14 @@ final readonly class ServiceProxy
      * Policy: setBackends() accepts a nonempty sequential list of complete serviceGroup/backend string pairs, with
      * optional general after the rows. Both fields are required per convenience row as a collection policy supported by
      * the source conditional requirements; canonical requiredness is unchanged. First fields are service_group and
-     * service_group_backend; later rows use -1, -2. Preserve duplicates, input order, case and bytes without promising
-     * upstream duplicate resolution. Unknown members, null fields, partial pairs and wrong scalar types fail locally
-     * before I/O.
+     * service_group_backend; later rows use -1, -2. Preserve duplicates, input order, case and bytes. The bounded
+     * duplicate observation below does not establish behavior on every version or server-side atomicity. Unknown
+     * members, null fields, partial pairs and wrong scalar types fail locally before I/O.
      *
      * Policy: The formal service_group name and explicit incrementing prose use underscores. The multiple service-group
      * example contradicts them with service-group-1/service-group-2. This mapping chooses the formal names and naming
-     * prose, preserves that source conflict and makes no live acceptance claim.
+     * prose and preserves that historical source conflict; the bounded direct-UAPI observation below records acceptance
+     * on the reviewed build.
      *
      * Policy: The pinned parameter names Mail as the documented service group. serviceGroup remains a plain string in
      * PHP and PHPDoc; the client does not enforce a closed set or claim that another service group is accepted by the
@@ -195,17 +225,47 @@ final readonly class ServiceProxy
      * Documented: Returns a nullable object without pinned fields. Preserve opaque object fields and explicit null; an
      * absent data member is a payload mismatch. No success or warning payload field is inferred.
      *
+     * Observed: Review 5725574081 of original commit 4462b68f73730ede842dd617a926bba23565af04
+     * (https://github.com/hostingpal/whm-api-client/pull/103#pullrequestreview-5725574081) reports direct UAPI success
+     * for all three ServiceProxy operations, including setBackends(), on cPanel 11.138.0.19. The WHM bridge failed to
+     * load ServiceProxy and raised ApiErrorException for each operation on that build. This is reviewer-observed
+     * behavior, not a universal route restriction or a new local capture; whm-api-client-8x0.2.70 remains open.
+     *
+     * Observed: In that direct-UAPI review on 11.138.0.19, setBackends() with two Mail rows stored the second backend.
+     * This establishes acceptance of the bare first service_group/service_group_backend fields followed by
+     * underscore-named -1 fields, and last-duplicate behavior for that tested case only. Input order and duplicates
+     * remain preserved; other versions and server-side atomicity are not established.
+     *
+     * Observed: In that direct-UAPI review on 11.138.0.19, the tested loopback, RFC 1918 and cloud-metadata IP literals
+     * were rejected with generic request-failed log-ID text and no caller-visible cause. Use the error ID with server
+     * logs when investigating such failures; this observation does not diagnose failures for untested destinations.
+     *
+     * Observed: In that direct-UAPI review on 11.138.0.19, setServiceProxyBackends() with no arguments and with general
+     * set to an empty string returned null without changing stored values. Omitted/null arguments and explicit empty
+     * strings retain their forwarding behavior. A null result with API success alone does not prove a configuration
+     * change; the client adds no automatic readback.
+     *
      * API-map identity: uapi:ServiceProxy/set_service_proxy_backends#GET (wire name set_service_proxy_backends).
      *
      * @param non-empty-list<ServiceProxyBackendInput> $backends Records in input order; optional fields retain their
-     *     original row index.
+     *     original row index. serviceGroup: The name of a service group for which to assign a proxy backend. The
+     *     corresponding `service_group_backend` value will be the service group's new proxy backend. * `Mail` — The
+     *     Mail service group. This parameter defaults to the existing setting, if one exists. Note: * When you call
+     *     this parameter, you must include a corresponding `service_group_backend` value. * To add multiple
+     *     `service_group` values, increment the parameter name. For example, `service_group`, `service_group-1`, and
+     *     `service_group-2`. backend: The hostname or IP address of the server to assign as the corresponding
+     *     `service_group` value's proxy backend server. This parameter defaults to the existing setting, if one exists.
+     *     Note: * When you call this parameter, you must include a corresponding `service_group` value. * To add
+     *     multiple `service_group_backend` values, increment the parameter name. For example, `service_group_backend`,
+     *     `service_group_backend-1`, and `service_group_backend-2`.
      * @param string|null $general The hostname or IP address to assign as the server that handles the account's service
      *     proxy requests. Null omits it.
      * @return SetServiceProxyBackendsResult
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
-     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
+     * @throws InvalidArgumentException If records are empty, nonsequential, contain unknown or missing fields,
+     *     invalid field types or expanded names; other list/map inputs retain their declared validation rules.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/serviceproxy/serviceproxy-set_service_proxy_backends
      */
     public function setBackends(
@@ -238,6 +298,12 @@ final readonly class ServiceProxy
      *
      * Documented: Returns a nullable object without pinned fields. Preserve opaque object fields and explicit null; an
      * absent data member is a payload mismatch. No success or warning payload field is inferred.
+     *
+     * Observed: Review 5725574081 of original commit 4462b68f73730ede842dd617a926bba23565af04
+     * (https://github.com/hostingpal/whm-api-client/pull/103#pullrequestreview-5725574081) reports direct UAPI success
+     * for all three ServiceProxy operations, including setBackends(), on cPanel 11.138.0.19. The WHM bridge failed to
+     * load ServiceProxy and raised ApiErrorException for each operation on that build. This is reviewer-observed
+     * behavior, not a universal route restriction or a new local capture; whm-api-client-8x0.2.70 remains open.
      *
      * API-map identity: uapi:ServiceProxy/unset_all_service_proxy_backends#GET (wire name
      * unset_all_service_proxy_backends).

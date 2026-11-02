@@ -11,6 +11,7 @@ use InvalidArgumentException;
 use LogicException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Throwable;
 
 final class NamedMapInputTest extends TestCase
 {
@@ -24,6 +25,12 @@ final class NamedMapInputTest extends TestCase
         yield 'greylist' => [['item_type' => 'bool'], ['google' => false], 'google=0'];
         yield 'MX' => [['prefix' => 'MXCHECK-', 'item_type' => 'int'], ['example.com' => 10], 'MXCHECK-example.com=10'];
         yield 'database' => [['prefix' => 'copymysqldb-'], ['source' => 'target'], 'copymysqldb-source=target'];
+        yield 'explicit prefix policy' => [
+        ['prefix' => 'x_', 'reject_prefixed_keys' => true],
+            ['X_case' => 'value', 'zero' => '0'], 'x_X_case=value&x_zero=0'];
+        yield 'database prefix is data' => [
+        ['prefix' => 'copymysqldb-'],
+            ['copymysqldb-old' => 'new'], 'copymysqldb-copymysqldb-old=new'];
         yield 'literal prefix' => [['prefix' => 'x_'], ['x_Case' => 'value'], 'x_x_Case=value'];
         yield 'bytes and order' => [
             [], ['Case.-%&=' => 'a%20&=', '01' => '', 'é' => '€'],
@@ -57,6 +64,7 @@ final class NamedMapInputTest extends TestCase
         }
         yield [self::MAP, ["private\x7Fkey" => 'v']];
         yield [['empty' => 'reject'] + self::MAP, []];
+        yield [['prefix' => 'x_', 'reject_prefixed_keys' => true] + self::MAP, ['x_private' => 'secret']];
         foreach (
             ['int' => ['1', false, 1.0, null], 'bool' => [0, '0', 1.0, null],
             'string|int' => [true, 1.0, null]] as $type => $values
@@ -71,8 +79,14 @@ final class NamedMapInputTest extends TestCase
     #[DataProvider('invalidInputs')]
     public function testRejectsInvalidKeysAndStrictValues(array $descriptor, mixed $input): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        ArgumentEncoder::encode(self::params($descriptor), ['values' => $input]);
+        $error = null;
+        try {
+            ArgumentEncoder::encode(self::params($descriptor), ['values' => $input]);
+        } catch (Throwable $caught) {
+            $error = $caught;
+        }
+        self::assertNotNull($error);
+        self::assertSame(InvalidArgumentException::class, $error::class);
     }
 
     /** @return iterable<array{array<string, mixed>}> */
@@ -85,19 +99,31 @@ final class NamedMapInputTest extends TestCase
         }
         foreach (
             ['allow_scalar' => true, 'empty' => 'omit', 'prefix' => 'api.version',
-            'item_type' => 'float', 'separator' => '-', 'start' => 0, 'unknown' => true] as $key => $value
+            'reject_prefixed_keys' => true, 'item_type' => 'float', 'separator' => '-',
+            'start' => 0, 'unknown' => true] as $key => $value
         ) {
             yield [[$key => $value] + self::MAP];
         }
+        foreach ([false, null, 'true', 1] as $value) {
+            yield [['prefix' => 'x_', 'reject_prefixed_keys' => $value] + self::MAP];
+        }
+        yield [['kind' => 'repeat', 'item_type' => 'string', 'allow_scalar' => false,
+            'empty' => 'reject', 'reject_prefixed_keys' => true]];
     }
 
     /** @param array<string, mixed> $descriptor */
     #[DataProvider('malformed')]
     public function testMalformedSpecsFailEvenWhenOmitted(array $descriptor): void
     {
-        $this->expectException(LogicException::class);
-        SpecChecker::check(['function' => 'fixture', 'method' => 'GET', 'outcome' => 'flag',
-            'params' => self::params($descriptor), 'returns' => null]);
+        $error = null;
+        try {
+            SpecChecker::check(['function' => 'fixture', 'method' => 'GET', 'outcome' => 'flag',
+                'params' => self::params($descriptor), 'returns' => null]);
+        } catch (Throwable $caught) {
+            $error = $caught;
+        }
+        self::assertNotNull($error);
+        self::assertSame(LogicException::class, $error::class);
     }
 
     public function testMapCollisionsAgainstEveryOriginInBothOrders(): void

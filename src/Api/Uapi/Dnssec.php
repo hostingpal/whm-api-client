@@ -251,11 +251,15 @@ final readonly class Dnssec
      *
      * Documented: Accepts one domain string or a nonempty sequential string list. Scalars use domain; lists use
      * domain-0/domain-1 starting at zero, including a singleton list. Empty, sparse, associative and non-string lists
-     * fail before dispatch. This documented input family does not establish live batch compatibility.
+     * fail before dispatch. Scoped live cases are recorded separately in the observed note.
      *
      * Documented: Disabling DNSSEC is irreversible and loses associated keys; the previous state can only be retrieved
      * from a full backup. Remove the DNS/DS records at the registrar when disabling DNSSEC. The disabled map reports an
      * integer 0/1 result for each domain, independent of envelope success.
+     *
+     * Observed: On cPanel 11.138.0.19, disabling two domains in one call succeeded through direct UAPI and the WHM
+     * bridge; a subsequent fetch returned no keys for either domain. Rejection of an empty string within a domain list
+     * remains unobserved, and this result establishes no atomicity guarantee.
      *
      * API-map identity: uapi:DNSSEC/disable_dnssec#GET (wire name disable_dnssec).
      *
@@ -287,7 +291,7 @@ final readonly class Dnssec
      *
      * Documented: Accepts one domain string or a nonempty sequential string list. Scalars use domain; lists use
      * domain-0/domain-1 starting at zero, including a singleton list. Empty, sparse, associative and non-string lists
-     * fail before dispatch. This documented input family does not establish live batch compatibility.
+     * fail before dispatch. Scoped live cases are recorded separately in the observed note.
      *
      * Documented: After enabling DNSSEC, add the DNS/DS records at the registrar. Security keys cannot be modified in
      * place; the source requires disabling/deleting and re-creating keys to change them.
@@ -305,6 +309,9 @@ final readonly class Dnssec
      * Documented: The enabled map is keyed by domain and preserves optional enabled, new_key_id and nsec_version. Its
      * per-domain flag is distinct from envelope success. Only new_key_id also accepts a lossless canonical integer
      * string, as the pinned example quotes it; it normalizes to int. Other integer contracts are unchanged.
+     *
+     * Observed: On cPanel 11.138.0.19, enabling two domains in one call succeeded through direct UAPI and the WHM
+     * bridge. API success does not establish DNS propagation or registrar configuration.
      *
      * API-map identity: uapi:DNSSEC/enable_dnssec#GET (wire name enable_dnssec).
      *
@@ -443,7 +450,7 @@ final readonly class Dnssec
      *
      * Documented: Accepts one domain string or a nonempty sequential string list. Scalars use domain; lists use
      * domain-0/domain-1 starting at zero, including a singleton list. Empty, sparse, associative and non-string lists
-     * fail before dispatch. This documented input family does not establish live batch compatibility.
+     * fail before dispatch. Scoped live cases are recorded separately in the observed note.
      *
      * Documented: The result is a domain-keyed map. Each optional keys map is keyed by the key tag, while optional
      * nsec_details is its sibling. The pinned example incorrectly places nsec_details inside keys; the explicit schema
@@ -461,6 +468,10 @@ final readonly class Dnssec
      * keys[].digests[].algo_num. The digest algorithm now accepts canonical decimal integer strings within PHP integer
      * range and normalizes to int. nsec3_narrow remained an integer. These observations are separate from the committed
      * empty-zone capture.
+     *
+     * Observed: On cPanel 11.138.0.19, direct UAPI and WHM bridge calls with multiple domains, a singleton list or a
+     * scalar returned populated keys and digests. Including an unknown domain raised ApiErrorException without a
+     * partial result. These reads do not establish DNS trust or resolver validation.
      *
      * API-map identity: uapi:DNSSEC/fetch_ds_records#GET (wire name fetch_ds_records).
      *

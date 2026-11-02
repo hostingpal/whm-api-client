@@ -16,15 +16,15 @@ func TestJSONBodyFoundation(t *testing.T) {
 		want         string
 	}{
 		{"required object", `{"type":"object","properties":{"enabled":{"type":"integer","enum":[0,1]},"nested":{"type":"object","properties":{"value":{"type":"string","nullable":true}}}},"required":["enabled"]}`, true, ""},
-		{"optional object", `{"type":"object"}`, false, ""},
-		{"optional list", `{"type":"array","items":{"type":"string"}}`, false, ""},
-		{"nullable", `{"type":"string","nullable":true}`, true, ""},
-		{"alternatives", `{"anyOf":[{"type":"string"},{"type":"integer"}]}`, true, ""},
+		{"optional WHM object", `{"type":"object"}`, false, "WHM JSON bodies must be required"},
+		{"optional list", `{"type":"array","items":{"type":"string"}}`, false, "object root"},
+		{"nullable", `{"type":"string","nullable":true}`, true, "object root"},
+		{"alternatives", `{"anyOf":[{"type":"string"},{"type":"integer"}]}`, true, "object root"},
 		{"missing type", `{"properties":{}}`, true, "explicit"},
 		{"mixed extras", `{"type":"object","additionalProperties":true}`, true, "additional"},
 		{"composition", `{"allOf":[{"type":"string"}]}`, true, "composition"},
 		{"ambiguous", `{"anyOf":[{"type":"object"},{"type":"array","items":{"type":"string"}}]}`, true, "scalar"},
-		{"optional nullable", `{"type":"string","nullable":true}`, false, "optional nullable"},
+		{"optional nullable", `{"type":"string","nullable":true}`, false, "object root"},
 		{"binary", `{"type":"string","format":"binary"}`, true, "binary"},
 		{"malformed required", `{"type":"object","required":"field"}`, true, "required"},
 		{"malformed properties", `{"type":"object","properties":[]}`, true, "properties"},
@@ -40,7 +40,13 @@ func TestJSONBodyFoundation(t *testing.T) {
 			json.Unmarshal([]byte(tc.schema), &s)
 			fixtureNode(t, m, "whm1:listaccts")["requestBody"] = map[string]any{"required": tc.required, "content": map[string]any{"application/json": map[string]any{"schema": s}}}
 			set := fixtureOverlay("listed")
+			for i := range m.Operations {
+				if m.Operations[i].ID == "whm1:listaccts" {
+					m.Operations[i].Variants[0].Parameters = nil
+				}
+			}
 			o := set.Files[1].Operations["whm1:listaccts"]
+			o.Params = nil
 			json.Unmarshal([]byte(`{"body":"json","json_body":{"php":"configuration","alias":"ConfigurationInput","routes":"direct"}}`), &o)
 			o.Evidence = append(o.Evidence, overlay.Evidence{Kind: "doc", SourceSHA256: "y", Pointer: "/paths/~1listaccts/get/requestBody", Note: "Virtual source only"})
 			set.Files[1].Operations["whm1:listaccts"] = o
@@ -83,7 +89,13 @@ func jsonFixture(t *testing.T, descriptor string) (model.Map, overlay.Set) {
 		t.Fatal(err)
 	}
 	fixtureNode(t, m, "whm1:listaccts")["requestBody"] = map[string]any{"content": map[string]any{"application/json": map[string]any{"schema": schema}}}
+	for i := range m.Operations {
+		if m.Operations[i].ID == "whm1:listaccts" {
+			m.Operations[i].Variants[0].Parameters = nil
+		}
+	}
 	op := set.Files[1].Operations["whm1:listaccts"]
+	op.Params = nil
 	if err := json.Unmarshal([]byte(descriptor), &op); err != nil {
 		t.Fatal(err)
 	}
@@ -127,7 +139,7 @@ func TestJSONBodyCorrectionsAreNarrowAndSourceBound(t *testing.T) {
 	for _, tc := range []struct{ old, new, want string }{
 		{`"source_sha256":"y"`, `"source_sha256":"wrong"`, "exact source evidence"},
 		{`/schema/properties/changes"`, `/schema/properties/missing"`, "exact source evidence"},
-		{`"nonempty":true`, `"nonempty":false`, "nonempty"},
+
 		{`"required":["changes"]`, `"required":["missing"]`, "not declared"},
 	} {
 		m, set := jsonFixture(t, strings.Replace(bodyDescriptor, tc.old, tc.new, 1))
@@ -142,7 +154,7 @@ func TestJSONBodyCorrectionsAreNarrowAndSourceBound(t *testing.T) {
 			m.Operations[i].Variants[0].Parameters = append(m.Operations[i].Variants[0].Parameters, model.Parameter{Name: "configuration", In: "query", Definition: model.Object{"required": false, "schema": map[string]any{"type": "string"}}, Locator: model.Locator{SourceID: "whm-openapi"}})
 		}
 	}
-	if _, p := buildProblems(t, m, set); !strings.Contains(p, "collides") {
+	if _, p := buildProblems(t, m, set); !strings.Contains(p, "query") {
 		t.Fatal(p)
 	}
 
@@ -175,7 +187,15 @@ func TestJSONBodySelectedPostVariantAndUapi(t *testing.T) {
 			n = 0
 			pointer = "/paths/~1DomainInfo~1list_domains/get/requestBody"
 		}
+		for i := range m.Operations {
+			if m.Operations[i].ID == id {
+				for j := range m.Operations[i].Variants {
+					m.Operations[i].Variants[j].Parameters = nil
+				}
+			}
+		}
 		o := set.Files[n].Operations[id]
+		o.Params = nil
 		o.Body = "json"
 		o.Variant = "POST"
 		o.JSONBody = &overlay.JSONBody{PHP: "body", Alias: "BodyInput", Routes: "direct"}

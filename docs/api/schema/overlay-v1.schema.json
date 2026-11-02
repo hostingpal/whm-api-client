@@ -129,6 +129,9 @@
           "type": "integer",
           "minimum": 0,
           "maximum": 2147483647
+        },
+        "reject_prefixed_keys": {
+          "const": true
         }
       },
       "required": [
@@ -230,6 +233,23 @@
               ]
             }
           }
+        },
+        {
+          "if": {
+            "required": [
+              "reject_prefixed_keys"
+            ]
+          },
+          "then": {
+            "properties": {
+              "kind": {
+                "const": "map"
+              },
+              "prefix": {
+                "minLength": 1
+              }
+            }
+          }
         }
       ]
     },
@@ -304,7 +324,7 @@
           "uniqueItems": true
         },
         "nonempty": {
-          "const": true
+          "type": "boolean"
         },
         "evidence": {
           "$ref": "#/$defs/evidenceList"
@@ -387,11 +407,6 @@
     },
     "operation": {
       "type": "object",
-      "allOf": [
-        {"not": {"required": ["multipart_upload", "multipart_uploads"]}},
-        {"not": {"required": ["multipart_upload", "multipart_upload_family"]}},
-        {"not": {"required": ["multipart_uploads", "multipart_upload_family"]}}
-      ],
       "properties": {
         "multipart_upload_family": {"$ref": "#/$defs/multipartUploadFamily"},
         "multipart_upload": {"$ref": "#/$defs/multipartUpload"},
@@ -404,9 +419,12 @@
         "json_body": {"$ref": "#/$defs/jsonBody"},
         "body_fields": {"type": "object", "minProperties": 1, "additionalProperties": {"type": "string", "minLength": 1}},
         "outcome": {"enum": ["flag", "unchecked"]},
+        "rows": {"type": "string", "minLength": 1},
         "unwrap": {"type": "string", "minLength": 1},
         "void": {"type": "boolean"},
         "optional_payload": {"type": "boolean"},
+        "empty_without_data": {"const": true},
+        "account_search_empty": {"const": true},
         "order": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
         "params": {"type": "object", "additionalProperties": {"$ref": "#/$defs/param"}},
         "additional_methods": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/additionalMethod"}},
@@ -424,7 +442,48 @@
         "probe": {"type": "object"},
         "evidence": {"$ref": "#/$defs/evidenceList"}
       },
-      "additionalProperties": false
+      "additionalProperties": false,
+      "allOf": [
+        {"not": {"required": ["multipart_upload", "multipart_uploads"]}},
+        {"not": {"required": ["multipart_upload", "multipart_upload_family"]}},
+        {"not": {"required": ["multipart_uploads", "multipart_upload_family"]}},
+        {
+        "if": {"required": ["rows"]},
+        "then": {
+          "required": ["outcome"],
+          "properties": {"outcome": {"const": "unchecked"}, "void": {"const": false}, "optional_payload": {"const": false}},
+          "not": {"anyOf": [{"required": ["unwrap"]}, {"required": ["exclude"]}]}
+        }
+      },
+      {
+        "if": {"required": ["empty_without_data"]},
+        "then": {
+          "required": ["unwrap"],
+          "properties": {"outcome": {"const": "flag"}, "void": {"const": false}, "optional_payload": {"const": false}},
+          "not": {"anyOf": [{"required": ["rows"]}, {"required": ["exclude"]}]}
+        }
+      },
+      {
+        "if": {"required": ["account_search_empty"]},
+        "then": {
+          "required": ["unwrap"],
+          "properties": {
+            "unwrap": {"const": "acct"},
+            "outcome": {"const": "flag"},
+            "method": {"const": "GET"},
+            "variant": {"const": "GET"},
+            "void": {"const": false},
+            "optional_payload": {"const": false}
+          },
+          "not": {"anyOf": [
+            {"required": ["rows"]},
+            {"required": ["exclude"]},
+            {"required": ["empty_without_data"]},
+            {"required": ["body"]},
+            {"required": ["function"]}
+          ]}
+        }
+      }]
     },
     "additionalMethod": {
       "type": "object",

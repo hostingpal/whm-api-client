@@ -158,8 +158,8 @@ final readonly class SpamAssassin
      * Documented: Accepts one string value or a nonempty sequential string list for the selected preference. Scalars
      * use value; lists use value-0/value-1 starting at zero, including a singleton list. Null or omission removes
      * previous settings; an empty list is rejected before dispatch rather than treated as omission. Order, duplicates,
-     * empty strings and string zero are preserved. This does not batch multiple preference names or establish live list
-     * compatibility.
+     * empty strings and string zero are preserved. This does not batch multiple preference names; scoped live cases are
+     * recorded separately in the observed note.
      *
      * Documented: The pinned return example includes custom preferences such as ok_locales. Its custom-variable
      * description and string item hint are misplaced as a properties.additionalProperties member without a type. The
@@ -173,6 +173,11 @@ final readonly class SpamAssassin
      * unchanged, including precision and trailing zeros; JSON integers and floats remain accepted. Arbitrary strings,
      * booleans, null and containers are rejected as score items. Omitted required_score stays absent and an empty list
      * stays empty.
+     *
+     * Observed: On cPanel 11.138.0.19, direct UAPI and WHM bridge calls stored three list values in order, including a
+     * duplicate; singleton-list and scalar forms stored one value. Omitting value deleted the selected preference.
+     * Empty lists, sparse lists and integer items raised InvalidArgumentException before dispatch. These results do not
+     * establish mail filtering or delivery behavior.
      *
      * API-map identity: uapi:SpamAssassin/update_user_preference#GET (wire name update_user_preference).
      *

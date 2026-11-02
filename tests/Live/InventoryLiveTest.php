@@ -97,7 +97,8 @@ final class InventoryLiveTest extends TestCase
             'impacted domains' => static fn (UapiClient $api): array
                 => $api->langPhp()->phpGetImpactedDomains('npr.rs'),
             'features' => static fn (UapiClient $api): array => $api->features()->listFeatures(),
-            'DNS lookup' => static fn (UapiClient $api): ?array => $api->dns()->lookup('npr.rs'),
+            // lookup needs public resolution; npr.rs is a local zone that is NXDOMAIN publicly.
+            'DNS lookup' => static fn (UapiClient $api): ?array => $api->dns()->lookup('example.com'),
             'generated domains' => static fn (UapiClient $api): array
                 => $api->dns()->fetchCpanelGeneratedDomains('npr.rs'),
         ];

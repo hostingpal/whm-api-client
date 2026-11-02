@@ -139,31 +139,34 @@ final class UapiTrashTest extends TestCase
         ) {
             $cases[] = ['getUsage', $json, true, $expected];
         }
-        // All omission/native-bool combinations, including source example alreadyGone=false.
+        // Pinned bool inputs remain accepted, now returning int flags; omission stays omission.
         foreach (
             [
             ['{}', []],
             ['[]', []],
-            ['{"removed":true}', ['removed' => true]],
-            ['{"removed":false}', ['removed' => false]],
-            ['{"alreadyGone":true}', ['alreadyGone' => true]],
-            ['{"alreadyGone":false}', ['alreadyGone' => false]],
-            ['{"alreadyGone":true,"removed":true}', ['alreadyGone' => true, 'removed' => true]],
-            ['{"alreadyGone":true,"removed":false}', ['alreadyGone' => true, 'removed' => false]],
-            ['{"alreadyGone":false,"removed":true}', ['alreadyGone' => false, 'removed' => true]],
-            ['{"alreadyGone":false,"removed":false}', ['alreadyGone' => false, 'removed' => false]],
-            ['{"removed":false,"future":"PRIVATE"}', ['removed' => false]],
+            ['{"removed":true}', ['removed' => 1]],
+            ['{"removed":false}', ['removed' => 0]],
+            ['{"alreadyGone":true}', ['alreadyGone' => 1]],
+            ['{"alreadyGone":false}', ['alreadyGone' => 0]],
+            ['{"alreadyGone":true,"removed":true}', ['alreadyGone' => 1, 'removed' => 1]],
+            ['{"alreadyGone":true,"removed":false}', ['alreadyGone' => 1, 'removed' => 0]],
+            ['{"alreadyGone":false,"removed":true}', ['alreadyGone' => 0, 'removed' => 1]],
+            ['{"alreadyGone":false,"removed":false}', ['alreadyGone' => 0, 'removed' => 0]],
+            ['{"removed":false,"future":"PRIVATE"}', ['removed' => 0]],
             ] as [$json, $expected]
         ) {
             $cases[] = ['removeItem', $json, true, $expected];
         }
         foreach (['bytes', 'exists', 'items'] as $field) {
-            foreach (['null', '1.5', '1.0', 'false', 'true', '"0"', '"4096"', '[]', '{}'] as $wrong) {
+            foreach (
+                ['null', '1.5', '1.0', 'false', 'true', '[]', '{}',
+                ...($field === 'items' ? [] : ['"0"', '"4096"'])] as $wrong
+            ) {
                 $cases[] = ['getUsage', '{"' . $field . '":' . $wrong . '}', false, null];
             }
         }
         foreach (['removed', 'alreadyGone'] as $field) {
-            foreach (['null', '0', '1', '1.0', '1.5', '"0"', '"1"', '"true"', '[]', '{}'] as $wrong) {
+            foreach (['null', '-1', '2', '1.0', '1.5', '"0"', '"1"', '"true"', '[]', '{}'] as $wrong) {
                 $cases[] = ['removeItem', '{"' . $field . '":' . $wrong . '}', false, null];
             }
         }
@@ -229,7 +232,7 @@ final class UapiTrashTest extends TestCase
         $before = $account->responseMeta();
         $http->addResponse(new Response(200, [], self::envelope($route, $payload, 1, true)));
         self::assertSame($method === 'getUsage' ? ['bytes' => 0, 'exists' => 0, 'items' => 0]
-            : ['alreadyGone' => false, 'removed' => false], self::invoke($account->trash(), $method));
+            : ['alreadyGone' => 0, 'removed' => 0], self::invoke($account->trash(), $method));
         self::assertNotSame($before, $account->responseMeta());
         self::assertSame(['Synthetic warning'], $account->responseMeta()?->uapiWarnings());
         self::assertSame(['transformed' => 1], $account->responseMeta()->uapi['metadata'] ?? null);
@@ -247,7 +250,7 @@ final class UapiTrashTest extends TestCase
         self::assertNull($two->responseMeta());
         $before = $one->responseMeta();
         $http->addResponse(new Response(200, [], self::envelope('bridge', '{"removed":true}')));
-        self::assertSame(['removed' => true], $two->trash()->removeItem('PRIVATE two'));
+        self::assertSame(['removed' => 1], $two->trash()->removeItem('PRIVATE two'));
         self::assertSame($before, $one->responseMeta());
         self::assertNotSame($before, $two->responseMeta());
         $request = $http->getLastRequest();

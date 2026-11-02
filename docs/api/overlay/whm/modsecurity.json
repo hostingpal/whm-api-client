@@ -86,7 +86,11 @@
         },
         {
           "kind": "policy",
-          "text": "Both methods issue one form POST to the same canonical operation, with no retries or rollback. A successful envelope does not establish atomic per-setting success. Record input coverage is source-backed and offline only; no live batch write was performed."
+          "text": "Both methods prepare staged settings; explicitly call deploySettingsChanges() to activate them. Each call issues one form POST, with no automatic re-read, retry or rollback. A failure can leave some staged settings changed. ApiErrorException does not expose data.failures; after ANY failure explicitly re-read getSettings() to establish the current staged state before deciding what to do next."
+        },
+        {
+          "kind": "policy",
+          "text": "In the reviewed 11.138.0.19 handler, success means every submitted row was accepted; it does not mean the staged configuration was deployed. Duplicate setting IDs are retained in emitted order, but server hash traversal provides no deterministic ordering or last-wins guarantee. Avoid conflicting repeated IDs."
         }
       ],
       "response": {
@@ -169,6 +173,12 @@
           "note": "remove documents the one-based suffix family. The three related fields share the original row position; required setting_id/state and optional remove retain source requiredness. This is input mapping evidence, not a live write.",
           "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
           "pointer": "/paths/~1modsec_batch_settings/get/parameters/2"
+        },
+        {
+          "kind": "doc",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer source inspection of Whostmgr/API/1/ModSecurity.pm, not live execution: any failed row sets result 0 and the handler returns data.failures after some settings may have succeeded; it traverses keys of the argument hash. Without the unpinned commit parameter settings remain staged. Preserve the input-only alias canonical Flag/outcome/result; caller must explicitly re-read getSettings after any failure. Review https://github.com/hostingpal/whm-api-client/pull/78#pullrequestreview-5723408145. No batch write was run."
         }
       ]
     },

@@ -20,13 +20,22 @@ use Throwable;
 /**
  * Temporarily populate the designated npr account for generated MySQL inventory and privilege reads.
  *
- * Only two databases and two users belong to this run. Their initial absence must be confirmed;
- * attempted creation is reconciled before deletion, including failed requests. Cleanup always
- * proceeds across independent resources and verifies absence without retrying mutations. Raw
- * identities, passwords, inventory values and upstream messages remain in memory. This fixture
- * creates no tables. Generated mutations are captured once on their assigned direct or bridged
- * route; generic identity reads remain independent of typed payload validation for cleanup.
- * Two run-bound GETs read back the linked pair's assigned SELECT privilege through both routes.
+ * Only two databases and two users belong to this run. Their initial absence must be confirmed,
+ * but that read says nothing about a name another process creates afterwards. A creation the API
+ * accepts is this run's. One the API rejects never is, even if the name then exists: it stays in
+ * place and fails cleanup. With no API outcome, the exact name is reconciled against inventory
+ * before deletion. Cleanup always proceeds across independent resources and verifies absence
+ * without retrying mutations. Raw identities, passwords, inventory values and upstream messages
+ * remain in memory. This fixture creates no tables. Generated mutations are captured once on
+ * their assigned direct or bridged route; generic identity reads remain independent of typed
+ * payload validation for cleanup. Two run-bound GETs read back the linked pair's assigned SELECT
+ * privilege through both routes.
+ *
+ * Supported concurrency is one run per suffix. Nothing enforces that across processes or machines:
+ * the server offers no lease, MySQL names carry no ownership marker, and a random suffix only makes
+ * a collision unlikely. A rejected create that took effect is therefore left behind, because its
+ * response matches a competitor's. One race remains: if another process creates the exact name
+ * during a create with no API outcome, reconciliation cannot tell it from ours and deletes it.
  *
  * @phpstan-import-type Record from EvidenceRunner
  * @phpstan-import-type Context from EvidenceRunner
@@ -35,7 +44,7 @@ use Throwable;
  * @phpstan-type Route 'direct-uapi'|'bridged-uapi'
  * @phpstan-type Mutation 'create_database'|'create_user'|'set_privileges_on_database'|'delete_user'|'delete_database'
  * @phpstan-type ResourceOutcome array{
- *     creation: 'not_attempted'|'confirmed'|'unconfirmed',
+ *     creation: 'not_attempted'|'confirmed'|'unconfirmed'|'rejected',
  *     cleanup: 'not_required'|'confirmed_absent'|'present'|'unconfirmed'
  * }
  * @phpstan-type Report array{
@@ -234,7 +243,11 @@ final class MysqlFixture
         }
         foreach ($this->names as $role => $name) {
             $report['resources'][$role]['creation'] = 'unconfirmed';
-            $this->mutation(str_ends_with($role, 'database') ? 'create_database' : 'create_user', $role);
+            $record = $this->attempt(str_ends_with($role, 'database') ? 'create_database' : 'create_user', $role);
+            if ($record['api_outcome'] === 'failure') {
+                $report['resources'][$role]['creation'] = 'rejected';
+            }
+            self::requirePassed($record);
             $report['resources'][$role]['creation'] = 'confirmed';
         }
         // Two deliberately planned route verifications of the documented replacement operation.
@@ -244,7 +257,27 @@ final class MysqlFixture
     }
 
     /**
-     * Capture one generated request before propagating a fixed failure to the lifecycle.
+     * Run one generated request and propagate a fixed failure to the lifecycle.
+     *
+     * @param Mutation $function
+     * @param Role $role
+     * @param Route|null $route
+     */
+    private function mutation(string $function, string $role, ?string $route = null): void
+    {
+        self::requirePassed($this->attempt($function, $role, $route));
+    }
+
+    /** @param Record $record */
+    private static function requirePassed(array $record): void
+    {
+        if ($record['probe_outcome'] !== 'passed') {
+            throw new RuntimeException('Generated MySQL fixture mutation failed.');
+        }
+    }
+
+    /**
+     * Capture one generated request and return its record for the caller to judge.
      *
      * The shared fixture guard binds the exact method, URI, account, credentials and body. The
      * observer never retries and never throws an invocation failure before recording it. Keeping
@@ -253,8 +286,9 @@ final class MysqlFixture
      * @param Mutation $function
      * @param Role $role
      * @param Route|null $route
+     * @return Record
      */
-    private function mutation(string $function, string $role, ?string $route = null): void
+    private function attempt(string $function, string $role, ?string $route = null): array
     {
         $route ??= str_starts_with($role, 'linked_') ? 'direct-uapi' : 'bridged-uapi';
         $name = $this->names[$role];
@@ -293,9 +327,8 @@ final class MysqlFixture
             $this->clients[$route],
         );
         $this->mutations[] = $record;
-        if ($record['probe_outcome'] !== 'passed') {
-            throw new RuntimeException('Generated MySQL fixture mutation failed.');
-        }
+
+        return $record;
     }
 
     /**
@@ -339,7 +372,8 @@ final class MysqlFixture
     private function cleanup(array &$report): void
     {
         foreach (array_reverse($this->names, true) as $role => $name) {
-            if ($report['resources'][$role]['creation'] === 'not_attempted') {
+            $creation = $report['resources'][$role]['creation'];
+            if ($creation === 'not_attempted') {
                 continue;
             }
             if ($report['cleanup'] === 'not_required') {
@@ -352,8 +386,15 @@ final class MysqlFixture
                     $report['resources'][$role]['cleanup'] = 'confirmed_absent';
                     continue;
                 }
-                // Every attempt followed confirmed initial absence. A usable inventory now
-                // confirms this exact run identity before even an uncertain creation is deleted.
+                if ($creation === 'rejected') {
+                    // Whoever holds this name, the API refused to give it to this run.
+                    $report['resources'][$role]['cleanup'] = 'present';
+                    $report['cleanup'] = 'failed';
+                    $report['failures'][] = 'ownership_unconfirmed';
+                    continue;
+                }
+                // The API accepted this creation or gave no outcome. A usable inventory now confirms
+                // this exact run identity before even an uncertain creation is deleted.
                 $report['resources'][$role]['creation'] = 'confirmed';
                 try {
                     $this->mutation($database ? 'delete_database' : 'delete_user', $role);

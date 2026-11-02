@@ -6,12 +6,16 @@ namespace HostingPal\WhmApiClient\Tests\Http;
 
 use HostingPal\WhmApiClient\Http\PreparedUploadSet;
 use HostingPal\WhmApiClient\Tests\Support\UploadProbeStream;
+use HostingPal\WhmApiClient\Tests\Support\UploadReleaseProbe;
 use HostingPal\WhmApiClient\Upload;
 use InvalidArgumentException;
+use LogicException;
 use Nyholm\Psr7\Stream;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
 use RuntimeException;
+use Throwable;
 
 final class PreparedUploadSetTest extends TestCase
 {
@@ -144,16 +148,19 @@ final class PreparedUploadSetTest extends TestCase
         $stream->reportedSize = $total;
         $stream->reportedPosition = $position;
         $stream->throwTell = $throwTell;
+        $exception = null;
         try {
             PreparedUploadSet::prepare([Upload::fromStream('file', $stream, size: $asserted)]);
-            self::fail('Invalid remainder accepted.');
-        } catch (RuntimeException $exception) {
-            self::assertNull($exception->getPrevious());
-            self::assertSame(0, $stream->reads);
-            self::assertSame(0, $stream->seeks);
-            self::assertSame(0, $stream->closes);
-            self::assertSame(0, $stream->detaches);
+        } catch (RuntimeException $caught) {
+            $exception = $caught;
         }
+        self::assertNotNull($exception);
+        self::assertSame(RuntimeException::class, $exception::class);
+        self::assertNull($exception->getPrevious());
+        self::assertSame(0, $stream->reads);
+        self::assertSame(0, $stream->seeks);
+        self::assertSame(0, $stream->closes);
+        self::assertSame(0, $stream->detaches);
     }
 
     /** @return iterable<string, array{0: int|null, 1: int|null, 2: int|null, 3?: bool}> */
@@ -164,7 +171,8 @@ final class PreparedUploadSetTest extends TestCase
         yield 'unknown cursor' => [6, null, null, true];
         yield 'negative total' => [-1, 0, 0];
         yield 'negative cursor' => [6, -1, 7];
-        yield 'beyond total' => [6, 7, 0];
+        yield 'beyond total asserted' => [6, 7, 0];
+        yield 'beyond total derived' => [6, 7, null];
         yield 'prefix assertion' => [6, 2, 2];
         yield 'excess assertion' => [6, 2, 5];
     }
@@ -243,13 +251,17 @@ final class PreparedUploadSetTest extends TestCase
         $stream->read(1);
         $stream->reads = 0;
         self::assertTrue($stream->eof());
+        $exception = null;
         try {
             PreparedUploadSet::prepare([Upload::fromStream('file', $stream)]);
-            self::fail('EOF was treated as proof of exact zero length.');
-        } catch (RuntimeException) {
-            self::assertSame(0, $stream->reads);
-            self::assertSame(0, $stream->seeks);
+        } catch (RuntimeException $caught) {
+            $exception = $caught;
         }
+        self::assertNotNull($exception);
+        self::assertSame(RuntimeException::class, $exception::class);
+        self::assertNull($exception->getPrevious());
+        self::assertSame(0, $stream->reads);
+        self::assertSame(0, $stream->seeks);
     }
 
     public function testPreparedSourceExportsHideAllSourceState(): void
@@ -288,15 +300,18 @@ final class PreparedUploadSetTest extends TestCase
     {
         $before = ini_set('zend.exception_ignore_args', '0');
         try {
+            $exception = null;
             try {
                 PreparedUploadSet::prepare([Upload::fromPath('/private-path-marker/missing', 'private-name-marker')]);
-                self::fail('Missing path accepted.');
-            } catch (RuntimeException $exception) {
-                self::assertNull($exception->getPrevious());
-                $trace = print_r(array_slice($exception->getTrace(), 0, 2), true);
-                self::assertStringNotContainsString('private-path-marker', $trace);
-                self::assertStringNotContainsString('private-name-marker', $trace);
+            } catch (RuntimeException $caught) {
+                $exception = $caught;
             }
+            self::assertNotNull($exception);
+            self::assertSame(RuntimeException::class, $exception::class);
+            self::assertNull($exception->getPrevious());
+            $trace = print_r(array_slice($exception->getTrace(), 0, 2), true);
+            self::assertStringNotContainsString('private-path-marker', $trace);
+            self::assertStringNotContainsString('private-name-marker', $trace);
         } finally {
             ini_set('zend.exception_ignore_args', $before === false ? '1' : $before);
         }
@@ -307,35 +322,42 @@ final class PreparedUploadSetTest extends TestCase
         $path = $this->file('bytes');
         $stream = new UploadProbeStream('abcdef');
         $stream->seek(2);
+        $exception = null;
         try {
             PreparedUploadSet::prepare([
                 Upload::fromPath($path),
                 Upload::fromStream('borrowed', $stream),
                 Upload::fromPath($path . '-missing'),
             ]);
-            self::fail('Missing path accepted.');
-        } catch (RuntimeException $exception) {
-            self::assertCount(0, $this->openHandles($path));
-            self::assertSame(2, $stream->tell());
-            self::assertSame(0, $stream->reads);
-            self::assertSame(1, $stream->seeks);
-            self::assertNull($exception->getPrevious());
-            self::assertStringNotContainsString($path, (string) $exception);
+        } catch (RuntimeException $caught) {
+            $exception = $caught;
         }
+        self::assertNotNull($exception);
+        self::assertSame(RuntimeException::class, $exception::class);
+        self::assertNull($exception->getPrevious());
+        self::assertCount(0, $this->openHandles($path));
+        self::assertSame(2, $stream->tell());
+        self::assertSame(0, $stream->reads);
+        self::assertSame(1, $stream->seeks);
+        self::assertStringNotContainsString($path, (string) $exception);
     }
 
     public function testBorrowedLengthFailureClosesPreviouslyOpenedFile(): void
     {
         $path = $this->file('bytes');
         $stream = new UploadProbeStream('abcdef');
+        $exception = null;
         try {
             PreparedUploadSet::prepare([Upload::fromPath($path), Upload::fromStream('file', $stream, size: 3)]);
-            self::fail('Length disagreement accepted.');
-        } catch (RuntimeException) {
-            self::assertCount(0, $this->openHandles($path));
-            self::assertSame(0, $stream->tell());
-            self::assertSame(0, $stream->reads);
+        } catch (RuntimeException $caught) {
+            $exception = $caught;
         }
+        self::assertNotNull($exception);
+        self::assertSame(RuntimeException::class, $exception::class);
+        self::assertNull($exception->getPrevious());
+        self::assertCount(0, $this->openHandles($path));
+        self::assertSame(0, $stream->tell());
+        self::assertSame(0, $stream->reads);
     }
 
     public function testUnreadableAndDetachedBorrowedSourcesRejectWithoutConsumption(): void
@@ -346,12 +368,15 @@ final class PreparedUploadSetTest extends TestCase
         $resource = $detached->detach();
         try {
             foreach ([$unreadable, $detached] as $stream) {
+                $exception = null;
                 try {
                     PreparedUploadSet::prepare([Upload::fromStream('file', $stream, size: 5)]);
-                    self::fail('Unreadable source accepted.');
-                } catch (RuntimeException $exception) {
-                    self::assertNull($exception->getPrevious());
+                } catch (RuntimeException $caught) {
+                    $exception = $caught;
                 }
+                self::assertNotNull($exception);
+                self::assertSame(RuntimeException::class, $exception::class);
+                self::assertNull($exception->getPrevious());
             }
         } finally {
             if (is_resource($resource)) {
@@ -430,25 +455,136 @@ PHP;
             $stream = new UploadProbeStream('private-stream-content-secret');
             $stream->throwRead = true;
             $set = PreparedUploadSet::prepare([Upload::fromStream('private-filename-secret', $stream)]);
+            $exception = null;
             try {
                 $set->sources()[0]->read(1);
-                self::fail('Read error ignored.');
-            } catch (RuntimeException $exception) {
-                self::assertNull($exception->getPrevious());
-                self::assertStringNotContainsString(
-                    'private-stream-content-secret',
-                    (string) $exception . print_r(array_slice($exception->getTrace(), 0, 2), true),
-                );
-                self::assertStringNotContainsString(
-                    'private-filename-secret',
-                    (string) $exception . print_r(array_slice($exception->getTrace(), 0, 2), true),
-                );
+            } catch (RuntimeException $caught) {
+                $exception = $caught;
             }
+            self::assertNotNull($exception);
+            self::assertSame(RuntimeException::class, $exception::class);
+            self::assertNull($exception->getPrevious());
+            self::assertStringNotContainsString(
+                'private-stream-content-secret',
+                (string) $exception . print_r(array_slice($exception->getTrace(), 0, 2), true),
+            );
+            self::assertStringNotContainsString(
+                'private-filename-secret',
+                (string) $exception . print_r(array_slice($exception->getTrace(), 0, 2), true),
+            );
             $set->release();
             self::assertSame(0, $stream->closes);
         } finally {
             ini_set('zend.exception_ignore_args', $before === false ? '1' : $before);
         }
+    }
+
+    public function testBorrowedOverReadRejectsWithoutExposingSourceBytes(): void
+    {
+        $stream = new UploadProbeStream('private-overread-bytes');
+        $stream->overRead = true;
+        $set = PreparedUploadSet::prepare([Upload::fromStream('private-overread-name', $stream)]);
+        self::assertSame(0, $stream->reads);
+        $exception = null;
+        try {
+            $set->sources()[0]->read(1);
+        } catch (RuntimeException $caught) {
+            $exception = $caught;
+        }
+        self::assertNotNull($exception);
+        self::assertSame(RuntimeException::class, $exception::class);
+        self::assertNull($exception->getPrevious());
+        self::assertStringNotContainsString('private-overread-', (string) $exception);
+        self::assertSame(1, $stream->reads);
+        $set->release();
+        self::assertSame(0, $stream->closes);
+    }
+
+    public function testGenuineEmptyRegularFilePreparesWithoutReading(): void
+    {
+        $path = $this->file('');
+        $set = PreparedUploadSet::prepare([Upload::fromPath($path)]);
+        self::assertSame(0, $set->sources()[0]->size());
+        foreach ($this->openHandles($path) as $handle) {
+            self::assertSame(0, ftell($handle));
+            self::assertFalse(feof($handle));
+        }
+        self::assertSame('', $set->sources()[0]->read(1));
+        $set->release();
+    }
+
+    public function testRelativeColonFilenameUsesExplicitDotSlash(): void
+    {
+        $path = $this->file('colon bytes');
+        $colon = $path . ':2026.csv';
+        rename($path, $colon);
+        array_pop($this->paths);
+        $this->paths[] = $colon;
+        $cwd = getcwd();
+        self::assertIsString($cwd);
+        try {
+            chdir(dirname($colon));
+            $set = PreparedUploadSet::prepare([Upload::fromPath('./' . basename($colon))]);
+        } finally {
+            chdir($cwd);
+        }
+        self::assertSame(basename($colon), $set->sources()[0]->filename());
+        self::assertSame('colon bytes', $set->sources()[0]->read(100));
+    }
+
+    public function testSetRefusesSerializationWithoutInvalidatingSources(): void
+    {
+        foreach ([[], [Upload::fromString('private-set-name', 'private-set-bytes')]] as $uploads) {
+            $set = PreparedUploadSet::prepare($uploads);
+            $exception = null;
+            try {
+                serialize($set);
+            } catch (Throwable $caught) {
+                $exception = $caught;
+            }
+            self::assertNotNull($exception);
+            self::assertSame(LogicException::class, $exception::class);
+            self::assertNull($exception->getPrevious());
+            self::assertStringNotContainsString('private-set-', (string) $exception);
+            if ($uploads !== []) {
+                self::assertSame('private-set-bytes', $set->sources()[0]->read(100));
+            }
+        }
+    }
+
+    public function testForgedSetUnserializationCannotReleaseForeignObjects(): void
+    {
+        UploadReleaseProbe::$releases = 0;
+        $key = "\0" . PreparedUploadSet::class . "\0sources";
+        foreach ([[$key => [new UploadReleaseProbe()]], []] as $data) {
+            $payload = 'O:' . strlen(PreparedUploadSet::class) . ':"' . PreparedUploadSet::class
+                . '":' . count($data) . ':{';
+            foreach ($data as $name => $value) {
+                $payload .= serialize($name) . serialize($value);
+            }
+            $payload .= '}';
+            $exception = null;
+            $restored = null;
+            try {
+                $restored = unserialize($payload);
+            } catch (Throwable $caught) {
+                $exception = $caught;
+            }
+            unset($restored);
+            self::assertSame(0, UploadReleaseProbe::$releases);
+            self::assertNotNull($exception);
+            self::assertSame(LogicException::class, $exception::class);
+            self::assertNull($exception->getPrevious());
+            self::assertStringNotContainsString('private-foreign', (string) $exception);
+        }
+    }
+
+    public function testUninitializedSetCanBeReleasedAndDestroyedSafely(): void
+    {
+        $set = (new ReflectionClass(PreparedUploadSet::class))->newInstanceWithoutConstructor();
+        $set->release();
+        self::assertSame([], $set->sources());
+        unset($set);
     }
 
     /** @return array<int, resource> */

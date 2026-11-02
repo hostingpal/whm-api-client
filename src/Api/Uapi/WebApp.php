@@ -31,11 +31,11 @@ use SensitiveParameter;
  *         runtime_tag?: string,
  *         startup_command?: string|null,
  *     },
- *     deployed?: bool,
+ *     deployed?: 0|1,
  *     deployname?: string|null,
  *     domain?: string,
  *     env?: array<array-key, string>,
- *     env_editable?: bool,
+ *     env_editable?: 0|1,
  *     env_status?: string,
  *     framework?: string|null,
  *     last_deploy?: array{
@@ -53,7 +53,7 @@ use SensitiveParameter;
  *         type?: string,
  *         url?: string|null,
  *     },
- *     staged?: bool,
+ *     staged?: 0|1,
  *     startup_command?: string|null,
  *     status?: string,
  *     url?: string,
@@ -94,11 +94,11 @@ use SensitiveParameter;
  *     build_command?: string|null,
  *     category?: string,
  *     container_name?: string|null,
- *     deployed?: bool,
+ *     deployed?: 0|1,
  *     deployname?: string|null,
  *     domain?: string,
  *     env?: array<array-key, string>,
- *     env_editable?: bool,
+ *     env_editable?: 0|1,
  *     env_status?: string,
  *     framework?: string|null,
  *     last_deploy?: array{
@@ -117,7 +117,7 @@ use SensitiveParameter;
  *         type?: string,
  *         url?: string|null,
  *     },
- *     staged?: bool,
+ *     staged?: 0|1,
  *     startup_command?: string|null,
  *     status?: string,
  *     url?: string,
@@ -146,10 +146,10 @@ use SensitiveParameter;
  *         runtime_tag?: string,
  *         startup_command?: string|null,
  *     },
- *     deployed?: bool,
+ *     deployed?: 0|1,
  *     domain?: string,
  *     env?: array<array-key, string>,
- *     env_editable?: bool,
+ *     env_editable?: 0|1,
  *     env_status?: string,
  *     framework?: string|null,
  *     last_deploy?: array{
@@ -168,7 +168,7 @@ use SensitiveParameter;
  *         type?: string,
  *         url?: string|null,
  *     },
- *     staged?: bool,
+ *     staged?: 0|1,
  *     startup_command?: string|null,
  *     status?: string,
  *     url?: string,
@@ -208,7 +208,8 @@ final readonly class WebApp
      * Policy: Names, paths, categories, modes and source values are forwarded unchanged and encoded once. Omission
      * preserves upstream defaults; explicit empty strings and false/zero stay supplied. The client does not look up
      * applications, upload/read source files, fetch returned URLs, poll, retry, merge configuration, restore or roll
-     * back. No live compatibility is established.
+     * back. No universal live compatibility is established; attributed observations are limited to their stated
+     * original revision, server build, operations and routes.
      *
      * Documented: Only supplied options change, but env and env_text replace ALL environment variables. Read the
      * current set separately and submit the complete intended set. Pass one or the other; the server rejects their
@@ -220,8 +221,8 @@ final readonly class WebApp
      *
      * Documented: Server environment restrictions: JSON at most 16 KiB, at most 64 variables, names matching
      * [A-Za-z_][A-Za-z0-9_]* and at most 128 characters, and single values at most 4096 characters without control
-     * characters. PORT is reserved. The client does not newly enforce these restrictions or promise upstream conversion
-     * of JSON scalar null.
+     * characters. PORT is reserved. The client does not newly enforce these restrictions or promise universal upstream
+     * conversion of JSON scalar null; the attributed build-specific behavior is described below.
      *
      * Documented: env_text splits at the first =; later duplicate names win. Quotes and spaces remain literal without
      * quote stripping; a noncomment line without = is rejected by the server. The client forwards the text unchanged.
@@ -233,6 +234,21 @@ final readonly class WebApp
      * Documented: An empty domain regenerates the default. useExistingDomain=true confirms takeover and hides the
      * existing website; omission does not confirm, and false cannot revoke prior confirmation. Changing the domain
      * releases the prior include. A domain owned by another application is still rejected.
+     *
+     * Observed: The optional deployed, env_editable and staged response fields return integer 0|1. Native JSON integer
+     * flags were reported on cPanel 11.138.0.19 through direct UAPI and WHM bridge for this operation at original
+     * revision 4ab5b80587f8d524bbc0ccf5129f9901ef9ab8df. Pinned formal booleans remain accepted as source compatibility
+     * and normalize to 0|1; booleans are not an observed wire claim. Strings, other integers, floats and null remain
+     * invalid. This does not establish deployment or running-container compatibility.
+     *
+     * Observed: On cPanel 11.138.0.19, seebeen reported on both direct UAPI and WHM bridge at original revision
+     * 4ab5b80587f8d524bbc0ccf5129f9901ef9ab8df that the server stores environment values as TEXT: number 5 becomes "5",
+     * float 1.5 becomes "1.5", true becomes "1", false becomes "0", and null becomes "". The nonempty string "0" can be
+     * truthy in application code. This is server conversion: configureStructured still serializes the original native
+     * JSON types and bytes in one form field without client text conversion. Its parameter description that scalar null
+     * stays JSON null describes client encoding. Each supplied environment replaces the full set; structured [] emits
+     * {} and clears it, while null for the whole optional input omits the field. These are attributed version-scoped
+     * observations, not a universal conversion or persistence guarantee.
      *
      * API-map identity: uapi:WebApp/configure#GET (wire name configure).
      *
@@ -307,7 +323,8 @@ final readonly class WebApp
      * Policy: Names, paths, categories, modes and source values are forwarded unchanged and encoded once. Omission
      * preserves upstream defaults; explicit empty strings and false/zero stay supplied. The client does not look up
      * applications, upload/read source files, fetch returned URLs, poll, retry, merge configuration, restore or roll
-     * back. No live compatibility is established.
+     * back. No universal live compatibility is established; attributed observations are limited to their stated
+     * original revision, server build, operations and routes.
      *
      * Documented: Only supplied options change, but env and env_text replace ALL environment variables. Read the
      * current set separately and submit the complete intended set. Pass one or the other; the server rejects their
@@ -319,8 +336,8 @@ final readonly class WebApp
      *
      * Documented: Server environment restrictions: JSON at most 16 KiB, at most 64 variables, names matching
      * [A-Za-z_][A-Za-z0-9_]* and at most 128 characters, and single values at most 4096 characters without control
-     * characters. PORT is reserved. The client does not newly enforce these restrictions or promise upstream conversion
-     * of JSON scalar null.
+     * characters. PORT is reserved. The client does not newly enforce these restrictions or promise universal upstream
+     * conversion of JSON scalar null; the attributed build-specific behavior is described below.
      *
      * Documented: env_text splits at the first =; later duplicate names win. Quotes and spaces remain literal without
      * quote stripping; a noncomment line without = is rejected by the server. The client forwards the text unchanged.
@@ -332,6 +349,21 @@ final readonly class WebApp
      * Documented: An empty domain regenerates the default. useExistingDomain=true confirms takeover and hides the
      * existing website; omission does not confirm, and false cannot revoke prior confirmation. Changing the domain
      * releases the prior include. A domain owned by another application is still rejected.
+     *
+     * Observed: The optional deployed, env_editable and staged response fields return integer 0|1. Native JSON integer
+     * flags were reported on cPanel 11.138.0.19 through direct UAPI and WHM bridge for this operation at original
+     * revision 4ab5b80587f8d524bbc0ccf5129f9901ef9ab8df. Pinned formal booleans remain accepted as source compatibility
+     * and normalize to 0|1; booleans are not an observed wire claim. Strings, other integers, floats and null remain
+     * invalid. This does not establish deployment or running-container compatibility.
+     *
+     * Observed: On cPanel 11.138.0.19, seebeen reported on both direct UAPI and WHM bridge at original revision
+     * 4ab5b80587f8d524bbc0ccf5129f9901ef9ab8df that the server stores environment values as TEXT: number 5 becomes "5",
+     * float 1.5 becomes "1.5", true becomes "1", false becomes "0", and null becomes "". The nonempty string "0" can be
+     * truthy in application code. This is server conversion: configureStructured still serializes the original native
+     * JSON types and bytes in one form field without client text conversion. Its parameter description that scalar null
+     * stays JSON null describes client encoding. Each supplied environment replaces the full set; structured [] emits
+     * {} and clears it, while null for the whole optional input omits the field. These are attributed version-scoped
+     * observations, not a universal conversion or persistence guarantee.
      *
      * API-map identity: uapi:WebApp/configure#GET (wire name configure).
      *
@@ -411,7 +443,8 @@ final readonly class WebApp
      * Policy: Names, paths, categories, modes and source values are forwarded unchanged and encoded once. Omission
      * preserves upstream defaults; explicit empty strings and false/zero stay supplied. The client does not look up
      * applications, upload/read source files, fetch returned URLs, poll, retry, merge configuration, restore or roll
-     * back. No live compatibility is established.
+     * back. No universal live compatibility is established; attributed observations are limited to their stated
+     * original revision, server build, operations and routes.
      *
      * Documented: verify is required without automatic confirmation; false is forwarded as 0 for server rejection.
      * Deleting stops and removes the container, moves the directory to .bak and removes the registry entry; the domain
@@ -446,7 +479,8 @@ final readonly class WebApp
      * Policy: Names, paths, categories, modes and source values are forwarded unchanged and encoded once. Omission
      * preserves upstream defaults; explicit empty strings and false/zero stay supplied. The client does not look up
      * applications, upload/read source files, fetch returned URLs, poll, retry, merge configuration, restore or roll
-     * back. No live compatibility is established.
+     * back. No universal live compatibility is established; attributed observations are limited to their stated
+     * original revision, server build, operations and routes.
      *
      * Documented: Dispatches an asynchronous deployment. Returned task/deploy IDs and sse_url are payload data; success
      * does not prove completion or runtime health. Inspect listApplications() last_deploy for the eventual outcome;
@@ -483,7 +517,8 @@ final readonly class WebApp
      * Policy: Names, paths, categories, modes and source values are forwarded unchanged and encoded once. Omission
      * preserves upstream defaults; explicit empty strings and false/zero stay supplied. The client does not look up
      * applications, upload/read source files, fetch returned URLs, poll, retry, merge configuration, restore or roll
-     * back. No live compatibility is established.
+     * back. No universal live compatibility is established; attributed observations are limited to their stated
+     * original revision, server build, operations and routes.
      *
      * Documented: Returns a static oldest-first tail. deployId is build-log-only; omitted lines/deployId preserve
      * server defaults. Returned log text is private payload data; never log it.
@@ -525,7 +560,8 @@ final readonly class WebApp
      * Policy: Names, paths, categories, modes and source values are forwarded unchanged and encoded once. Omission
      * preserves upstream defaults; explicit empty strings and false/zero stay supplied. The client does not look up
      * applications, upload/read source files, fetch returned URLs, poll, retry, merge configuration, restore or roll
-     * back. No live compatibility is established.
+     * back. No universal live compatibility is established; attributed observations are limited to their stated
+     * original revision, server build, operations and routes.
      *
      * Documented: Account-wide limits and per-runtime current usage are distinct. Runtime and tag map keys and empty
      * manager lists are preserved. When a runtime apps object is present its used integer is required.
@@ -557,7 +593,8 @@ final readonly class WebApp
      * Policy: Names, paths, categories, modes and source values are forwarded unchanged and encoded once. Omission
      * preserves upstream defaults; explicit empty strings and false/zero stay supplied. The client does not look up
      * applications, upload/read source files, fetch returned URLs, poll, retry, merge configuration, restore or roll
-     * back. No live compatibility is established.
+     * back. No universal live compatibility is established; attributed observations are limited to their stated
+     * original revision, server build, operations and routes.
      *
      * Documented: data.has_feature is an integer 0/1 payload flag, distinct from UAPI status. Normal flag outcome
      * checks remain enabled.
@@ -588,11 +625,18 @@ final readonly class WebApp
      * Policy: Names, paths, categories, modes and source values are forwarded unchanged and encoded once. Omission
      * preserves upstream defaults; explicit empty strings and false/zero stay supplied. The client does not look up
      * applications, upload/read source files, fetch returned URLs, poll, retry, merge configuration, restore or roll
-     * back. No live compatibility is established.
+     * back. No universal live compatibility is established; attributed observations are limited to their stated
+     * original revision, server build, operations and routes.
      *
      * Documented: List rows preserve their formal fields independently from configure and stage. The source
      * deploy/redeploy prose places last_deploy.error_category here although the list schema omits it; only that field
      * is preserved as optional mixed without a type or enum promise.
+     *
+     * Observed: The optional deployed, env_editable and staged response fields return integer 0|1. Native JSON integer
+     * flags were reported on cPanel 11.138.0.19 through direct UAPI and WHM bridge for this operation at original
+     * revision 4ab5b80587f8d524bbc0ccf5129f9901ef9ab8df. Pinned formal booleans remain accepted as source compatibility
+     * and normalize to 0|1; booleans are not an observed wire claim. Strings, other integers, floats and null remain
+     * invalid. This does not establish deployment or running-container compatibility.
      *
      * API-map identity: uapi:WebApp/list#GET (wire name list).
      *
@@ -621,7 +665,8 @@ final readonly class WebApp
      * Policy: Names, paths, categories, modes and source values are forwarded unchanged and encoded once. Omission
      * preserves upstream defaults; explicit empty strings and false/zero stay supplied. The client does not look up
      * applications, upload/read source files, fetch returned URLs, poll, retry, merge configuration, restore or roll
-     * back. No live compatibility is established.
+     * back. No universal live compatibility is established; attributed observations are limited to their stated
+     * original revision, server build, operations and routes.
      *
      * Documented: Dispatches asynchronously after pulling Git changes; returned IDs and sse_url do not establish
      * completion or health. Inspect listApplications() last_deploy and responseMeta() immediate error_category
@@ -664,7 +709,8 @@ final readonly class WebApp
      * Policy: Names, paths, categories, modes and source values are forwarded unchanged and encoded once. Omission
      * preserves upstream defaults; explicit empty strings and false/zero stay supplied. The client does not look up
      * applications, upload/read source files, fetch returned URLs, poll, retry, merge configuration, restore or roll
-     * back. No live compatibility is established.
+     * back. No universal live compatibility is established; attributed observations are limited to their stated
+     * original revision, server build, operations and routes.
      *
      * Documented: Applies only to server-category applications with a completed prior deploy. Static or not-deployed
      * applications are rejected upstream.
@@ -697,7 +743,8 @@ final readonly class WebApp
      * Policy: Names, paths, categories, modes and source values are forwarded unchanged and encoded once. Omission
      * preserves upstream defaults; explicit empty strings and false/zero stay supplied. The client does not look up
      * applications, upload/read source files, fetch returned URLs, poll, retry, merge configuration, restore or roll
-     * back. No live compatibility is established.
+     * back. No universal live compatibility is established; attributed observations are limited to their stated
+     * original revision, server build, operations and routes.
      *
      * Documented: Applies only to server-category applications with a completed prior deploy. restarted=0 may retain
      * the recorded mode without a completed restart; inspect it separately from UAPI success.
@@ -731,7 +778,8 @@ final readonly class WebApp
      * Policy: Names, paths, categories, modes and source values are forwarded unchanged and encoded once. Omission
      * preserves upstream defaults; explicit empty strings and false/zero stay supplied. The client does not look up
      * applications, upload/read source files, fetch returned URLs, poll, retry, merge configuration, restore or roll
-     * back. No live compatibility is established.
+     * back. No universal live compatibility is established; attributed observations are limited to their stated
+     * original revision, server build, operations and routes.
      *
      * Documented: Registers source only; configure optionally, then deploy separately. ZIP/tar source paths refer to
      * previously uploaded archives relative to the account home; Git sources are URLs. The client never uploads, reads
@@ -747,6 +795,12 @@ final readonly class WebApp
      *
      * Documented: sshKeyPass is sent only as sshkeypass in the selected POST form body; omitted passphrases stay
      * omitted. The client never prompts for or stores them.
+     *
+     * Observed: The optional deployed, env_editable and staged response fields return integer 0|1. Native JSON integer
+     * flags were reported on cPanel 11.138.0.19 through direct UAPI and WHM bridge for this operation at original
+     * revision 4ab5b80587f8d524bbc0ccf5129f9901ef9ab8df. Pinned formal booleans remain accepted as source compatibility
+     * and normalize to 0|1; booleans are not an observed wire claim. Strings, other integers, floats and null remain
+     * invalid. This does not establish deployment or running-container compatibility.
      *
      * API-map identity: uapi:WebApp/stage#POST (wire name stage).
      *
@@ -811,7 +865,8 @@ final readonly class WebApp
      * Policy: Names, paths, categories, modes and source values are forwarded unchanged and encoded once. Omission
      * preserves upstream defaults; explicit empty strings and false/zero stay supplied. The client does not look up
      * applications, upload/read source files, fetch returned URLs, poll, retry, merge configuration, restore or roll
-     * back. No live compatibility is established.
+     * back. No universal live compatibility is established; attributed observations are limited to their stated
+     * original revision, server build, operations and routes.
      *
      * Documented: Applies only to server-category applications with a completed prior deploy. Static or not-deployed
      * applications are rejected upstream.
@@ -843,7 +898,8 @@ final readonly class WebApp
      * Policy: Names, paths, categories, modes and source values are forwarded unchanged and encoded once. Omission
      * preserves upstream defaults; explicit empty strings and false/zero stay supplied. The client does not look up
      * applications, upload/read source files, fetch returned URLs, poll, retry, merge configuration, restore or roll
-     * back. No live compatibility is established.
+     * back. No universal live compatibility is established; attributed observations are limited to their stated
+     * original revision, server build, operations and routes.
      *
      * Documented: Applies only to server-category applications with a completed prior deploy. Static or not-deployed
      * applications are rejected upstream.

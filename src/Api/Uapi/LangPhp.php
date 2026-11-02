@@ -67,6 +67,7 @@ use SensitiveParameter;
  * }
  * @phpstan-type PhpIniGetUserBasicDirectivesResult array{
  *     directives?: list<array{
+ *         cpanel_default?: mixed,
  *         default_value?: string|bool|int|int|float,
  *         info?: string,
  *         key?: string,
@@ -83,6 +84,7 @@ use SensitiveParameter;
  *         account?: string,
  *         documentroot?: string,
  *         homedir?: string,
+ *         is_suspended?: mixed,
  *         main_domain?: 0|1,
  *         path?: string,
  *         type?: string,
@@ -249,6 +251,14 @@ final readonly class LangPhp
      * Documented: Requires EasyApache 4 and the WebServer role; INI operations additionally require MultiPHP enabled.
      * Requests act through the selected account.
      *
+     * Observed: On cPanel 11.138.0.19 with type=home, cpanel_default appeared as a non-numeric string on 1 of 15
+     * directive rows through direct UAPI, and the other rows omitted it. A later capture recorded string and omitted
+     * rows through both direct and bridged UAPI.
+     *
+     * Policy: cpanel_default is optional and deliberately unvalidated because its meaning is unknown: any JSON value,
+     * including null, reaches the caller unchanged and cannot fail the read. It implies no relationship to
+     * default_value.
+     *
      * API-map identity: uapi:LangPHP/php_ini_get_user_basic_directives#GET (wire name
      * php_ini_get_user_basic_directives).
      *
@@ -307,6 +317,13 @@ final readonly class LangPhp
      *
      * Documented: Requires EasyApache 4 and the WebServer role; INI operations additionally require MultiPHP enabled.
      * Requests act through the selected account.
+     *
+     * Observed: On cPanel 11.138.0.19 is_suspended appeared as an integer on 1 of 2 path rows through direct UAPI, and
+     * the other row omitted it. A later capture recorded integer and omitted rows through both direct and bridged UAPI.
+     * No value was inspected, and it is not a documented suspension flag.
+     *
+     * Policy: is_suspended is optional and deliberately unvalidated because its meaning is unknown: any JSON value,
+     * including null, reaches the caller unchanged and cannot fail the read.
      *
      * API-map identity: uapi:LangPHP/php_ini_get_user_paths#GET (wire name php_ini_get_user_paths).
      *

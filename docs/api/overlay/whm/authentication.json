@@ -673,8 +673,12 @@
           "text": "The pinned configurations query parameter carries JSON-encoded key-value text for color, display_name, icon, icon_type, label and textcolor. The effective request uses form POST."
         },
         {
+          "kind": "documented",
+          "text": "On cPanel 11.138.0.19, set_display_configuration merges supplied keys over the current configuration; omitted keys retain their current values. Every call writes the full merged configuration, including {} (structured []). This pins current values and defaults for that provider/service and prevents later upstream defaults from applying. An empty call is neither a reset nor a write-free no-op. The server requires color and textcolor to match ^[0-9a-fA-F]{3,6}$ without a leading #. A key unsupported by the provider, such as icon when the provider has no icon, can pass local shape validation and still be rejected upstream. These are upstream constraints; the client does not validate colors or provider-specific key availability."
+        },
+        {
           "kind": "policy",
-          "text": "setProviderDisplayConfigurations() accepts caller-serialized string text without parsing or reencoding. configureProviderDisplay() validates structured PHP input, serializes it once into the configurations form field and then form-encodes once. Configuration inputs are sensitive. Omitted members remain absent and source defaults stay upstream; [] sends {} without a reset or no-op guarantee. Client policy: send one request without automatic retry or rollback."
+          "text": "setProviderDisplayConfigurations() accepts caller-serialized string text without parsing or reencoding. configureProviderDisplay() validates structured PHP input, serializes it once into the configurations form field and then form-encodes once. Configuration inputs are sensitive. Omitted members remain absent in the request; [] sends {}. Client policy: send one request without automatic retry or rollback."
         }
       ],
       "evidence": [
@@ -713,6 +717,12 @@
           "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
           "pointer": "/paths/~1set_provider_display_configurations/get/parameters/2",
           "note": "Bind companion input to pinned service_name parameter exactly once. The configurations application/json object schema selects strict structured PHP input in one form field; source query location and effective form POST remain distinct."
+        },
+        {
+          "kind": "doc",
+          "version": "11.138.0.19 source review",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/83#pullrequestreview-5724088397 inspects Whostmgr/API/1/Authentication.pm and Cpanel/Security/Authn/Provider/OpenIdConnectBase/Set.pm: parseform loads one JSON configurations string; set_display_configuration merges supplied keys into current configuration and always writes the complete merged result, including empty input, pinning current defaults. color/textcolor require ^[0-9a-fA-F]{3,6}$ without #; unsupported provider keys (including icon without provider icon support) fail upstream. Source inspection only; no provider write or runtime verification. Both input methods share this behavior; no additional local enum/regex/provider validation."
         }
       ],
       "void": true,
@@ -1038,7 +1048,7 @@
     },
     "whm1:twofactorauth_set_tfa_config_for_user": {
       "exclude": {
-        "reason": "Requires an application/json request body; typed JSON-body machinery is available, while this endpoint adoption remains deferred under whm-api-client-8x0.1.18; remaining selection/source/route audit is tracked under whm-api-client-8x0.29.6. Raw callJson() supplies no typed contract and establishes no endpoint compatibility.",
+        "reason": "Requires an application/json request body; typed JSON-body support remains tracked under whm-api-client-8x0.1.18. Raw callJson() supplies no typed contract and establishes no endpoint compatibility.",
         "evidence": [
           {
             "kind": "doc",

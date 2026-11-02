@@ -30,9 +30,8 @@ use SensitiveParameter;
  * }>
  * @phpstan-type SaveConfigurationResult list<array{
  *     analyzers?: list<array{
- *         available?: 0|1,
  *         enabled?: 0|1,
- *         locked?: 0|1,
+ *         enabled_by_user?: 0|1,
  *         name?: string,
  *     }>,
  *     domain?: string,
@@ -44,7 +43,7 @@ use SensitiveParameter;
  *             enabled: bool,
  *             name: string,
  *         }>,
- *         domain: string,
+ *         domain: non-empty-string,
  *     }>,
  * }
  */
@@ -95,39 +94,34 @@ final readonly class StatsManager
 
     /**
      * Documented: Account-wide replacement: explicitly read StatsManager/get_configuration first and supply the
-     * complete intended domain/analyzer set for this account. A partial-looking input can reset other settings to
-     * defaults. The client performs no implicit read, merge, patch, retry, restore or rollback.
+     * complete intended domain/analyzer set for this account. Round-trip enabled_by_user, the user choice, into input
+     * enabled; enabled in the read result is the effective administrator/user state. Analyzers absent from the read
+     * receive their defaults. A partial-looking input can reset other settings to defaults. The client performs no
+     * implicit read, merge, patch, retry, restore or rollback.
      *
-     * Documented: The PR73 reviewer inspected the 11.138.0.19 handler: it builds defaults for every domain/analyzer,
-     * applies supplied changes, then saves. Its POD says unspecified configurations are disabled. These are attributed
-     * upstream findings, not a successful typed-client write or a promise that every default is universally disabled.
+     * Documented: On cPanel 11.138.0.19 the handler builds defaults for every domain/analyzer, applies supplied
+     * changes, then saves. Unspecified configurations receive defaults; the POD describes them as disabled. Do not
+     * assume every default is universally disabled.
      *
      * Documented: Available in cPanel 90 and later; disabled when the WebServer role is disabled.
-     * Root/reseller-controlled analyzers cannot be managed by the cPanel user. Pinned x-readonly=false and
-     * x-rollback=none remain; this is one direct-UAPI JSON POST, and WHM-bridged UAPI is refused locally after metadata
-     * reset.
+     * Root/reseller-controlled analyzers cannot be managed by the cPanel user. This is one direct-UAPI JSON POST;
+     * WHM-bridged UAPI is refused locally after metadata reset.
      *
-     * Documented: The pinned 11.138.0.10 body and nested members are formally optional. Attributed 11.138.0.19 reviewer
-     * handler findings and raw direct-UAPI missing/empty-changes failures support this operation-scoped effective
-     * correction: configuration and every listed member are required, changes is nonempty, and analyzers may be empty.
-     * Structural validity does not prove account completeness, ownership, analyzer availability or persistence.
+     * Documented: Configuration and every listed member are required. changes must be nonempty and domain must be a
+     * non-empty string; analyzers may be empty and an analyzer name may be empty. Strings are forwarded without
+     * trimming or hostname validation. Structural validity does not prove account completeness, ownership, analyzer
+     * availability or persistence.
      *
-     * Documented: Input enabled requires native bool and maps to integer 0/1, following the formal integer enum rather
-     * than quoted samples. The reviewer reports enabled == 1 comparison; no successful end-to-end write or bool mapping
-     * was observed. Names remain strings without a closed analyzer enum. Response row fields remain optional and flags
-     * remain integer 0/1. The pinned response description says locked=1 is user-manageable and locked=0 is
-     * root/reseller-controlled; do not infer semantics from the name.
+     * Documented: Input enabled requires native bool and maps to integer 0/1. Names remain strings without a closed
+     * analyzer enum. On cPanel 11.138.0.19 save and get return the same analyzer row: name, enabled and
+     * enabled_by_user. All response fields remain optional and flags remain native integer 0/1. Additional analyzer
+     * information stays in responseMeta()->uapi[metadata]: available_for_user is an analyzer setting, and locked=1
+     * permits only reseller/root management while locked=0 permits user management.
      *
-     * Documented: The reviewer reports status 1 can accompany skipped entries and raw_warning for not_owned,
-     * not_available or unrecognized entries. Inspect responseMeta() and its warnings and verify persistence separately;
-     * success does not establish that every requested setting applied. No raw_warning payload field or synthetic
-     * partial-failure exception is added.
-     *
-     * Documented: Successful live-write gate whm-api-client-8x0.1.18 remains OPEN. The reviewer's well-formed direct
-     * JSON requests on 11.138.0.19 bypassed this client and were blocked by _can_self_manage: You may not modify the
-     * weblog analyzer configuration. Passing that gate requires a root/reseller server-wide setting change, which is
-     * not authorized. No live call or server setting change is part of this adoption. Review:
-     * https://github.com/hostingpal/whm-api-client/pull/73#pullrequestreview-5722705880.
+     * Documented: On cPanel 11.138.0.19 status 1 can accompany skipped entries and warnings for not_owned,
+     * not_available or unrecognized entries. An empty analyzer name produces an unrecognized warning; an empty domain
+     * is skipped without a warning by the upstream handler and is rejected locally. Inspect responseMeta() warnings and
+     * verify persistence separately; success does not establish that every requested setting applied.
      *
      * Save current user's weblog analyzers configuration.
      *
@@ -143,7 +137,7 @@ final readonly class StatsManager
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
-     * @throws InvalidArgumentException If the whole JSON body is invalid, query/root routing names are reserved,
+     * @throws InvalidArgumentException If the whole JSON body is invalid, root routing names are reserved,
      *     or this account handle uses the unsupported WHM bridge.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/weblog-settings/statsmanager-save_configuration
      */

@@ -93,8 +93,13 @@ final class UapiSiteQualityTest extends TestCase
             (new ReflectionClass($account))->hasMethod('siteQuality'),
             'The audited SiteQuality accessor must exist.',
         );
-        $http->addResponse(new Response(200, [], self::envelope($route, '{}')));
-        self::assertSame([], $call($account->siteQuality()));
+        // createProject requires both wrapper keys even in a request-focused fixture.
+        $project = $function === 'create_project';
+        $http->addResponse(new Response(200, [], self::envelope(
+            $route,
+            $project ? '{"component":1,"project":null}' : '{}',
+        )));
+        self::assertSame($project ? ['component' => 1, 'project' => null] : [], $call($account->siteQuality()));
         self::assertRequest($http, $route, $function, $body);
         self::assertCount(1, $http->getRequests());
         self::assertSame(1, $account->responseMeta()?->uapiStatus());
@@ -183,16 +188,9 @@ final class UapiSiteQualityTest extends TestCase
     /** @return iterable<string, array{string, string, ?string, bool}> */
     public static function payloads(): iterable
     {
-        $project = '{"id":0,"identifier":"p","location":"region","name":"project",'
-            . '"role":{"id":0,"name":"Owner"},"systems":[{"description":null,'
-            . '"domain":"https://example.test","id":1,"interval":"hour","limits":{"maximumCrawlDepth":0},'
-            . '"name":"site","system_type":{"fixedComponents":false,"id":{"untyped":[null,false,"x"]},'
-            . '"name":"Open template"}},{}]}';
         $cases = [
-            ['createProject', $project, true],
-            ['createProject', '{"systems":[]}', true],
-            ['createProject', '{"systems":[{"system_type":{"fixedComponents":true}}]}', true],
-            ['createProject', '{"role":{},"systems":[{"description":"","limits":{},"system_type":{}}]}', true],
+            ['createProject', '{"component":1,"project":null}', true],
+            ['createProject', '{"component":null,"project":{}}', true],
             ['createSiteQualityUser', '{"app_token":"PRIVATE","enabled":true,"username":"a"}', true],
             ['createSiteQualityUser', '{"enabled":false}', true],
             ['createSiteQualityUser', '{"enabled":null}', true],
@@ -200,12 +198,6 @@ final class UapiSiteQualityTest extends TestCase
                 . '"url":"https://example.test"}}', true],
             ['updateDomain', '{"system":{"system_size":{}}}', true],
         ];
-        foreach ([null, false, 0, 1.25, 'untyped', [], ['k' => 'v']] as $id) {
-            $cases[] = ['createProject', json_encode(
-                ['systems' => [['system_type' => ['id' => $id]]]],
-                JSON_THROW_ON_ERROR,
-            ), true];
-        }
         foreach (
             [
             ['getAppToken', 'app_token'], ['createSiteQualityUser', 'app_token'],
@@ -224,22 +216,8 @@ final class UapiSiteQualityTest extends TestCase
                 $cases[] = [$method, '{"' . $field . '":' . $wrong . '}', false];
             }
         }
-        foreach (['0', '1', '"true"', '[]', '{}'] as $wrong) {
+        foreach (['"0"', '"1"', '"true"', '0.0', '1.0', '-1', '2', '[]', '{}'] as $wrong) {
             $cases[] = ['createSiteQualityUser', '{"enabled":' . $wrong . '}', false];
-        }
-        foreach (
-            [
-            '{"id":"1"}', '{"identifier":null}', '{"location":1}', '{"name":false}', '{"role":null}',
-            '{"role":{"id":"0"}}', '{"role":{"name":0}}', '{"systems":null}', '{"systems":{}}',
-            '{"systems":[null]}', '{"systems":[{"name":0}]}', '{"systems":[{"description":0}]}',
-            '{"systems":[{"domain":null}]}', '{"systems":[{"id":"1"}]}', '{"systems":[{"interval":0}]}',
-            '{"systems":[{"limits":null}]}', '{"systems":[{"limits":{"maximumCrawlDepth":"0"}}]}',
-            '{"systems":[{"system_type":null}]}', '{"systems":[{"system_type":{"name":0}}]}',
-            '{"systems":[{"system_type":{"fixedComponents":1}}]}',
-            '{"systems":[{"system_type":{"fixedComponents":null}}]}',
-            ] as $wrong
-        ) {
-            $cases[] = ['createProject', $wrong, false];
         }
         foreach (
             [
@@ -252,7 +230,7 @@ final class UapiSiteQualityTest extends TestCase
         }
         foreach (self::methods() as $method) {
             foreach (['{}', '[]'] as $empty) {
-                $cases[] = [$method, $empty, true];
+                $cases[] = [$method, $empty, $method !== 'createProject'];
             }
             foreach ([null, 'null', '0', 'false', '"payload"', '[{}]'] as $wrong) {
                 $cases[] = [$method, $wrong, false];
@@ -269,8 +247,15 @@ final class UapiSiteQualityTest extends TestCase
     public function testKnownFieldObjectsDoNotBecomeOpaque(string $route, string $method): void
     {
         [$client, $http] = self::client($route);
-        $http->addResponse(new Response(200, [], self::envelope($route, '{"undocumented":"PRIVATE"}')));
-        self::assertSame([], self::invoke($client->uapi('fixture')->siteQuality(), $method));
+        // Unknown wrapper siblings are filtered; the opaque inner values remain intact.
+        $payload = $method === 'createProject'
+            ? '{"component":1,"project":{"opaque":true},"undocumented":"PRIVATE"}'
+            : '{"undocumented":"PRIVATE"}';
+        $http->addResponse(new Response(200, [], self::envelope($route, $payload)));
+        self::assertSame(
+            $method === 'createProject' ? ['component' => 1, 'project' => ['opaque' => true]] : [],
+            self::invoke($client->uapi('fixture')->siteQuality(), $method),
+        );
         self::assertCount(1, $http->getRequests());
     }
 
@@ -360,7 +345,8 @@ final class UapiSiteQualityTest extends TestCase
         [$client, $http] = self::client($route);
         $account = $client->uapi('fixture');
         $field = self::flagMethods()[$method] ?? null;
-        $payload = $field === null ? '{}' : '{"' . $field . '":0}';
+        $payload = $method === 'createProject' ? '{"component":1,"project":null}'
+            : ($field === null ? '{}' : '{"' . $field . '":0}');
         $http->addResponse(new Response(200, [], self::envelope($route, $payload, 0)));
         try {
             self::invoke($account->siteQuality(), $method);
@@ -371,7 +357,11 @@ final class UapiSiteQualityTest extends TestCase
         }
         $before = $account->responseMeta();
         $http->addResponse(new Response(200, [], self::envelope($route, $payload, 1, true)));
-        self::assertSame($field === null ? [] : [$field => 0], self::invoke($account->siteQuality(), $method));
+        self::assertSame(
+            $method === 'createProject'
+                ? ['component' => 1, 'project' => null] : ($field === null ? [] : [$field => 0]),
+            self::invoke($account->siteQuality(), $method),
+        );
         self::assertNotSame($before, $account->responseMeta());
         self::assertSame(['Synthetic warning'], $account->responseMeta()?->uapiWarnings());
         self::assertSame(['synthetic_warning' => true], $account->responseMeta()->uapi['metadata'] ?? null);

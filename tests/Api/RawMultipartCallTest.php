@@ -321,29 +321,98 @@ final class RawMultipartCallTest extends TestCase
         self::assertSame(0, $stream->reads);
     }
 
-    public function testUnknownMismatchOverflowAndDuplicateBorrowedSourcesRejectBeforeHttp(): void
+    /** @return iterable<string, array{bool, string}> */
+    public static function preparationFailures(): iterable
     {
-        foreach (['unknown', 'mismatch', 'overflow', 'duplicate'] as $case) {
-            $stream = new UploadProbeStream('bytes');
-            $stream->reportedSize = $case === 'unknown' || $case === 'overflow' ? null : 5;
-            $upload = Upload::fromStream('file', $stream, size: match ($case) {
+        foreach ([false, true] as $direct) {
+            foreach (
+                ['missing', 'directory', 'unreadable path', 'unreadable stream',
+                'unknown', 'mismatch', 'overflow', 'duplicate'] as $case
+            ) {
+                yield ($direct ? 'direct ' : 'WHM ') . $case => [$direct, $case];
+            }
+        }
+    }
+
+    #[DataProvider('preparationFailures')]
+    public function testPreparationFailuresUseExactLocalExceptionAndReleaseEarlierOwnedFiles(
+        bool $direct,
+        string $case,
+    ): void {
+        $path = tempnam(sys_get_temp_dir(), 'multipart-preflight-');
+        self::assertIsString($path);
+        file_put_contents($path, 'owned bytes');
+        $unreadable = tempnam(sys_get_temp_dir(), 'multipart-unreadable-');
+        self::assertIsString($unreadable);
+        file_put_contents($unreadable, 'private bytes');
+        try {
+            if ($case === 'unreadable path') {
+                chmod($unreadable, 0000);
+                clearstatcache(true, $unreadable);
+                if (is_readable($unreadable)) {
+                    self::markTestSkipped('Current user can read mode-0000 files.');
+                }
+            }
+            $stream = new UploadProbeStream('xxbytes');
+            $stream->seek(2);
+            $stream->reportedSize = $case === 'unknown' || $case === 'overflow' ? null : 7;
+            $stream->readable = $case !== 'unreadable stream';
+            $upload = Upload::fromStream('private-file', $stream, size: match ($case) {
                 'overflow' => PHP_INT_MAX,
                 'mismatch' => 4,
                 default => null,
             });
-            $parts = [['name' => 'file', 'value' => $upload]];
-            if ($case === 'duplicate') {
+            $parts = [
+                ['name' => 'owned-first', 'value' => Upload::fromPath($path)],
+                ['name' => 'owned-second', 'value' => Upload::fromPath($path)],
+                ['name' => 'borrowed', 'value' => $upload],
+            ];
+            if (in_array($case, ['missing', 'directory', 'unreadable path'], true)) {
+                $parts[] = ['name' => 'later-path', 'value' => Upload::fromPath(match ($case) {
+                    'missing' => $path . '-missing',
+                    'directory' => sys_get_temp_dir(),
+                    default => $unreadable,
+                }, 'private-path-file')];
+            } elseif ($case === 'duplicate') {
                 $parts[] = ['name' => 'other', 'value' => $upload];
             }
-            $client = self::client(true, static function (): ResponseInterface {
-                self::fail('Invalid sources must not dispatch.');
+            $sends = 0;
+            $client = self::client($direct, static function () use (&$sends, $direct): ResponseInterface {
+                ++$sends;
+                return self::success($direct);
             });
-            $error = self::caught(static fn () => self::call($client, true, $parts));
-            self::assertTrue($error instanceof RuntimeException || $error instanceof InvalidArgumentException);
+            self::call($client, $direct, []);
+            $handle = $direct ? $client->uapi() : $client->whm();
+            self::assertNotNull($handle->responseMeta());
+            self::assertSame(0, self::openPathCount($path));
+            $error = self::caught(static fn () => self::call($client, $direct, $parts));
+            // Assertions run after preparation's catches and the public boundary.
+            self::assertNotNull($error);
+            self::assertSame(InvalidArgumentException::class, $error::class);
             self::assertNull($error->getPrevious());
+            if ($case !== 'duplicate') {
+                self::assertSame('API multipart sources could not be prepared.', $error->getMessage());
+            }
+            foreach ([$path, $unreadable, 'private-file', 'private-path-file'] as $secret) {
+                self::assertStringNotContainsString($secret, $error->getMessage());
+            }
+            self::assertNull($handle->responseMeta());
+            self::assertSame(1, $sends, 'The priming call must be the only HTTP request.');
+            self::assertSame(0, self::openPathCount($path));
+            self::assertSame(0, self::openPathCount($unreadable));
+            self::assertSame('owned bytes', file_get_contents($path));
             self::assertSame(0, $stream->reads);
-            self::assertSame(0, $stream->tell());
+            if ($case === 'duplicate') {
+                self::assertSame(0, $stream->metadataCalls);
+            }
+            self::assertSame(2, $stream->tell());
+            self::assertSame(1, $stream->seeks);
             self::assertSame(0, $stream->closes);
+            self::assertSame(0, $stream->detaches);
+        } finally {
+            chmod($unreadable, 0600);
+            unlink($unreadable);
+            unlink($path);
         }
     }
 
@@ -515,7 +584,7 @@ final class RawMultipartCallTest extends TestCase
                         'http' => HttpException::class,
                         'api' => ApiErrorException::class,
                         'envelope' => InvalidResponseException::class,
-                        default => RuntimeException::class,
+                        default => InvalidArgumentException::class,
                     }, $error);
                 }
                 self::assertSame($mode === 'preparation' || $mode === 'overflow' ? 0 : 1, $sends);

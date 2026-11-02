@@ -14,7 +14,7 @@ import (
 // Regenerate only this fixture with -run '^TestJSONCallerFixtureMatchesOfficialRender$' -update.
 func TestJSONCallerFixtureMatchesOfficialRender(t *testing.T) {
 	g := effective.Group{Family: "uapi", Name: "CallerJson", Class: "CallerJson", Accessor: "callerJson", Description: "Test-only generated JSON input methods; no production operations."}
-	for _, typ := range []string{"flag", "bool", "int", "string", "object"} {
+	for _, typ := range []string{"object"} {
 		s := effective.InputSpec{Type: typ}
 		if typ == "object" {
 			for _, name := range []string{"", "00", "01", "+1", "-0", "-01", "1.0", "1e1", " 1", "1 ", "9223372036854775808", "-9223372036854775809"} {

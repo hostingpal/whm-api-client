@@ -7,6 +7,7 @@ namespace HostingPal\WhmApiClient\Tests\Live;
 use Closure;
 use HostingPal\WhmApiClient\Api\RequestMethod;
 use HostingPal\WhmApiClient\Client;
+use HostingPal\WhmApiClient\Exception\ApiErrorException;
 use HostingPal\WhmApiClient\Exception\ApiException;
 use HostingPal\WhmApiClient\Http\HttpTransport;
 use HostingPal\WhmApiClient\Response\CallResult;
@@ -22,14 +23,18 @@ use Throwable;
 /**
  * Read-only live verification of the account inventory and the POST request path.
  *
- * Every request is read-only: account listing, one account summary, the package
- * list, and the same read-only operations over POST on all three routes, which
- * is the runtime evidence for form-encoded execution. Failures report only safe
+ * Every request is read-only: account listing, searches that match and that match
+ * nothing, one account summary, a summary of a missing account, the package list,
+ * and the same read-only operations over POST on all three routes, which is the
+ * runtime evidence for form-encoded execution. Failures report only safe
  * predicates, exception classes, and numeric statuses.
  */
 #[Group('live')]
 final class AccountsLiveTest extends TestCase
 {
+    /** A username that no account on the test server uses. */
+    private const MISSING_ACCOUNT = 'nosuchacct9dy';
+
     private Client $whm;
 
     private Client $cpanel;
@@ -87,6 +92,78 @@ final class AccountsLiveTest extends TestCase
         self::assertTrue(count($accounts) === 1, 'An exact user search must return exactly one record.');
         self::assertTrue(($accounts[0]['user'] ?? null) === 'npr', 'The filtered record must be the known account.');
         self::assertWhmMetadata($whm->responseMeta(), 'listaccts');
+    }
+
+    public function testMatchingSearchWithWantReturnsOnlyTheRequestedField(): void
+    {
+        $whm = $this->whm->whm();
+        $accounts = self::safeOperation(static fn (): array => $whm->accounts()->listAccounts(
+            search: 'npr',
+            searchtype: 'user',
+            searchmethod: 'exact',
+            want: 'user',
+        ));
+
+        self::assertTrue($accounts === [['user' => 'npr']], 'want must narrow the matching record to the user field.');
+        self::assertWhmMetadata($whm->responseMeta(), 'listaccts');
+    }
+
+    /** WHM omits data and reports success here; the search filter is a name that no account uses. */
+    public function testRegexSearchWithoutMatchesReturnsAnEmptyList(): void
+    {
+        $whm = $this->whm->whm();
+        foreach ([null, 'user'] as $want) {
+            $accounts = self::safeOperation(static fn (): array => $whm->accounts()->listAccounts(
+                search: '^' . self::MISSING_ACCOUNT . '$',
+                searchtype: 'user',
+                searchmethod: 'regex',
+                want: $want,
+            ));
+
+            self::assertTrue($accounts === [], 'A search without matches must return an empty list.');
+            self::assertWhmMetadata($whm->responseMeta(), 'listaccts');
+        }
+    }
+
+    /** The evidenced no-match result returns [] while retaining the server's result 0. */
+    public function testExactUserSearchWithoutMatchesReturnsAnEmptyList(): void
+    {
+        $whm = $this->whm->whm();
+        foreach ([null, 'user'] as $want) {
+            $accounts = self::safeOperation(static fn (): array => $whm->accounts()->listAccounts(
+                search: self::MISSING_ACCOUNT,
+                searchtype: 'user',
+                searchmethod: 'exact',
+                want: $want,
+            ));
+            self::assertTrue($accounts === [], 'An absent exact-user search must return an empty list.');
+            self::assertTrue($whm->responseMeta()?->whmResult() === 0, 'Expected the original failed WHM result.');
+            self::assertTrue(
+                ($whm->responseMeta()?->whm['reason'] ?? null) === 'No accounts found.',
+                'Expected the reviewed absence reason.',
+            );
+        }
+    }
+
+    public function testExactDomainSearchWithoutMatchesReturnsAnEmptyList(): void
+    {
+        $whm = $this->whm->whm();
+        $accounts = self::safeOperation(static fn (): array => $whm->accounts()->listAccounts(
+            search: self::MISSING_ACCOUNT . '.example',
+            searchtype: 'domain',
+            searchmethod: 'exact',
+        ));
+        self::assertTrue($accounts === [], 'An absent exact-domain search must return an empty list.');
+        self::assertWhmMetadata($whm->responseMeta(), 'listaccts');
+    }
+
+    public function testAccountSummaryOfAMissingAccountStaysAnApiError(): void
+    {
+        $whm = $this->whm->whm();
+        self::assertApiError(
+            static fn (): array => $whm->accounts()->accountSummary(user: self::MISSING_ACCOUNT),
+            'Account does not exist.',
+        );
     }
 
     public function testAccountSummaryDescribesTheKnownAccount(): void
@@ -191,6 +268,28 @@ final class AccountsLiveTest extends TestCase
         self::assertTrue($metadata->httpStatus === 200, 'Expected HTTP 200.');
         self::assertTrue($metadata->whmResult() === 1, 'Expected successful WHM result.');
         self::assertTrue(($metadata->whm['command'] ?? null) === $command, 'Expected the WHM command echo.');
+    }
+
+    /**
+     * Require a server-reported failure with one known reason.
+     *
+     * @param Closure(): mixed $operation
+     */
+    private static function assertApiError(Closure $operation, string $reason): void
+    {
+        try {
+            $operation();
+        } catch (ApiErrorException $error) {
+            self::assertTrue($error->errors() === [$reason], 'Expected the reviewed WHM failure reason.');
+            self::assertTrue($error->metadata?->httpStatus === 200, 'Expected HTTP 200.');
+            self::assertTrue($error->metadata->whmResult() === 0, 'Expected failed WHM result.');
+
+            return;
+        } catch (Throwable $error) {
+            self::fail(sprintf('Expected an API error, got %s.', $error::class));
+        }
+
+        self::fail('Expected a server-reported failure.');
     }
 
     /**

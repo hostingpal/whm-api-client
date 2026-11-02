@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace HostingPal\WhmApiClient\Tools\LiveVerify;
 
+use Closure;
 use Psr\Http\Client\ClientInterface;
 use SensitiveParameter;
 
@@ -27,9 +28,11 @@ final readonly class ReadOnlySectionRunner
      * Catalogs contain fixed account-bound arguments, with WHM version first. The strict assessment
      * keeps every original discrepancy and requires complete ordered provenance and successful outcomes.
      * Mutations, retries and historical acknowledgment policies are outside this runner.
+     * Only a catalog whose reviewed recipe declares its per-probe outcomes supplies $outcome; see passes().
      *
      * @param list<Probe> $probes
      * @param array{whm: string, cpanel: string} $tokens
+     * @param (Closure(Probe, array<mixed>): bool)|null $outcome
      * @return Report
      */
     public function run(
@@ -37,10 +40,11 @@ final readonly class ReadOnlySectionRunner
         string $recipe,
         string|false $optIn,
         #[SensitiveParameter] array $tokens,
+        ?Closure $outcome = null,
     ): array {
         $records = (new EvidenceRunner($this->http, $this->context))->run($probes, $optIn, $tokens);
 
-        return ['recipe' => $recipe, 'status' => self::passes($probes, $records, $this->context)
+        return ['recipe' => $recipe, 'status' => self::passes($probes, $records, $this->context, $outcome)
             ? 'passed' : 'failed', 'probes' => $records];
     }
 
@@ -52,11 +56,16 @@ final readonly class ReadOnlySectionRunner
      * Repeated operations on one route require distinct explicit argument labels on every occurrence.
      * Missing, extra or mismatched labels fail; historical unlabeled catalogs retain duplicate rejection.
      *
+     * By default every probe must succeed with no discrepancy. $outcome replaces that one rule for a catalog
+     * that must observe failures, deciding each record's api_outcome, payload_validation, probe_outcome,
+     * failure_kind and discrepancies. Every catalog, label, method, HTTP and provenance check still applies.
+     *
      * @param list<Probe> $probes
      * @param array<mixed> $records
      * @param Context $context
+     * @param (Closure(Probe, array<mixed>): bool)|null $outcome
      */
-    public static function passes(array $probes, array $records, array $context): bool
+    public static function passes(array $probes, array $records, array $context, ?Closure $outcome = null): bool
     {
         if (
             $probes === [] || !array_is_list($records) || count($probes) !== count($records)
@@ -98,13 +107,17 @@ final readonly class ReadOnlySectionRunner
                 'operation' => $probe->operation, 'route' => $probe->route,
                 'variant' => $probe->sourceVariant ?? $probe->operation . '#GET',
                 'method' => 'GET', 'http_status' => 200, 'server_version' => $version,
-                'api_outcome' => 'success', 'payload_validation' => 'passed', 'probe_outcome' => 'passed',
-                'failure_kind' => null, 'discrepancies' => [],
                 'revision' => $context['revision'], 'map_sha256' => $context['map_sha256'],
                 'generator_tree' => $context['generator_tree'], 'overlay_sha256' => $context['overlay_sha256'],
                 'source_sha256' => $context['source_hashes'][$probe->route === 'whm' ? 'whm1' : 'uapi'],
                 'effective_contract_sha256' => hash('sha256', json_encode($probe->spec, JSON_THROW_ON_ERROR)),
             ];
+            if ($outcome === null) {
+                $expected += ['api_outcome' => 'success', 'payload_validation' => 'passed',
+                    'probe_outcome' => 'passed', 'failure_kind' => null, 'discrepancies' => []];
+            } elseif (!$outcome($probe, $record)) {
+                return false;
+            }
             foreach ($expected as $key => $value) {
                 if (!array_key_exists($key, $record) || $record[$key] !== $value) {
                     return false;
@@ -113,6 +126,37 @@ final readonly class ReadOnlySectionRunner
         }
 
         return true;
+    }
+
+    /**
+     * Describe each record that fails an outcome rule, for console output only.
+     *
+     * A line holds the reviewed catalog labels and the harness's fixed outcome values and a discrepancy count,
+     * never a URI, request argument, path or upstream text, and nothing here reaches the report. A run that
+     * failed only a provenance or label check names no probe, since every outcome then matched.
+     *
+     * @param list<Probe> $probes
+     * @param list<Record> $records
+     * @param Closure(Probe, array<mixed>): bool $outcome
+     * @return list<string>
+     */
+    public static function deviations(array $probes, array $records, Closure $outcome): array
+    {
+        $lines = [];
+        foreach ($probes as $index => $probe) {
+            $record = $records[$index] ?? null;
+            if ($record !== null && !$outcome($probe, $record)) {
+                $lines[] = 'Deviation: ' . $probe->operation . ' ' . $probe->route
+                    . ($probe->argumentVariant === null ? '' : ' ' . $probe->argumentVariant)
+                    . ': api_outcome=' . $record['api_outcome']
+                    . ' payload_validation=' . $record['payload_validation']
+                    . ' probe_outcome=' . $record['probe_outcome']
+                    . ' failure_kind=' . ($record['failure_kind'] ?? 'none')
+                    . ' discrepancies=' . count($record['discrepancies']);
+            }
+        }
+
+        return $lines;
     }
 
     /** Require structural evidence, including a root, without revalidating the upstream payload. */

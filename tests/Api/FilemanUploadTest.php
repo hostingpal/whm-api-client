@@ -10,6 +10,7 @@ use HostingPal\WhmApiClient\Api\Engine\OperationRunner;
 use HostingPal\WhmApiClient\Api\Engine\SpecChecker;
 use HostingPal\WhmApiClient\Api\Uapi\Spec\FilemanSpec;
 use HostingPal\WhmApiClient\Client;
+use HostingPal\WhmApiClient\Exception\ApiErrorException;
 use HostingPal\WhmApiClient\Exception\ApiException;
 use HostingPal\WhmApiClient\Exception\HttpException;
 use HostingPal\WhmApiClient\Exception\InvalidResponseException;
@@ -204,6 +205,8 @@ final class FilemanUploadTest extends TestCase
             ['status' => 0, 'size' => null, 'reason' => 'exists', 'warnings' => ['warning']],
         ]]];
         yield 'empty object' => [1, []];
+        yield 'empty uploads success' => [1, ['uploads' => [], 'failed' => 0, 'succeeded' => 0, 'warned' => 0]];
+        yield 'missing uploads success' => [1, ['succeeded' => 1]];
         yield 'diskinfo' => [1, ['diskinfo' => ['file_upload_max_bytes' => '104857600.00',
             'file_upload_must_leave_bytes' => '5242880.00', 'file_upload_remain' => '0.00',
             'fileslimit' => '∞', 'filesremain' => 0, 'filesused' => '1024', 'spacelimit' => '∞',
@@ -237,13 +240,22 @@ final class FilemanUploadTest extends TestCase
     public static function invalidResponses(): iterable
     {
         foreach (
-            ['{}', '{"status":null,"data":{}}', '{"status":"1","data":{}}',
+            ['{}', '{"status":null,"data":{}}',
+            '{"status":"0","data":null}', '{"status":2,"data":{"uploads":[]}}', '{"status":"1","data":{}}',
             '{"status":true,"data":{}}', '{"status":2,"data":{}}'] as $i => $result
         ) {
             yield 'status ' . $i => [$result, InvalidResponseException::class];
         }
         foreach (
-            ['{"status":0}', '{"status":1,"data":null}', '{"status":0,"data":[]}',
+            ['{"status":0}', '{"status":0,"data":"bad"}', '{"status":0,"data":false}',
+            '{"status":0,"data":{"uploads":{"a":{"status":0}}}}', '{"status":0,"data":{}}',
+            '{"status":0,"data":{"failed":0,"succeeded":0,"warned":0}}',
+            '{"status":0,"data":{"uploads":null}}', '{"status":0,"data":{"uploads":{}}}',
+            '{"status":0,"data":{"uploads":[1]}}',
+            '{"status":0,"data":{"uploads":[{"status":"0","size":null,"reason":"exists"}]}}',
+            '{"status":0,"data":{"uploads":[],"failed":"0"}}',
+            '{"status":0,"data":{"uploads":[],"diskinfo":{"spaceused":1}}}',
+            '{"status":1}', '{"status":1,"data":null}', '{"status":0,"data":[]}',
             '{"status":1,"data":"bad"}', '{"status":0,"data":{"failed":"1"}}',
             '{"status":1,"data":{"uploads":[{"status":"1"}]}}',
             '{"status":1,"data":{"uploads":[{"size":1.5}]}}',
@@ -277,6 +289,7 @@ final class FilemanUploadTest extends TestCase
         $error = self::caught(static fn () => $client->uapi()->fileman()->uploadFiles([
             Upload::fromStream('private-name', $source),
         ]));
+        self::assertSame($type, $error::class);
         self::assertInstanceOf($type, $error);
         self::assertNotNull($client->uapi()->responseMeta());
         if ($error instanceof PayloadMismatchException) {
@@ -330,6 +343,122 @@ final class FilemanUploadTest extends TestCase
         }
     }
 
+    /** @return iterable<string, array{string, string}> */
+    public static function noRowsFailures(): iterable
+    {
+        yield 'invalid permissions' => ['null',
+            'The permissions argument must contain a valid file system permission.'];
+        yield 'directory failure' => ['null', 'Failed to create the directory.'];
+        yield 'full account' => ['{"uploads":[],"failed":0,"succeeded":0,"warned":0}',
+            'You must specify at least one file to upload.'];
+    }
+
+    #[DataProvider('noRowsFailures')]
+    public function testNoRowsFailureRaisesExactApiErrorWithFreshEnvelope(string $data, string $reason): void
+    {
+        $sends = 0;
+        $source = new UploadProbeStream('private-bytes');
+        $request = null;
+        $client = self::client(static function (RequestInterface $sent) use (
+            &$sends,
+            &$request,
+            $data,
+            $reason,
+        ): ResponseInterface {
+            ++$sends;
+            $request = $sent;
+            $sent->getBody()->getContents();
+            return $sends === 1 ? self::response([]) : new Response(
+                200,
+                [],
+                '{"result":{"status":0,"errors":'
+                . json_encode([$reason], JSON_THROW_ON_ERROR)
+                . ',"warnings":null,"messages":null,"data":' . $data . '}}',
+            );
+        });
+        $account = $client->uapi();
+        $account->call('Fileman', 'fixture');
+        $previous = $account->responseMeta();
+        $error = self::caught(static fn () => $account->fileman()->uploadFiles([
+            Upload::fromStream('private-name', $source),
+        ], dir: 'private-dir', permissions: 'private-permissions'));
+        self::assertSame(ApiErrorException::class, $error::class);
+        self::assertInstanceOf(ApiErrorException::class, $error);
+        self::assertSame($account->responseMeta(), $error->metadata);
+        self::assertNotSame($previous, $error->metadata);
+        self::assertSame(0, $error->metadata?->uapiStatus());
+        self::assertSame([$reason], $error->errors());
+        self::assertSame(
+            ['status' => 0, 'errors' => [$reason], 'warnings' => null, 'messages' => null],
+            $error->metadata->uapi,
+        );
+        self::assertSame('UAPI operation failed; inspect errors() or response metadata.', $error->getMessage());
+        self::assertNull($error->getPrevious());
+        self::assertSame(2, $sends);
+        self::assertInstanceOf(RequestInterface::class, $request);
+        self::assertFalse($request->getBody()->isReadable());
+        self::assertSame(0, $source->closes);
+        self::assertSame(0, $source->detaches);
+    }
+
+    public function testRowBearingFailureReturnsReasonsAndRetainsEnvelopeErrors(): void
+    {
+        $client = self::client(static fn (): ResponseInterface => new Response(
+            200,
+            [],
+            '{"result":{"status":0,"errors":["Failed to upload any of the requested files with various failures."],'
+            . '"data":{"failed":1,"succeeded":0,"warned":0,"uploads":[{"file":"exists.txt","status":0,'
+            . '"reason":"File already exists.","size":null,"warnings":[]}]}}}',
+        ));
+        self::assertSame(['failed' => 1, 'succeeded' => 0, 'uploads' => [
+            ['file' => 'exists.txt', 'reason' => 'File already exists.',
+                'size' => null, 'status' => 0, 'warnings' => []],
+        ], 'warned' => 0], $client->uapi()->fileman()->uploadFiles([Upload::fromString('exists.txt', '')]));
+        self::assertSame(0, $client->uapi()->responseMeta()?->uapiStatus());
+        self::assertSame(
+            ['Failed to upload any of the requested files with various failures.'],
+            $client->uapi()->responseMeta()->errors(),
+        );
+    }
+
+    #[DataProvider('noRowsFailures')]
+    public function testNoRowsApiErrorTraceHidesResponseAndUploadArguments(string $data, string $reason): void
+    {
+        $old = ini_set('zend.exception_ignore_args', '0');
+        try {
+            $client = self::client(static fn (): ResponseInterface => new Response(
+                200,
+                [],
+                '{"result":{"status":0,"errors":' . json_encode([$reason . ' private-upstream'], JSON_THROW_ON_ERROR)
+                . ',"data":' . $data . '}}',
+            ));
+            $error = self::caught(static fn () => $client->uapi()->fileman()->uploadFiles([
+                Upload::fromString('private-name', 'private-bytes'),
+            ], dir: 'private-dir', permissions: 'private-permissions'));
+            self::assertSame(ApiErrorException::class, $error::class);
+            $found = false;
+            $diagnostic = $error->getMessage();
+            foreach ($error->getTrace() as $frame) {
+                if (($frame['class'] ?? '') === OperationRunner::class && $frame['function'] === 'result') {
+                    $found = true;
+                    self::assertInstanceOf(SensitiveParameterValue::class, $frame['args'][1] ?? null);
+                }
+                $class = $frame['class'] ?? '';
+                if (str_starts_with($class, 'HostingPal\\WhmApiClient\\') && !str_contains($class, '\\Tests\\')) {
+                    $diagnostic .= print_r($frame['args'] ?? [], true);
+                }
+            }
+            self::assertTrue($found);
+            foreach (
+                ['private-upstream', 'private-name', 'private-bytes', 'private-dir', 'private-permissions'] as $secret
+            ) {
+                self::assertStringNotContainsString($secret, $diagnostic);
+            }
+        } finally {
+            ini_set('zend.exception_ignore_args', $old === false ? '1' : $old);
+        }
+    }
+
     public function testUnknownMismatchAndOverflowLengthsFailWithoutReadingOrSending(): void
     {
         $sends = 0;
@@ -337,6 +466,9 @@ final class FilemanUploadTest extends TestCase
             ++$sends;
             return self::response([]);
         });
+        $account = $client->uapi();
+        $account->call('Fileman', 'fixture');
+        self::assertNotNull($account->responseMeta());
         foreach (['unknown', 'assertion', 'overflow'] as $mode) {
             $source = new UploadProbeStream('private-bytes');
             $source->reportedSize = $mode === 'assertion' ? 13 : null;
@@ -345,16 +477,19 @@ final class FilemanUploadTest extends TestCase
                 $source,
                 size: $mode === 'assertion' ? 12 : ($mode === 'overflow' ? PHP_INT_MAX : null),
             )];
-            self::assertInstanceOf(
-                RuntimeException::class,
-                self::caught(static fn () => $client->uapi()->fileman()->uploadFiles($files)),
-            );
+            $error = self::caught(static fn () => $account->fileman()->uploadFiles($files));
+            self::assertSame(InvalidArgumentException::class, $error::class);
+            self::assertSame('API multipart sources could not be prepared.', $error->getMessage());
+            self::assertNull($error->getPrevious());
+            self::assertSame(0, $source->seeks);
+            self::assertSame(0, $source->tell());
+            self::assertSame($mode === 'assertion' ? 13 : null, $source->reportedSize);
             self::assertSame(0, $source->reads);
             self::assertSame(0, $source->closes);
             self::assertSame(0, $source->detaches);
             self::assertNull($client->uapi()->responseMeta());
         }
-        self::assertSame(0, $sends);
+        self::assertSame(1, $sends);
     }
 
     public function testOwnedAndBorrowedSourcesAreReleasedAfterPayloadHttpAndTransportFailures(): void

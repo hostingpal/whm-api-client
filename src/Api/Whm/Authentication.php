@@ -883,11 +883,18 @@ final readonly class Authentication
      * Documented: The pinned configurations query parameter carries JSON-encoded key-value text for color,
      * display_name, icon, icon_type, label and textcolor. The effective request uses form POST.
      *
+     * Documented: On cPanel 11.138.0.19, set_display_configuration merges supplied keys over the current configuration;
+     * omitted keys retain their current values. Every call writes the full merged configuration, including {}
+     * (structured []). This pins current values and defaults for that provider/service and prevents later upstream
+     * defaults from applying. An empty call is neither a reset nor a write-free no-op. The server requires color and
+     * textcolor to match ^[0-9a-fA-F]{3,6}$ without a leading #. A key unsupported by the provider, such as icon when
+     * the provider has no icon, can pass local shape validation and still be rejected upstream. These are upstream
+     * constraints; the client does not validate colors or provider-specific key availability.
+     *
      * Policy: setProviderDisplayConfigurations() accepts caller-serialized string text without parsing or reencoding.
      * configureProviderDisplay() validates structured PHP input, serializes it once into the configurations form field
-     * and then form-encodes once. Configuration inputs are sensitive. Omitted members remain absent and source defaults
-     * stay upstream; [] sends {} without a reset or no-op guarantee. Client policy: send one request without automatic
-     * retry or rollback.
+     * and then form-encodes once. Configuration inputs are sensitive. Omitted members remain absent in the request; []
+     * sends {}. Client policy: send one request without automatic retry or rollback.
      *
      * API-map identity: whm1:set_provider_display_configurations#GET (wire name set_provider_display_configurations;
      * External Authentication).
@@ -926,11 +933,18 @@ final readonly class Authentication
      * Documented: The pinned configurations query parameter carries JSON-encoded key-value text for color,
      * display_name, icon, icon_type, label and textcolor. The effective request uses form POST.
      *
+     * Documented: On cPanel 11.138.0.19, set_display_configuration merges supplied keys over the current configuration;
+     * omitted keys retain their current values. Every call writes the full merged configuration, including {}
+     * (structured []). This pins current values and defaults for that provider/service and prevents later upstream
+     * defaults from applying. An empty call is neither a reset nor a write-free no-op. The server requires color and
+     * textcolor to match ^[0-9a-fA-F]{3,6}$ without a leading #. A key unsupported by the provider, such as icon when
+     * the provider has no icon, can pass local shape validation and still be rejected upstream. These are upstream
+     * constraints; the client does not validate colors or provider-specific key availability.
+     *
      * Policy: setProviderDisplayConfigurations() accepts caller-serialized string text without parsing or reencoding.
      * configureProviderDisplay() validates structured PHP input, serializes it once into the configurations form field
-     * and then form-encodes once. Configuration inputs are sensitive. Omitted members remain absent and source defaults
-     * stay upstream; [] sends {} without a reset or no-op guarantee. Client policy: send one request without automatic
-     * retry or rollback.
+     * and then form-encodes once. Configuration inputs are sensitive. Omitted members remain absent in the request; []
+     * sends {}. Client policy: send one request without automatic retry or rollback.
      *
      * API-map identity: whm1:set_provider_display_configurations#GET (wire name set_provider_display_configurations;
      * External Authentication).

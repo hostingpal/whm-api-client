@@ -8,7 +8,9 @@ use Closure;
 use HostingPal\WhmApiClient\Api\Engine\SpecChecker;
 use HostingPal\WhmApiClient\Api\Whm\Spec\ServerSpec;
 use HostingPal\WhmApiClient\Client;
+use HostingPal\WhmApiClient\Exception\ApiErrorException;
 use HostingPal\WhmApiClient\Exception\ApiException;
+use HostingPal\WhmApiClient\Exception\InvalidResponseException;
 use HostingPal\WhmApiClient\Exception\TransportException;
 use HostingPal\WhmApiClient\Http\HttpTransport;
 use HostingPal\WhmApiClient\Tests\Support\UploadProbeStream;
@@ -235,8 +237,8 @@ final class WhmConfigUploadTest extends TestCase
                 'private-module',
                 Upload::fromPath('/missing/private-path'),
             ));
-            // Inherited PR86 preparation mapping is RuntimeException until the external fix integrates.
-            self::assertInstanceOf(RuntimeException::class, $error);
+            self::assertSame(InvalidArgumentException::class, $error::class);
+            self::assertSame('API multipart sources could not be prepared.', $error->getMessage());
             self::assertNull($error->getPrevious());
             self::assertNull($client->whm()->responseMeta());
             self::assertSame(1, $sends);
@@ -263,8 +265,66 @@ final class WhmConfigUploadTest extends TestCase
             }
             self::assertTrue($seen);
             self::assertStringNotContainsString('private-', $diagnostic);
+            $source = new UploadProbeStream('private-bytes');
+            $source->throwSize = true;
+            $error = self::caught(static fn () => $client->whm()->server()->restoreConfigFromUpload(
+                'Main',
+                Upload::fromStream('private-file', $source),
+            ));
+            self::assertSame(InvalidArgumentException::class, $error::class);
+            self::assertSame('API multipart sources could not be prepared.', $error->getMessage());
+            self::assertNull($error->getPrevious());
+            self::assertNull($client->whm()->responseMeta());
+            self::assertSame(1, $sends);
+            self::assertSame(0, $source->reads);
+            self::assertSame(0, $source->closes);
+            self::assertSame(0, $source->detaches);
         } finally {
             ini_set('zend.exception_ignore_args', $old === false ? '1' : $old);
+        }
+    }
+
+    public function testMissingResultAndZeroResultKeepDistinctTypedEnvelopeFailures(): void
+    {
+        // Synthetic envelopes classify client behavior; neither is an observed restore response.
+        foreach (
+            [
+            ['{"metadata":{"reason":"fixture","version":1}}', InvalidResponseException::class, null],
+            ['{"metadata":{"result":0,"reason":"fixture","version":1}}', ApiErrorException::class, 0],
+            ] as [$json, $class, $result]
+        ) {
+            $sends = 0;
+            $body = null;
+            $client = self::client(static function (RequestInterface $request) use (
+                &$sends,
+                &$body,
+                $json,
+            ): ResponseInterface {
+                ++$sends;
+                if ($sends === 1) {
+                    return self::response();
+                }
+                $body = $request->getBody();
+                $body->getContents();
+                return new Response(200, [], $json);
+            });
+            $whm = $client->whm();
+            $whm->call('fixture');
+            $previous = $whm->responseMeta();
+            $error = self::caught(static fn () => $whm->server()->restoreConfigFromUpload(
+                'Main',
+                Upload::fromString('config', 'private-backup'),
+            ));
+            self::assertSame($class, $error::class);
+            self::assertInstanceOf(ApiException::class, $error);
+            self::assertNotNull($error->metadata);
+            self::assertSame($whm->responseMeta(), $error->metadata);
+            self::assertNotSame($previous, $error->metadata);
+            self::assertSame($result, $error->metadata->whmResult());
+            self::assertNull($error->getPrevious());
+            self::assertSame(2, $sends);
+            self::assertNotNull($body);
+            self::assertFalse($body->isReadable());
         }
     }
 

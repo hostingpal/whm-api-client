@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace HostingPal\WhmApiClient\Tools\LiveVerify;
 
+use FilesystemIterator;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 use RuntimeException;
 use SensitiveParameter;
+use SplFileInfo;
 use Throwable;
 
 /**
@@ -26,13 +30,21 @@ use Throwable;
  */
 final readonly class DiscrepancyPolicy
 {
-    private const EVIDENCE = 'docs/api/evidence/2026-10-16-quota-inventory.json';
+    /**
+     * Current immutable reference, captured at 5f9b001 on cPanel 11.138.0.19.
+     *
+     * Until 2026-11-01 the same two observations were bound to cPanel 11.138.0.15 through
+     * docs/api/evidence/2026-10-16-quota-inventory.json (SHA-256
+     * 5f65d66acc36673ee37be1b4e024dad3ac725e5313d45c208abb489d5c9f6811). That file stays
+     * unchanged as history; only this rebinding moved the acknowledgments.
+     */
+    private const EVIDENCE = 'docs/api/evidence/2026-11-01-read-only-11.138.0.19.json';
 
-    private const SHA256 = '5f65d66acc36673ee37be1b4e024dad3ac725e5313d45c208abb489d5c9f6811';
+    private const SHA256 = '4138dbf1d083ddfe6d109c86bb8beb449abde6937e93b2452693d47b2b792b81';
 
     private const ROUTES = [
-        'direct-uapi' => 'quota-total-direct-11.138.0.15',
-        'bridged-uapi' => 'quota-total-bridge-11.138.0.15',
+        'direct-uapi' => 'quota-total-direct-11.138.0.19',
+        'bridged-uapi' => 'quota-total-bridge-11.138.0.19',
     ];
 
     /** @param array<string, array{identity: string, signature: string}> $expected */
@@ -57,7 +69,7 @@ final readonly class DiscrepancyPolicy
                 throw new RuntimeException('Invalid reference.');
             }
             $document = json_decode($bytes, true, 512, JSON_THROW_ON_ERROR);
-            if (!is_array($document) || ($document['schema_version'] ?? null) !== 1) {
+            if (!is_array($document) || ($document['schema_version'] ?? null) !== 2) {
                 throw new RuntimeException('Invalid reference.');
             }
             $records = $document['probes'] ?? null;
@@ -86,24 +98,45 @@ final readonly class DiscrepancyPolicy
     }
 
     /**
-     * Refuse overwriting the historical reference, including symlink and hard-link aliases.
+     * Refuse overwriting any existing evidence file, including symlink and hard-link aliases.
      *
-     * Call before preparing an output file or sending a request. The CLI also rejects symlink
-     * destinations generally. This protects the reviewed artifact independently of its filename.
+     * Everything under docs/api/evidence/ is immutable history, and the current reference is only
+     * one file there. Call before preparing an output file or sending a request. The CLI also
+     * rejects symlink destinations generally. Comparing device and inode protects each file
+     * independently of its name. New paths and files elsewhere stay allowed.
      *
-     * @throws RuntimeException If the output identifies the reference artifact.
+     * @throws RuntimeException If the output identifies an existing evidence file.
      */
     public function assertOutputAllowed(#[SensitiveParameter] string $output): void
     {
-        $reference = @stat($this->reference);
         $destination = @stat($output);
-        if (
-            realpath($output) === realpath($this->reference)
-            || ($reference !== false && $destination !== false
-                && $reference['dev'] === $destination['dev'] && $reference['ino'] === $destination['ino'])
-        ) {
-            throw new RuntimeException('Evidence output cannot replace the discrepancy reference.');
+        if ($destination === false) {
+            return;
         }
+        $files = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator(dirname($this->reference), FilesystemIterator::SKIP_DOTS),
+        );
+        foreach ($files as $file) {
+            $evidence = $file instanceof SplFileInfo ? @stat($file->getPathname()) : false;
+            if (
+                $evidence !== false
+                && $evidence['dev'] === $destination['dev'] && $evidence['ino'] === $destination['ino']
+            ) {
+                throw new RuntimeException('Evidence output cannot replace an existing evidence file.');
+            }
+        }
+    }
+
+    /**
+     * Return the console label for a reviewed acknowledgment, or null for any other identifier.
+     *
+     * The identifiers live only in this class, so rebinding them to a new reference cannot leave
+     * the CLI with a stale copy that throws after live requests are spent. Null keeps an
+     * unreviewed identifier off the console.
+     */
+    public function acknowledgmentLabel(#[SensitiveParameter] string $id): ?string
+    {
+        return isset($this->expected[$id]) ? $id . ' ($.* unknown_field)' : null;
     }
 
     /**

@@ -136,7 +136,7 @@ final class UapiUserDataTest extends TestCase
     }
 
     #[DataProvider('payloads')]
-    public function testRequiredDynamicStringMapPreservesKeysAndRejectsOtherTypes(
+    public function testRequiredDynamicMixedMapPreservesEntriesAndRejectsWrongRoots(
         string $route,
         string $method,
         ?string $json,
@@ -179,10 +179,15 @@ final class UapiUserDataTest extends TestCase
             $cases[] = [$wrong, false, null];
         }
         foreach (
-            ['0', '50', '-1', '1.0', '1.5', 'true', 'false', 'null', '[]', '{}',
-            '["value"]', '{"key":"value"}'] as $wrong
+            [
+                ['0', 0], ['50', 50], ['-1', -1], ['1.0', 1.0], ['1.5', 1.5],
+                ['true', true], ['false', false], ['null', null], ['[]', []], ['{}', []],
+                ['["value"]', ['value']], ['{"key":"value"}', ['key' => 'value']],
+                ['{"0":{"01":null},"2":[]}', [0 => ['01' => null], 2 => []]],
+                ['[false,{"nested":[null,0,1.5]}]', [false, ['nested' => [null, 0, 1.5]]]],
+            ] as [$entry, $expected]
         ) {
-            $cases[] = ['{"valid":"0","PRIVATE":' . $wrong . '}', false, null];
+            $cases[] = ['{"valid":"0","PRIVATE":' . $entry . '}', true, ['valid' => '0', 'PRIVATE' => $expected]];
         }
         foreach (self::outcomes() as $name => [$route, $method]) {
             foreach ($cases as $index => $case) {
@@ -313,7 +318,7 @@ final class UapiUserDataTest extends TestCase
                 default => new Response(
                     200,
                     [],
-                    self::envelope($route, '{"PRIVATE successful mismatch":null}', 1, true),
+                    self::envelope($route, '[{"PRIVATE successful mismatch":null}]', 1, true),
                 ),
             };
         });
@@ -350,7 +355,7 @@ final class UapiUserDataTest extends TestCase
             }
             if ($error instanceof PayloadMismatchException) {
                 self::assertTrue($error->outcomeConfirmed);
-                self::assertSame(['PRIVATE successful mismatch' => null], $error->payload);
+                self::assertSame([['PRIVATE successful mismatch' => null]], $error->payload);
                 self::assertSame(['PRIVATE warning'], $error->metadata?->uapiWarnings());
                 self::assertSame(
                     ['transformed' => 1, 'private' => 'PRIVATE metadata'],
@@ -418,7 +423,7 @@ final class UapiUserDataTest extends TestCase
         }
     }
 
-    /** @return array<array-key, string> */
+    /** @return array<array-key, mixed> */
     private static function invoke(UserData $group, string $method): array
     {
         return $method === 'getScopedUserdata' ? $group->getScopedUserdata(scope: 'PRIVATE scope')

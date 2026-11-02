@@ -102,12 +102,14 @@ final class FtpSectionGuardTest extends TestCase
         } catch (LogicException) {
             self::assertCount(0, $http->getRequests());
         }
+        $caught = null;
         try {
             $guard->sendRequest(self::delete());
-            self::fail('Transport should fail.');
-        } catch (RuntimeException) {
-            self::assertCount(1, $http->getRequests());
+        } catch (RuntimeException $error) {
+            $caught = $error;
         }
+        self::assertInstanceOf(RuntimeException::class, $caught, 'Transport should fail.');
+        self::assertCount(1, $http->getRequests());
         $this->expectException(LogicException::class);
         $guard->sendRequest(self::delete());
     }

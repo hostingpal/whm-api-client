@@ -25,9 +25,14 @@ use SensitiveParameter;
  * @phpstan-type ListTasksResult list<array{
  *     action?: string,
  *     args?: array{
+ *         domain?: string,
+ *         install_id?: string,
+ *         log_file?: string,
  *         repository_root?: string,
  *     },
+ *     exclusive?: string|int,
  *     id?: string,
+ *     sse_url?: string,
  *     subsystem?: string,
  * }>
  */
@@ -51,8 +56,11 @@ final readonly class UserTasks
      * Documented: Available in cPanel 72 and later; operates on the selected cPanel account, whose user task queue is
      * separate from other accounts.
      *
-     * Policy: Queue IDs, task arguments and repository paths are private payload data. Do not log results, raw metadata
-     * or PayloadMismatchException::$payload indiscriminately. Returned paths are never opened.
+     * Policy: Queue IDs, task arguments, repository paths and progress paths are private payload data. Reviewed WPX
+     * imports carry site_settings JSON containing source_password. Typed inventory filters unreviewed arguments without
+     * parsing that JSON; raw responses, generic call() results and PayloadMismatchException::$payload can retain the
+     * password. Avoid indiscriminate logging. Envelope metadata does not always contain task payloads. Returned paths
+     * are never opened or fetched.
      *
      * Documented: Deletes the supplied item from the selected account user task queue. Queue deletion does not
      * establish task completion or running-process termination. The source declares no rollback; the client adds no
@@ -94,17 +102,27 @@ final readonly class UserTasks
      * Documented: Available in cPanel 72 and later; operates on the selected cPanel account, whose user task queue is
      * separate from other accounts.
      *
-     * Policy: Queue IDs, task arguments and repository paths are private payload data. Do not log results, raw metadata
-     * or PayloadMismatchException::$payload indiscriminately. Returned paths are never opened.
+     * Policy: Queue IDs, task arguments, repository paths and progress paths are private payload data. Reviewed WPX
+     * imports carry site_settings JSON containing source_password. Typed inventory filters unreviewed arguments without
+     * parsing that JSON; raw responses, generic call() results and PayloadMismatchException::$payload can retain the
+     * password. Avoid indiscriminate logging. Envelope metadata does not always contain task payloads. Returned paths
+     * are never opened or fetched.
      *
      * Documented: Returns a nonnullable ordered list with optional action, args, id and subsystem fields. args, when
-     * supplied, is a nonnullable object with optional string repository_root. Empty lists and omitted fields remain
-     * distinct from explicit null.
+     * supplied, is a nonnullable closed object; repository_root remains an optional string. Empty lists, omitted fields
+     * and explicit null remain distinct. Existing empty-object and empty-array object compatibility is retained.
      *
-     * Policy: The source documents action=create and subsystem=VersionControl. Existing string-enum policy retains
-     * their documentation without adding a runtime enum validator. Only the formally declared repository_root argument
-     * is retained; unknown task and argument fields follow existing known-field filtering. Empty args objects and
-     * inherited empty-array object compatibility remain valid.
+     * Policy: The pinned create/VersionControl-only prose is incomplete: reviewer-retained WPX source queues install
+     * and import actions. Action and subsystem remain open strings, with no closed enum. Only named reviewed arguments
+     * are retained; unknown row and argument fields, including title and site_settings, are filtered.
+     *
+     * Policy: Source-inferred compatibility additions: optional nonnullable string sse_url and args.domain,
+     * args.install_id and args.log_file; optional nonnullable string|int exclusive, preserving the received primitive
+     * without coercion or integer bounds. sse_url is a relative progress path; exclusive is a key, not a boolean flag.
+     * Reviewer-attributed producer code concatenates strings and defaults exclusive to integer 0, but
+     * Directory::Queue::Normal serialization and Task.adopt were not inspected. These types and rejection of explicit
+     * null are client compatibility choices, not proven wire types or universal nullability. Live/source follow-ups
+     * whm-api-client-8x0.2.72 and 8x0.2.72.1 remain open.
      *
      * Documented: Post-processing metadata.transformed remains envelope metadata accessible through responseMeta(); it
      * is not a task payload field.

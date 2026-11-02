@@ -129,6 +129,26 @@ func TestRecordAliasCannotInheritMultipartBody(t *testing.T) {
 	}
 }
 
+func TestAdditionalMethodMapsSourceNamesAfterWireCorrection(t *testing.T) {
+	set := fixtureOverlay("listed")
+	var ov overlay.Operation
+	if err := json.Unmarshal([]byte(aliasFixture), &ov); err != nil {
+		t.Fatal(err)
+	}
+	ov.Params = map[string]overlay.Param{"username": {Wire: "account_name"}}
+	ov.AdditionalMethods[0].Inputs[0].Records.Fields = ov.AdditionalMethods[0].Inputs[0].Records.Fields[1:]
+	ov.AdditionalMethods[0].Inputs = append([]overlay.MethodInput{{Source: "username", PHP: "account"}}, ov.AdditionalMethods[0].Inputs...)
+	set.Files[1].Operations["whm1:createacct"] = ov
+	result, problems := buildProblems(t, fixtureMap(t), set)
+	if problems != "" {
+		t.Fatal(problems)
+	}
+	method := groupByClass(t, result, "Accounts").Operations[0].AdditionalMethods[0]
+	if method.Params[0].Wire != "account_name" || method.Params[0].PHP != "account" {
+		t.Fatal("source and wire names confused")
+	}
+}
+
 func TestFirstUnsuffixedRecordRequirednessAndSerialization(t *testing.T) {
 	build := func(raw string) (Operation, string) {
 		set := fixtureOverlay("listed")
@@ -148,7 +168,7 @@ func TestFirstUnsuffixedRecordRequirednessAndSerialization(t *testing.T) {
 		t.Fatal(problems)
 	}
 	encoded, _ := json.Marshal(old.AdditionalMethods[0].Params[0].Records)
-	want := `{"Alias":"AccountInput","Start":1,"Separator":"","Fields":[{"PHP":"name","Prefix":"user","Type":"string","Required":true},{"PHP":"password","Prefix":"pass","Type":"string","Required":false},{"PHP":"plan","Prefix":"plan","Type":"string","Required":false}]}`
+	want := `{"Alias":"AccountInput","Start":1,"Separator":"","Fields":[{"Description":"The account's username.","PHP":"name","Prefix":"user","Type":"string","Required":true},{"Description":"The password.","PHP":"password","Prefix":"pass","Type":"string","Required":false},{"Description":"","PHP":"plan","Prefix":"plan","Type":"string","Required":false}]}`
 	if string(encoded) != want {
 		t.Fatalf("old effective serialization changed: %s", encoded)
 	}
@@ -212,8 +232,8 @@ func TestFirstUnsuffixedDirectConstructionCollisionsInBothInputOrders(t *testing
 			t.Run(tc.name+map[bool]string{false: " forward", true: " reverse"}[reverse], func(t *testing.T) {
 				rowPointer, otherPointer := "/parameters/0", "/parameters/1"
 				canonical := Operation{ID: "fixture", Method: "POST", Params: []Param{
-					{PHP: "field", Wire: "field", PHPType: "string", Encoding: "scalar", Required: true},
-					{PHP: "other", Wire: tc.wire, PHPType: "string", Encoding: tc.encoding, Required: true, Collection: tc.collection},
+					{Source: "field", PHP: "field", Wire: "field", PHPType: "string", Encoding: "scalar", Required: true},
+					{Source: tc.wire, PHP: "other", Wire: tc.wire, PHPType: "string", Encoding: tc.encoding, Required: true, Collection: tc.collection},
 				}}
 				variant := model.Variant{Parameters: []model.Parameter{
 					{Name: "field", Locator: model.Locator{SourceSHA256: "hash", Pointer: &rowPointer}},

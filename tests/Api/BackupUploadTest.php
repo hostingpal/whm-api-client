@@ -61,8 +61,8 @@ final class BackupUploadTest extends TestCase
         ): ResponseInterface {
             $requests[] = $request;
             $bodies[] = $request->getBody()->getContents();
-            return new Response(200, [], '{"result":{"status":1,"data":'
-                . '{"log_id":"id","log_path":"/sensitive/log","messages":["done"]}}}');
+            return new Response(200, [], '{"result":{"status":1,"messages":["done"],"data":'
+                . '{"log_id":"id","log_path":"/sensitive/log"}}}');
         });
         $upload = Upload::fromString('same<>;.gz', "\0\xff");
         $reflection = new ReflectionMethod($client->uapi()->backup(), $method);
@@ -74,10 +74,11 @@ final class BackupUploadTest extends TestCase
             $args['timeout'] = 0;
             $args['verbose'] = false;
             self::assertSame(
-                ['log_id' => 'id', 'log_path' => '/sensitive/log', 'messages' => ['done']],
+                ['log_id' => 'id', 'log_path' => '/sensitive/log'],
                 $reflection->invokeArgs($client->uapi()->backup(), $args),
             );
         }
+        self::assertSame(['status' => 1, 'messages' => ['done']], $client->uapi()->responseMeta()?->uapi);
         self::assertCount(3, $requests);
         foreach ($requests as $i => $request) {
             self::assertSame('POST', $request->getMethod());
@@ -105,6 +106,66 @@ final class BackupUploadTest extends TestCase
         }
     }
 
+
+    #[DataProvider('methods')]
+    public function testRestoreLogsStayTypedWhileMessagesRemainEnvelopeData(
+        string $method,
+        string $function,
+        string $part,
+    ): void {
+        foreach (['["unmodeled"]', '[1]', 'null'] as $unexpectedMessages) {
+            $sends = 0;
+            $client = self::client(static function (RequestInterface $request) use (
+                &$sends,
+                $unexpectedMessages,
+            ): ResponseInterface {
+                ++$sends;
+                $request->getBody()->getContents();
+                return new Response(200, [], '{"result":{"status":1,"errors":null,"warnings":null,'
+                    . '"messages":["line one\\nline two","<b>restored</b>"],'
+                    . '"data":{"log_id":"restore-123","log_path":"/home/fixture/.cpanel/logs/restore-123",'
+                    . '"messages":' . $unexpectedMessages . ',"other":{"opaque":[1,null]}}}}');
+            });
+            $reflection = new ReflectionMethod($client->uapi()->backup(), $method);
+            self::assertSame(
+                ['log_id' => 'restore-123', 'log_path' => '/home/fixture/.cpanel/logs/restore-123'],
+                $reflection->invoke($client->uapi()->backup(), Upload::fromString('archive.gz', 'bytes')),
+            );
+            self::assertSame([
+                'status' => 1, 'errors' => null, 'warnings' => null,
+                'messages' => ["line one\nline two", '<b>restored</b>'],
+            ], $client->uapi()->responseMeta()?->uapi);
+            self::assertSame(1, $sends);
+        }
+    }
+
+    #[DataProvider('methods')]
+    public function testFailedRestoreKeepsFlagErrorsAndEnvelopeWithoutReturningUnvalidatedLogs(
+        string $method,
+        string $function,
+        string $part,
+    ): void {
+        $sends = 0;
+        $client = self::client(static function (RequestInterface $request) use (&$sends): ResponseInterface {
+            ++$sends;
+            $request->getBody()->getContents();
+            return new Response(200, [], '{"result":{"status":0,"errors":["archive rejected"],'
+                . '"messages":["log available"],"data":{"log_id":"failed-123","log_path":"/private/log"}}}');
+        });
+        $reflection = new ReflectionMethod($client->uapi()->backup(), $method);
+        $error = self::caught(static fn () => $reflection->invoke(
+            $client->uapi()->backup(),
+            Upload::fromString('archive.gz', 'bytes'),
+        ));
+        self::assertSame(\HostingPal\WhmApiClient\Exception\ApiErrorException::class, $error::class);
+        self::assertInstanceOf(ApiException::class, $error);
+        self::assertSame(['archive rejected'], $error->errors());
+        self::assertSame($client->uapi()->responseMeta(), $error->metadata);
+        self::assertSame([
+            'status' => 0, 'errors' => ['archive rejected'], 'messages' => ['log available'],
+        ], $error->metadata?->uapi);
+        self::assertSame(1, $sends);
+    }
 
     #[DataProvider('methods')]
     public function testOmittedOptionsAndNegativeTimeoutAreNotLocallyReinterpreted(
@@ -227,8 +288,8 @@ final class BackupUploadTest extends TestCase
         string $part,
     ): void {
         foreach (
-            ['{}', '{"log_id":"id"}', '{"log_path":"path"}', '{"messages":[]}', '{"messages":["private-message"]}',
-                'null', '[]', '1', '{"log_id":1}', '{"log_path":null}', '{"messages":[1]}',
+            ['{}', '{"log_id":"id"}', '{"log_path":"path"}',
+                'null', '[]', '1', '{"log_id":1}', '{"log_id":null}', '{"log_path":null}', '{"log_path":1}',
                 'missing', 'api', 'http', 'transport'] as $data
         ) {
             $sends = 0;
@@ -261,7 +322,7 @@ final class BackupUploadTest extends TestCase
             );
             if (
                 in_array($data, [
-                '{}', '{"log_id":"id"}', '{"log_path":"path"}', '{"messages":[]}', '{"messages":["private-message"]}',
+                '{}', '{"log_id":"id"}', '{"log_path":"path"}',
                 ], true)
             ) {
                 self::assertSame(json_decode($data, true, 512, JSON_THROW_ON_ERROR), $call());
@@ -306,6 +367,7 @@ final class BackupUploadTest extends TestCase
             });
             $client->uapi()->call('Backup', 'fixture');
             $source = new UploadProbeStream('private-bytes');
+            $source->seek(6);
             $source->reportedSize = null;
             $reflection = new ReflectionMethod($client->uapi()->backup(), $method);
             $args = [[Upload::fromStream('private-name', $source)], 'timeout' => 7, 'verbose' => true];
@@ -316,12 +378,16 @@ final class BackupUploadTest extends TestCase
                 $client->uapi()->backup(),
                 $args,
             ));
-            // PR86 owns the preparation exception-class mapping; retarget on its integration.
-            self::assertInstanceOf(RuntimeException::class, $error);
+            self::assertSame(InvalidArgumentException::class, $error::class);
+            self::assertSame('API multipart sources could not be prepared.', $error->getMessage());
             self::assertNull($error->getPrevious());
             self::assertNull($client->uapi()->responseMeta());
             self::assertSame(1, $sends);
             self::assertSame(0, $source->reads);
+            self::assertSame(1, $source->seeks);
+            self::assertSame(6, $source->tell());
+            self::assertSame(0, $source->closes);
+            self::assertSame(0, $source->detaches);
             foreach ($reflection->getParameters() as $parameter) {
                 self::assertCount(1, $parameter->getAttributes(SensitiveParameter::class));
             }

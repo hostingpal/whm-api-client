@@ -265,7 +265,6 @@
       ],
       "response": {
         "": {
-          "accept_empty_array": false,
           "evidence": [
             {
               "kind": "doc",
@@ -274,8 +273,28 @@
               "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
               "pointer": "/paths/~1Backup~1restore_databases/post/responses/200/content/application~1json/schema/properties/result/properties/data",
               "note": "Pinned actual object with three optional leaves, not nullable; opt out only at these new roots."
+            },
+            {
+              "kind": "doc",
+              "version": "pinned 11.138.0.10; attributed reviewer handler 11.138.0.19",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Backup~1restore_databases/post/responses/200/content/application~1json/schema/properties/result/properties/data",
+              "note": "PR89 review5724752679 reports that _expand_log_messages_into_results sends text through raw_message into the UAPI envelope, and all 19 successful restores returned only log_id and log_path in data. Replace this operation-scoped pinned three-field object with optional strict string log_id/log_path, preserving the nonnullable actual-object root and empty-object validity. Messages are available through responseMeta()->uapi['messages'], not the returned array. Attributed source/observations: https://github.com/hostingpal/whm-api-client/pull/89#pullrequestreview-5724752679. This correction performs no new live restore or capture."
             }
-          ]
+          ],
+          "replace": {
+            "type": "object",
+            "fields": {
+              "log_id": {
+                "type": "string"
+              },
+              "log_path": {
+                "type": "string"
+              }
+            },
+            "accept_empty_array": false
+          }
         }
       },
       "notes": [
@@ -289,7 +308,15 @@
         },
         {
           "kind": "documented",
-          "text": "The server declares no rollback. One request is sent without automatic retry or rollback. Optional log_id, log_path and messages remain an actual nonnullable object; empty object is valid, absent/null/list payloads mismatch. Log paths and message text are sensitive payload data and are not fetched. Results do not establish atomicity, completion or per-file success."
+          "text": "The server declares no rollback. One request is sent without automatic retry or rollback. Optional strict string log_id and log_path remain an actual nonnullable object; empty object is valid, absent/null/list payloads mismatch. Log paths are sensitive payload data and are not fetched. Results do not establish atomicity, completion or per-file success."
+        },
+        {
+          "kind": "documented",
+          "text": "Restore and verbose messages are in responseMeta()->uapi['messages'], not the returned array. On API failure the Flag policy raises ApiErrorException before data validation, so unvalidated log_id/log_path are unavailable; errors() retains the upstream error text."
+        },
+        {
+          "kind": "documented",
+          "text": "The client preserves archive list order on the wire, but upstream application order is unreliable. PR89 reviewer observations on cPanel 11.138.0.19 found overlapping-archive results disagreeing with list order in three of five permutations. Overlapping archives have unpredictable results; callers needing a specific result should restore one archive per call. This adds no completion, atomicity or rollback guarantee."
         }
       ]
     },
@@ -354,7 +381,6 @@
       ],
       "response": {
         "": {
-          "accept_empty_array": false,
           "evidence": [
             {
               "kind": "doc",
@@ -363,8 +389,28 @@
               "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
               "pointer": "/paths/~1Backup~1restore_email_filters/post/responses/200/content/application~1json/schema/properties/result/properties/data",
               "note": "Pinned actual object with three optional leaves, not nullable; opt out only at these new roots."
+            },
+            {
+              "kind": "doc",
+              "version": "pinned 11.138.0.10; attributed reviewer handler 11.138.0.19",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Backup~1restore_email_filters/post/responses/200/content/application~1json/schema/properties/result/properties/data",
+              "note": "PR89 review5724752679 reports that _expand_log_messages_into_results sends text through raw_message into the UAPI envelope, and all 19 successful restores returned only log_id and log_path in data. Replace this operation-scoped pinned three-field object with optional strict string log_id/log_path, preserving the nonnullable actual-object root and empty-object validity. Messages are available through responseMeta()->uapi['messages'], not the returned array. Attributed source/observations: https://github.com/hostingpal/whm-api-client/pull/89#pullrequestreview-5724752679. This correction performs no new live restore or capture."
             }
-          ]
+          ],
+          "replace": {
+            "type": "object",
+            "fields": {
+              "log_id": {
+                "type": "string"
+              },
+              "log_path": {
+                "type": "string"
+              }
+            },
+            "accept_empty_array": false
+          }
         }
       },
       "notes": [
@@ -378,7 +424,15 @@
         },
         {
           "kind": "documented",
-          "text": "The server declares no rollback. One request is sent without automatic retry or rollback. Optional log_id, log_path and messages remain an actual nonnullable object; empty object is valid, absent/null/list payloads mismatch. Log paths and message text are sensitive payload data and are not fetched. Results do not establish atomicity, completion or per-file success."
+          "text": "The server declares no rollback. One request is sent without automatic retry or rollback. Optional strict string log_id and log_path remain an actual nonnullable object; empty object is valid, absent/null/list payloads mismatch. Log paths are sensitive payload data and are not fetched. Results do not establish atomicity, completion or per-file success."
+        },
+        {
+          "kind": "documented",
+          "text": "Restore and verbose messages are in responseMeta()->uapi['messages'], not the returned array. On API failure the Flag policy raises ApiErrorException before data validation, so unvalidated log_id/log_path are unavailable; errors() retains the upstream error text."
+        },
+        {
+          "kind": "documented",
+          "text": "The client preserves archive list order on the wire, but upstream application order is unreliable. PR89 reviewer observations on cPanel 11.138.0.19 found overlapping-archive results disagreeing with list order in three of five permutations. Overlapping archives have unpredictable results; callers needing a specific result should restore one archive per call. This adds no completion, atomicity or rollback guarantee."
         }
       ]
     },
@@ -443,7 +497,6 @@
       ],
       "response": {
         "": {
-          "accept_empty_array": false,
           "evidence": [
             {
               "kind": "doc",
@@ -452,8 +505,28 @@
               "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
               "pointer": "/paths/~1Backup~1restore_email_forwarders/post/responses/200/content/application~1json/schema/properties/result/properties/data",
               "note": "Pinned actual object with three optional leaves, not nullable; opt out only at these new roots."
+            },
+            {
+              "kind": "doc",
+              "version": "pinned 11.138.0.10; attributed reviewer handler 11.138.0.19",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Backup~1restore_email_forwarders/post/responses/200/content/application~1json/schema/properties/result/properties/data",
+              "note": "PR89 review5724752679 reports that _expand_log_messages_into_results sends text through raw_message into the UAPI envelope, and all 19 successful restores returned only log_id and log_path in data. Replace this operation-scoped pinned three-field object with optional strict string log_id/log_path, preserving the nonnullable actual-object root and empty-object validity. Messages are available through responseMeta()->uapi['messages'], not the returned array. Attributed source/observations: https://github.com/hostingpal/whm-api-client/pull/89#pullrequestreview-5724752679. This correction performs no new live restore or capture."
             }
-          ]
+          ],
+          "replace": {
+            "type": "object",
+            "fields": {
+              "log_id": {
+                "type": "string"
+              },
+              "log_path": {
+                "type": "string"
+              }
+            },
+            "accept_empty_array": false
+          }
         }
       },
       "notes": [
@@ -467,7 +540,15 @@
         },
         {
           "kind": "documented",
-          "text": "The server declares no rollback. One request is sent without automatic retry or rollback. Optional log_id, log_path and messages remain an actual nonnullable object; empty object is valid, absent/null/list payloads mismatch. Log paths and message text are sensitive payload data and are not fetched. Results do not establish atomicity, completion or per-file success."
+          "text": "The server declares no rollback. One request is sent without automatic retry or rollback. Optional strict string log_id and log_path remain an actual nonnullable object; empty object is valid, absent/null/list payloads mismatch. Log paths are sensitive payload data and are not fetched. Results do not establish atomicity, completion or per-file success."
+        },
+        {
+          "kind": "documented",
+          "text": "Restore and verbose messages are in responseMeta()->uapi['messages'], not the returned array. On API failure the Flag policy raises ApiErrorException before data validation, so unvalidated log_id/log_path are unavailable; errors() retains the upstream error text."
+        },
+        {
+          "kind": "documented",
+          "text": "The client preserves archive list order on the wire, but upstream application order is unreliable. PR89 reviewer observations on cPanel 11.138.0.19 found overlapping-archive results disagreeing with list order in three of five permutations. Overlapping archives have unpredictable results; callers needing a specific result should restore one archive per call. This adds no completion, atomicity or rollback guarantee."
         }
       ]
     },
@@ -536,7 +617,6 @@
       ],
       "response": {
         "": {
-          "accept_empty_array": false,
           "evidence": [
             {
               "kind": "doc",
@@ -545,8 +625,28 @@
               "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
               "pointer": "/paths/~1Backup~1restore_files/post/responses/200/content/application~1json/schema/properties/result/properties/data",
               "note": "Pinned actual object with three optional leaves, not nullable; opt out only at these new roots."
+            },
+            {
+              "kind": "doc",
+              "version": "pinned 11.138.0.10; attributed reviewer handler 11.138.0.19",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Backup~1restore_files/post/responses/200/content/application~1json/schema/properties/result/properties/data",
+              "note": "PR89 review5724752679 reports that _expand_log_messages_into_results sends text through raw_message into the UAPI envelope, and all 19 successful restores returned only log_id and log_path in data. Replace this operation-scoped pinned three-field object with optional strict string log_id/log_path, preserving the nonnullable actual-object root and empty-object validity. Messages are available through responseMeta()->uapi['messages'], not the returned array. Attributed source/observations: https://github.com/hostingpal/whm-api-client/pull/89#pullrequestreview-5724752679. This correction performs no new live restore or capture."
             }
-          ]
+          ],
+          "replace": {
+            "type": "object",
+            "fields": {
+              "log_id": {
+                "type": "string"
+              },
+              "log_path": {
+                "type": "string"
+              }
+            },
+            "accept_empty_array": false
+          }
         }
       },
       "notes": [
@@ -560,11 +660,19 @@
         },
         {
           "kind": "documented",
-          "text": "The server declares no rollback. One request is sent without automatic retry or rollback. Optional log_id, log_path and messages remain an actual nonnullable object; empty object is valid, absent/null/list payloads mismatch. Log paths and message text are sensitive payload data and are not fetched. Results do not establish atomicity, completion or per-file success."
+          "text": "The server declares no rollback. One request is sent without automatic retry or rollback. Optional strict string log_id and log_path remain an actual nonnullable object; empty object is valid, absent/null/list payloads mismatch. Log paths are sensitive payload data and are not fetched. Results do not establish atomicity, completion or per-file success."
         },
         {
           "kind": "documented",
           "text": "Omitted directory defaults to the user home directory; supplied directory bytes are unchanged and the relative-path base is not further defined."
+        },
+        {
+          "kind": "documented",
+          "text": "Restore and verbose messages are in responseMeta()->uapi['messages'], not the returned array. On API failure the Flag policy raises ApiErrorException before data validation, so unvalidated log_id/log_path are unavailable; errors() retains the upstream error text."
+        },
+        {
+          "kind": "documented",
+          "text": "The client preserves archive list order on the wire, but upstream application order is unreliable. PR89 reviewer observations on cPanel 11.138.0.19 found overlapping-archive results disagreeing with list order in three of five permutations. Overlapping archives have unpredictable results; callers needing a specific result should restore one archive per call. This adds no completion, atomicity or rollback guarantee."
         }
       ]
     }

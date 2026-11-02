@@ -3,7 +3,7 @@
   "family": "uapi",
   "group": "ServiceProxy",
   "accessor": "serviceProxy",
-  "description": "Selected-account service proxy backend inventory and configuration. Backend/general address inputs and paired records are sensitive; read results reveal infrastructure information. Writes may rebuild vhosts and restart the web server, with API-success rebuild warnings retained in responseMeta(). No backend contact, DNS/IP validation, retry or rollback is performed. Offline source-backed coverage only; live follow-up whm-api-client-8x0.2.70 remains open.",
+  "description": "Selected-account service proxy backend inventory and configuration. Backend/general address inputs and paired records are sensitive; read results reveal infrastructure information. Writes may rebuild vhosts and restart the web server, with API-success rebuild warnings retained in responseMeta(). No backend contact, DNS/IP validation, retry or rollback is performed. Review 5725574081 at original 4462b68 reports direct UAPI success and WHM bridge module-load failure on 11.138.0.19; this build-scoped reviewer observation does not restrict supported routes. Live follow-up whm-api-client-8x0.2.70 remains open.",
   "operations": {
     "uapi:ServiceProxy/get_service_proxy_backends": {
       "name": "getServiceProxyBackends",
@@ -16,6 +16,10 @@
         {
           "kind": "documented",
           "text": "Returns a nonnullable list in server order. backend is an optional string; service_group is an optional nullable string. Explicit null service_group denotes the general backend; omission remains distinct. Empty inventory remains an empty list."
+        },
+        {
+          "kind": "observed",
+          "text": "Review 5725574081 of original commit 4462b68f73730ede842dd617a926bba23565af04 (https://github.com/hostingpal/whm-api-client/pull/103#pullrequestreview-5725574081) reports direct UAPI success for all three ServiceProxy operations, including setBackends(), on cPanel 11.138.0.19. The WHM bridge failed to load ServiceProxy and raised ApiErrorException for each operation on that build. This is reviewer-observed behavior, not a universal route restriction or a new local capture; whm-api-client-8x0.2.70 remains open."
         }
       ],
       "evidence": [
@@ -26,6 +30,12 @@
           "note": "Pinned read-only inventory uses GET; preserve the formal response list, optional backend and nullable optional service_group without response corrections.",
           "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
           "pointer": "/paths/~1ServiceProxy~1get_service_proxy_backends/get/x-readonly"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-11-01",
+          "note": "Reviewer-attributed observation in review 5725574081 at original commit 4462b68f73730ede842dd617a926bba23565af04: https://github.com/hostingpal/whm-api-client/pull/103#pullrequestreview-5725574081. Direct UAPI succeeded; WHM bridge returned ApiErrorException because ServiceProxy could not be loaded. The reviewer reports an absent on-disk module and a compiled-binary/direct-versus-disk-loader explanation from their server-source inspection; this was not independently inspected locally. Historical doc evidence remains unchanged; these bounded observations supersede implementation-time blanket no-live claims only. No new local request or committed runtime capture. "
         }
       ]
     },
@@ -94,11 +104,11 @@
         },
         {
           "kind": "policy",
-          "text": "setBackends() accepts a nonempty sequential list of complete serviceGroup/backend string pairs, with optional general after the rows. Both fields are required per convenience row as a collection policy supported by the source conditional requirements; canonical requiredness is unchanged. First fields are service_group and service_group_backend; later rows use -1, -2. Preserve duplicates, input order, case and bytes without promising upstream duplicate resolution. Unknown members, null fields, partial pairs and wrong scalar types fail locally before I/O."
+          "text": "setBackends() accepts a nonempty sequential list of complete serviceGroup/backend string pairs, with optional general after the rows. Both fields are required per convenience row as a collection policy supported by the source conditional requirements; canonical requiredness is unchanged. First fields are service_group and service_group_backend; later rows use -1, -2. Preserve duplicates, input order, case and bytes. The bounded duplicate observation below does not establish behavior on every version or server-side atomicity. Unknown members, null fields, partial pairs and wrong scalar types fail locally before I/O."
         },
         {
           "kind": "policy",
-          "text": "The formal service_group name and explicit incrementing prose use underscores. The multiple service-group example contradicts them with service-group-1/service-group-2. This mapping chooses the formal names and naming prose, preserves that source conflict and makes no live acceptance claim."
+          "text": "The formal service_group name and explicit incrementing prose use underscores. The multiple service-group example contradicts them with service-group-1/service-group-2. This mapping chooses the formal names and naming prose and preserves that historical source conflict; the bounded direct-UAPI observation below records acceptance on the reviewed build."
         },
         {
           "kind": "policy",
@@ -115,6 +125,22 @@
         {
           "kind": "documented",
           "text": "Returns a nullable object without pinned fields. Preserve opaque object fields and explicit null; an absent data member is a payload mismatch. No success or warning payload field is inferred."
+        },
+        {
+          "kind": "observed",
+          "text": "Review 5725574081 of original commit 4462b68f73730ede842dd617a926bba23565af04 (https://github.com/hostingpal/whm-api-client/pull/103#pullrequestreview-5725574081) reports direct UAPI success for all three ServiceProxy operations, including setBackends(), on cPanel 11.138.0.19. The WHM bridge failed to load ServiceProxy and raised ApiErrorException for each operation on that build. This is reviewer-observed behavior, not a universal route restriction or a new local capture; whm-api-client-8x0.2.70 remains open."
+        },
+        {
+          "kind": "observed",
+          "text": "In that direct-UAPI review on 11.138.0.19, setBackends() with two Mail rows stored the second backend. This establishes acceptance of the bare first service_group/service_group_backend fields followed by underscore-named -1 fields, and last-duplicate behavior for that tested case only. Input order and duplicates remain preserved; other versions and server-side atomicity are not established."
+        },
+        {
+          "kind": "observed",
+          "text": "In that direct-UAPI review on 11.138.0.19, the tested loopback, RFC 1918 and cloud-metadata IP literals were rejected with generic request-failed log-ID text and no caller-visible cause. Use the error ID with server logs when investigating such failures; this observation does not diagnose failures for untested destinations."
+        },
+        {
+          "kind": "observed",
+          "text": "In that direct-UAPI review on 11.138.0.19, setServiceProxyBackends() with no arguments and with general set to an empty string returned null without changing stored values. Omitted/null arguments and explicit empty strings retain their forwarding behavior. A null result with API success alone does not prove a configuration change; the client adds no automatic readback."
         }
       ],
       "evidence": [
@@ -157,6 +183,12 @@
           "note": "With Web Server role active, writes rebuild vhosts and restart the web server; rebuild failure can return API success with a failure warning in metadata. Retain ordinary Flag envelope outcome and responseMeta; no payload warning schema or successful application guarantee is invented.",
           "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
           "pointer": "/paths/~1ServiceProxy~1set_service_proxy_backends/get/description"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-11-01",
+          "note": "Reviewer-attributed observation in review 5725574081 at original commit 4462b68f73730ede842dd617a926bba23565af04: https://github.com/hostingpal/whm-api-client/pull/103#pullrequestreview-5725574081. Direct UAPI succeeded; WHM bridge returned ApiErrorException because ServiceProxy could not be loaded. The reviewer reports an absent on-disk module and a compiled-binary/direct-versus-disk-loader explanation from their server-source inspection; this was not independently inspected locally. Historical doc evidence remains unchanged; these bounded observations supersede implementation-time blanket no-live claims only. No new local request or committed runtime capture. In that direct-UAPI review on 11.138.0.19, setBackends() with two Mail rows stored the second backend. This establishes acceptance of the bare first service_group/service_group_backend fields followed by underscore-named -1 fields, and last-duplicate behavior for that tested case only. Input order and duplicates remain preserved; other versions and server-side atomicity are not established. In that direct-UAPI review on 11.138.0.19, the tested loopback, RFC 1918 and cloud-metadata IP literals were rejected with generic request-failed log-ID text and no caller-visible cause. Use the error ID with server logs when investigating such failures; this observation does not diagnose failures for untested destinations. In that direct-UAPI review on 11.138.0.19, setServiceProxyBackends() with no arguments and with general set to an empty string returned null without changing stored values. Omitted/null arguments and explicit empty strings retain their forwarding behavior. A null result with API success alone does not prove a configuration change; the client adds no automatic readback."
         }
       ]
     },
@@ -179,6 +211,10 @@
         {
           "kind": "documented",
           "text": "Returns a nullable object without pinned fields. Preserve opaque object fields and explicit null; an absent data member is a payload mismatch. No success or warning payload field is inferred."
+        },
+        {
+          "kind": "observed",
+          "text": "Review 5725574081 of original commit 4462b68f73730ede842dd617a926bba23565af04 (https://github.com/hostingpal/whm-api-client/pull/103#pullrequestreview-5725574081) reports direct UAPI success for all three ServiceProxy operations, including setBackends(), on cPanel 11.138.0.19. The WHM bridge failed to load ServiceProxy and raised ApiErrorException for each operation on that build. This is reviewer-observed behavior, not a universal route restriction or a new local capture; whm-api-client-8x0.2.70 remains open."
         }
       ],
       "evidence": [
@@ -197,6 +233,12 @@
           "note": "Retain Web Server role rebuild/restart side effects and success-with-warning caveat in responseMeta, without a payload correction or implicit restore.",
           "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
           "pointer": "/paths/~1ServiceProxy~1unset_all_service_proxy_backends/get/description"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-11-01",
+          "note": "Reviewer-attributed observation in review 5725574081 at original commit 4462b68f73730ede842dd617a926bba23565af04: https://github.com/hostingpal/whm-api-client/pull/103#pullrequestreview-5725574081. Direct UAPI succeeded; WHM bridge returned ApiErrorException because ServiceProxy could not be loaded. The reviewer reports an absent on-disk module and a compiled-binary/direct-versus-disk-loader explanation from their server-source inspection; this was not independently inspected locally. Historical doc evidence remains unchanged; these bounded observations supersede implementation-time blanket no-live claims only. No new local request or committed runtime capture. "
         }
       ]
     }

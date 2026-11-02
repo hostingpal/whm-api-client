@@ -692,7 +692,8 @@ final readonly class Mail
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
-     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
+     * @throws InvalidArgumentException If map keys, values, empty policy, or expanded names are invalid;
+     *     list inputs must be nonempty, sequential, and contain supported values.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/spam-protection-(greylisting)/cpgreylist-cpgreylist_save_common_mail_providers_config
      */
     public function cpgreylistSaveCommonMailProvidersConfig(

@@ -25,26 +25,33 @@ final class ScalarInputFidelityTest extends TestCase
         array $arguments,
     ): void {
         [$client, $http] = self::client();
-        $handle = $client->whm();
-        $http->addResponse(new Response(200, [], '{"metadata":{"result":1},"data":{"version":"fixture"}}'));
-        $handle->call('version');
+        if ($group === 'wordPressBackup' || $group === 'versionControl') {
+            $handle = $client->uapi('fixture');
+            $http->addResponse(new Response(
+                200,
+                [],
+                '{"metadata":{"result":1},"data":{"uapi":{"status":1,"errors":null,"data":{}}}}',
+            ));
+            $handle->call('Fixture', 'prime');
+        } else {
+            $handle = $client->whm();
+            $http->addResponse(new Response(200, [], '{"metadata":{"result":1},"data":{"version":"fixture"}}'));
+            $handle->call('version');
+        }
         $metadata = $handle->responseMeta();
         self::assertNotNull($metadata);
-        $api = $group === 'wordPressBackup' || $group === 'versionControl' ? $client->uapi('fixture') : $handle;
-        $target = $api->{$group}();
-        $http->addResponse(new Response(
-            200,
-            [],
-            '{"metadata":{"result":1},"data":{"uapi":{"status":1,"errors":null,"data":{}}}}',
-        ));
+        $target = $handle->{$group}();
+        $error = null;
         try {
             $target->{$method}(...$arguments);
-            self::fail('An integer has no source string contract.');
-        } catch (TypeError) {
-            self::assertCount(1, $http->getRequests());
-            // Native PHP argument checks precede the generated method and its lifecycle reset.
-            self::assertSame($metadata, $handle->responseMeta());
+        } catch (TypeError $caught) {
+            $error = $caught;
         }
+        self::assertInstanceOf(TypeError::class, $error, 'An integer has no source string contract.');
+        self::assertSame(TypeError::class, $error::class);
+        self::assertCount(1, $http->getRequests());
+        // Native PHP argument checks precede the generated method and its lifecycle reset.
+        self::assertSame($metadata, $handle->responseMeta());
     }
 
     /** @return iterable<string, array{string, string, array<string, mixed>}> */

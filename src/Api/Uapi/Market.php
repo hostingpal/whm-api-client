@@ -143,7 +143,7 @@ use SensitiveParameter;
  *     redirect_url_success?: string,
  * }
  * @phpstan-type GetProviderSpecificDcvConstraintsResult array{
- *     dcv_file_allowed_characters?: list<string>,
+ *     dcv_file_allowed_characters?: list<string|int>,
  *     dcv_file_extension?: string,
  *     dcv_file_random_character_count?: int,
  *     dcv_file_relative_path?: string,
@@ -160,9 +160,9 @@ use SensitiveParameter;
  *         evClickThroughStatus?: string|null,
  *         ovCallbackStatus?: string|null,
  *         ...<array-key, mixed>
- *     },
+ *     }|null,
  *     status_code?: string,
- *     status_message?: string,
+ *     status_message?: string|null,
  * }
  * @phpstan-type ProcessSslPendingQueueResult list<array{
  *     certificate_id?: string,
@@ -228,6 +228,10 @@ final readonly class Market
      * and identity values are sensitive payload data; do not log them. URLs are returned without navigation or
      * secondary requests. Inputs retain exact bytes without trimming, URL/domain parsing or provider-specific
      * validation.
+     *
+     * Observed: Review 5725131701 of 3872d38, cPanel 11.138.0.19, direct UAPI and WHM bridge: unknown order 999 with
+     * provider cPStore returned an empty list with status 1. No matching item was removed in that observed case.
+     * Confirm returned matching rows instead of treating envelope success alone as proof of cancellation.
      *
      * API-map identity: uapi:Market/cancel_pending_ssl_certificate#GET (wire name cancel_pending_ssl_certificate).
      *
@@ -325,6 +329,10 @@ final readonly class Market
      * label/name and opaque extras. Only three wildcard-price fields additionally preserve exact numeric strings; no
      * financial calculation or global normalization is added.
      *
+     * Observed: Review 5725042192 on 9a32128, cPanel 11.138.0.19, direct UAPI and WHM bridge GET: license_term and
+     * product_id digit strings normalize losslessly to integers; requires_ip accepts exact quoted 0/1 as integer flags.
+     * Other fields retain strict types. The three wildcard-price numeric strings retain exact bytes without conversion.
+     *
      * API-map identity: uapi:Market/get_all_products#GET (wire name get_all_products).
      *
      * @return GetAllProductsResult
@@ -360,6 +368,10 @@ final readonly class Market
      * and identity values are sensitive payload data; do not log them. URLs are returned without navigation or
      * secondary requests. Inputs retain exact bytes without trimming, URL/domain parsing or provider-specific
      * validation.
+     *
+     * Observed: Review 5725131701 of 3872d38, cPanel 11.138.0.19: token-authenticated calls through direct UAPI and the
+     * WHM bridge failed because server information was unavailable from the request environment. This build, route and
+     * environment scoped result does not establish universal token or route incompatibility.
      *
      * API-map identity: uapi:Market/get_build_cart_url#GET (wire name get_build_cart_url).
      *
@@ -439,6 +451,11 @@ final readonly class Market
      * Policy: Returned URLs, security tokens, encrypted action URLs, PEM/CSR and identity verification values are
      * sensitive payload data. Do not log them. The client does not follow URLs, log in, redirect, purchase, request or
      * install certificates; each call makes one request without retry.
+     *
+     * Observed: Review 5725042192 on 9a32128, cPanel 11.138.0.19, token-authenticated direct UAPI and WHM bridge GET:
+     * URL construction failed because server information was unavailable from the environment. Reviewer source
+     * inspection of _build_url supports an environment dependency; this does not establish universal token or route
+     * incompatibility. No precheck, fallback or environment probing is added.
      *
      * API-map identity: uapi:Market/get_completion_url#GET (wire name get_completion_url).
      *
@@ -618,6 +635,10 @@ final readonly class Market
      * sensitive payload data. Do not log them. The client does not follow URLs, log in, redirect, purchase, request or
      * install certificates; each call makes one request without retry.
      *
+     * Observed: Review 5725042192 on 9a32128, cPanel 11.138.0.19, direct UAPI and WHM bridge GET: allowed characters
+     * mix native integers and strings. Preserve item types, order and duplicates; no character enum or string
+     * conversion is inferred.
+     *
      * API-map identity: uapi:Market/get_provider_specific_dcv_constraints#GET (wire name
      * get_provider_specific_dcv_constraints).
      *
@@ -687,6 +708,12 @@ final readonly class Market
      *
      * Documented: orderItemId is a string. certificate_pem may be null when unavailable; null differs from omission.
      * Known encrypted action URL fields are optional nullable strings; documented additional keys remain opaque.
+     *
+     * Observed: Review 5725042192 on 9a32128, cPanel 11.138.0.19, direct UAPI and WHM bridge GET: unavailable
+     * certificates can have null encrypted_action_urls and status_message, alongside nullable certificate_pem. All
+     * remain optional; status_code stays a nonnullable string. Only four fields are formally declared here. Reported
+     * null certificate_id and parent_cert_expiry remain untyped unknown fields and are filtered; null-only observations
+     * establish no additional field contract.
      *
      * API-map identity: uapi:Market/get_ssl_certificate_if_available#GET (wire name get_ssl_certificate_if_available).
      *
@@ -771,6 +798,10 @@ final readonly class Market
      * singleton lists, repeat the literal order_item_id in caller order, retaining duplicates and exact bytes. Empty,
      * sparse, keyed, nested or non-string lists fail locally after metadata reset. provider and status remain single
      * fields.
+     *
+     * Policy: Review 5725131701 source inspection reports matching items updated in memory before leftover IDs reject
+     * before finish(). Partial-match persistence was not observed. An error is not proof of rollback or atomicity; no
+     * persistence, no-change, transaction or retry guarantee is established.
      *
      * API-map identity: uapi:Market/set_status_of_pending_queue_items#GET (wire name
      * set_status_of_pending_queue_items).

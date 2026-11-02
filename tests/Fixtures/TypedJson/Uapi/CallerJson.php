@@ -20,14 +20,6 @@ use SensitiveParameter;
  * according to the configured credentials, with a single attempt and no retries. The handle clears responseMeta()
  * before every attempt and records the envelope snapshot before API or payload errors.
  *
- * @phpstan-type BodyflagInput bool
- *
- * @phpstan-type BodyboolInput bool
- *
- * @phpstan-type BodyintInput int
- *
- * @phpstan-type BodystringInput string
- *
  * @phpstan-type BodyobjectInput array{
  *     '': string,
  *     '00': string,
@@ -58,106 +50,6 @@ final readonly class CallerJson
     /**
      * Exercise the generated native argument boundary with a mock transport.
      *
-     * API-map identity: uapi:CallerJson/flag#POST (wire name flag).
-     *
-     * @param BodyflagInput $body Validated whole JSON body. Secrets belong in the body, not URL query fields. Direct
-     *     routes only.
-     * @return int
-     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
-     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
-     *     the operation may already have changed state; do not retry automatically.
-     * @throws InvalidArgumentException If the whole JSON body is invalid, query/root routing names are reserved,
-     *     or this account handle uses the unsupported WHM bridge.
-     * @see https://api.example.test/CallerJson/flag
-     */
-    public function sendFlag(
-        #[SensitiveParameter]
-        bool $body,
-    ): int {
-        /** @var int $result Validated against CallerJsonSpec::FLAG. */
-        $result = ($this->run)(CallerJsonSpec::FLAG, ['body' => $body]);
-
-        return $result;
-    }
-
-    /**
-     * Exercise the generated native argument boundary with a mock transport.
-     *
-     * API-map identity: uapi:CallerJson/bool#POST (wire name bool).
-     *
-     * @param BodyboolInput $body Validated whole JSON body. Secrets belong in the body, not URL query fields. Direct
-     *     routes only.
-     * @return int
-     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
-     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
-     *     the operation may already have changed state; do not retry automatically.
-     * @throws InvalidArgumentException If the whole JSON body is invalid, query/root routing names are reserved,
-     *     or this account handle uses the unsupported WHM bridge.
-     * @see https://api.example.test/CallerJson/bool
-     */
-    public function sendBool(
-        #[SensitiveParameter]
-        bool $body,
-    ): int {
-        /** @var int $result Validated against CallerJsonSpec::BOOL. */
-        $result = ($this->run)(CallerJsonSpec::BOOL, ['body' => $body]);
-
-        return $result;
-    }
-
-    /**
-     * Exercise the generated native argument boundary with a mock transport.
-     *
-     * API-map identity: uapi:CallerJson/int#POST (wire name int).
-     *
-     * @param BodyintInput $body Validated whole JSON body. Secrets belong in the body, not URL query fields. Direct
-     *     routes only.
-     * @return int
-     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
-     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
-     *     the operation may already have changed state; do not retry automatically.
-     * @throws InvalidArgumentException If the whole JSON body is invalid, query/root routing names are reserved,
-     *     or this account handle uses the unsupported WHM bridge.
-     * @see https://api.example.test/CallerJson/int
-     */
-    public function sendInt(
-        #[SensitiveParameter]
-        int $body,
-    ): int {
-        /** @var int $result Validated against CallerJsonSpec::INT. */
-        $result = ($this->run)(CallerJsonSpec::INT, ['body' => $body]);
-
-        return $result;
-    }
-
-    /**
-     * Exercise the generated native argument boundary with a mock transport.
-     *
-     * API-map identity: uapi:CallerJson/string#POST (wire name string).
-     *
-     * @param BodystringInput $body Validated whole JSON body. Secrets belong in the body, not URL query fields. Direct
-     *     routes only.
-     * @return int
-     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
-     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
-     *     the operation may already have changed state; do not retry automatically.
-     * @throws InvalidArgumentException If the whole JSON body is invalid, query/root routing names are reserved,
-     *     or this account handle uses the unsupported WHM bridge.
-     * @see https://api.example.test/CallerJson/string
-     */
-    public function sendString(
-        #[SensitiveParameter]
-        string $body,
-    ): int {
-        /** @var int $result Validated against CallerJsonSpec::STRING. */
-        $result = ($this->run)(CallerJsonSpec::STRING, ['body' => $body]);
-
-        return $result;
-    }
-
-    /**
-     * Exercise the generated native argument boundary with a mock transport.
-     *
      * API-map identity: uapi:CallerJson/object#POST (wire name object).
      *
      * @param BodyobjectInput $body Validated whole JSON body. Secrets belong in the body, not URL query fields. Direct
@@ -166,7 +58,7 @@ final readonly class CallerJson
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
-     * @throws InvalidArgumentException If the whole JSON body is invalid, query/root routing names are reserved,
+     * @throws InvalidArgumentException If the whole JSON body is invalid, root routing names are reserved,
      *     or this account handle uses the unsupported WHM bridge.
      * @see https://api.example.test/CallerJson/object
      */

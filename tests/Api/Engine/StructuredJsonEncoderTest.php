@@ -180,8 +180,15 @@ JSON;
     #[DataProvider('invalidSchemas')]
     public function testWholeSchemaIsCheckedBeforeInspectingInput(array $schema): void
     {
-        $this->expectException(LogicException::class);
-        StructuredJsonEncoder::encode(null, $schema);
+        $error = null;
+        try {
+            StructuredJsonEncoder::encode(null, $schema);
+        } catch (LogicException $caught) {
+            $error = $caught;
+        }
+        self::assertNotNull($error);
+        self::assertSame(LogicException::class, $error::class);
+        self::assertNull($error->getPrevious());
     }
 
     /** @return iterable<string, array{array<mixed>}> */
@@ -193,6 +200,12 @@ JSON;
             ['type' => 'int', 'accept' => ['numeric-string']],
             ['type' => 'number', 'preserve' => true], ['type' => 'int', 'nullable' => null],
             ['type' => 'int', 'nullable' => 1],
+            ['type' => 'list', 'items' => self::INT, 'nonempty' => null],
+            ['type' => 'list', 'items' => self::INT, 'nonempty' => 1],
+            ['type' => 'list', 'items' => self::INT, 'nonempty' => 'true'],
+            ['type' => 'list', 'items' => self::INT, 'nonempty' => []],
+            ['type' => 'int', 'nonempty' => false],
+            ['type' => 'object', 'fields' => [], 'nonempty' => true],
             ['type' => 'int', 'typo' => true], ['type' => 'string', 'fields' => []], ['type' => 'list'],
             ['type' => 'list', 'items' => false], ['type' => 'object'],
             ['type' => 'object', 'fields' => ['x' => false]],
@@ -217,31 +230,92 @@ JSON;
         }
     }
 
-    public function testUnavailableFloatEncodingSettingFailsClosed(): void
+    public function testStringsAndFloatsEncodeWithIniFunctionsDisabled(): void
     {
         $code = <<<'PHP_CODE'
 require 'vendor/autoload.php';
-try {
-    HostingPal\WhmApiClient\Api\Engine\StructuredJsonEncoder::encode(1.2345678901234567, ['type' => 'number']);
-    echo 'unexpected success';
-} catch (LogicException $error) {
-    echo 'safe failure';
-}
+use HostingPal\WhmApiClient\Api\Engine\StructuredJsonEncoder;
+echo StructuredJsonEncoder::encode(
+    ['changes' => [['domain' => 'x']]],
+    ['type' => 'object', 'fields' => ['changes' => ['type' => 'list', 'items' => [
+        'type' => 'object', 'fields' => ['domain' => ['type' => 'string']],
+    ]]]],
+);
+echo "\n";
+echo StructuredJsonEncoder::encode(
+    [1.2345678901234567, -0.0, 5.0e-324, PHP_FLOAT_MIN, PHP_FLOAT_MAX],
+    ['type' => 'list', 'items' => ['type' => 'number']],
+);
 PHP_CODE;
-        $process = proc_open(
-            [PHP_BINARY, '-d', 'disable_functions=ini_set', '-r', $code],
-            [1 => ['pipe', 'w'], 2 => ['pipe', 'w']],
-            $pipes,
-            dirname(__DIR__, 3),
+        foreach ([['14', '-1'], ['5', '17'], ['3', '3']] as [$precision, $serializePrecision]) {
+            $process = proc_open(
+                [PHP_BINARY, '-d', 'disable_functions=ini_set,ini_get', '-d', 'precision=' . $precision,
+                '-d', 'serialize_precision=' . $serializePrecision, '-r', $code],
+                [1 => ['pipe', 'w'], 2 => ['pipe', 'w']],
+                $pipes,
+                dirname(__DIR__, 3),
+            );
+            self::assertIsResource($process);
+            $stdout = stream_get_contents($pipes[1]);
+            $stderr = stream_get_contents($pipes[2]);
+            fclose($pipes[1]);
+            fclose($pipes[2]);
+            self::assertSame(0, proc_close($process), $stderr === false ? '' : $stderr);
+            self::assertSame(
+                '{"changes":[{"domain":"x"}]}' . "\n"
+                    . '[1.2345678901234567,-0.0,5.0E-324,2.2250738585072014E-308,1.7976931348623157E+308]',
+                $stdout,
+            );
+            self::assertSame('', $stderr);
+        }
+    }
+
+    public function testExplicitNonemptyListPolicyPreservesOrdinaryEmptyLists(): void
+    {
+        $list = ['type' => 'list', 'items' => self::STRING];
+        self::assertSame('[]', StructuredJsonEncoder::encode([], $list));
+        self::assertSame('[]', StructuredJsonEncoder::encode([], $list + ['nonempty' => false]));
+        self::assertSame('["x"]', StructuredJsonEncoder::encode(['x'], $list + ['nonempty' => true]));
+        $schema = ['type' => 'object', 'fields' => [
+            'changes' => ['type' => 'list', 'nonempty' => true, 'items' => [
+                'type' => 'object', 'fields' => ['analyzers' => $list], 'required' => ['analyzers'],
+            ]],
+        ], 'required' => ['changes']];
+        self::assertSame(
+            '{"changes":[{"analyzers":[]}]}',
+            StructuredJsonEncoder::encode(['changes' => [['analyzers' => []]]], $schema),
         );
-        self::assertIsResource($process);
-        $stdout = stream_get_contents($pipes[1]);
-        $stderr = stream_get_contents($pipes[2]);
-        fclose($pipes[1]);
-        fclose($pipes[2]);
-        self::assertSame(0, proc_close($process), $stderr === false ? '' : $stderr);
-        self::assertSame('safe failure', $stdout);
-        self::assertSame('', $stderr);
+        $error = null;
+        try {
+            StructuredJsonEncoder::encode(['changes' => []], $schema);
+        } catch (LogicException $caught) {
+            $error = $caught;
+        }
+        self::assertNotNull($error);
+        self::assertSame(InvalidArgumentException::class, $error::class);
+        self::assertNull($error->getPrevious());
+    }
+
+    public function testNumberAcceptsNativeIntegersWithoutConvertingTheirKind(): void
+    {
+        self::assertSame('0', StructuredJsonEncoder::encode(0, self::NUMBER));
+        self::assertSame('-7', StructuredJsonEncoder::encode(-7, self::NUMBER));
+        self::assertSame((string) PHP_INT_MAX, StructuredJsonEncoder::encode(PHP_INT_MAX, self::NUMBER));
+    }
+
+    public function testRecursiveUnionSchemaTerminatesWithExactSchemaError(): void
+    {
+        $schema = ['type' => 'union', 'anyOf' => [self::INT]];
+        $schema['anyOf'][] = &$schema;
+        $error = null;
+        try {
+            StructuredJsonEncoder::encode(null, $schema);
+        } catch (LogicException $caught) {
+            $error = $caught;
+        }
+        self::assertNotNull($error);
+        self::assertSame(LogicException::class, $error::class);
+        self::assertNull($error->getPrevious());
     }
 
     public function testFiniteFloatsPreserveValuesAndKindsUnderHostPrecisionAndLocale(): void
@@ -264,12 +338,14 @@ PHP_CODE;
                         ['type' => 'list', 'items' => self::NUMBER],
                     );
                     $expected = '[1.0,1.2345678901234567,-0.0,'
-                        . '2.2250738585072014e-308,1.7976931348623157e+308,5.0e-324]';
+                        . '2.2250738585072014E-308,1.7976931348623157E+308,5.0E-324]';
                     self::assertSame($expected, $json);
+                    $decoded = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
                     self::assertSame(
                         [1.0, 1.2345678901234567, -0.0, PHP_FLOAT_MIN, PHP_FLOAT_MAX, 5.0e-324],
-                        json_decode($json, true, 512, JSON_THROW_ON_ERROR),
+                        $decoded,
                     );
+                    self::assertSame(pack('d', -0.0), pack('d', $decoded[2]));
                     self::assertSame($setting, ini_get('serialize_precision'));
                     self::assertSame('3', ini_get('precision'));
                     self::assertSame($candidate, setlocale(LC_NUMERIC, '0'));
@@ -300,14 +376,14 @@ PHP_CODE;
 
     public function testDepthBudgetMatchesNativeValidationForListsAndObjects(): void
     {
-        foreach (['list', 'object'] as $kind) {
+        foreach (['list', 'object', 'mixed'] as $kind) {
             foreach ([511, 512, 513] as $nesting) {
                 foreach ([false, true] as $emptyLeaf) {
                     $schema = $emptyLeaf ? self::EMPTY_OBJECT : self::INT;
                     $value = $emptyLeaf ? [] : 7;
                     $wrappers = $emptyLeaf ? $nesting - 1 : $nesting;
                     for ($depth = 0; $depth < $wrappers; $depth++) {
-                        if ($kind === 'list') {
+                        if ($kind === 'list' || ($kind === 'mixed' && $depth % 2 === 0)) {
                             $schema = ['type' => 'list', 'items' => $schema];
                             $value = [$value];
                         } else {
@@ -315,21 +391,25 @@ PHP_CODE;
                             $value = ['x' => $value];
                         }
                     }
-                    $prefix = $kind === 'list' ? '[' : '{"x":';
-                    $suffix = $kind === 'list' ? ']' : '}';
-                    $literal = str_repeat($prefix, $wrappers) . ($emptyLeaf ? '{}' : '7')
-                        . str_repeat($suffix, $wrappers);
+                    $literal = $emptyLeaf ? '{}' : '7';
+                    for ($depth = 0; $depth < $wrappers; $depth++) {
+                        $literal = $kind === 'list' || ($kind === 'mixed' && $depth % 2 === 0)
+                            ? '[' . $literal . ']' : '{"x":' . $literal . '}';
+                    }
                     self::assertSame($nesting === 511, json_validate($literal, 512));
                     if ($nesting === 511) {
                         self::assertSame($literal, StructuredJsonEncoder::encode($value, $schema));
                         continue;
                     }
+                    $error = null;
                     try {
                         StructuredJsonEncoder::encode($value, $schema);
-                        self::fail('Over-budget schemas must fail, even for an empty deepest container.');
-                    } catch (LogicException $error) {
-                        self::assertNull($error->getPrevious());
+                    } catch (LogicException $caught) {
+                        $error = $caught;
                     }
+                    self::assertNotNull($error, 'Over-budget schemas must fail, including empty deepest containers.');
+                    self::assertSame(LogicException::class, $error::class);
+                    self::assertNull($error->getPrevious());
                 }
             }
         }
@@ -380,8 +460,14 @@ PHP_CODE;
         }
         $schema = ['type' => 'list'];
         $schema['items'] = &$schema;
-        $this->expectException(LogicException::class);
-        StructuredJsonEncoder::encode([], $schema);
+        $error = null;
+        try {
+            StructuredJsonEncoder::encode([], $schema);
+        } catch (LogicException $caught) {
+            $error = $caught;
+        }
+        self::assertNotNull($error);
+        self::assertSame(LogicException::class, $error::class);
     }
 
     public function testSensitiveFramesAndDiagnosticsDoNotExposeDynamicKeysOrValues(): void

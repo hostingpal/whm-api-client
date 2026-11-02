@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace HostingPal\WhmApiClient\Api;
 
 use HostingPal\WhmApiClient\Api\Engine\JsonBody;
-use HostingPal\WhmApiClient\Api\Engine\JsonRouting;
 use HostingPal\WhmApiClient\Api\Engine\MultipartEncoder;
 use HostingPal\WhmApiClient\Api\Engine\MultipartInput;
 use HostingPal\WhmApiClient\Api\Engine\OrderedFields;
@@ -160,14 +159,12 @@ abstract class AbstractApiClient
      * Execute one JSON POST through the common one-attempt lifecycle.
      *
      * The owning handle clears metadata before validating caller input and controls
-     * route capability. Present content retains exact bytes; absence sends no
-     * content or Content-Type. Authentication and envelope handling stay shared.
-     *
-     * @param Parameters|OrderedFields $query
+     * route capability. Present objects retain caller bytes with only the WHM
+     * root version inserted; absence sends no content or Content-Type.
+     * Authentication and envelope handling stay shared.
      */
     final protected function executeJsonPost(
         string $path,
-        #[SensitiveParameter] array|OrderedFields $query,
         #[SensitiveParameter] JsonBody $body,
         ResponseRoute $route,
         OutcomePolicy $outcome = OutcomePolicy::Flag,
@@ -177,7 +174,13 @@ abstract class AbstractApiClient
             throw new InvalidArgumentException('JSON bodies require a direct cPanel UAPI handle.');
         }
 
-        return $this->execute(RequestMethod::Post, $path, $query, $body, $route, $outcome);
+        $body->assertNoReservedRoot($route === ResponseRoute::DirectUapi
+            ? ['cpanel.user', 'cpanel.module', 'cpanel.function'] : []);
+        if ($route === ResponseRoute::Whm) {
+            $body = $body->withWhmVersion();
+        }
+
+        return $this->execute(RequestMethod::Post, $path, [], $body, $route, $outcome);
     }
 
     /**
@@ -197,38 +200,6 @@ abstract class AbstractApiClient
         OutcomePolicy $outcome = OutcomePolicy::Flag,
     ): ApiResponse {
         return $this->execute(RequestMethod::Post, $path, $query, $body, $route, $outcome);
-    }
-
-    /**
-     * Validate the new JSON entrypoints' explicit query before legacy filtering.
-     *
-     * Presence checks precede value expansion so even reserved nulls are rejected.
-     * The case-sensitive api. prefix and route-specific exact names are reserved.
-     * Expansion checks final wire names, using static, data-free diagnostics.
-     * Generated dispatch checks OrderedFields here before withRouting(); the JSON
-     * executor accepts the resulting already-routed query. Existing generic call()
-     * filtering and collision semantics are unaffected.
-     *
-     * @param Parameters|OrderedFields $query
-     * @param list<string> $reserved Additional exact names reserved by the route.
-     */
-    final protected function validateJsonQuery(
-        #[SensitiveParameter] array|OrderedFields $query,
-        array $reserved,
-    ): void {
-        if ($query instanceof OrderedFields) {
-            foreach ($query->all() as $field) {
-                JsonRouting::assertAllowed($field['name'], $reserved);
-            }
-
-            return;
-        }
-        foreach ($query as $name => $value) {
-            JsonRouting::assertAllowed((string) $name, $reserved);
-            foreach (ParameterExpander::expand((string) $name, $value) as $field) {
-                JsonRouting::assertAllowed($field['name'], $reserved);
-            }
-        }
     }
 
     /**
@@ -263,7 +234,11 @@ abstract class AbstractApiClient
         $content = null;
         if ($method === RequestMethod::Post) {
             if ($body instanceof MultipartInput) {
-                $content = StreamingMultipartEncoder::encode($body->parts);
+                try {
+                    $content = StreamingMultipartEncoder::encode($body->parts);
+                } catch (RuntimeException) {
+                    throw new InvalidArgumentException('API multipart sources could not be prepared.');
+                }
             } elseif ($body instanceof JsonBody) {
                 $content = $body->content;
                 if ($content !== null) {

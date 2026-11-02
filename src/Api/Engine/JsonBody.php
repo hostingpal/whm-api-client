@@ -42,7 +42,7 @@ final readonly class JsonBody
     }
 
     /**
-     * Reject reserved root object member names by presence, including escaped nulls.
+     * Require an object root and reject reserved member names by presence.
      *
      * Associative decoding avoids stdClass's leading-NUL property restriction.
      * Numeric-looking keys and duplicate ordinary members are allowed. Only names
@@ -52,14 +52,38 @@ final readonly class JsonBody
      */
     public function assertNoReservedRoot(array $reserved): void
     {
-        if ($this->content === null || !str_starts_with(ltrim($this->content, " \t\r\n"), '{')) {
+        if ($this->content === null) {
             return;
         }
-        $members = json_decode($this->content, true, 512, JSON_BIGINT_AS_STRING);
-        if (is_array($members)) {
-            foreach (array_keys($members) as $name) {
-                JsonRouting::assertAllowed((string) $name, $reserved);
-            }
+        if (!str_starts_with(ltrim($this->content, " \t\r\n"), '{')) {
+            throw new InvalidArgumentException('The JSON body must have an object root.');
         }
+        $members = json_decode($this->content, true, 512, JSON_BIGINT_AS_STRING);
+        if (!is_array($members)) {
+            throw new InvalidArgumentException('The JSON body must have an object root.');
+        }
+        foreach (array_keys($members) as $name) {
+            JsonRouting::assertAllowed((string) $name, $reserved);
+        }
+    }
+
+    /**
+     * Insert library-owned WHM routing before every caller member without re-encoding.
+     *
+     * The shared JSON executor has checked caller root reservations. Whitespace,
+     * duplicate ordinary members, escaped names and numeric tokens remain literal.
+     * An absent body stays absent; typed WHM dispatch can reuse this insertion.
+     */
+    public function withWhmVersion(): self
+    {
+        $this->assertNoReservedRoot([]);
+        if ($this->content === null) {
+            return $this;
+        }
+        $offset = strspn($this->content, " \t\r\n") + 1;
+        $rest = substr($this->content, $offset);
+        $separator = str_starts_with(ltrim($rest, " \t\r\n"), '}') ? '' : ',';
+
+        return new self(substr($this->content, 0, $offset) . '"api.version":1' . $separator . $rest);
     }
 }

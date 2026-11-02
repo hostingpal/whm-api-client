@@ -879,6 +879,71 @@ operation or mutation compatibility, including the effective POST login-URL meth
 All remaining operations and variants stay under `8x0.2.40`. Immutable SHA-256:
 `79245a336ed4daacbc6ac02c1bc48a3c72f64dee68f42987b5ab1dafb6366c81`.
 
+## Site-builder domain-capability evidence
+
+The [site-builder capability capture](2026-10-31-site-builders.json) at
+`fcd979dfce9657c69ac92cb47ef17f3301fa03cb` on `11.138.0.19` records five
+HTTP-200 observations. Version and Sitejet capability on both routes pass; Nova
+capability returns API failure on both routes and its payload is not validated.
+Strict assessment remains failed with zero schema discrepancies. The artifact
+does not establish the failure cause; the documented AI App Builder prerequisite
+alone does not diagnose it. No contract is loosened or failure waived.
+
+Sitejet returns an integer capability value; this structural observation does not
+establish a particular value, successful domain creation or publication. No
+account/site creation, token retrieval, private content, SSO/OAuth, publishing,
+restoration or URL fetch ran. Remaining operations and variants stay under
+`8x0.2.57`. The failed artifact remains immutable. SHA-256:
+`4094bcd7f3addad45d9ccd76ee56d2d1b2eaa3cfc0a647a9169b37bb2c3fb1d3`.
+
+Separately, reviewer 5721328890 on `11.138.0.19` found `Cpanel::API::Nova`
+missing and all six Nova reads they called failing on both routes. All eleven
+Nova methods are unavailable for verification; writes were not executed and all
+Nova response shapes remain unobserved. Their Sitejet reads and local disposable
+account writes are attributed in the [source audit](../source-audit.md#nova-and-sitejet-site-builders); remote service calls,
+successful restoration and published metadata remain unobserved. The historical
+capture stays failed/not_checked without a waiver, and no corrected-head capture
+ran. Remaining gaps stay open under `8x0.2.57`.
+
+## Log administration live evidence
+
+The initial [log metadata capture](2026-10-31-log-administration.json)
+at `e5476c1b9fd2d8a94f371ab05caee86b46f4ab37` on `11.138.0.19` records eight
+HTTP/API successes and five payload/probe passes. Seven known-field discrepancies
+occur across three observations: WHM default_retention is a numeric string; UAPI
+get_settings archive_logs, prune_archive and retention_days are numeric strings
+on both routes. Those four original capture-bound corrections use: lossless canonical
+integer strings for the two retention fields, exact quoted 0/1 for the two flags.
+Sibling fields remain strict and public normalized values remain integers. The
+structural artifact does not prove both quoted flag values were observed. Initial
+SHA-256: `093432542f5f0dd5ac066707112c3f7e0ae8b5d76bfc29c4fefb3e96160a4550`.
+
+The [corrected capture](2026-10-31-log-administration-corrected.json) at
+`dd5e626ae11f0f6c59e353a17d51bee4868aaa96` on `11.138.0.19` passes all eight
+HTTP/API/payload/probe checks and strict assessment with zero discrepancies.
+WHM account rows and archive inventories are populated; account retention days
+are null and using_default is boolean. Error-log inventories are empty on both
+routes, leaving their populated rows unobserved. No existing log content was read,
+no archive was deleted and no setting changed. API metadata does not establish
+actual retention/rotation. The initial failed artifact remains immutable and
+remaining variants/lifecycle stay under `8x0.2.55`. Corrected SHA-256:
+`743a081ee25a8971df4052534a96c60b05cde3483d9ed624857ccd82912e7255`.
+
+Separate review [5721279104](https://github.com/hostingpal/whm-api-client/pull/68#pullrequestreview-5721279104)
+at `984c5c16e47c43741b50e817a6f87149eb2f86d5` on `11.138.0.19` exercised
+all seven methods with synthetic logs/archives on a disposable account, both UAPI
+routes and the single WHM route. Its token was revoked and account/home removed.
+It observed empty direct `view_error_log` with `log_content: []` and string
+`lines_read: "0"`; nonempty direct/bridged counts were integers. This separate
+review observation motivates only that leaf's integer-string compatibility and
+is absent from both committed captures. The review also observed stored false/zero
+settings, unchanged omitted flags after clearing retention, server rejection of
+1000 outside -1..999 and of an empty-argument settings call. Reviewer source
+inspection found WebServer/rawlog requirements in shared `%API`; neither is
+pinned or a disabled-role runtime test. Unreadable/symlink null metadata,
+php_fpm_error_log and actual rotation/pruning remain open under `8x0.2.55`.
+No corrected-head live run is claimed.
+
 ## DAV service-status evidence
 
 The [DAV status capture](2026-10-31-dav-calendar.json) at
@@ -1199,3 +1264,99 @@ Sitejet/get_commerce GET and nullable commission IDs; see
 the Commerce/Market contract notes. All remaining methods/variants stay under
 `8x0.2.52`. SHA-256:
 `8b1b468eb3ab91072cd0a676ac7d9337c3359bbde80497703451b24ecda1ee7d`.
+
+## Webmail inventory evidence
+
+The [Webmail inventory capture](2026-11-01-webmail-inventory.json) at
+`eba1711a62e71d614a50cb5eeb2259aa00adbbea` on `11.138.0.19` passes all five GET
+observations and strict assessment with zero discrepancies, through direct UAPI and
+the `npr` bridge. Session inventory is empty on both routes and proves nothing about
+session row fields. Webmail application rows are populated. No `Session/*` creator
+ran, and no returned URL was fetched or login attempted. The creators stay open under
+`8x0.2.69`. SHA-256:
+`37ee9760012a45c19100adc379ca59d7b87d46aebea8596a6c1f8e75dc201cd6`.
+
+## UAPI Market read evidence
+
+The [Market reads capture](2026-11-01-market-reads.json) at
+`eba1711a62e71d614a50cb5eeb2259aa00adbbea` on `11.138.0.19` passes all eleven GET
+observations and strict assessment with zero discrepancies, through direct UAPI and
+the `npr` bridge. It covers five of the nine reads in `8x0.2.63`: provider list,
+catalog, pending certificates, DCV constraints and login URL. The pending list is
+empty and observes no row fields. The login URL was not followed.
+
+Certificate status details, certificate availability, product information and
+completion URL did not run, because no read available here enumerated an order item
+or a product name. The empty pending list covers only certificates the system
+currently polls, so it does not show that no order exists. Review 5725042192 also
+reports missing local product files and a completion URL failure on token
+authentication, so a real selector may not be enough for those two. Their absence is
+a recorded decision, not a failure or a pass. No purchase, payment, issuance,
+installation, trust or served TLS behavior is established. SHA-256:
+`4a9ec4fffec130ee099b63cb2f86c24482b332a8101995828426745bdb70da51`.
+
+The [no-match audit capture](2026-11-01-empty-results.json) at
+`fc5264d97f0c9d90ebbf9148b714d69e4a288959` on `11.138.0.19` records 27 GET observations
+across WHM version and 15 curated operations, under recipe `empty-results-v1`.
+Twenty-three return empty results and three raise API errors, including the required
+entity-lookup control. No typed method threw a client exception.
+
+Its `failed` status and exit 1 were predicted before execution from the two controls
+only: `accountsummary` fails, and `listaccts` omits `data`. The two `Bandwidth/query`
+absent-domain API errors, which also failed that assessment, were not predicted. They
+and the other 23 records were only observed.
+
+Recipe `empty-results-v2` assesses a declared outcome per probe. This artifact keeps its
+recipe and `failed` status unchanged, and its records match those declarations. Empty
+results establish no item fields, and several have no populated baseline; see the
+[source audit](../source-audit.md#empty-result-audit-2026-11-01).
+SHA-256: `2ec7d60176b4354c01d1016849e0e3d62ae85a7182354010ab8d89e77a39894f`.
+
+The [v2 capture](2026-11-01-empty-results-v2.json) at
+`e8021d20d859efc84b6532c6b78a4e4471a6ba0d` on `11.138.0.19` passes recipe
+`empty-results-v2`, exit 0: all 27 GETs returned HTTP 200 and all 27 records match the
+outcomes committed before the run. Three records still raise API errors and `listaccts`
+keeps its discrepancy, as declared, and every structural field matches the v1 capture.
+It repeats one server version from declarations drawn from v1, so it is not independent
+evidence and establishes no other version. No live run has produced a deviation.
+SHA-256: `e1258f73d56221a60dee6fdab3d7fee6b2a3036ee062f8a5935449134b2fce15`.
+
+## cPanel 11.138.0.19 default read-only capture
+
+The [default-catalog capture](2026-11-01-read-only-11.138.0.19.json) at
+`5f9b001466a30bc45828c4fb3dd8007f7f811ad0` on `11.138.0.19` passes all 67 GET
+HTTP/API/payload/probe observations across 37 operations. DomainInfo `domains_data`,
+`single_domain_data` and LangPHP `php_ini_get_user_basic_directives`,
+`php_ini_get_user_paths` report their typed fields as named paths with no discrepancy
+through both direct and bridged UAPI. The only discrepancies left are the two masked
+Quota `$.*` integer observations.
+
+Its embedded `discrepancy_review` says failed (0 acknowledged, 2 unexpected, 2 stale)
+because this run was assessed against the previous `11.138.0.15` reference. The review
+stays as captured. `DiscrepancyPolicy` now uses this file as its reference, which is a
+later code change and not a change to this artifact. Masked Quota keys establish neither
+names nor counts, and empty addon, parked and subdomain lists establish no row fields.
+Seven of those fields became `mixed` after this capture, so its contract hashes for those
+four operations record the earlier contract; see the
+[source audit](../source-audit.md#correction-carried-not-typed).
+SHA-256: `4138dbf1d083ddfe6d109c86bb8beb449abde6937e93b2452693d47b2b792b81`.
+
+## Disposable-account Fileman upload evidence
+
+The [corrected capture](2026-11-01-fileman-upload-v2.json) at
+`1c8bbce3325f5b758837e1615cdcba199f3bd2ce` on `11.138.0.19` passes recipe
+`fileman-upload-disposable-v2`, exit 0: five multipart uploads, six exact content
+readbacks through the Latin-1 oracle, and token, account, domain and zone absence
+confirmed through the API. It claims no filesystem cleanup, raw-download identity, or
+WHM or bridged upload coverage. SHA-256:
+`10eecbe1be592a3872fc59d74f2e24187fad98bb4f0e3c700f38af9afcd874d3`. It stays the valid
+record of what ran at that revision. The fixture has since moved to
+`fileman-upload-disposable-v3` and policy `fileman-upload-no-acknowledgments-v2`, and no
+v3 capture exists yet; see the
+[source audit](../source-audit.md#fixture-corrections-after-the-corrected-capture).
+
+The [first capture](2026-11-01-fileman-upload.json) at
+`aa84150664d6e5c48e1668cc833bb9220e11a1bf` is a failed run, exit 1, kept unchanged. It
+required the exact requested charset spelling, which this server does not return. See
+the [source audit](../source-audit.md#charset-echo-classification-and-corrected-capture).
+SHA-256: `34e31bfd989c84deee7568a5d8fca72b1b6c657346cf5d81dcd3f760c7f2f41a`.

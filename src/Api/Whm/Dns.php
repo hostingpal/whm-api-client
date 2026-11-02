@@ -1081,6 +1081,10 @@ final readonly class Dns
      * ensures that each record not removed will occupy the same number of lines after the edit as it did before the
      * edit.
      *
+     * Documented: Both remove indices and edit.line_index are 0-based. Use line_index from parseDnsZone(). Reviewed
+     * dumpzone Line values are 1-based and must not be passed directly: a wrong index can delete another record while
+     * the API reports success. No automatic index conversion is performed.
+     *
      * Documented: This function updates a DNS zone in one form POST, available from cPanel 96. Temporary domains are
      * unsupported. The supplied SOA serial must match the current zone or the request fails. The documented serial and
      * removal-index minima are zero; the client adds no runtime range guard.
@@ -1092,15 +1096,24 @@ final readonly class Dns
      *
      * Documented: Each supplied family must be a nonempty sequential list with strict string items for add/edit and
      * integer items for remove. Order and duplicates survive repeated literal keys. Omit unused families or pass null;
-     * omitting every family still sends serial and zone. No minimum-one-edit rule or client no-op is inferred.
+     * omitting every family still sends serial and zone once. On reviewed cPanel 11.138.0.19 the server rejects a
+     * serial-and-zone-only call with ApiErrorException and no zone change. The client adds no minimum-one-edit rule or
+     * local no-op.
      *
      * Documented: The source says each surviving record occupies the same number of lines after editing, not that line
-     * offsets remain unchanged. remove uses source line-index terminology without automatic conversion. The optional
-     * new_serial can be used for later edits if callers track lines per record. No automatic reread, serial refresh,
-     * retry, rollback, atomicity, deployment or propagation guarantee is provided.
+     * offsets remain unchanged. The optional integer new_serial accepts native integers and evidenced canonical
+     * in-range integer strings, normalized losslessly for later edits if callers track lines per record. No automatic
+     * reread, serial refresh, retry, rollback, atomicity, deployment or propagation guarantee is provided.
      *
-     * Documented: Typed support is source-backed and tested offline only. No live DNS mutation or no-op probe was
-     * performed; addzonerecord/editzonerecord composed forms remain deferred under whm-api-client-8x0.1.30.
+     * Documented: Stale serials and malformed add JSON fail with ApiErrorException on reviewed cPanel 11.138.0.19
+     * without changing the zone. A result=0 raises ApiErrorException under Flag before payload validation; unvalidated
+     * failure data.by_line details are not exposed. The reviewer identified the InvalidZoneFile detail path in server
+     * source but did not trigger it.
+     *
+     * Documented: The pinned operation gives A and TXT as record_type examples rather than a complete accepted-type
+     * list. Reviewer inspection of the 11.138.0.19 handler found a fixed set excluding SOA; no closed record-type enum
+     * or local validation is inferred. Composed addzonerecord/editzonerecord forms remain deferred under
+     * whm-api-client-8x0.1.30.
      *
      * API-map identity: whm1:mass_edit_dns_zone#GET (wire name mass_edit_dns_zone; DNS Zones).
      *
