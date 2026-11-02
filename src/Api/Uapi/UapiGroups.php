@@ -159,6 +159,8 @@ trait UapiGroups
 
     private ?TwoFactorAuth $twoFactorAuthGroup = null;
 
+    private ?UserData $userDataGroup = null;
+
     private ?UserManager $userManagerGroup = null;
 
     private ?UserTasks $userTasksGroup = null;
@@ -944,6 +946,19 @@ trait UapiGroups
     public function twoFactorAuth(): TwoFactorAuth
     {
         return $this->twoFactorAuthGroup ??= new TwoFactorAuth($this->run(...));
+    }
+
+    /**
+     * Select the UserData operations without making a request.
+     *
+     * Selected-account scoped userdata settings from cPanel 11.32. Preserve exact scalar inputs and required private
+     * maps with mixed JSON entries through existing object-to-array handling. Both pinned GET variants are
+     * non-read-only; form POST acceptance and mixed response shapes were observed at original 08dacc43 on 11.138.0.19,
+     * not on this corrected candidate. Live follow-up whm-api-client-8x0.2.74 remains open.
+     */
+    public function userData(): UserData
+    {
+        return $this->userDataGroup ??= new UserData($this->run(...));
     }
 
     /**

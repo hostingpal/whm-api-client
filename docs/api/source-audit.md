@@ -9881,6 +9881,149 @@ unwaived. Local combined offline gates are recorded separately; PHP8.3 CI and
 exact-HEAD Claude4g9/adh dispositions remain publication requirements. No worker
 commit/push/Beads mutation or acceptance is claimed.
 
+### UserData complete source-backed slice (2026-11-01)
+
+Delivery `whm-api-client-8x0.4.32` selects both complete UserData path objects from
+the original pinned `2026-10-13/cpanel.openapi.json.gz` (OpenAPI 11.138.0.10),
+decompressed SHA-256
+`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`.
+The independently checked `/tmp/next-UserData-source.json` export equals both
+original path objects. Evidence binds selection, naming and POST policy to
+`/paths/~1UserData~1get_scoped_userdata/get` and
+`/paths/~1UserData~1set_scoped_userdata/get`, getter scope sensitivity to its
+`/parameters/0`, and setter scope/json/key/value sensitivity to its
+`/parameters/0` through `/parameters/3`. Both source functions are available from
+cPanel 11.32 without pinned role/plugin restrictions. No source refresh, alias,
+exclusion, unwrap, void, optional_payload, body/body_fields override, parameter
+requiredness/encoding change, response correction or runtime primitive is added.
+
+`getScopedUserdata(#[SensitiveParameter] string $scope): array` retains the getter
+prose returning all scoped key/value pairs alongside its formal non-read-only
+classification. Both formal variants are GET with x-readonly=false and
+x-rollback=none; both effective methods use one form POST under repository policy.
+No hidden getter side effect, live POST acceptance or immutability is inferred.
+`setScopedUserdata(scope, ?string $json = null, ?string $key = null,
+?string $value = null): array` creates/updates data and returns the full updated
+mapping. Every input uses SensitiveParameter. scope/json/key/value wire names and
+order remain unchanged. Required scope and optional strings preserve exact
+supplied bytes; null omits and empty strings remain supplied. The source forbids
+json with key or value; this canonical method forwards all supplied strings and
+leaves conflicts, scope-only validity and key/value pairing to the server.
+
+The json parameter is a scalar string with an object-shaped string example, not
+a formal application/json content schema. Whitespace, duplicate keys, percent,
+plus, Unicode, empty/malformed JSON, scalar and list text remain verbatim through
+one form encoding. No local parsing, reserialization, structured alias, inferred
+mode, cross-field guard, key deletion or normalization is added. Callers may
+encode their desired JSON; source-permitted string inputs are not narrowed.
+No merge-versus-replace, atomicity, transactionality, persistence or rollback
+promise is inferred.
+
+Both required nonnullable result objects have additionalProperties of type string,
+lowered through existing map<string> validation to `array<array-key, string>`.
+Arbitrary keys and exact string values survive, including empty, zero-like,
+whitespace, Unicode, dotted, reserved-looking and numeric-string keys. Canonical
+numeric object keys can become PHP integers under existing decoding. Empty object
+and inherited empty-array map compatibility stay; decoder object/array identity
+remains distinct. Missing data, null, scalar/nonempty-list roots and numeric,
+boolean, null or nested entry values reject. No opaque widening, filtering to a
+fixed field set or response normalization is introduced.
+
+Independent literal HTTP-boundary fixtures exercise cached account accessors,
+native/named signatures, auth, direct/bridge URLs, routing query versus form body,
+Content-Type, every source argument-presence combination and null/empty values,
+conflicting supplied arguments, exact raw-string encoding, strict dynamic maps,
+required payloads, native pre-entry failures retaining metadata, snapshot
+replacement, warning retention, metadata clearing at actual I/O, one-attempt
+transport/HTTP/JSON/status/API/outer-WHM/payload failure precedence and actual
+nonzero library exception frames with argument collection enabled. Explicit
+metadata and mismatch payloads remain accessible private settings data.
+
+Scope identities, keys, values, response/error data and metadata are private
+account settings, not necessarily authentication tokens. Library trace frames
+conceal these arguments; third-party transport traces remain its responsibility.
+No live/API/SSH/network/credentials, account settings, returned paths or URLs were
+accessed. There is no implicit read, merge, deletion, readback, retry, rollback or
+cache of remote settings. Live follow-up `whm-api-client-8x0.2.74` and the full API
+goal remain OPEN; this delivery establishes synthetic offline coverage only.
+
+Generated coverage is 1,207 canonical operations (619 UAPI, 588 WHM), 108 groups
+and 219 outputs (218 PHP plus coverage). Prior generated methods/specs and overlays
+stay byte-identical, except the additive cached userData accessor and coverage.
+Pinned sources/evidence, map checksum, runtime, generator, schema copies,
+transport, envelope and response normalization remain unchanged; this audit's
+historical text remains an unchanged prefix. All 55 inherited source diagnostics
+remain unwaived. PHP 8.3 remains the supported minimum; local validation uses
+PHP 8.4.26 and exact-head PHP 8.3 CI remains a controller publication gate.
+
+### UserData mixed-value response correction after original review (2026-11-01)
+
+This append supersedes active strict-string/nonstring-rejection and blanket
+offline/no-POST conclusions for UserData above; the original historical section,
+pin and seven original evidence entries remain exact. The source-audit prefix is
+exact approved master 625d498c13dc97ecfb2f091476dc0cc328c48cc1 (659,868 bytes)
+followed by the exact original O-only 5,089-byte UserData append, then this append.
+No historical source or evidence record is rewritten.
+
+Review https://github.com/hostingpal/whm-api-client/pull/107#pullrequestreview-5725906568
+at original 08dacc43c15a6d58aa536da8352a3696642d129f on 11.138.0.19 observed direct
+and bridged POST acceptance, writes merging keys, empty values storing empty
+strings rather than deleting, and new-scope getter directory creation. Its
+Cpanel::JSON::Load/Guard::new_scoped source attribution is not authenticated
+implementation bytes or a retained implementation-file SHA. The source remains
+GET/x-readonly=false/x-rollback=none; no causal explanation of that annotation
+or universal confinement/atomicity/persistence/transaction guarantee is inferred.
+Recovery by overwriting mixed entries with strings was not tested.
+
+The review's t/n/f/l/o write returned integer 1, null, float 1.5, a string list
+and a nested string-valued object; get returned string 1/string 1.5 with the
+other shapes retained. Separate immutable root
+open-pr-live-results-bootstrap107-v5.json, SHA-256
+56b778e99fb7f2e55ed9c89eb740f0e9d642e070f5f2d14311dc787cfcf7403c,
+records six payload observations/25 API calls at O with success envelopes,
+persistence predicates and four typed response mismatches. It records structural
+classes/predicates, not saved lexical values or corrected-head runtime.
+Root API cleanup and reviewer cleanup are distinct; later root SSH lstat exited
+255/no JSON/cause unknown. Filesystem absence is not established; nyz remains
+OPEN and no retry/alternate filesystem route is authorized.
+
+Only the two generated result map values.type leaves change string to existing
+mixed through evidence-bound root replacement overlays. Required nonnullable
+map roots, missing/null/scalar/nonempty-list failures and empty-array compatibility
+remain. Existing mixed preserves scalars/null, copies lists and recursively
+converts decoded objects to associative arrays; numeric keys follow PHP and
+empty object/list identity may collapse. This wider compatibility policy exceeds
+observed variants. The server write/read scalar differences are not client
+coercion. Native signatures/attributes/constructor/bodies/request specs, exact
+form forwarding, omission/conflict behavior and privacy remain unchanged.
+WHM InterfaceData and all unrelated specs/runtime/generator/schema/locks/source
+remain unchanged relative to approved M.
+
+Independent literal HTTP fixtures were authored before the response correction.
+The focused uncached RED produced four actual PayloadMismatchException errors
+under API success: set and get on both routes, with 24 assertions, before any
+value-contract change. The fixtures use attributed synthetic shapes and literal
+PHP expected arrays, not exact historical wire reconstruction or production
+normalization helpers. An explicit caller set/get pair remains two requests.
+Original strict-root, metadata/outcome/request/privacy tests remain; the invalid
+privacy response now uses a nonempty list root rather than a now-valid null entry.
+
+Active overlay/generated documentation and README/AGENTS explain those bounded
+observations, mixed object-to-array cost, raw unparsed scalar json input, privacy
+and no implicit read/merge/readback/retry/rollback/key deletion. No new live call,
+capture, source refresh, account setting or provider action occurred. UserData
+8x0.2.74, nyz, 95qrk/adh/3x6 and inherited runtime/platform/metadata/stress/parity/
+release/consumer boundaries remain OPEN; 55 inherited diagnostics are unwaived.
+Generated construction adds two operations/one group/two outputs to M, separately
+from offline tests or live coverage.
+
+R8 retains the failed fresh guard whose PR base.sha was 8c1b137c while actual
+Git master was M625d498c. A separate successful guard found authenticated REST
+and direct Git master refs at M and stored M tree 6634d5b5 with ordered parents
+97a251fc/659da467. The discrepancy's cause remains unknown; explicit immutable M
+is the integration authority. This is no relaxation of future exact-head
+approval/CI/protection/actual stored-tree and SHA-guarded merge requirements.
+
 ## Shared disposable-account lifecycle (2026-11-01)
 
 `FilemanUploadFixture` and `FiniteQuotaFixture` held near-verbatim copies of their account,
