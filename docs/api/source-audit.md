@@ -10237,6 +10237,184 @@ for `wlupload`; it counts zone files and is not explained further here. **Sessio
 for an existing account too**, so they still have no positive control. No account was
 created, and nothing was written.
 
+## Disposable domain rows and multi-value DNS reads (2026-11-02)
+
+Beads `whm-api-client-gni` and `whm-api-client-idw`. `npr` holds one domain, so its
+multi-value DNS tests sent that domain twice, which proves the repeated-key encoding only,
+and its addon, parked and subdomain rows were empty, so `format=list` and those record kinds
+were never observed. This section records a recipe that adds those kinds on a disposable
+account, the private name inspection that preceded typing, the corrections it led to, and
+one capture. Nothing here touched `npr` or any account but `wldomains`.
+
+### Shared change
+
+`DisposableAccountLifecycle::run()` takes an optional third callback (`eac0493c`, narrowed
+in `063ad9e`; see the review corrections below). It runs at most once, only after the marker
+proved the account this run's and the account then read confirmed absent, after the
+lifecycle's own domain and zone reads and before the filesystem proof; its labels fail
+`cleanup`, and a throw becomes `removed_resource_absence_unconfirmed`. A recipe uses it to
+settle what account removal takes or leaves, such as an addon's zone. Existing callers are
+unchanged; the change is in its own commits because other recipes build on the same file.
+
+### Recipe
+
+`DomainRowsFixture` (`c12695b`, corrected in `e6df465`) is described in the
+[live-verify README](../../tools/live-verify/README.md#disposable-account-domain-rows-and-multi-value-dns-reads).
+In short: every extra name is a fixed RFC 2606 name and must read absent server-wide first;
+the marker is read again before `modifyacct` raises this account's own limits; the account's
+own token creates the addon, an alias on the main domain and a subdomain, each once, and each
+counts only once the inventory lists it for this account. The DNS reads send the main domain
+and the addon in both orders. After removal, the lifecycle's new callback reads every
+attempted name and zone absent, and the unchanged read-only filesystem proof runs for the
+addon and the alias, each with its own control while it exists.
+
+### Private name inspection
+
+The recipe's `--inspect-names` mode ran once at `c12695b` on `11.138.0.19`, with the
+filesystem proof enabled. It is a full lifecycle run, so it created and removed a
+`wldomains` account and its domains as the capture later did; no artifact was written. It
+printed only undeclared key names, JSON types and the sanitized outcome labels; no value,
+path, token or upstream text was printed or saved. All 35 phases passed their API and
+payload checks. Every account, token, extra name and zone read `confirmed_absent`
+afterwards, as did the filesystem proof, including each extra zone after a passed control.
+The run failed, as intended for an inspection, on these findings:
+
+| Operation and record | Undeclared keys, both routes |
+| --- | --- |
+| `domains_data` `format=hash` `addon_domains[]`, `sub_domains[]` | `phpopenbasedirprotect` numeric string, `status` string |
+| `domains_data` `format=list` rows | `phpopenbasedirprotect` numeric string, `status` string |
+| `single_domain_data` for the addon and the subdomain | `ipv6` null, `no_cache_update` numeric string |
+
+No row carried `phpversion`, and no other undeclared key appeared. The main domain and alias
+`single_domain_data` results carried none. The `format=list` response held no row for the
+alias, which failed the recipe's expectation that every inventory lists it.
+
+### Corrections
+
+The owner's policy decided each type: fields of unknown meaning become optional `mixed`, and
+documented fields keep validation.
+
+| Path | Type | Reason |
+| --- | --- | --- |
+| `domains_data` `addon_domains[]`, `sub_domains[]`, list rows: `status` | optional `mixed` | No pinned meaning, as on `main_domain` |
+| the same rows: `phpopenbasedirprotect` | optional `mixed` | `domains_data` does not promise it, as on `main_domain` |
+| `single_domain_data` `ipv6` | optional `string\|null` | Pinned DomainInfo `Contents` documents it as the IPv6 address, null without IPv6 |
+| `single_domain_data` `no_cache_update` | optional 0/1 flag, quoted 0/1 accepted | Pinned `Contents` documents the flag; shared domains_data compatibility |
+
+The pinned `single_domain_data` schema declares neither of its two fields, but the
+`Contents` and `MainDomainContents` components that `domains_data` rows use describe the same
+user-data record with a type and a meaning, so they keep that validation rather than become
+`mixed`. Only a null `ipv6` was observed; its non-null form follows the pinned string. The
+main-domain list form and parked rows were not observed with any of these keys and are
+unchanged, as is `phpversion` on every record but the main domain. Every correction is an
+overlay entry with `live` evidence, and `tests/Api/DomainRowsObservedFieldsTest.php` covers
+them offline with synthetic values; the earlier observed-fields test now expects addon,
+subdomain and list rows to carry the two new fields.
+
+The inspection also showed a `single_domain_data` query for the alias succeeding on both
+routes with a result whose `domain` field named the alias, although the pinned note says an
+alias has no user-data file.
+It is recorded as an observed note only; which record such a query reads is not established.
+
+The recipe was corrected before the capture: `domains_data` `format=list` no longer has to
+list the alias, and records whether it does. The inspection tests were rewritten to use
+hand-written contracts, as they had depended on the generated `domains_data` spec.
+
+### Capture
+
+The [capture](evidence/2026-11-02-domain-rows.json) ran once at committed code
+`e6df4652d7b44c170f76250d85c200d516c748b5` on `11.138.0.19`, with every gate green and the
+filesystem proof enabled. It is a **passed run**, exit 0: all 35 observations passed HTTP,
+API, payload, probe and expectation checks, and the strict review, policy
+`domain-rows-no-acknowledgments-v1`, passed with zero findings. SHA-256:
+`031e989c1035966b2696fec08975b8846e07381ec0c5fd1e5718992c7f547f16`.
+
+| Phase group | Requests |
+| --- | --- |
+| Setup | WHM `version` GET; WHM `modifyacct` POST; direct `addaddondomain`, `park` and `addsubdomain` POSTs |
+| DNS | WHM, direct and bridged `has_local_authority`; direct and bridged `ensure_domains_reside_only_locally` and `ensure_domains_use_recognized_nameservers`; WHM `fetch_ds_records_for_domains`; each GET in both orders |
+| DomainInfo | direct and bridged `list_domains`, `domains_data` hash and list, and `single_domain_data` for each of four names, all GET |
+
+**Distinct domains and order.** Every multi-value read returned exactly two results for the
+two distinct domains. `has_local_authority` on all three routes and
+`fetch_ds_records_for_domains` name their domain: each result set was exactly the two
+requested domains, and all eight samples came back in request order, in both orders on each
+route. The inspection's eight samples did too. That is recorded per sample and establishes no
+ordering guarantee. The `ensure_*` results name no domain, so their order is not observable;
+structurally the residence results were strings and the nameserver results null, whose
+meaning this capture does not interpret.
+
+**Record kinds.** `list_domains` and `domains_data` `format=hash` listed the main domain,
+addon, alias and subdomain on both routes, the hash form giving the alias as a plain string.
+`format=list` held rows for the main domain, addon and subdomain, and again none for the
+alias. No inventory listed the subdomain the addon is parked on, though `get_domain_info`
+did. The run's `single_domain` labels show each of the eight `single_domain_data` results
+naming the requested domain in its `domain` field, the alias included; v1 recorded this
+without requiring it. The new fields appear as named paths with no `unknown_field`. `userdirprotect`
+was the exact empty string on addon and subdomain rows in both forms and in their
+single-domain results, while the main domain and the alias omitted it; `phpversion` was
+absent throughout on this fresh account.
+
+**Cleanup.** Account, token, main domain and zone, the addon, the addon's subdomain, the
+alias, the subdomain and both extra zones are all `confirmed_absent` through the API. The
+filesystem control passed with `home=1, users=1, userdata=1, userdomains=1, passwd=1,
+zones=2`, and `filesystem_cleanup` is `confirmed_absent`. Each extra zone's own control passed
+with `zones=2` and `userdomains=5`, the account's five domain lines matched by owner, and each
+final check read `confirmed_absent`.
+
+### Scope limits
+
+- One server version and one account; only null `ipv6`, and no DNSSEC keys, so DS records
+  were empty and their populated shape is not established by this capture.
+- `return_https_redirects_status` was not requested, so redirect fields stayed absent.
+- `export_zone_files` with more than one zone stays excluded after the earlier refusal.
+- The filesystem proof covers its fixed locations at one moment; sessions are still never
+  required by a control.
+
+### Review corrections (2026-11-02)
+
+An independent review of the branch found seven issues. Each was checked against the code;
+all seven are fixed, except one part of the fifth, as follows. No live request ran, and the
+v1 artifact is unchanged.
+
+- **The callback contract** (shared, `063ad9e`). It is now called only for a proven account
+  that reads confirmed absent after removal; it was called after a failed or unreadable
+  removal too. That makes it safe for a recipe that settles residue, as another recipe will.
+  Its labels still fail `cleanup`, and callers that pass nothing are unaffected. The
+  domain-rows fixture reports every attempted extra name, zone and extra filesystem claim as
+  `unconfirmed` when the proof was never called.
+- **A wrong single-domain record could pass.** v1 accepted the main domain's record, or the
+  addon's underlying subdomain's, for an addon, alias or subdomain read. v2 requires exactly
+  the requested domain and records any other as a failed expectation. The v1 capture's
+  `single_domain` labels were all `requested_domain`, so its result stands, but the overlay
+  evidence, this audit and the README now say v1 recorded that without requiring it.
+- **Stale documentation.** The root README still said the empty-string `userdirprotect` was
+  documentation-only coverage, and the `singleDomainData()` policy note still said only a
+  main domain was observed. Both now match the evidence; `status` was a string on all four
+  single-domain records, where `phpversion` was absent.
+- **Inspection could print data.** Beneath an undeclared key, every plain-identifier key was
+  printed, and such a key can be a username or token name. A name is now printed only for an
+  undeclared key in an object whose contract declares named fields; every key beneath it, in
+  an object declaring no fields, or at a map position is masked. The 2026-11-02 inspection
+  output contained no nested undeclared keys, so nothing was exposed then.
+- **Reads after creation.** The subdomain's creation was followed by a `listzones` read that
+  no label needed, so a transient failure there could stop the capture. Each creation now
+  reads `listzones` only when it can make a zone. The other part, reusing the lifecycle's own
+  absence reads, is **rejected**: they are private to the lifecycle, and the preflight ones
+  precede `createacct` and the token creation, which the lifecycle's own rule forbids reusing
+  across. Reusing the post-removal ones would need a further shared change or reliance on the
+  capture's last response.
+- **Unreachable refusal support** was removed from the recipe, fixture, evidence gate and
+  server double. No recorded observation makes a refusal the expected outcome.
+- **A hardcoded count.** `dns_results.requested` and its comparison now use the requested
+  list's length.
+
+These change what a report means, so the scenario is now `domain-rows-disposable-v2`, and no
+v2 capture exists. The review policy stays `domain-rows-no-acknowledgments-v1`: with no
+expected refusals, it assesses every record exactly as before. Duplicated inventory parsing
+and the inspection's copy of `Fingerprint`'s schema walk stay as they are; consolidating them
+is bead `whm-api-client-bis`.
+
 ## User task queue fixture, 2026-11-02
 
 Bead `whm-api-client-8x0.2.72` asks for a populated `UserTasks` inventory through both routes
@@ -10427,6 +10605,158 @@ The report's meaning changed, so the scenario is now `user-tasks-disposable-v2` 
 policies `user-tasks-subject-no-acknowledgments-v2` and `user-tasks-producer-structure-v2`.
 **No v2 capture exists.** The shared entrypoint and observe-helper duplication was left for a
 follow-up that consolidates it across every recipe.
+
+## Disposable-account LangPHP setters (2026-11-02)
+
+Bead `8x0.2.17` left `php_ini_set_user_basic_directives`, `php_ini_set_user_content` and
+`php_set_vhost_versions` offline-only, together with the INI write/read round trip, pending
+an account-scoped fixture that preserves the original configuration state. A disposable
+account removes the need to restore: `php-mutations.php` runs the three setters through the
+generated client on direct UAPI and the WHM bridge for the fresh account `wlphpset`, reads
+each change back through its matching getter on the same route, and lets account removal
+take every change. The bead's separate `php_get_vhost_versions` root-union item stays out of
+scope; what the run showed of it is recorded below without changing that contract.
+
+### Server source inspection
+
+Before writing the recipe, two server files were read once over the `oblak.test` SSH alias,
+read-only, on `11.138.0.19`: `Cpanel/API/LangPHP.pm` (SHA-256
+`4eb36ed11a329670ec839f9ed9f6a7d04cb23ecfe78a45629b3ba5b21f9b96cd`) and
+`Cpanel/ProgLang/Supported/php/Ini.pm` (SHA-256
+`df893c527eb1a3b417c3d07d0f71270d4ca2c184fa9d02d3028b485d08983639`). Neither file is
+committed. What the recipe relies on:
+
+- Every INI function lowercases `type` and accepts only `home` or `vhost`; anything else,
+  `host` included, dies with an invalid-parameter error before any metadata or write.
+  `home` resolves to `<homedir>/php.ini` with the system default package.
+- `php_ini_set_user_content` HTML-entity-decodes the supplied text, rejects empty text and
+  lines that are not directives, comments, blank lines or section headers, requires at
+  least one directive, splits the text into lines, and prepends a four-line comment block
+  and a blank line unless a line already holds it. `php_ini_get_user_content` returns
+  the file HTML-entity-encoded, or an empty string when the file does not exist.
+- `php_ini_set_user_basic_directives` collects repeated `directive` fields and any field
+  matching `directive(-N)`, removes exact duplicates, sorts the `key:value` strings as text
+  and applies them in that order. For a directive given more than once, the value that
+  sorts last wins, whatever the caller's order: `max_execution_time:9` wins over
+  `max_execution_time:10`. Values pass a per-type check; integer values are written
+  unchanged.
+- Both INI setters pass `userfiles => 1`, which regenerates `.user.ini` and a marked
+  `.htaccess` section beside `php.ini`.
+- `php_set_vhost_versions` requires the version to be a feature the account has and,
+  unless it is `inherit`, an installed package. It adds domains that share a document root
+  with the requested ones, writes through an admin binary in chunks of ten, reports per-vhost
+  failures as errors after earlier vhosts changed, and returns every changed vhost.
+- `php_get_vhost_versions` returns the account's list, or with `vhost` the one matching row
+  as an object, or an error for an unknown vhost.
+- The default feature list on this server enables `multiphp`, `multiphp_ini_editor` and
+  four PHP packages; a read-only `get_featurelist_data` call confirmed it before the run.
+
+The content oracle and the expectation that `host` is refused come from this inspection.
+The classifier does not depend on the comment block's wording.
+
+### Recipe
+
+Preflight reads installed versions, all vhost versions, home basic directives and home INI
+content through both routes, and both routes must agree before any write. The directive
+group sends one scalar `directive` directly and a numbered `directive`/`directive-1` pair
+through the bridge, reading each back exactly. The content group writes two different texts,
+reads each back through the content getter and the directive getter, then sends `type=host`
+once per route, expecting an explicit refusal and an unchanged readback. The version group
+moves the main domain to another installed version on each route and reads it back with the
+vhost selector. A group stops at its first unexpected state while the later groups still run;
+nothing repeats. Every response is validated by the generated contract, every structural
+discrepancy reaches the strict review, and there is no acknowledgment mechanism.
+
+### Capture
+
+The [capture](evidence/2026-11-02-langphp-mutations.json) at
+`c4a124a247b2575ef09a47e8dabb5f84f51ac50d` on `11.138.0.19`, with the filesystem proof
+enabled, is a **passed run**, exit 0, on its one execution. All 27 phases passed: 8 POST and
+19 GET, including WHM version. The review has no findings and every phase has zero
+discrepancies. Account, token, domain, zone and filesystem cleanup are `confirmed_absent`;
+the control read `home=1, users=1, userdata=1, userdomains=1, passwd=1, zones=2`. SHA-256:
+`66af9e3c509fbb9cf51c91d72a56eb25c6509f97b0dd4667a3881f20c7124748`.
+
+| Setter | Direct UAPI | WHM bridge |
+| --- | --- | --- |
+| `php_ini_set_user_basic_directives`, `type=home` | scalar directive accepted, null data, exact readback | numbered pair accepted, null data, exact readback |
+| `php_ini_set_user_content`, `type=home` | accepted, null data, `entity_model_after_server_comments` | the same |
+| `php_ini_set_user_content`, `type=host` | refused, UAPI status 0, one error, null data, content unchanged | the same |
+| `php_set_vhost_versions` | accepted, `vhosts` exactly the main domain, readback matches | the same |
+
+The original home content was an empty string on both routes, so the account had no home
+`php.ini`. Each content readback was the sent text behind four comment lines and a blank
+line, with `"` read back as `&quot;` and a written `&amp;` read back as `&amp;`: decoded on
+write and encoded on read, as the source shows. `+` and `%41` came back unchanged, so the
+client's single form encoding is right and the pinned example's percent-encoded form must
+not be sent through it. After each content write the directive getter showed that text's
+`max_input_vars` and none of the earlier directive values, so a content write replaces the
+whole file. The `host` refusals carried empty response metadata, consistent with the type
+check running before the handler sets any.
+
+### The content type discrepancy
+
+The pinned `php_ini_set_user_content` enum says `host|vhost` while its description says
+`home|vhost`. On this server `home` is accepted and `host` refused on both routes, with no
+change to the content; the handler accepts only `home` or `vhost`. The method keeps its
+plain `string` type and forwards what it is given, as the overlay has no evidence-bound way
+to replace a parameter's enum; its notes now say which values the server accepts. `vhost`
+was not exercised.
+
+### The vhost-versions root shape
+
+Recorded only: without a selector the preflight returned a list on both routes, and with the
+selector the readback returned a single object on both routes, both of which the current
+union already accepts. `phpversion_source` was an object both times: with an integer
+`system_default` on the fresh account, and with a string `domain` after an explicit version
+was set. The root-union item stays with `8x0.4.11.1`, and its contract is unchanged.
+
+### Contracts and documentation
+
+No live response contradicted a typed contract, so there is no response correction. The
+overlay gains `observed` notes and `live` evidence on the three setters and the content
+getter, the content getter's note no longer calls its text raw, and the generated PHPDoc is
+regenerated. AGENTS.md and README statements that called the setters and the round trip
+offline-only, or the type discrepancy unresolved, are updated.
+
+### Scope limits
+
+The run establishes API storage and readback on one server version. It does not establish
+PHP runtime behavior, vhost-scope INI files, `.user.ini` or `.htaccess` contents, PHP-FPM
+pools, impacted domains sharing a document root, `inherit`, per-vhost partial failure, or the
+`vhost` content type. Fixture design and offline tests cover malformed and failed paths; the
+live run took only the expected one.
+
+### Review corrections
+
+An independent review of the branch found seven issues. All seven were confirmed and
+fixed, and none was rejected. The captured artifact is unchanged and no live request ran.
+
+- The content getter's live evidence note claimed ten GETs. The artifact has six
+  `php_ini_get_user_content` GETs, three per route: two empty preflight reads, two
+  readbacks classified through the oracle, and two readbacks after the refused `host`
+  writes, compared for equality. The note now says exactly that. This section never
+  repeated the count.
+- `host()` counted a write as accepted only when the probe passed, so a write the API
+  confirmed but whose payload failed validation was reported `unknown` and never read back.
+  It is now accepted on `api_outcome: success`, read back, and also counted as a failed
+  observation. The capture took the refusal path, so its records are unaffected.
+- Preflight counted vhost rows only from a list root, so the single-object form the union
+  admits would abort the run. It now reads the row from either shape, as the version
+  readback already did. The capture saw lists, so it is unaffected.
+- The basic-directives note said list order sets no precedence. The handler applies the
+  sorted strings in order, so the value that sorts last wins; the note and the source
+  bullet above now say so.
+- The fixture repeated the directive targets as literals. It now derives them from
+  `LangPhpMutationRecipe::DIRECTIVES`, and a test covers every declared target.
+- The gate's `PLAN` repeats the recipe's `MUTATIONS`. A test now fails if they disagree on
+  a mutation phase, its function, its route or the order.
+- The AGENTS.md statement on the remaining work had lost its bead references. It now
+  points the remaining LangPHP live variants at `whm-api-client-2dj` and the root-union
+  item at `8x0.4.11.1`.
+
+Scenario and policy names are unchanged: the capture's outcomes and records mean the same
+under the corrected code, because it reached neither changed path.
 
 ## Disposable Webmail session capture (2026-11-02)
 

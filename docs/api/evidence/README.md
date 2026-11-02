@@ -1399,6 +1399,27 @@ of what ran at that revision, including its `filesystem_cleanup`, which predates
 The fixture has since moved to `finite-quota-disposable-v3`, and no v3 capture exists; see
 the [source audit](../source-audit.md#re-review-corrections-2026-11-02).
 
+## Disposable-account domain rows and multi-value DNS reads
+
+The [domain-rows capture](2026-11-02-domain-rows.json) at
+`e6df4652d7b44c170f76250d85c200d516c748b5` on `11.138.0.19` is a **passed run**, exit 0,
+scenario `domain-rows-disposable-v1` under policy `domain-rows-no-acknowledgments-v1`, with
+the filesystem proof enabled. A fresh `wldomains` account gained an addon, an alias of its
+main domain and a subdomain, and all 35 observations passed with zero review findings: WHM
+version, the account-limit and three domain-creation POSTs, 16 multi-value DNS GETs and 14
+DomainInfo GETs across every record kind. Token, account, main domain and zone, all four
+extra domain names and both extra zones are `confirmed_absent`, and the filesystem proof is
+`confirmed_absent` for the account and for each extra zone, each after its own passed
+control. The eight DNS results that name their domain, `has_local_authority` on three routes
+and `fetch_ds_records_for_domains` on WHM, each in both orders, all came back in request
+order; that is recorded per sample and is not a general ordering claim. See the
+[source audit](../source-audit.md#disposable-domain-rows-and-multi-value-dns-reads-2026-11-02).
+SHA-256: `031e989c1035966b2696fec08975b8846e07381ec0c5fd1e5718992c7f547f16`. It stays the
+valid record of what ran at that revision. Its `single_domain` labels show every single-domain
+read returning the requested record, which v1 recorded without requiring. The recipe has
+since moved to `domain-rows-disposable-v2`, and no v2 capture exists; see the
+[source audit](../source-audit.md#review-corrections-2026-11-02).
+
 ## Disposable-account user task queue evidence
 
 The [capture](2026-11-02-user-tasks.json) at `fea2d7d612acd215c452f5d710b5d0813f3e590b` on
@@ -1420,6 +1441,38 @@ no successful delete. The fixture is now `user-tasks-disposable-v2`, which withh
 read supports, and no v2 capture exists. See the
 [source audit](../source-audit.md#user-task-queue-capture). SHA-256:
 `470a6271daedbf78ab07b0769ffa967251c7ca1619940780d65ac0f26fda4e6c`.
+
+## Disposable-account LangPHP setter evidence
+
+The [capture](2026-11-02-langphp-mutations.json) at
+`c4a124a247b2575ef09a47e8dabb5f84f51ac50d` on `11.138.0.19` passes scenario
+`langphp-mutations-disposable-v1` and policy `langphp-mutations-no-acknowledgments-v1`,
+exit 0, on the fresh disposable account `wlphpset` through the shared lifecycle with the
+filesystem proof enabled. All 27 phases passed with no review findings: 8 POST and 19 GET
+observations through direct UAPI and the WHM bridge, including WHM version.
+
+- `php_ini_set_user_basic_directives`: a scalar `directive` (direct) and a numbered
+  `directive`/`directive-1` pair (bridge) each read back exactly through
+  `php_ini_get_user_basic_directives`. Both returned null data.
+- `php_ini_set_user_content` with `type=home`: both routes read back through
+  `php_ini_get_user_content` as `entity_model_after_server_comments`, behind four comment
+  lines and one blank line. The directive getter confirmed each text's `max_input_vars` and
+  that the earlier directive values were gone. Both returned null data.
+- `php_ini_set_user_content` with the pinned enum's `type=host`: refused on both routes
+  with UAPI status 0, one error and null data, and the home content read back unchanged.
+- `php_set_vhost_versions`: each route moved the main domain to another installed version.
+  The result `vhosts` listed exactly that domain, and `php_get_vhost_versions` with the
+  vhost selector returned a single object with the new version. Without the selector the
+  preflight returned a list on both routes.
+
+The original home INI content read as an empty string on both routes. Account, token,
+domain, zone and filesystem cleanup are `confirmed_absent`; the control read
+`home=1, users=1, userdata=1, userdomains=1, passwd=1, zones=2`. The artifact holds no
+names, versions, paths, values, INI content or upstream text. It establishes API storage
+and readback only, not PHP runtime behavior, vhost-scope INI files, FPM pools or
+impacted-domain variants. See the
+[source audit](../source-audit.md#disposable-account-langphp-setters-2026-11-02). SHA-256:
+`66af9e3c509fbb9cf51c91d72a56eb25c6509f97b0dd4667a3881f20c7124748`.
 
 ## Disposable-account Webmail session evidence
 

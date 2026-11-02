@@ -1,0 +1,2778 @@
+{
+    "schema_version": 1,
+    "langphp_mutations": {
+        "scenario": "langphp-mutations-disposable-v1",
+        "target_role": "disposable-test-account",
+        "probes": [
+            {
+                "operation": "whm1:version",
+                "variant": "whm1:version#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-02T10:42:55Z",
+                "revision": "c4a124a247b2575ef09a47e8dabb5f84f51ac50d",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "256bece71d3819f939648ab75c12457ad3b31884",
+                "overlay_sha256": "d40262fc509bc6587bca0f32e5499087ea215b9ccec8a03b33bbf2a5d9505ab1",
+                "effective_contract_sha256": "a3b55069b379516f20fcf82f959226d68b68ac515a7e55c0bde8842d39effd60",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.version": [
+                        "string"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.version": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "version",
+                "uapi_status": null,
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:LangPHP/php_get_installed_versions",
+                "variant": "uapi:LangPHP/php_get_installed_versions#GET",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-02T10:42:55Z",
+                "revision": "c4a124a247b2575ef09a47e8dabb5f84f51ac50d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "256bece71d3819f939648ab75c12457ad3b31884",
+                "overlay_sha256": "d40262fc509bc6587bca0f32e5499087ea215b9ccec8a03b33bbf2a5d9505ab1",
+                "effective_contract_sha256": "70a7163caadfb2f0c8d040d25e039959d30227f2e72dc67a76d053d64c4190b4",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.versions": [
+                        "list"
+                    ],
+                    "$.data.versions[]": [
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.versions": [
+                        "list"
+                    ],
+                    "$.versions[]": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "installed_direct",
+                "uapi_status": 1,
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:LangPHP/php_get_installed_versions",
+                "variant": "uapi:LangPHP/php_get_installed_versions#GET",
+                "route": "bridged-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-02T10:42:55Z",
+                "revision": "c4a124a247b2575ef09a47e8dabb5f84f51ac50d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "256bece71d3819f939648ab75c12457ad3b31884",
+                "overlay_sha256": "d40262fc509bc6587bca0f32e5499087ea215b9ccec8a03b33bbf2a5d9505ab1",
+                "effective_contract_sha256": "70a7163caadfb2f0c8d040d25e039959d30227f2e72dc67a76d053d64c4190b4",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.versions": [
+                        "list"
+                    ],
+                    "$.data.uapi.data.versions[]": [
+                        "string"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "empty-object"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.versions": [
+                        "list"
+                    ],
+                    "$.versions[]": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "installed_bridged",
+                "uapi_status": 1,
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:LangPHP/php_get_vhost_versions",
+                "variant": "uapi:LangPHP/php_get_vhost_versions#GET",
+                "argument_variant": "all-vhosts",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-02T10:42:55Z",
+                "revision": "c4a124a247b2575ef09a47e8dabb5f84f51ac50d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "256bece71d3819f939648ab75c12457ad3b31884",
+                "overlay_sha256": "d40262fc509bc6587bca0f32e5499087ea215b9ccec8a03b33bbf2a5d9505ab1",
+                "effective_contract_sha256": "9cf2aa5174684b2059d4847a709a6f83e6b33f36732314581a8b07a5d1c7a111",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "list"
+                    ],
+                    "$.data[]": [
+                        "object"
+                    ],
+                    "$.data[].account": [
+                        "string"
+                    ],
+                    "$.data[].account_owner": [
+                        "string"
+                    ],
+                    "$.data[].documentroot": [
+                        "string"
+                    ],
+                    "$.data[].homedir": [
+                        "string"
+                    ],
+                    "$.data[].main_domain": [
+                        "int"
+                    ],
+                    "$.data[].php_fpm": [
+                        "int"
+                    ],
+                    "$.data[].php_fpm_pool_parms": [
+                        "empty-object"
+                    ],
+                    "$.data[].php_fpm_pool_parms.pm_max_children": [
+                        "missing"
+                    ],
+                    "$.data[].php_fpm_pool_parms.pm_max_requests": [
+                        "missing"
+                    ],
+                    "$.data[].php_fpm_pool_parms.pm_process_idle_timeout": [
+                        "missing"
+                    ],
+                    "$.data[].phpversion_source": [
+                        "object"
+                    ],
+                    "$.data[].phpversion_source.domain": [
+                        "missing"
+                    ],
+                    "$.data[].phpversion_source.system_default": [
+                        "int"
+                    ],
+                    "$.data[].version": [
+                        "string"
+                    ],
+                    "$.data[].vhost": [
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.*": [
+                        "int"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "list"
+                    ],
+                    "$[]": [
+                        "object"
+                    ],
+                    "$[].account": [
+                        "string"
+                    ],
+                    "$[].account_owner": [
+                        "string"
+                    ],
+                    "$[].documentroot": [
+                        "string"
+                    ],
+                    "$[].homedir": [
+                        "string"
+                    ],
+                    "$[].main_domain": [
+                        "int"
+                    ],
+                    "$[].php_fpm": [
+                        "int"
+                    ],
+                    "$[].php_fpm_pool_parms": [
+                        "empty-object"
+                    ],
+                    "$[].php_fpm_pool_parms.pm_max_children": [
+                        "missing"
+                    ],
+                    "$[].php_fpm_pool_parms.pm_max_requests": [
+                        "missing"
+                    ],
+                    "$[].php_fpm_pool_parms.pm_process_idle_timeout": [
+                        "missing"
+                    ],
+                    "$[].phpversion_source": [
+                        "object"
+                    ],
+                    "$[].phpversion_source.domain": [
+                        "missing"
+                    ],
+                    "$[].phpversion_source.system_default": [
+                        "int"
+                    ],
+                    "$[].version": [
+                        "string"
+                    ],
+                    "$[].vhost": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "vhosts_direct",
+                "uapi_status": 1,
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:LangPHP/php_get_vhost_versions",
+                "variant": "uapi:LangPHP/php_get_vhost_versions#GET",
+                "argument_variant": "all-vhosts",
+                "route": "bridged-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-02T10:42:56Z",
+                "revision": "c4a124a247b2575ef09a47e8dabb5f84f51ac50d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "256bece71d3819f939648ab75c12457ad3b31884",
+                "overlay_sha256": "d40262fc509bc6587bca0f32e5499087ea215b9ccec8a03b33bbf2a5d9505ab1",
+                "effective_contract_sha256": "9cf2aa5174684b2059d4847a709a6f83e6b33f36732314581a8b07a5d1c7a111",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "list"
+                    ],
+                    "$.data.uapi.data[]": [
+                        "object"
+                    ],
+                    "$.data.uapi.data[].account": [
+                        "string"
+                    ],
+                    "$.data.uapi.data[].account_owner": [
+                        "string"
+                    ],
+                    "$.data.uapi.data[].documentroot": [
+                        "string"
+                    ],
+                    "$.data.uapi.data[].homedir": [
+                        "string"
+                    ],
+                    "$.data.uapi.data[].main_domain": [
+                        "int"
+                    ],
+                    "$.data.uapi.data[].php_fpm": [
+                        "int"
+                    ],
+                    "$.data.uapi.data[].php_fpm_pool_parms": [
+                        "empty-object"
+                    ],
+                    "$.data.uapi.data[].php_fpm_pool_parms.pm_max_children": [
+                        "missing"
+                    ],
+                    "$.data.uapi.data[].php_fpm_pool_parms.pm_max_requests": [
+                        "missing"
+                    ],
+                    "$.data.uapi.data[].php_fpm_pool_parms.pm_process_idle_timeout": [
+                        "missing"
+                    ],
+                    "$.data.uapi.data[].phpversion_source": [
+                        "object"
+                    ],
+                    "$.data.uapi.data[].phpversion_source.domain": [
+                        "missing"
+                    ],
+                    "$.data.uapi.data[].phpversion_source.system_default": [
+                        "int"
+                    ],
+                    "$.data.uapi.data[].version": [
+                        "string"
+                    ],
+                    "$.data.uapi.data[].vhost": [
+                        "string"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "object"
+                    ],
+                    "$.data.uapi.metadata.*": [
+                        "int"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "list"
+                    ],
+                    "$[]": [
+                        "object"
+                    ],
+                    "$[].account": [
+                        "string"
+                    ],
+                    "$[].account_owner": [
+                        "string"
+                    ],
+                    "$[].documentroot": [
+                        "string"
+                    ],
+                    "$[].homedir": [
+                        "string"
+                    ],
+                    "$[].main_domain": [
+                        "int"
+                    ],
+                    "$[].php_fpm": [
+                        "int"
+                    ],
+                    "$[].php_fpm_pool_parms": [
+                        "empty-object"
+                    ],
+                    "$[].php_fpm_pool_parms.pm_max_children": [
+                        "missing"
+                    ],
+                    "$[].php_fpm_pool_parms.pm_max_requests": [
+                        "missing"
+                    ],
+                    "$[].php_fpm_pool_parms.pm_process_idle_timeout": [
+                        "missing"
+                    ],
+                    "$[].phpversion_source": [
+                        "object"
+                    ],
+                    "$[].phpversion_source.domain": [
+                        "missing"
+                    ],
+                    "$[].phpversion_source.system_default": [
+                        "int"
+                    ],
+                    "$[].version": [
+                        "string"
+                    ],
+                    "$[].vhost": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "vhosts_bridged",
+                "uapi_status": 1,
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:LangPHP/php_ini_get_user_basic_directives",
+                "variant": "uapi:LangPHP/php_ini_get_user_basic_directives#GET",
+                "argument_variant": "home-scope",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-02T10:42:56Z",
+                "revision": "c4a124a247b2575ef09a47e8dabb5f84f51ac50d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "256bece71d3819f939648ab75c12457ad3b31884",
+                "overlay_sha256": "d40262fc509bc6587bca0f32e5499087ea215b9ccec8a03b33bbf2a5d9505ab1",
+                "effective_contract_sha256": "e3f6c53168f3aa0dd41cd02bc02a760ecf3a9c92d78a79a1801a8e100a0384bb",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.directives": [
+                        "list"
+                    ],
+                    "$.data.directives[]": [
+                        "object"
+                    ],
+                    "$.data.directives[].cpanel_default": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data.directives[].default_value": [
+                        "numeric-string",
+                        "string"
+                    ],
+                    "$.data.directives[].info": [
+                        "string"
+                    ],
+                    "$.data.directives[].key": [
+                        "string"
+                    ],
+                    "$.data.directives[].php_ini_mode": [
+                        "string"
+                    ],
+                    "$.data.directives[].type": [
+                        "string"
+                    ],
+                    "$.data.directives[].value": [
+                        "numeric-string",
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.*": [
+                        "object"
+                    ],
+                    "$.metadata.*.*": [
+                        "string"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.directives": [
+                        "list"
+                    ],
+                    "$.directives[]": [
+                        "object"
+                    ],
+                    "$.directives[].cpanel_default": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.directives[].default_value": [
+                        "numeric-string",
+                        "string"
+                    ],
+                    "$.directives[].info": [
+                        "string"
+                    ],
+                    "$.directives[].key": [
+                        "string"
+                    ],
+                    "$.directives[].php_ini_mode": [
+                        "string"
+                    ],
+                    "$.directives[].type": [
+                        "string"
+                    ],
+                    "$.directives[].value": [
+                        "numeric-string",
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "directives_direct",
+                "uapi_status": 1,
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:LangPHP/php_ini_get_user_basic_directives",
+                "variant": "uapi:LangPHP/php_ini_get_user_basic_directives#GET",
+                "argument_variant": "home-scope",
+                "route": "bridged-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-02T10:42:56Z",
+                "revision": "c4a124a247b2575ef09a47e8dabb5f84f51ac50d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "256bece71d3819f939648ab75c12457ad3b31884",
+                "overlay_sha256": "d40262fc509bc6587bca0f32e5499087ea215b9ccec8a03b33bbf2a5d9505ab1",
+                "effective_contract_sha256": "e3f6c53168f3aa0dd41cd02bc02a760ecf3a9c92d78a79a1801a8e100a0384bb",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.directives": [
+                        "list"
+                    ],
+                    "$.data.uapi.data.directives[]": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.directives[].cpanel_default": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data.uapi.data.directives[].default_value": [
+                        "numeric-string",
+                        "string"
+                    ],
+                    "$.data.uapi.data.directives[].info": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.directives[].key": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.directives[].php_ini_mode": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.directives[].type": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.directives[].value": [
+                        "numeric-string",
+                        "string"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "object"
+                    ],
+                    "$.data.uapi.metadata.*": [
+                        "object"
+                    ],
+                    "$.data.uapi.metadata.*.*": [
+                        "string"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.directives": [
+                        "list"
+                    ],
+                    "$.directives[]": [
+                        "object"
+                    ],
+                    "$.directives[].cpanel_default": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.directives[].default_value": [
+                        "numeric-string",
+                        "string"
+                    ],
+                    "$.directives[].info": [
+                        "string"
+                    ],
+                    "$.directives[].key": [
+                        "string"
+                    ],
+                    "$.directives[].php_ini_mode": [
+                        "string"
+                    ],
+                    "$.directives[].type": [
+                        "string"
+                    ],
+                    "$.directives[].value": [
+                        "numeric-string",
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "directives_bridged",
+                "uapi_status": 1,
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:LangPHP/php_ini_get_user_content",
+                "variant": "uapi:LangPHP/php_ini_get_user_content#GET",
+                "argument_variant": "home-scope",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-02T10:42:57Z",
+                "revision": "c4a124a247b2575ef09a47e8dabb5f84f51ac50d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "256bece71d3819f939648ab75c12457ad3b31884",
+                "overlay_sha256": "d40262fc509bc6587bca0f32e5499087ea215b9ccec8a03b33bbf2a5d9505ab1",
+                "effective_contract_sha256": "f2d9e447f6f3aaba355a0fa09e40f87720fa7a3681db50bade97f11180a8f5cd",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.content": [
+                        "empty-string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.*": [
+                        "object"
+                    ],
+                    "$.metadata.*.*": [
+                        "string"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.content": [
+                        "empty-string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "content_direct",
+                "uapi_status": 1,
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:LangPHP/php_ini_get_user_content",
+                "variant": "uapi:LangPHP/php_ini_get_user_content#GET",
+                "argument_variant": "home-scope",
+                "route": "bridged-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-02T10:42:57Z",
+                "revision": "c4a124a247b2575ef09a47e8dabb5f84f51ac50d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "256bece71d3819f939648ab75c12457ad3b31884",
+                "overlay_sha256": "d40262fc509bc6587bca0f32e5499087ea215b9ccec8a03b33bbf2a5d9505ab1",
+                "effective_contract_sha256": "f2d9e447f6f3aaba355a0fa09e40f87720fa7a3681db50bade97f11180a8f5cd",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.content": [
+                        "empty-string"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "object"
+                    ],
+                    "$.data.uapi.metadata.*": [
+                        "object"
+                    ],
+                    "$.data.uapi.metadata.*.*": [
+                        "string"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.content": [
+                        "empty-string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "content_bridged",
+                "uapi_status": 1,
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:LangPHP/php_ini_set_user_basic_directives",
+                "variant": "uapi:LangPHP/php_ini_set_user_basic_directives#GET",
+                "argument_variant": "scalar-directive",
+                "route": "direct-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-02T10:42:57Z",
+                "revision": "c4a124a247b2575ef09a47e8dabb5f84f51ac50d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "256bece71d3819f939648ab75c12457ad3b31884",
+                "overlay_sha256": "d40262fc509bc6587bca0f32e5499087ea215b9ccec8a03b33bbf2a5d9505ab1",
+                "effective_contract_sha256": "a5a6adad93aec0d5c9cccc7e552517ecb92cf1af77256b20cac7ab6e28122213",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "null"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.*": [
+                        "object"
+                    ],
+                    "$.metadata.*.*": [
+                        "string"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "null"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "set_directives_direct",
+                "uapi_status": 1,
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:LangPHP/php_ini_get_user_basic_directives",
+                "variant": "uapi:LangPHP/php_ini_get_user_basic_directives#GET",
+                "argument_variant": "home-scope",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-02T10:42:57Z",
+                "revision": "c4a124a247b2575ef09a47e8dabb5f84f51ac50d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "256bece71d3819f939648ab75c12457ad3b31884",
+                "overlay_sha256": "d40262fc509bc6587bca0f32e5499087ea215b9ccec8a03b33bbf2a5d9505ab1",
+                "effective_contract_sha256": "e3f6c53168f3aa0dd41cd02bc02a760ecf3a9c92d78a79a1801a8e100a0384bb",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.directives": [
+                        "list"
+                    ],
+                    "$.data.directives[]": [
+                        "object"
+                    ],
+                    "$.data.directives[].cpanel_default": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data.directives[].default_value": [
+                        "numeric-string",
+                        "string"
+                    ],
+                    "$.data.directives[].info": [
+                        "string"
+                    ],
+                    "$.data.directives[].key": [
+                        "string"
+                    ],
+                    "$.data.directives[].php_ini_mode": [
+                        "string"
+                    ],
+                    "$.data.directives[].type": [
+                        "string"
+                    ],
+                    "$.data.directives[].value": [
+                        "numeric-string",
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.*": [
+                        "object"
+                    ],
+                    "$.metadata.*.*": [
+                        "string"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.directives": [
+                        "list"
+                    ],
+                    "$.directives[]": [
+                        "object"
+                    ],
+                    "$.directives[].cpanel_default": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.directives[].default_value": [
+                        "numeric-string",
+                        "string"
+                    ],
+                    "$.directives[].info": [
+                        "string"
+                    ],
+                    "$.directives[].key": [
+                        "string"
+                    ],
+                    "$.directives[].php_ini_mode": [
+                        "string"
+                    ],
+                    "$.directives[].type": [
+                        "string"
+                    ],
+                    "$.directives[].value": [
+                        "numeric-string",
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "read_directives_direct",
+                "uapi_status": 1,
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:LangPHP/php_ini_set_user_basic_directives",
+                "variant": "uapi:LangPHP/php_ini_set_user_basic_directives#GET",
+                "argument_variant": "numbered-directives",
+                "route": "bridged-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-02T10:42:58Z",
+                "revision": "c4a124a247b2575ef09a47e8dabb5f84f51ac50d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "256bece71d3819f939648ab75c12457ad3b31884",
+                "overlay_sha256": "d40262fc509bc6587bca0f32e5499087ea215b9ccec8a03b33bbf2a5d9505ab1",
+                "effective_contract_sha256": "a5a6adad93aec0d5c9cccc7e552517ecb92cf1af77256b20cac7ab6e28122213",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "null"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "object"
+                    ],
+                    "$.data.uapi.metadata.*": [
+                        "object"
+                    ],
+                    "$.data.uapi.metadata.*.*": [
+                        "string"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "null"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "set_directives_bridged",
+                "uapi_status": 1,
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:LangPHP/php_ini_get_user_basic_directives",
+                "variant": "uapi:LangPHP/php_ini_get_user_basic_directives#GET",
+                "argument_variant": "home-scope",
+                "route": "bridged-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-02T10:42:58Z",
+                "revision": "c4a124a247b2575ef09a47e8dabb5f84f51ac50d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "256bece71d3819f939648ab75c12457ad3b31884",
+                "overlay_sha256": "d40262fc509bc6587bca0f32e5499087ea215b9ccec8a03b33bbf2a5d9505ab1",
+                "effective_contract_sha256": "e3f6c53168f3aa0dd41cd02bc02a760ecf3a9c92d78a79a1801a8e100a0384bb",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.directives": [
+                        "list"
+                    ],
+                    "$.data.uapi.data.directives[]": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.directives[].cpanel_default": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data.uapi.data.directives[].default_value": [
+                        "numeric-string",
+                        "string"
+                    ],
+                    "$.data.uapi.data.directives[].info": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.directives[].key": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.directives[].php_ini_mode": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.directives[].type": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.directives[].value": [
+                        "numeric-string",
+                        "string"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "object"
+                    ],
+                    "$.data.uapi.metadata.*": [
+                        "object"
+                    ],
+                    "$.data.uapi.metadata.*.*": [
+                        "string"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.directives": [
+                        "list"
+                    ],
+                    "$.directives[]": [
+                        "object"
+                    ],
+                    "$.directives[].cpanel_default": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.directives[].default_value": [
+                        "numeric-string",
+                        "string"
+                    ],
+                    "$.directives[].info": [
+                        "string"
+                    ],
+                    "$.directives[].key": [
+                        "string"
+                    ],
+                    "$.directives[].php_ini_mode": [
+                        "string"
+                    ],
+                    "$.directives[].type": [
+                        "string"
+                    ],
+                    "$.directives[].value": [
+                        "numeric-string",
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "read_directives_bridged",
+                "uapi_status": 1,
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:LangPHP/php_ini_set_user_content",
+                "variant": "uapi:LangPHP/php_ini_set_user_content#GET",
+                "argument_variant": "home-type",
+                "route": "direct-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-02T10:42:58Z",
+                "revision": "c4a124a247b2575ef09a47e8dabb5f84f51ac50d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "256bece71d3819f939648ab75c12457ad3b31884",
+                "overlay_sha256": "d40262fc509bc6587bca0f32e5499087ea215b9ccec8a03b33bbf2a5d9505ab1",
+                "effective_contract_sha256": "26355006798ab2cf9f776d5f64a2f8b5fb8c97df70feba049f19cab8dc07f8a7",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "null"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.*": [
+                        "object"
+                    ],
+                    "$.metadata.*.*": [
+                        "string"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "null"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "set_content_direct",
+                "uapi_status": 1,
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:LangPHP/php_ini_get_user_content",
+                "variant": "uapi:LangPHP/php_ini_get_user_content#GET",
+                "argument_variant": "home-scope",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-02T10:42:59Z",
+                "revision": "c4a124a247b2575ef09a47e8dabb5f84f51ac50d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "256bece71d3819f939648ab75c12457ad3b31884",
+                "overlay_sha256": "d40262fc509bc6587bca0f32e5499087ea215b9ccec8a03b33bbf2a5d9505ab1",
+                "effective_contract_sha256": "f2d9e447f6f3aaba355a0fa09e40f87720fa7a3681db50bade97f11180a8f5cd",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.content": [
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.*": [
+                        "object"
+                    ],
+                    "$.metadata.*.*": [
+                        "string"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.content": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "read_content_direct",
+                "uapi_status": 1,
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:LangPHP/php_ini_get_user_basic_directives",
+                "variant": "uapi:LangPHP/php_ini_get_user_basic_directives#GET",
+                "argument_variant": "home-scope",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-02T10:42:59Z",
+                "revision": "c4a124a247b2575ef09a47e8dabb5f84f51ac50d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "256bece71d3819f939648ab75c12457ad3b31884",
+                "overlay_sha256": "d40262fc509bc6587bca0f32e5499087ea215b9ccec8a03b33bbf2a5d9505ab1",
+                "effective_contract_sha256": "e3f6c53168f3aa0dd41cd02bc02a760ecf3a9c92d78a79a1801a8e100a0384bb",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.directives": [
+                        "list"
+                    ],
+                    "$.data.directives[]": [
+                        "object"
+                    ],
+                    "$.data.directives[].cpanel_default": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data.directives[].default_value": [
+                        "numeric-string",
+                        "string"
+                    ],
+                    "$.data.directives[].info": [
+                        "string"
+                    ],
+                    "$.data.directives[].key": [
+                        "string"
+                    ],
+                    "$.data.directives[].php_ini_mode": [
+                        "string"
+                    ],
+                    "$.data.directives[].type": [
+                        "string"
+                    ],
+                    "$.data.directives[].value": [
+                        "numeric-string",
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.*": [
+                        "object"
+                    ],
+                    "$.metadata.*.*": [
+                        "string"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.directives": [
+                        "list"
+                    ],
+                    "$.directives[]": [
+                        "object"
+                    ],
+                    "$.directives[].cpanel_default": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.directives[].default_value": [
+                        "numeric-string",
+                        "string"
+                    ],
+                    "$.directives[].info": [
+                        "string"
+                    ],
+                    "$.directives[].key": [
+                        "string"
+                    ],
+                    "$.directives[].php_ini_mode": [
+                        "string"
+                    ],
+                    "$.directives[].type": [
+                        "string"
+                    ],
+                    "$.directives[].value": [
+                        "numeric-string",
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "read_content_directives_direct",
+                "uapi_status": 1,
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:LangPHP/php_ini_set_user_content",
+                "variant": "uapi:LangPHP/php_ini_set_user_content#GET",
+                "argument_variant": "home-type",
+                "route": "bridged-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-02T10:42:59Z",
+                "revision": "c4a124a247b2575ef09a47e8dabb5f84f51ac50d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "256bece71d3819f939648ab75c12457ad3b31884",
+                "overlay_sha256": "d40262fc509bc6587bca0f32e5499087ea215b9ccec8a03b33bbf2a5d9505ab1",
+                "effective_contract_sha256": "26355006798ab2cf9f776d5f64a2f8b5fb8c97df70feba049f19cab8dc07f8a7",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "null"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "object"
+                    ],
+                    "$.data.uapi.metadata.*": [
+                        "object"
+                    ],
+                    "$.data.uapi.metadata.*.*": [
+                        "string"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "null"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "set_content_bridged",
+                "uapi_status": 1,
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:LangPHP/php_ini_get_user_content",
+                "variant": "uapi:LangPHP/php_ini_get_user_content#GET",
+                "argument_variant": "home-scope",
+                "route": "bridged-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-02T10:43:00Z",
+                "revision": "c4a124a247b2575ef09a47e8dabb5f84f51ac50d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "256bece71d3819f939648ab75c12457ad3b31884",
+                "overlay_sha256": "d40262fc509bc6587bca0f32e5499087ea215b9ccec8a03b33bbf2a5d9505ab1",
+                "effective_contract_sha256": "f2d9e447f6f3aaba355a0fa09e40f87720fa7a3681db50bade97f11180a8f5cd",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.content": [
+                        "string"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "object"
+                    ],
+                    "$.data.uapi.metadata.*": [
+                        "object"
+                    ],
+                    "$.data.uapi.metadata.*.*": [
+                        "string"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.content": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "read_content_bridged",
+                "uapi_status": 1,
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:LangPHP/php_ini_get_user_basic_directives",
+                "variant": "uapi:LangPHP/php_ini_get_user_basic_directives#GET",
+                "argument_variant": "home-scope",
+                "route": "bridged-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-02T10:43:00Z",
+                "revision": "c4a124a247b2575ef09a47e8dabb5f84f51ac50d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "256bece71d3819f939648ab75c12457ad3b31884",
+                "overlay_sha256": "d40262fc509bc6587bca0f32e5499087ea215b9ccec8a03b33bbf2a5d9505ab1",
+                "effective_contract_sha256": "e3f6c53168f3aa0dd41cd02bc02a760ecf3a9c92d78a79a1801a8e100a0384bb",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.directives": [
+                        "list"
+                    ],
+                    "$.data.uapi.data.directives[]": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.directives[].cpanel_default": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data.uapi.data.directives[].default_value": [
+                        "numeric-string",
+                        "string"
+                    ],
+                    "$.data.uapi.data.directives[].info": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.directives[].key": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.directives[].php_ini_mode": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.directives[].type": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.directives[].value": [
+                        "numeric-string",
+                        "string"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "object"
+                    ],
+                    "$.data.uapi.metadata.*": [
+                        "object"
+                    ],
+                    "$.data.uapi.metadata.*.*": [
+                        "string"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.directives": [
+                        "list"
+                    ],
+                    "$.directives[]": [
+                        "object"
+                    ],
+                    "$.directives[].cpanel_default": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.directives[].default_value": [
+                        "numeric-string",
+                        "string"
+                    ],
+                    "$.directives[].info": [
+                        "string"
+                    ],
+                    "$.directives[].key": [
+                        "string"
+                    ],
+                    "$.directives[].php_ini_mode": [
+                        "string"
+                    ],
+                    "$.directives[].type": [
+                        "string"
+                    ],
+                    "$.directives[].value": [
+                        "numeric-string",
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "read_content_directives_bridged",
+                "uapi_status": 1,
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:LangPHP/php_ini_set_user_content",
+                "variant": "uapi:LangPHP/php_ini_set_user_content#GET",
+                "argument_variant": "host-type",
+                "route": "direct-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-02T10:43:00Z",
+                "revision": "c4a124a247b2575ef09a47e8dabb5f84f51ac50d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "256bece71d3819f939648ab75c12457ad3b31884",
+                "overlay_sha256": "d40262fc509bc6587bca0f32e5499087ea215b9ccec8a03b33bbf2a5d9505ab1",
+                "effective_contract_sha256": "26355006798ab2cf9f776d5f64a2f8b5fb8c97df70feba049f19cab8dc07f8a7",
+                "http_status": 200,
+                "api_outcome": "failure",
+                "payload_validation": "not_checked",
+                "probe_outcome": "failed",
+                "failure_kind": "api_failure",
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "null"
+                    ],
+                    "$.errors": [
+                        "list"
+                    ],
+                    "$.errors[]": [
+                        "string"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "null"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "set_content_host_direct",
+                "uapi_status": 0,
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:LangPHP/php_ini_get_user_content",
+                "variant": "uapi:LangPHP/php_ini_get_user_content#GET",
+                "argument_variant": "home-scope",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-02T10:43:01Z",
+                "revision": "c4a124a247b2575ef09a47e8dabb5f84f51ac50d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "256bece71d3819f939648ab75c12457ad3b31884",
+                "overlay_sha256": "d40262fc509bc6587bca0f32e5499087ea215b9ccec8a03b33bbf2a5d9505ab1",
+                "effective_contract_sha256": "f2d9e447f6f3aaba355a0fa09e40f87720fa7a3681db50bade97f11180a8f5cd",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.content": [
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.*": [
+                        "object"
+                    ],
+                    "$.metadata.*.*": [
+                        "string"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.content": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "read_content_host_direct",
+                "uapi_status": 1,
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:LangPHP/php_ini_set_user_content",
+                "variant": "uapi:LangPHP/php_ini_set_user_content#GET",
+                "argument_variant": "host-type",
+                "route": "bridged-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-02T10:43:01Z",
+                "revision": "c4a124a247b2575ef09a47e8dabb5f84f51ac50d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "256bece71d3819f939648ab75c12457ad3b31884",
+                "overlay_sha256": "d40262fc509bc6587bca0f32e5499087ea215b9ccec8a03b33bbf2a5d9505ab1",
+                "effective_contract_sha256": "26355006798ab2cf9f776d5f64a2f8b5fb8c97df70feba049f19cab8dc07f8a7",
+                "http_status": 200,
+                "api_outcome": "failure",
+                "payload_validation": "not_checked",
+                "probe_outcome": "failed",
+                "failure_kind": "api_failure",
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "null"
+                    ],
+                    "$.data.uapi.errors": [
+                        "list"
+                    ],
+                    "$.data.uapi.errors[]": [
+                        "string"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "empty-object"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "null"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "set_content_host_bridged",
+                "uapi_status": 0,
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:LangPHP/php_ini_get_user_content",
+                "variant": "uapi:LangPHP/php_ini_get_user_content#GET",
+                "argument_variant": "home-scope",
+                "route": "bridged-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-02T10:43:01Z",
+                "revision": "c4a124a247b2575ef09a47e8dabb5f84f51ac50d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "256bece71d3819f939648ab75c12457ad3b31884",
+                "overlay_sha256": "d40262fc509bc6587bca0f32e5499087ea215b9ccec8a03b33bbf2a5d9505ab1",
+                "effective_contract_sha256": "f2d9e447f6f3aaba355a0fa09e40f87720fa7a3681db50bade97f11180a8f5cd",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.content": [
+                        "string"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "object"
+                    ],
+                    "$.data.uapi.metadata.*": [
+                        "object"
+                    ],
+                    "$.data.uapi.metadata.*.*": [
+                        "string"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.content": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "read_content_host_bridged",
+                "uapi_status": 1,
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:LangPHP/php_set_vhost_versions",
+                "variant": "uapi:LangPHP/php_set_vhost_versions#GET",
+                "argument_variant": "selected-vhost",
+                "route": "direct-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-02T10:43:02Z",
+                "revision": "c4a124a247b2575ef09a47e8dabb5f84f51ac50d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "256bece71d3819f939648ab75c12457ad3b31884",
+                "overlay_sha256": "d40262fc509bc6587bca0f32e5499087ea215b9ccec8a03b33bbf2a5d9505ab1",
+                "effective_contract_sha256": "69a2da9928a5895857a64c1a473e70708886e746e7490ff7b6c60a89e60767c1",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.vhosts": [
+                        "list"
+                    ],
+                    "$.data.vhosts[]": [
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.vhosts": [
+                        "list"
+                    ],
+                    "$.vhosts[]": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "set_version_direct",
+                "uapi_status": 1,
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:LangPHP/php_get_vhost_versions",
+                "variant": "uapi:LangPHP/php_get_vhost_versions#GET",
+                "argument_variant": "selected-vhost",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-02T10:43:03Z",
+                "revision": "c4a124a247b2575ef09a47e8dabb5f84f51ac50d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "256bece71d3819f939648ab75c12457ad3b31884",
+                "overlay_sha256": "d40262fc509bc6587bca0f32e5499087ea215b9ccec8a03b33bbf2a5d9505ab1",
+                "effective_contract_sha256": "9cf2aa5174684b2059d4847a709a6f83e6b33f36732314581a8b07a5d1c7a111",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.account": [
+                        "string"
+                    ],
+                    "$.data.account_owner": [
+                        "string"
+                    ],
+                    "$.data.documentroot": [
+                        "string"
+                    ],
+                    "$.data.homedir": [
+                        "string"
+                    ],
+                    "$.data.main_domain": [
+                        "int"
+                    ],
+                    "$.data.php_fpm": [
+                        "int"
+                    ],
+                    "$.data.php_fpm_pool_parms": [
+                        "empty-object"
+                    ],
+                    "$.data.php_fpm_pool_parms.pm_max_children": [
+                        "missing"
+                    ],
+                    "$.data.php_fpm_pool_parms.pm_max_requests": [
+                        "missing"
+                    ],
+                    "$.data.php_fpm_pool_parms.pm_process_idle_timeout": [
+                        "missing"
+                    ],
+                    "$.data.phpversion_source": [
+                        "object"
+                    ],
+                    "$.data.phpversion_source.domain": [
+                        "string"
+                    ],
+                    "$.data.phpversion_source.system_default": [
+                        "missing"
+                    ],
+                    "$.data.version": [
+                        "string"
+                    ],
+                    "$.data.vhost": [
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.account": [
+                        "string"
+                    ],
+                    "$.account_owner": [
+                        "string"
+                    ],
+                    "$.documentroot": [
+                        "string"
+                    ],
+                    "$.homedir": [
+                        "string"
+                    ],
+                    "$.main_domain": [
+                        "int"
+                    ],
+                    "$.php_fpm": [
+                        "int"
+                    ],
+                    "$.php_fpm_pool_parms": [
+                        "empty-object"
+                    ],
+                    "$.php_fpm_pool_parms.pm_max_children": [
+                        "missing"
+                    ],
+                    "$.php_fpm_pool_parms.pm_max_requests": [
+                        "missing"
+                    ],
+                    "$.php_fpm_pool_parms.pm_process_idle_timeout": [
+                        "missing"
+                    ],
+                    "$.phpversion_source": [
+                        "object"
+                    ],
+                    "$.phpversion_source.domain": [
+                        "string"
+                    ],
+                    "$.phpversion_source.system_default": [
+                        "missing"
+                    ],
+                    "$.version": [
+                        "string"
+                    ],
+                    "$.vhost": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "read_version_direct",
+                "uapi_status": 1,
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:LangPHP/php_set_vhost_versions",
+                "variant": "uapi:LangPHP/php_set_vhost_versions#GET",
+                "argument_variant": "selected-vhost",
+                "route": "bridged-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-02T10:43:03Z",
+                "revision": "c4a124a247b2575ef09a47e8dabb5f84f51ac50d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "256bece71d3819f939648ab75c12457ad3b31884",
+                "overlay_sha256": "d40262fc509bc6587bca0f32e5499087ea215b9ccec8a03b33bbf2a5d9505ab1",
+                "effective_contract_sha256": "69a2da9928a5895857a64c1a473e70708886e746e7490ff7b6c60a89e60767c1",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.vhosts": [
+                        "list"
+                    ],
+                    "$.data.uapi.data.vhosts[]": [
+                        "string"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "empty-object"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.vhosts": [
+                        "list"
+                    ],
+                    "$.vhosts[]": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "set_version_bridged",
+                "uapi_status": 1,
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:LangPHP/php_get_vhost_versions",
+                "variant": "uapi:LangPHP/php_get_vhost_versions#GET",
+                "argument_variant": "selected-vhost",
+                "route": "bridged-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-02T10:43:03Z",
+                "revision": "c4a124a247b2575ef09a47e8dabb5f84f51ac50d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "256bece71d3819f939648ab75c12457ad3b31884",
+                "overlay_sha256": "d40262fc509bc6587bca0f32e5499087ea215b9ccec8a03b33bbf2a5d9505ab1",
+                "effective_contract_sha256": "9cf2aa5174684b2059d4847a709a6f83e6b33f36732314581a8b07a5d1c7a111",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.account": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.account_owner": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.documentroot": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.homedir": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.main_domain": [
+                        "int"
+                    ],
+                    "$.data.uapi.data.php_fpm": [
+                        "int"
+                    ],
+                    "$.data.uapi.data.php_fpm_pool_parms": [
+                        "empty-object"
+                    ],
+                    "$.data.uapi.data.php_fpm_pool_parms.pm_max_children": [
+                        "missing"
+                    ],
+                    "$.data.uapi.data.php_fpm_pool_parms.pm_max_requests": [
+                        "missing"
+                    ],
+                    "$.data.uapi.data.php_fpm_pool_parms.pm_process_idle_timeout": [
+                        "missing"
+                    ],
+                    "$.data.uapi.data.phpversion_source": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.phpversion_source.domain": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.phpversion_source.system_default": [
+                        "missing"
+                    ],
+                    "$.data.uapi.data.version": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.vhost": [
+                        "string"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "empty-object"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.account": [
+                        "string"
+                    ],
+                    "$.account_owner": [
+                        "string"
+                    ],
+                    "$.documentroot": [
+                        "string"
+                    ],
+                    "$.homedir": [
+                        "string"
+                    ],
+                    "$.main_domain": [
+                        "int"
+                    ],
+                    "$.php_fpm": [
+                        "int"
+                    ],
+                    "$.php_fpm_pool_parms": [
+                        "empty-object"
+                    ],
+                    "$.php_fpm_pool_parms.pm_max_children": [
+                        "missing"
+                    ],
+                    "$.php_fpm_pool_parms.pm_max_requests": [
+                        "missing"
+                    ],
+                    "$.php_fpm_pool_parms.pm_process_idle_timeout": [
+                        "missing"
+                    ],
+                    "$.phpversion_source": [
+                        "object"
+                    ],
+                    "$.phpversion_source.domain": [
+                        "string"
+                    ],
+                    "$.phpversion_source.system_default": [
+                        "missing"
+                    ],
+                    "$.version": [
+                        "string"
+                    ],
+                    "$.vhost": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "read_version_bridged",
+                "uapi_status": 1,
+                "expectation": "passed"
+            }
+        ],
+        "original_state": {
+            "installed_versions": 4,
+            "installed_routes_agree": true,
+            "version_alternatives": 3,
+            "vhost_rows": {
+                "direct-uapi": 1,
+                "bridged-uapi": 1
+            },
+            "vhost_row_found": true,
+            "vhosts_root": {
+                "direct-uapi": "list",
+                "bridged-uapi": "list"
+            },
+            "home_content": {
+                "direct-uapi": "empty",
+                "bridged-uapi": "empty"
+            },
+            "content_routes_agree": true,
+            "directives_found": true,
+            "directive_routes_agree": true,
+            "directive_targets_distinct": true
+        },
+        "directive_changes": {
+            "direct-uapi": {
+                "encoding": "scalar",
+                "fields": 1,
+                "readback_exact": true
+            },
+            "bridged-uapi": {
+                "encoding": "numbered",
+                "fields": 2,
+                "readback_exact": true
+            }
+        },
+        "content_round_trips": {
+            "direct-uapi": {
+                "class": "entity_model_after_server_comments",
+                "server_comment_lines": 4,
+                "server_blank_lines": 1,
+                "directive_crosscheck": true,
+                "earlier_directives_replaced": true
+            },
+            "bridged-uapi": {
+                "class": "entity_model_after_server_comments",
+                "server_comment_lines": 4,
+                "server_blank_lines": 1,
+                "directive_crosscheck": true,
+                "earlier_directives_replaced": true
+            }
+        },
+        "content_type_host": {
+            "direct-uapi": {
+                "outcome": "refused",
+                "envelope_errors": 1,
+                "content_unchanged": true
+            },
+            "bridged-uapi": {
+                "outcome": "refused",
+                "envelope_errors": 1,
+                "content_unchanged": true
+            }
+        },
+        "version_changes": {
+            "direct-uapi": {
+                "result_vhosts_exact": true,
+                "readback_root": "object",
+                "readback_matches": true
+            },
+            "bridged-uapi": {
+                "result_vhosts_exact": true,
+                "readback_root": "object",
+                "readback_matches": true
+            }
+        },
+        "discrepancy_review": {
+            "policy": "langphp-mutations-no-acknowledgments-v1",
+            "status": "passed",
+            "findings": []
+        },
+        "fixture": {
+            "status": "passed",
+            "setup": "passed",
+            "capture": "passed",
+            "expectations": "passed",
+            "cleanup": "passed",
+            "failures": [],
+            "stopped_at": {
+                "preflight": null,
+                "directives": null,
+                "content": null,
+                "versions": null
+            },
+            "resources": {
+                "account": {
+                    "creation": "confirmed",
+                    "cleanup": "confirmed_absent"
+                },
+                "token": {
+                    "creation": "confirmed",
+                    "cleanup": "confirmed_absent"
+                }
+            },
+            "domain_cleanup": "confirmed_absent",
+            "zone_cleanup": "confirmed_absent",
+            "filesystem_cleanup": "confirmed_absent",
+            "filesystem_residue": [],
+            "filesystem_control": {
+                "status": "passed",
+                "counts": {
+                    "home": 1,
+                    "users": 1,
+                    "userdata": 1,
+                    "userdomains": 1,
+                    "passwd": 1,
+                    "zones": 2
+                }
+            }
+        },
+        "limitations": [
+            "two_routes_on_one_server_version_only",
+            "home_ini_scope_only_no_vhost_ini_round_trip",
+            "api_readback_only_no_php_runtime_behavior",
+            "main_domain_version_change_only_no_fpm_or_impacted_domain_variants",
+            "account_removal_is_the_only_cleanup_of_ini_and_version_changes",
+            "filesystem_proof_covers_fixed_locations_at_one_moment"
+        ]
+    }
+}
