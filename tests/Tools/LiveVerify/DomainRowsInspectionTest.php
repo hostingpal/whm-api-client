@@ -4,13 +4,34 @@ declare(strict_types=1);
 
 namespace HostingPal\WhmApiClient\Tests\Tools\LiveVerify;
 
-use HostingPal\WhmApiClient\Api\Uapi\Spec\DomainInfoSpec;
-use HostingPal\WhmApiClient\Api\Whm\Spec\DnsSpec as WhmDnsSpec;
 use HostingPal\WhmApiClient\Tools\LiveVerify\DomainRowsInspection;
 use PHPUnit\Framework\TestCase;
 
+/** Contracts here are written by hand, so these tests never move with the generated specs. */
 final class DomainRowsInspectionTest extends TestCase
 {
+    /** A row union like domains_data: an object branch first, then a list of rows. */
+    private const ROWS = ['type' => 'union', 'anyOf' => [
+        ['type' => 'object', 'fields' => ['main_domain' => ['type' => 'string']]],
+        ['type' => 'list', 'items' => ['type' => 'object', 'fields' => [
+            'domain' => ['type' => 'string'],
+            'type' => ['type' => 'string'],
+            'port' => ['type' => 'int', 'accept' => ['numeric-string']],
+            'customlog' => ['type' => 'list', 'items' => ['type' => 'object', 'fields' => [
+                'format' => ['type' => 'string'], 'target' => ['type' => 'string'],
+            ]]],
+        ]]],
+    ]];
+
+    private const RECORDS = ['type' => 'object', 'fields' => ['records' => ['type' => 'list', 'items' => [
+        'type' => 'object', 'fields' => ['domain' => ['type' => 'string'], 'local_authority' => ['type' => 'flag']],
+    ]]]];
+
+    private const SUMMARY = ['type' => 'object', 'fields' => [
+        'main_domain' => ['type' => 'string', 'nullable' => true],
+        'sub_domains' => ['type' => 'list', 'items' => ['type' => 'string']],
+    ]];
+
     public function testListsOnlyUndeclaredKeyNamesAndTypesNeverValues(): void
     {
         $raw = (string) json_encode(['result' => ['status' => 1, 'data' => [
@@ -20,7 +41,7 @@ final class DomainRowsInspectionTest extends TestCase
             ['domain' => 'private-other.example', 'customlog' => [['target' => 'private', 'format' => 'private']]],
         ]]]);
 
-        $lines = DomainRowsInspection::undeclared('direct-uapi', $raw, DomainInfoSpec::DOMAINS_DATA['returns']);
+        $lines = DomainRowsInspection::undeclared('direct-uapi', $raw, self::ROWS);
 
         self::assertSame([
             'undeclared $[].nested.<key>: int',
@@ -45,22 +66,21 @@ final class DomainRowsInspectionTest extends TestCase
 
         self::assertSame(
             ['undeclared $.records[].extra: bool'],
-            DomainRowsInspection::undeclared('whm', $whm, WhmDnsSpec::HAS_LOCAL_AUTHORITY['returns']),
+            DomainRowsInspection::undeclared('whm', $whm, self::RECORDS),
         );
         self::assertSame(
             ['undeclared $.records[].extra: bool'],
-            DomainRowsInspection::undeclared('bridged-uapi', $bridged, WhmDnsSpec::HAS_LOCAL_AUTHORITY['returns']),
+            DomainRowsInspection::undeclared('bridged-uapi', $bridged, self::RECORDS),
         );
     }
 
     public function testATypeMismatchNamesOnlyTheDeclaredPathAndTheObservedType(): void
     {
-        $raw = (string) json_encode(['status' => 1, 'data' => ['main_domain' => ['private'],
-            'addon_domains' => [], 'parked_domains' => [], 'sub_domains' => []]]);
+        $raw = (string) json_encode(['status' => 1, 'data' => ['main_domain' => ['private'], 'sub_domains' => []]]);
 
         self::assertSame(
             ['mismatch $.main_domain: list'],
-            DomainRowsInspection::undeclared('direct-uapi', $raw, DomainInfoSpec::LIST_DOMAINS['returns']),
+            DomainRowsInspection::undeclared('direct-uapi', $raw, self::SUMMARY),
         );
     }
 

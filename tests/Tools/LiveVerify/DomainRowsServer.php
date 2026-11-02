@@ -50,6 +50,12 @@ final class DomainRowsServer implements ClientInterface
     /** Return only one result to every DNS read. */
     public bool $oneDnsResult = false;
 
+    /** Whether domains_data format=list holds a row for the alias; cPanel 11.138.0.19 held none. */
+    public bool $listAliasRow = false;
+
+    /** Whether the inventories list the subdomain an addon is parked on; cPanel 11.138.0.19 listed it nowhere. */
+    public bool $listAddonSubdomain = false;
+
     /** Whether single_domain_data refuses an alias, as aliases have no user-data file. */
     public bool $refuseAlias = true;
 
@@ -263,20 +269,26 @@ final class DomainRowsServer implements ClientInterface
                 ['message' => 'private upstream text', 'type' => 'unrecognized_nameservers'], $named),
             'DomainInfo/list_domains' => ['main_domain' => self::M, 'addon_domains' => $this->owned([self::A]),
                 'parked_domains' => $this->owned([DomainRowsRecipe::ALIAS]),
-                'sub_domains' => $this->owned([DomainRowsRecipe::ADDON_SUBDOMAIN, DomainRowsRecipe::SUBDOMAIN])],
+                'sub_domains' => $this->owned($this->subdomains())],
             'DomainInfo/domains_data' => ($query['format'] ?? null) === 'list'
-                ? array_map(self::row(...), [self::M, ...$this->owned([self::A, DomainRowsRecipe::ALIAS,
-                    DomainRowsRecipe::ADDON_SUBDOMAIN, DomainRowsRecipe::SUBDOMAIN])])
+                ? array_map(self::row(...), [self::M, ...$this->owned([self::A,
+                    ...($this->listAliasRow ? [DomainRowsRecipe::ALIAS] : []), ...$this->subdomains()])])
                 : ['main_domain' => self::row(self::M),
                     'addon_domains' => array_map(self::row(...), $this->owned([self::A])),
                     'parked_domains' => $this->owned([DomainRowsRecipe::ALIAS]),
-                    'sub_domains' => array_map(self::row(...), $this->owned([DomainRowsRecipe::ADDON_SUBDOMAIN,
-                        DomainRowsRecipe::SUBDOMAIN]))],
+                    'sub_domains' => array_map(self::row(...), $this->owned($this->subdomains()))],
             'DomainInfo/single_domain_data' => $this->single(
                 is_string($query['domain'] ?? null) ? $query['domain'] : '',
             ),
             default => null,
         };
+    }
+
+    /** @return list<string> */
+    private function subdomains(): array
+    {
+        return $this->listAddonSubdomain
+            ? [DomainRowsRecipe::ADDON_SUBDOMAIN, DomainRowsRecipe::SUBDOMAIN] : [DomainRowsRecipe::SUBDOMAIN];
     }
 
     /**

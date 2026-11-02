@@ -98,8 +98,10 @@ final class DomainRowsFixtureTest extends TestCase
         }
         self::assertCount(16, $scenario['dns_results']);
         foreach ($scenario['domain_kinds'] as $phase => $kinds) {
+            // As on cPanel 11.138.0.19, format=list holds no alias row and no inventory lists the addon's subdomain.
+            $parked = !str_ends_with($phase, '_domains_list');
             self::assertSame(
-                ['main' => true, 'addon' => true, 'parked' => true, 'sub' => true, 'addon_subdomain' => true],
+                ['main' => true, 'addon' => true, 'parked' => $parked, 'sub' => true, 'addon_subdomain' => false],
                 $kinds,
                 $phase,
             );
@@ -139,6 +141,38 @@ final class DomainRowsFixtureTest extends TestCase
             MarkerExposure::assertNeverExposed($form, $scenario);
             MarkerExposure::assertNeverExposed($form, $fixture, $http);
         }
+    }
+
+    /** The alias and the addon's subdomain are recorded wherever they appear, and required by no list form. */
+    public function testOptionalKindsAreRecordedWhereverTheyAppear(): void
+    {
+        $http = new DomainRowsServer();
+        $http->listAliasRow = true;
+        $http->listAddonSubdomain = true;
+        $scenario = self::scenario($http);
+
+        self::assertSame('passed', $scenario['fixture']['status']);
+        foreach ($scenario['domain_kinds'] as $phase => $kinds) {
+            self::assertSame(
+                ['main' => true, 'addon' => true, 'parked' => true, 'sub' => true, 'addon_subdomain' => true],
+                $kinds,
+                $phase,
+            );
+        }
+    }
+
+    /** Every other inventory must list the alias, as its row is part of what the run exists to observe. */
+    public function testAnInventoryWithoutTheAliasFailsItsExpectation(): void
+    {
+        $http = new DomainRowsServer();
+        $http->overrides['direct:DomainInfo/list_domains:1'] = '{"main_domain":"wldomains.example.com",'
+            . '"addon_domains":["wldomains-addon.example.com"],"parked_domains":[],'
+            . '"sub_domains":["wldsub.wldomains.example.com"]}';
+        $scenario = self::scenario($http);
+
+        self::assertSame(['expectation_failure'], $scenario['fixture']['failures']);
+        self::assertFalse($scenario['domain_kinds']['direct_list_domains']['parked']);
+        self::assertSame('failed', self::observation($scenario, 'direct_list_domains')['expectation']);
     }
 
     /** A server answering in sorted order reads as request order for one permutation and reverse for the other. */

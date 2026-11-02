@@ -412,7 +412,13 @@ final class DomainRowsFixture
         $this->judge(count($rows) === 2 && $identities !== 'mismatch');
     }
 
-    /** Record which owned kinds an inventory read lists; every kind must appear, as rows of each are the point. */
+    /**
+     * Record which owned kinds an inventory read lists; main, addon and subdomain must always appear.
+     *
+     * The alias must appear too, except in domains_data format=list: on cPanel 11.138.0.19 the private inspection
+     * found no alias row there, and the alias shows only as a name in the hash form. Where it does appear it is
+     * recorded. The subdomain an addon is parked on is recorded and never required.
+     */
     private function judgeKinds(string $phase, #[SensitiveParameter] mixed $result): void
     {
         $payload = is_array($result) ? $result : [];
@@ -445,7 +451,10 @@ final class DomainRowsFixture
             ];
         }
         $this->kinds[$phase] = $kinds;
-        $this->judge($kinds['main'] && $kinds['addon'] && $kinds['parked'] && $kinds['sub']);
+        $this->judge(
+            $kinds['main'] && $kinds['addon'] && $kinds['sub']
+            && ($kinds['parked'] || str_ends_with($phase, '_domains_list')),
+        );
     }
 
     /** Record which of this run's names a single-domain read returned; it must be one of them. */
