@@ -1398,3 +1398,20 @@ observations as the [v1 artifact](2026-10-17-finite-quota.json). See the
 of what ran at that revision, including its `filesystem_cleanup`, which predates the control.
 The fixture has since moved to `finite-quota-disposable-v3`, and no v3 capture exists; see
 the [source audit](../source-audit.md#re-review-corrections-2026-11-02).
+
+## Disposable-account domain rows and multi-value DNS reads
+
+The [domain-rows capture](2026-11-02-domain-rows.json) at
+`e6df4652d7b44c170f76250d85c200d516c748b5` on `11.138.0.19` is a **passed run**, exit 0,
+scenario `domain-rows-disposable-v1` under policy `domain-rows-no-acknowledgments-v1`, with
+the filesystem proof enabled. A fresh `wldomains` account gained an addon, an alias of its
+main domain and a subdomain, and all 35 observations passed with zero review findings: WHM
+version, the account-limit and three domain-creation POSTs, 16 multi-value DNS GETs and 14
+DomainInfo GETs across every record kind. Token, account, main domain and zone, all four
+extra domain names and both extra zones are `confirmed_absent`, and the filesystem proof is
+`confirmed_absent` for the account and for each extra zone, each after its own passed
+control. The eight DNS results that name their domain, `has_local_authority` on three routes
+and `fetch_ds_records_for_domains` on WHM, each in both orders, all came back in request
+order; that is recorded per sample and is not a general ordering claim. See the
+[source audit](../source-audit.md#disposable-domain-rows-and-multi-value-dns-reads-2026-11-02).
+SHA-256: `031e989c1035966b2696fec08975b8846e07381ec0c5fd1e5718992c7f547f16`.

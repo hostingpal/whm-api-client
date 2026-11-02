@@ -322,8 +322,9 @@ hashes for those operations differ from the current specs. Of those eight fields
 list-form `customlog[].format` stays validated: `main_domain.phpopenbasedirprotect` is
 also `mixed` because domains_data does not promise it, while the pinned
 single_domain_data flag and other documented fields keep their validation.
-Empty-string userdirprotect remains documentation/offline coverage because
-the live field is omitted. Three PHP setters and their INI write/read round trip
+The main domain omits userdirprotect; the 2026-11-02 domain-rows capture observed
+the exact empty string on addon and subdomain rows in both domains_data forms
+and in their single-domain results. Three PHP setters and their INI write/read round trip
 remain offline-only; follow-up 8x0.2.17 owns the remaining live work.
 The `uapi()->siteQuality()` group exposes ten of thirteen pinned SiteQuality
 functions from cPanel 110: account creation/deletion, project creation/domain
