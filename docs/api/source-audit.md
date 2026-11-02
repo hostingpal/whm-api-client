@@ -10236,3 +10236,83 @@ every count 0 and every inventory usable. The `zones` count of 4 is higher than 
 for `wlupload`; it counts zone files and is not explained further here. **Sessions read 0
 for an existing account too**, so they still have no positive control. No account was
 created, and nothing was written.
+
+## User task queue fixture, 2026-11-02
+
+Bead `whm-api-client-8x0.2.72` asks for a populated `UserTasks` inventory through both routes
+and the deletion of a task the run owns; its child `8x0.2.72.1` asks how queue rows are
+serialized. Both need a real producer. The constraint for this run was that the producer use
+only resources on the server itself, with no outbound network contact, nothing installed and
+no server setting changed.
+
+**Pinned source.** The pinned `UserTasks/retrieve` and `UserTasks/delete` text names
+`VersionControl::create` as the queue's user, and `VersionControl/create` says a source
+repository is cloned through the task queue while omitting it creates an empty repository.
+Its only URL example is `ssh://`. The pinned text does not say whether a local path is an
+acceptable clone source, so it cannot settle the producer alone.
+
+**Installed source.** The installed Perl modules of `11.138.0.19` on `test.oblak.host` were
+therefore read over the `oblak.test` SSH alias, read-only, with `grep`, `sed` and `sha256sum`;
+nothing was written and no process was started on the server. These are agent-inspected
+excerpts, not pinned sources:
+
+| Module | SHA-256 |
+| --- | --- |
+| `Cpanel/VersionControl/git/Remote.pm` | `319419a57552e38890347914534e2fa047d08ee7d8d65af096a5dc63afe009f0` |
+| `Cpanel/VersionControl/git.pm` | `864bbff2acc7aa4db4f36096409fcba6ae561cead938247fea5f397b9eb3f16b` |
+| `Cpanel/API/VersionControl.pm` | `b531fb8fe076021e757fa7673326ee84a06bc0f566837493bbaf2f79f77f08bc` |
+| `Cpanel/Validate/URL.pm` | `116efd1266ac7415ceef7b7c11c14a83f9952fb3d7ac509ccdc49dea31a09980` |
+| `Cpanel/UserTasks.pm` | `fac7718639acdf5929bd00dd6953250707b582ff43723017d9fa82f8bfacbab1` |
+| `Cpanel/UserTasks/VersionControl.pm` | `d9846322078c2f2ac1b5d3e4f8f1b88026c6f8f9abf35862139db0eced93e080` |
+| `Cpanel/UserTasksCore/Task.pm` | `76f2364adcebffb2576f3e5634cdd9b9377ccb8955aaa37e0ff650b63843ce58` |
+| `Cpanel/API/UserTasks.pm` | `d280eb3065ad82d527af28f7b990c4295fb7bb8eb079c18fec0bca957dbe77c1` |
+| `3rdparty/perl/542/cpanel-lib/Directory/Queue/Normal.pm` (2.2) | `017ade2ae3a9bead074d4683ba6a7ccc24231b0cf9a246377e4733092ca15e91` |
+| `3rdparty/perl/542/cpanel-lib/Directory/Queue.pm` | `fa3429e68028741f829f83e091492c3bf83c507b526584b11da63d1c1f366d00` |
+
+What they show:
+
+- `Remote::_validate_source_url` refuses only a URL with an embedded password and one with a
+  character outside `Cpanel::Validate::URL::is_valid_url`, which is a character-set check. An
+  absolute local path passes. `Remote::new` caches the repository, queues
+  `{subsystem: VersionControl, action: create, args: {repository_root, log_file}}` through
+  `Cpanel::UserTasks->new()->add()`, and the task later runs `git clone --origin=<remote>
+  <url> <dir>`. Git clones a local path without any network transport.
+- Without `source_repository`, `git::new` creates the repository at once with `git init` and
+  cPanel's deployment template, and queues nothing. Its only active hook is `post-receive`,
+  which runs on a push, never on a clone.
+- `API::VersionControl::create` needs the `version_control` feature, accepts a root only below
+  the account home, and fills `tasks` from the queue rows for that root at response time. A
+  field whose method dies, such as `available_branches` before the clone exists, becomes null.
+- `UserTasks::add()` defaults `exclusive` to integer 0, stores the task through
+  `Directory::Queue::Normal` with schema `subsystem`, `action` and `exclusive` as `string` and
+  `args` as `table`, and starts the compiled `process_user_tasks` runner at once. `get()` adds
+  `sse_url` when `args.log_file` is set. `get()` and `remove()` retry the element lock for up to
+  0.5 seconds, then die.
+- `Directory::Queue::Normal` 2.2 writes every `string` field as UTF-8 text and reads it back by
+  decoding, and a `table` as tab-separated lines whose values come back as strings;
+  `_hash2string` refuses an undefined value. Element names match `[0-9a-f]{8}/[0-9a-f]{14}`,
+  and `_check_element` refuses anything else.
+- `UserTasksCore::Task->adopt` only blesses the hash, and its `TO_JSON` returns a shallow copy.
+  `API::UserTasks::retrieve` reads each element with `get()` and adds its `id`; `delete`
+  requires `id` and calls `remove()`.
+
+The runner is a compiled binary; its logic was not inspected. These excerpts predict that every
+row scalar of a `VersionControl` task, `exclusive` included, reaches JSON as a string, and that
+args carry no null. Only a capture can show what the wire carries, and it says nothing about
+the WPX fields `domain` and `install_id`.
+
+**Recipe.** `tools/live-verify/user-tasks.php`, scenario `user-tasks-disposable-v1`, runs on the
+disposable account `wltasks` through the shared lifecycle. It creates an empty source
+repository, then a clone of it by absolute path, reads the queue through both routes, deletes
+the one task proven its own by its exact ID, and reads again. The
+[recipe notes](../../tools/live-verify/README.md#disposable-account-user-task-queue-fixture)
+give the phases, gates and ownership rules. The runner starts with the task and nothing
+controls it, so the task may finish before any read; each read records what it held, and the
+one delete runs even then, with its outcome recorded and never retried. Deleting a queue entry
+proves neither completion nor that a process stopped.
+
+`discrepancy_review` gates the UserTasks phases with no acknowledgment mechanism.
+`producer_review` reports the home read and both creates, sent through generic `call()`, by the
+same rule. Their discrepancies are Variables and VersionControl evidence and never gate the
+UserTasks result. The create rows are expected to carry `exclusive`, which the VersionControl
+create contract does not declare.

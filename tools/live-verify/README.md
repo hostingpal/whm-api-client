@@ -2444,3 +2444,78 @@ is a **failed run**, exit 1, kept unchanged. It required the exact requested spe
 but this server omits `from_char`/`to_char` and lowercases `from_charset`/`to_charset`.
 See the [source audit](../../docs/api/source-audit.md#charset-echo-classification-and-corrected-capture)
 for what these captures do and do not establish.
+
+## Disposable-account user task queue fixture
+
+`user-tasks.php` observes one real `UserTasks` queue entry through both routes and deletes it,
+once, on a fresh disposable account, with no write to `npr` or any other account. It runs at
+committed code, reads only `OBLAK_TEST_WHM_KEY`, and creates its own short-lived writable token:
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 WHM_API_LIVE_FS_CHECK=1 \
+  WHM_API_LIVE_ACCOUNT=wltasks WHM_API_LIVE_DOMAIN=wltasks.example.com \
+  php tools/live-verify/user-tasks.php \
+  --output=docs/api/evidence/YYYY-MM-DD-user-tasks.json
+```
+
+Use a new output path and run it once; a failed run keeps its artifact and is never rerun to
+obtain a better one. The output is written only after cleanup, as a new-only protected file.
+Exit 0 requires the lifecycle and the strict UserTasks review to pass. The shared
+[disposable-account lifecycle](#disposable-account-lifecycle) owns identity, ownership, the
+900-second writable token and account cleanup. `UserTasksGuard` checks both opt-ins and the
+exact account and domain on every request, then the exact method, URI, complete header set and
+body. Each mutation is consumed once, even when refused.
+
+**Producer.** A `VersionControl/create` clone queues a `VersionControl`/`create` task. Its
+source is an empty repository this run creates first, inside the same account, with a plain
+`VersionControl/create` that queues nothing. The clone URL is that repository's absolute
+path, with no scheme, host or credential, so the server's git clones a local path and contacts
+no network. Nothing is installed and no server setting changes. Both creates go through
+generic `call()`, because they are fixture steps rather than the subject. The producer rests
+on the installed sources of `11.138.0.19`, inspected read-only for this recipe: see the
+[source audit](../../docs/api/source-audit.md#user-task-queue-fixture-2026-11-02).
+
+**Requests**, in order, all on the direct route unless named bridged:
+
+| Phase | Request | Gate |
+| --- | --- | --- |
+| `version` | WHM version | usable version |
+| `home` | `Variables/get_user_information` for `home`, generic GET | exactly `/home/wltasks` |
+| `tasks_initial_direct`, `tasks_initial_bridged` | typed `listTasks()` | an empty JSON list |
+| `source_create` | `VersionControl/create`, no source, generic POST | its own root, no task rows |
+| `clone_create` | `VersionControl/create` from the local path, generic POST | API success |
+| `tasks_queued_direct`, `tasks_queued_bridged` | typed `listTasks()` | recorded |
+| `delete_owned` | typed `deleteTask()` with the owned ID | recorded |
+| `tasks_after_direct`, `tasks_after_bridged` | typed `listTasks()` | recorded |
+
+Capture stops at the first unexpected state before the producer, so nothing is created on an
+account that does not look as planned. After the producer nothing stops capture: every read and
+the delete still run, and their unmet expectations are recorded and fail the run.
+
+**Ownership and the one delete.** Both routes must read an empty queue first, so every later
+row is this run's, but ownership still needs an exact `VersionControl` subsystem, `create`
+action and this run's clone root, read from the original JSON, never from typed results. The
+ID comes from the producer's own response, which lists the queue rows for its root, or failing
+that from a queue read, and it must be a `Directory::Queue::Normal` element name. Exactly one
+delete is ever authorized, of that ID, by its literal body. It runs even if the task already
+finished, because the runner races this run and nothing controls it; a refusal is then
+recorded and never retried. Other rows are only counted. No queued work is executed, polled,
+cancelled or otherwise touched, and deletion proves neither completion nor that a process
+stopped. Both repositories stay for account removal, which takes the whole home directory.
+
+**Evidence.** `user_tasks` holds structural probe records, per-read counts (`rows`,
+`owned_rows`, `foreign_rows`), the ownership proof and the delete's outcome and data type.
+Payload paths carry each queue field's wire type; no task ID, argument, path, name, token or
+upstream text is persisted. `expectation_findings` names every unmet expectation by fixed
+label, such as `owned_row_absent:tasks_queued_bridged` when the task finished before that read.
+
+Two reviews read the records. `discrepancy_review`, policy
+`user-tasks-subject-no-acknowledgments-v1`, gates the run: every UserTasks phase and the
+version must appear once, in order, with its contract and route, a successful outcome, UAPI
+status 1 and no discrepancy. `producer_review`, policy `user-tasks-producer-structure-v1`, holds
+the home read and both creates to the same rule with validation `not_checked`. Their
+discrepancies are Variables and VersionControl evidence: they fail that review and are
+reported, but never gate the UserTasks result. The queue's own `exclusive` key, which the
+VersionControl create contract does not declare, is expected to appear there.
+
+The current scenario is `user-tasks-disposable-v1`.
