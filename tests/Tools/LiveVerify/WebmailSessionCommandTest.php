@@ -52,7 +52,7 @@ final class WebmailSessionCommandTest extends TestCase
             'Webmail session fixture: passed', 'Webmail session discrepancy review: passed',
             'Webmail session files: removed',
         ], $result['output']);
-        self::assertSame(['proof', 'observe', 'remove', 'proof'], self::sshCalls($directory));
+        self::assertSame(['proof', 'remove', 'proof'], self::sshCalls($directory));
         $file = $directory . '/evidence.json';
         self::assertSame(0600, fileperms($file) & 0777);
         $json = file_get_contents($file);
@@ -65,7 +65,7 @@ final class WebmailSessionCommandTest extends TestCase
         self::assertSame(1, $report['schema_version']);
         self::assertIsArray($report['webmail_sessions']);
         $scenario = $report['webmail_sessions'];
-        self::assertSame('webmail-sessions-disposable-v3', $scenario['scenario']);
+        self::assertSame('webmail-sessions-disposable-v4', $scenario['scenario']);
         self::assertIsArray($scenario['fixture']);
         self::assertSame([], $scenario['fixture']['failures']);
         self::assertSame('confirmed_absent', $scenario['fixture']['filesystem_cleanup']);
@@ -75,8 +75,11 @@ final class WebmailSessionCommandTest extends TestCase
         self::assertSame([], glob($directory . '/.webmail-sessions-*'));
     }
 
-    /** A deletion that fails fails the lifecycle's cleanup, and the final proof still finds the files. */
-    public function testAFailedDeletionFailsCleanupAndTheRun(): void
+    /**
+     * A deletion the server refused is reported as failed, with its counts; it fails the lifecycle's cleanup, and the
+     * final proof still finds the files.
+     */
+    public function testAFailedDeletionFailsCleanupAndTheRunWithItsCounts(): void
     {
         $directory = $this->sandbox();
         $result = self::runCommand($directory, ['PATH' => self::standInSsh($directory, 4, removalFails: true)]);
@@ -86,11 +89,40 @@ final class WebmailSessionCommandTest extends TestCase
             'Webmail session fixture: failed', 'Webmail session discrepancy review: passed',
             'Webmail session files: unconfirmed',
         ], $result['output']);
-        self::assertSame(['proof', 'observe', 'remove', 'proof'], self::sshCalls($directory));
+        self::assertSame(['proof', 'remove', 'proof'], self::sshCalls($directory));
         $fixture = self::fixtureReport($directory);
         self::assertSame('failed', $fixture['cleanup']);
-        self::assertSame(['session_files_unconfirmed', 'filesystem_residue_present'], $fixture['failures']);
+        self::assertSame(['session_file_deletion_failed', 'filesystem_residue_present'], $fixture['failures']);
         self::assertSame(['sessions' => 4], $fixture['filesystem_residue']);
+        $files = self::sessionFiles($directory);
+        self::assertSame('deletion_failed', $files['reason']);
+        self::assertIsArray($files['removal']);
+        self::assertTrue($files['removal']['deletion_failed']);
+        self::assertSame(4, $files['removal']['attempted']);
+        self::assertIsArray($files['removal']['after']);
+        self::assertSame(4, $files['removal']['after']['mailbox_literal']);
+    }
+
+    /**
+     * Without the cleanup's own opt-in nothing is deleted: the run reads the residue once, leaves it for the owner,
+     * and fails as before.
+     */
+    public function testWithoutTheCleanupOptInNothingIsDeletedAndTheRunFails(): void
+    {
+        $directory = $this->sandbox();
+        $result = self::runCommand($directory, [
+            'PATH' => self::standInSsh($directory, 4), 'WHM_API_LIVE_SESSION_CLEANUP' => '',
+        ]);
+
+        self::assertSame(1, $result['status'], implode("\n", $result['output']));
+        self::assertSame([
+            'Webmail session fixture: failed', 'Webmail session discrepancy review: passed',
+            'Webmail session files: residue_left',
+        ], $result['output']);
+        self::assertSame(['proof', 'observe', 'proof'], self::sshCalls($directory));
+        $fixture = self::fixtureReport($directory);
+        self::assertSame(['session_files_left_for_owner', 'filesystem_residue_present'], $fixture['failures']);
+        self::assertSame('removal_not_opted_in', self::sessionFiles($directory)['reason']);
     }
 
     public function testACleanRemovalNeedsNoSessionFileCleanupAndPasses(): void
@@ -103,7 +135,7 @@ final class WebmailSessionCommandTest extends TestCase
             'Webmail session fixture: passed', 'Webmail session discrepancy review: passed',
             'Webmail session files: not_required',
         ], $result['output']);
-        self::assertSame(['proof', 'observe', 'proof'], self::sshCalls($directory));
+        self::assertSame(['proof', 'remove', 'proof'], self::sshCalls($directory));
     }
 
     public function testRefusesToOverwriteEvidenceBeforeAnyTransport(): void
@@ -169,7 +201,7 @@ final class WebmailSessionCommandTest extends TestCase
      * Put a recording `ssh` first on PATH. It names each fixed script it reads, and answers like the server.
      *
      * The control sees the account and no session. Account removal leaves $left session files, which the final proof
-     * finds unless a removal took effect first; a failing removal exits 1 and removes nothing.
+     * finds unless a removal took effect first; a failing removal reports `deletion_failed=1` and removes nothing.
      */
     private static function standInSsh(string $directory, int $left, bool $removalFails = false): string
     {
@@ -186,7 +218,7 @@ final class WebmailSessionCommandTest extends TestCase
         $classified = static function (string $prefix, int $files) use ($left): string {
             $counts = ['inventory' => 40 - $left + $files, 'wide' => $files, 'own' => 0, 'mailbox_encoded' => 0,
                 'mailbox_literal' => $files, 'anchored_other' => 0, 'unexplained' => 0, 'token_suffix' => 0,
-                'directories' => $files === 0 ? 0 : 2];
+                'top_level' => 0, 'in_subfolders' => $files];
             $lines = '';
             foreach ($counts as $label => $count) {
                 $lines .= $prefix . $label . '=' . $count . '\n';
@@ -195,8 +227,9 @@ final class WebmailSessionCommandTest extends TestCase
             return $lines;
         };
         $observed = $classified('', $left) . 'complete=1\n';
-        $removed = $classified('before_', $left) . 'deleted=' . $left . '\n' . $classified('after_', 0)
-            . 'complete=1\n';
+        $removed = $classified('before_', $left) . 'attempted=' . $left . '\n'
+            . 'deletion_failed=' . ($removalFails ? 1 : 0) . '\n'
+            . $classified('after_', $removalFails ? $left : 0) . 'complete=1\n';
         $calls = escapeshellarg($directory . '/ssh-calls');
         $effect = escapeshellarg($directory . '/removal-took-effect');
         file_put_contents($directory . '/bin/ssh', "#!/bin/sh\nscript=$(cat)\n"
@@ -210,7 +243,7 @@ final class WebmailSessionCommandTest extends TestCase
             . "else printf '" . $report(0, $left) . "'; fi ;;\n"
             . "    esac ;;\n"
             . "  *-delete*) echo remove >> " . $calls . '; '
-            . ($removalFails ? 'exit 1' : 'touch ' . $effect . "; printf '" . $removed . "'") . " ;;\n"
+            . ($removalFails ? '' : 'touch ' . $effect . '; ') . "printf '" . $removed . "' ;;\n"
             . "  *) echo observe >> " . $calls . "; printf '" . $observed . "' ;;\n"
             . "esac\n");
         chmod($directory . '/bin/ssh', 0700);
@@ -229,6 +262,19 @@ final class WebmailSessionCommandTest extends TestCase
         self::assertIsArray($report['webmail_sessions']['fixture']);
 
         return $report['webmail_sessions']['fixture'];
+    }
+
+    /** @return array<mixed> */
+    private static function sessionFiles(string $directory): array
+    {
+        $json = file_get_contents($directory . '/evidence.json');
+        self::assertIsString($json);
+        $report = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+        self::assertIsArray($report);
+        self::assertIsArray($report['webmail_sessions']);
+        self::assertIsArray($report['webmail_sessions']['session_files']);
+
+        return $report['webmail_sessions']['session_files'];
     }
 
     /** @return list<string> */
@@ -281,8 +327,8 @@ final class WebmailSessionCommandTest extends TestCase
     {
         // exec() inherits this process's environment, so every opt-in is set here rather than left to chance.
         $defaults = ['WHM_API_LIVE' => '1', 'WHM_API_LIVE_MUTATIONS' => '1', 'WHM_API_LIVE_FS_CHECK' => '1',
-            'WHM_API_LIVE_ACCOUNT' => 'wlsession', 'WHM_API_LIVE_DOMAIN' => 'wlsession.example.com',
-            'OBLAK_TEST_WHM_KEY' => 'private-whm'];
+            'WHM_API_LIVE_SESSION_CLEANUP' => '1', 'WHM_API_LIVE_ACCOUNT' => 'wlsession',
+            'WHM_API_LIVE_DOMAIN' => 'wlsession.example.com', 'OBLAK_TEST_WHM_KEY' => 'private-whm'];
         $variables = '';
         foreach ($environment + $defaults as $key => $value) {
             $variables .= $key . '=' . escapeshellarg($value) . ' ';

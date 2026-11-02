@@ -18,7 +18,9 @@ $command = static function (#[SensitiveParameter] array $arguments): int {
             fwrite(STDOUT, "Usage: php tools/live-verify/webmail-sessions.php --output=PATH\n"
                 . "Requires WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 WHM_API_LIVE_FS_CHECK=1 "
                 . "WHM_API_LIVE_ACCOUNT=wlsession WHM_API_LIVE_DOMAIN=wlsession.example.com and OBLAK_TEST_WHM_KEY.\n"
-                . "The filesystem proof is mandatory: account removal leaves session files that only it can see.\n");
+                . "The filesystem proof is mandatory: account removal leaves session files that only it can see.\n"
+                . "WHM_API_LIVE_SESSION_CLEANUP=1 also lets it delete them as root; without it, the run leaves\n"
+                . "them for the owner and fails.\n");
 
             return 0;
         }
