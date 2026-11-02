@@ -1399,6 +1399,28 @@ of what ran at that revision, including its `filesystem_cleanup`, which predates
 The fixture has since moved to `finite-quota-disposable-v3`, and no v3 capture exists; see
 the [source audit](../source-audit.md#re-review-corrections-2026-11-02).
 
+## Disposable-account user task queue evidence
+
+The [capture](2026-11-02-user-tasks.json) at `fea2d7d612acd215c452f5d710b5d0813f3e590b` on
+`11.138.0.19` is a **failed run**, exit 1, kept unchanged. Scenario `user-tasks-disposable-v1`
+queued one clone of a local repository inside the disposable account `wltasks`, which cPanel's
+own queue runner processed. The source was a local path chosen to need no network transport;
+traffic was not monitored.
+
+Observed: the producer's own response listed one owned task row with a queue element ID. All six
+`UserTasks/retrieve` reads, through both routes, returned an empty list, the first after the
+producer beginning within two seconds of it. The delete v1 sent by that ID returned UAPI status
+0. Setup and cleanup passed, and `filesystem_cleanup` is `confirmed_absent` after a passed
+control. Both reviews fail: the UserTasks review on the refused delete, the producer review on
+masked VersionControl create fields.
+
+Inferred, not observed: that the runner removed the task before the first read, and that the
+delete was refused because the element was gone. It establishes no populated `retrieve` row and
+no successful delete. The fixture is now `user-tasks-disposable-v2`, which withholds a delete no
+read supports, and no v2 capture exists. See the
+[source audit](../source-audit.md#user-task-queue-capture). SHA-256:
+`470a6271daedbf78ab07b0769ffa967251c7ca1619940780d65ac0f26fda4e6c`.
+
 ## Disposable-account LangPHP setter evidence
 
 The [capture](2026-11-02-langphp-mutations.json) at
