@@ -97,6 +97,69 @@ final class WebmailSessionGuardTest extends TestCase
         self::assertCount(1, $this->http->getRequests());
     }
 
+    /**
+     * Only the headers differ from the exact request: the refusal consumes nothing, so the exact one passes once.
+     *
+     * @param callable(RequestInterface): RequestInterface $vary
+     */
+    #[DataProvider('headerVariants')]
+    public function testARequestRefusedForItsHeadersConsumesNothing(string $phase, callable $vary): void
+    {
+        $recipe = self::recipe();
+        $guard = $this->guard($recipe);
+        $guard->bindToken(self::TOKEN);
+        $exact = self::request($recipe, $phase);
+        $this->assertRefused($guard, $vary($exact));
+        $guard->sendRequest($exact);
+        $this->assertRefused($guard, $exact);
+        self::assertCount(1, $this->http->getRequests());
+    }
+
+    /** @return iterable<string, array{string, callable(RequestInterface): RequestInterface}> */
+    public static function headerVariants(): iterable
+    {
+        $variants = [
+            'with an extra header' => static fn (RequestInterface $request): RequestInterface
+                => $request->withHeader('Cookie', 'cpsession=private'),
+            'without a content type' => static fn (RequestInterface $request): RequestInterface
+                => $request->withoutHeader('Content-Type'),
+            'with another credential' => static fn (RequestInterface $request): RequestInterface
+                => $request->withHeader('Authorization', 'whm root:OTHER'),
+        ];
+        foreach (['create_mailbox', 'self_direct', 'check_password_bridged'] as $phase) {
+            foreach ($variants as $name => $vary) {
+                yield $phase . ' ' . $name => [$phase, $vary];
+            }
+        }
+    }
+
+    /** A direct mutation sent before the token is bound is refused and consumes nothing. */
+    public function testADirectMutationBeforeTheTokenIsBoundConsumesNothing(): void
+    {
+        $recipe = self::recipe();
+        $guard = $this->guard($recipe);
+        $exact = self::request($recipe, 'mail_user_direct');
+        $this->assertRefused($guard, $exact);
+        $guard->bindToken(self::TOKEN);
+        $guard->sendRequest($exact);
+        $this->assertRefused($guard, $exact);
+        self::assertCount(1, $this->http->getRequests());
+    }
+
+    /** A control mutation refused for its headers consumes nothing either. */
+    public function testAControlPostRefusedForItsHeadersConsumesNothing(): void
+    {
+        $recipe = self::recipe();
+        $guard = $this->guard($recipe);
+        foreach ($recipe->account->controlPosts() as $uri => $body) {
+            $exact = self::root('POST', $uri, $body);
+            $this->assertRefused($guard, $exact->withHeader('Authorization', 'whm root:OTHER'));
+            $guard->sendRequest($exact);
+            $this->assertRefused($guard, $exact);
+        }
+        self::assertCount(count($recipe->account->controlPosts()), $this->http->getRequests());
+    }
+
     /** @param callable(WebmailSessionRecipe): RequestInterface $build */
     #[DataProvider('refusedRequests')]
     public function testEverythingElseIsRefusedBeforeTheTransport(callable $build): void

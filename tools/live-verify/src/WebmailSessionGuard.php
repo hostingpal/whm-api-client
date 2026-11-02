@@ -16,7 +16,8 @@ use SensitiveParameter;
  * Every request requires both opt-ins and the exact account and domain, then an exact method, URI, header set and
  * body. Reads may repeat. Each mutation is admitted at most once: the binding's ControlPostAdmission admits each
  * lifecycle mutation, and this guard admits each recipe mutation the first time its exact request arrives, so nothing
- * below it can retry one. A request that does not match exactly consumes nothing. Only the API ports and the recipe's
+ * below it can retry one. Every check, headers and token binding included, runs before a mutation is consumed, so a
+ * request that does not match exactly in every part consumes nothing. Only the API ports and the recipe's
  * URIs exist here, so a returned Webmail credential, session or URL can never be used or fetched through this guard.
  * Failure text carries no request data.
  */
@@ -92,18 +93,23 @@ final class WebmailSessionGuard implements ClientInterface
         }
         $method = $request->getMethod();
         if ($method === 'GET') {
-            $this->requireHeaders($request, $body === '' && isset($this->readOnly[$uri]), $direct, null);
+            if ($body !== '' || !isset($this->readOnly[$uri]) || !$this->headersMatch($request, $direct, null)) {
+                throw self::refused();
+            }
 
             return $this->http->sendRequest($request);
         }
-        if ($method !== 'POST') {
+        if ($method !== 'POST' || !$this->headersMatch($request, $direct, 'application/x-www-form-urlencoded')) {
             throw self::refused();
         }
+        // Everything else has been checked; consuming the mutation is the last step before the transport.
         $phase = $this->mutations[$uri] ?? null;
-        $allowed = $phase === null
+        $admitted = $phase === null
             ? !$direct && $this->controlPosts->admit($uri, $body)
             : $this->admitMutation($phase, $uri, $body, $direct);
-        $this->requireHeaders($request, $allowed, $direct, 'application/x-www-form-urlencoded');
+        if (!$admitted) {
+            throw self::refused();
+        }
 
         return $this->http->sendRequest($request);
     }
@@ -122,15 +128,14 @@ final class WebmailSessionGuard implements ClientInterface
         return true;
     }
 
-    /** Compare the complete header set exactly, so nothing unreviewed reaches the transport. */
-    private function requireHeaders(
+    /** Compare the complete header set exactly, so nothing unreviewed reaches the transport; direct needs a token. */
+    private function headersMatch(
         #[SensitiveParameter] RequestInterface $request,
-        bool $allowed,
         bool $direct,
         ?string $contentType,
-    ): void {
+    ): bool {
         if ($direct && $this->cpanelToken === null) {
-            throw self::refused();
+            return false;
         }
         $headers = [
             'host' => ['test.oblak.host:' . ($direct ? '2083' : '2087')],
@@ -145,9 +150,8 @@ final class WebmailSessionGuard implements ClientInterface
         $actual = array_change_key_case($request->getHeaders(), CASE_LOWER);
         ksort($headers);
         ksort($actual);
-        if (!$allowed || $actual !== $headers) {
-            throw self::refused();
-        }
+
+        return $actual === $headers;
     }
 
     private static function refused(): LogicException
