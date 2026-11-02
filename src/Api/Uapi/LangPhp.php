@@ -365,9 +365,10 @@ final readonly class LangPhp
      * Observed: On cPanel 11.138.0.19 with type=home, a scalar directive through direct UAPI and a numbered
      * directive/directive-1 pair through the WHM bridge each took effect: phpIniGetUserBasicDirectives() read back
      * exactly the written values, other directives were unchanged, and both writes returned null data. The server's
-     * handler collects, deduplicates and sorts the key:value strings before applying them, so list order sets no
-     * precedence; each write also regenerates .user.ini and a marked .htaccess section beside php.ini. API readback
-     * does not establish PHP runtime behavior.
+     * handler removes exact duplicates, sorts the key:value strings as text and applies them in that order, so when one
+     * directive is given conflicting values the one that sorts last wins, whatever the caller's order:
+     * max_execution_time:9 wins over max_execution_time:10. Each write also regenerates .user.ini and a marked
+     * .htaccess section beside php.ini. API readback does not establish PHP runtime behavior.
      *
      * API-map identity: uapi:LangPHP/php_ini_set_user_basic_directives#GET (wire name
      * php_ini_set_user_basic_directives).

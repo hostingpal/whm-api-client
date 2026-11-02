@@ -369,7 +369,7 @@
           "version": "11.138.0.19",
           "date": "2026-11-02",
           "fingerprint": "docs/api/evidence/2026-11-02-langphp-mutations.json",
-          "note": "Disposable-account capture at revision c4a124a, artifact SHA-256 66af9e3c509fbb9cf51c91d72a56eb25c6509f97b0dd4667a3881f20c7124748: ten GETs with type=home through both routes read an empty original and then each written text, classified in memory as the sent text with quotes and ampersands entity-encoded behind the server's comment lines. Only the class and line counts were persisted. A read-only inspection of the server's Cpanel/API/LangPHP.pm (SHA-256 4eb36ed11a329670ec839f9ed9f6a7d04cb23ecfe78a45629b3ba5b21f9b96cd) shows the getter HTML-entity-encodes the file and returns an empty string for a missing file."
+          "note": "Disposable-account capture at revision c4a124a, artifact SHA-256 66af9e3c509fbb9cf51c91d72a56eb25c6509f97b0dd4667a3881f20c7124748: six GETs with type=home, three per route. The two preflight reads returned an empty string. The two readbacks after the home writes were classified in memory as the sent text with quotes and ampersands entity-encoded behind the server's comment lines; only the class and line counts were persisted. The two readbacks after the refused host writes were compared in memory with the previous readback and were equal. A read-only inspection of the server's Cpanel/API/LangPHP.pm (SHA-256 4eb36ed11a329670ec839f9ed9f6a7d04cb23ecfe78a45629b3ba5b21f9b96cd) shows the getter HTML-entity-encodes the file and returns an empty string for a missing file."
         }
       ]
     },
@@ -449,7 +449,7 @@
           "version": "11.138.0.19",
           "date": "2026-11-02",
           "fingerprint": "docs/api/evidence/2026-11-02-langphp-mutations.json",
-          "note": "Disposable-account capture at revision c4a124a, artifact SHA-256 66af9e3c509fbb9cf51c91d72a56eb25c6509f97b0dd4667a3881f20c7124748: one POST with a scalar directive through direct UAPI and one with a numbered directive/directive-1 pair through the WHM bridge, both type=home, returned status 1 and null data, and php_ini_get_user_basic_directives read back exactly the written values with the other watched directive unchanged. A read-only inspection of the server's Cpanel/API/LangPHP.pm (SHA-256 4eb36ed11a329670ec839f9ed9f6a7d04cb23ecfe78a45629b3ba5b21f9b96cd) and Cpanel/ProgLang/Supported/php/Ini.pm (SHA-256 df893c527eb1a3b417c3d07d0f71270d4ca2c184fa9d02d3028b485d08983639) shows repeated directive fields and any directive-N field are collected, deduplicated and sorted before applying, and that each write regenerates .user.ini and a marked .htaccess section beside php.ini."
+          "note": "Disposable-account capture at revision c4a124a, artifact SHA-256 66af9e3c509fbb9cf51c91d72a56eb25c6509f97b0dd4667a3881f20c7124748: one POST with a scalar directive through direct UAPI and one with a numbered directive/directive-1 pair through the WHM bridge, both type=home, returned status 1 and null data, and php_ini_get_user_basic_directives read back exactly the written values with the other watched directive unchanged. A read-only inspection of the server's Cpanel/API/LangPHP.pm (SHA-256 4eb36ed11a329670ec839f9ed9f6a7d04cb23ecfe78a45629b3ba5b21f9b96cd) and Cpanel/ProgLang/Supported/php/Ini.pm (SHA-256 df893c527eb1a3b417c3d07d0f71270d4ca2c184fa9d02d3028b485d08983639) shows repeated directive fields and any directive-N field are collected, exact duplicates removed, and the key:value strings sorted as text and applied in that order, so for a directive given more than once the value that sorts last wins; and that each write regenerates .user.ini and a marked .htaccess section beside php.ini."
         }
       ],
       "notes": [
@@ -467,7 +467,7 @@
         },
         {
           "kind": "observed",
-          "text": "On cPanel 11.138.0.19 with type=home, a scalar directive through direct UAPI and a numbered directive/directive-1 pair through the WHM bridge each took effect: phpIniGetUserBasicDirectives() read back exactly the written values, other directives were unchanged, and both writes returned null data. The server's handler collects, deduplicates and sorts the key:value strings before applying them, so list order sets no precedence; each write also regenerates .user.ini and a marked .htaccess section beside php.ini. API readback does not establish PHP runtime behavior."
+          "text": "On cPanel 11.138.0.19 with type=home, a scalar directive through direct UAPI and a numbered directive/directive-1 pair through the WHM bridge each took effect: phpIniGetUserBasicDirectives() read back exactly the written values, other directives were unchanged, and both writes returned null data. The server's handler removes exact duplicates, sorts the key:value strings as text and applies them in that order, so when one directive is given conflicting values the one that sorts last wins, whatever the caller's order: max_execution_time:9 wins over max_execution_time:10. Each write also regenerates .user.ini and a marked .htaccess section beside php.ini. API readback does not establish PHP runtime behavior."
         }
       ]
     },

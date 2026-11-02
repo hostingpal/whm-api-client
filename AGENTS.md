@@ -327,7 +327,8 @@ Empty-string userdirprotect remains documentation/offline coverage because
 the live field is omitted. The 2026-11-02 disposable-account capture at c4a124a on
 11.138.0.19 passed the three PHP setters and the home INI write/read round trip
 through both routes. Vhost-scope INI, FPM and impacted-domain variants and PHP
-runtime behavior remain unverified; the vhost-versions root-union item stays open.
+runtime behavior remain unverified under `whm-api-client-2dj`; the vhost-versions
+root-union item stays open under `8x0.4.11.1`.
 The `uapi()->siteQuality()` group exposes ten of thirteen pinned SiteQuality
 functions from cPanel 110: account creation/deletion, project creation/domain
 update, token retrieval, association/enabled status, local configuration reset,

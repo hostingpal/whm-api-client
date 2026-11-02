@@ -10266,8 +10266,11 @@ committed. What the recipe relies on:
   and a blank line unless a line already holds it. `php_ini_get_user_content` returns
   the file HTML-entity-encoded, or an empty string when the file does not exist.
 - `php_ini_set_user_basic_directives` collects repeated `directive` fields and any field
-  matching `directive(-N)`, removes duplicates and sorts the `key:value` strings before
-  applying them. Values pass a per-type check; integer values are written unchanged.
+  matching `directive(-N)`, removes exact duplicates, sorts the `key:value` strings as text
+  and applies them in that order. For a directive given more than once, the value that
+  sorts last wins, whatever the caller's order: `max_execution_time:9` wins over
+  `max_execution_time:10`. Values pass a per-type check; integer values are written
+  unchanged.
 - Both INI setters pass `userfiles => 1`, which regenerates `.user.ini` and a marked
   `.htaccess` section beside `php.ini`.
 - `php_set_vhost_versions` requires the version to be a feature the account has and,
@@ -10354,3 +10357,34 @@ PHP runtime behavior, vhost-scope INI files, `.user.ini` or `.htaccess` contents
 pools, impacted domains sharing a document root, `inherit`, per-vhost partial failure, or the
 `vhost` content type. Fixture design and offline tests cover malformed and failed paths; the
 live run took only the expected one.
+
+### Review corrections
+
+An independent review of the branch found seven issues. All seven were confirmed and
+fixed, and none was rejected. The captured artifact is unchanged and no live request ran.
+
+- The content getter's live evidence note claimed ten GETs. The artifact has six
+  `php_ini_get_user_content` GETs, three per route: two empty preflight reads, two
+  readbacks classified through the oracle, and two readbacks after the refused `host`
+  writes, compared for equality. The note now says exactly that. This section never
+  repeated the count.
+- `host()` counted a write as accepted only when the probe passed, so a write the API
+  confirmed but whose payload failed validation was reported `unknown` and never read back.
+  It is now accepted on `api_outcome: success`, read back, and also counted as a failed
+  observation. The capture took the refusal path, so its records are unaffected.
+- Preflight counted vhost rows only from a list root, so the single-object form the union
+  admits would abort the run. It now reads the row from either shape, as the version
+  readback already did. The capture saw lists, so it is unaffected.
+- The basic-directives note said list order sets no precedence. The handler applies the
+  sorted strings in order, so the value that sorts last wins; the note and the source
+  bullet above now say so.
+- The fixture repeated the directive targets as literals. It now derives them from
+  `LangPhpMutationRecipe::DIRECTIVES`, and a test covers every declared target.
+- The gate's `PLAN` repeats the recipe's `MUTATIONS`. A test now fails if they disagree on
+  a mutation phase, its function, its route or the order.
+- The AGENTS.md statement on the remaining work had lost its bead references. It now
+  points the remaining LangPHP live variants at `whm-api-client-2dj` and the root-union
+  item at `8x0.4.11.1`.
+
+Scenario and policy names are unchanged: the capture's outcomes and records mean the same
+under the corrected code, because it reached neither changed path.
