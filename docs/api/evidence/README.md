@@ -1420,3 +1420,35 @@ no successful delete. The fixture is now `user-tasks-disposable-v2`, which withh
 read supports, and no v2 capture exists. See the
 [source audit](../source-audit.md#user-task-queue-capture). SHA-256:
 `470a6271daedbf78ab07b0769ffa967251c7ca1619940780d65ac0f26fda4e6c`.
+
+## Disposable-account LangPHP setter evidence
+
+The [capture](2026-11-02-langphp-mutations.json) at
+`c4a124a247b2575ef09a47e8dabb5f84f51ac50d` on `11.138.0.19` passes scenario
+`langphp-mutations-disposable-v1` and policy `langphp-mutations-no-acknowledgments-v1`,
+exit 0, on the fresh disposable account `wlphpset` through the shared lifecycle with the
+filesystem proof enabled. All 27 phases passed with no review findings: 8 POST and 19 GET
+observations through direct UAPI and the WHM bridge, including WHM version.
+
+- `php_ini_set_user_basic_directives`: a scalar `directive` (direct) and a numbered
+  `directive`/`directive-1` pair (bridge) each read back exactly through
+  `php_ini_get_user_basic_directives`. Both returned null data.
+- `php_ini_set_user_content` with `type=home`: both routes read back through
+  `php_ini_get_user_content` as `entity_model_after_server_comments`, behind four comment
+  lines and one blank line. The directive getter confirmed each text's `max_input_vars` and
+  that the earlier directive values were gone. Both returned null data.
+- `php_ini_set_user_content` with the pinned enum's `type=host`: refused on both routes
+  with UAPI status 0, one error and null data, and the home content read back unchanged.
+- `php_set_vhost_versions`: each route moved the main domain to another installed version.
+  The result `vhosts` listed exactly that domain, and `php_get_vhost_versions` with the
+  vhost selector returned a single object with the new version. Without the selector the
+  preflight returned a list on both routes.
+
+The original home INI content read as an empty string on both routes. Account, token,
+domain, zone and filesystem cleanup are `confirmed_absent`; the control read
+`home=1, users=1, userdata=1, userdomains=1, passwd=1, zones=2`. The artifact holds no
+names, versions, paths, values, INI content or upstream text. It establishes API storage
+and readback only, not PHP runtime behavior, vhost-scope INI files, FPM pools or
+impacted-domain variants. See the
+[source audit](../source-audit.md#disposable-account-langphp-setters-2026-11-02). SHA-256:
+`66af9e3c509fbb9cf51c91d72a56eb25c6509f97b0dd4667a3881f20c7124748`.

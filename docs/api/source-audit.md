@@ -10427,3 +10427,155 @@ The report's meaning changed, so the scenario is now `user-tasks-disposable-v2` 
 policies `user-tasks-subject-no-acknowledgments-v2` and `user-tasks-producer-structure-v2`.
 **No v2 capture exists.** The shared entrypoint and observe-helper duplication was left for a
 follow-up that consolidates it across every recipe.
+
+## Disposable-account LangPHP setters (2026-11-02)
+
+Bead `8x0.2.17` left `php_ini_set_user_basic_directives`, `php_ini_set_user_content` and
+`php_set_vhost_versions` offline-only, together with the INI write/read round trip, pending
+an account-scoped fixture that preserves the original configuration state. A disposable
+account removes the need to restore: `php-mutations.php` runs the three setters through the
+generated client on direct UAPI and the WHM bridge for the fresh account `wlphpset`, reads
+each change back through its matching getter on the same route, and lets account removal
+take every change. The bead's separate `php_get_vhost_versions` root-union item stays out of
+scope; what the run showed of it is recorded below without changing that contract.
+
+### Server source inspection
+
+Before writing the recipe, two server files were read once over the `oblak.test` SSH alias,
+read-only, on `11.138.0.19`: `Cpanel/API/LangPHP.pm` (SHA-256
+`4eb36ed11a329670ec839f9ed9f6a7d04cb23ecfe78a45629b3ba5b21f9b96cd`) and
+`Cpanel/ProgLang/Supported/php/Ini.pm` (SHA-256
+`df893c527eb1a3b417c3d07d0f71270d4ca2c184fa9d02d3028b485d08983639`). Neither file is
+committed. What the recipe relies on:
+
+- Every INI function lowercases `type` and accepts only `home` or `vhost`; anything else,
+  `host` included, dies with an invalid-parameter error before any metadata or write.
+  `home` resolves to `<homedir>/php.ini` with the system default package.
+- `php_ini_set_user_content` HTML-entity-decodes the supplied text, rejects empty text and
+  lines that are not directives, comments, blank lines or section headers, requires at
+  least one directive, splits the text into lines, and prepends a four-line comment block
+  and a blank line unless a line already holds it. `php_ini_get_user_content` returns
+  the file HTML-entity-encoded, or an empty string when the file does not exist.
+- `php_ini_set_user_basic_directives` collects repeated `directive` fields and any field
+  matching `directive(-N)`, removes exact duplicates, sorts the `key:value` strings as text
+  and applies them in that order. For a directive given more than once, the value that
+  sorts last wins, whatever the caller's order: `max_execution_time:9` wins over
+  `max_execution_time:10`. Values pass a per-type check; integer values are written
+  unchanged.
+- Both INI setters pass `userfiles => 1`, which regenerates `.user.ini` and a marked
+  `.htaccess` section beside `php.ini`.
+- `php_set_vhost_versions` requires the version to be a feature the account has and,
+  unless it is `inherit`, an installed package. It adds domains that share a document root
+  with the requested ones, writes through an admin binary in chunks of ten, reports per-vhost
+  failures as errors after earlier vhosts changed, and returns every changed vhost.
+- `php_get_vhost_versions` returns the account's list, or with `vhost` the one matching row
+  as an object, or an error for an unknown vhost.
+- The default feature list on this server enables `multiphp`, `multiphp_ini_editor` and
+  four PHP packages; a read-only `get_featurelist_data` call confirmed it before the run.
+
+The content oracle and the expectation that `host` is refused come from this inspection.
+The classifier does not depend on the comment block's wording.
+
+### Recipe
+
+Preflight reads installed versions, all vhost versions, home basic directives and home INI
+content through both routes, and both routes must agree before any write. The directive
+group sends one scalar `directive` directly and a numbered `directive`/`directive-1` pair
+through the bridge, reading each back exactly. The content group writes two different texts,
+reads each back through the content getter and the directive getter, then sends `type=host`
+once per route, expecting an explicit refusal and an unchanged readback. The version group
+moves the main domain to another installed version on each route and reads it back with the
+vhost selector. A group stops at its first unexpected state while the later groups still run;
+nothing repeats. Every response is validated by the generated contract, every structural
+discrepancy reaches the strict review, and there is no acknowledgment mechanism.
+
+### Capture
+
+The [capture](evidence/2026-11-02-langphp-mutations.json) at
+`c4a124a247b2575ef09a47e8dabb5f84f51ac50d` on `11.138.0.19`, with the filesystem proof
+enabled, is a **passed run**, exit 0, on its one execution. All 27 phases passed: 8 POST and
+19 GET, including WHM version. The review has no findings and every phase has zero
+discrepancies. Account, token, domain, zone and filesystem cleanup are `confirmed_absent`;
+the control read `home=1, users=1, userdata=1, userdomains=1, passwd=1, zones=2`. SHA-256:
+`66af9e3c509fbb9cf51c91d72a56eb25c6509f97b0dd4667a3881f20c7124748`.
+
+| Setter | Direct UAPI | WHM bridge |
+| --- | --- | --- |
+| `php_ini_set_user_basic_directives`, `type=home` | scalar directive accepted, null data, exact readback | numbered pair accepted, null data, exact readback |
+| `php_ini_set_user_content`, `type=home` | accepted, null data, `entity_model_after_server_comments` | the same |
+| `php_ini_set_user_content`, `type=host` | refused, UAPI status 0, one error, null data, content unchanged | the same |
+| `php_set_vhost_versions` | accepted, `vhosts` exactly the main domain, readback matches | the same |
+
+The original home content was an empty string on both routes, so the account had no home
+`php.ini`. Each content readback was the sent text behind four comment lines and a blank
+line, with `"` read back as `&quot;` and a written `&amp;` read back as `&amp;`: decoded on
+write and encoded on read, as the source shows. `+` and `%41` came back unchanged, so the
+client's single form encoding is right and the pinned example's percent-encoded form must
+not be sent through it. After each content write the directive getter showed that text's
+`max_input_vars` and none of the earlier directive values, so a content write replaces the
+whole file. The `host` refusals carried empty response metadata, consistent with the type
+check running before the handler sets any.
+
+### The content type discrepancy
+
+The pinned `php_ini_set_user_content` enum says `host|vhost` while its description says
+`home|vhost`. On this server `home` is accepted and `host` refused on both routes, with no
+change to the content; the handler accepts only `home` or `vhost`. The method keeps its
+plain `string` type and forwards what it is given, as the overlay has no evidence-bound way
+to replace a parameter's enum; its notes now say which values the server accepts. `vhost`
+was not exercised.
+
+### The vhost-versions root shape
+
+Recorded only: without a selector the preflight returned a list on both routes, and with the
+selector the readback returned a single object on both routes, both of which the current
+union already accepts. `phpversion_source` was an object both times: with an integer
+`system_default` on the fresh account, and with a string `domain` after an explicit version
+was set. The root-union item stays with `8x0.4.11.1`, and its contract is unchanged.
+
+### Contracts and documentation
+
+No live response contradicted a typed contract, so there is no response correction. The
+overlay gains `observed` notes and `live` evidence on the three setters and the content
+getter, the content getter's note no longer calls its text raw, and the generated PHPDoc is
+regenerated. AGENTS.md and README statements that called the setters and the round trip
+offline-only, or the type discrepancy unresolved, are updated.
+
+### Scope limits
+
+The run establishes API storage and readback on one server version. It does not establish
+PHP runtime behavior, vhost-scope INI files, `.user.ini` or `.htaccess` contents, PHP-FPM
+pools, impacted domains sharing a document root, `inherit`, per-vhost partial failure, or the
+`vhost` content type. Fixture design and offline tests cover malformed and failed paths; the
+live run took only the expected one.
+
+### Review corrections
+
+An independent review of the branch found seven issues. All seven were confirmed and
+fixed, and none was rejected. The captured artifact is unchanged and no live request ran.
+
+- The content getter's live evidence note claimed ten GETs. The artifact has six
+  `php_ini_get_user_content` GETs, three per route: two empty preflight reads, two
+  readbacks classified through the oracle, and two readbacks after the refused `host`
+  writes, compared for equality. The note now says exactly that. This section never
+  repeated the count.
+- `host()` counted a write as accepted only when the probe passed, so a write the API
+  confirmed but whose payload failed validation was reported `unknown` and never read back.
+  It is now accepted on `api_outcome: success`, read back, and also counted as a failed
+  observation. The capture took the refusal path, so its records are unaffected.
+- Preflight counted vhost rows only from a list root, so the single-object form the union
+  admits would abort the run. It now reads the row from either shape, as the version
+  readback already did. The capture saw lists, so it is unaffected.
+- The basic-directives note said list order sets no precedence. The handler applies the
+  sorted strings in order, so the value that sorts last wins; the note and the source
+  bullet above now say so.
+- The fixture repeated the directive targets as literals. It now derives them from
+  `LangPhpMutationRecipe::DIRECTIVES`, and a test covers every declared target.
+- The gate's `PLAN` repeats the recipe's `MUTATIONS`. A test now fails if they disagree on
+  a mutation phase, its function, its route or the order.
+- The AGENTS.md statement on the remaining work had lost its bead references. It now
+  points the remaining LangPHP live variants at `whm-api-client-2dj` and the root-union
+  item at `8x0.4.11.1`.
+
+Scenario and policy names are unchanged: the capture's outcomes and records mean the same
+under the corrected code, because it reached neither changed path.
