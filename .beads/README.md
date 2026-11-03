@@ -38,6 +38,33 @@ Issues in Beads are:
 - **Branch-aware**: Issues can follow your branch workflow
 - **Sync-ready**: Uses Dolt remotes for backup and team sharing
 
+## Bounded agent context
+
+The repository caps `bd prime` memory injection at four entries and an 8,000-byte
+memory budget. These caps affect injection only: all history remains searchable
+with `bd memories <keyword>`. Use `bd ready` and `bd show <id>` for current work.
+Selection is alphabetical, not based on freshness or relevance.
+`00-agent-context-index` supplies retrieval pointers rather than mutable task status;
+AGENTS.md and current user instructions remain authoritative.
+
+The byte budget covers whole memory entries, excluding headers and the core
+workflow. Upstream always includes at least one entry, so an oversized first entry
+can exceed that budget. This is not a hard limit on total injected bytes.
+
+Normal Claude `bd prime --hook-json` and Codex `bd codex-hook` lifecycle wrappers
+inherit the resolved Beads workspace configuration. Git worktrees can resolve to
+the main checkout's `.beads` directory instead of their local configuration;
+check `bd where` before assuming these caps apply. The resolved checkout needs the
+updated configuration, as do other independent checkouts, before they benefit.
+
+```bash
+bd config get prime.max-memories
+bd config get prime.max-memory-chars
+bd memories search-absence-and-flexible-json-contracts
+bd ready
+bd show <id>
+```
+
 ## Why Beads?
 
 ✨ **AI-Native Design**
