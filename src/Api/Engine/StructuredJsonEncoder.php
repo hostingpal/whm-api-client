@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace HostingPal\WhmApiClient\Api\Engine;
 
+use HostingPal\WhmApiClient\JsonList;
+use HostingPal\WhmApiClient\JsonObject;
 use InvalidArgumentException;
 use JsonException;
 use LogicException;
@@ -12,7 +14,8 @@ use SensitiveParameter;
 /**
  * Serialize a present, schema-declared structured JSON value without I/O.
  *
- * Only ordinary arrays and strict declared scalar types are accepted. No caller
+ * Known schemas accept ordinary arrays and strict declared scalars. Unrestricted
+ * JSON positions require explicit JsonObject/JsonList containers. No arbitrary
  * object, resource or serialization callback is used. Containers are emitted
  * explicitly: PHP object casting followed by json_encode silently discards
  * leading-NUL member names, while array encoding guesses the wrong kind for
@@ -61,6 +64,9 @@ final class StructuredJsonEncoder
         #[SensitiveParameter] StructuredJsonSchema $schema,
         int $depth,
     ): string {
+        if ($schema->type === 'json') {
+            return self::freeValue($value, $schema, $depth);
+        }
         if ($value === null && ($schema->nullable || $schema->type === 'null')) {
             return 'null';
         }
@@ -78,7 +84,7 @@ final class StructuredJsonEncoder
         if ($schema->type === 'string' && $schema->nonempty && $value === '') {
             throw new InvalidArgumentException('Structured JSON string must not be empty.');
         }
-        if (is_array($value)) {
+        if (is_array($value) || $value instanceof JsonObject) {
             // Defensive: the checked schema already bounds every traversable container.
             if ($depth >= StructuredJsonSchema::MAX_DEPTH - 1) {
                 throw new InvalidArgumentException('Structured JSON value exceeds the nesting limit.');
@@ -100,19 +106,20 @@ final class StructuredJsonEncoder
             'int' => is_int($value),
             'number' => is_int($value) || (is_float($value) && is_finite($value)),
             'bool', 'flag' => is_bool($value),
-            'object', 'list' => is_array($value),
+            'object' => is_array($value) || ($value instanceof JsonObject && $schema->values?->type === 'json'),
+            'list' => is_array($value),
             default => false,
         };
     }
 
-    /** @param array<mixed> $value */
+    /** @param array<mixed>|JsonObject $value */
     private static function container(
-        #[SensitiveParameter] array $value,
+        #[SensitiveParameter] array|JsonObject $value,
         #[SensitiveParameter] StructuredJsonSchema $schema,
         int $depth,
     ): string {
         $parts = [];
-        if ($schema->type === 'list') {
+        if ($schema->type === 'list' && is_array($value)) {
             if ($schema->nonempty && $value === []) {
                 throw new InvalidArgumentException('Structured JSON list must not be empty.');
             }
@@ -125,22 +132,112 @@ final class StructuredJsonEncoder
             }
             return '[' . implode(',', $parts) . ']';
         }
+        $members = self::objectMembers($value);
+        $present = [];
+        foreach ($members as $member) {
+            $present[$member['name']] = true;
+        }
         foreach ($schema->required as $name) {
-            if (!array_key_exists($name, $value)) {
+            if (!isset($present[$name])) {
                 throw new InvalidArgumentException('Structured JSON object is missing a required member.');
             }
         }
-        foreach ($value as $name => $item) {
-            if (!is_string($name)) {
-                throw new InvalidArgumentException('Structured JSON objects require string member names.');
-            }
+        foreach ($members as $member) {
+            $name = $member['name'];
             $field = $schema->fields[$name] ?? $schema->values;
             if ($field === null) {
                 throw new InvalidArgumentException('Structured JSON object contains an undeclared member.');
             }
-            $parts[] = self::token($name) . ':' . self::value($item, $field, $depth);
+            $parts[] = self::token($name) . ':' . self::value($member['value'], $field, $depth);
         }
         return '{' . implode(',', $parts) . '}';
+    }
+
+    /**
+     * Traverse unrestricted JSON without guessing the container kind of PHP arrays.
+     *
+     * Recursion is bounded by the same total container budget as known schemas,
+     * including cycles through descriptors or external PHP references.
+     */
+    private static function freeValue(
+        #[SensitiveParameter] mixed $value,
+        #[SensitiveParameter] StructuredJsonSchema $schema,
+        int $depth,
+    ): string {
+        if ($value instanceof JsonObject || $value instanceof JsonList) {
+            if ($depth >= StructuredJsonSchema::MAX_DEPTH - 1) {
+                throw new InvalidArgumentException('Structured JSON value exceeds the nesting limit.');
+            }
+            $parts = [];
+            if ($value instanceof JsonList) {
+                $items = $value->input();
+                if (!array_is_list($items)) {
+                    throw new InvalidArgumentException('Structured JSON lists require sequential arrays.');
+                }
+                foreach ($items as $item) {
+                    $parts[] = self::value($item, $schema, $depth + 1);
+                }
+                return '[' . implode(',', $parts) . ']';
+            }
+            foreach (self::objectMembers($value) as $member) {
+                $parts[] = self::token($member['name']) . ':' . self::value($member['value'], $schema, $depth + 1);
+            }
+            return '{' . implode(',', $parts) . '}';
+        }
+        if (
+            $value === null || is_bool($value) || is_int($value) || is_string($value)
+            || (is_float($value) && is_finite($value))
+        ) {
+            return self::token($value);
+        }
+        throw new InvalidArgumentException('Structured JSON value requires a scalar or explicit container.');
+    }
+
+    /**
+     * Validate object representation without losing numeric or leading-NUL names.
+     *
+     * @param array<mixed>|JsonObject $value
+     * @return list<array{name: string, value: mixed}>
+     */
+    private static function objectMembers(#[SensitiveParameter] array|JsonObject $value): array
+    {
+        $entries = $value instanceof JsonObject && $value->isEntryList();
+        $input = $value instanceof JsonObject ? $value->input() : $value;
+        if ($entries && !array_is_list($input)) {
+            throw new InvalidArgumentException('Structured JSON object entries require a sequential list.');
+        }
+        $members = [];
+        if ($entries) {
+            foreach ($input as $entry) {
+                if (
+                    !is_array($entry) || count($entry) !== 2 || !array_key_exists('name', $entry)
+                    || !array_key_exists('value', $entry)
+                ) {
+                    throw new InvalidArgumentException(
+                        'Structured JSON object entries require exact name/value records.',
+                    );
+                }
+                $members[] = ['name' => $entry['name'], 'value' => $entry['value']];
+            }
+        } else {
+            foreach ($input as $name => $item) {
+                $members[] = ['name' => $name, 'value' => $item];
+            }
+        }
+        $checked = [];
+        $seen = [];
+        foreach ($members as $member) {
+            $name = $member['name'];
+            if (!is_string($name) || preg_match('//u', $name) !== 1) {
+                throw new InvalidArgumentException('Structured JSON objects require UTF-8 string member names.');
+            }
+            if (isset($seen[$name])) {
+                throw new InvalidArgumentException('Structured JSON objects require unique member names.');
+            }
+            $seen[$name] = true;
+            $checked[] = ['name' => $name, 'value' => $member['value']];
+        }
+        return $checked;
     }
 
     private static function token(#[SensitiveParameter] mixed $value): string

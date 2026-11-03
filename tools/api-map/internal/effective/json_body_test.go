@@ -21,7 +21,7 @@ func TestJSONBodyFoundation(t *testing.T) {
 		{"nullable", `{"type":"string","nullable":true}`, true, "object root"},
 		{"alternatives", `{"anyOf":[{"type":"string"},{"type":"integer"}]}`, true, "object root"},
 		{"missing type", `{"properties":{}}`, true, "explicit"},
-		{"mixed extras", `{"type":"object","additionalProperties":true}`, true, "additional"},
+		{"mixed extras", `{"type":"object","additionalProperties":true}`, true, ""},
 		{"composition", `{"allOf":[{"type":"string"}]}`, true, "composition"},
 		{"ambiguous", `{"anyOf":[{"type":"object"},{"type":"array","items":{"type":"string"}}]}`, true, "scalar"},
 		{"optional nullable", `{"type":"string","nullable":true}`, false, "object root"},

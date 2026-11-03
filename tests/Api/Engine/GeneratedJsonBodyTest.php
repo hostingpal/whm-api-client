@@ -37,6 +37,7 @@ final class GeneratedJsonBodyTest extends TestCase
         ];
         foreach (
             [
+            ['json_body' => ['schema' => ['type' => 'json']] + $spec['json_body']] + $spec,
             ['method' => 'GET'] + $spec,
             ['params' => ['body' => ['name' => 'b', 'encoding' => 'scalar']]] + $spec,
             ['json_body' => null] + $spec,

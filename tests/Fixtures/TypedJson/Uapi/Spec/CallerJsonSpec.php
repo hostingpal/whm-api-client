@@ -58,4 +58,53 @@ final class CallerJsonSpec
         'params' => [],
         'returns' => ['type' => 'int'],
     ];
+
+    public const OPEN = [
+        'function' => 'sendOpen',
+        'module' => 'CallerJson',
+        'method' => 'POST',
+        'body' => 'json',
+        'outcome' => 'flag',
+        'json_body' => [
+            'php' => 'body',
+            'required' => true,
+            'routes' => 'direct',
+            'schema' => [
+                'type' => 'object',
+                'values' => ['type' => 'json'],
+                'fields' => [
+                    'known' => ['type' => 'int'],
+                ],
+                'required' => ['known'],
+            ],
+        ],
+        'params' => [],
+        'returns' => ['type' => 'int'],
+    ];
+
+    public const FIELD = [
+        'function' => 'sendField',
+        'module' => 'CallerJson',
+        'method' => 'POST',
+        'body' => 'form',
+        'outcome' => 'flag',
+        'params' => [
+            'body' => [
+                'name' => 'configuration',
+                'encoding' => 'json',
+                'json' => [
+                    'required' => true,
+                    'schema' => [
+                        'type' => 'object',
+                        'values' => ['type' => 'json'],
+                        'fields' => [
+                            'known' => ['type' => 'int'],
+                        ],
+                        'required' => ['known'],
+                    ],
+                ],
+            ],
+        ],
+        'returns' => ['type' => 'int'],
+    ];
 }
