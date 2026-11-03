@@ -394,14 +394,20 @@ final class DiscrepancyPolicyTest extends TestCase
             file_put_contents($root . '/' . self::EVIDENCE, $contents);
         }
 
+        $caught = null;
         try {
             DiscrepancyPolicy::load($root);
-            self::fail('The hardcoded evidence hash must be verified before assessing records.');
         } catch (RuntimeException $error) {
-            self::assertStringNotContainsString($root, $error->getMessage());
-            self::assertStringNotContainsString('private-source-content', $error->getMessage());
-            self::assertNull($error->getPrevious());
+            $caught = $error;
         }
+        self::assertInstanceOf(
+            RuntimeException::class,
+            $caught,
+            'The hardcoded evidence hash must be verified before assessing records.',
+        );
+        self::assertStringNotContainsString($root, $caught->getMessage());
+        self::assertStringNotContainsString('private-source-content', $caught->getMessage());
+        self::assertNull($caught->getPrevious());
     }
 
     /** @return iterable<string, array{string}> */
@@ -434,14 +440,20 @@ final class DiscrepancyPolicyTest extends TestCase
         }
         $policy = DiscrepancyPolicy::load($root);
 
+        $caught = null;
         try {
             $policy->assertOutputAllowed($target);
-            self::fail('An output alias must not replace the immutable baseline.');
         } catch (RuntimeException $error) {
-            self::assertStringNotContainsString($root, $error->getMessage());
-            self::assertStringNotContainsString('private-alias', $error->getMessage());
-            self::assertNull($error->getPrevious());
+            $caught = $error;
         }
+        self::assertInstanceOf(
+            RuntimeException::class,
+            $caught,
+            'An output alias must not replace the immutable baseline.',
+        );
+        self::assertStringNotContainsString($root, $caught->getMessage());
+        self::assertStringNotContainsString('private-alias', $caught->getMessage());
+        self::assertNull($caught->getPrevious());
         self::assertSame(self::EVIDENCE_HASH, hash_file('sha256', $source));
     }
 
