@@ -12343,3 +12343,118 @@ change ran. Historical scalar captures cannot establish PHP-list acceptance or
 persistence. Live follow-up `8x0.2.86`, wider `8x0.28.8`, monthly-date gate
 `8x0.28.8.6` and all existing module live/source gaps remain OPEN. Local PHP 8.4
 verification does not establish exact-HEAD PHP 8.3 CI or external acceptance.
+
+
+## 2026-11-01 — WHM system_needs_reboot envelope-field projection (offline)
+
+The immutable pinned WHM source has decompressed SHA-256
+`6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594`.
+The sole source variant is GET at `/paths/~1system_needs_reboot/get`; the exact
+success schema is
+`/paths/~1system_needs_reboot/get/responses/200/content/application~1json/schema`.
+That nonnullable object declares optional `details` and `needs_reboot` beside
+ordinary `metadata`, without `data`. The overlay selects all documented result
+siblings exactly once and binds a documentation record to that hash and pointer.
+No source, checksum, annotation or historical evidence is changed.
+
+Explicit `response_fields` is WHM-only. Generation rejects reserved, duplicate,
+omitted or unknown fields, unrelated provenance, malformed/unresolved source
+schemas, composed envelope roots, nullable roots and root additional-properties
+contracts that cannot be preserved. Normal nested lowering/corrections/defect
+checks still apply; the source schema supplies all returned types/requiredness.
+The runtime carries an immutable field-name descriptor through existing WHM
+executors. HTTP/API outcome and metadata handling precede selection; no raw
+whole-envelope property is added to ApiResponse. Ordinary operations, UAPI and
+generic entrypoints retain their previous extraction. Missing selected fields
+remain absent; a metadata-only success projects an empty object and validates to
+`[]`. Stray `data` is never a fallback. Explicit null stays present and fails the
+nonnullable selected contract. Mismatch payloads contain selected fields only.
+
+`whm()->server()->systemNeedsReboot()` is the sole adopter. The source documents
+cPanel 64+ and says detection cannot work inside LXC. `needs_reboot` is strict
+native integer `0|1`; quota's singleton integer enum remains ordinary `int`.
+`kernel.boot_version` is the version the kernel updated to; `running_version`
+is the version currently running. The kernel object appears only if the kernel
+updates and requires a reboot. The pinned quota note likewise says: “The function
+only returns this value if the kernel updates and requires a reboot.” The updates
+object appears only if software packages require updates; its contents remain
+opaque rather than a string-valued package map inferred from an example.
+All fields are optional and nonnullable; absence is not a no-reboot assertion.
+
+The documented GET example and source `x-readonly: false` conflict in transport
+classification. Existing policy therefore emits one empty form POST, with normal
+WHM routing/authentication. No POST compatibility or live status observation is
+claimed. Synthetic tests cover literal request bytes, sibling selection, optional/
+null/zero/opaque boundaries, malformed descriptors/source binding, standard
+outcome precedence, metadata lifecycle and privacy. No command, update, reboot,
+retry, polling, implicit read, network or live verification runs in this slice.
+The separate live follow-up `8x0.2.87` stays OPEN.
+
+Only Server/ServerSpec and generated coverage adopt the endpoint. Canonical
+coverage changes from 1,234 to 1,235 operations (636 UAPI, 599 WHM), retaining
+119 groups and 241 outputs. Previous method/spec contracts and all other generated
+outputs remain unchanged. All 55 inherited map diagnostics remain visible and
+unwaived. Local offline validation does not establish PHP 8.3 CI or external
+acceptance; historical artifacts remain immutable.
+
+
+## 2026-11-01 — WHM reboot status ordinary-data correction after review5727236239
+
+This section supersedes the extraction claims in the preceding initial PR121
+projection entry, which remains unchanged as historical evidence. The immutable
+pin remains SHA-256
+`6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594`, at
+`/paths/~1system_needs_reboot/get/responses/200/content/application~1json/schema`.
+Its placement of details/needs_reboot beside metadata is incorrect for the
+reviewed build. [External review5727236239](https://github.com/hostingpal/whm-api-client/pull/121#pullrequestreview-5727236239)
+at HEAD `789dfb04ab25420efbdc5cf47c4a2b8b77299257` reports GET and typed form POST
+on `11.138.0.19`, both HTTP 200/API result 1 with the status/details under data;
+the projected typed method returned an empty result. Only a no-reboot response
+with empty details was actually observed. The review's scratch removal of the
+selector restored ordinary data extraction offline. This implementation lane
+makes no server call or independent live capture.
+
+The existing response root replacement grammar corrects the ordinary data payload,
+bound to the exact source hash/schema pointer plus the attributed dated live
+review. Its narrow generator entry applies only to WHM with a successfully
+resolved nonpartial envelope that omits data, explicit nonvoid root replacement,
+nonblank exact doc evidence, and nonblank live version/date/observation evidence.
+Unresolved/partial source, UAPI, void, unrelated/missing evidence and malformed
+replacement specs remain errors; documented-payload corrections retain their
+behavior. No source snapshot, annotation, checksum or historical artifact changes.
+No new overlay key or runtime selector is added. Projection machinery and its
+sole adopter descriptor are removed; the five shared runtime files are restored
+byte-for-byte to pre-PR121 `ff6d0ee35b39ff1e11b2b32f9d2c54d027fb6d6e`.
+
+The corrected method keeps zero arguments, array return, Flag outcome and one
+empty form POST from the existing x-readonly:false policy. Ordinary outcome/HTTP
+precedence, metadata reset and immutable snapshots, sensitive response frames and
+private mismatch payload handling remain unchanged. Data presence is required;
+missing/null data and sibling-only envelopes fail. Optional fields stay omitted,
+strict integer 0|1 needs_reboot stays strict, quota remains int, kernel versions
+stay optional strings and updates remains an opaque mixed map. Existing empty-array
+object compatibility stays unchanged. Literal offline fixtures cover the actual
+no-reboot shape separately from synthetic populated reasons and failure cases.
+
+The same review reports handler-source evidence from
+`Whostmgr/API/1/ApplicationVersions.pm`: the return hash receives ordinary WHM
+data wrapping; details.needs_cloudlinux and details.securetmp_size_update are
+assigned integer 1. Separate optional int field additions retain that attribution,
+without a fabricated pin pointer/hash or a live-observation claim. These two
+reasons and populated kernel/quota/updates fixtures are source-read/offline checks,
+not observed live states. The established singleton-integer policy remains int.
+
+The review also reports source-only behavior: each call schedules
+`recache_system_reboot_data` unless unpinned no_cache_update is set. No such typed
+argument is introduced. A failed sub-check other than Unsupported sets API result
+0 and raises ApiErrorException under the normal Flag policy. Unsupported is
+skipped; needs_reboot 0 therefore does not prove every check ran. Client request
+count/retry behavior makes no claim that the server call has no side effects.
+POST acceptance is attributed only to this build; other unobserved conditions
+remain in live follow-up `8x0.2.87`.
+
+Only the target Server/ServerSpec contract changes. All previous Server methods,
+constants and nontarget generated outputs remain preserved. Canonical coverage
+remains 1,235 operations (636 UAPI, 599 WHM), 119 groups and 241 outputs, with
+55 inherited source diagnostics visible and unwaived. Offline gates and this
+correction do not establish exact-HEAD PHP 8.3 CI or final external acceptance.

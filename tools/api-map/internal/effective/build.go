@@ -163,6 +163,9 @@ func (b *builder) operation(op model.Operation, v model.Variant, ov overlay.Oper
 		return Operation{}, "", false
 	}
 	returns := payload.spec
+	if returns == nil {
+		returns = b.missingPayloadRoot(op, v, ov, payload)
+	}
 	// Query parameters and form-encoded body fields are generated; any other
 	// documented body (multipart or JSON, possibly carrying secrets) must
 	// never be dropped silently.

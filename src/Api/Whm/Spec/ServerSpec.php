@@ -1535,6 +1535,35 @@ final class ServerSpec
         ],
     ];
 
+    public const SYSTEM_NEEDS_REBOOT = [
+        'function' => 'system_needs_reboot',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'details' => [
+                    'type' => 'object',
+                    'fields' => [
+                        'kernel' => [
+                            'type' => 'object',
+                            'fields' => [
+                                'boot_version' => ['type' => 'string'],
+                                'running_version' => ['type' => 'string'],
+                            ],
+                        ],
+                        'needs_cloudlinux' => ['type' => 'int'],
+                        'quota' => ['type' => 'int'],
+                        'securetmp_size_update' => ['type' => 'int'],
+                        'updates' => ['type' => 'map', 'values' => ['type' => 'mixed']],
+                    ],
+                ],
+                'needs_reboot' => ['type' => 'flag'],
+            ],
+        ],
+    ];
+
     public const UNLINK_SERVER_NODE = [
         'function' => 'unlink_server_node',
         'method' => 'POST',

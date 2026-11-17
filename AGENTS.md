@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 128 typed groups cover 1,272 documented operations:
+and cPanel UAPI surface. The 128 typed groups cover 1,273 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -1720,18 +1720,18 @@ and follow-up `8x0.2.37` retains all remaining live coverage.
 
 ### Expanded WHM server administration
 
-`whm()->server()` now exposes 76 of the 79 pinned Server Administration functions,
-including 72 additions for services, profiles, updates, configuration, linked nodes,
-notifications, licensing and inventory. The new calls use 23 GET requests and 49
-form POST requests. The four existing server methods retain their contracts.
+`whm()->server()` now exposes 78 of the 79 pinned Server Administration functions.
+The original 72 additions for services, profiles, updates, configuration, linked
+nodes, notifications, licensing and inventory use 23 GET requests and 49 form POST
+requests. Configuration upload and reboot status add two further form/body POST
+methods. The four original server methods retain their contracts.
 Missing read-only declarations remain conservative POST calls, including the
 three namespaced EcosystemFeatures functions.
 
-JSON connected-application saving remains under `8x0.1.18`, binary configuration
-upload under `8x0.1.19`, and `system_needs_reboot` under `8x0.1.27`. The latter's
-result fields are envelope siblings outside `data`; neither the typed runner nor
-the generic call currently preserves that result. No misleading void method is
-provided. Connected-application reads preserve declared typed fields and opaque
+JSON connected-application saving remains under `8x0.1.18`. Configuration upload
+is described below. `systemNeedsReboot()` returns the evidence-corrected ordinary
+`data` payload; generic calls retain their existing data-only extraction.
+Connected-application reads preserve declared typed fields and opaque
 additional properties through the existing object-values mechanism. Treat their
 results and service/configuration values as private payload data.
 
@@ -5567,3 +5567,47 @@ has offline evidence only; historical scalar captures cannot prove PHP-list
 acceptance. Live 2.86, wider 28.8, monthly-date gate 28.8.6 and existing module gaps
 remain OPEN. Original source/checksum/evidence and 55 inherited diagnostics remain
 unchanged. Exact-HEAD PHP 8.3 CI and external acceptance are separate gates.
+
+
+### WHM reboot status and corrected ordinary data payload
+
+`whm()->server()->systemNeedsReboot(): array` exposes the cPanel 64+ reboot-status
+operation. It determines whether quotas, software package updates or kernel
+updates require a reboot; upstream says detection cannot work inside LXC.
+The pinned schema incorrectly puts `details` and `needs_reboot` beside `metadata`.
+[External review5727236239](https://github.com/hostingpal/whm-api-client/pull/121#pullrequestreview-5727236239)
+at HEAD `789dfb0` on `11.138.0.19` observed the ordinary `data` envelope on GET
+and typed form POST (HTTP 200/API result 1), with no reboot and empty details.
+The overlay corrects that exact pinned response root. The shared runtime uses
+ordinary data extraction; no sibling fallback or projection descriptor exists.
+Missing data and explicit null are mismatches. Omitted optional fields remain
+omitted; `{data:{details:[],needs_reboot:0}}` retains that exact result shape.
+
+Every result field is optional and nonnullable. `needs_reboot` accepts only
+native integer `0|1`. `details.kernel` has optional string `boot_version` (the
+version the kernel updated to) and `running_version` (the current version).
+The kernel object appears only if the kernel updates and requires a reboot.
+`quota` stays an ordinary integer under the existing singleton-enum policy;
+its pinned note says it appears only if the kernel updates and requires a reboot.
+`updates` preserves an opaque map of mixed values; its pinned note says it appears
+only if software packages require updates. Existing empty-array object
+compatibility remains unchanged. The same external review reports handler source
+in `Whostmgr/API/1/ApplicationVersions.pm` assigning integer 1 to optional
+`details.needs_cloudlinux` and `details.securetmp_size_update`; both remain `int`
+under the existing singleton-integer policy. Populated kernel/quota/updates and
+these two reasons are source-read/offline cases, not observed live conditions.
+
+The documented variant/example uses GET, while `x-readonly: false` selects one
+empty form POST to `/json-api/system_needs_reboot?api.version=1`. The external
+review establishes POST acceptance only on `11.138.0.19`. Reviewer handler-source
+observations also say the server schedules `recache_system_reboot_data` unless
+the unpinned `no_cache_update` option is set; no typed argument is added. A failed
+sub-check other than `Unsupported` sets API result 0 and raises the ordinary
+`ApiErrorException`. `Unsupported` is skipped, so `needs_reboot: 0` does not prove
+every check ran. The client adds no request, retry, polling or implicit read.
+
+This correction uses attributed external evidence and offline synthetic fixtures;
+it performs no new live capture. Other unobserved states remain under live
+follow-up `8x0.2.87`. Current totals remain 1,235 canonical operations (636 UAPI,
+599 WHM), 119 groups and 241 outputs. Source snapshots, historical evidence and
+all 55 inherited diagnostics remain unchanged and unwaived.
