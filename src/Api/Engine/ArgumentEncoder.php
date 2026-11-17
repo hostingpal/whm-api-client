@@ -78,7 +78,8 @@ final class ArgumentEncoder
                 $exact = in_array($param['encoding'] ?? null, ['scalar', 'bool', 'repeat', 'numbered', 'json'], true);
                 if (($param['encoding'] ?? null) === 'collection') {
                     $collection = CollectionEncoder::check($param['collection'] ?? null);
-                    $exact = $collection['kind'] === 'repeat' || $collection['allow_scalar'];
+                    $exact = $collection['kind'] === 'repeat' || $collection['kind'] === 'delimited'
+                        || $collection['allow_scalar'];
                 }
                 if ($exact) {
                     $encoded->reserveExactName($name, $wire);

@@ -31,10 +31,30 @@ final class MonitoringSpec
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [
-            'globalSections' => ['name' => 'global_sections', 'encoding' => 'scalar'],
+            'globalSections' => [
+                'name' => 'global_sections',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => ',',
+                ],
+            ],
             'interval' => ['name' => 'interval', 'encoding' => 'scalar'],
             'maxDataSpan' => ['name' => 'max_data_span', 'encoding' => 'scalar'],
-            'pluginSections' => ['name' => 'plugin_sections', 'encoding' => 'scalar'],
+            'pluginSections' => [
+                'name' => 'plugin_sections',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => ',',
+                ],
+            ],
         ],
         'returns' => [
             'type' => 'object',

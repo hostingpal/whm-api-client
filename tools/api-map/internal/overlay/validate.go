@@ -265,11 +265,21 @@ func ValidateCollection(c *Collection) error {
 	if c != nil && c.RejectPrefixedKeys != nil && (!*c.RejectPrefixedKeys || c.Kind != "map" || c.Prefix == nil || *c.Prefix == "") {
 		return fmt.Errorf("reject_prefixed_keys requires true and a nonempty map prefix")
 	}
-	if c == nil || (c.Kind != "indexed" && c.Kind != "repeat" && c.Kind != "map") ||
+	if c == nil || (c.Kind != "indexed" && c.Kind != "repeat" && c.Kind != "map" && c.Kind != "delimited") ||
 		(c.ItemType != "string" && c.ItemType != "int" && c.ItemType != "bool" && c.ItemType != "string|int") ||
 		c.AllowScalar == nil || (c.Empty != "reject" && (c.Kind != "map" || c.Empty != "allow")) {
 		return fmt.Errorf("requires kind, strict item_type, allow_scalar and an explicit supported empty policy")
 	}
+	if c.Kind == "delimited" {
+		if c.ItemType != "string" || c.Delimiter == nil || (*c.Delimiter != "," && *c.Delimiter != "|") || c.Prefix != nil || c.Separator != nil || c.Start != nil {
+			return fmt.Errorf("delimited requires string items, comma/pipe delimiter and no index/map rules")
+		}
+		return nil
+	}
+	if c.Delimiter != nil {
+		return fmt.Errorf("delimiter requires delimited collection kind")
+	}
+
 	if c.Kind == "map" {
 		if *c.AllowScalar || c.Prefix == nil || !mapPrefix.MatchString(*c.Prefix) || c.Separator != nil || c.Start != nil {
 			return fmt.Errorf("map requires literal prefix, no scalar fallback or index rules")

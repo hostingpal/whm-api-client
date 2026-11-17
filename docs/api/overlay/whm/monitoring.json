@@ -72,7 +72,7 @@
           "date": "2026-11-01",
           "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
           "pointer": "/paths/~1360Monitoring~1set_360_agent_polling/get/parameters/0",
-          "note": "Preserve source argument order, optionality, scalar schema and full parameter prose. Comma strings stay strings; positive timing and interval/filter constraints remain upstream validation."
+          "note": "Original pinned global_sections parameter explicitly documents a comma-separated list with optional string schema. The client adds nonempty sequential strict-string arrays via the explicit delimited collection descriptor (literal comma), joined once to the original field. Scalar strings preserve all bytes unchanged; reject commas inside array items, not scalar strings. Preserve source argument order, optionality and full parameter prose; documented section choices, positive timing and interval/filter constraints remain upstream validation. This source binding establishes the client convenience, not live array or POST acceptance."
         },
         {
           "kind": "doc",
@@ -96,7 +96,7 @@
           "date": "2026-11-01",
           "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
           "pointer": "/paths/~1360Monitoring~1set_360_agent_polling/get/parameters/3",
-          "note": "Preserve source argument order, optionality, scalar schema and full parameter prose. Comma strings stay strings; positive timing and interval/filter constraints remain upstream validation."
+          "note": "Original pinned plugin_sections parameter explicitly documents a comma-separated list with optional string schema. The client adds nonempty sequential strict-string arrays via the explicit delimited collection descriptor (literal comma), joined once to the original field. Scalar strings preserve all bytes unchanged; reject commas inside array items, not scalar strings. Preserve source argument order, optionality and full parameter prose; documented section choices, positive timing and interval/filter constraints remain upstream validation. This source binding establishes the client convenience, not live array or POST acceptance."
         }
       ],
       "notes": [
@@ -106,7 +106,11 @@
         },
         {
           "kind": "policy",
-          "text": "globalSections and pluginSections are canonical comma-separated strings. Preserve exact bytes, ordering, duplicates, spaces and empty strings without parsing or rejoining. Optional null omits; explicit zero and negative integers remain supplied for server validation. No local range, cross-field or inferred-default guard. Delimited array convenience is deferred under whm-api-client-8x0.28.7."
+          "text": "globalSections and pluginSections accept canonical comma-separated strings or nonempty sequential strict-string arrays. Scalar strings preserve all bytes unchanged without parsing or rejoining. Arrays join once with a comma to the original field, retaining exact item bytes, ordering, duplicates, spaces and empty strings; commas inside items are rejected. Optional null omits; [] rejects, [''] sends empty and ['', 'cpu', ''] sends ,cpu,. Explicit zero and negative timing integers remain supplied for server validation. No local section enum, range, cross-field or inferred-default guard. Collection arguments receive SensitiveParameter for library trace protection; section lists do not change transport sensitivity or the original POST policy."
+        },
+        {
+          "kind": "documented",
+          "text": "global_sections is a comma-separated list of core sections: global, agent, data or execution. plugin_sections is a comma-separated list whose values must match plugin sections loaded in agent configuration, for example cpu, iostat or network. Both filters apply only to interval. interval is the polling interval in seconds and must be a positive integer. max_data_span is the maximum seconds between batches of metrics sent for analysis and must be a positive integer. These requirements are server validation; the client adds no enum or range checks."
         },
         {
           "kind": "policy",
@@ -136,7 +140,27 @@
           "kind": "policy",
           "text": "Returned tokens, state, authorization URLs, sessions, account identifiers, email/error details and PayloadMismatchException payloads may be private. Existing SensitiveParameter protections cover library-owned input/response frames, not caller-readable payloads or third-party transport traces. Returned URLs remain inert data and are never fetched. Offline fixtures establish no live server acceptance, POST compatibility, account, authentication or agent behavior; live follow-up whm-api-client-8x0.2.79 remains open."
         }
-      ]
+      ],
+      "params": {
+        "global_sections": {
+          "collection": {
+            "kind": "delimited",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "delimiter": ","
+          }
+        },
+        "plugin_sections": {
+          "collection": {
+            "kind": "delimited",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "delimiter": ","
+          }
+        }
+      }
     },
     "whm1:360Monitoring/webpros_auth_callback": {
       "name": "webProsAuthCallback",

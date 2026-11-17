@@ -8,6 +8,7 @@ use Closure;
 use HostingPal\WhmApiClient\Api\Whm\Spec\MonitoringSpec;
 use HostingPal\WhmApiClient\Exception\ApiException;
 use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
+use InvalidArgumentException;
 use SensitiveParameter;
 
 /**
@@ -139,10 +140,20 @@ final readonly class Monitoring
      * filters updates all core and default plugin sections. max_data_span controls global batched metric delivery.
      * Matching values avoid changes/restart per source; changes may restart agent360.
      *
-     * Policy: globalSections and pluginSections are canonical comma-separated strings. Preserve exact bytes, ordering,
-     * duplicates, spaces and empty strings without parsing or rejoining. Optional null omits; explicit zero and
-     * negative integers remain supplied for server validation. No local range, cross-field or inferred-default guard.
-     * Delimited array convenience is deferred under whm-api-client-8x0.28.7.
+     * Policy: globalSections and pluginSections accept canonical comma-separated strings or nonempty sequential
+     * strict-string arrays. Scalar strings preserve all bytes unchanged without parsing or rejoining. Arrays join once
+     * with a comma to the original field, retaining exact item bytes, ordering, duplicates, spaces and empty strings;
+     * commas inside items are rejected. Optional null omits; [] rejects, [''] sends empty and ['', 'cpu', ''] sends
+     * ,cpu,. Explicit zero and negative timing integers remain supplied for server validation. No local section enum,
+     * range, cross-field or inferred-default guard. Collection arguments receive SensitiveParameter for library trace
+     * protection; section lists do not change transport sensitivity or the original POST policy.
+     *
+     * Documented: global_sections is a comma-separated list of core sections: global, agent, data or execution.
+     * plugin_sections is a comma-separated list whose values must match plugin sections loaded in agent configuration,
+     * for example cpu, iostat or network. Both filters apply only to interval. interval is the polling interval in
+     * seconds and must be a positive integer. max_data_span is the maximum seconds between batches of metrics sent for
+     * analysis and must be a positive integer. These requirements are server validation; the client adds no enum or
+     * range checks.
      *
      * Policy: The source status enum is [1], documenting only 1 as success. Existing generated validation enforces
      * native int, not singleton enum membership; other accepted integers carry no promised upstream meaning.
@@ -176,22 +187,27 @@ final readonly class Monitoring
      * API-map identity: whm1:360Monitoring/set_360_agent_polling#GET (wire name 360Monitoring/set_360_agent_polling;
      * 360 Monitoring).
      *
-     * @param string|null $globalSections A comma-separated list of core sections to update. Null omits it.
+     * @param string|non-empty-list<string>|null $globalSections A comma-separated list of core sections to update. Null
+     *     omits it.
      * @param int|null $interval The polling interval in seconds. Null omits it.
      * @param int|null $maxDataSpan The maximum number of seconds between batches of metrics sent for analysis. Null
      *     omits it.
-     * @param string|null $pluginSections A comma-separated list of plugin sections to update. Null omits it.
+     * @param string|non-empty-list<string>|null $pluginSections A comma-separated list of plugin sections to update.
+     *     Null omits it.
      * @return Set360AgentPollingResult
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/360-monitoring/360monitoring-set_360_agent_polling
      */
     public function set360AgentPolling(
-        ?string $globalSections = null,
+        #[SensitiveParameter]
+        string|array|null $globalSections = null,
         ?int $interval = null,
         ?int $maxDataSpan = null,
-        ?string $pluginSections = null,
+        #[SensitiveParameter]
+        string|array|null $pluginSections = null,
     ): array {
         /** @var Set360AgentPollingResult $result Validated against MonitoringSpec::SET360_AGENT_POLLING. */
         $result = ($this->run)(MonitoringSpec::SET360_AGENT_POLLING, [

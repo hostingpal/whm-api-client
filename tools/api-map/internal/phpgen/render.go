@@ -606,6 +606,10 @@ func specClass(g effective.Group) string {
 					if c.RejectPrefixedKeys != nil {
 						w.line("                    'reject_prefixed_keys' => true,")
 					}
+
+					if c.Kind == "delimited" {
+						w.line("                    'delimiter' => " + phpString(*c.Delimiter) + ",")
+					}
 					if c.Kind == "indexed" || c.Kind == "map" {
 						w.line("                    'prefix' => " + phpString(*c.Prefix) + ",")
 					}
