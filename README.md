@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 116 generated typed groups cover 1,244 documented operations (see
+The 117 generated typed groups cover 1,245 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, DNS zone and DNSSEC
 management, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -664,6 +664,47 @@ payload. Directory fields retain optional presence; only `auth_name` and
 `auth_type` in the configure response additionally accept explicit null, based on
 the reviewer's successful disable calls. Read-operation field types are unchanged.
 
+`uapi()->personalization()->get($query)` retrieves account NVData from cPanel 74
+using one direct-UAPI JSON POST. The required whole-body array has optional
+`names: list<string>`. `get([])` sends `{}`, while `get(['names' => []])` sends
+`{"names":[]}`; neither form establishes server defaults. Empty names, duplicates,
+order and string bytes are preserved. Invalid structures fail locally after
+metadata reset; WHM-bridged UAPI rejects this method without I/O.
+
+```php
+// $client uses direct cPanel credentials; returned settings may contain private data.
+$settings = $client->uapi()->personalization()->get(['names' => ['theme', 'locale']]);
+$rows = $settings['personalization'] ?? [];
+// Inspect each optional row success (integer 0/1), reason and value (any JSON type or null).
+```
+
+The return retains the formal optional `personalization` map despite the pinned
+example's direct keys. Row `success: 0` under UAPI status 1 remains returned data;
+UAPI status 0 throws an API error. Missing fields and explicit `value: null` stay
+distinct. Keep names, values, reasons and mismatch payloads private. Documented
+128-byte key and 2048-byte value limits add no client checks. No implicit read,
+retry, fallback or returned-URL fetch occurs. This covers one of two Personalization
+operations; `set()` remains excluded under `8x0.29.6`. The original protocol probe
+retained structural wrapper observations but lost the API outcome through its
+incorrect temporary parser; that failed evidence remains unchanged. A separate
+bounded typed observation through clean committed `6466122` on `11.138.0.19`
+passed WHM version GET and direct getter JSON POST (two attempts, HTTP 200/API 1).
+The exact two fresh requested rows had explicit null values and both row success
+flags were **1**. The bare `data.personalization` wrapper matches the formal schema.
+This custom developer verification is not a schema-2 catalog capture or strict
+unknown-field audit.
+
+Row `value` is nullable `mixed`, not a string. `set` accepts any JSON value, and
+[review 5728223669](https://github.com/hostingpal/whm-api-client/pull/131#pullrequestreview-5728223669)
+on `11.138.0.19` read stored values back through direct UAPI as strings (integer 5
+as `"5"`), float, boolean, list and object. Objects become associative arrays, so
+check each value's type. One non-string name no longer fails the whole call. The
+same review saw omitted and empty `names` raise API errors, an empty-string name
+return a row with `success: 0`, a null value and a private reason, and duplicates
+return one row. Other versions, setter and persistence remain unverified. No writes,
+SSH, sessions, retries or returned-URL access ran. See
+[`docs/api/source-audit.md`](docs/api/source-audit.md) for exact artifact/probe hashes.
+
 The resource and web statistics slice exposes eleven GET operations across
 `bandwidth()`, `resourceUsage()`, `statsBar()`, `stats()` and `statsManager()`.
 Bandwidth protocols, retention and grouped queries complement resource limits,
@@ -713,7 +754,7 @@ well-formed raw direct-JSON requests bypassed this client and were blocked by
 `_can_self_manage` on 11.138.0.19: “You may not modify the weblog analyzer
 configuration”. Passing the gate requires a root/reseller server-wide statistics
 setting change; this work authorizes no such change and ran no live calls.
-Twelve other pinned JSON-body operations remain deferred; remaining
+Eleven other pinned JSON-body operations remain deferred; remaining
 selection/source/route audit is tracked under `8x0.29.6`.
 
 ```php
