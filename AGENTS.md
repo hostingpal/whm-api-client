@@ -497,7 +497,8 @@ Preserve the generated Beads blocks and keep project-specific additions outside
 them. If `bd setup` regenerates a Beads block with profile-neutral wording,
 re-apply the team-maintainer wording; the Git Workflow section is authoritative.
 
-Keep `AGENTS.md` under 40,000 characters (`wc -c AGENTS.md`). The whole file is
-loaded into every session, and Claude Code warns above that size. It holds only
-rules that apply to every session; module contract notes, recipe state and runtime
-detail belong in `docs/agents/` (see [Module Contract Notes](#module-contract-notes)).
+Keep `AGENTS.md` under 32,000 bytes (`wc -c AGENTS.md`). The whole file is loaded
+into every session: Codex stops reading project instructions at 32 KiB by default
+(`project_doc_max_bytes`) and Claude Code warns above 40,000 characters. It holds
+only rules that apply to every session; module contract notes, recipe state and
+runtime detail belong in `docs/agents/` (see [Module Contract Notes](#module-contract-notes)).
