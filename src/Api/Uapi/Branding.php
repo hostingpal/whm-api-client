@@ -23,17 +23,25 @@ use SensitiveParameter;
  * before every attempt and records the envelope snapshot before API or payload errors.
  *
  * @phpstan-type GetApplicationInformationResult array{
+ *     acontent?: string,
+ *     base64_png_image?: string,
  *     feature?: string,
  *     file?: string,
  *     group?: string,
  *     height?: int,
  *     if?: string,
  *     imgtype?: string,
+ *     implements?: string,
  *     itemdesc?: string,
  *     itemorder?: int,
+ *     key?: string,
  *     module?: string,
+ *     onclick?: string,
+ *     plainitemdesc?: string,
  *     searchtext?: string,
  *     subtype?: string,
+ *     target?: string,
+ *     touch?: string,
  *     type?: string,
  *     url?: string,
  *     width?: int,
@@ -73,12 +81,12 @@ use SensitiveParameter;
  *             feature?: string,
  *             file?: string,
  *             group?: string,
- *             height?: string,
+ *             height?: int,
  *             if?: string,
  *             imgtype?: string,
  *             implements?: string,
  *             itemdesc?: string,
- *             itemorder?: string,
+ *             itemorder?: int,
  *             key?: string,
  *             module?: string,
  *             onclick?: string,
@@ -89,7 +97,7 @@ use SensitiveParameter;
  *             touch?: string,
  *             type?: string,
  *             url?: string,
- *             width?: string,
+ *             width?: int,
  *         }>,
  *     }>,
  *     implements?: array<array-key, string>,
@@ -136,27 +144,37 @@ final readonly class Branding
      * Documented: Available from cPanel 11.42. No pinned role or plugin restriction. One immediate account-scoped
      * request uses the ordinary UAPI Flag outcome on direct and WHM-bridged routes.
      *
-     * Documented: appKey is the required feature app_key in dynamicui.conf. Return a required nonnullable object with
-     * all fourteen formal fields optional; height/itemorder/width remain strict integers. Strings including conditional
-     * expressions and URL/path values stay open and inert.
+     * Documented: appKey is the required feature app_key in dynamicui.conf. Return an object with all formal fields
+     * optional, or null when no app has that key. Strings including conditional expressions and URL/path values stay
+     * open and inert.
+     *
+     * Observed: PR108 review 5725970479 on 11.138.0.19, both routes: height/itemorder/width arrive as digit strings and
+     * normalize losslessly to int, as in getApplications(); the same eight extra row fields are kept. An unknown key
+     * (including an empty string) leaves the source's app record undefined, so the call succeeds with null data: null
+     * means no such app, not a failure.
      *
      * Policy: Returned HTML, JavaScript, conditional expressions, URLs, paths and image strings are inert payload. The
      * client never renders, executes, fetches, decodes or locally reads them. No implicit read, merge, sort, retry,
      * rollback or cache of server data is added. Offline fixtures establish no live theme, rendering, visibility or
      * POST acceptance; live follow-up whm-api-client-8x0.2.75 remains open.
      *
+     * Returns null when the server sends no data.
+     *
      * API-map identity: uapi:Branding/get_application_information#GET (wire name get_application_information).
      *
      * @param string $appKey The application's feature name.
-     * @return GetApplicationInformationResult
+     * @return GetApplicationInformationResult|null
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/application-information/branding-get_application_information
      */
-    public function getApplicationInformation(string $appKey): array
+    public function getApplicationInformation(string $appKey): ?array
     {
-        /** @var GetApplicationInformationResult $result Validated against BrandingSpec::GET_APPLICATION_INFORMATION. */
+        /**
+         * @var GetApplicationInformationResult|null $result
+         * Validated against BrandingSpec::GET_APPLICATION_INFORMATION.
+         */
         $result = ($this->run)(BrandingSpec::GET_APPLICATION_INFORMATION, ['appKey' => $appKey]);
 
         return $result;
@@ -222,8 +240,11 @@ final readonly class Branding
      * joined once with |; omission requests no sorting. Source arglist is an alias, not a second public argument.
      * Preserve default_group_order integer map, ordered grouporder/groups/items lists, implements string map and index
      * integer-list map. Index prose describes zero-based group/item positions, but does not establish fixed tuple
-     * length. Item height/itemorder/width remain strings. Example-only key/plainitemdesc are optional strings; preserve
-     * empty lists/maps and dynamic keys.
+     * length. Item height/itemorder/width normalize to int from native integers or canonical digit strings.
+     * Example-only key/plainitemdesc are optional strings; preserve empty lists/maps and dynamic keys.
+     *
+     * Observed: PR108 review 5725970479 on 11.138.0.19, both routes: item height/itemorder/width mixed digit strings
+     * and native integers across groups, so the pinned string type rejected every call. Both forms now return int.
      *
      * Policy: Returned HTML, JavaScript, conditional expressions, URLs, paths and image strings are inert payload. The
      * client never renders, executes, fetches, decodes or locally reads them. No implicit read, merge, sort, retry,
@@ -273,6 +294,10 @@ final readonly class Branding
      * accesses or validates the path locally. Required nonnullable dynamic map retains optional condition/icon/other
      * formal fields with strict integer dimensions/order. terms is an optional ordered string list supported by formal
      * items:string and array example; null is invalid and omission stays absent.
+     *
+     * Observed: PR108 review 5725970479 on 11.138.0.19: a docroot without sitemap.json, including a nonexistent path,
+     * returns an empty result at status 1 with no error; only base/webmail/jupiter had a sitemap there. An empty result
+     * does not prove that the directory exists.
      *
      * Policy: Returned HTML, JavaScript, conditional expressions, URLs, paths and image strings are inert payload. The
      * client never renders, executes, fetches, decodes or locally reads them. No implicit read, merge, sort, retry,
@@ -331,6 +356,9 @@ final readonly class Branding
      * accounts without a branding package always use theme fallback. Null optional values omit; supplied empty strings
      * remain and bool false/true send 0/1. Return exact string content (including empty/HTML/Unicode/zero-like text) or
      * explicit null; missing data is a mismatch.
+     *
+     * Observed: PR108 review 5725970479 on 11.138.0.19: when no file matches, the handler returns nothing, giving
+     * status 0 with null errors, so ApiErrorException::errors() is empty. Treat that exception as a missing file.
      *
      * Policy: The source GET is x-readonly=true; effective form POST keeps arbitrary potentially private data out of
      * URLs. data remains an unparsed raw string, including malformed, scalar, list or duplicate-key JSON-like text. No

@@ -9,6 +9,7 @@ use HostingPal\WhmApiClient\Api\Uapi\ImageManager;
 use HostingPal\WhmApiClient\Client;
 use HostingPal\WhmApiClient\Exception\ApiErrorException;
 use HostingPal\WhmApiClient\Exception\ApiException;
+use HostingPal\WhmApiClient\Exception\InvalidResponseException;
 use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
 use HostingPal\WhmApiClient\Exception\TransportException;
 use HostingPal\WhmApiClient\Http\HttpTransport;
@@ -155,35 +156,187 @@ final class UapiImageManagerTest extends TestCase
         ];
     }
 
-    /** @param ImageCall $call */
-    #[DataProvider('invalidPayloads')]
-    public function testInvalidPayloadRetainsNewConfirmedMetadata(string $route, Closure $call, ?string $payload): void
+    /** @return iterable<string, array{string, string, array{height?: int, width?: int}}> */
+    public static function dimensionStrings(): iterable
+    {
+        foreach (['direct', 'bridge'] as $route) {
+            yield "$route observed digit captures" => [$route, '{"height":"5","width":"10","future":true}',
+                ['height' => 5, 'width' => 10]];
+            foreach (
+                ['0' => 0, '-1' => -1, (string) PHP_INT_MIN => PHP_INT_MIN,
+                (string) PHP_INT_MAX => PHP_INT_MAX] as $wire => $value
+            ) {
+                yield "$route canonical $wire" => [$route, '{"height":"' . $wire . '","width":"' . $wire . '"}',
+                    ['height' => $value, 'width' => $value]];
+            }
+        }
+    }
+
+    /** @param array{height?: int, width?: int} $expected */
+    #[DataProvider('dimensionStrings')]
+    public function testReviewedDimensionStrings(string $route, string $payload, array $expected): void
+    {
+        [$client, $http] = self::client($route);
+        $account = $client->uapi('npr');
+        $http->addResponse(new Response(200, [], self::envelope($route, $payload)));
+        self::assertSame($expected, $account->imageManager()->getDimensions('img/a.png'));
+        self::assertCount(1, $http->getRequests());
+        self::assertSame(1, $account->responseMeta()?->uapiStatus());
+    }
+
+    /** @return iterable<string, array{string, int, ?string, string}> */
+    public static function reviewedThumbnailBatches(): iterable
+    {
+        foreach (['direct', 'bridge'] as $route) {
+            foreach (
+                [
+                'all failed reasons' => [0, '[{"failed":1,"file":"a.png","reason":"corrupt A","future":true},'
+                    . '{"failed":1,"file":"b.png","reason":"corrupt B"}]', 'rows'],
+                'optional fields remain optional' => [0, '[{}]', 'rows'],
+                'empty failure' => [0, '[]', 'api'],
+                'null failure' => [0, 'null', 'api'],
+                'missing failure data' => [0, null, 'mismatch'],
+                'wrong object root' => [0, '{}', 'mismatch'],
+                'wrong scalar root' => [0, 'false', 'mismatch'],
+                'null row' => [0, '[null]', 'mismatch'],
+                'malformed known reason' => [0, '[{"failed":1,"reason":false}]', 'mismatch'],
+                'later row malformed' => [0, '[{"reason":"keep"},{"file":3}]', 'mismatch'],
+                'success empty' => [1, '[]', 'rows'],
+                'success null' => [1, 'null', 'mismatch'],
+                'success absent' => [1, null, 'mismatch'],
+                'success mixed' => [1, '[{"thumbnail_file":"tn_a.png"},{"failed":1,"reason":"bad B"}]', 'rows'],
+                ] as $name => [$status, $payload, $kind]
+            ) {
+                yield "$route $name" => [$route, $status, $payload, $kind];
+            }
+        }
+    }
+
+    #[DataProvider('reviewedThumbnailBatches')]
+    public function testReviewedThumbnailBatches(string $route, int $status, ?string $payload, string $kind): void
     {
         [$client, $http] = self::client($route);
         $account = $client->uapi('npr');
         $http->addResponse(new Response(200, [], self::envelope($route, '{}')));
         $account->imageManager()->getDimensions('seed.jpg');
         $previous = $account->responseMeta();
-        $http->addResponse(new Response(200, [], self::envelope($route, $payload)));
+        $body = str_replace('["Synthetic failure"]', 'null', self::envelope($route, $payload, $status));
+        $http->addResponse(new Response(200, [], $body));
+        $caught = null;
+        $result = null;
         try {
-            $call($account->imageManager());
-            self::fail('Invalid payload must fail.');
-        } catch (PayloadMismatchException $error) {
-            self::assertTrue($error->outcomeConfirmed);
-            self::assertSame($account->responseMeta(), $error->metadata);
-            self::assertNotSame($previous, $error->metadata);
-            self::assertSame(1, $error->metadata?->uapiStatus());
-            self::assertSame($route === 'bridge' ? 1 : null, $error->metadata->whmResult());
-            self::assertSame(['Fixture warning'], $error->metadata->uapiWarnings());
+            $result = $account->imageManager()->createThumbnails('img', 25, 25);
+        } catch (ApiException $error) {
+            $caught = $error;
+        }
+        if ($kind === 'rows') {
+            self::assertNull($caught);
+            $expected = match ($payload) {
+                '[{}]' => [[]],
+                '[]' => [],
+                '[{"thumbnail_file":"tn_a.png"},{"failed":1,"reason":"bad B"}]' => [
+                    ['thumbnail_file' => 'tn_a.png'], ['failed' => 1, 'reason' => 'bad B'],
+                ],
+                default => [
+                ['failed' => 1, 'file' => 'a.png', 'reason' => 'corrupt A'],
+                    ['failed' => 1, 'file' => 'b.png', 'reason' => 'corrupt B']],
+            };
+            self::assertSame($expected, $result);
+        } elseif ($kind === 'api') {
+            self::assertInstanceOf(ApiErrorException::class, $caught);
+            self::assertSame([], $caught->errors());
+            self::assertSame('UAPI operation failed; inspect errors() or response metadata.', $caught->getMessage());
+        } else {
+            self::assertInstanceOf(PayloadMismatchException::class, $caught);
+            self::assertFalse($caught->outcomeConfirmed);
             self::assertSame(
                 $payload === null ? null : json_decode($payload, true, 512, JSON_THROW_ON_ERROR),
-                $error->payload,
+                $caught->payload,
             );
+        }
+        self::assertNotSame($previous, $account->responseMeta());
+        self::assertSame($status, $account->responseMeta()?->uapiStatus());
+        if ($caught !== null) {
+            self::assertSame($account->responseMeta(), $caught->metadata);
         }
         self::assertCount(2, $http->getRequests());
     }
 
-    /** @return iterable<string, array{string, ImageCall, ?string}> */
+    public function testGenericUncheckedThumbnailCallDoesNotInheritRowsPolicy(): void
+    {
+        foreach (['direct', 'bridge'] as $route) {
+            [$client, $http] = self::client($route);
+            $account = $client->uapi('npr');
+            $http->addResponse(new Response(200, [], self::envelope($route, '[]', 0)));
+            $result = $account->call(
+                'ImageManager',
+                'create_thumbnails',
+                [],
+                outcome: \HostingPal\WhmApiClient\Api\OutcomePolicy::Unchecked,
+            );
+            self::assertSame([], $result->data);
+            self::assertCount(1, $http->getRequests());
+        }
+    }
+
+    public function testThumbnailTypedStatusPrecedesRowClassification(): void
+    {
+        foreach (['direct', 'bridge'] as $route) {
+            foreach (['"0"', 'false', 'null', '2'] as $status) {
+                [$client, $http] = self::client($route);
+                $account = $client->uapi('npr');
+                $body = str_replace('"status":0', '"status":' . $status, self::envelope($route, 'null', 0));
+                $http->addResponse(new Response(200, [], $body));
+                $caught = null;
+                try {
+                    $account->imageManager()->createThumbnails('img', 25, 25);
+                } catch (ApiException $error) {
+                    $caught = $error;
+                }
+                self::assertInstanceOf(InvalidResponseException::class, $caught);
+                self::assertNotInstanceOf(PayloadMismatchException::class, $caught);
+                self::assertSame($account->responseMeta(), $caught->metadata);
+                self::assertCount(1, $http->getRequests());
+            }
+        }
+    }
+
+    /** @param ImageCall $call */
+    #[DataProvider('invalidPayloads')]
+    public function testInvalidPayloadRetainsNewConfirmedMetadata(
+        string $route,
+        Closure $call,
+        ?string $payload,
+        bool $confirmed,
+    ): void {
+        [$client, $http] = self::client($route);
+        $account = $client->uapi('npr');
+        $http->addResponse(new Response(200, [], self::envelope($route, '{}')));
+        $account->imageManager()->getDimensions('seed.jpg');
+        $previous = $account->responseMeta();
+        $http->addResponse(new Response(200, [], self::envelope($route, $payload)));
+        $caught = null;
+        try {
+            $call($account->imageManager());
+        } catch (PayloadMismatchException $error) {
+            $caught = $error;
+        }
+        self::assertInstanceOf(PayloadMismatchException::class, $caught);
+        self::assertSame($confirmed, $caught->outcomeConfirmed);
+        self::assertSame($account->responseMeta(), $caught->metadata);
+        self::assertNotSame($previous, $caught->metadata);
+        self::assertSame(1, $caught->metadata?->uapiStatus());
+        self::assertSame($route === 'bridge' ? 1 : null, $caught->metadata->whmResult());
+        self::assertSame(['Fixture warning'], $caught->metadata->uapiWarnings());
+        self::assertSame(
+            $payload === null ? null : json_decode($payload, true, 512, JSON_THROW_ON_ERROR),
+            $caught->payload,
+        );
+        self::assertCount(2, $http->getRequests());
+    }
+
+
+    /** @return iterable<string, array{string, ImageCall, ?string, bool}> */
     public static function invalidPayloads(): iterable
     {
         foreach (['direct', 'bare', 'bridge'] as $route) {
@@ -194,8 +347,8 @@ final class UapiImageManagerTest extends TestCase
                 }
                 $invalid = [...$invalid, ...match ($function) {
                     'convert_file' => ['[{}]', '{"converted_file":null}', '{"converted_file":1}'],
-                    'get_dimensions' => ['[{}]', '{"height":null}', '{"height":"300"}', '{"width":false}',
-                        '{"width":2.5}'],
+                    'get_dimensions' => ['[{}]', '{"height":null}', '{"width":false}',
+                        '{"width":2.5}', ...self::invalidDimensionStrings()],
                     'create_thumbnails' => ['{}', '{"0":{}}', '[null]', '[1]', '["path"]',
                         '[{"failed":true}]', '[{"failed":"1"}]', '[{"failed":null}]', '[{"file":1}]',
                         '[{"file":null}]', '[{"reason":false}]', '[{"reason":null}]', '[{"thumbnail_file":[]}]',
@@ -203,10 +356,30 @@ final class UapiImageManagerTest extends TestCase
                     default => ['{}', '[]', '["path"]'],
                 }];
                 foreach ($invalid as $index => $payload) {
-                    yield "$route $name invalid $index" => [$route, $call, $payload];
+                    yield "$route $name invalid $index" => [$route, $call, $payload, $function !== 'create_thumbnails'];
                 }
             }
         }
+    }
+
+    /** @return list<string> */
+    private static function invalidDimensionStrings(): array
+    {
+        $payloads = [];
+        foreach (
+            ['', '01', '+1', '-0', '1.0', '1e1', ' 1', '1 ', '1\n',
+            (string) PHP_INT_MAX . '0', (string) PHP_INT_MIN . '0'] as $value
+        ) {
+            foreach (['height', 'width'] as $field) {
+                $payloads[] = json_encode([$field => $value], JSON_THROW_ON_ERROR);
+            }
+        }
+        foreach (['height', 'width'] as $field) {
+            foreach (['null', 'true', 'false', '1.0', '[]', '{}'] as $value) {
+                $payloads[] = '{"' . $field . '":' . $value . '}';
+            }
+        }
+        return $payloads;
     }
 
     /** @param ImageCall $call */

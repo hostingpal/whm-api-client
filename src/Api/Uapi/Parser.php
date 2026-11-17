@@ -20,7 +20,7 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  * before every attempt and records the envelope snapshot before API or payload errors.
  *
  * @phpstan-type GetFirstFileRelativeUriResult array{
- *     uri?: string,
+ *     uri?: string|null,
  * }
  */
 final readonly class Parser
@@ -47,6 +47,10 @@ final readonly class Parser
      * formal uri description and /usr/local/cpanel/base/favicon.ico example specify an absolute server path. This
      * contradiction is unresolved. getFirstFileRelativeUri returns the optional string unchanged; no local path
      * interpretation, base resolution or normalization.
+     *
+     * Observed: PR110 review 5726184111 on 11.138.0.19: the handler reads a template-processing global, so an API call
+     * gets null (direct UAPI) or a meaningless value such as [stdin] (WHM bridge). Outside a template, no call returns
+     * a useful uri; uri is nullable.
      *
      * Policy: One invocation makes one immediate request on the selected account through direct or WHM-bridged UAPI,
      * with ordinary Flag outcome. Selectors are lazy and cached without I/O or metadata reset. No implicit rendering,

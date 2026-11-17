@@ -13,70 +13,6 @@ namespace HostingPal\WhmApiClient\Api\Uapi\Spec;
  */
 final class CallerJsonSpec
 {
-    public const FLAG = [
-        'function' => 'flag',
-        'module' => 'CallerJson',
-        'method' => 'POST',
-        'body' => 'json',
-        'outcome' => 'flag',
-        'json_body' => [
-            'php' => 'body',
-            'required' => true,
-            'routes' => 'direct',
-            'schema' => ['type' => 'flag'],
-        ],
-        'params' => [],
-        'returns' => ['type' => 'int'],
-    ];
-
-    public const BOOL = [
-        'function' => 'bool',
-        'module' => 'CallerJson',
-        'method' => 'POST',
-        'body' => 'json',
-        'outcome' => 'flag',
-        'json_body' => [
-            'php' => 'body',
-            'required' => true,
-            'routes' => 'direct',
-            'schema' => ['type' => 'bool'],
-        ],
-        'params' => [],
-        'returns' => ['type' => 'int'],
-    ];
-
-    public const INT = [
-        'function' => 'int',
-        'module' => 'CallerJson',
-        'method' => 'POST',
-        'body' => 'json',
-        'outcome' => 'flag',
-        'json_body' => [
-            'php' => 'body',
-            'required' => true,
-            'routes' => 'direct',
-            'schema' => ['type' => 'int'],
-        ],
-        'params' => [],
-        'returns' => ['type' => 'int'],
-    ];
-
-    public const STRING = [
-        'function' => 'string',
-        'module' => 'CallerJson',
-        'method' => 'POST',
-        'body' => 'json',
-        'outcome' => 'flag',
-        'json_body' => [
-            'php' => 'body',
-            'required' => true,
-            'routes' => 'direct',
-            'schema' => ['type' => 'string'],
-        ],
-        'params' => [],
-        'returns' => ['type' => 'int'],
-    ];
-
     public const OBJECT = [
         'function' => 'object',
         'module' => 'CallerJson',
@@ -120,6 +56,55 @@ final class CallerJsonSpec
             ],
         ],
         'params' => [],
+        'returns' => ['type' => 'int'],
+    ];
+
+    public const OPEN = [
+        'function' => 'sendOpen',
+        'module' => 'CallerJson',
+        'method' => 'POST',
+        'body' => 'json',
+        'outcome' => 'flag',
+        'json_body' => [
+            'php' => 'body',
+            'required' => true,
+            'routes' => 'direct',
+            'schema' => [
+                'type' => 'object',
+                'values' => ['type' => 'json'],
+                'fields' => [
+                    'known' => ['type' => 'int'],
+                ],
+                'required' => ['known'],
+            ],
+        ],
+        'params' => [],
+        'returns' => ['type' => 'int'],
+    ];
+
+    public const FIELD = [
+        'function' => 'sendField',
+        'module' => 'CallerJson',
+        'method' => 'POST',
+        'body' => 'form',
+        'outcome' => 'flag',
+        'params' => [
+            'body' => [
+                'name' => 'configuration',
+                'encoding' => 'json',
+                'json' => [
+                    'required' => true,
+                    'schema' => [
+                        'type' => 'object',
+                        'values' => ['type' => 'json'],
+                        'fields' => [
+                            'known' => ['type' => 'int'],
+                        ],
+                        'required' => ['known'],
+                    ],
+                ],
+            ],
+        ],
         'returns' => ['type' => 'int'],
     ];
 }

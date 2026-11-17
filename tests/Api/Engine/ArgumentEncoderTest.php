@@ -102,7 +102,7 @@ final class ArgumentEncoderTest extends TestCase
     }
 
     #[DataProvider('floats')]
-    public function testFloatsUseTheShortestRoundTripFormIndependentOfSettings(float $value, string $expected): void
+    public function testFloatsUseRoundTripFormIndependentOfSettings(float $value, string $expected): void
     {
         $serialize = ini_get('serialize_precision');
         $precision = ini_get('precision');
@@ -116,7 +116,7 @@ final class ArgumentEncoderTest extends TestCase
                 $encoded = ArgumentEncoder::encode(self::PARAMS, ['ratio' => $value]);
 
                 self::assertSame($expected, $encoded->all()[0]['value'], 'serialize_precision ' . $setting);
-                self::assertSame($value, (float) $expected);
+                self::assertSame(pack('d', $value), pack('d', (float) $expected));
             }
         } finally {
             ini_set('serialize_precision', $serialize);

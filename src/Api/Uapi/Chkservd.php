@@ -47,9 +47,12 @@ final readonly class Chkservd
      * ports containing integers; the source specifies items from 1 through 65535 and uniqueItems:true.
      *
      * Policy: ports remains an optional list<int>; omission differs from an empty list. Native integers and order are
-     * preserved; numeric strings, floats, booleans and null are rejected without normalization. Existing runtime policy
-     * validates types, not general bounds or uniqueness. Reported ports do not prove listening, reachability, mail
-     * delivery or TLS behavior.
+     * preserved; canonical digit strings normalize losslessly to int; floats, booleans, null and noncanonical strings
+     * are rejected. Existing runtime policy validates types, not general bounds or uniqueness. Reported ports do not
+     * prove listening, reachability, mail delivery or TLS behavior.
+     *
+     * Observed: PR116 review 5726617674 on 11.138.0.19, both routes: the server splits a comma-separated port string,
+     * so every port is a digit string on any server; they normalize to int. getEximPortsSsl() returns native integers.
      *
      * Policy: One explicit invocation sends one parameterless GET on the selected account through direct or WHM-bridged
      * UAPI with ordinary Flag outcome. Accessors are lazy, cached and account-bound without I/O or metadata reset. No

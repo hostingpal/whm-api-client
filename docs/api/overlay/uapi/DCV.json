@@ -51,6 +51,14 @@
           "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
           "pointer": "/paths/~1DCV~1check_domains_via_dns/post/parameters/0",
           "note": "The original domain parameter description and multiple example explicitly establish domain-0/domain-1. Accept scalar string as domain and a nonempty sequential string list as indexed fields starting at 0, including singleton lists. Preserve order, duplicates, empty strings and exact bytes; no local domain syntax checks or normalization."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1DCV~1check_domains_via_dns/post/responses/200/content/application~1json/schema/properties/result/properties/data",
+          "note": "Attributed reviewer finding (PR109 review 5726048230): succeeded was a digit string on direct UAPI and an integer on the WHM bridge."
         }
       ],
       "notes": [
@@ -64,7 +72,11 @@
         },
         {
           "kind": "documented",
-          "text": "Results preserve input order. Optional dcv_string/domain/failure_reason/zone stay nonnull strings; query_results is an optional possibly-empty string list, succeeded is optional integer 0|1. UAPI success can include succeeded=0. failure_reason can report a DNS zone update failure; inspect each result separately."
+          "text": "Results preserve input order. Optional dcv_string/domain/failure_reason/zone stay nonnull strings; query_results is an optional possibly-empty string list or null, succeeded is optional integer 0|1. UAPI success can include succeeded=0. failure_reason can report a DNS zone update failure; inspect each result separately."
+        },
+        {
+          "kind": "observed",
+          "text": "PR109 review 5726048230 on 11.138.0.19: direct UAPI sends succeeded as a digit string and the WHM bridge as an integer; both normalize to integer 0|1. Source reading adds that query_results is null for a domain validated through an ancestor domain."
         },
         {
           "kind": "policy",
@@ -78,14 +90,43 @@
           "kind": "policy",
           "text": "Result data is a required nonnull list of optional-field objects; empty lists are valid, null or missing data fails. Per-row outcomes remain separate from UAPI status; status 0 and outer WHM failures still throw. Inspect responseMeta() warnings and raw metadata even after payload mismatch. Existing individual empty-array-as-object compatibility remains under whm-api-client-8x0.2.50; no shared validation change."
         }
-      ]
+      ],
+      "response": {
+        "[].succeeded": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1DCV~1check_domains_via_dns/post/responses/200/content/application~1json/schema/properties/result/properties/data",
+              "note": "Attributed reviewer finding (PR109 review 5726048230): succeeded arrived as a digit string through direct UAPI and as an integer through the WHM bridge; it is a grep count in Cpanel::SSL::DCV::DNS. Only exact quoted 0/1 is accepted, matching the pinned flag."
+            }
+          ]
+        },
+        "[].query_results": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19 attributed source review",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1DCV~1check_domains_via_dns/post/responses/200/content/application~1json/schema/properties/result/properties/data",
+              "note": "Attributed reviewer finding (PR109 review 5726048230): the installed Cpanel::SSL::DCV::DNS POD says query_results is an arrayref or undef, and it is undef for a domain validated through an ancestor. Source reading only, not a wire observation."
+            }
+          ]
+        }
+      }
     },
     "uapi:DCV/check_domains_via_http": {
       "name": "checkDomainsViaHttp",
       "method": "POST",
       "order": [
         "domain",
-        "dcv_file_allowed_characters",
         "dcv_file_extension",
         "dcv_file_random_character_count",
         "dcv_file_relative_path",
@@ -105,12 +146,7 @@
           }
         },
         "dcv_file_allowed_characters": {
-          "collection": {
-            "kind": "repeat",
-            "item_type": "string",
-            "allow_scalar": false,
-            "empty": "reject"
-          }
+          "omit": true
         },
         "dcv_file_extension": {
           "sensitive": true
@@ -170,6 +206,22 @@
           "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
           "pointer": "/paths/~1DCV~1check_domains_via_http/get/parameters/6",
           "note": "Client privacy policy treats supplied challenge filename extension, relative path and user-agent text as potentially private infrastructure/request data. Mark this source parameter sensitive in library trace frames; this does not promise secrecy in caller payloads or third-party transports."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1DCV~1check_domains_via_http/get/parameters",
+          "note": "Attributed reviewer finding (PR109 review 5726048230): repeated dcv_file_allowed_characters fields raised ApiErrorException (failed to parse the JSON stream data) on both routes, while a generic call sending one JSON array string reached the check. The source array/query schema therefore misdescribes the wire form; the PHP input becomes caller-serialized JSON text."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1DCV~1check_domains_via_http/get/responses/200/content/application~1json/schema/properties/result/properties/data",
+          "note": "Attributed reviewer finding (PR109 review 5726048230): on 11.138.0.19 through direct UAPI and the WHM bridge, a check that failed before any redirect returned failure_reason with redirects and redirects_count both null, because Cpanel::SSL::DCV::verify_domains leaves them undefined. Not a committed capture."
         }
       ],
       "notes": [
@@ -186,12 +238,16 @@
           "text": "All six optional null arguments omit and retain server defaults; empty strings and integer zero are supplied. Allowed filename characters default to A-Z and 0-9, extension to empty, random count to 100 (documented minimum 1), relative path to .well-known/pki-validation relative to the DOMAIN DOCUMENT ROOT, max redirects to null (minimum 0), and the user-agent default can change. Zero max redirects means no limit on redirect returns; a supplied N yields N+1 redirect records so excess failures are visible. No client defaults or new integer minimum/range guards are sent."
         },
         {
-          "kind": "policy",
-          "text": "Allowed filename characters are a nonempty sequential list<string> serialized as repeated literal dcv_file_allowed_characters fields under OpenAPI query form/explode defaults. Null omits; empty/nonsequential/nonstring lists reject after metadata reset before I/O. String items, including empty or multi-character values, remain exact without one-character/charset checks. Serialization is source/default-derived and offline, not server-observed."
+          "kind": "observed",
+          "text": "PR109 review 5726048230 on 11.138.0.19, both routes: the handler reads one dcv_file_allowed_characters value and decodes it with Cpanel::JSON::Load, and its POD calls it a JSON-encoded arrayref. Repeated fields, even a single one, failed with a JSON parse error, so the typed method omits this option and the server default A-Z and 0-9 applies. To send it, use uapi()->call('DCV', 'check_domains_via_http', [...]) with dcv_file_allowed_characters set to caller-serialized JSON array text, for example json_encode(['a', 'b']). A typed JSON-list encoding is follow-up work."
         },
         {
           "kind": "documented",
-          "text": "Results preserve input order for positional domain association; no top-row domain field is pinned. Optional failure_reason is string|null, redirects is a possibly-empty list and redirects_count is int. Redirect fields remain optional: content/protocol/reason/url strings, status int and success exactly empty string|0|1; success 0 or empty string is not an envelope failure. headers is an opaque object with arbitrary values; nested redirects is list<opaque object>|null, not an inferred recursive model. Unknown fields survive only inside those opaque nodes; known objects retain existing filtering."
+          "text": "Results preserve input order for positional domain association; no top-row domain field is pinned. Optional failure_reason is string|null, redirects is a possibly-empty list or null and redirects_count is int|null. Redirect fields remain optional: content/protocol/reason/url strings, status int and success exactly empty string|0|1; success 0 or empty string is not an envelope failure. headers is an opaque object with arbitrary values; nested redirects is list<opaque object>|null, not an inferred recursive model. Unknown fields survive only inside those opaque nodes; known objects retain existing filtering."
+        },
+        {
+          "kind": "observed",
+          "text": "PR109 review 5726048230 on 11.138.0.19, both routes: a check that fails before any redirect returns failure_reason with null redirects and redirects_count, including for a domain the account does not own. Read failure_reason; null redirect fields are a normal failed-check result, not a mismatch."
         },
         {
           "kind": "policy",
@@ -222,6 +278,32 @@
               "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
               "pointer": "/paths/~1DCV~1check_domains_via_http/get/responses/200/content/application~1json/schema/properties/result/properties/data/items/properties/redirects/items/properties/success",
               "note": "The original success oneOf is string enum [empty string] or integer enum [0,1], corroborated by its prose and empty-string field example. Replace only this optional node with the existing exact flag plus empty-string variant, yielding empty-string|0|1 without coercion. Reject quoted 0/1, other strings/integers, floats, booleans and null. This is pinned source evidence, not unrelated endpoint observation or live evidence."
+            }
+          ]
+        },
+        "[].redirects": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1DCV~1check_domains_via_http/get/responses/200/content/application~1json/schema/properties/result/properties/data",
+              "note": "Attributed reviewer finding (PR109 review 5726048230): on 11.138.0.19 through direct UAPI and the WHM bridge, a check that failed before any redirect returned failure_reason with redirects and redirects_count both null, because Cpanel::SSL::DCV::verify_domains leaves them undefined. Not a committed capture."
+            }
+          ]
+        },
+        "[].redirects_count": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1DCV~1check_domains_via_http/get/responses/200/content/application~1json/schema/properties/result/properties/data",
+              "note": "Attributed reviewer finding (PR109 review 5726048230): on 11.138.0.19 through direct UAPI and the WHM bridge, a check that failed before any redirect returned failure_reason with redirects and redirects_count both null, because Cpanel::SSL::DCV::verify_domains leaves them undefined. Not a committed capture."
             }
           ]
         }

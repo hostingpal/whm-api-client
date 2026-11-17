@@ -39,10 +39,21 @@ final class UserTasksSpec
                     'args' => [
                         'type' => 'object',
                         'fields' => [
+                            'domain' => ['type' => 'string'],
+                            'install_id' => ['type' => 'string'],
+                            'log_file' => ['type' => 'string'],
                             'repository_root' => ['type' => 'string'],
                         ],
                     ],
+                    'exclusive' => [
+                        'type' => 'union',
+                        'anyOf' => [
+                            ['type' => 'string'],
+                            ['type' => 'int'],
+                        ],
+                    ],
                     'id' => ['type' => 'string'],
+                    'sse_url' => ['type' => 'string'],
                     'subsystem' => ['type' => 'string'],
                 ],
             ],
