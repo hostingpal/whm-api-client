@@ -17,6 +17,14 @@
           "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
           "pointer": "/paths/~1Parser~1firstfile_relative_uri/get",
           "note": "Select complete firstfile_relative_uri under the explicit readable method getFirstFileRelativeUri; cPanel 11.42, source/effective GET, x-readonly:true, no parameters and ordinary Flag outcome. Keep the absolute formal field versus relative method/prose/summary contradiction visible without inferring path semantics."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Parser~1firstfile_relative_uri/get/responses/200/content/application~1json/schema/properties/result/properties/data",
+          "note": "Attributed reviewer observation (PR110 review 5726184111) on a disposable account: direct UAPI returned uri null and the WHM bridge returned the string [stdin]; the handler reads the Cpanel::Parser::Vars::firstfile global, which only has meaning while a template is processed. Not a committed capture."
         }
       ],
       "notes": [
@@ -27,6 +35,10 @@
         {
           "kind": "documented",
           "text": "The method/prose says relative to the cPanel base, the summary says session relative, while the formal uri description and /usr/local/cpanel/base/favicon.ico example specify an absolute server path. This contradiction is unresolved. getFirstFileRelativeUri returns the optional string unchanged; no local path interpretation, base resolution or normalization."
+        },
+        {
+          "kind": "observed",
+          "text": "PR110 review 5726184111 on 11.138.0.19: the handler reads a template-processing global, so an API call gets null (direct UAPI) or a meaningless value such as [stdin] (WHM bridge). Outside a template, no call returns a useful uri; uri is nullable."
         },
         {
           "kind": "policy",
@@ -40,7 +52,22 @@
           "kind": "policy",
           "text": "Inputs are ordinary noncredential selectors; returned content, paths, URLs and metadata may be private. Existing SensitiveParameter protections cover library-owned response frames, not caller-readable payloads, mismatch payloads or third-party transport traces. Offline fixtures establish no server acceptance, live UI/session behavior or POST compatibility; live follow-up whm-api-client-8x0.2.77 remains open."
         }
-      ]
+      ],
+      "response": {
+        "uri": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Parser~1firstfile_relative_uri/get/responses/200/content/application~1json/schema/properties/result/properties/data",
+              "note": "Attributed reviewer observation (PR110 review 5726184111) on a disposable account: direct UAPI returned uri null and the WHM bridge returned the string [stdin]; the handler reads the Cpanel::Parser::Vars::firstfile global, which only has meaning while a template is processed. Not a committed capture."
+            }
+          ]
+        }
+      }
     }
   }
 }

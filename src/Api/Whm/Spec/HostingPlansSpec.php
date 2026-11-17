@@ -880,7 +880,7 @@ final class HostingPlansSpec
                     'kind' => 'map',
                     'item_type' => 'bool',
                     'allow_scalar' => false,
-                    'empty' => 'allow',
+                    'empty' => 'reject',
                     'prefix' => '',
                 ],
             ],
@@ -889,8 +889,8 @@ final class HostingPlansSpec
             'type' => 'object',
             'fields' => [
                 'featurelist' => ['type' => 'string'],
-                'invalid_features' => ['type' => 'list', 'items' => ['type' => 'map', 'values' => ['type' => 'flag']]],
-                'updated_features' => ['type' => 'map', 'values' => ['type' => 'flag']],
+                'invalid_features' => ['type' => 'list', 'items' => ['type' => 'string']],
+                'updated_features' => ['type' => 'map', 'values' => ['type' => 'flag', 'accept' => ['string-flag']]],
             ],
         ],
     ];

@@ -22,7 +22,7 @@
         },
         {
           "kind": "documented",
-          "text": "Available from cPanel 86. Creates temporary credentials, not a Webmail login, session activity or mail access. Formal GET has x-readonly=false and x-rollback=none; effective transport is form POST on direct UAPI and WHM bridge. Live POST acceptance remains unverified. Login and remoteAddress are private inputs; password is sensitive where present."
+          "text": "Available from cPanel 86. Creates temporary credentials, not a Webmail login, session activity or mail access. Formal GET has x-readonly=false and x-rollback=none; effective transport is form POST on direct UAPI and WHM bridge. Login and remoteAddress are private inputs; password is sensitive where present."
         },
         {
           "kind": "documented",
@@ -30,11 +30,19 @@
         },
         {
           "kind": "documented",
-          "text": "Lowercase locale is a server requirement; omitted locale uses the account locale. remote_address defaults to the API caller IP and is required for command-line use; this HTTP library retains optionality. Direct and bridged routes need not infer the same remote address."
+          "text": "Lowercase locale is a server requirement; omitted locale uses the account locale. The pinned documentation describes remote_address as defaulting to the API caller IP and required for command-line use. That default does not establish WHM bridge inference; see the reviewed-build guidance below. The optional signature and null omission remain unchanged."
         },
         {
           "kind": "documented",
           "text": "The source recipe requires a separate caller-controlled POST to https://<hostname>:2096<token>/login with session=<session> in the body. Null hostname means the server that answered the API; missing hostname remains omitted. This library does not construct, fetch or log in to that destination. Hostname/token/session combinations and returned Webmail URLs are private data. Optional hostname:string|null, session:string and token:string preserve omission, null hostname and empty or opaque credential bytes."
+        },
+        {
+          "kind": "observed",
+          "text": "Reviewer seebeen reported on 2026-10-31 (review5725475353, original 5b005fb, cPanel 11.138.0.19) that all three Session creators succeeded as form POST on direct UAPI and WHM bridge with an explicit remoteAddress. Returned credentials were not used for login or access; non-null hostname remains unobserved. On that reviewed build, this method succeeded with remoteAddress omitted on direct UAPI but failed with an API error on WHM bridge; supply an explicit remoteAddress for the bridge on that build. This is scoped runtime evidence, not a universal route or authentication prohibition."
+        },
+        {
+          "kind": "observed",
+          "text": "In the same reviewer suspended-mailbox case on 11.138.0.19, this non-password method still issued credentials on both routes while checkPassword refused. Login and access with those credentials were not tested; credential issuance establishes no suspension-enforcement or availability guarantee."
         }
       ],
       "evidence": [
@@ -61,6 +69,30 @@
           "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
           "pointer": "/paths/~1Session~1create_webmail_session_for_mail_user/get/x-rollback",
           "note": "Pinned classification supports form POST without changing selected source variant or response schema."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Session~1create_webmail_session_for_mail_user/get/description",
+          "note": "Reviewer seebeen review5725475353 (https://github.com/hostingpal/whm-api-client/pull/102#pullrequestreview-5725475353), submitted 2026-10-31T23:39:57Z, reviewed original 5b005fb140877a5e7e3cb9ed7435e114617717c9. All three credential creators succeeded as form POST with an explicit address on direct UAPI and WHM bridge. Reviewer tested no returned-credential login/access. Non-null hostname and create_temp_user remain unobserved. This is attributed reviewer evidence, not root verification or combined-HEAD wire coverage."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Session~1create_webmail_session_for_mail_user/get/parameters/3/description",
+          "note": "Reviewer observed this method succeeding without remoteAddress on direct UAPI and failing with an API error on WHM bridge; explicit-address guidance is limited to this reviewed build. Attribution: seebeen review5725475353 (https://github.com/hostingpal/whm-api-client/pull/102#pullrequestreview-5725475353), original 5b005fb140877a5e7e3cb9ed7435e114617717c9. Pointer binds the pinned remote_address documentation, not the separately inspected server source; pinned default prose is not evidence of bridge inference."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Session~1create_webmail_session_for_mail_user/get/description",
+          "note": "Reviewer seebeen review5725475353 (https://github.com/hostingpal/whm-api-client/pull/102#pullrequestreview-5725475353), original 5b005fb140877a5e7e3cb9ed7435e114617717c9: in the suspended-mailbox case this non-password creator returned credentials on both routes while the password-checking creator refused. No returned-credential login/access test or general availability/bypass claim."
         }
       ],
       "params": {
@@ -89,7 +121,7 @@
         },
         {
           "kind": "documented",
-          "text": "Available from cPanel 86. Creates temporary credentials, not a Webmail login, session activity or mail access. Formal GET has x-readonly=false and x-rollback=none; effective transport is form POST on direct UAPI and WHM bridge. Live POST acceptance remains unverified. Login and remoteAddress are private inputs; password is sensitive where present."
+          "text": "Available from cPanel 86. Creates temporary credentials, not a Webmail login, session activity or mail access. Formal GET has x-readonly=false and x-rollback=none; effective transport is form POST on direct UAPI and WHM bridge. Login and remoteAddress are private inputs; password is sensitive where present."
         },
         {
           "kind": "documented",
@@ -97,11 +129,15 @@
         },
         {
           "kind": "documented",
-          "text": "Lowercase locale is a server requirement; omitted locale uses the account locale. remote_address defaults to the API caller IP and is required for command-line use; this HTTP library retains optionality. Direct and bridged routes need not infer the same remote address."
+          "text": "Lowercase locale is a server requirement; omitted locale uses the account locale. The pinned documentation describes remote_address as defaulting to the API caller IP and required for command-line use. That default does not establish WHM bridge inference; see the reviewed-build guidance below. The optional signature and null omission remain unchanged."
         },
         {
           "kind": "documented",
           "text": "The source recipe requires a separate caller-controlled POST to https://<hostname>:2096<token>/login with session=<session> in the body. Null hostname means the server that answered the API; missing hostname remains omitted. This library does not construct, fetch or log in to that destination. Hostname/token/session combinations and returned Webmail URLs are private data. Optional hostname:string|null, session:string and token:string preserve omission, null hostname and empty or opaque credential bytes."
+        },
+        {
+          "kind": "observed",
+          "text": "Reviewer seebeen reported on 2026-10-31 (review5725475353, original 5b005fb, cPanel 11.138.0.19) that all three Session creators succeeded as form POST on direct UAPI and WHM bridge with an explicit remoteAddress. Returned credentials were not used for login or access; non-null hostname remains unobserved. On that reviewed build, supply remoteAddress for the bridge: the reviewer source inspection found the shared _create_session() REMOTE_ADDR fallback fails when empty. Password-variant omission is source-derived, not runtime-observed by the reviewer; no universal route or authentication prohibition is inferred."
         }
       ],
       "evidence": [
@@ -128,6 +164,22 @@
           "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
           "pointer": "/paths/~1Session~1create_webmail_session_for_mail_user_check_password/get/x-rollback",
           "note": "Pinned classification supports form POST without changing selected source variant or response schema."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Session~1create_webmail_session_for_mail_user_check_password/get/description",
+          "note": "Reviewer seebeen review5725475353 (https://github.com/hostingpal/whm-api-client/pull/102#pullrequestreview-5725475353), submitted 2026-10-31T23:39:57Z, reviewed original 5b005fb140877a5e7e3cb9ed7435e114617717c9. All three credential creators succeeded as form POST with an explicit address on direct UAPI and WHM bridge. Reviewer tested no returned-credential login/access. Non-null hostname and create_temp_user remain unobserved. This is attributed reviewer evidence, not root verification or combined-HEAD wire coverage."
+        },
+        {
+          "kind": "doc",
+          "version": "11.138.0.19 (reviewer source inspection)",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Session~1create_webmail_session_for_mail_user_check_password/get/parameters/4/description",
+          "note": "Reviewer source inspection reported shared _create_session() using REMOTE_ADDR and failing when empty. Password-variant omission was not runtime-tested; bridge explicit-address guidance on this reviewed build is source-derived. Attribution: seebeen review5725475353 (https://github.com/hostingpal/whm-api-client/pull/102#pullrequestreview-5725475353), original 5b005fb140877a5e7e3cb9ed7435e114617717c9. Pointer binds the pinned remote_address documentation, not the separately inspected server source; pinned default prose is not evidence of bridge inference."
         }
       ],
       "params": {
@@ -156,7 +208,7 @@
         },
         {
           "kind": "documented",
-          "text": "Available from cPanel 86. Creates temporary credentials, not a Webmail login, session activity or mail access. Formal GET has x-readonly=false and x-rollback=none; effective transport is form POST on direct UAPI and WHM bridge. Live POST acceptance remains unverified. Login and remoteAddress are private inputs; password is sensitive where present."
+          "text": "Available from cPanel 86. Creates temporary credentials, not a Webmail login, session activity or mail access. Formal GET has x-readonly=false and x-rollback=none; effective transport is form POST on direct UAPI and WHM bridge. Login and remoteAddress are private inputs; password is sensitive where present."
         },
         {
           "kind": "documented",
@@ -164,11 +216,15 @@
         },
         {
           "kind": "documented",
-          "text": "Lowercase locale is a server requirement; omitted locale uses the account locale. remote_address defaults to the API caller IP and is required for command-line use; this HTTP library retains optionality. Direct and bridged routes need not infer the same remote address."
+          "text": "Lowercase locale is a server requirement; omitted locale uses the account locale. The pinned documentation describes remote_address as defaulting to the API caller IP and required for command-line use. That default does not establish WHM bridge inference; see the reviewed-build guidance below. The optional signature and null omission remain unchanged."
         },
         {
           "kind": "documented",
           "text": "The source recipe requires a separate caller-controlled POST to https://<hostname>:2096<token>/login with session=<session> in the body. Null hostname means the server that answered the API; missing hostname remains omitted. This library does not construct, fetch or log in to that destination. Hostname/token/session combinations and returned Webmail URLs are private data. Optional hostname:string|null, session:string and token:string preserve omission, null hostname and empty or opaque credential bytes."
+        },
+        {
+          "kind": "observed",
+          "text": "Reviewer seebeen reported on 2026-10-31 (review5725475353, original 5b005fb, cPanel 11.138.0.19) that all three Session creators succeeded as form POST on direct UAPI and WHM bridge with an explicit remoteAddress. Returned credentials were not used for login or access; non-null hostname remains unobserved. On that reviewed build, this method succeeded with remoteAddress omitted on direct UAPI but failed with an API error on WHM bridge; supply an explicit remoteAddress for the bridge on that build. This is scoped runtime evidence, not a universal route or authentication prohibition."
         }
       ],
       "evidence": [
@@ -195,6 +251,22 @@
           "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
           "pointer": "/paths/~1Session~1create_webmail_session_for_self/get/x-rollback",
           "note": "Pinned classification supports form POST without changing selected source variant or response schema."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Session~1create_webmail_session_for_self/get/description",
+          "note": "Reviewer seebeen review5725475353 (https://github.com/hostingpal/whm-api-client/pull/102#pullrequestreview-5725475353), submitted 2026-10-31T23:39:57Z, reviewed original 5b005fb140877a5e7e3cb9ed7435e114617717c9. All three credential creators succeeded as form POST with an explicit address on direct UAPI and WHM bridge. Reviewer tested no returned-credential login/access. Non-null hostname and create_temp_user remain unobserved. This is attributed reviewer evidence, not root verification or combined-HEAD wire coverage."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Session~1create_webmail_session_for_self/get/parameters/1/description",
+          "note": "Reviewer observed this method succeeding without remoteAddress on direct UAPI and failing with an API error on WHM bridge; explicit-address guidance is limited to this reviewed build. Attribution: seebeen review5725475353 (https://github.com/hostingpal/whm-api-client/pull/102#pullrequestreview-5725475353), original 5b005fb140877a5e7e3cb9ed7435e114617717c9. Pointer binds the pinned remote_address documentation, not the separately inspected server source; pinned default prose is not evidence of bridge inference."
         }
       ],
       "params": {
