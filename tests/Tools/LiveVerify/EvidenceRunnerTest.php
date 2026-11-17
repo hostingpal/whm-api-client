@@ -453,16 +453,18 @@ final class EvidenceRunnerTest extends TestCase
     public function testOptInFailsBeforeAnyRequest(): void
     {
         $http = new Client();
+        $caught = null;
         try {
             (new EvidenceRunner($http, self::context()))->run(
                 ProbeCatalog::load(self::ROOT),
                 false,
                 ['whm' => 'synthetic', 'cpanel' => 'synthetic'],
             );
-            self::fail('Missing opt-in must fail.');
-        } catch (RuntimeException) {
-            self::assertCount(0, $http->getRequests());
+        } catch (RuntimeException $error) {
+            $caught = $error;
         }
+        self::assertInstanceOf(RuntimeException::class, $caught, 'Missing opt-in must fail.');
+        self::assertCount(0, $http->getRequests());
     }
 
     /** @param array{api: string, payload: string, probe: string} $expected */

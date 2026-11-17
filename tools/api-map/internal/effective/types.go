@@ -46,18 +46,20 @@ type RecordSpec struct {
 	Fields          []RecordField
 }
 
-// RecordField preserves a source scalar type and requiredness under its reviewed prefix.
+// RecordField preserves source scalar type, requiredness and complete prose under its reviewed prefix.
 type RecordField struct {
-	PHP      string
-	Prefix   string
-	Type     string
-	Required bool
+	Description string
+	PHP         string
+	Prefix      string
+	Type        string
+	Required    bool
 }
 
 // Param is one generated method argument.
 type Param struct {
 	// Input is strict request data; Encoding=json selects one field, otherwise JSONBody owns the whole body.
 	Input       *InputSpec          `json:",omitempty"`
+	Source      string              // Pinned parameter identity, independent of corrected wire names.
 	Records     *RecordSpec         `json:",omitempty"`
 	Collection  *overlay.Collection `json:",omitempty"`
 	Wire        string
@@ -87,6 +89,7 @@ type Operation struct {
 	Function    string
 	Method      string
 	Body        string
+	Rows        string // explicit no-row failure policy; does not alter global Unchecked
 	Outcome     string
 	PHPName     string
 	Constant    string
@@ -101,6 +104,10 @@ type Operation struct {
 	Unwrap      string
 	// OptionalPayload makes an omitted or null data member a null result.
 	OptionalPayload bool
+	// EmptyWithoutData makes an omitted data member an empty unwrapped list.
+	EmptyWithoutData bool
+	// AccountSearchEmpty restores strict outcomes around evidenced listaccts absence.
+	AccountSearchEmpty bool
 }
 
 // Method owns only input mapping and public symbols, never a second response contract.

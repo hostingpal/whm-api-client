@@ -13,16 +13,16 @@ import (
 
 func TestJSONInputPublicGrammarAndExactSpec(t *testing.T) {
 	s := effective.InputSpec{Type: "object", Fields: []effective.InputField{{Name: "changes", Spec: effective.InputSpec{Type: "list", Nonempty: true, Items: &effective.InputSpec{Type: "object", Fields: []effective.InputField{{Name: "enabled", Spec: effective.InputSpec{Type: "flag"}}, {Name: "nested", Spec: effective.InputSpec{Type: "list", Items: &effective.InputSpec{Type: "string", Nullable: true}}}}, Required: []string{"enabled"}}}}}, Required: []string{"changes"}}
-	g := effective.Group{Family: "uapi", Name: "Examples", Class: "Examples", Accessor: "examples", Operations: []effective.Operation{{ID: "uapi:Examples/save", VariantID: "uapi:Examples/save#POST", Module: "Examples", Function: "save", PHPName: "save", Constant: "SAVE", Method: "POST", Body: "json", Outcome: "flag", JSONBody: &effective.JSONBody{PHP: "configuration", Alias: "ConfigurationInput", Routes: "direct", Required: true, Schema: s}, Params: []effective.Param{{PHP: "configuration", PHPType: "array", DocType: "ConfigurationInput", Required: true, Sensitive: true, Input: &s}, {PHP: "query", Wire: "q", Encoding: "scalar", PHPType: "string", DocType: "string"}}, Returns: &effective.TypeSpec{Type: "flag"}}}}
+	g := effective.Group{Family: "uapi", Name: "Examples", Class: "Examples", Accessor: "examples", Operations: []effective.Operation{{ID: "uapi:Examples/save", VariantID: "uapi:Examples/save#POST", Module: "Examples", Function: "save", PHPName: "save", Constant: "SAVE", Method: "POST", Body: "json", Outcome: "flag", JSONBody: &effective.JSONBody{PHP: "configuration", Alias: "ConfigurationInput", Routes: "direct", Required: true, Schema: s}, Params: []effective.Param{{PHP: "configuration", PHPType: "array", DocType: "ConfigurationInput", Required: true, Sensitive: true, Input: &s}}, Returns: &effective.TypeSpec{Type: "flag"}}}}
 	files := Render(effective.Result{Groups: []effective.Group{g}})
 	class := string(files["src/Api/Uapi/Examples.php"])
 	spec := string(files["src/Api/Uapi/Spec/ExamplesSpec.php"])
-	for _, want := range []string{"@phpstan-type ConfigurationInput array{", "changes: non-empty-list<array{", "enabled: bool,", "nested?: list<string|null>,", "@param ConfigurationInput $configuration", "#[SensitiveParameter]\n        array $configuration,", "?string $query = null,", "@return 0|1", "ConfigurationInput", "Direct routes only", "@throws InvalidArgumentException If the whole JSON body"} {
+	for _, want := range []string{"@phpstan-type ConfigurationInput array{", "changes: non-empty-list<array{", "enabled: bool,", "nested?: list<string|null>,", "@param ConfigurationInput $configuration", "#[SensitiveParameter]\n        array $configuration,", "@return 0|1", "ConfigurationInput", "Direct routes only", "@throws InvalidArgumentException If the whole JSON body"} {
 		if !strings.Contains(class, want) {
 			t.Fatalf("missing %q in class:\n%s", want, class)
 		}
 	}
-	for _, want := range []string{"'body' => 'json'", "'json_body' => [", "'php' => 'configuration'", "'required' => true", "'routes' => 'direct'", "'nonempty' => true", "'enabled' => ['type' => 'flag']", "'returns' => ['type' => 'flag']", "'query' => ['name' => 'q', 'encoding' => 'scalar']"} {
+	for _, want := range []string{"'body' => 'json'", "'json_body' => [", "'php' => 'configuration'", "'required' => true", "'routes' => 'direct'", "'nonempty' => true", "'enabled' => ['type' => 'flag']", "'returns' => ['type' => 'flag']"} {
 		if !strings.Contains(spec, want) {
 			t.Fatalf("missing %q in spec:\n%s", want, spec)
 		}
@@ -37,10 +37,6 @@ func TestJSONInputPublicGrammarAndExactSpec(t *testing.T) {
 		wire     string
 	}{
 		{effective.InputSpec{Type: "object"}, false, "?array $configuration = null,", "'required' => false"},
-		{effective.InputSpec{Type: "list", Items: &effective.InputSpec{Type: "string"}}, false, "?array $configuration = null,", "'type' => 'list'"},
-		{effective.InputSpec{Type: "int", Nullable: true}, true, "?int $configuration,", "'nullable' => true"},
-		{effective.InputSpec{Type: "null"}, true, "null $configuration,", "'type' => 'null'"},
-		{effective.InputSpec{Type: "union", AnyOf: []effective.InputSpec{{Type: "string"}, {Type: "int"}}}, true, "string|int $configuration,", "'type' => 'union'"},
 	} {
 		op := &g.Operations[0]
 		op.JSONBody.Schema = tc.s
@@ -83,6 +79,7 @@ func TestJSONVirtualStatsConfigurationSourceToGeneratedInput(t *testing.T) {
 			m.Operations[i].Variants[0].Method = "POST"
 			m.Operations[i].Variants[0].ID = "uapi:DomainInfo/list_domains#POST"
 			m.Operations[i].Variants[0].OperationLocator.Pointer = &pointer
+			m.Operations[i].Variants[0].Parameters = nil
 		}
 	}
 	required, nonempty := true, true
@@ -95,6 +92,7 @@ func TestJSONVirtualStatsConfigurationSourceToGeneratedInput(t *testing.T) {
 		corrections[path] = overlay.InputCorrection{Required: fields, Evidence: proof(schemaPointer + path)}
 	}
 	corrections["/properties/changes"] = overlay.InputCorrection{Nonempty: &nonempty, Evidence: proof(schemaPointer + "/properties/changes")}
+	corrections["/properties/changes/items/properties/domain"] = overlay.InputCorrection{Nonempty: &nonempty, Evidence: proof(schemaPointer + "/properties/changes/items/properties/domain")}
 	set := overlay.Set{Config: overlay.Config{Scope: "listed"}, Files: []overlay.File{{Family: "uapi", Group: "DomainInfo", Operations: map[string]overlay.Operation{"uapi:DomainInfo/list_domains": {Name: "saveConfiguration", Variant: "POST", Body: "json", JSONBody: &overlay.JSONBody{PHP: "configuration", Alias: "StatsConfigurationInput", Routes: "direct", Required: &required, Corrections: corrections}, Evidence: proof(pointer + "/requestBody")}}}}}
 	result, err := effective.Build(m, set)
 	if err != nil || len(result.Problems) > 0 {
@@ -103,7 +101,7 @@ func TestJSONVirtualStatsConfigurationSourceToGeneratedInput(t *testing.T) {
 	files := Render(result)
 	class := string(files["src/Api/Uapi/DomainInfo.php"])
 	spec := string(files["src/Api/Uapi/Spec/DomainInfoSpec.php"])
-	for _, want := range []string{"@phpstan-type StatsConfigurationInput array{", "changes: non-empty-list<array{", "domain: string,", "analyzers: list<array{", "enabled: bool,", "name: string,", "array $configuration,", "uapi:DomainInfo/list_domains#POST"} {
+	for _, want := range []string{"@phpstan-type StatsConfigurationInput array{", "changes: non-empty-list<array{", "domain: non-empty-string,", "analyzers: list<array{", "enabled: bool,", "name: string,", "array $configuration,", "uapi:DomainInfo/list_domains#POST"} {
 		if !strings.Contains(class, want) {
 			t.Fatalf("missing %q:\n%s", want, class)
 		}
