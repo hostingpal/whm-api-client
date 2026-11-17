@@ -24,7 +24,7 @@ use SensitiveParameter;
  *     personalization?: array<array-key, array{
  *         reason?: string,
  *         success?: 0|1,
- *         value?: string|null,
+ *         value?: mixed,
  *     }>,
  * }
  *
@@ -52,8 +52,8 @@ final readonly class Personalization
      *
      * Documented: The formal response is an object with an optional personalization map, although the pinned data
      * example uses direct keys. Preserve the formal wrapper and optional reason, native integer success 0/1 and
-     * nullable string value fields. A row success of 0 is returned data under envelope status 1; envelope status 0 is
-     * an API error. Keep names, values and upstream reasons private; do not log mismatch payloads or fetch returned
+     * nullable mixed value fields. A row success of 0 is returned data under envelope status 1; envelope status 0 is an
+     * API error. Keep names, values and upstream reasons private; do not log mismatch payloads or fetch returned
      * values.
      *
      * Documented: The separate 2026-11-01 protocol probe on 11.138.0.19 observed only structural personalization rows
@@ -69,6 +69,13 @@ final readonly class Personalization
      * developer capture is not schema-2 catalog evidence or a strict unknown-field audit. Known nonnull values, live
      * row success 0, omitted/empty names, other versions, WHM bridge, setter and persistence remain unverified; no
      * write, session, SSH, retry or returned-URL access ran. The original failed probe remains separate and unchanged.
+     *
+     * Observed: Personalization/set accepts any JSON value and checks only its length. On 11.138.0.19, PR131 review
+     * 5728223669 stored values with callJson() through direct UAPI and read each back separately: strings returned
+     * unchanged, integer 5 returned as string "5", while float 1.5, boolean true, a list and an object returned as
+     * those JSON types. value is therefore nullable mixed: scalars and null pass through, lists are copied and objects
+     * become associative arrays. One non-string stored value no longer fails the whole multi-name call. Callers should
+     * check the type of each returned value.
      *
      * Retrieve NVData data from file.
      *

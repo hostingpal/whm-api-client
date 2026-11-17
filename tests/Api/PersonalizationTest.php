@@ -213,6 +213,26 @@ JSON;
             '{"personalization":{"":{"reason":"","value":""}}}',
             ['personalization' => ['' => ['reason' => '', 'value' => '']]],
         ];
+        // PR131 review 5728223669 read these stored JSON types back on 11.138.0.19.
+        yield 'non-string stored values stay mixed' => [
+            '{"personalization":{"s":{"success":1,"value":"5"},"f":{"success":1,"value":1.5},'
+                . '"t":{"success":1,"value":true},"z":{"success":1,"value":false},'
+                . '"i":{"success":1,"value":7},"l":{"success":1,"value":[1,2]},'
+                . '"o":{"success":1,"value":{"a":1,"b":{"c":null}}},"e":{"success":1,"value":{}}}}',
+            ['personalization' => [
+                's' => ['success' => 1, 'value' => '5'], 'f' => ['success' => 1, 'value' => 1.5],
+                't' => ['success' => 1, 'value' => true], 'z' => ['success' => 1, 'value' => false],
+                'i' => ['success' => 1, 'value' => 7], 'l' => ['success' => 1, 'value' => [1, 2]],
+                'o' => ['success' => 1, 'value' => ['a' => 1, 'b' => ['c' => null]]],
+                'e' => ['success' => 1, 'value' => []],
+            ]],
+        ];
+        yield 'one non-string name keeps the other rows' => [
+            '{"personalization":{"rv_s":{"success":1,"value":"kept"},"rv_t":{"success":1,"value":true}}}',
+            ['personalization' => [
+                'rv_s' => ['success' => 1, 'value' => 'kept'], 'rv_t' => ['success' => 1, 'value' => true],
+            ]],
+        ];
         yield 'direct-key example is not an inferred union' => ['{"theme":{"value":"dark"}}', []];
     }
 
@@ -266,14 +286,11 @@ JSON;
                 PayloadMismatchException::class, true,
             ];
         }
-        $invalidFields = ['reason' => ['null', '1', 'false', '{}', '[]'], 'value' => ['1', 'false', '{}', '[]']];
-        foreach ($invalidFields as $field => $values) {
-            foreach ($values as $value) {
-                yield 'invalid ' . $field . ' ' . $value => [
-                    '{"status":1,"data":{"personalization":{"x":{"' . $field . '":' . $value . '}}}}',
-                    PayloadMismatchException::class, true,
-                ];
-            }
+        foreach (['null', '1', 'false', '{}', '[]'] as $reason) {
+            yield 'invalid reason ' . $reason => [
+                '{"status":1,"data":{"personalization":{"x":{"reason":' . $reason . '}}}}',
+                PayloadMismatchException::class, true,
+            ];
         }
     }
 

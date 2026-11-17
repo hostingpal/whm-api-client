@@ -19,7 +19,7 @@
         },
         {
           "kind": "documented",
-          "text": "The formal response is an object with an optional personalization map, although the pinned data example uses direct keys. Preserve the formal wrapper and optional reason, native integer success 0/1 and nullable string value fields. A row success of 0 is returned data under envelope status 1; envelope status 0 is an API error. Keep names, values and upstream reasons private; do not log mismatch payloads or fetch returned values."
+          "text": "The formal response is an object with an optional personalization map, although the pinned data example uses direct keys. Preserve the formal wrapper and optional reason, native integer success 0/1 and nullable mixed value fields. A row success of 0 is returned data under envelope status 1; envelope status 0 is an API error. Keep names, values and upstream reasons private; do not log mismatch payloads or fetch returned values."
         },
         {
           "kind": "documented",
@@ -28,6 +28,10 @@
         {
           "kind": "observed",
           "text": "A separate bounded typed verification on 2026-11-01 through clean committed implementation 646612249d9b86dc19ed17dea0b7babf15b3c516 passed on 11.138.0.19: WHM version GET followed by one direct Personalization/get JSON POST, both HTTP 200/API status 1. Exactly two fresh requested rows were validated with explicit null values and row success flags 1 and 1 in the bare data.personalization wrapper. This custom developer capture is not schema-2 catalog evidence or a strict unknown-field audit. Known nonnull values, live row success 0, omitted/empty names, other versions, WHM bridge, setter and persistence remain unverified; no write, session, SSH, retry or returned-URL access ran. The original failed probe remains separate and unchanged."
+        },
+        {
+          "kind": "observed",
+          "text": "Personalization/set accepts any JSON value and checks only its length. On 11.138.0.19, PR131 review 5728223669 stored values with callJson() through direct UAPI and read each back separately: strings returned unchanged, integer 5 returned as string \"5\", while float 1.5, boolean true, a list and an object returned as those JSON types. value is therefore nullable mixed: scalars and null pass through, lists are copied and objects become associative arrays. One non-string stored value no longer fails the whole multi-name call. Callers should check the type of each returned value."
         }
       ],
       "evidence": [
@@ -63,8 +67,33 @@
           "pointer": "/paths/~1Personalization~1get/post/responses/200/content/application~1json/schema/properties/result/properties/data",
           "fingerprint": "sha256:e67db47603ad5c377400f72ecac1f0c7714ce627b6fc0c5ad4f1c29bffa0ce2a",
           "note": "Separate custom bounded developer artifact /tmp/personalization-get-typed-verification-2026-11-01.json, SHA-256 e67db47603ad5c377400f72ecac1f0c7714ce627b6fc0c5ad4f1c29bffa0ce2a, through exact clean committed implementation 646612249d9b86dc19ed17dea0b7babf15b3c516; reviewed PHP probe c497bb8292b2a9ea47b0ac97c585582cb580a717cd4929ad6501bac550e2edfd and launcher 9792570cfc361e0f1baaf577b051f275315a33117661390ad6a3fdb949848b6f. Exactly two requests: WHM version GET and direct JSON Personalization/get POST, both HTTP200/API1 on 11.138.0.19. Typed validation and exact two fresh requested rows passed; both values null and both integer row success flags 1. Bare envelope data.personalization matches the formal wrapper and contradicts the direct-key example. Names, values and reason text are masked. Not schema-2 catalog or strict unknown-field acceptance, no known nonnull values/live row0/omitted or empty names/other versions/bridge/setter/persistence evidence. No writes, SSH, sessions, retries or returned-URL access. Earlier failed raw artifact 6734dfa5f3a03cb89b910f883177d2277c940e4466197f3f359d9a60b7ebb8e2 is unchanged and retains lost API status/row identity; it is not reclassified."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Personalization~1get/post/responses/200/content/application~1json/schema/properties/result/properties/data",
+          "note": "Attributed reviewer observation, [review 5728223669](https://github.com/hostingpal/whm-api-client/pull/131#pullrequestreview-5728223669): known non-null strings (empty, unicode, numeric-looking) and non-string JSON values read back through direct UAPI; omitted names and an empty names list are API errors; an empty-string name yields a row with success 0, null value and a private reason; duplicates return one row; the WHM bridge rejects locally."
         }
-      ]
+      ],
+      "response": {
+        "personalization{}.value": {
+          "replace": {
+            "type": "mixed"
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Personalization~1get/post/responses/200/content/application~1json/schema/properties/result/properties/data",
+              "note": "Attributed reviewer observation, [review 5728223669](https://github.com/hostingpal/whm-api-client/pull/131#pullrequestreview-5728223669) of 1567596 on a disposable account through direct UAPI: values stored with callJson() read back as string, float, boolean, list and object. The pinned nullable string value made get() raise PayloadMismatchException for the whole call when any requested name held a non-string. Not a committed capture; the reviewer removed the account and revoked the token."
+            }
+          ]
+        }
+      }
     },
     "uapi:Personalization/set": {
       "exclude": {

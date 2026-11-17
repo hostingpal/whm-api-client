@@ -521,7 +521,7 @@ metadata reset; WHM-bridged UAPI rejects this method without I/O.
 // $client uses direct cPanel credentials; returned settings may contain private data.
 $settings = $client->uapi()->personalization()->get(['names' => ['theme', 'locale']]);
 $rows = $settings['personalization'] ?? [];
-// Inspect each optional row success (integer 0/1), reason and value (string|null).
+// Inspect each optional row success (integer 0/1), reason and value (any JSON type or null).
 ```
 
 The return retains the formal optional `personalization` map despite the pinned
@@ -538,8 +538,16 @@ passed WHM version GET and direct getter JSON POST (two attempts, HTTP 200/API 1
 The exact two fresh requested rows had explicit null values and both row success
 flags were **1**. The bare `data.personalization` wrapper matches the formal schema.
 This custom developer verification is not a schema-2 catalog capture or strict
-unknown-field audit. Known nonnull values, live row success 0, omitted/empty names,
-other versions, WHM bridge, setter and persistence remain unverified. No writes,
+unknown-field audit.
+
+Row `value` is nullable `mixed`, not a string. `set` accepts any JSON value, and
+[review 5728223669](https://github.com/hostingpal/whm-api-client/pull/131#pullrequestreview-5728223669)
+on `11.138.0.19` read stored values back through direct UAPI as strings (integer 5
+as `"5"`), float, boolean, list and object. Objects become associative arrays, so
+check each value's type. One non-string name no longer fails the whole call. The
+same review saw omitted and empty `names` raise API errors, an empty-string name
+return a row with `success: 0`, a null value and a private reason, and duplicates
+return one row. Other versions, setter and persistence remain unverified. No writes,
 SSH, sessions, retries or returned-URL access ran. See
 [`docs/api/source-audit.md`](docs/api/source-audit.md) for exact artifact/probe hashes.
 

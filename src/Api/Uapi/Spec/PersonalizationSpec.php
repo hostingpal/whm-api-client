@@ -41,7 +41,7 @@ final class PersonalizationSpec
                         'fields' => [
                             'reason' => ['type' => 'string'],
                             'success' => ['type' => 'flag'],
-                            'value' => ['type' => 'string', 'nullable' => true],
+                            'value' => ['type' => 'mixed'],
                         ],
                     ],
                 ],
