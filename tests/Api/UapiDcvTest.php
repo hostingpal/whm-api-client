@@ -48,7 +48,7 @@ final class UapiDcvTest extends TestCase
             $expected = ['domain' => ['array|string', true]];
             if ($name === 'checkDomainsViaHttp') {
                 $expected += [
-                    'dcvFileAllowedCharacters' => ['?array', true], 'dcvFileExtension' => ['?string', true],
+                    'dcvFileExtension' => ['?string', true],
                     'dcvFileRandomCharacterCount' => ['?int', false], 'dcvFileRelativePath' => ['?string', true],
                     'dcvMaxRedirects' => ['?int', false], 'dcvUserAgentString' => ['?string', true],
                 ];
@@ -113,22 +113,21 @@ final class UapiDcvTest extends TestCase
             ['checkDomainsViaHttp', 'check_domains_via_http', ['domain' => ['a.test']], 'domain-1=a.test'],
             ['checkDomainsViaHttp', 'check_domains_via_http', ['domain' => ['a.test', '', 'a.test']],
                 'domain-1=a.test&domain-2=&domain-3=a.test'],
-            ['checkDomainsViaHttp', 'check_domains_via_http', ['domain' => 'a', 'dcvFileAllowedCharacters' => null,
+            ['checkDomainsViaHttp', 'check_domains_via_http', ['domain' => 'a',
                 'dcvFileExtension' => null, 'dcvFileRandomCharacterCount' => null, 'dcvFileRelativePath' => null,
                 'dcvMaxRedirects' => null, 'dcvUserAgentString' => null], 'domain=a'],
             ['checkDomainsViaHttp', 'check_domains_via_http', ['domain' => [' %2F+&š'],
-                'dcvFileAllowedCharacters' => ['AB', '', '+&š', 'AB'], 'dcvFileExtension' => ' %2F+&š',
+                'dcvFileExtension' => ' %2F+&š',
                 'dcvFileRandomCharacterCount' => 0, 'dcvFileRelativePath' => '../ %2F+&š', 'dcvMaxRedirects' => 0,
                 'dcvUserAgentString' => 'agent %2F+&š'],
-                'domain-1=%20%252F%2B%26%C5%A1&dcv_file_allowed_characters=AB&dcv_file_allowed_characters='
-                . '&dcv_file_allowed_characters=%2B%26%C5%A1&dcv_file_allowed_characters=AB'
+                'domain-1=%20%252F%2B%26%C5%A1'
                 . '&dcv_file_extension=%20%252F%2B%26%C5%A1&dcv_file_random_character_count=0'
                 . '&dcv_file_relative_path=..%2F%20%252F%2B%26%C5%A1&dcv_max_redirects=0'
                 . '&dcv_user_agent_string=agent%20%252F%2B%26%C5%A1'],
             ['checkDomainsViaHttp', 'check_domains_via_http', ['dcvUserAgentString' => '', 'dcvMaxRedirects' => -1,
                 'dcvFileRelativePath' => '', 'dcvFileRandomCharacterCount' => -1, 'dcvFileExtension' => '',
-                'dcvFileAllowedCharacters' => [''], 'domain' => 'a'],
-                'domain=a&dcv_file_allowed_characters=&dcv_file_extension=&dcv_file_random_character_count=-1'
+                'domain' => 'a'],
+                'domain=a&dcv_file_extension=&dcv_file_random_character_count=-1'
                 . '&dcv_file_relative_path=&dcv_max_redirects=-1&dcv_user_agent_string='],
         ];
         foreach (['direct', 'bridge'] as $route) {
@@ -169,38 +168,36 @@ final class UapiDcvTest extends TestCase
                 foreach (['checkDomainsViaDns', 'checkDomainsViaHttp'] as $method) {
                     yield "$route domain $method $i" => [$route, $method, ['domain' => $bad]];
                 }
-                yield "$route characters $i" => [$route, 'checkDomainsViaHttp',
-                    ['domain' => 'a', 'dcvFileAllowedCharacters' => $bad]];
             }
         }
     }
 
-    /** @param array<mixed> $arguments */
-    #[DataProvider('nativeFailures')]
-    public function testAllowedCharactersRejectNativeScalarBeforeReset(
-        string $route,
-        string $method,
-        array $arguments,
-    ): void {
-        [$client, $http] = self::client($route);
-        $account = $client->uapi('fixture');
-        $http->addResponse(new Response(200, [], self::envelope($route, '[]')));
-        $account->dcv()->checkDomainsViaDns('a');
-        $previous = $account->responseMeta();
-        try {
-            $account->dcv()->$method(...$arguments);
-            self::fail('The array-only native parameter must reject scalar input.');
-        } catch (TypeError) {
-            self::assertSame($previous, $account->responseMeta());
+    public function testAllowedCharactersOnlyTravelAsOneGenericJsonField(): void
+    {
+        // PR109 review 5726048230: the handler JSON-decodes one field; repeated fields fail upstream.
+        self::assertFalse(self::hasParameter('checkDomainsViaHttp', 'dcvFileAllowedCharacters'));
+        foreach (['direct', 'bridge'] as $route) {
+            [$client, $http] = self::client($route);
+            $http->addResponse(new Response(200, [], self::envelope($route, '[]')));
+            $client->uapi('fixture')->call('DCV', 'check_domains_via_http', [
+                'domain' => 'a', 'dcv_file_allowed_characters' => json_encode(['a', 'b'], JSON_THROW_ON_ERROR),
+            ]);
+            self::assertSame(
+                'domain=a&dcv_file_allowed_characters=%5B%22a%22%2C%22b%22%5D',
+                (string) $http->getRequests()[0]->getBody(),
+            );
         }
-        self::assertCount(1, $http->getRequests());
     }
 
-    /** @return iterable<array{string, string, array<mixed>}> */
-    public static function nativeFailures(): iterable
+    private static function hasParameter(string $method, string $name): bool
     {
-        yield ['direct', 'checkDomainsViaHttp', ['a', 'PRIVATE']];
-        yield ['bridge', 'checkDomainsViaHttp', ['a', 'PRIVATE']];
+        foreach ((new ReflectionMethod(Dcv::class, $method))->getParameters() as $parameter) {
+            if ($parameter->getName() === $name) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /** @param mixed $expected */
@@ -266,6 +263,12 @@ final class UapiDcvTest extends TestCase
                     'status' => 301, 'success' => '', 'url' => 'https://inert.test/PRIVATE'],
                     ['redirects' => null, 'success' => 0], ['success' => 1], []], 'redirects_count' => 2],
                 ['failure_reason' => 'PRIVATE failed', 'redirects' => [], 'redirects_count' => 0], []]],
+            // PR109 review 5726048230: failed checks, direct digit-string counts and ancestor-validated rows.
+            [$http, '[{"failure_reason":"PRIVATE failed","redirects":null,"redirects_count":null}]', true,
+                [['failure_reason' => 'PRIVATE failed', 'redirects' => null, 'redirects_count' => null]]],
+            [$dns, '[{"domain":"a","succeeded":"1","query_results":null},{"domain":"b","succeeded":"0"}]', true,
+                [['domain' => 'a', 'query_results' => null, 'succeeded' => 1],
+                ['domain' => 'b', 'succeeded' => 0]]],
         ];
         foreach ([$dns, $http] as $method) {
             foreach ([['[]', []], ['[{},[]]', [[], []]]] as [$payload, $expected]) {
@@ -281,8 +284,8 @@ final class UapiDcvTest extends TestCase
         foreach (
             [
             '{"failure_reason":null}', '{"dcv_string":1}', '{"domain":false}', '{"zone":null}',
-            '{"query_results":null}', '{"query_results":{}}', '{"query_results":[0]}',
-            '{"succeeded":"1"}', '{"succeeded":true}', '{"succeeded":2}',
+            '{"query_results":{}}', '{"query_results":[0]}',
+            '{"succeeded":"2"}', '{"succeeded":" 1"}', '{"succeeded":true}', '{"succeeded":2}',
             ] as $row
         ) {
             $cases[] = [$dns, '[' . $row . ']', false, null];
@@ -290,7 +293,7 @@ final class UapiDcvTest extends TestCase
         foreach (
             [
             '{"failure_reason":0}', '{"redirects_count":"0"}', '{"redirects_count":1.5}',
-            '{"redirects_count":null}', '{"redirects":null}', '{"redirects":{}}', '{"redirects":[null]}',
+            '{"redirects":{}}', '{"redirects":[null]}',
             ] as $row
         ) {
             $cases[] = [$http, '[' . $row . ']', false, null];
@@ -406,7 +409,8 @@ final class UapiDcvTest extends TestCase
                     $groupFrames++;
                     self::assertInstanceOf(SensitiveParameterValue::class, ($frame['args'] ?? [])[0]);
                     if ($method === 'checkDomainsViaHttp') {
-                        foreach ([1, 2, 4, 6] as $index) {
+                        // Extension, relative path and user agent after allowed characters left the signature.
+                        foreach ([1, 3, 5] as $index) {
                             self::assertInstanceOf(SensitiveParameterValue::class, ($frame['args'] ?? [])[$index]);
                         }
                     }
@@ -448,7 +452,6 @@ final class UapiDcvTest extends TestCase
         return $method === 'checkDomainsViaDns' ? $group->checkDomainsViaDns(['PRIVATE domain'])
             : $group->checkDomainsViaHttp(
                 ['PRIVATE domain'],
-                ['PRIVATE alphabet'],
                 'PRIVATE extension',
                 0,
                 'PRIVATE path',

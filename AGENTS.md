@@ -4075,9 +4075,8 @@ route compatibility or server persistence is established.
 
 The complete nondeprecated `uapi()->dcv()` group exposes two operations:
 `checkDomainsViaDns(domain)` (cPanel 74, source POST) and
-`checkDomainsViaHttp(domain, dcvFileAllowedCharacters, dcvFileExtension,
-dcvFileRandomCharacterCount, dcvFileRelativePath, dcvMaxRedirects,
-dcvUserAgentString)` (cPanel 60, source GET). Both have `x-readonly:false` and
+`checkDomainsViaHttp(domain, dcvFileExtension, dcvFileRandomCharacterCount,
+dcvFileRelativePath, dcvMaxRedirects, dcvUserAgentString)` (cPanel 60, source GET). Both have `x-readonly:false` and
 `x-rollback:none`; the existing mutation policy sends one immediate form POST on
 direct and bridged routes, including HTTP's deliberate source-GET/effective-POST
 difference. Successful live POST acceptance remains unestablished. Only standard
@@ -4089,12 +4088,12 @@ Domain inputs are strings or nonempty sequential string lists. Scalar uses
 `domain-1/domain-2/...`, including singleton lists. Ordinary PHP arrays hide the
 distinct source numbering. Preserve order, duplicates, empty strings and exact
 bytes without local syntax checks, lowercasing, sorting or deduplication.
-`dcvFileAllowedCharacters` is array-only, a nonempty sequential string list emitted
-as repeated literal `dcv_file_allowed_characters` fields under OpenAPI 3.0.2 query
-form/explode defaults; this is source/default-derived offline serialization, not
-server-observed acceptance. Preserve empty and multi-character strings without
-one-character/charset validation. Malformed collections reject after metadata
-reset before I/O; native scalar rejection occurs before entry/reset.
+`checkDomainsViaHttp()` omits `dcv_file_allowed_characters`: review 5726048230
+found that the 11.138.0.19 handler JSON-decodes one field and the pinned
+repeated query form fails on both routes. Use generic `call()` with
+caller-serialized JSON array text until a typed JSON-list encoding exists.
+Malformed collections reject after metadata reset before I/O; native scalar
+rejection occurs before entry/reset.
 
 Every optional null omits. Empty strings and integer zero are supplied. The server
 owns defaults: alphabet A-Z/0-9, empty extension, random count 100 (minimum 1),
@@ -4105,9 +4104,10 @@ excess failures are visible. No client-side defaults or new integer range guards
 
 Both payloads are required nonnull possibly-empty lists in input order with
 optional row fields. DNS retains dcv_string/domain/failure_reason/zone as nonnull
-strings, query_results as a possibly-empty string list, succeeded as integer 0|1.
+strings, query_results as a possibly-empty string list or null, succeeded as
+integer 0|1 (direct UAPI digit strings normalize).
 API success can contain succeeded=0. HTTP has failure_reason string|null,
-redirects list and redirects_count int; no row domain field is pinned, so associate
+redirects list|null and redirects_count int|null (null on a failed check); no row domain field is pinned, so associate
 positionally. Redirect content/protocol/reason/url are strings, status is int and
 success is exactly ''|0|1, preserving empty string and rejecting quoted 0/1,
 whitespace, arbitrary strings, other ints, floats, booleans and null. This sole

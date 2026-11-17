@@ -25,7 +25,7 @@ use SensitiveParameter;
  *     dcv_string?: string,
  *     domain?: string,
  *     failure_reason?: string,
- *     query_results?: list<string>,
+ *     query_results?: list<string>|null,
  *     succeeded?: 0|1,
  *     zone?: string,
  * }>
@@ -40,8 +40,8 @@ use SensitiveParameter;
  *         status?: int,
  *         success?: ''|0|1,
  *         url?: string,
- *     }>,
- *     redirects_count?: int,
+ *     }>|null,
+ *     redirects_count?: int|null,
  * }>
  */
 final readonly class Dcv
@@ -69,8 +69,12 @@ final readonly class Dcv
      * order, duplicates, empty strings and exact bytes; do not lowercase, sort, deduplicate or validate domain syntax.
      *
      * Documented: Results preserve input order. Optional dcv_string/domain/failure_reason/zone stay nonnull strings;
-     * query_results is an optional possibly-empty string list, succeeded is optional integer 0|1. UAPI success can
-     * include succeeded=0. failure_reason can report a DNS zone update failure; inspect each result separately.
+     * query_results is an optional possibly-empty string list or null, succeeded is optional integer 0|1. UAPI success
+     * can include succeeded=0. failure_reason can report a DNS zone update failure; inspect each result separately.
+     *
+     * Observed: PR109 review 5726048230 on 11.138.0.19: direct UAPI sends succeeded as a digit string and the WHM
+     * bridge as an integer; both normalize to integer 0|1. Source reading adds that query_results is null for a domain
+     * validated through an ancestor domain.
      *
      * Policy: One invocation sends one immediate form POST on direct and WHM-bridged UAPI with ordinary Flag outcome.
      * Routing stays in the URL; all supplied operation arguments stay in the body. No implicit read, polling, merge,
@@ -128,18 +132,23 @@ final readonly class Dcv
      * supplied N yields N+1 redirect records so excess failures are visible. No client defaults or new integer
      * minimum/range guards are sent.
      *
-     * Policy: Allowed filename characters are a nonempty sequential list<string> serialized as repeated literal
-     * dcv_file_allowed_characters fields under OpenAPI query form/explode defaults. Null omits;
-     * empty/nonsequential/nonstring lists reject after metadata reset before I/O. String items, including empty or
-     * multi-character values, remain exact without one-character/charset checks. Serialization is
-     * source/default-derived and offline, not server-observed.
+     * Observed: PR109 review 5726048230 on 11.138.0.19, both routes: the handler reads one dcv_file_allowed_characters
+     * value and decodes it with Cpanel::JSON::Load, and its POD calls it a JSON-encoded arrayref. Repeated fields, even
+     * a single one, failed with a JSON parse error, so the typed method omits this option and the server default A-Z
+     * and 0-9 applies. To send it, use uapi()->call('DCV', 'check_domains_via_http', [...]) with
+     * dcv_file_allowed_characters set to caller-serialized JSON array text, for example json_encode(['a', 'b']). A
+     * typed JSON-list encoding is follow-up work.
      *
      * Documented: Results preserve input order for positional domain association; no top-row domain field is pinned.
-     * Optional failure_reason is string|null, redirects is a possibly-empty list and redirects_count is int. Redirect
-     * fields remain optional: content/protocol/reason/url strings, status int and success exactly empty string|0|1;
-     * success 0 or empty string is not an envelope failure. headers is an opaque object with arbitrary values; nested
-     * redirects is list<opaque object>|null, not an inferred recursive model. Unknown fields survive only inside those
-     * opaque nodes; known objects retain existing filtering.
+     * Optional failure_reason is string|null, redirects is a possibly-empty list or null and redirects_count is
+     * int|null. Redirect fields remain optional: content/protocol/reason/url strings, status int and success exactly
+     * empty string|0|1; success 0 or empty string is not an envelope failure. headers is an opaque object with
+     * arbitrary values; nested redirects is list<opaque object>|null, not an inferred recursive model. Unknown fields
+     * survive only inside those opaque nodes; known objects retain existing filtering.
+     *
+     * Observed: PR109 review 5726048230 on 11.138.0.19, both routes: a check that fails before any redirect returns
+     * failure_reason with null redirects and redirects_count, including for a domain the account does not own. Read
+     * failure_reason; null redirect fields are a normal failed-check result, not a mismatch.
      *
      * Policy: One invocation sends one immediate form POST on direct and WHM-bridged UAPI with ordinary Flag outcome.
      * Routing stays in the URL; all supplied operation arguments stay in the body. No implicit read, polling, merge,
@@ -160,8 +169,6 @@ final readonly class Dcv
      * API-map identity: uapi:DCV/check_domains_via_http#GET (wire name check_domains_via_http).
      *
      * @param string|non-empty-list<string> $domain The domains to check.
-     * @param non-empty-list<string>|null $dcvFileAllowedCharacters An array of characters that the certificate provider
-     *     allows in the DCV check file's filename. Null omits it.
      * @param string|null $dcvFileExtension The DCV check file extension that the certificate provider requires. Null
      *     omits it.
      * @param int|null $dcvFileRandomCharacterCount The number of characters that the certificate provider allows in the
@@ -183,8 +190,6 @@ final readonly class Dcv
         #[SensitiveParameter]
         string|array $domain,
         #[SensitiveParameter]
-        ?array $dcvFileAllowedCharacters = null,
-        #[SensitiveParameter]
         ?string $dcvFileExtension = null,
         ?int $dcvFileRandomCharacterCount = null,
         #[SensitiveParameter]
@@ -196,7 +201,6 @@ final readonly class Dcv
         /** @var CheckDomainsViaHttpResult $result Validated against DcvSpec::CHECK_DOMAINS_VIA_HTTP. */
         $result = ($this->run)(DcvSpec::CHECK_DOMAINS_VIA_HTTP, [
             'domain' => $domain,
-            'dcvFileAllowedCharacters' => $dcvFileAllowedCharacters,
             'dcvFileExtension' => $dcvFileExtension,
             'dcvFileRandomCharacterCount' => $dcvFileRandomCharacterCount,
             'dcvFileRelativePath' => $dcvFileRelativePath,

@@ -4311,9 +4311,8 @@ route compatibility or server persistence is established.
 
 `uapi()->dcv()` exposes both nondeprecated pinned DCV operations for the selected
 account: `checkDomainsViaDns(domain)` from cPanel 74 and
-`checkDomainsViaHttp(domain, dcvFileAllowedCharacters, dcvFileExtension,
-dcvFileRandomCharacterCount, dcvFileRelativePath, dcvMaxRedirects,
-dcvUserAgentString)` from cPanel 60. Both execute one immediate form POST through
+`checkDomainsViaHttp(domain, dcvFileExtension, dcvFileRandomCharacterCount,
+dcvFileRelativePath, dcvMaxRedirects, dcvUserAgentString)` from cPanel 60. Both execute one immediate form POST through
 direct cPanel UAPI or the WHM bridge. The DNS source is POST; the HTTP source is
 GET but declares `x-readonly:false`, so the established mutation policy selects
 POST. Successful live POST acceptance remains unestablished. Both declare
@@ -4326,7 +4325,6 @@ $dcv = $client->uapi('example')->dcv();
 $dnsResults = $dcv->checkDomainsViaDns(domain: ['one.example.test', 'two.example.test']);
 $httpResults = $dcv->checkDomainsViaHttp(
     domain: ['one.example.test', 'two.example.test'],
-    dcvFileAllowedCharacters: ['A', 'B', '0'],
     dcvFileExtension: 'txt',
     dcvMaxRedirects: 2,
 );
@@ -4343,13 +4341,21 @@ source-specific numbering conventions. Order, duplicate domains, empty strings,
 case and exact bytes are preserved without local domain validation. Malformed
 collections fail after metadata reset and before dispatch.
 
-`dcvFileAllowedCharacters` accepts only a nonempty sequential string list and
-emits repeated literal `dcv_file_allowed_characters` fields. This derives from the
-pinned OpenAPI 3.0.2 query form/explode defaults, with no explicit style override;
-it is offline serialization coverage, not server-observed acceptance. Strings,
-including empty and multi-character entries, remain exact. Empty arrays, sparse
-or associative lists and nonstring entries reject; there is no scalar, CSV or
-JSON-text alternative.
+The typed HTTP method has no allowed-characters argument. [Review 5726048230](https://github.com/hostingpal/whm-api-client/pull/109#pullrequestreview-5726048230)
+found that the cPanel 11.138.0.19 handler reads one `dcv_file_allowed_characters`
+value and decodes it as JSON; the repeated fields derived from the pinned query
+schema failed on both routes. The server default (A-Z and 0-9) applies. To send
+a custom alphabet, use generic `call()` with caller-serialized JSON text:
+
+```php
+$client->uapi('example')->call('DCV', 'check_domains_via_http', [
+    'domain' => 'one.example.test',
+    'dcv_file_allowed_characters' => json_encode(['A', 'B', '0'], JSON_THROW_ON_ERROR),
+]);
+```
+
+That generic call returns an unvalidated `CallResult`. A typed JSON-list encoding
+is follow-up work.
 
 Every optional null omits and keeps its server default. Supplied empty strings
 and integer zero are sent. Defaults stay server-owned: filename alphabet A-Z and
@@ -4363,10 +4369,12 @@ stay in the form body, with only standard routing in the URL.
 
 Both results are required nonnull lists, may be empty, and preserve input order.
 Every row field is optional. DNS rows retain nonnull strings `dcv_string`,
-`domain`, `failure_reason`, `zone`, possibly-empty `query_results` string lists
-and integer `succeeded` 0|1. Inspect each row even after UAPI success. HTTP rows
-have optional `failure_reason` string|null, `redirects` list and `redirects_count`
-integer. HTTP domain association is positional; there is no pinned row `domain`.
+`domain`, `failure_reason`, `zone`, possibly-empty or null `query_results` string
+lists and integer `succeeded` 0|1 (direct UAPI sends exact `"0"`/`"1"`, which
+normalize). Inspect each row even after UAPI success. HTTP rows
+have optional `failure_reason` string|null, `redirects` list|null and
+`redirects_count` integer|null; a check that fails before any redirect returns
+null for both, so read `failure_reason`. HTTP domain association is positional; there is no pinned row `domain`.
 Redirects preserve string `content`, `protocol`, `reason`, `url`, integer `status`,
 and `success` exactly `''|0|1`. Empty success stays empty; quoted 0/1, whitespace,
 booleans, other integers, floats and null fail. Values 0 and '' indicate a
