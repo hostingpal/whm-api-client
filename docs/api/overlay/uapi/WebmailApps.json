@@ -1,0 +1,41 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "WebmailApps",
+  "class": "WebmailApps",
+  "accessor": "webmailApps",
+  "description": "Available Webmail application inventory.",
+  "operations": {
+    "uapi:WebmailApps/list_webmail_apps": {
+      "name": "listWebmailApps",
+      "method": "GET",
+      "order": [
+        "theme"
+      ],
+      "notes": [
+        {
+          "kind": "policy",
+          "text": "Supplied strings retain case, punctuation and exact bytes and are encoded once. Optional null omits; empty strings remain supplied. No local locale, host, IP, password or name normalization or extra enum/range validation. One request only; no implicit lookup, login, redirect, retry, polling, cleanup or rollback. Live follow-up whm-api-client-8x0.2.69 remains OPEN."
+        },
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 11.48. Disabled when the Receive Mail role is disabled. Omitted theme keeps the server default; empty theme stays supplied."
+        },
+        {
+          "kind": "documented",
+          "text": "Icon is a path documented relative to /usr/local/cpanel/base/frontend; URL may contain a session token. Both are returned bytes without path normalization, URL verification or fetching. Private returned URLs establish neither browser reachability nor successful login. IDs and names stay open strings."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1WebmailApps~1list_webmail_apps/get/description",
+          "note": "Selected formal GET variant and ordinary Flag outcome; no response or requiredness correction. Read-only inventory retains effective GET."
+        }
+      ]
+    }
+  }
+}

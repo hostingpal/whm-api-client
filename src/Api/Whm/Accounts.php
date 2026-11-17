@@ -1523,6 +1523,12 @@ final readonly class Accounts
      * payload remains an error. The recorded 11.138.0.15 successful exact-domain null data also returns an empty list;
      * only structural diagnostics survive, not the original wire body. Other nonnull payloads retain strict validation.
      *
+     * Observed: On 11.138.0.19, reviewer tests found that search is ignored when searchtype is omitted, even with
+     * searchmethod supplied. An invalid regular expression with searchtype user or domain, and an empty search with
+     * searchtype user, also matched all visible accounts. Specify a nonempty search and searchtype; use searchmethod
+     * exact for literal account identifiers. Check returned account identities before applying mutations. The client
+     * forwards these inputs without local filtering or rejection.
+     *
      * Returns an empty list for the evidenced account-search absence forms; response metadata retains the server
      * outcome.
      *

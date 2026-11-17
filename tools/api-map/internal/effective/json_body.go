@@ -270,14 +270,19 @@ func (s schemas) inputFor(source string, raw any, containers, descriptors int, p
 				}
 			}
 			if extra, exists := obj["additionalProperties"]; exists && extra != false {
-				if _, ok := asObject(extra); !ok {
-					return fail("additional values require an explicit schema")
+				additional, object := asObject(extra)
+				if extra == true || (object && len(additional) == 0) {
+					result.Values = &InputSpec{Type: "json"}
+				} else {
+					if !object {
+						return fail("additional values require an explicit schema")
+					}
+					value, err := recur(extra, "/additionalProperties")
+					if err != nil {
+						return fail(err.Error())
+					}
+					result.Values = &value
 				}
-				value, err := recur(extra, "/additionalProperties")
-				if err != nil {
-					return fail(err.Error())
-				}
-				result.Values = &value
 			}
 		}
 	default:
@@ -311,8 +316,13 @@ func InputNative(s InputSpec) string {
 			switch p {
 			case "flag":
 				p = "bool"
+			case "json":
+				p = "mixed"
 			case "object", "list":
 				p = "array"
+				if s.Type == "object" && s.Values != nil && s.Values.Type == "json" {
+					p += `|\HostingPal\WhmApiClient\JsonObject`
+				}
 			case "number":
 				p = "int|float"
 			}
@@ -327,6 +337,11 @@ func InputNative(s InputSpec) string {
 	var result []string
 	nullable := false
 	for _, p := range parts {
+		// The runtime json grammar is strict; a native scalar union could coerce
+		// or invoke Stringable before metadata reset in weak callers.
+		if p == "mixed" {
+			return "mixed"
+		}
 		if p == "null" {
 			nullable = true
 			continue

@@ -11,6 +11,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use ReflectionClassConstant;
 use RuntimeException;
 
 final class LiveCurlClientTest extends TestCase
@@ -195,6 +196,61 @@ final class LiveCurlClientTest extends TestCase
             'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1'
                 . '&cpanel.user=npr&cpanel.module=DNS&cpanel.function=parse_zone&zone=example.test',
         ];
+        yield 'public resolution of the local test zone' => [
+            'GET',
+            'https://test.oblak.host:2087/json-api/resolvedomainname?api.version=1&domain=npr.rs',
+        ];
+        yield 'direct lookup of the local test zone' => [
+            'GET',
+            'https://test.oblak.host:2083/execute/DNS/lookup?domain=npr.rs',
+        ];
+        yield 'bridged lookup of the local test zone' => [
+            'GET',
+            'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1'
+                . '&cpanel.user=npr&cpanel.module=DNS&cpanel.function=lookup&domain=npr.rs',
+        ];
+        yield 'public resolution of another name' => [
+            'GET',
+            'https://test.oblak.host:2087/json-api/resolvedomainname?api.version=1&domain=example.org',
+        ];
+        yield 'direct lookup of another name' => [
+            'GET',
+            'https://test.oblak.host:2083/execute/DNS/lookup?domain=example.org',
+        ];
+        yield 'bridged lookup of another name' => [
+            'GET',
+            'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1'
+                . '&cpanel.user=npr&cpanel.module=DNS&cpanel.function=lookup&domain=example.org',
+        ];
+        yield 'public name outside the resolver operations' => [
+            'GET',
+            'https://test.oblak.host:2087/json-api/parse_dns_zone?api.version=1&zone=example.com',
+        ];
+        yield 'repeated domains with a value npr does not have' => [
+            'GET',
+            'https://test.oblak.host:2083/execute/DNS/has_local_authority?domain=npr.rs&domain=example.com',
+        ];
+        yield 'bridged repeated domains with a value npr does not have' => [
+            'GET',
+            'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
+                . '&cpanel.module=DNS&cpanel.function=has_local_authority&domain=npr.rs&domain=example.com',
+        ];
+        yield 'three repeated domains' => [
+            'GET',
+            'https://test.oblak.host:2083/execute/DNS/has_local_authority?domain=npr.rs&domain=npr.rs&domain=npr.rs',
+        ];
+        yield 'numbered instead of repeated domains' => [
+            'GET',
+            'https://test.oblak.host:2083/execute/DNS/has_local_authority?domain=npr.rs&domain-1=npr.rs',
+        ];
+        yield 'repeated domains on an operation without an approved multi-value read' => [
+            'GET',
+            'https://test.oblak.host:2083/execute/DNS/lookup?domain=example.com&domain=example.com',
+        ];
+        yield 'multi-zone export' => [
+            'GET',
+            'https://test.oblak.host:2087/json-api/export_zone_files?api.version=1&zone=npr.rs&zone=npr.rs',
+        ];
         yield 'userinfo' => ['GET', 'https://root@test.oblak.host:2087/json-api/version?api.version=1'];
         yield 'fragment' => ['GET', 'https://test.oblak.host:2087/json-api/version?api.version=1#unexpected'];
     }
@@ -270,10 +326,10 @@ final class LiveCurlClientTest extends TestCase
             'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
                 . '&cpanel.module=Features&cpanel.function=list_features',
         ];
-        yield 'inventory 26' => ['https://test.oblak.host:2083/execute/DNS/lookup?domain=npr.rs'];
+        yield 'inventory 26' => ['https://test.oblak.host:2083/execute/DNS/lookup?domain=example.com'];
         yield 'inventory 27' => [
             'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
-                . '&cpanel.module=DNS&cpanel.function=lookup&domain=npr.rs',
+                . '&cpanel.module=DNS&cpanel.function=lookup&domain=example.com',
         ];
         yield 'inventory 28' => [
             'https://test.oblak.host:2083/execute/DNS/fetch_cpanel_generated_domains?domain=npr.rs',
@@ -302,6 +358,14 @@ final class LiveCurlClientTest extends TestCase
             'https://test.oblak.host:2087/json-api/listaccts?api.version=1'
                 . '&search=npr&searchtype=user&searchmethod=exact',
         ];
+        yield 'WHM filtered accounts with want' => [
+            'https://test.oblak.host:2087/json-api/listaccts?api.version=1'
+                . '&search=npr&searchtype=user&searchmethod=exact&want=user',
+        ];
+        yield 'WHM absent exact user' => [
+            'https://test.oblak.host:2087/json-api/listaccts?api.version=1'
+                . '&search=nosuchacct9dy&searchtype=user&searchmethod=exact',
+        ];
         yield 'WHM absent exact user with want' => [
             'https://test.oblak.host:2087/json-api/listaccts?api.version=1'
                 . '&search=nosuchacct9dy&searchtype=user&searchmethod=exact&want=user',
@@ -309,6 +373,17 @@ final class LiveCurlClientTest extends TestCase
         yield 'WHM absent exact domain' => [
             'https://test.oblak.host:2087/json-api/listaccts?api.version=1'
                 . '&search=nosuchacct9dy.example&searchtype=domain&searchmethod=exact',
+        ];
+        yield 'WHM absent user regex' => [
+            'https://test.oblak.host:2087/json-api/listaccts?api.version=1'
+                . '&search=%5Enosuchacct9dy%24&searchtype=user&searchmethod=regex',
+        ];
+        yield 'WHM absent user regex with want' => [
+            'https://test.oblak.host:2087/json-api/listaccts?api.version=1'
+                . '&search=%5Enosuchacct9dy%24&searchtype=user&searchmethod=regex&want=user',
+        ];
+        yield 'WHM absent account summary' => [
+            'https://test.oblak.host:2087/json-api/accountsummary?api.version=1&user=nosuchacct9dy',
         ];
         yield 'WHM account summary' => ['https://test.oblak.host:2087/json-api/accountsummary?api.version=1&user=npr'];
         yield 'WHM packages' => ['https://test.oblak.host:2087/json-api/listpkgs?api.version=1'];
@@ -319,7 +394,7 @@ final class LiveCurlClientTest extends TestCase
         yield 'WHM parsed zone' => ['https://test.oblak.host:2087/json-api/parse_dns_zone?api.version=1&zone=npr.rs'];
         yield 'WHM MX records' => ['https://test.oblak.host:2087/json-api/listmxs?api.version=1&domain=npr.rs'];
         yield 'WHM resolve domain' => [
-            'https://test.oblak.host:2087/json-api/resolvedomainname?api.version=1&domain=npr.rs',
+            'https://test.oblak.host:2087/json-api/resolvedomainname?api.version=1&domain=example.com',
         ];
         yield 'WHM nameserver config' => ['https://test.oblak.host:2087/json-api/get_nameserver_config?api.version=1'];
         yield 'WHM local authority' => [
@@ -334,6 +409,28 @@ final class LiveCurlClientTest extends TestCase
         yield 'WHM DS records' => [
             'https://test.oblak.host:2087/json-api/fetch_ds_records_for_domains?api.version=1&domain=npr.rs',
         ];
+        yield 'WHM local authority with repeated domains' => [
+            'https://test.oblak.host:2087/json-api/has_local_authority?api.version=1&domain=npr.rs&domain=npr.rs',
+        ];
+        yield 'WHM DS records with repeated domains' => [
+            'https://test.oblak.host:2087/json-api/fetch_ds_records_for_domains?api.version=1'
+                . '&domain=npr.rs&domain=npr.rs',
+        ];
+        $repeated = [
+            'has_local_authority',
+            'ensure_domains_reside_only_locally',
+            'ensure_domains_use_recognized_nameservers',
+        ];
+        foreach ($repeated as $function) {
+            yield 'direct DNS repeated domains ' . $function => [
+                'https://test.oblak.host:2083/execute/DNS/' . $function . '?domain=npr.rs&domain=npr.rs',
+            ];
+            yield 'bridged DNS repeated domains ' . $function => [
+                'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
+                    . '&cpanel.module=DNS&cpanel.function=' . $function . '&domain=npr.rs&domain=npr.rs',
+            ];
+        }
+
         $dns = [
             'parse_zone' => 'zone=npr.rs',
             'has_local_authority' => 'domain=npr.rs',
@@ -352,6 +449,29 @@ final class LiveCurlClientTest extends TestCase
                     . '&cpanel.module=DNS&cpanel.function=' . $function . ($query === '' ? '' : '&' . $query),
             ];
         }
+    }
+
+    /**
+     * Pin the approved GET list in both directions.
+     *
+     * approvedUris() spells each URI out independently of LiveCurlClient, so an entry
+     * added to or removed from only one side fails here. Comparing the whole sorted
+     * lists also fails on a duplicate. The data-provider test above proves that every
+     * pinned URI really passes the guard.
+     */
+    public function testApprovedReadOnlyGetListMatchesThePinnedUrisExactly(): void
+    {
+        $pinned = [];
+        foreach (self::approvedUris() as [$uri]) {
+            $pinned[] = $uri;
+        }
+
+        $listed = (new ReflectionClassConstant(LiveCurlClient::class, 'READ_ONLY_GET'))->getValue();
+        self::assertIsArray($listed);
+        sort($pinned);
+        sort($listed);
+
+        self::assertSame($pinned, $listed, 'READ_ONLY_GET and approvedUris() must list exactly the same URIs.');
     }
 
     public function testApprovesDerivedDnsReadsOnlyForTheBoundValues(): void
