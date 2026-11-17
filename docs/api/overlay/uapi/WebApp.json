@@ -14,7 +14,7 @@
         },
         {
           "kind": "policy",
-          "text": "Names, paths, categories, modes and source values are forwarded unchanged and encoded once. Omission preserves upstream defaults; explicit empty strings and false/zero stay supplied. The client does not look up applications, upload/read source files, fetch returned URLs, poll, retry, merge configuration, restore or roll back. No live compatibility is established."
+          "text": "Names, paths, categories, modes and source values are forwarded unchanged and encoded once. Omission preserves upstream defaults; explicit empty strings and false/zero stay supplied. The client does not look up applications, upload/read source files, fetch returned URLs, poll, retry, merge configuration, restore or roll back. No universal live compatibility is established; attributed observations are limited to their stated original revision, server build, operations and routes."
         },
         {
           "kind": "documented",
@@ -26,7 +26,7 @@
         },
         {
           "kind": "documented",
-          "text": "Server environment restrictions: JSON at most 16 KiB, at most 64 variables, names matching [A-Za-z_][A-Za-z0-9_]* and at most 128 characters, and single values at most 4096 characters without control characters. PORT is reserved. The client does not newly enforce these restrictions or promise upstream conversion of JSON scalar null."
+          "text": "Server environment restrictions: JSON at most 16 KiB, at most 64 variables, names matching [A-Za-z_][A-Za-z0-9_]* and at most 128 characters, and single values at most 4096 characters without control characters. PORT is reserved. The client does not newly enforce these restrictions or promise universal upstream conversion of JSON scalar null; the attributed build-specific behavior is described below."
         },
         {
           "kind": "documented",
@@ -39,6 +39,14 @@
         {
           "kind": "documented",
           "text": "An empty domain regenerates the default. useExistingDomain=true confirms takeover and hides the existing website; omission does not confirm, and false cannot revoke prior confirmation. Changing the domain releases the prior include. A domain owned by another application is still rejected."
+        },
+        {
+          "kind": "observed",
+          "text": "The optional deployed, env_editable and staged response fields return integer 0|1. Native JSON integer flags were reported on cPanel 11.138.0.19 through direct UAPI and WHM bridge for this operation at original revision 4ab5b80587f8d524bbc0ccf5129f9901ef9ab8df. Pinned formal booleans remain accepted as source compatibility and normalize to 0|1; booleans are not an observed wire claim. Strings, other integers, floats and null remain invalid. This does not establish deployment or running-container compatibility."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, seebeen reported on both direct UAPI and WHM bridge at original revision 4ab5b80587f8d524bbc0ccf5129f9901ef9ab8df that the server stores environment values as TEXT: number 5 becomes \"5\", float 1.5 becomes \"1.5\", true becomes \"1\", false becomes \"0\", and null becomes \"\". The nonempty string \"0\" can be truthy in application code. This is server conversion: configureStructured still serializes the original native JSON types and bytes in one form field without client text conversion. Its parameter description that scalar null stays JSON null describes client encoding. Each supplied environment replaces the full set; structured [] emits {} and clears it, while null for the whole optional input omits the field. These are attributed version-scoped observations, not a universal conversion or persistence guarantee."
         }
       ],
       "evidence": [
@@ -153,6 +161,14 @@
           "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
           "pointer": "/paths/~1WebApp~1configure/get/parameters/11/description",
           "note": "Canonical source binding for configureStructured preserves wire, requiredness and sensitivity. The env prose explicitly describes an object of single scalar values and excludes nested objects/lists; optional null omits the whole field."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1WebApp~1configure/get",
+          "note": "Attributed to seebeen review 5725334504 (https://github.com/hostingpal/whm-api-client/pull/99#pullrequestreview-5725334504), as edited, and correction 6550246600 (https://github.com/hostingpal/whm-api-client/pull/99#issuecomment-6550246600), original revision 4ab5b80587f8d524bbc0ccf5129f9901ef9ab8df (whole slice 9e47d95..4ab5b80), cPanel 11.138.0.19, direct UAPI and WHM bridge, disposable wrvapp account and real local ZIP. Stage/configure took effect before PayloadMismatchException with outcomeConfirmed=true; list with an app also mismatched. The reviewer reports these three native integer state flags as the only response mismatches, including staged=1, deployed=0, env_editable=1. No deploy/redeploy or running-container call was observed. Account/home removal and token revocation are reviewer reports, not independently checked by this integration. No new live call, capture or server inspection was performed. The same review reports configure/structured configure storing env scalars as text: 5 to \"5\", 1.5 to \"1.5\", true to \"1\", false to \"0\", null to \"\"; full-set replacement and structured [] clearing were read back on both routes. Client JSON types remain unchanged."
         }
       ],
       "name": "configure",
@@ -228,7 +244,87 @@
             }
           ]
         }
-      ]
+      ],
+      "response": {
+        "deployed": {
+          "replace": {
+            "type": "flag"
+          },
+          "accept": [
+            "bool"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WebApp~1configure/get/responses/200/content/application~1json/schema/properties/result/properties/data/properties/deployed",
+              "note": "The exact immutable selected leaf is an optional, nonnullable formal boolean. Preserve omission and all neighboring fields. The reviewed effective output is 0|1; the existing flag bool acceptance preserves pinned native false/true compatibility by normalizing to 0/1. This is source-contract compatibility, not observed boolean wire evidence. No string, general integer, float or null acceptance is added."
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WebApp~1configure/get/responses/200/content/application~1json/schema/properties/result/properties/data/properties/deployed",
+              "note": "Attributed to seebeen review 5725334504 (https://github.com/hostingpal/whm-api-client/pull/99#pullrequestreview-5725334504), as edited, and correction 6550246600 (https://github.com/hostingpal/whm-api-client/pull/99#issuecomment-6550246600), original revision 4ab5b80587f8d524bbc0ccf5129f9901ef9ab8df (whole slice 9e47d95..4ab5b80), cPanel 11.138.0.19, direct UAPI and WHM bridge, disposable wrvapp account and real local ZIP. Stage/configure took effect before PayloadMismatchException with outcomeConfirmed=true; list with an app also mismatched. The reviewer reports these three native integer state flags as the only response mismatches, including staged=1, deployed=0, env_editable=1. No deploy/redeploy or running-container call was observed. Account/home removal and token revocation are reviewer reports, not independently checked by this integration. No new live call, capture or server inspection was performed. Correction is limited to this exact configure.deployed leaf; runtime uses form POST."
+            }
+          ]
+        },
+        "env_editable": {
+          "replace": {
+            "type": "flag"
+          },
+          "accept": [
+            "bool"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WebApp~1configure/get/responses/200/content/application~1json/schema/properties/result/properties/data/properties/env_editable",
+              "note": "The exact immutable selected leaf is an optional, nonnullable formal boolean. Preserve omission and all neighboring fields. The reviewed effective output is 0|1; the existing flag bool acceptance preserves pinned native false/true compatibility by normalizing to 0/1. This is source-contract compatibility, not observed boolean wire evidence. No string, general integer, float or null acceptance is added."
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WebApp~1configure/get/responses/200/content/application~1json/schema/properties/result/properties/data/properties/env_editable",
+              "note": "Attributed to seebeen review 5725334504 (https://github.com/hostingpal/whm-api-client/pull/99#pullrequestreview-5725334504), as edited, and correction 6550246600 (https://github.com/hostingpal/whm-api-client/pull/99#issuecomment-6550246600), original revision 4ab5b80587f8d524bbc0ccf5129f9901ef9ab8df (whole slice 9e47d95..4ab5b80), cPanel 11.138.0.19, direct UAPI and WHM bridge, disposable wrvapp account and real local ZIP. Stage/configure took effect before PayloadMismatchException with outcomeConfirmed=true; list with an app also mismatched. The reviewer reports these three native integer state flags as the only response mismatches, including staged=1, deployed=0, env_editable=1. No deploy/redeploy or running-container call was observed. Account/home removal and token revocation are reviewer reports, not independently checked by this integration. No new live call, capture or server inspection was performed. Correction is limited to this exact configure.env_editable leaf; runtime uses form POST."
+            }
+          ]
+        },
+        "staged": {
+          "replace": {
+            "type": "flag"
+          },
+          "accept": [
+            "bool"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WebApp~1configure/get/responses/200/content/application~1json/schema/properties/result/properties/data/properties/staged",
+              "note": "The exact immutable selected leaf is an optional, nonnullable formal boolean. Preserve omission and all neighboring fields. The reviewed effective output is 0|1; the existing flag bool acceptance preserves pinned native false/true compatibility by normalizing to 0/1. This is source-contract compatibility, not observed boolean wire evidence. No string, general integer, float or null acceptance is added."
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WebApp~1configure/get/responses/200/content/application~1json/schema/properties/result/properties/data/properties/staged",
+              "note": "Attributed to seebeen review 5725334504 (https://github.com/hostingpal/whm-api-client/pull/99#pullrequestreview-5725334504), as edited, and correction 6550246600 (https://github.com/hostingpal/whm-api-client/pull/99#issuecomment-6550246600), original revision 4ab5b80587f8d524bbc0ccf5129f9901ef9ab8df (whole slice 9e47d95..4ab5b80), cPanel 11.138.0.19, direct UAPI and WHM bridge, disposable wrvapp account and real local ZIP. Stage/configure took effect before PayloadMismatchException with outcomeConfirmed=true; list with an app also mismatched. The reviewer reports these three native integer state flags as the only response mismatches, including staged=1, deployed=0, env_editable=1. No deploy/redeploy or running-container call was observed. Account/home removal and token revocation are reviewer reports, not independently checked by this integration. No new live call, capture or server inspection was performed. Correction is limited to this exact configure.staged leaf; runtime uses form POST."
+            }
+          ]
+        }
+      }
     },
     "uapi:WebApp/delete": {
       "method": "POST",
@@ -239,7 +335,7 @@
         },
         {
           "kind": "policy",
-          "text": "Names, paths, categories, modes and source values are forwarded unchanged and encoded once. Omission preserves upstream defaults; explicit empty strings and false/zero stay supplied. The client does not look up applications, upload/read source files, fetch returned URLs, poll, retry, merge configuration, restore or roll back. No live compatibility is established."
+          "text": "Names, paths, categories, modes and source values are forwarded unchanged and encoded once. Omission preserves upstream defaults; explicit empty strings and false/zero stay supplied. The client does not look up applications, upload/read source files, fetch returned URLs, poll, retry, merge configuration, restore or roll back. No universal live compatibility is established; attributed observations are limited to their stated original revision, server build, operations and routes."
         },
         {
           "kind": "documented",
@@ -267,7 +363,7 @@
         },
         {
           "kind": "policy",
-          "text": "Names, paths, categories, modes and source values are forwarded unchanged and encoded once. Omission preserves upstream defaults; explicit empty strings and false/zero stay supplied. The client does not look up applications, upload/read source files, fetch returned URLs, poll, retry, merge configuration, restore or roll back. No live compatibility is established."
+          "text": "Names, paths, categories, modes and source values are forwarded unchanged and encoded once. Omission preserves upstream defaults; explicit empty strings and false/zero stay supplied. The client does not look up applications, upload/read source files, fetch returned URLs, poll, retry, merge configuration, restore or roll back. No universal live compatibility is established; attributed observations are limited to their stated original revision, server build, operations and routes."
         },
         {
           "kind": "documented",
@@ -299,7 +395,7 @@
         },
         {
           "kind": "policy",
-          "text": "Names, paths, categories, modes and source values are forwarded unchanged and encoded once. Omission preserves upstream defaults; explicit empty strings and false/zero stay supplied. The client does not look up applications, upload/read source files, fetch returned URLs, poll, retry, merge configuration, restore or roll back. No live compatibility is established."
+          "text": "Names, paths, categories, modes and source values are forwarded unchanged and encoded once. Omission preserves upstream defaults; explicit empty strings and false/zero stay supplied. The client does not look up applications, upload/read source files, fetch returned URLs, poll, retry, merge configuration, restore or roll back. No universal live compatibility is established; attributed observations are limited to their stated original revision, server build, operations and routes."
         },
         {
           "kind": "documented",
@@ -326,7 +422,7 @@
         },
         {
           "kind": "policy",
-          "text": "Names, paths, categories, modes and source values are forwarded unchanged and encoded once. Omission preserves upstream defaults; explicit empty strings and false/zero stay supplied. The client does not look up applications, upload/read source files, fetch returned URLs, poll, retry, merge configuration, restore or roll back. No live compatibility is established."
+          "text": "Names, paths, categories, modes and source values are forwarded unchanged and encoded once. Omission preserves upstream defaults; explicit empty strings and false/zero stay supplied. The client does not look up applications, upload/read source files, fetch returned URLs, poll, retry, merge configuration, restore or roll back. No universal live compatibility is established; attributed observations are limited to their stated original revision, server build, operations and routes."
         },
         {
           "kind": "documented",
@@ -354,7 +450,7 @@
         },
         {
           "kind": "policy",
-          "text": "Names, paths, categories, modes and source values are forwarded unchanged and encoded once. Omission preserves upstream defaults; explicit empty strings and false/zero stay supplied. The client does not look up applications, upload/read source files, fetch returned URLs, poll, retry, merge configuration, restore or roll back. No live compatibility is established."
+          "text": "Names, paths, categories, modes and source values are forwarded unchanged and encoded once. Omission preserves upstream defaults; explicit empty strings and false/zero stay supplied. The client does not look up applications, upload/read source files, fetch returned URLs, poll, retry, merge configuration, restore or roll back. No universal live compatibility is established; attributed observations are limited to their stated original revision, server build, operations and routes."
         },
         {
           "kind": "documented",
@@ -382,11 +478,15 @@
         },
         {
           "kind": "policy",
-          "text": "Names, paths, categories, modes and source values are forwarded unchanged and encoded once. Omission preserves upstream defaults; explicit empty strings and false/zero stay supplied. The client does not look up applications, upload/read source files, fetch returned URLs, poll, retry, merge configuration, restore or roll back. No live compatibility is established."
+          "text": "Names, paths, categories, modes and source values are forwarded unchanged and encoded once. Omission preserves upstream defaults; explicit empty strings and false/zero stay supplied. The client does not look up applications, upload/read source files, fetch returned URLs, poll, retry, merge configuration, restore or roll back. No universal live compatibility is established; attributed observations are limited to their stated original revision, server build, operations and routes."
         },
         {
           "kind": "documented",
           "text": "List rows preserve their formal fields independently from configure and stage. The source deploy/redeploy prose places last_deploy.error_category here although the list schema omits it; only that field is preserved as optional mixed without a type or enum promise."
+        },
+        {
+          "kind": "observed",
+          "text": "The optional deployed, env_editable and staged response fields return integer 0|1. Native JSON integer flags were reported on cPanel 11.138.0.19 through direct UAPI and WHM bridge for this operation at original revision 4ab5b80587f8d524bbc0ccf5129f9901ef9ab8df. Pinned formal booleans remain accepted as source compatibility and normalize to 0|1; booleans are not an observed wire claim. Strings, other integers, floats and null remain invalid. This does not establish deployment or running-container compatibility."
         }
       ],
       "evidence": [
@@ -397,6 +497,14 @@
           "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
           "pointer": "/paths/~1WebApp~1list/get/description",
           "note": "Explicit pinned operation description selects GET read; x-readonly/x-rollback are absent. Selected formal parameters, response data and requiredness remain unchanged except the separately evidenced optional list last_deploy.error_category addition. Runtime transport is independent of the selected source GET variant."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1WebApp~1list/get",
+          "note": "Attributed to seebeen review 5725334504 (https://github.com/hostingpal/whm-api-client/pull/99#pullrequestreview-5725334504), as edited, and correction 6550246600 (https://github.com/hostingpal/whm-api-client/pull/99#issuecomment-6550246600), original revision 4ab5b80587f8d524bbc0ccf5129f9901ef9ab8df (whole slice 9e47d95..4ab5b80), cPanel 11.138.0.19, direct UAPI and WHM bridge, disposable wrvapp account and real local ZIP. Stage/configure took effect before PayloadMismatchException with outcomeConfirmed=true; list with an app also mismatched. The reviewer reports these three native integer state flags as the only response mismatches, including staged=1, deployed=0, env_editable=1. No deploy/redeploy or running-container call was observed. Account/home removal and token revocation are reviewer reports, not independently checked by this integration. No new live call, capture or server inspection was performed."
         }
       ],
       "name": "listApplications",
@@ -431,6 +539,84 @@
               "note": "Selected POST redeploy prose independently names WebApp/list last_deploy.error_category. Envelope metadata.error_category stays raw metadata."
             }
           ]
+        },
+        "[].deployed": {
+          "replace": {
+            "type": "flag"
+          },
+          "accept": [
+            "bool"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WebApp~1list/get/responses/200/content/application~1json/schema/properties/result/properties/data/items/properties/deployed",
+              "note": "The exact immutable selected leaf is an optional, nonnullable formal boolean. Preserve omission and all neighboring fields. The reviewed effective output is 0|1; the existing flag bool acceptance preserves pinned native false/true compatibility by normalizing to 0/1. This is source-contract compatibility, not observed boolean wire evidence. No string, general integer, float or null acceptance is added."
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WebApp~1list/get/responses/200/content/application~1json/schema/properties/result/properties/data/items/properties/deployed",
+              "note": "Attributed to seebeen review 5725334504 (https://github.com/hostingpal/whm-api-client/pull/99#pullrequestreview-5725334504), as edited, and correction 6550246600 (https://github.com/hostingpal/whm-api-client/pull/99#issuecomment-6550246600), original revision 4ab5b80587f8d524bbc0ccf5129f9901ef9ab8df (whole slice 9e47d95..4ab5b80), cPanel 11.138.0.19, direct UAPI and WHM bridge, disposable wrvapp account and real local ZIP. Stage/configure took effect before PayloadMismatchException with outcomeConfirmed=true; list with an app also mismatched. The reviewer reports these three native integer state flags as the only response mismatches, including staged=1, deployed=0, env_editable=1. No deploy/redeploy or running-container call was observed. Account/home removal and token revocation are reviewer reports, not independently checked by this integration. No new live call, capture or server inspection was performed. Correction is limited to this exact list.deployed leaf; runtime uses GET."
+            }
+          ]
+        },
+        "[].env_editable": {
+          "replace": {
+            "type": "flag"
+          },
+          "accept": [
+            "bool"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WebApp~1list/get/responses/200/content/application~1json/schema/properties/result/properties/data/items/properties/env_editable",
+              "note": "The exact immutable selected leaf is an optional, nonnullable formal boolean. Preserve omission and all neighboring fields. The reviewed effective output is 0|1; the existing flag bool acceptance preserves pinned native false/true compatibility by normalizing to 0/1. This is source-contract compatibility, not observed boolean wire evidence. No string, general integer, float or null acceptance is added."
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WebApp~1list/get/responses/200/content/application~1json/schema/properties/result/properties/data/items/properties/env_editable",
+              "note": "Attributed to seebeen review 5725334504 (https://github.com/hostingpal/whm-api-client/pull/99#pullrequestreview-5725334504), as edited, and correction 6550246600 (https://github.com/hostingpal/whm-api-client/pull/99#issuecomment-6550246600), original revision 4ab5b80587f8d524bbc0ccf5129f9901ef9ab8df (whole slice 9e47d95..4ab5b80), cPanel 11.138.0.19, direct UAPI and WHM bridge, disposable wrvapp account and real local ZIP. Stage/configure took effect before PayloadMismatchException with outcomeConfirmed=true; list with an app also mismatched. The reviewer reports these three native integer state flags as the only response mismatches, including staged=1, deployed=0, env_editable=1. No deploy/redeploy or running-container call was observed. Account/home removal and token revocation are reviewer reports, not independently checked by this integration. No new live call, capture or server inspection was performed. Correction is limited to this exact list.env_editable leaf; runtime uses GET."
+            }
+          ]
+        },
+        "[].staged": {
+          "replace": {
+            "type": "flag"
+          },
+          "accept": [
+            "bool"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WebApp~1list/get/responses/200/content/application~1json/schema/properties/result/properties/data/items/properties/staged",
+              "note": "The exact immutable selected leaf is an optional, nonnullable formal boolean. Preserve omission and all neighboring fields. The reviewed effective output is 0|1; the existing flag bool acceptance preserves pinned native false/true compatibility by normalizing to 0/1. This is source-contract compatibility, not observed boolean wire evidence. No string, general integer, float or null acceptance is added."
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WebApp~1list/get/responses/200/content/application~1json/schema/properties/result/properties/data/items/properties/staged",
+              "note": "Attributed to seebeen review 5725334504 (https://github.com/hostingpal/whm-api-client/pull/99#pullrequestreview-5725334504), as edited, and correction 6550246600 (https://github.com/hostingpal/whm-api-client/pull/99#issuecomment-6550246600), original revision 4ab5b80587f8d524bbc0ccf5129f9901ef9ab8df (whole slice 9e47d95..4ab5b80), cPanel 11.138.0.19, direct UAPI and WHM bridge, disposable wrvapp account and real local ZIP. Stage/configure took effect before PayloadMismatchException with outcomeConfirmed=true; list with an app also mismatched. The reviewer reports these three native integer state flags as the only response mismatches, including staged=1, deployed=0, env_editable=1. No deploy/redeploy or running-container call was observed. Account/home removal and token revocation are reviewer reports, not independently checked by this integration. No new live call, capture or server inspection was performed. Correction is limited to this exact list.staged leaf; runtime uses GET."
+            }
+          ]
         }
       }
     },
@@ -443,7 +629,7 @@
         },
         {
           "kind": "policy",
-          "text": "Names, paths, categories, modes and source values are forwarded unchanged and encoded once. Omission preserves upstream defaults; explicit empty strings and false/zero stay supplied. The client does not look up applications, upload/read source files, fetch returned URLs, poll, retry, merge configuration, restore or roll back. No live compatibility is established."
+          "text": "Names, paths, categories, modes and source values are forwarded unchanged and encoded once. Omission preserves upstream defaults; explicit empty strings and false/zero stay supplied. The client does not look up applications, upload/read source files, fetch returned URLs, poll, retry, merge configuration, restore or roll back. No universal live compatibility is established; attributed observations are limited to their stated original revision, server build, operations and routes."
         },
         {
           "kind": "documented",
@@ -482,7 +668,7 @@
         },
         {
           "kind": "policy",
-          "text": "Names, paths, categories, modes and source values are forwarded unchanged and encoded once. Omission preserves upstream defaults; explicit empty strings and false/zero stay supplied. The client does not look up applications, upload/read source files, fetch returned URLs, poll, retry, merge configuration, restore or roll back. No live compatibility is established."
+          "text": "Names, paths, categories, modes and source values are forwarded unchanged and encoded once. Omission preserves upstream defaults; explicit empty strings and false/zero stay supplied. The client does not look up applications, upload/read source files, fetch returned URLs, poll, retry, merge configuration, restore or roll back. No universal live compatibility is established; attributed observations are limited to their stated original revision, server build, operations and routes."
         },
         {
           "kind": "documented",
@@ -510,7 +696,7 @@
         },
         {
           "kind": "policy",
-          "text": "Names, paths, categories, modes and source values are forwarded unchanged and encoded once. Omission preserves upstream defaults; explicit empty strings and false/zero stay supplied. The client does not look up applications, upload/read source files, fetch returned URLs, poll, retry, merge configuration, restore or roll back. No live compatibility is established."
+          "text": "Names, paths, categories, modes and source values are forwarded unchanged and encoded once. Omission preserves upstream defaults; explicit empty strings and false/zero stay supplied. The client does not look up applications, upload/read source files, fetch returned URLs, poll, retry, merge configuration, restore or roll back. No universal live compatibility is established; attributed observations are limited to their stated original revision, server build, operations and routes."
         },
         {
           "kind": "documented",
@@ -537,7 +723,7 @@
         },
         {
           "kind": "policy",
-          "text": "Names, paths, categories, modes and source values are forwarded unchanged and encoded once. Omission preserves upstream defaults; explicit empty strings and false/zero stay supplied. The client does not look up applications, upload/read source files, fetch returned URLs, poll, retry, merge configuration, restore or roll back. No live compatibility is established."
+          "text": "Names, paths, categories, modes and source values are forwarded unchanged and encoded once. Omission preserves upstream defaults; explicit empty strings and false/zero stay supplied. The client does not look up applications, upload/read source files, fetch returned URLs, poll, retry, merge configuration, restore or roll back. No universal live compatibility is established; attributed observations are limited to their stated original revision, server build, operations and routes."
         },
         {
           "kind": "documented",
@@ -554,6 +740,10 @@
         {
           "kind": "documented",
           "text": "sshKeyPass is sent only as sshkeypass in the selected POST form body; omitted passphrases stay omitted. The client never prompts for or stores them."
+        },
+        {
+          "kind": "observed",
+          "text": "The optional deployed, env_editable and staged response fields return integer 0|1. Native JSON integer flags were reported on cPanel 11.138.0.19 through direct UAPI and WHM bridge for this operation at original revision 4ab5b80587f8d524bbc0ccf5129f9901ef9ab8df. Pinned formal booleans remain accepted as source compatibility and normalize to 0|1; booleans are not an observed wire claim. Strings, other integers, floats and null remain invalid. This does not establish deployment or running-container compatibility."
         }
       ],
       "evidence": [
@@ -564,6 +754,14 @@
           "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
           "pointer": "/paths/~1WebApp~1stage/post/description",
           "note": "Explicit pinned operation description and selected POST variant define this form POST mutation; x-readonly/x-rollback are absent. Selected formal parameters, response data and requiredness are preserved. The selected POST source retains the optional body-only sshkeypass field; no list response correction is applied to this operation."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1WebApp~1stage/post",
+          "note": "Attributed to seebeen review 5725334504 (https://github.com/hostingpal/whm-api-client/pull/99#pullrequestreview-5725334504), as edited, and correction 6550246600 (https://github.com/hostingpal/whm-api-client/pull/99#issuecomment-6550246600), original revision 4ab5b80587f8d524bbc0ccf5129f9901ef9ab8df (whole slice 9e47d95..4ab5b80), cPanel 11.138.0.19, direct UAPI and WHM bridge, disposable wrvapp account and real local ZIP. Stage/configure took effect before PayloadMismatchException with outcomeConfirmed=true; list with an app also mismatched. The reviewer reports these three native integer state flags as the only response mismatches, including staged=1, deployed=0, env_editable=1. No deploy/redeploy or running-container call was observed. Account/home removal and token revocation are reviewer reports, not independently checked by this integration. No new live call, capture or server inspection was performed."
         }
       ],
       "variant": "POST",
@@ -579,6 +777,86 @@
         "ssh_key_name": {
           "sensitive": false
         }
+      },
+      "response": {
+        "deployed": {
+          "replace": {
+            "type": "flag"
+          },
+          "accept": [
+            "bool"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WebApp~1stage/post/responses/200/content/application~1json/schema/properties/result/properties/data/properties/deployed",
+              "note": "The exact immutable selected leaf is an optional, nonnullable formal boolean. Preserve omission and all neighboring fields. The reviewed effective output is 0|1; the existing flag bool acceptance preserves pinned native false/true compatibility by normalizing to 0/1. This is source-contract compatibility, not observed boolean wire evidence. No string, general integer, float or null acceptance is added."
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WebApp~1stage/post/responses/200/content/application~1json/schema/properties/result/properties/data/properties/deployed",
+              "note": "Attributed to seebeen review 5725334504 (https://github.com/hostingpal/whm-api-client/pull/99#pullrequestreview-5725334504), as edited, and correction 6550246600 (https://github.com/hostingpal/whm-api-client/pull/99#issuecomment-6550246600), original revision 4ab5b80587f8d524bbc0ccf5129f9901ef9ab8df (whole slice 9e47d95..4ab5b80), cPanel 11.138.0.19, direct UAPI and WHM bridge, disposable wrvapp account and real local ZIP. Stage/configure took effect before PayloadMismatchException with outcomeConfirmed=true; list with an app also mismatched. The reviewer reports these three native integer state flags as the only response mismatches, including staged=1, deployed=0, env_editable=1. No deploy/redeploy or running-container call was observed. Account/home removal and token revocation are reviewer reports, not independently checked by this integration. No new live call, capture or server inspection was performed. Correction is limited to this exact stage.deployed leaf; runtime uses form POST."
+            }
+          ]
+        },
+        "env_editable": {
+          "replace": {
+            "type": "flag"
+          },
+          "accept": [
+            "bool"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WebApp~1stage/post/responses/200/content/application~1json/schema/properties/result/properties/data/properties/env_editable",
+              "note": "The exact immutable selected leaf is an optional, nonnullable formal boolean. Preserve omission and all neighboring fields. The reviewed effective output is 0|1; the existing flag bool acceptance preserves pinned native false/true compatibility by normalizing to 0/1. This is source-contract compatibility, not observed boolean wire evidence. No string, general integer, float or null acceptance is added."
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WebApp~1stage/post/responses/200/content/application~1json/schema/properties/result/properties/data/properties/env_editable",
+              "note": "Attributed to seebeen review 5725334504 (https://github.com/hostingpal/whm-api-client/pull/99#pullrequestreview-5725334504), as edited, and correction 6550246600 (https://github.com/hostingpal/whm-api-client/pull/99#issuecomment-6550246600), original revision 4ab5b80587f8d524bbc0ccf5129f9901ef9ab8df (whole slice 9e47d95..4ab5b80), cPanel 11.138.0.19, direct UAPI and WHM bridge, disposable wrvapp account and real local ZIP. Stage/configure took effect before PayloadMismatchException with outcomeConfirmed=true; list with an app also mismatched. The reviewer reports these three native integer state flags as the only response mismatches, including staged=1, deployed=0, env_editable=1. No deploy/redeploy or running-container call was observed. Account/home removal and token revocation are reviewer reports, not independently checked by this integration. No new live call, capture or server inspection was performed. Correction is limited to this exact stage.env_editable leaf; runtime uses form POST."
+            }
+          ]
+        },
+        "staged": {
+          "replace": {
+            "type": "flag"
+          },
+          "accept": [
+            "bool"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WebApp~1stage/post/responses/200/content/application~1json/schema/properties/result/properties/data/properties/staged",
+              "note": "The exact immutable selected leaf is an optional, nonnullable formal boolean. Preserve omission and all neighboring fields. The reviewed effective output is 0|1; the existing flag bool acceptance preserves pinned native false/true compatibility by normalizing to 0/1. This is source-contract compatibility, not observed boolean wire evidence. No string, general integer, float or null acceptance is added."
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WebApp~1stage/post/responses/200/content/application~1json/schema/properties/result/properties/data/properties/staged",
+              "note": "Attributed to seebeen review 5725334504 (https://github.com/hostingpal/whm-api-client/pull/99#pullrequestreview-5725334504), as edited, and correction 6550246600 (https://github.com/hostingpal/whm-api-client/pull/99#issuecomment-6550246600), original revision 4ab5b80587f8d524bbc0ccf5129f9901ef9ab8df (whole slice 9e47d95..4ab5b80), cPanel 11.138.0.19, direct UAPI and WHM bridge, disposable wrvapp account and real local ZIP. Stage/configure took effect before PayloadMismatchException with outcomeConfirmed=true; list with an app also mismatched. The reviewer reports these three native integer state flags as the only response mismatches, including staged=1, deployed=0, env_editable=1. No deploy/redeploy or running-container call was observed. Account/home removal and token revocation are reviewer reports, not independently checked by this integration. No new live call, capture or server inspection was performed. Correction is limited to this exact stage.staged leaf; runtime uses form POST."
+            }
+          ]
+        }
       }
     },
     "uapi:WebApp/start": {
@@ -590,7 +868,7 @@
         },
         {
           "kind": "policy",
-          "text": "Names, paths, categories, modes and source values are forwarded unchanged and encoded once. Omission preserves upstream defaults; explicit empty strings and false/zero stay supplied. The client does not look up applications, upload/read source files, fetch returned URLs, poll, retry, merge configuration, restore or roll back. No live compatibility is established."
+          "text": "Names, paths, categories, modes and source values are forwarded unchanged and encoded once. Omission preserves upstream defaults; explicit empty strings and false/zero stay supplied. The client does not look up applications, upload/read source files, fetch returned URLs, poll, retry, merge configuration, restore or roll back. No universal live compatibility is established; attributed observations are limited to their stated original revision, server build, operations and routes."
         },
         {
           "kind": "documented",
@@ -618,7 +896,7 @@
         },
         {
           "kind": "policy",
-          "text": "Names, paths, categories, modes and source values are forwarded unchanged and encoded once. Omission preserves upstream defaults; explicit empty strings and false/zero stay supplied. The client does not look up applications, upload/read source files, fetch returned URLs, poll, retry, merge configuration, restore or roll back. No live compatibility is established."
+          "text": "Names, paths, categories, modes and source values are forwarded unchanged and encoded once. Omission preserves upstream defaults; explicit empty strings and false/zero stay supplied. The client does not look up applications, upload/read source files, fetch returned URLs, poll, retry, merge configuration, restore or roll back. No universal live compatibility is established; attributed observations are limited to their stated original revision, server build, operations and routes."
         },
         {
           "kind": "documented",

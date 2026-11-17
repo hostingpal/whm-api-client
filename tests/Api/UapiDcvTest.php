@@ -27,7 +27,6 @@ use ReflectionMethod;
 use RuntimeException;
 use SensitiveParameter;
 use SensitiveParameterValue;
-use TypeError;
 
 /** Synthetic offline fixtures; no domain, challenge, path, URL or header is accessed. */
 final class UapiDcvTest extends TestCase
@@ -267,7 +266,8 @@ final class UapiDcvTest extends TestCase
             [$http, '[{"failure_reason":"PRIVATE failed","redirects":null,"redirects_count":null}]', true,
                 [['failure_reason' => 'PRIVATE failed', 'redirects' => null, 'redirects_count' => null]]],
             [$dns, '[{"domain":"a","succeeded":"1","query_results":null},{"domain":"b","succeeded":"0"}]', true,
-                [['domain' => 'a', 'query_results' => null, 'succeeded' => 1],
+                [
+            ['domain' => 'a', 'query_results' => null, 'succeeded' => 1],
                 ['domain' => 'b', 'succeeded' => 0]]],
         ];
         foreach ([$dns, $http] as $method) {

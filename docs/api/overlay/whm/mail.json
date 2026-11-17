@@ -1710,8 +1710,26 @@
         {
           "kind": "doc",
           "version": "pinned 2026-10-13",
-          "date": "2026-10-31",
-          "note": "The pinned /install_spf_records domain parameter documents incremented names, while record only says that it must be provided for every domain. No repeated or numbered record wire spelling is established. Preserve the documented scalar domain and record schemas for the typed method; defer the multi-record encoding under whm-api-client-8x0.1.21 rather than mirror a family by inference. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+          "date": "2026-11-01",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1install_spf_records/get/parameters/0",
+          "note": "Required string domain explicitly documents domain-1, domain-2 and domain-3. Preserve the scalar method and select the one-based hyphenated family for the separate related-record companion. This is pinned input evidence, not a live batch observation."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1install_spf_records/get/parameters/1",
+          "note": "Required string record must be provided for every domain, but pinned prose does not spell record-N. That limitation remains explicit; the paired family is supported separately by the attributed 11.138.0.19 source review. Preserve string bytes and source requiredness."
+        },
+        {
+          "kind": "doc",
+          "version": "11.138.0.19 reviewer source inspection",
+          "date": "2026-11-01",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1install_spf_records/get/parameters",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/72#pullrequestreview-5722427592 reports validate_domain_value_pairs_or_die through map_length_required_multiple_to_key_values pairing domain and record families by sorted position, with count mismatch errors. Cpanel::Form::Param collects bare and numerically suffixed names. This supports explicit domain-1/record-1 pairs for installSpfRecordBatch(records), preserving complete rows and duplicates. No batch list was observed live; no new source inspection or capture is performed and no universal version behavior is claimed."
         }
       ],
       "notes": [
@@ -1721,16 +1739,52 @@
         },
         {
           "kind": "documented",
-          "text": "Installs the supplied complete SPF record on the DNS server; supply the desired full record rather than a patch. This typed method supports the documented single domain/record pair. The pinned source documents incremented domain names and requires a corresponding record for each domain, but does not establish the repeated record field spelling or positional serialization. Both arguments remain scalar strings; multi-record serialization is deferred under whm-api-client-8x0.1.21. No numbered or repeated record encoder is inferred. Pass raw SPF text and let the client form-encode it once; do not pre-encode the source example. Inspect per-domain status and message separately from API status."
+          "text": "Installs the supplied complete SPF record on the DNS server; supply the desired full record rather than a patch. installSpfRecords(domain, record) retains one scalar domain/record pair. installSpfRecordBatch(records) accepts a nonempty sequential list of complete domain/record string rows and emits domain-1, record-1, domain-2, record-2 in row order, including a suffixed singleton. Both fields are required; empty strings and all supplied bytes are forwarded unchanged before one form encoding. Those byte rules do not promise clearing or preservation semantics. No SPF syntax/domain validation or DNS lookup is added. Inspect per-domain status and message separately from API status; status 0 under API result 1 remains returned data."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned domain prose documents numbered fields, but record only requires a value for every domain and omits its numbered spelling. Review https://github.com/hostingpal/whm-api-client/pull/72#pullrequestreview-5722427592 reports sorted-position domain/record family pairing in validate_domain_value_pairs_or_die through map_length_required_multiple_to_key_values and numeric family collection in Cpanel::Form::Param on 11.138.0.19. The companion is source-based; no live batch list was observed. Duplicate domains retain wire order without establishing server duplicate resolution, DNS propagation or applied state."
         },
         {
           "kind": "policy",
           "text": "OutcomePolicy::Flag is unchanged. On API result=0, ApiErrorException retains metadata but discards per-domain data rows; the source does not define partial-failure result semantics. Do not retry automatically. Re-read affected domain state before deciding further action."
+        },
+        {
+          "kind": "policy",
+          "text": "The sensitive records argument rejects empty or nonsequential lists, incomplete rows, unknown keys, nulls and wrong native types before I/O after metadata reset. One form POST uses the canonical response and outcome without unwrapping. Returned messages/configuration are private payload data. The client adds no read/merge, URL fetch, retry or rollback and promises no persistence or atomicity. Live follow-up remains whm-api-client-8x0.2.48."
         }
       ],
       "order": [
         "domain",
         "record"
+      ],
+      "additional_methods": [
+        {
+          "name": "installSpfRecordBatch",
+          "inputs": [
+            {
+              "php": "records",
+              "records": {
+                "alias": "SpfRecordInput",
+                "start": 1,
+                "separator": "-",
+                "sensitive": true,
+                "fields": [
+                  {
+                    "source": "domain",
+                    "php": "domain",
+                    "prefix": "domain"
+                  },
+                  {
+                    "source": "record",
+                    "php": "record",
+                    "prefix": "record"
+                  }
+                ]
+              }
+            }
+          ]
+        }
       ]
     },
     "whm1:is_sni_supported": {

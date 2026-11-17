@@ -97,6 +97,8 @@ trait UapiGroups
 
     private ?Locale $localeGroup = null;
 
+    private ?LogManager $logManagerGroup = null;
+
     private ?Mailboxes $mailboxesGroup = null;
 
     private ?Market $marketGroup = null;
@@ -111,11 +113,15 @@ trait UapiGroups
 
     private ?Notifications $notificationsGroup = null;
 
+    private ?Nova $novaGroup = null;
+
     private ?Park $parkGroup = null;
 
     private ?PassengerApps $passengerAppsGroup = null;
 
     private ?PasswdStrength $passwdStrengthGroup = null;
+
+    private ?Personalization $personalizationGroup = null;
 
     private ?Postgresql $postgresqlGroup = null;
 
@@ -132,6 +138,8 @@ trait UapiGroups
     private ?Session $sessionGroup = null;
 
     private ?SiteQuality $siteQualityGroup = null;
+
+    private ?Sitejet $sitejetGroup = null;
 
     private ?SpamAssassin $spamAssassinGroup = null;
 
@@ -612,6 +620,20 @@ trait UapiGroups
     }
 
     /**
+     * Select the LogManager operations without making a request.
+     *
+     * Selected-account log administration. Observed: reviewer 5721279104 inspected Cpanel/API/LogManager.pm on cPanel
+     * 11.138.0.19 and found the shared %API requirements WebServer role and rawlog feature for all six operations.
+     * Neither requirement is declared in the pinned snapshot; disabled-role/feature behavior was not runtime-tested.
+     * Policy: supplied paths/selectors are sent unchanged and the client performs no local filesystem access. Log
+     * contents are private payload data, including explicitly accessible exception payloads.
+     */
+    public function logManager(): LogManager
+    {
+        return $this->logManagerGroup ??= new LogManager($this->run(...));
+    }
+
+    /**
      * Select the Mailboxes operations without making a request.
      *
      * Mailbox inventory, selected-message expunge and Roundcube mailbox-name encoding settings.
@@ -683,6 +705,23 @@ trait UapiGroups
     }
 
     /**
+     * Select the Nova operations without making a request.
+     *
+     * Pinned availability is cPanel 110+. Observed: Reviewer 5721328890 on cPanel 11.138.0.19 reports all six Nova
+     * reads they called failed on both routes because Cpanel::API::Nova could not load. Reviewer-source inspection
+     * found the module file absent. All eleven methods are unavailable for verification on this server. Write failures
+     * are expected from the missing module but were not executed. Every Nova response shape, including overlay repairs,
+     * remains unobserved. Policy: Each call makes one request without automatic retry, polling, rollback or undo.
+     * Returned tokens, SSO URLs and account metadata are sensitive payload data. The client does not fetch returned
+     * URLs or inspect website files. API success does not establish publication completion, rendering or interactive
+     * SSO login.
+     */
+    public function nova(): Nova
+    {
+        return $this->novaGroup ??= new Nova($this->run(...));
+    }
+
+    /**
      * Select the Park operations without making a request.
      *
      * The Park module for UAPI.
@@ -710,6 +749,16 @@ trait UapiGroups
     public function passwdStrength(): PasswdStrength
     {
         return $this->passwdStrengthGroup ??= new PasswdStrength($this->run(...));
+    }
+
+    /**
+     * Select the Personalization operations without making a request.
+     *
+     * The Personalization module for UAPI.
+     */
+    public function personalization(): Personalization
+    {
+        return $this->personalizationGroup ??= new Personalization($this->run(...));
     }
 
     /**
@@ -768,8 +817,9 @@ trait UapiGroups
      * Selected-account service proxy backend inventory and configuration. Backend/general address inputs and paired
      * records are sensitive; read results reveal infrastructure information. Writes may rebuild vhosts and restart the
      * web server, with API-success rebuild warnings retained in responseMeta(). No backend contact, DNS/IP validation,
-     * retry or rollback is performed. Offline source-backed coverage only; live follow-up whm-api-client-8x0.2.70
-     * remains open.
+     * retry or rollback is performed. Review 5725574081 at original 4462b68 reports direct UAPI success and WHM bridge
+     * module-load failure on 11.138.0.19; this build-scoped reviewer observation does not restrict supported routes.
+     * Live follow-up whm-api-client-8x0.2.70 remains open.
      */
     public function serviceProxy(): ServiceProxy
     {
@@ -800,6 +850,18 @@ trait UapiGroups
     public function siteQuality(): SiteQuality
     {
         return $this->siteQualityGroup ??= new SiteQuality($this->run(...));
+    }
+
+    /**
+     * Select the Sitejet operations without making a request.
+     *
+     * Policy: Each call makes one request without automatic retry, polling, rollback or undo. Returned tokens, SSO URLs
+     * and account metadata are sensitive payload data. The client does not fetch returned URLs or inspect website
+     * files. API success does not establish publication completion, rendering or interactive SSO login.
+     */
+    public function sitejet(): Sitejet
+    {
+        return $this->sitejetGroup ??= new Sitejet($this->run(...));
     }
 
     /**
@@ -907,7 +969,8 @@ trait UapiGroups
      *
      * Selected-account trash apparent usage and permanent item removal, available from cPanel 136 with source plugin
      * annotation Trash. Paths and payloads are private remote data; the client forwards exact path bytes without local
-     * filesystem operations. Offline source-backed coverage only; live follow-up whm-api-client-8x0.2.73 remains open.
+     * filesystem operations. Original-revision observations are build/route scoped; live follow-up
+     * whm-api-client-8x0.2.73 remains open.
      */
     public function trash(): Trash
     {
@@ -927,9 +990,10 @@ trait UapiGroups
     /**
      * Select the UserData operations without making a request.
      *
-     * Selected-account scoped userdata settings from cPanel 11.32. Both pinned GET variants declare non-read-only
-     * behavior and use form POST under repository policy. Preserve raw scalar inputs and dynamic private string-map
-     * results; offline coverage only, with live follow-up whm-api-client-8x0.2.74 open.
+     * Selected-account scoped userdata settings from cPanel 11.32. Preserve exact scalar inputs and required private
+     * maps with mixed JSON entries through existing object-to-array handling. Both pinned GET variants are
+     * non-read-only; form POST acceptance and mixed response shapes were observed at original 08dacc43 on 11.138.0.19,
+     * not on this corrected candidate. Live follow-up whm-api-client-8x0.2.74 remains open.
      */
     public function userData(): UserData
     {
