@@ -556,7 +556,19 @@ final class AuthenticationSpec
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [
-            'user' => ['name' => 'user', 'encoding' => 'scalar'],
+            'user' => [
+                'name' => 'user',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'indexed',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'prefix' => 'user',
+                    'separator' => '-',
+                    'start' => 1,
+                ],
+            ],
         ],
         'returns' => [
             'type' => 'object',

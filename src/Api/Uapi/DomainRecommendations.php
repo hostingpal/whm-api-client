@@ -90,6 +90,7 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  *     },
  *     suggestions?: array<array-key, array{
  *         is_premium: 0|1,
+ *         is_searched_term?: 0|1,
  *         premium_cost_pricing: array{
  *             register?: array<array-key, array{
  *                 code?: string,
@@ -164,8 +165,8 @@ final readonly class DomainRecommendations
      *
      * Documented: Available from cPanel 134. The source expects an FQDN including TLD. The server caches availability
      * per domain. Explicit null availability is preserved without inferring its reason. Availability, premium and TLD
-     * flags are native booleans, unlike suggestion integer premium flags. Its nullable premium_cost_pricing remains
-     * opaque; no sibling premium structure is inferred.
+     * flags remain strict native booleans; suggestion premium boolean compatibility does not apply here. Its nullable
+     * premium_cost_pricing remains opaque; no sibling premium structure is inferred.
      *
      * Documented: The server caches results for up to two minutes. Omitted useCache retains server default 1; explicit
      * false bypasses server cache and may contact the configured store. The client adds no cache. Availability and
@@ -207,10 +208,12 @@ final readonly class DomainRecommendations
      * retry, rollback or returned-URL fetch. Live and configured-store behavior remain unverified under
      * whm-api-client-8x0.2.68.
      *
-     * Documented: Available from cPanel 134. searchField is free text, normally the base name without a TLD. Page
-     * numbers are one-based; omitted page/pageSize retain store defaults. The source caches by search, page, page-size
-     * and requested-TLD combination, but pins no TLD parameter or example; none is invented. Source gap remains under
-     * whm-api-client-8x0.2.68.
+     * Documented: Available from cPanel 134. searchField is free text, normally the base name without a TLD;
+     * full-domain searches are also supported by the reviewed 11.138.0.19 source and may add the available searched
+     * domain on the first page. Page numbers are one-based; omitted page/pageSize retain store defaults. Pinned
+     * documentation omits a TLD input despite cache-key prose. Reviewed handler source reads get_multiple('tld') and
+     * its POD shows tld-0=com&tld-1=net. This source-only finding does not add a typed argument or hidden parameter;
+     * the pinned interface stays unchanged under whm-api-client-8x0.2.68.
      *
      * Documented: The server caches results for up to two minutes. Omitted useCache retains server default 1; explicit
      * false bypasses server cache and may contact the configured store. The client adds no cache. Availability and
@@ -221,9 +224,12 @@ final readonly class DomainRecommendations
      * currency conversion, parsing, rounding or float coercion.
      *
      * Documented: Returned domain and registration-term keys remain dynamic; empty maps are valid. Metadata permits
-     * unknown members. Every suggestion row requires pricing, strict integer 0|1 is_premium and nullable
-     * premium_cost_pricing. Formal requiredness is retained despite prose calling premium details optional; omission
-     * remains a visible mismatch pending evidence. No conditional premium-field inference.
+     * unknown members. Every suggestion row requires pricing, integer 0|1 is_premium and nullable premium_cost_pricing.
+     * Only is_premium additionally accepts native false/true and normalizes to 0/1, based on reviewed 11.138.0.19
+     * injection and serializer evidence. Optional is_searched_term is a strict native integer 0|1 identifying the
+     * injected own-search row when 1; ordinary rows can omit it. No string, float or null flag conversion. Formal
+     * requiredness is retained despite prose calling premium details optional; omission remains a visible mismatch
+     * pending evidence. No conditional premium-field inference. Actual configured-store success remains unobserved.
      *
      * API-map identity: uapi:DomainRecommendations/domain_suggestions#GET (wire name domain_suggestions).
      *
@@ -335,6 +341,13 @@ final readonly class DomainRecommendations
      * POST. No retries or rollback. Live POST acceptance is unverified: a server accepting only documented GET can fail
      * until route-specific evidence resolves transport. Returning a checkout URL does not prove completion of a
      * commercial transaction.
+     *
+     * Policy: Reviewed 11.138.0.19 source creates a real upstream store cart, adds a domain item and requests checkout
+     * after refusing an unavailable domain. The backend emits Domain-Purchase-Initiated analytics with the domain by
+     * default; analytics can precede cart validation and occur despite a later failure. This is source-only evidence,
+     * not transaction or route verification. Do not assume atomicity or retry automatically. No skip_backend_track
+     * input is added. purchaseDomain was never called: the reviewer permission check refused it and no alternate route
+     * or retry was attempted; live POST/store/cart/analytics behavior remains unobserved.
      *
      * API-map identity: uapi:DomainRecommendations/purchase_domain#GET (wire name purchase_domain).
      *

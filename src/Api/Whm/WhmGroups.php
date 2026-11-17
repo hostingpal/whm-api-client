@@ -27,15 +27,21 @@ trait WhmGroups
 
     private ?CpHulk $cpHulkGroup = null;
 
+    private ?Customizations $customizationsGroup = null;
+
     private ?Databases $databasesGroup = null;
 
     private ?Dns $dnsGroup = null;
 
     private ?HostingPlans $hostingPlansGroup = null;
 
+    private ?InProductSurvey $inProductSurveyGroup = null;
+
     private ?Integrations $integrationsGroup = null;
 
     private ?IpAddresses $ipAddressesGroup = null;
+
+    private ?Logs $logsGroup = null;
 
     private ?Mail $mailGroup = null;
 
@@ -49,6 +55,8 @@ trait WhmGroups
 
     private ?Resellers $resellersGroup = null;
 
+    private ?Security $securityGroup = null;
+
     private ?Server $serverGroup = null;
 
     private ?Ssl $sslGroup = null;
@@ -58,6 +66,8 @@ trait WhmGroups
     private ?SystemPackages $systemPackagesGroup = null;
 
     private ?Transfers $transfersGroup = null;
+
+    private ?UserData $userDataGroup = null;
 
     private ?WebServer $webServerGroup = null;
 
@@ -137,6 +147,17 @@ trait WhmGroups
     }
 
     /**
+     * Select the Customizations operations without making a request.
+     *
+     * WHM Jupiter interface customization retrieval and deletion. Retrieval preserves opaque payload data; update
+     * serialization remains excluded.
+     */
+    public function customizations(): Customizations
+    {
+        return $this->customizationsGroup ??= new Customizations($this->run(...));
+    }
+
+    /**
      * Select the Databases operations without making a request.
      *
      * WHM API 1 functions in the documented Databases group.
@@ -167,6 +188,16 @@ trait WhmGroups
     }
 
     /**
+     * Select the InProductSurvey operations without making a request.
+     *
+     * WHM in-product survey metadata. Returned URLs may contain private tokens and are never fetched by the client.
+     */
+    public function inProductSurvey(): InProductSurvey
+    {
+        return $this->inProductSurveyGroup ??= new InProductSurvey($this->run(...));
+    }
+
+    /**
      * Select the Integrations operations without making a request.
      *
      * Account-scoped cPanel integration links and groups, and server-wide script/Perl hook inventory and management.
@@ -186,6 +217,16 @@ trait WhmGroups
     public function ipAddresses(): IpAddresses
     {
         return $this->ipAddressesGroup ??= new IpAddresses($this->run(...));
+    }
+
+    /**
+     * Select the Logs operations without making a request.
+     *
+     * WHM API 1 functions in the documented Logs group.
+     */
+    public function logs(): Logs
+    {
+        return $this->logsGroup ??= new Logs($this->run(...));
     }
 
     /**
@@ -266,6 +307,17 @@ trait WhmGroups
     }
 
     /**
+     * Select the Security operations without making a request.
+     *
+     * WHM root login IP restrictions. Changes can remove root password access to the control panel; no automatic retry
+     * or rollback is provided.
+     */
+    public function security(): Security
+    {
+        return $this->securityGroup ??= new Security($this->run(...));
+    }
+
+    /**
      * Select the Server Administration operations without making a request.
      *
      * WHM API 1 functions in the documented Server Administration group.
@@ -330,6 +382,17 @@ trait WhmGroups
     public function transfers(): Transfers
     {
         return $this->transfersGroup ??= new Transfers($this->run(...));
+    }
+
+    /**
+     * Select the UserData operations without making a request.
+     *
+     * WHM scoped private configuration in root scope for any WHM caller. Never log input or returned configuration
+     * values, including raw mismatch payloads.
+     */
+    public function userData(): UserData
+    {
+        return $this->userDataGroup ??= new UserData($this->run(...));
     }
 
     /**

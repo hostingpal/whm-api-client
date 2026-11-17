@@ -1,6 +1,7 @@
 package phpgen
 
 import (
+	"encoding/json"
 	"github.com/hostingpal/whm-api-client/tools/api-map/internal/effective"
 	"github.com/hostingpal/whm-api-client/tools/api-map/internal/overlay"
 	"strings"
@@ -11,6 +12,9 @@ func TestRenderUploadListAndExplicitObjectPolicy(t *testing.T) {
 	zero := 0
 	deny := false
 	op := effective.Operation{PHPName: "uploadFiles", Constant: "UPLOAD_FILES", Body: "multipart", Method: "POST", Outcome: "unchecked", MultipartUploads: &overlay.MultipartUploads{PHP: "files", Prefix: "file-", Start: &zero, Routes: "direct", FilenameForbidden: "<>;"}, Params: []effective.Param{{PHP: "files", PHPType: "array", DocType: "non-empty-list<Upload>", Sensitive: true, Required: true}, {PHP: "dir", Wire: "dir", Encoding: "scalar", PHPType: "string", DocType: "string"}}, Returns: &effective.TypeSpec{Type: "object", AcceptEmptyArray: &deny, Fields: []effective.Field{{Name: "diskinfo", Spec: effective.TypeSpec{Type: "object", Values: &effective.TypeSpec{Type: "string"}, Fields: []effective.Field{{Name: "filesused", Spec: effective.TypeSpec{Type: "int"}}}}}}}}
+	if err := json.Unmarshal([]byte(`{"Rows":"uploads"}`), &op); err != nil {
+		t.Fatal(err)
+	}
 	g := effective.Group{Family: "uapi", Name: "Fileman", Class: "Fileman", Operations: []effective.Operation{op}}
 	group := groupClass(g)
 	spec := specClass(g)
@@ -19,7 +23,7 @@ func TestRenderUploadListAndExplicitObjectPolicy(t *testing.T) {
 			t.Errorf("missing %s", want)
 		}
 	}
-	for _, want := range []string{`'multipart_uploads' => [`, `'prefix' => 'file-'`, `'routes' => 'direct'`, `'outcome' => 'unchecked'`, `'accept_empty_array' => false`, `'dir' => ['name' => 'dir', 'encoding' => 'scalar']`} {
+	for _, want := range []string{`'multipart_uploads' => [`, `'prefix' => 'file-'`, `'routes' => 'direct'`, `'outcome' => 'unchecked'`, `'rows' => 'uploads'`, `'accept_empty_array' => false`, `'dir' => ['name' => 'dir', 'encoding' => 'scalar']`} {
 		if !strings.Contains(spec, want) {
 			t.Errorf("missing %s", want)
 		}

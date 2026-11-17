@@ -62,6 +62,6 @@ func (b *builder) multipartUploadFamily(op model.Operation, v model.Variant, ov 
 	for i := range *params {
 		(*params)[i].Sensitive = true
 	}
-	*params = append([]Param{{PHP: d.PHP, PHPType: "Upload|array", DocType: "Upload|non-empty-list<Upload>", Required: true, Sensitive: true, Description: "An uploaded archive or a nonempty ordered list. Scalar uses the bare part name; lists use one-based suffixes, including singleton lists."}}, *params...)
+	*params = append([]Param{{PHP: d.PHP, PHPType: "Upload|array", DocType: "Upload|non-empty-list<Upload>", Required: true, Sensitive: true, Description: "An uploaded archive or a nonempty sequential list. Scalar uses the bare part name; lists use one-based suffixes, including singleton lists."}}, *params...)
 	return d
 }

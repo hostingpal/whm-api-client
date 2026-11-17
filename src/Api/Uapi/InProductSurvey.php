@@ -21,11 +21,11 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  *
  * @phpstan-type GetInProductSurveyUrlResult array{
  *     display?: 0|1,
- *     link?: string,
- *     max_dismiss?: string,
+ *     link?: string|null,
+ *     max_dismiss?: string|null,
  *     new_user?: 0|1,
  *     server_type?: string,
- *     submit_event?: string,
+ *     submit_event?: string|null,
  *     user_type?: string,
  * }
  */
@@ -52,9 +52,13 @@ final readonly class InProductSurvey
      *
      * Policy: display/new_user use the existing generated flag-enum policy: exact quoted 0/1 and native integer 0/1
      * normalize to integer 0|1; reject other strings, booleans, floats and null. This is existing source policy, not an
-     * overlay response correction or live observation. max_dismiss stays strict string without integer coercion; link,
+     * overlay response correction or live observation. max_dismiss stays a string without integer coercion; link,
      * submit_event, server_type and user_type stay optional strings with general string enums open. All seven formal
      * fields and the whole source example remain represented.
+     *
+     * Observed: PR110 review 5726184111 on 11.138.0.19, both routes: when no survey is configured, which is the normal
+     * state, link, submit_event and max_dismiss are null. All three are nullable strings; null means no configured
+     * survey.
      *
      * Documented: Source display 0 means do not render the banner; consumers compare normalized integer 0. The source
      * selects a link template for authenticated webmail versus cPanel/Team users. This account-bound client adds no

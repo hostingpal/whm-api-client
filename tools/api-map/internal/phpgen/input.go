@@ -8,10 +8,17 @@ import (
 func inputShape(s effective.InputSpec, indent string) string {
 	var result string
 	switch s.Type {
+	case "json":
+		result = `null|bool|int|float|string|\HostingPal\WhmApiClient\JsonObject|\HostingPal\WhmApiClient\JsonList`
 	case "flag", "bool":
 		result = "bool"
 	case "number":
 		result = "int|float"
+	case "string":
+		result = "string"
+		if s.Nonempty {
+			result = "non-empty-string"
+		}
 	case "list":
 		prefix := "list"
 		if s.Nonempty {
@@ -45,6 +52,9 @@ func inputShape(s effective.InputSpec, indent string) string {
 		}
 		lines = append(lines, indent+"}")
 		result = strings.Join(lines, "\n")
+		if s.Values != nil && s.Values.Type == "json" {
+			result += `|\HostingPal\WhmApiClient\JsonObject`
+		}
 	case "union":
 		var parts []string
 		for _, a := range s.AnyOf {
@@ -54,7 +64,7 @@ func inputShape(s effective.InputSpec, indent string) string {
 	default:
 		result = s.Type
 	}
-	if s.Nullable && s.Type != "null" {
+	if s.Nullable && s.Type != "null" && s.Type != "json" {
 		result += "|null"
 	}
 	return result

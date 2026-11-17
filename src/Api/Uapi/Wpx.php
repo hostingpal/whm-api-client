@@ -25,23 +25,45 @@ use SensitiveParameter;
  *     login?: string,
  * }
  * @phpstan-type CreateNovaForWordPressWebsiteResult array{
+ *     blocked_by?: list<string>,
+ *     compatible?: 0|1,
  *     domain?: string,
+ *     domain_package?: string|null,
+ *     domain_version?: string|null,
+ *     domain_version_source?: string|null,
+ *     domain_version_vhost?: string|null,
+ *     effective_version?: string|null,
  *     existing_installations?: list<array{
  *         id?: int,
  *         url?: string,
  *     }>,
+ *     is_fallback?: 0|1,
  *     magic_link?: string,
+ *     required_version?: string,
  *     status?: string,
+ *     system_default_package?: string|null,
+ *     system_default_version?: string|null,
  * }
  * @phpstan-type CreateWebsiteResult array{
+ *     blocked_by?: list<string>,
+ *     compatible?: 0|1,
  *     domain?: string,
+ *     domain_package?: string|null,
+ *     domain_version?: string|null,
+ *     domain_version_source?: string|null,
+ *     domain_version_vhost?: string|null,
+ *     effective_version?: string|null,
  *     existing_installations?: list<array{
  *         id?: int,
  *         url?: string,
  *     }>,
  *     install_id?: string,
+ *     is_fallback?: 0|1,
+ *     required_version?: string,
  *     sse_url?: string,
  *     status?: string,
+ *     system_default_package?: string|null,
+ *     system_default_version?: string|null,
  *     task_id?: string,
  * }
  * @phpstan-type GetAdminAccountResult array{
@@ -94,14 +116,25 @@ use SensitiveParameter;
  *     has_reached_quota?: 0|1,
  * }
  * @phpstan-type ImportWebsiteResult array{
+ *     blocked_by?: list<string>,
+ *     compatible?: 0|1,
  *     domain?: string,
+ *     domain_package?: string|null,
+ *     domain_version?: string|null,
+ *     domain_version_source?: string|null,
+ *     domain_version_vhost?: string|null,
+ *     effective_version?: string|null,
  *     existing_installations?: list<array{
  *         id?: int,
  *         url?: string,
  *     }>,
  *     install_id?: string,
+ *     is_fallback?: 0|1,
+ *     required_version?: string,
  *     sse_url?: string,
  *     status?: string,
+ *     system_default_package?: string|null,
+ *     system_default_version?: string|null,
  *     task_id?: string,
  * }
  * @phpstan-type ListWebsitesResult array{
@@ -225,6 +258,23 @@ final readonly class Wpx
      * characters. Invalid values are ignored for a default, not rejected locally. The prompt, return URL and returned
      * magic link are private; never log or fetch the magic link.
      *
+     * Documented: Source-only on cPanel 11.138.0.19, reviewed in PR100 review 5725396130: Cpanel/API/WPX.pm
+     * _unsupported_php_response() preserves Cpanel/WPX/PhpCompat.pm check_compatibility() diagnostics with status
+     * unsupported_php. This is a successful-envelope refusal: it queues nothing and creates no installation task.
+     * Inspect status explicitly; a noncollision result does not imply running. No unsupported_php wire response was
+     * observed. The eleven additional diagnostic fields are optional; unknown lookup strings can be null. Existing
+     * domain/status remain strings. See docs/api/source-audit.md, WPX review corrections, for local captured-output
+     * provenance.
+     *
+     * Documented: Source-only remedies: blocked_by domain can require changing the MultiPHP Manager row named by
+     * domain_version_vhost; system_default means contact the provider. The client does not repair PHP, poll, fetch
+     * sources or start another request automatically. required_version is a string (source constant 7.4); no local
+     * PHP-version or closed blocked_by/source enum validation.
+     *
+     * Documented: Source-only on 11.138.0.19: Cpanel/API/WPX.pm also requires wp-toolkit-site-import; the shared Nova
+     * entitlement requires both nova-wordpress and the ai-app-builder extension. These are source-derived
+     * prerequisites, not a live entitlement or installation guarantee.
+     *
      * API-map identity: uapi:WPX/create_nova_for_wordpress_website#POST (wire name create_nova_for_wordpress_website).
      *
      * @param string $domain The domain on which to start the WordPress walkthrough.
@@ -282,6 +332,19 @@ final readonly class Wpx
      * Documented: Collision is a successful result that queues nothing. Running returns task_id and install_id without
      * proving completion or health. The client never deletes an existing installation automatically. Use
      * getTaskProgress(installId) explicitly; the SSE path needs an interactive session, not an API token.
+     *
+     * Documented: Source-only on cPanel 11.138.0.19, reviewed in PR100 review 5725396130: Cpanel/API/WPX.pm
+     * _unsupported_php_response() preserves Cpanel/WPX/PhpCompat.pm check_compatibility() diagnostics with status
+     * unsupported_php. This is a successful-envelope refusal: it queues nothing and creates no installation task.
+     * Inspect status explicitly; a noncollision result does not imply running. No unsupported_php wire response was
+     * observed. The eleven additional diagnostic fields are optional; unknown lookup strings can be null. Existing
+     * domain/status remain strings. See docs/api/source-audit.md, WPX review corrections, for local captured-output
+     * provenance.
+     *
+     * Documented: Source-only remedies: blocked_by domain can require changing the MultiPHP Manager row named by
+     * domain_version_vhost; system_default means contact the provider. The client does not repair PHP, poll, fetch
+     * sources or start another request automatically. required_version is a string (source constant 7.4); no local
+     * PHP-version or closed blocked_by/source enum validation.
      *
      * API-map identity: uapi:WPX/create_website#POST (wire name create_website).
      *
@@ -359,8 +422,9 @@ final readonly class Wpx
      * characters; rejected values are ignored for a default. The client forwards it unchanged in the POST body.
      *
      * Policy: Despite its getter name and selected source GET, this token-minting operation uses form POST under
-     * mutation policy. Live POST acceptance is unestablished; a GET-only server will fail until route-specific evidence
-     * corrects transport.
+     * mutation policy. PR100 review 5725396130 at a4d3145 on 11.138.0.19 reports POST reaching the adminbin on direct
+     * UAPI and the WHM bridge, then failing because the WP Toolkit binary was missing. Successful token payloads remain
+     * unobserved; this is no universal route-acceptance or success guarantee and adds no fallback.
      *
      * API-map identity: uapi:WPX/get_credentials#GET (wire name get_credentials).
      *
@@ -436,6 +500,11 @@ final readonly class Wpx
      * Documented: installId identifies retained progress/outcome logs, which remain readable after completion. Status
      * and percentage do not change the envelope success rules. API-token clients explicitly use this method; SSE needs
      * an interactive session. No automatic polling or path fetch.
+     *
+     * Observed: PR100 review 5725396130 on 11.138.0.19 seeded the two documented progress-log formats, not a real
+     * install: direct GET percentage was quoted 20/10/40 while bridged GET was integer; no-log 0 and complete 100 were
+     * integers on both routes. Only percentage accepts lossless canonical bounded integer strings and returns int; the
+     * descriptive 0..100 range adds no validator.
      *
      * API-map identity: uapi:WPX/get_task_progress#GET (wire name get_task_progress).
      *
@@ -582,6 +651,23 @@ final readonly class Wpx
      * installation. passwordType remains a supplied string. The background import can fail after API success. Collision
      * queues nothing; running identifiers are not completion or health. Explicit getTaskProgress(installId) works for
      * API tokens; the SSE path needs an interactive session.
+     *
+     * Documented: Source-only on cPanel 11.138.0.19, reviewed in PR100 review 5725396130: Cpanel/API/WPX.pm
+     * _unsupported_php_response() preserves Cpanel/WPX/PhpCompat.pm check_compatibility() diagnostics with status
+     * unsupported_php. This is a successful-envelope refusal: it queues nothing and creates no installation task.
+     * Inspect status explicitly; a noncollision result does not imply running. No unsupported_php wire response was
+     * observed. The eleven additional diagnostic fields are optional; unknown lookup strings can be null. Existing
+     * domain/status remain strings. See docs/api/source-audit.md, WPX review corrections, for local captured-output
+     * provenance.
+     *
+     * Documented: Source-only remedies: blocked_by domain can require changing the MultiPHP Manager row named by
+     * domain_version_vhost; system_default means contact the provider. The client does not repair PHP, poll, fetch
+     * sources or start another request automatically. required_version is a string (source constant 7.4); no local
+     * PHP-version or closed blocked_by/source enum validation.
+     *
+     * Documented: Source-only on 11.138.0.19: Cpanel/API/WPX.pm also requires wp-toolkit-site-import; the shared Nova
+     * entitlement requires both nova-wordpress and the ai-app-builder extension. These are source-derived
+     * prerequisites, not a live entitlement or installation guarantee.
      *
      * API-map identity: uapi:WPX/import_website#POST (wire name import_website).
      *
