@@ -62,7 +62,7 @@ func TestJSONFieldSourceAndSchemaFailClosed(t *testing.T) {
 		{`{"type":"object"}`, `"source":"plan"`, `"source":"username"`, "duplicated source"},
 		{`{"properties":{}}`, "", "", "explicit"},
 		{`{"allOf":[{"type":"string"}]}`, "", "", "composition"},
-		{`{"type":"object","additionalProperties":true}`, "", "", "additional"},
+		{`{"type":"object","additionalProperties":{"description":"untyped"}}`, "", "", "explicit"},
 		{`{"type":"string","format":"binary"}`, "", "", "binary"},
 		{`{"anyOf":[{"type":"object"},{"type":"array","items":{"type":"string"}}]}`, "", "", "scalar"},
 		{`{"type":"object","properties":{"1":{"type":"string"}}}`, "", "", "string array keys"},
