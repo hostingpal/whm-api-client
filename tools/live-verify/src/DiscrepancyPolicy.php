@@ -36,7 +36,9 @@ final readonly class DiscrepancyPolicy
      * A name inspection on 11.138.0.24 found exactly the two owner-accepted undeclared fields,
      * backup_warning_threshold_pct and under_backup_threshold, on both routes.
      * Earlier bindings stay unchanged as history: cPanel 11.138.0.19 through
-     * docs/api/evidence/2026-11-01-read-only-11.138.0.19.json (SHA-256 4138dbf1d083ddfe6d109c86bb8beb449abde6937e93b2452693d47b2b792b81), and before 2026-11-01 cPanel 11.138.0.15 through
+     * docs/api/evidence/2026-11-01-read-only-11.138.0.19.json (SHA-256
+     * 4138dbf1d083ddfe6d109c86bb8beb449abde6937e93b2452693d47b2b792b81), and before 2026-11-01
+     * cPanel 11.138.0.15 through
      * docs/api/evidence/2026-10-16-quota-inventory.json (SHA-256
      * 5f65d66acc36673ee37be1b4e024dad3ac725e5313d45c208abb489d5c9f6811). Only rebinding moves
      * the acknowledgments.

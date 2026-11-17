@@ -377,7 +377,7 @@ final class UapiVersionControlTest extends TestCase
         $plain = $repositories->create('/home/u/src', 'src', 'git');
         self::assertSame(0, $plain['deployable'] ?? null);
         self::assertArrayHasKey('last_deployment', $plain);
-        self::assertNull($plain['last_deployment']);
+        self::assertNull($plain['last_deployment'] ?? null);
         $http->addResponse(new Response(200, [], self::envelope(
             $route,
             '{"name":"clone","type":"git","repository_root":"/home/u/clone","deployable":"1",'
@@ -390,7 +390,7 @@ final class UapiVersionControlTest extends TestCase
         self::assertSame(1, $clone['deployable'] ?? null);
         // An unreachable clone source leaves available_branches undefined in the unnarrowed response.
         self::assertArrayHasKey('available_branches', $clone);
-        self::assertNull($clone['available_branches']);
+        self::assertNull($clone['available_branches'] ?? null);
         self::assertSame('0', $clone['tasks'][0]['exclusive'] ?? null);
         $http->addResponse(new Response(200, [], self::envelope($route, '{"deployable":2}')));
         try {

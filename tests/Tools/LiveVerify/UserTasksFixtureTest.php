@@ -114,16 +114,20 @@ final class UserTasksFixtureTest extends TestCase
         self::assertSame(['null'], self::probe($scenario, 'delete_owned')['payload_paths']['$']);
     }
 
-    /** The real create rows carry the queue's exclusive key, which VersionControl's contract does not declare. */
+    /** An undeclared create-row key is reported by the producer review without gating the UserTasks review. */
     public function testProducerDiscrepancyIsReportedWithoutGatingTheUserTaskReview(): void
     {
-        $scenario = self::scenario(new UserTasksServer());
+        $server = new UserTasksServer();
+        $server->producerRowExtraFields = ['future_key' => 'undeclared'];
+        $scenario = self::scenario($server);
         self::assertSame(['unacknowledged_discrepancy:clone_create'], $scenario['producer_review']['findings']);
         self::assertSame(
             [['path' => '$.tasks[].*', 'kind' => 'unknown_field']],
             self::probe($scenario, 'clone_create')['discrepancies'],
         );
         self::assertSame('passed', $scenario['fixture']['status']);
+        // VersionControl/create now declares the queue's exclusive key (2026-11-17 name inspection).
+        self::assertSame('passed', self::scenario(new UserTasksServer())['producer_review']['status']);
         $http = new UserTasksServer();
         $http->producerRowsCarryExclusive = false;
         self::assertSame('passed', self::scenario($http)['producer_review']['status']);

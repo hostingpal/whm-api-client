@@ -188,8 +188,10 @@ final class SslSectionFixtureTest extends TestCase
         foreach (['direct-uapi', 'bridged-uapi'] as $route) {
             self::assertContains($route . ':cleanup_strict_discrepancy', $report['failures']);
             self::assertNotContains($route . ':cleanup_request_failure', $report['failures']);
-            self::assertSame(['key' => 'cleaned', 'cert' => 'cleaned', 'generated_key' => 'cleaned'],
-                $report['resources'][$route]);
+            self::assertSame(
+                ['key' => 'cleaned', 'cert' => 'cleaned', 'generated_key' => 'cleaned'],
+                $report['resources'][$route],
+            );
         }
         self::assertSame([], $server->keys);
         self::assertSame([], $server->certificates);
