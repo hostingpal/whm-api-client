@@ -4442,9 +4442,13 @@ Survey preserves all seven optional fields. The existing generator policy
 normalizes exact quoted `'0'`/`'1'` and native integer 0/1 in `display` and
 `new_user` to integer `0|1`. Other strings, booleans, floats and null fail; this
 is source flag-enum policy, not a new response correction or live observation.
-`max_dismiss` remains strict string, including zero-like strings, with no integer
-coercion. `link`, `submit_event`, `server_type` and `user_type` remain strings;
-general string enums remain open. Source display 0 means do not render a banner;
+`max_dismiss` stays a string, including zero-like strings, with no integer
+coercion. `server_type` and `user_type` remain strings; general string enums
+remain open. Review 5726184111 on 11.138.0.19 saw `link`, `submit_event` and
+`max_dismiss` null on both routes when no survey is configured, the normal
+state, so those three are nullable. `getFirstFileRelativeUri()` reads a
+template-processing global: outside a template it returned `null` through direct
+UAPI and `[stdin]` through the bridge, so `uri` is nullable and not meaningful. Source display 0 means do not render a banner;
 compare normalized integer 0. The source selects link templates for authenticated
 webmail versus cPanel/Team users. These account-bound methods add no authentication
 mode or session route, and offline fixtures establish no webmail session coverage,

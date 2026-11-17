@@ -4161,8 +4161,10 @@ Unicode, percent/ampersand/plus bytes without local validation or normalization.
 Survey retains seven optional fields. display/new_user use existing generator
 flag-enum normalization of exact quoted 0/1 and native integers to int 0|1;
 other strings, bools, floats and null fail. This is not an overlay response
-correction or live observation. max_dismiss stays strict string, alongside link,
-submit_event, server_type and user_type; general string enums remain open. Source
+correction or live observation. max_dismiss, link and submit_event are nullable
+strings (null when no survey is configured, review 5726184111); server_type and
+user_type stay strings; general string enums remain open. Parser uri is nullable:
+outside a template it is null (direct) or a meaningless value such as [stdin]. Source
 display 0 means do not render the banner, compared as normalized integer 0.
 Source webmail versus cPanel/Team link templates establish no added authentication
 mode/session route or tested webmail credentials/session coverage.

@@ -162,6 +162,9 @@ final class UapiUiHelpersTest extends TestCase
             ['Parser', '{"uri":"/usr/local/cpanel/base/favicon.ico","unknown":1}',
                 ['uri' => '/usr/local/cpanel/base/favicon.ico']],
             ['Parser', '{"uri":"../ %2F+š\n"}', ['uri' => "../ %2F+š\n"]],
+            // PR110 review 5726184111: outside a template, direct gives null and the bridge [stdin].
+            ['Parser', '{"uri":null}', ['uri' => null]],
+            ['Parser', '{"uri":"[stdin]"}', ['uri' => '[stdin]']],
             ['Integration', '{"redirect_url":"not a URL %2F+š","url":"javascript:inert()","unknown":true}',
                 ['redirect_url' => 'not a URL %2F+š', 'url' => 'javascript:inert()']],
             ['Integration', '{"url":""}', ['url' => '']],
@@ -176,6 +179,11 @@ final class UapiUiHelpersTest extends TestCase
                 ['display' => 0, 'link' => '', 'max_dismiss' => '00', 'new_user' => 1,
                     'server_type' => 'future', 'submit_event' => '', 'user_type' => 'future']],
             ['InProductSurvey', '{"new_user":"1","display":"0"}', ['display' => 0, 'new_user' => 1]],
+            // PR110 review 5726184111: no configured survey leaves these three null on both routes.
+            ['InProductSurvey', '{"display":0,"link":null,"max_dismiss":null,"new_user":1,'
+                . '"server_type":"cpanel","submit_event":null,"user_type":"cpanel"}',
+                ['display' => 0, 'link' => null, 'max_dismiss' => null, 'new_user' => 1,
+                    'server_type' => 'cpanel', 'submit_event' => null, 'user_type' => 'cpanel']],
             ['Plugins', '{"can_show_promotions":0,"unknown":"discard"}', ['can_show_promotions' => 0]],
             ['Plugins', '{"can_show_promotions":1}', ['can_show_promotions' => 1]],
         ];
@@ -218,12 +226,16 @@ final class UapiUiHelpersTest extends TestCase
             'InProductSurvey' => ['display', 'new_user', 'max_dismiss', 'link', 'submit_event',
                 'server_type', 'user_type'], 'Plugins' => ['can_show_promotions'],
         ];
+        // PR110 review 5726184111 observed null for these; null is valid, other wrong types still fail.
+        $nullable = ['uri', 'max_dismiss', 'link', 'submit_event'];
         foreach ($fields as $group => $names) {
             foreach ([null, 'null', '"object"', '1', 'true', '[{}]'] as $index => $wrong) {
                 yield "$group root $index" => [$group, $wrong];
             }
             foreach ($names as $field) {
-                yield "$group $field null" => [$group, '{"' . $field . '":null}'];
+                if (!in_array($field, $nullable, true)) {
+                    yield "$group $field null" => [$group, '{"' . $field . '":null}'];
+                }
                 yield "$group $field wrong type" => [$group, '{"' . $field . '":true}'];
             }
         }
