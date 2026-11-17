@@ -327,6 +327,14 @@
           "version": "11.138.0.19",
           "date": "2026-10-30",
           "note": "https://github.com/hostingpal/whm-api-client/pull/37#pullrequestreview-5719361198 assessed d484e4b187fc380188871a3b798a55a0b8de8eac and observed empty size for zero-byte files plus empty uid/gid for root-owned entries on both routes. This reviewer report is separate from prior committed inventory captures; no other empty field variant is inferred."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Fileman~1list_files/get/parameters/6",
+          "note": "Attributed reviewer observation (PR115 review 5726574983) on a disposable account through direct UAPI and the WHM bridge: only_these_files as a string or comma-joined list returned all five entries without limit_to_list and an ARRAY-ref ApiErrorException with limit_to_list=1. The list-input adoption was withdrawn; not a committed capture."
         }
       ],
       "notes": [
@@ -361,6 +369,10 @@
         {
           "kind": "observed",
           "text": "PR37 review on cPanel 11.138.0.19 observed an empty size string for zero-byte files and empty uid/gid strings for root-owned entries through both direct UAPI and the WHM bridge. These empty strings remain empty strings, distinct from numeric zero and omission. Only file information and observed flat listing rows gain these forms; other integer fields and unobserved dirs/files object rows remain strict."
+        },
+        {
+          "kind": "observed",
+          "text": "PR115 review 5726574983 on 11.138.0.19, both routes: onlyTheseFiles has no working HTTP form. Cpanel::API::Fileman::list_files dereferences only_these_files as an array reference that only Perl callers can supply, so a string (or comma-joined list) is ignored without limitToList and raises ApiErrorException (Can't use string ... as an ARRAY ref) with limitToList true. The pinned comma-separated prose does not hold on that build; the client keeps the raw string argument unchanged and adds no list form."
         }
       ],
       "params": {
@@ -848,10 +860,18 @@
       "outcome": "unchecked",
       "rows": "uploads",
       "params": {
-        "dir": {"sensitive": true},
-        "get_disk_info": {"sensitive": true},
-        "overwrite": {"sensitive": true},
-        "permissions": {"sensitive": true}
+        "dir": {
+          "sensitive": true
+        },
+        "get_disk_info": {
+          "sensitive": true
+        },
+        "overwrite": {
+          "sensitive": true
+        },
+        "permissions": {
+          "sensitive": true
+        }
       },
       "evidence": [
         {
@@ -902,14 +922,16 @@
       "response": {
         "": {
           "accept_empty_array": false,
-          "evidence": [{
-            "kind": "doc",
-            "version": "pinned 2026-10-13",
-            "date": "2026-10-31",
-            "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
-            "pointer": "/paths/~1Fileman~1upload_files/post/responses/200/content/application~1json/schema/properties/result/properties/data",
-            "note": "The required Fileman result is an actual object with optional fields. Opt out of the shared empty-array compatibility only at this new root, independently of transport metadata."
-          }]
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Fileman~1upload_files/post/responses/200/content/application~1json/schema/properties/result/properties/data",
+              "note": "The required Fileman result is an actual object with optional fields. Opt out of the shared empty-array compatibility only at this new root, independently of transport metadata."
+            }
+          ]
         },
         "diskinfo": {
           "replace": {

@@ -187,12 +187,23 @@ final class HostingPlansSpec
         'method' => 'GET',
         'outcome' => 'flag',
         'params' => [
-            'applicationsList' => ['name' => 'applications_list', 'encoding' => 'scalar'],
+            'applicationsList' => [
+                'name' => 'applications_list',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => ',',
+                ],
+            ],
             'file' => ['name' => 'file', 'encoding' => 'scalar'],
         ],
         'returns' => [
             'type' => 'object',
             'fields' => [
+                'applications' => ['type' => 'list', 'items' => ['type' => 'map', 'values' => ['type' => 'mixed']]],
                 'groups' => [
                     'type' => 'list',
                     'items' => [
