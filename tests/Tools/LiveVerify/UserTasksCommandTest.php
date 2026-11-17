@@ -51,7 +51,7 @@ final class UserTasksCommandTest extends TestCase
         $result = self::runCommand($directory);
         self::assertSame(0, $result['status'], implode("\n", $result['output']));
         self::assertSame([
-            'User task fixture: passed', 'User task discrepancy review: passed', 'User task producer review: failed',
+            'User task fixture: passed', 'User task discrepancy review: passed', 'User task producer review: passed',
         ], $result['output']);
         $file = $directory . '/evidence.json';
         $json = file_get_contents($file);

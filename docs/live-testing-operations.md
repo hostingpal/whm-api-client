@@ -4,7 +4,8 @@ Generated from the reviewed API map (`docs/api/map.sha256`) and the explicit
 lists in [live-testing.md](live-testing.md); every pinned operation appears once.
 Unlisted operations fall back to the map risk class: read-only, UAPI mutation
 (account-scoped) or WHM mutation (server-wide). `Client` shows whether master
-has a typed method, an explicit exclusion or neither (use generic `call()`).
+has a typed method, an explicit exclusion or neither (use generic `call()`);
+refresh it with `php tools/live-testing/refresh-operations-client.php`.
 
 | Group | Operations |
 | --- | ---: |
@@ -39,19 +40,19 @@ has a typed method, an explicit exclusion or neither (use generic `call()`).
 | `uapi:BoxTrapper/get_status` | typed |
 | `uapi:BoxTrapper/list_email_templates` | typed |
 | `uapi:BoxTrapper/list_queued_messages` | typed |
-| `uapi:Branding/get_application_information` | untyped |
-| `uapi:Branding/get_applications` | untyped |
-| `uapi:Branding/get_available_applications` | untyped |
-| `uapi:Branding/get_information_for_applications` | untyped |
-| `uapi:Branding/include` | untyped |
+| `uapi:Branding/get_application_information` | typed |
+| `uapi:Branding/get_applications` | typed |
+| `uapi:Branding/get_available_applications` | typed |
+| `uapi:Branding/get_information_for_applications` | typed |
+| `uapi:Branding/include` | typed |
 | `uapi:CCS/list_delegates` | typed |
 | `uapi:CCS/list_users` | typed |
 | `uapi:CPDAVD/list_delegates` | typed |
 | `uapi:CPDAVD/list_users` | typed |
 | `uapi:CacheBuster/read` | typed |
-| `uapi:Chkservd/get_exim_ports` | untyped |
-| `uapi:Chkservd/get_exim_ports_ssl` | untyped |
-| `uapi:Chrome/get_dom` | untyped |
+| `uapi:Chkservd/get_exim_ports` | typed |
+| `uapi:Chkservd/get_exim_ports_ssl` | typed |
+| `uapi:Chrome/get_dom` | typed |
 | `uapi:ClamScanner/check_disinfection_status` | typed |
 | `uapi:ClamScanner/get_scan_paths` | typed |
 | `uapi:ClamScanner/get_scan_status` | typed |
@@ -225,16 +226,16 @@ has a typed method, an explicit exclusion or neither (use generic `call()`).
 | `uapi:Nova/get_all_user_nova_info` | typed |
 | `uapi:Nova/get_tier` | typed |
 | `uapi:Park/listparkeddomains` | typed |
-| `uapi:Parser/firstfile_relative_uri` | untyped |
+| `uapi:Parser/firstfile_relative_uri` | typed |
 | `uapi:PassengerApps/list_applications` | typed |
 | `uapi:PasswdStrength/get_required_strength` | typed |
-| `uapi:Personalization/get` | untyped |
+| `uapi:Personalization/get` | typed |
 | `uapi:Postgresql/get_restrictions` | typed |
 | `uapi:Postgresql/list_databases` | typed |
 | `uapi:Postgresql/list_users` | typed |
 | `uapi:Quota/get_local_quota_info` | typed |
 | `uapi:Quota/get_quota_info` | typed |
-| `uapi:Resellers/list_accounts` | untyped |
+| `uapi:Resellers/list_accounts` | typed |
 | `uapi:ResourceUsage/get_usages` | typed |
 | `uapi:Restore/directory_listing` | typed |
 | `uapi:Restore/get_users` | typed |
@@ -485,7 +486,7 @@ has a typed method, an explicit exclusion or neither (use generic `call()`).
 | `whm1:package_manager_resolve_actions` | typed |
 | `whm1:parse_dns_zone` | typed |
 | `whm1:personalization_get` | excluded |
-| `whm1:php_fpm_config_get` | excluded |
+| `whm1:php_fpm_config_get` | typed |
 | `whm1:php_get_default_accounts_to_fpm` | typed |
 | `whm1:php_get_handlers` | typed |
 | `whm1:php_get_impacted_domains` | typed |
@@ -587,8 +588,8 @@ has a typed method, an explicit exclusion or neither (use generic `call()`).
 | `uapi:ContactInformation/unset_email_addresses` | typed |
 | `uapi:DAV/disable_shared_global_addressbook` | typed |
 | `uapi:DAV/enable_shared_global_addressbook` | typed |
-| `uapi:DCV/check_domains_via_dns` | untyped |
-| `uapi:DCV/check_domains_via_http` | untyped |
+| `uapi:DCV/check_domains_via_dns` | typed |
+| `uapi:DCV/check_domains_via_http` | typed |
 | `uapi:DCV/ensure_domains_can_pass_dcv` | excluded |
 | `uapi:DNS/mass_edit_zone` | untyped |
 | `uapi:DNS/swap_ip_in_zones` | untyped |
@@ -700,8 +701,8 @@ has a typed method, an explicit exclusion or neither (use generic `call()`).
 | `uapi:ImageManager/convert_file` | typed |
 | `uapi:ImageManager/create_thumbnails` | typed |
 | `uapi:ImageManager/resize_image` | typed |
-| `uapi:InProductSurvey/get_in_product_survey_url` | untyped |
-| `uapi:Integration/fetch_url` | untyped |
+| `uapi:InProductSurvey/get_in_product_survey_url` | typed |
+| `uapi:Integration/fetch_url` | typed |
 | `uapi:KnownHosts/create` | typed |
 | `uapi:KnownHosts/delete` | typed |
 | `uapi:KnownHosts/update` | typed |
@@ -755,8 +756,8 @@ has a typed method, an explicit exclusion or neither (use generic `call()`).
 | `uapi:PassengerApps/ensure_deps` | typed |
 | `uapi:PassengerApps/register_application` | typed |
 | `uapi:PassengerApps/unregister_application` | typed |
-| `uapi:Personalization/set` | untyped |
-| `uapi:Plugins/can_show_promotions` | untyped |
+| `uapi:Personalization/set` | excluded |
+| `uapi:Plugins/can_show_promotions` | typed |
 | `uapi:Plugins/create_user` | untyped |
 | `uapi:Postgresql/create_database` | typed |
 | `uapi:Postgresql/create_user` | typed |
@@ -901,7 +902,7 @@ has a typed method, an explicit exclusion or neither (use generic `call()`).
 | `uapi:WebDisk/set_homedir` | typed |
 | `uapi:WebDisk/set_password` | typed |
 | `uapi:WebDisk/set_permissions` | typed |
-| `uapi:WebProsMCP/get_connection_config` | untyped |
+| `uapi:WebProsMCP/get_connection_config` | typed |
 | `uapi:WebsiteBackup/create_backup` | typed |
 | `uapi:WebsiteBackup/delete_backup` | typed |
 | `uapi:WebsiteBackup/disk_quota_check` | typed |
@@ -926,8 +927,8 @@ has a typed method, an explicit exclusion or neither (use generic `call()`).
 
 | Operation | Client |
 | --- | --- |
-| `whm1:360Monitoring/set_360_agent_polling` | untyped |
-| `whm1:360Monitoring/webpros_auth_status` | untyped |
+| `whm1:360Monitoring/set_360_agent_polling` | typed |
+| `whm1:360Monitoring/webpros_auth_status` | typed |
 | `whm1:EcosystemFeatures/is_ready` | typed |
 | `whm1:EcosystemFeatures/local_disable` | typed |
 | `whm1:EcosystemFeatures/local_enable` | typed |
@@ -1195,7 +1196,7 @@ has a typed method, an explicit exclusion or neither (use generic `call()`).
 | `whm1:suspend_outgoing_email` | typed |
 | `whm1:suspendacct` | typed |
 | `whm1:suspendreseller` | typed |
-| `whm1:system_needs_reboot` | excluded |
+| `whm1:system_needs_reboot` | typed |
 | `whm1:terminate_cpuser_mailbox_sessions` | typed |
 | `whm1:terminatereseller` | typed |
 | `whm1:ticket_whitelist_setup` | typed |
@@ -1255,7 +1256,7 @@ has a typed method, an explicit exclusion or neither (use generic `call()`).
 | `whm1:nat_set_public_ip` | typed |
 | `whm1:package_manager_submit_actions` | typed |
 | `whm1:package_manager_upgrade` | typed |
-| `whm1:php_fpm_config_set` | excluded |
+| `whm1:php_fpm_config_set` | typed |
 | `whm1:reboot` | typed |
 | `whm1:reset_service_ssl_certificate` | typed |
 | `whm1:restartservice` | typed |
@@ -1273,7 +1274,7 @@ has a typed method, an explicit exclusion or neither (use generic `call()`).
 | `whm1:start_cpanel_update` | typed |
 | `whm1:start_profile_activation` | typed |
 | `whm1:twofactorauth_enable_policy` | typed |
-| `whm1:update_sql_config` | excluded |
+| `whm1:update_sql_config` | typed |
 | `whm1:update_updateconf` | typed |
 
 ## External effects not undone by a restore (owned or synthetic targets only)
@@ -1298,11 +1299,11 @@ has a typed method, an explicit exclusion or neither (use generic `call()`).
 | `uapi:Sitejet/start_publish` | typed |
 | `uapi:Team/password_reset_request` | typed |
 | `uapi:WPX/import_website` | typed |
-| `uapi:WebProsMCP/unlink_webpros_account` | untyped |
-| `whm1:360Monitoring/webpros_auth_callback` | untyped |
-| `whm1:360Monitoring/webpros_auth_clear` | untyped |
-| `whm1:360Monitoring/webpros_auth_start` | untyped |
-| `whm1:360Monitoring/webpros_auth_token` | untyped |
+| `uapi:WebProsMCP/unlink_webpros_account` | typed |
+| `whm1:360Monitoring/webpros_auth_callback` | typed |
+| `whm1:360Monitoring/webpros_auth_clear` | typed |
+| `whm1:360Monitoring/webpros_auth_start` | typed |
+| `whm1:360Monitoring/webpros_auth_token` | typed |
 | `whm1:add_configclusterserver` | typed |
 | `whm1:analyze_transfer_session_remote` | typed |
 | `whm1:backup_destination_add` | typed |
@@ -1357,7 +1358,7 @@ has a typed method, an explicit exclusion or neither (use generic `call()`).
 | `uapi:SiteQuality/create_project` | typed |
 | `uapi:SiteQuality/create_site_quality_user` | typed |
 | `uapi:WPX/create_nova_for_wordpress_website` | typed |
-| `whm1:360Monitoring/register_server_with_360_monitoring` | untyped |
+| `whm1:360Monitoring/register_server_with_360_monitoring` | typed |
 | `whm1:set_market_provider_commission_id` | typed |
 
 ## Costs money (excluded)

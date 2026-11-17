@@ -4,5 +4,6 @@ parameters:
     paths:
         - src
         - tests
+        - tools/live-testing
         - tools/live-verify
     tmpDir: .cache/phpstan

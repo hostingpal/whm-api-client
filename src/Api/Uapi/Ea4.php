@@ -91,6 +91,11 @@ final readonly class Ea4
      * bool|string without inferring a false-only sentinel; option-level URLs remain strings. The failed WHM bridge
      * envelope establishes no successful bridged payload behavior.
      *
+     * Observed: On cPanel 11.138.0.24 (2026-11-17), the WHM bridge returned metadata.result 1 with data.uapi null, so
+     * the bridged call raises InvalidResponseException before any payload validation; the same read through direct UAPI
+     * succeeded. The 11.138.0.19 capture also recorded a bridge failure. Use direct cPanel credentials for this read;
+     * the client adds no fallback or retry.
+     *
      * API-map identity: uapi:EA4/get_recommendations#GET (wire name get_recommendations).
      *
      * @return GetRecommendationsResult

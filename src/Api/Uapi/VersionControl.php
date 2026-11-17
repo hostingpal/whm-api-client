@@ -21,12 +21,22 @@ use SensitiveParameter;
  * before every attempt and records the envelope snapshot before API or payload errors.
  *
  * @phpstan-type CreateResult array{
- *     available_branches?: list<string>,
+ *     available_branches?: list<string>|null,
  *     branch?: string|null,
  *     clone_urls?: array{
  *         read_only?: list<string>,
  *         read_write?: list<string>,
  *     },
+ *     deployable?: 0|1,
+ *     last_deployment?: array{
+ *         deployment_date?: int,
+ *         repository_state?: array{
+ *             author?: string,
+ *             date?: int,
+ *             identifier?: string,
+ *             message?: string,
+ *         },
+ *     }|null,
  *     last_update?: mixed,
  *     name?: string,
  *     repository_root?: string,
@@ -40,6 +50,7 @@ use SensitiveParameter;
  *             log_file?: string,
  *             repository_root?: string,
  *         },
+ *         exclusive?: string|int,
  *         id?: string,
  *         sse_url?: string,
  *         subsystem?: string,
@@ -170,6 +181,11 @@ final readonly class VersionControl
      * Documented: source_repository and tasks are returned only for cloning. Task IDs and SSE URLs are returned data,
      * not evidence of completion; this call does not follow SSE URLs or poll tasks. Clone URL lists can be empty
      * without Shell Access and can include a nonstandard SSH port.
+     *
+     * Observed: On cPanel 11.138.0.24 create returns the same repository object as retrieve, including deployable (0/1
+     * flag) and, for a repository without deployments, last_deployment null; a queued clone's task row also carries
+     * exclusive (string|int, as in UserTasks). These fields are now typed instead of dropped. available_branches is
+     * null when the clone source cannot be reached, as retrieve and update already declare.
      *
      * API-map identity: uapi:VersionControl/create#GET (wire name create).
      *

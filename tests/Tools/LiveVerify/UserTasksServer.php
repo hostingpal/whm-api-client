@@ -58,6 +58,9 @@ final class UserTasksServer implements ClientInterface
     /** Whether create responses carry the stored exclusive key in their task rows, as get() returns it. */
     public bool $producerRowsCarryExclusive = true;
 
+    /** @var array<string, mixed> Extra fields added to create-response task rows, e.g. an undeclared key. */
+    public array $producerRowExtraFields = [];
+
     /** @var array<string, mixed> Replacement fields for every queue row as returned. */
     public array $rowFields = [];
 
@@ -268,6 +271,9 @@ final class UserTasksServer implements ClientInterface
             }
             if ($root !== null && !$this->producerRowsCarryExclusive) {
                 unset($row['exclusive']);
+            }
+            if ($root !== null) {
+                $row = [...$row, ...$this->producerRowExtraFields];
             }
             $rows[] = array_replace($row, $root === null ? $this->rowFields : []);
         }

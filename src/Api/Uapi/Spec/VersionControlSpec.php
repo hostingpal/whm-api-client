@@ -27,13 +27,30 @@ final class VersionControlSpec
         'returns' => [
             'type' => 'object',
             'fields' => [
-                'available_branches' => ['type' => 'list', 'items' => ['type' => 'string']],
+                'available_branches' => ['type' => 'list', 'nullable' => true, 'items' => ['type' => 'string']],
                 'branch' => ['type' => 'string', 'nullable' => true],
                 'clone_urls' => [
                     'type' => 'object',
                     'fields' => [
                         'read_only' => ['type' => 'list', 'items' => ['type' => 'string']],
                         'read_write' => ['type' => 'list', 'items' => ['type' => 'string']],
+                    ],
+                ],
+                'deployable' => ['type' => 'flag', 'accept' => ['string-flag']],
+                'last_deployment' => [
+                    'type' => 'object',
+                    'nullable' => true,
+                    'fields' => [
+                        'deployment_date' => ['type' => 'int'],
+                        'repository_state' => [
+                            'type' => 'object',
+                            'fields' => [
+                                'author' => ['type' => 'string'],
+                                'date' => ['type' => 'int'],
+                                'identifier' => ['type' => 'string'],
+                                'message' => ['type' => 'string'],
+                            ],
+                        ],
                     ],
                 ],
                 'last_update' => ['type' => 'mixed', 'nullable' => true],
@@ -57,6 +74,13 @@ final class VersionControlSpec
                                 'fields' => [
                                     'log_file' => ['type' => 'string'],
                                     'repository_root' => ['type' => 'string'],
+                                ],
+                            ],
+                            'exclusive' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'string'],
+                                    ['type' => 'int'],
                                 ],
                             ],
                             'id' => ['type' => 'string'],

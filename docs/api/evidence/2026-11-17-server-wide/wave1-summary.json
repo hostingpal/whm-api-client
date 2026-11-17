@@ -1,0 +1,180 @@
+{
+    "schema": "server-wide-battery-v1",
+    "host": "test.oblak.host",
+    "server_version": "11.138.0.24",
+    "date": "2026-11-17T16:17:14+00:00",
+    "counts": {
+        "passed": 29
+    },
+    "steps": [
+        {
+            "id": "whm1:version",
+            "group": "read-only",
+            "outcome": "passed",
+            "shape": "string"
+        },
+        {
+            "id": "whm1:system_needs_reboot",
+            "group": "read-only",
+            "outcome": "passed",
+            "shape": "array"
+        },
+        {
+            "id": "whm1:360Monitoring/webpros_auth_status",
+            "group": "read-only",
+            "outcome": "passed",
+            "shape": "array"
+        },
+        {
+            "id": "whm1:php_fpm_config_get",
+            "group": "read-only",
+            "outcome": "passed",
+            "shape": "array"
+        },
+        {
+            "id": "whm1:php_fpm_config_get(domain)",
+            "group": "read-only",
+            "outcome": "passed",
+            "shape": "array"
+        },
+        {
+            "id": "whm1:360Monitoring/webpros_auth_clear",
+            "group": "server-wide",
+            "outcome": "passed",
+            "shape": "array"
+        },
+        {
+            "id": "whm1:360Monitoring/set_360_agent_polling",
+            "group": "server-wide",
+            "outcome": "passed",
+            "shape": "array"
+        },
+        {
+            "id": "whm1:save_spamd_config(list)",
+            "group": "server-wide",
+            "outcome": "passed",
+            "shape": "null"
+        },
+        {
+            "id": "whm1:api_token_create(lists)",
+            "group": "server-wide",
+            "outcome": "passed",
+            "shape": "array"
+        },
+        {
+            "id": "whm1:api_token_list(after create)",
+            "group": "read-only",
+            "outcome": "passed",
+            "shape": "array"
+        },
+        {
+            "id": "token created with both ACLs",
+            "group": "expectation",
+            "outcome": "passed"
+        },
+        {
+            "id": "token kept both whitelist addresses",
+            "group": "expectation",
+            "outcome": "passed"
+        },
+        {
+            "id": "whm1:api_token_update(rename only)",
+            "group": "server-wide",
+            "outcome": "passed",
+            "shape": "array"
+        },
+        {
+            "id": "whm1:api_token_list(after rename)",
+            "group": "read-only",
+            "outcome": "passed",
+            "shape": "array"
+        },
+        {
+            "id": "rename preserved ACLs and whitelist",
+            "group": "expectation",
+            "outcome": "passed"
+        },
+        {
+            "id": "whm1:api_token_revoke(list with unknown name)",
+            "group": "server-wide",
+            "outcome": "passed",
+            "shape": "null"
+        },
+        {
+            "id": "whm1:api_token_list(after revoke)",
+            "group": "read-only",
+            "outcome": "passed",
+            "shape": "array"
+        },
+        {
+            "id": "revoked token absent",
+            "group": "expectation",
+            "outcome": "passed"
+        },
+        {
+            "id": "whm1:createacct(reseller fixture)",
+            "group": "account-scoped",
+            "outcome": "passed",
+            "shape": "array"
+        },
+        {
+            "id": "whm1:setupreseller",
+            "group": "server-wide",
+            "outcome": "passed",
+            "shape": "null"
+        },
+        {
+            "id": "whm1:setresellernameservers(list)",
+            "group": "server-wide",
+            "outcome": "passed",
+            "shape": "null"
+        },
+        {
+            "id": "whm1:getresellerips",
+            "group": "read-only",
+            "outcome": "passed",
+            "shape": "array"
+        },
+        {
+            "id": "whm1:unsetupreseller",
+            "group": "server-wide",
+            "outcome": "passed",
+            "shape": "null"
+        },
+        {
+            "id": "whm1:removeacct(reseller fixture)",
+            "group": "account-scoped",
+            "outcome": "passed",
+            "shape": "null"
+        },
+        {
+            "id": "whm1:listaccts(fixture absent)",
+            "group": "read-only",
+            "outcome": "passed",
+            "shape": "array"
+        },
+        {
+            "id": "reseller fixture removed",
+            "group": "expectation",
+            "outcome": "passed"
+        },
+        {
+            "id": "whm1:php_fpm_config_set(validate_only)",
+            "group": "lockout",
+            "outcome": "passed",
+            "shape": "null"
+        },
+        {
+            "id": "whm1:update_sql_config",
+            "group": "lockout",
+            "outcome": "passed",
+            "shape": "null"
+        },
+        {
+            "id": "whm1:version(after lockout group)",
+            "group": "read-only",
+            "outcome": "passed",
+            "shape": "string"
+        }
+    ]
+}

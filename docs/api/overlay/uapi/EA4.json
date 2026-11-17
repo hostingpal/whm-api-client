@@ -46,6 +46,10 @@
         {
           "kind": "observed",
           "text": "Direct UAPI returned boolean and string outer recommendation url values on cPanel 11.138.0.19. Preserve bool|string without inferring a false-only sentinel; option-level URLs remain strings. The failed WHM bridge envelope establishes no successful bridged payload behavior."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.24 (2026-11-17), the WHM bridge returned metadata.result 1 with data.uapi null, so the bridged call raises InvalidResponseException before any payload validation; the same read through direct UAPI succeeded. The 11.138.0.19 capture also recorded a bridge failure. Use direct cPanel credentials for this read; the client adds no fallback or retry."
         }
       ],
       "evidence": [
@@ -61,6 +65,14 @@
           "date": "2026-10-31",
           "note": "EA4/get_recommendations direct-uapi returned bool and string at $.*[].url, the outer recommendation URL. Preserve bool|string at only that leaf; the masked artifact does not establish a false-only sentinel. Option-level $.*[].options[].url remains string. The unknown wildcard field remains unresolved, and the bridged data.uapi:null request failure provides no payload compatibility evidence. Original GET capture at revision e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6; immutable artifact SHA-256 e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd. Structural evidence masks values and unknown key identities.",
           "fingerprint": "docs/api/evidence/2026-10-31-account-environment.json"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.24",
+          "date": "2026-11-17",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1EA4~1get_recommendations/get",
+          "note": "2026-11-17 live battery at 8be370a: docs/api/evidence/2026-11-17-account-environment.json records the bridged probe as request_failure; a raw bridged request returned HTTP 200 with {\"metadata\":{\"result\":1,...},\"data\":{\"uapi\":null}}, while direct UAPI returned status 1."
         }
       ],
       "response": {

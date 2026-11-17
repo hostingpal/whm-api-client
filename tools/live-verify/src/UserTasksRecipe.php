@@ -70,6 +70,9 @@ final readonly class UserTasksRecipe
         return is_string($id) && preg_match(self::TASK_ID, $id) === 1;
     }
 
+    /** Unroutable documentation-range clone source (RFC 5737); see sourceRepositoryJson(). */
+    public const CLONE_SOURCE = 'https://192.0.2.1/whm-api-client-fixture.git';
+
     public function sourceRoot(): string
     {
         return self::HOME . '/' . $this->directory . '/source';
@@ -80,10 +83,16 @@ final readonly class UserTasksRecipe
         return self::HOME . '/' . $this->directory . '/clone';
     }
 
-    /** The clone's source: the local source repository's absolute path, with no scheme, host or credential. */
+    /**
+     * The clone's source: an unroutable RFC 5737 TEST-NET-1 URL with no credential.
+     *
+     * A local-path clone finished before the first queue read in both earlier captures, so no read ever
+     * listed the task. The server validates only the URL's syntax and queues the clone; git then blocks on
+     * a TCP connect that no host answers, keeping the task queued for the reads. No traffic reaches a host.
+     */
     public function sourceRepositoryJson(): string
     {
-        return '{"url":"' . $this->sourceRoot() . '"}';
+        return '{"url":"' . self::CLONE_SOURCE . '"}';
     }
 
     /**
@@ -112,7 +121,7 @@ final readonly class UserTasksRecipe
         return $repository === 'source'
             ? 'repository_root=' . $root . '%2Fsource&name=' . $this->sourceName . '&type=git'
             : 'repository_root=' . $root . '%2Fclone&name=' . $this->cloneName . '&type=git'
-                . '&source_repository=%7B%22url%22%3A%22' . $root . '%2Fsource%22%7D';
+                . '&source_repository=%7B%22url%22%3A%22https%3A%2F%2F192.0.2.1%2Fwhm-api-client-fixture.git%22%7D';
     }
 
     /** The exact form body that deletes one queue element, spelled literally; anything else is refused. */

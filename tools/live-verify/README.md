@@ -431,7 +431,11 @@ A passing assessment with acknowledgments is **not a discrepancy-free run**.
 ### Reviewed structural acknowledgments
 
 `DiscrepancyPolicy` contains only the two reviewed Quota total observations from
-`docs/api/evidence/2026-11-01-read-only-11.138.0.19.json`. It verifies that file's
+`docs/api/evidence/2026-11-17-read-only.json` (cPanel 11.138.0.24). A name inspection on
+that version found exactly the owner-accepted `backup_warning_threshold_pct` and
+`under_backup_threshold` on both routes. The acknowledgments compare `server_version`, so
+the server's automatic cPanel updates make them stale until they are rebound; the
+11.138.0.19 and 11.138.0.15 bindings stay as history. It verifies that file's
 fixed SHA-256 and, also before any network request, refuses every existing file under
 `docs/api/evidence/` (including filesystem aliases) as an output destination, so history
 stays protected after the reference moves. New paths there and files elsewhere stay
@@ -754,7 +758,10 @@ all other upload discrepancies and unsuccessful API/payload checks stop continua
 The one-shot guard checks exact opt-ins, account, credentials, routing, fields,
 headers, form bytes and multipart bytes. No request is retried. Each confirmed owned ID gets
 one cleanup attempt, followed by inventory checks for ID and public-modulus
-absence. Uncertain creations remain unresolved and stop later route lifecycles.
+absence. A failed delete request records `route:cleanup_request_failure`; a delete that
+succeeded but carried a strict discrepancy records `route:cleanup_strict_discrepancy`
+instead, so the strict failure stays visible without reading as a failed cleanup.
+Uncertain creations remain unresolved and stop later route lifecycles.
 Existing unrelated resources are retained. No certificates are installed and no
 TLS service certificates, AutoSSL exclusions, SSL defaults, redirects or mail SNI
 configuration are changed. Successful storage calls do not establish HTTPS or
@@ -2574,14 +2581,18 @@ Exit 0 requires the lifecycle and the strict UserTasks review to pass. The share
 exact account and domain on every request, then the exact method, URI, complete header set and
 body. Each mutation is consumed once, even when refused.
 
-**Producer.** The run queues one clone of a local repository inside the disposable account, and
-cPanel's own queue runner processes it. First a plain `VersionControl/create` makes an empty
-repository there, which queues nothing. Then a second `VersionControl/create` clones it by
-absolute path, with no scheme, host or credential, which queues one `VersionControl`/`create`
-task. The fixture neither starts nor stops that work. The installed source says a local path
-needs no network transport, so the source was chosen for that; network traffic is not
-monitored, and no absence of contact is claimed. Nothing is installed and no server setting
-changes. Both creates go through generic `call()`, because they are fixture steps rather than
+**Producer.** The run queues one clone inside the disposable account, and cPanel's own queue
+runner processes it. First a plain `VersionControl/create` makes an empty repository there,
+which queues nothing. Then a second `VersionControl/create` clones
+`https://192.0.2.1/whm-api-client-fixture.git`, an RFC 5737 TEST-NET-1 address with no
+credential, which queues one `VersionControl`/`create` task. Scenario v3 replaced the v1/v2
+local-path source: in both earlier captures (2026-11-02 on 11.138.0.19, 2026-11-17 on
+11.138.0.24) that clone finished before the first queue read, so no read listed the task and
+the owned delete was never exercised. The installed source validates only the URL's syntax and
+queues the clone; git then blocks on a TCP connect that no internet host answers, keeping the
+task queued for the reads. The create response also runs a `git ls-remote` with a five-second
+read timeout. The fixture neither starts nor stops that work; account removal ends any clone
+still waiting. Nothing is installed and no server setting changes. Both creates go through generic `call()`, because they are fixture steps rather than
 the subject. The producer rests on the installed sources of `11.138.0.19`, inspected read-only
 for this recipe: see the
 [source audit](../../docs/api/source-audit.md#user-task-queue-fixture-2026-11-02).
