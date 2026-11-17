@@ -348,18 +348,20 @@ final class RawJsonCallTest extends TestCase
         foreach ([false, true] as $direct) {
             [$client, $http] = self::client($direct);
             $http->addResponse(new Response($status, ['Location' => 'https://other.example.test'], $response));
+            $caught = null;
             try {
                 self::call($client, $direct, ' {"a":1} ');
-                self::fail('Expected failure.');
-            } catch (Throwable $exception) {
-                self::assertSame($expected, $exception::class);
-                self::assertCount(1, $http->getRequests());
-                self::assertSame(
-                    $direct ? ' {"a":1} ' : ' {"api.version":1,"a":1} ',
-                    (string) self::lastRequest($http)->getBody(),
-                );
-                self::assertSame('application/json', self::lastRequest($http)->getHeaderLine('Content-Type'));
+            } catch (Throwable $error) {
+                $caught = $error;
             }
+            self::assertInstanceOf($expected, $caught, 'Expected failure.');
+            self::assertSame($expected, $caught::class);
+            self::assertCount(1, $http->getRequests());
+            self::assertSame(
+                $direct ? ' {"a":1} ' : ' {"api.version":1,"a":1} ',
+                (string) self::lastRequest($http)->getBody(),
+            );
+            self::assertSame('application/json', self::lastRequest($http)->getHeaderLine('Content-Type'));
         }
     }
 

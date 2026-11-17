@@ -1,0 +1,760 @@
+<?php
+
+declare(strict_types=1);
+
+namespace HostingPal\WhmApiClient\Tests\Tools\LiveVerify;
+
+use HostingPal\WhmApiClient\Tools\LiveVerify\EvidenceRunner;
+use HostingPal\WhmApiClient\Tools\LiveVerify\FilesystemAbsenceProof;
+use HostingPal\WhmApiClient\Tools\LiveVerify\SessionFileCleanup;
+use HostingPal\WhmApiClient\Tools\LiveVerify\SshSessionFileCleanup;
+use HostingPal\WhmApiClient\Tools\LiveVerify\WebmailSessionFixture;
+use HostingPal\WhmApiClient\Tools\LiveVerify\WebmailSessionRecipe;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\TestCase;
+use Psr\Http\Message\RequestInterface;
+
+/**
+ * @phpstan-import-type Scenario from WebmailSessionFixture
+ * @phpstan-import-type Observation from WebmailSessionFixture
+ * @phpstan-import-type Context from EvidenceRunner
+ * @phpstan-import-type Finding from FilesystemAbsenceProof
+ * @phpstan-import-type Observation from SessionFileCleanup as FileObservation
+ * @phpstan-import-type Removal from SessionFileCleanup
+ */
+final class WebmailSessionFixtureTest extends TestCase
+{
+    private const SELF = 'create_webmail_session_for_self';
+
+    private const MAIL_USER = 'create_webmail_session_for_mail_user';
+
+    private const CHECK = 'create_webmail_session_for_mail_user_check_password';
+
+    private const CREATOR_PHASES = ['self_direct', 'mail_user_direct', 'check_password_direct', 'self_bridged',
+        'mail_user_bridged', 'check_password_bridged'];
+
+    /** @var array<string, string|false> */
+    private array $environment = [];
+
+    protected function setUp(): void
+    {
+        foreach (
+            ['WHM_API_LIVE' => '1', 'WHM_API_LIVE_MUTATIONS' => '1', 'WHM_API_LIVE_ACCOUNT' => 'wlsession',
+                'WHM_API_LIVE_DOMAIN' => 'wlsession.example.com', SshSessionFileCleanup::OPT_IN => '1',
+            ] as $key => $value
+        ) {
+            $this->environment[$key] = getenv($key);
+            putenv($key . '=' . $value);
+        }
+    }
+
+    protected function tearDown(): void
+    {
+        foreach ($this->environment as $key => $value) {
+            putenv($value === false ? $key : $key . '=' . $value);
+        }
+    }
+
+    public function testCompleteRunCreatesEverySessionOnBothRoutesAndKeepsOnlyStructure(): void
+    {
+        $http = new WebmailSessionServer();
+        $scenario = self::scenario($http);
+        $fixture = $scenario['fixture'];
+
+        self::assertSame('passed', $fixture['status'], (string) json_encode($fixture['failures']));
+        self::assertSame('webmail-sessions-disposable-v4', $scenario['scenario']);
+        self::assertSame(
+            ['policy' => 'webmail-sessions-no-acknowledgments-v1', 'status' => 'passed', 'findings' => []],
+            $scenario['discrepancy_review'],
+        );
+        self::assertSame([], $fixture['failures']);
+        self::assertSame('passed', $fixture['capture']);
+        self::assertSame('passed', $fixture['expectations']);
+        self::assertNull($fixture['stopped_at']);
+        self::assertSame(WebmailSessionRecipe::PHASES, array_column($scenario['probes'], 'phase'));
+        self::assertSame([
+            'createacct', 'Tokens/create_full_access', 'direct:Email/add_pop',
+            'direct:Session/' . self::SELF, 'direct:Session/' . self::MAIL_USER, 'direct:Session/' . self::CHECK,
+            'Session/' . self::SELF, 'Session/' . self::MAIL_USER, 'Session/' . self::CHECK,
+            'Tokens/revoke', 'removeacct',
+        ], $http->mutations);
+        self::assertCount(6, $http->sessions);
+        foreach (self::CREATOR_PHASES as $phase) {
+            self::assertSame(
+                ['uapi_status' => 1, 'hostname' => 'null', 'session' => 'string', 'token' => 'string'],
+                $scenario['credentials'][$phase],
+                $phase,
+            );
+        }
+        self::assertSame(self::CREATOR_PHASES, array_keys($scenario['credentials']));
+        $empty = ['rows' => 0, 'current_rows' => 0, 'possessed_rows' => 0, 'tfa_verified_rows' => 0,
+            'supplied_address_rows' => 0, 'empty_address_rows' => 0];
+        $populated = ['rows' => 6, 'current_rows' => 0, 'possessed_rows' => 0, 'tfa_verified_rows' => 0,
+            'supplied_address_rows' => 6, 'empty_address_rows' => 0];
+        self::assertSame([
+            'by_phase' => [
+                'sessions_initial_direct' => $empty, 'sessions_initial_bridged' => $empty,
+                'sessions_final_direct' => $populated, 'sessions_final_bridged' => $populated,
+            ],
+            'appeared' => ['direct-uapi' => true, 'bridged-uapi' => true],
+        ], $scenario['active_sessions']);
+        self::assertSame(
+            ['creation' => 'confirmed', 'cleanup' => 'absent_with_account'],
+            $fixture['resources']['mailbox'],
+        );
+        self::assertSame(['created' => 6], $fixture['resources']['sessions']);
+        foreach (['account', 'token'] as $resource) {
+            $outcome = $fixture['resources'][$resource];
+            self::assertSame(['creation' => 'confirmed', 'cleanup' => 'confirmed_absent'], $outcome);
+        }
+        self::assertSame('not_run', $scenario['session_files']['status']);
+        self::assertSame('filesystem_proof_not_enabled', $scenario['session_files']['reason']);
+        self::assertContains('api_absence_only_no_filesystem_or_session_file_claim', $scenario['limitations']);
+        self::assertPrivate($scenario, [self::sentMailbox($http->requests), self::sentPassword($http->requests)]);
+    }
+
+    /** Every field a clean lifecycle reports reaches this report unchanged, so a new one cannot be left out. */
+    public function testReportCarriesEveryLifecycleField(): void
+    {
+        $fixture = self::scenario(new WebmailSessionServer())['fixture'];
+        foreach (CleanLifecycleRun::reportFields() as $field => $value) {
+            if ($field === 'resources') {
+                foreach ($value as $resource => $outcome) {
+                    self::assertSame($outcome, $fixture['resources'][$resource], $resource);
+                }
+                continue;
+            }
+            self::assertSame($value, $fixture[$field], $field);
+        }
+    }
+
+    /** The fixture, its guard, recipe, lifecycle and scenario never keep the marker, the password or a credential. */
+    public function testNoPublicObjectHoldsTheMarkerThePasswordOrAReturnedCredential(): void
+    {
+        $http = new WebmailSessionServer();
+        $fixture = new WebmailSessionFixture($http, 'WHMTOKEN', self::context());
+        $scenario = $fixture->run();
+        $secrets = [self::sentMarker($http->requests), self::sentPassword($http->requests), 'PRIVATEWEBMAILSESSION',
+            '/cpsessPRIVATE'];
+        foreach ($secrets as $secret) {
+            foreach ([$secret, rawurlencode($secret)] as $form) {
+                MarkerExposure::assertNeverExposed($form, $scenario);
+                MarkerExposure::assertNeverExposed($form, $fixture, $http);
+            }
+        }
+        // The account token lives in the guard and clients that use it, but never reaches the report.
+        MarkerExposure::assertNeverExposed(WebmailSessionServer::TOKEN, $scenario);
+    }
+
+    /** Only the two API ports are reached; no request carries a returned session or token anywhere. */
+    public function testReturnedCredentialsAreNeverUsedOrFetched(): void
+    {
+        $http = new WebmailSessionServer();
+        $http->hostname = 'private-webmail.example.net';
+        self::scenario($http);
+        foreach ($http->requests as $request) {
+            $uri = (string) $request->getUri();
+            self::assertMatchesRegularExpression(
+                '#\Ahttps://test\.oblak\.host:(?:2083/execute/|2087/json-api/)#',
+                $uri,
+            );
+            foreach (['PRIVATEWEBMAILSESSION', 'cpsess', 'private-webmail'] as $returned) {
+                self::assertStringNotContainsString($returned, $uri);
+                self::assertStringNotContainsString($returned, (string) $request->getBody());
+                self::assertStringNotContainsString($returned, implode("\n", array_merge(...array_values(
+                    $request->getHeaders(),
+                ))));
+            }
+        }
+    }
+
+    public function testEveryCreatorCarriesTheDocumentationAddressAndTheOwnedMailbox(): void
+    {
+        $http = new WebmailSessionServer();
+        self::scenario($http);
+        $mailbox = array_key_first($http->mailboxes) ?? self::sentMailbox($http->requests);
+        foreach ($http->requests as $request) {
+            if (!str_contains((string) $request->getUri(), 'create_webmail_session_for_')) {
+                continue;
+            }
+            parse_str((string) $request->getBody(), $fields);
+            self::assertSame('192.0.2.10', $fields['remote_address'] ?? null);
+            if (!str_contains((string) $request->getUri(), self::SELF)) {
+                self::assertSame($mailbox, $fields['login'] ?? null);
+                self::assertSame('wlsession.example.com', $fields['domain'] ?? null);
+            }
+        }
+    }
+
+    public function testTheMailboxIsCreatedWithWelcomeMailDisabledAndAFreshName(): void
+    {
+        $http = new WebmailSessionServer();
+        self::scenario($http);
+        $mailbox = self::sentMailbox($http->requests);
+        self::assertMatchesRegularExpression('/\Abox[0-9a-f]{16}\z/', $mailbox);
+        self::assertSame(1, $http->counts['direct:Email/add_pop']);
+    }
+
+    #[DataProvider('hostnames')]
+    public function testHostnameIsRecordedAsAKindNeverAValue(mixed $hostname, string $kind): void
+    {
+        $http = new WebmailSessionServer();
+        $http->hostname = $hostname;
+        $scenario = self::scenario($http);
+        foreach (self::CREATOR_PHASES as $phase) {
+            self::assertSame($kind, $scenario['credentials'][$phase]['hostname']);
+        }
+        self::assertSame('passed', $scenario['fixture']['status']);
+        self::assertStringNotContainsString('private-webmail', (string) json_encode($scenario));
+    }
+
+    /** @return iterable<string, array{mixed, string}> */
+    public static function hostnames(): iterable
+    {
+        yield 'null' => [null, 'null'];
+        yield 'string' => ['private-webmail.example.net', 'string'];
+        yield 'absent' => [WebmailSessionServer::ABSENT, 'absent'];
+    }
+
+    public function testAFailedBridgedCreatorIsRecordedAndTheOthersStillRun(): void
+    {
+        $http = new WebmailSessionServer();
+        $http->failures['Session/' . self::SELF . ':1'] = 'api_before';
+        $scenario = self::scenario($http);
+        $fixture = $scenario['fixture'];
+
+        self::assertSame('failed', $fixture['status']);
+        self::assertSame('failed', $fixture['capture']);
+        self::assertNull($fixture['stopped_at']);
+        self::assertSame(['capture_failure'], $fixture['failures']);
+        self::assertSame(WebmailSessionRecipe::PHASES, array_column($scenario['probes'], 'phase'));
+        self::assertSame(1, $http->counts['Session/' . self::MAIL_USER]);
+        self::assertSame(1, $http->counts['Session/' . self::CHECK]);
+        self::assertSame(1, $http->counts['Session/' . self::SELF]);
+        self::assertSame(
+            ['uapi_status' => 0, 'hostname' => 'absent', 'session' => 'absent', 'token' => 'absent'],
+            $scenario['credentials']['self_bridged'],
+        );
+        self::assertSame(['created' => 5], $fixture['resources']['sessions']);
+        $record = self::observation($scenario, 'self_bridged');
+        self::assertSame('api_failure', $record['failure_kind']);
+        self::assertSame(
+            ['unsuccessful_phase:self_bridged', 'unexpected_uapi_status:self_bridged'],
+            $scenario['discrepancy_review']['findings'],
+        );
+        self::assertFalse($http->account);
+        self::assertSame([], $http->tokens);
+    }
+
+    public function testALostCreatorResponseIsNeverRetried(): void
+    {
+        $http = new WebmailSessionServer();
+        $http->failures['direct:Session/' . self::CHECK . ':1'] = 'throw_after';
+        $scenario = self::scenario($http);
+        self::assertSame(1, $http->counts['direct:Session/' . self::CHECK]);
+        self::assertSame('request_failure', self::observation($scenario, 'check_password_direct')['failure_kind']);
+        self::assertSame(['created' => 5], $scenario['fixture']['resources']['sessions']);
+        self::assertSame('failed', $scenario['fixture']['status']);
+    }
+
+    #[DataProvider('mailboxFailures')]
+    public function testAFailedMailboxCreationStopsBeforeAnyCreator(string $mode): void
+    {
+        $http = new WebmailSessionServer();
+        $http->failures['direct:Email/add_pop:1'] = $mode;
+        $scenario = self::scenario($http);
+        $fixture = $scenario['fixture'];
+
+        self::assertSame('create_mailbox', $fixture['stopped_at']);
+        self::assertSame('failed', $fixture['capture']);
+        self::assertContains('capture_failure', $fixture['failures']);
+        self::assertSame([], $http->sessions);
+        foreach (array_keys($http->counts) as $function) {
+            self::assertStringNotContainsString('Session/create', $function);
+        }
+        // Only the initial inventories ran; nothing follows a mailbox whose state is not the expected one.
+        self::assertSame(1, $http->counts['direct:ActiveSessions/list_active_sessions']);
+        self::assertSame(1, $http->counts['ActiveSessions/list_active_sessions']);
+        self::assertSame(
+            ['creation' => 'unconfirmed', 'cleanup' => 'absent_with_account'],
+            $fixture['resources']['mailbox'],
+        );
+        self::assertSame(1, $http->counts['direct:Email/add_pop']);
+        self::assertSame(['created' => 0], $fixture['resources']['sessions']);
+        self::assertFalse($http->account);
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function mailboxFailures(): iterable
+    {
+        yield 'explicit refusal' => ['api_before'];
+        yield 'lost response' => ['throw_after'];
+        yield 'gateway error' => ['http_after'];
+    }
+
+    public function testAnUnexpectedMailboxResultStopsCaptureAsAFailedExpectation(): void
+    {
+        $http = new WebmailSessionServer();
+        $http->overrides['direct:Email/add_pop:1'] = '"private+other.example.com"';
+        $scenario = self::scenario($http);
+        $fixture = $scenario['fixture'];
+
+        self::assertSame('create_mailbox', $fixture['stopped_at']);
+        self::assertSame('failed', $fixture['expectations']);
+        self::assertSame(['capture_failure', 'expectation_failure'], $fixture['failures']);
+        self::assertSame('failed', self::observation($scenario, 'create_mailbox')['expectation']);
+        self::assertSame(
+            ['creation' => 'confirmed', 'cleanup' => 'absent_with_account'],
+            $fixture['resources']['mailbox'],
+        );
+        self::assertSame([], $http->sessions);
+    }
+
+    public function testAnEmptyReturnedCredentialFailsItsExpectationWhileCaptureContinues(): void
+    {
+        $http = new WebmailSessionServer();
+        $http->overrides['direct:Session/' . self::MAIL_USER . ':1'] = '{"hostname":null,"session":"","token":"x"}';
+        $scenario = self::scenario($http);
+        $fixture = $scenario['fixture'];
+
+        self::assertSame('passed', $fixture['capture']);
+        self::assertSame('failed', $fixture['expectations']);
+        self::assertSame(['expectation_failure'], $fixture['failures']);
+        self::assertSame('empty_string', $scenario['credentials']['mail_user_direct']['session']);
+        self::assertSame('failed', self::observation($scenario, 'mail_user_direct')['expectation']);
+        self::assertSame(6, count($http->sessions));
+        self::assertContains('unsuccessful_phase:mail_user_direct', $scenario['discrepancy_review']['findings']);
+    }
+
+    /** An inventory that stays empty after creation is recorded as such, never as a failure or as no sessions. */
+    public function testAnInventoryThatShowsNoNewSessionIsRecordedNotFailed(): void
+    {
+        $http = new WebmailSessionServer();
+        $http->listSessions = false;
+        $scenario = self::scenario($http);
+
+        self::assertSame('passed', $scenario['fixture']['status']);
+        self::assertSame(['direct-uapi' => false, 'bridged-uapi' => false], $scenario['active_sessions']['appeared']);
+        $final = $scenario['active_sessions']['by_phase']['sessions_final_direct'];
+        self::assertNotNull($final);
+        self::assertSame(0, $final['rows']);
+        self::assertContains(
+            'empty_session_inventory_cannot_separate_no_sessions_from_unreadable_store',
+            $scenario['limitations'],
+        );
+    }
+
+    public function testAnUnknownSessionRowFieldReachesTheStrictReview(): void
+    {
+        $http = new WebmailSessionServer();
+        $http->overrides['ActiveSessions/list_active_sessions:2'] = '[{"ip_address":"192.0.2.10","is_current":0,'
+            . '"private_extra":1}]';
+        $scenario = self::scenario($http);
+
+        self::assertContains(
+            'unacknowledged_discrepancy:sessions_final_bridged',
+            $scenario['discrepancy_review']['findings'],
+        );
+        $final = $scenario['active_sessions']['by_phase']['sessions_final_bridged'];
+        self::assertNotNull($final);
+        self::assertSame(1, $final['rows']);
+        self::assertStringNotContainsString('private_extra', (string) json_encode($scenario));
+    }
+
+    public function testMissingOptInFailsBeforeAnyRequest(): void
+    {
+        putenv('WHM_API_LIVE_MUTATIONS=0');
+        $http = new WebmailSessionServer();
+        $scenario = self::scenario($http);
+
+        self::assertSame([], $http->requests);
+        self::assertSame(['configuration_failure'], $scenario['fixture']['failures']);
+        self::assertSame('not_run', $scenario['session_files']['status']);
+    }
+
+    /**
+     * The lifecycle calls the cleanup after account removal and before its own final proof. Opted in, it sends the one
+     * removal script, which counts before it deletes; a run that removes every file its creators left passes.
+     */
+    public function testACleanRunThatRemovesItsSessionFilesPasses(): void
+    {
+        $http = new WebmailSessionServer();
+        $order = [];
+        $cleanup = new RecordingSessionFileCleanup(observe: static function (string $step) use ($http, &$order): void {
+            $order[] = $step . ($http->account ? ':account_present' : ':account_absent');
+        });
+        $proof = new RecordingFilesystemProof(
+            [RecordingFilesystemProof::PRESENT, ['outcome' => 'confirmed_absent', 'residue' => []]],
+            static function () use (&$order): void {
+                $order[] = 'proof';
+            },
+        );
+        $scenario = self::scenario($http, $proof, $cleanup);
+        $fixture = $scenario['fixture'];
+
+        self::assertSame(['proof', 'remove:account_absent', 'proof'], $order);
+        $mailbox = self::sentMailbox($http->requests);
+        self::assertSame([['remove', 'wlsession', 'wlsession.example.com', $mailbox]], $cleanup->calls);
+        self::assertSame('passed', $fixture['status'], (string) json_encode($fixture['failures']));
+        self::assertSame('passed', $fixture['cleanup']);
+        self::assertSame([], $fixture['failures']);
+        self::assertSame('confirmed_absent', $fixture['filesystem_cleanup']);
+        self::assertSame([
+            'status' => 'removed', 'reason' => null, 'observed' => RecordingSessionFileCleanup::OBSERVED,
+            'removal' => RecordingSessionFileCleanup::REMOVED,
+        ], $scenario['session_files']);
+        self::assertContains('filesystem_proof_covers_fixed_locations_at_one_moment', $scenario['limitations']);
+        self::assertContains(
+            'session_file_removal_is_a_bounded_root_filesystem_write_before_the_final_proof',
+            $scenario['limitations'],
+        );
+        self::assertSame('passed', $scenario['discrepancy_review']['status']);
+    }
+
+    /** A removal that cannot be read fails `cleanup` through the lifecycle, and the final proof shows what remains. */
+    public function testAnUnreadableRemovalFailsCleanup(): void
+    {
+        $cleanup = new RecordingSessionFileCleanup(removal: null);
+        $proof = RecordingFilesystemProof::after(['outcome' => 'present', 'residue' => ['sessions' => 4]]);
+        $scenario = self::scenario(new WebmailSessionServer(), $proof, $cleanup);
+        $fixture = $scenario['fixture'];
+
+        self::assertSame(['remove'], array_column($cleanup->calls, 0));
+        self::assertSame('failed', $fixture['status']);
+        self::assertSame('failed', $fixture['cleanup']);
+        self::assertSame(['session_files_unconfirmed', 'filesystem_residue_present'], $fixture['failures']);
+        self::assertSame(
+            ['status' => 'unconfirmed', 'reason' => 'removal_unreadable', 'observed' => null, 'removal' => null],
+            $scenario['session_files'],
+        );
+    }
+
+    /** A deletion the server refused partway is reported as failed, with the counts before and after kept. */
+    public function testAFailedDeletionFailsCleanupAndKeepsItsCounts(): void
+    {
+        $removal = [...RecordingSessionFileCleanup::REMOVED, 'attempted' => 4, 'deletion_failed' => true,
+            'after' => [...RecordingSessionFileCleanup::OBSERVED, 'inventory' => 38, 'wide' => 2, 'own' => 0,
+                'token_suffix' => 2, 'in_subfolders' => 2]];
+        $cleanup = new RecordingSessionFileCleanup(removal: $removal);
+        $proof = RecordingFilesystemProof::after(['outcome' => 'present', 'residue' => ['sessions' => 2]]);
+        $scenario = self::scenario(new WebmailSessionServer(), $proof, $cleanup);
+
+        self::assertSame('failed', $scenario['fixture']['cleanup']);
+        self::assertSame(
+            ['session_file_deletion_failed', 'filesystem_residue_present'],
+            $scenario['fixture']['failures'],
+        );
+        self::assertSame([
+            'status' => 'unconfirmed', 'reason' => 'deletion_failed', 'observed' => $removal['before'],
+            'removal' => $removal,
+        ], $scenario['session_files']);
+    }
+
+    /**
+     * Without its own opt-in the cleanup deletes nothing: it reads the residue once, leaves it for the owner with its
+     * own label, and the run fails as before.
+     */
+    public function testWithoutItsOwnOptInTheCleanupOnlyRecordsTheResidueForTheOwner(): void
+    {
+        putenv(SshSessionFileCleanup::OPT_IN);
+        $cleanup = new RecordingSessionFileCleanup();
+        $proof = RecordingFilesystemProof::after(['outcome' => 'present', 'residue' => ['sessions' => 4]]);
+        $scenario = self::scenario(new WebmailSessionServer(), $proof, $cleanup);
+
+        self::assertSame(['observe'], array_column($cleanup->calls, 0));
+        self::assertSame([
+            'status' => 'residue_left', 'reason' => 'removal_not_opted_in',
+            'observed' => RecordingSessionFileCleanup::OBSERVED, 'removal' => null,
+        ], $scenario['session_files']);
+        self::assertSame('failed', $scenario['fixture']['status']);
+        self::assertSame(
+            ['session_files_left_for_owner', 'filesystem_residue_present'],
+            $scenario['fixture']['failures'],
+        );
+        self::assertNotContains(
+            'session_file_removal_is_a_bounded_root_filesystem_write_before_the_final_proof',
+            $scenario['limitations'],
+        );
+    }
+
+    /**
+     * @param FileObservation|null $observed
+     * @param list<string> $labels
+     */
+    #[DataProvider('observationsWithoutOptIn')]
+    public function testWithoutItsOwnOptInEveryObservationOutcomeIsReported(
+        ?array $observed,
+        string $status,
+        ?string $reason,
+        array $labels,
+    ): void {
+        putenv(SshSessionFileCleanup::OPT_IN . '=0');
+        $cleanup = new RecordingSessionFileCleanup($observed);
+        $proof = RecordingFilesystemProof::after(['outcome' => 'confirmed_absent', 'residue' => []]);
+        $scenario = self::scenario(new WebmailSessionServer(), $proof, $cleanup);
+
+        self::assertSame(['observe'], array_column($cleanup->calls, 0));
+        self::assertSame(
+            ['status' => $status, 'reason' => $reason, 'observed' => $observed, 'removal' => null],
+            $scenario['session_files'],
+        );
+        self::assertSame($labels, $scenario['fixture']['failures']);
+    }
+
+    /** @return iterable<string, array{FileObservation|null, string, string|null, list<string>}> */
+    public static function observationsWithoutOptIn(): iterable
+    {
+        yield 'nothing named for the account' => [RecordingSessionFileCleanup::NONE, 'not_required', null, []];
+        yield 'files left' => [RecordingSessionFileCleanup::OBSERVED, 'residue_left', 'removal_not_opted_in',
+            ['session_files_left_for_owner']];
+        yield 'only an unexplained name' => [
+        [...RecordingSessionFileCleanup::NONE, 'wide' => 1, 'unexplained' => 1],
+            'residue_left', 'removal_not_opted_in', ['session_files_left_for_owner']];
+        yield 'unreadable observation' => [null, 'unconfirmed', 'observation_unreadable',
+            ['session_files_unconfirmed']];
+    }
+
+    /**
+     * The cleanup runs only when the lifecycle calls it: never for an account not proven created and then removed.
+     *
+     * @param array<string, string> $failures
+     */
+    #[DataProvider('accountsNeverProvenRemoved')]
+    public function testACleanupTheLifecycleNeverCallsDeletesNothing(array $failures): void
+    {
+        $http = new WebmailSessionServer();
+        $http->failures = $failures;
+        $cleanup = new RecordingSessionFileCleanup();
+        $proof = RecordingFilesystemProof::after(['outcome' => 'present', 'residue' => ['sessions' => 4]]);
+        $scenario = self::scenario($http, $proof, $cleanup);
+
+        self::assertSame([], $cleanup->calls);
+        self::assertSame(
+            ['status' => 'not_run', 'reason' => 'not_called', 'observed' => null, 'removal' => null],
+            $scenario['session_files'],
+        );
+        self::assertSame('failed', $scenario['fixture']['status']);
+    }
+
+    /** @return iterable<string, array{array<string, string>}> */
+    public static function accountsNeverProvenRemoved(): iterable
+    {
+        yield 'account removal refused' => [['removeacct:1' => 'api_before']];
+        yield 'account removal outcome lost' => [['removeacct:1' => 'throw_before']];
+        yield 'account never created' => [['createacct:1' => 'api_before']];
+    }
+
+    /**
+     * Called by the lifecycle, the cleanup still refuses unless the lifecycle's own recorded control passed and saw
+     * no session name before the exercise; the refusal fails `cleanup` and nothing is read or touched.
+     *
+     * @param list<Finding> $findings
+     */
+    #[DataProvider('refusedSessionCleanups')]
+    public function testTheCleanupRefusesWithoutAUsableControl(array $findings, string $reason): void
+    {
+        $cleanup = new RecordingSessionFileCleanup();
+        $scenario = self::scenario(new WebmailSessionServer(), new RecordingFilesystemProof($findings), $cleanup);
+
+        self::assertSame([], $cleanup->calls);
+        self::assertSame(
+            ['status' => 'not_run', 'reason' => $reason, 'observed' => null, 'removal' => null],
+            $scenario['session_files'],
+        );
+        self::assertContains('session_file_removal_refused', $scenario['fixture']['failures']);
+        self::assertSame('failed', $scenario['fixture']['cleanup']);
+    }
+
+    /** @return iterable<string, array{list<Finding>, string}> */
+    public static function refusedSessionCleanups(): iterable
+    {
+        $residue = ['outcome' => 'present', 'residue' => ['sessions' => 4]];
+        yield 'session names before the exercise' => [[['outcome' => 'present', 'residue' => [
+            ...RecordingFilesystemProof::PRESENT['residue'], 'sessions' => 1,
+        ]], $residue], 'session_names_before_exercise'];
+        yield 'failed control' => [
+        [['outcome' => 'unconfirmed', 'residue' => []], $residue],
+            'filesystem_control_not_passed'];
+        yield 'control missing a location' => [
+        [['outcome' => 'present', 'residue' => ['home' => 1]], $residue],
+            'filesystem_control_not_passed'];
+    }
+
+    public function testNoCleanupIsOfferedWithoutTheFilesystemProof(): void
+    {
+        $cleanup = new RecordingSessionFileCleanup();
+        $scenario = self::scenario(new WebmailSessionServer(), null, $cleanup);
+
+        self::assertSame([], $cleanup->calls);
+        self::assertSame('filesystem_proof_not_enabled', $scenario['session_files']['reason']);
+        self::assertSame('passed', $scenario['fixture']['status']);
+    }
+
+    /**
+     * Every removal outcome uses the same classification and reaches the lifecycle as failure labels: regular anchored
+     * files are removed, and every other anchored entry or unexplained name is reported as remaining, never lost.
+     *
+     * @param Removal|null $removal
+     * @param list<string> $labels
+     */
+    #[DataProvider('sessionCleanupOutcomes')]
+    public function testSessionCleanupOutcomesReachTheLifecycle(
+        ?array $removal,
+        string $status,
+        ?string $reason,
+        array $labels,
+    ): void {
+        $cleanup = new RecordingSessionFileCleanup(removal: $removal);
+        // The final proof reads absent, so the failures are the cleanup's own labels alone.
+        $proof = RecordingFilesystemProof::after(['outcome' => 'confirmed_absent', 'residue' => []]);
+        $scenario = self::scenario(new WebmailSessionServer(), $proof, $cleanup);
+
+        self::assertSame(['remove'], array_column($cleanup->calls, 0));
+        self::assertSame([
+            'status' => $status, 'reason' => $reason, 'observed' => $removal === null ? null : $removal['before'],
+            'removal' => $removal,
+        ], $scenario['session_files']);
+        self::assertSame($labels, $scenario['fixture']['failures']);
+        self::assertSame($labels === [] ? 'passed' : 'failed', $scenario['fixture']['cleanup']);
+    }
+
+    /** @return iterable<string, array{Removal|null, string, string|null, list<string>}> */
+    public static function sessionCleanupOutcomes(): iterable
+    {
+        $removed = RecordingSessionFileCleanup::REMOVED;
+        $observed = RecordingSessionFileCleanup::OBSERVED;
+        $after = $removed['after'];
+        $none = RecordingSessionFileCleanup::NONE;
+        $nothing = ['before' => $none, 'attempted' => 0, 'deletion_failed' => false, 'after' => $none];
+        $remain = ['session_files_remain'];
+        yield 'removed' => [$removed, 'removed', null, []];
+        yield 'nothing to remove' => [$nothing, 'not_required', null, []];
+        $unexplained = [...$none, 'wide' => 2, 'unexplained' => 2];
+        yield 'only unexplained names' => [['before' => $unexplained, 'attempted' => 0, 'deletion_failed' => false,
+            'after' => $unexplained], 'residue_left', 'no_anchored_regular_files', $remain];
+        $link = [...$none, 'wide' => 1, 'anchored_other' => 1];
+        yield 'only an anchored link' => [['before' => $link, 'attempted' => 0, 'deletion_failed' => false,
+            'after' => $link], 'residue_left', 'no_anchored_regular_files', $remain];
+        yield 'unreadable removal' => [null, 'unconfirmed', 'removal_unreadable', ['session_files_unconfirmed']];
+        yield 'deletion failed' => [[...$removed, 'deletion_failed' => true, 'after' => [...$after, 'wide' => 1,
+            'own' => 1]], 'unconfirmed', 'deletion_failed', ['session_file_deletion_failed']];
+        yield 'an anchored file remains' => [
+        [...$removed, 'after' => [...$after, 'wide' => 1, 'own' => 1]],
+            'residue_left', 'anchored_files_remain', $remain];
+        yield 'fewer attempted than counted before' => [
+        [...$removed, 'attempted' => 3], 'residue_left',
+            'anchored_files_remain', $remain];
+        yield 'an unexplained name remains' => [
+        ['before' => [...$observed, 'wide' => 5, 'unexplained' => 1],
+            'attempted' => 4, 'deletion_failed' => false, 'after' => [...$after, 'wide' => 1, 'unexplained' => 1]],
+            'residue_left', 'other_names_remain', $remain];
+        yield 'an anchored link remains' => [
+        ['before' => [...$observed, 'wide' => 5, 'anchored_other' => 1],
+            'attempted' => 4, 'deletion_failed' => false, 'after' => [...$after, 'wide' => 1, 'anchored_other' => 1]],
+            'residue_left', 'other_names_remain', $remain];
+    }
+
+    public function testACleanupThatThrowsIsUnreadableNeverAbsent(): void
+    {
+        $cleanup = new RecordingSessionFileCleanup(throw: true);
+        $proof = RecordingFilesystemProof::after(['outcome' => 'present', 'residue' => ['sessions' => 4]]);
+        $scenario = self::scenario(new WebmailSessionServer(), $proof, $cleanup);
+
+        self::assertSame('unconfirmed', $scenario['session_files']['status']);
+        self::assertSame('removal_unreadable', $scenario['session_files']['reason']);
+        self::assertSame(['remove'], array_column($cleanup->calls, 0));
+        self::assertSame(['session_files_unconfirmed', 'filesystem_residue_present'], $scenario['fixture']['failures']);
+    }
+
+    /**
+     * @param Scenario $scenario
+     * @return Observation
+     */
+    private static function observation(array $scenario, string $phase): array
+    {
+        foreach ($scenario['probes'] as $record) {
+            if ($record['phase'] === $phase) {
+                return $record;
+            }
+        }
+        self::fail('Missing observation.');
+    }
+
+    /** @param list<RequestInterface> $requests */
+    private static function sentMarker(array $requests): string
+    {
+        foreach ($requests as $request) {
+            if (str_contains((string) $request->getUri(), '/createacct?')) {
+                parse_str((string) $request->getBody(), $fields);
+                $marker = $fields['contactemail'] ?? null;
+                self::assertIsString($marker);
+
+                return $marker;
+            }
+        }
+        self::fail('The fixture sent no createacct request.');
+    }
+
+    /** @param list<RequestInterface> $requests */
+    private static function sentPassword(array $requests): string
+    {
+        return self::addPopField($requests, 'password');
+    }
+
+    /** @param list<RequestInterface> $requests */
+    private static function sentMailbox(array $requests): string
+    {
+        return self::addPopField($requests, 'email');
+    }
+
+    /** @param list<RequestInterface> $requests */
+    private static function addPopField(array $requests, string $field): string
+    {
+        foreach ($requests as $request) {
+            if (str_ends_with((string) $request->getUri(), '/execute/Email/add_pop')) {
+                parse_str((string) $request->getBody(), $fields);
+                $value = $fields[$field] ?? null;
+                self::assertIsString($value);
+
+                return $value;
+            }
+        }
+        self::fail('The fixture sent no add_pop request.');
+    }
+
+    /** @return Scenario */
+    private static function scenario(
+        WebmailSessionServer $http,
+        ?FilesystemAbsenceProof $filesystem = null,
+        ?SessionFileCleanup $sessionFiles = null,
+    ): array {
+        return (new WebmailSessionFixture($http, 'WHMTOKEN', self::context(), $filesystem, $sessionFiles))->run();
+    }
+
+    /** @return Context */
+    public static function context(): array
+    {
+        return [
+            'revision' => str_repeat('a', 40),
+            'source_hashes' => ['whm1' => str_repeat('b', 64), 'uapi' => str_repeat('c', 64)],
+            'map_sha256' => str_repeat('d', 64),
+            'generator_tree' => str_repeat('e', 40),
+            'overlay_sha256' => str_repeat('f', 64),
+        ];
+    }
+
+    /**
+     * @param array<mixed> $scenario
+     * @param list<string> $secrets
+     */
+    private static function assertPrivate(array $scenario, array $secrets): void
+    {
+        $json = json_encode($scenario, JSON_THROW_ON_ERROR);
+        foreach (
+            ['private', 'PRIVATE', 'WHMTOKEN', 'wlsession', 'example.com', '/home', 'Ws!9', 'cpsess', '192.0.2',
+                '1790000000', ...$secrets] as $value
+        ) {
+            self::assertStringNotContainsString($value, $json, $value);
+        }
+    }
+}

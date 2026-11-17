@@ -10,7 +10,7 @@ use SensitiveParameter;
 /**
  * A checked request schema, separate from response normalization rules.
  *
- * Descriptors use "type" (string, int, number, bool, flag, null, object, list or
+ * Descriptors use "type" (string, int, number, bool, flag, null, json, object, list or
  * union) and optional boolean "nullable". Objects require "fields" (string names
  * to descriptors), optionally "required" (a unique list of declared names) and
  * "values" (the descriptor for additional members). Lists require "items" and
@@ -20,6 +20,8 @@ use SensitiveParameter;
  * Unions require at least two scalar "anyOf" branches with disjoint PHP input
  * types. A flag accepts native bool only, emitting integer 0/1. Numbers accept
  * int or finite float; no response-side accepted variants apply to requests.
+ * The json node intrinsically permits null, strict scalars and explicit JsonObject/
+ * JsonList containers, with runtime depth checks; it cannot join scalar unions.
  *
  * Unknown descriptor keys, opaque/mixed nodes, container alternatives and
  * overlapping scalar alternatives are rejected, including omitted branches.
@@ -64,7 +66,7 @@ final readonly class StructuredJsonSchema
     /** Whether this root accepts explicit JSON null, including a scalar alternative. */
     public function acceptsNull(): bool
     {
-        if ($this->nullable || $this->type === 'null') {
+        if ($this->nullable || in_array($this->type, ['null', 'json'], true)) {
             return true;
         }
         foreach ($this->alternatives as $branch) {
@@ -83,7 +85,9 @@ final readonly class StructuredJsonSchema
         $type = $schema['type'] ?? null;
         $nullable = $schema['nullable'] ?? false;
         if (
-            !in_array($type, ['string', 'int', 'number', 'bool', 'flag', 'null', 'object', 'list', 'union'], true)
+            !in_array($type, [
+                'string', 'int', 'number', 'bool', 'flag', 'null', 'json', 'object', 'list', 'union',
+            ], true)
             || !is_bool($nullable) || (array_key_exists('nullable', $schema) && $schema['nullable'] === null)
         ) {
             throw new LogicException('Invalid structured JSON schema.');

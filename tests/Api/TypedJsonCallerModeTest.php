@@ -8,6 +8,8 @@ use Closure;
 use HostingPal\WhmApiClient\Api\Uapi\CallerJson;
 use HostingPal\WhmApiClient\Client;
 use HostingPal\WhmApiClient\Http\HttpTransport;
+use HostingPal\WhmApiClient\JsonList;
+use HostingPal\WhmApiClient\JsonObject;
 use HostingPal\WhmApiClient\Tests\Fixtures\StrictJsonCaller;
 use HostingPal\WhmApiClient\Tests\Fixtures\WeakJsonCaller;
 use HostingPal\WhmApiClient\UapiClient;
@@ -101,6 +103,103 @@ final class TypedJsonCallerModeTest extends TestCase
         } catch (InvalidArgumentException) {
             self::assertCount(1, $http->getRequests());
             self::assertNull($handle->responseMeta());
+        }
+    }
+
+
+    public function testExplicitOpenGeneratedBodyAndFieldPreserveKindsInBothCallerModes(): void
+    {
+        foreach ([StrictJsonCaller::class, WeakJsonCaller::class] as $caller) {
+            [$handle, $http, $group] = self::fixture();
+            foreach (['sendOpen', 'sendField'] as $method) {
+                $http->addResponse(self::success());
+                $input = JsonObject::fromEntries([
+                    ['name' => 'known', 'value' => 7],
+                    ['name' => '0', 'value' => JsonList::fromArray([
+                        JsonObject::fromArray([]), null, false, 1.0,
+                    ])],
+                ]);
+                self::assertSame(7, $caller::call($group, $method, $input));
+                $request = $http->getRequests()[count($http->getRequests()) - 1];
+                $expected = '{"known":7,"0":[{},null,false,1.0]}';
+                self::assertSame($method === 'sendOpen' ? $expected
+                    : 'configuration=' . rawurlencode($expected), (string) $request->getBody());
+                self::assertSame(
+                    $method === 'sendOpen' ? 'application/json' : 'application/x-www-form-urlencoded',
+                    $request->getHeaderLine('Content-Type'),
+                );
+                self::assertNotNull($handle->responseMeta());
+                foreach (
+                    [JsonObject::fromArray([]),
+                    JsonObject::fromArray(['known' => '7']),
+                    JsonObject::fromArray(['known' => 7, 'private-name' => []]),
+                    JsonObject::fromEntries([
+                    ['name' => 'known', 'value' => 7],
+                        ['name' => 'private-name', 'value' => 1], ['name' => 'private-name', 'value' => 2]]),
+                    JsonList::fromArray([])] as $bad
+                ) {
+                    $before = count($http->getRequests());
+                    try {
+                        $caller::call($group, $method, $bad);
+                        self::fail('Invalid explicit JSON accepted.');
+                    } catch (TypeError) {
+                        self::assertInstanceOf(JsonList::class, $bad);
+                    } catch (InvalidArgumentException $error) {
+                        self::assertNull($handle->responseMeta());
+                        self::assertStringNotContainsString('private-', $error->getMessage());
+                    }
+                    self::assertCount($before, $http->getRequests());
+                }
+            }
+        }
+    }
+
+
+    public function testOpenNativeUnionsAndFactoriesCannotCoerceOrInvokeStringableInEitherMode(): void
+    {
+        foreach ([StrictJsonCaller::class, WeakJsonCaller::class] as $caller) {
+            [$handle, $http, $group] = self::fixture();
+            $http->addResponse(self::success());
+            $caller::call($group, 'sendOpen', ['known' => 7]);
+            $before = $handle->responseMeta();
+            self::assertNotNull($before);
+            $stringable = new class implements Stringable {
+                public int $calls = 0;
+
+                public function __toString(): string
+                {
+                    $this->calls++;
+                    return 'private-value';
+                }
+            };
+            foreach (['sendOpen', 'sendField'] as $method) {
+                foreach ([null, '{}', 7, false, $stringable, JsonList::fromArray([])] as $bad) {
+                    $caught = null;
+                    try {
+                        $caller::call($group, $method, $bad);
+                    } catch (TypeError $error) {
+                        $caught = $error;
+                    }
+                    self::assertNotNull($caught);
+                    self::assertSame($before, $handle->responseMeta());
+                    self::assertCount(1, $http->getRequests());
+                }
+            }
+            foreach (
+                [
+                [JsonObject::class, 'fromArray'], [JsonObject::class, 'fromEntries'],
+                [JsonList::class, 'fromArray']] as [$class, $method]
+            ) {
+                $caught = null;
+                try {
+                    $caller::factory($class, $method, $stringable);
+                } catch (TypeError $error) {
+                    $caught = $error;
+                }
+                self::assertNotNull($caught);
+                self::assertSame($before, $handle->responseMeta());
+            }
+            self::assertSame(0, $stringable->calls);
         }
     }
 

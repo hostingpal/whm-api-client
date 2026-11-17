@@ -213,14 +213,16 @@ final class RepositoryContextTest extends TestCase
     public function testShellMetacharactersInRootAreLiteralAndErrorsHidePaths(): void
     {
         $injectedRoot = $this->root . '/missing; touch PWNED';
+        $caught = null;
         try {
             RepositoryContext::load($injectedRoot);
-            self::fail('A missing repository must be rejected.');
         } catch (RuntimeException $error) {
-            self::assertStringNotContainsString($this->root, $error->getMessage());
-            self::assertStringNotContainsString('PWNED', $error->getMessage());
-            self::assertNull($error->getPrevious());
+            $caught = $error;
         }
+        self::assertInstanceOf(RuntimeException::class, $caught, 'A missing repository must be rejected.');
+        self::assertStringNotContainsString($this->root, $caught->getMessage());
+        self::assertStringNotContainsString('PWNED', $caught->getMessage());
+        self::assertNull($caught->getPrevious());
 
         self::assertFileDoesNotExist($this->root . '/PWNED');
     }

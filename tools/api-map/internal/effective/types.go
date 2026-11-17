@@ -39,10 +39,11 @@ type Note struct {
 
 // RecordSpec is an ordered set of source-bound fields sharing one row index.
 type RecordSpec struct {
-	Alias     string
-	Start     int
-	Separator string
-	Fields    []RecordField
+	FirstUnsuffixed bool `json:",omitempty"`
+	Alias           string
+	Start           int
+	Separator       string
+	Fields          []RecordField
 }
 
 // RecordField preserves source scalar type, requiredness and complete prose under its reviewed prefix.
