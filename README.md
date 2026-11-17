@@ -5732,7 +5732,9 @@ Three generated methods send one JSON POST through the configured WHM route:
 whole-body array has `SensitiveParameter`, no default and no nullable alternative.
 The input aliases are `PhpFpmConfigGetInput`, `PhpFpmConfigSetInput` and
 `UpdateSqlConfigInput`. Selectors are lazy and cached. The request has exactly
-`Content-Type: application/json` and controlled query `api.version=1`; body fields
+`Content-Type: application/json`, no query string and a library-owned root
+`"api.version":1` member inserted first (WHM reads JSON arguments only from the
+body, so a query version gets HTTP 400 per review 5726712933); body fields
 never become query/form fields. All `api.` root controls remain reserved.
 
 PHP-FPM methods require cPanel 78 and the Web Server role. The get method remains
