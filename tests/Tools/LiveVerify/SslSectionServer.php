@@ -174,6 +174,10 @@ final class SslSectionServer implements ClientInterface
                     }
                 }
                 $data = [];
+                if ($function === 'delete_key' && $this->failure === 'delete_unknown') {
+                    // Live delete_key rows carry an undeclared field; the deletion itself succeeded.
+                    $data = [['id' => $id, 'undeclared' => 'masked']];
+                }
                 break;
             default:
                 throw new RuntimeException('Unreviewed fixture operation.');
