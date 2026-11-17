@@ -39,9 +39,33 @@ final class ApiToolsSpec
         'outcome' => 'flag',
         'params' => [
             'tokenName' => ['name' => 'token_name', 'encoding' => 'scalar'],
-            'acl' => ['name' => 'acl', 'encoding' => 'scalar'],
+            'acl' => [
+                'name' => 'acl',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'indexed',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'prefix' => 'acl',
+                    'separator' => '-',
+                    'start' => 0,
+                ],
+            ],
             'expiresAt' => ['name' => 'expires_at', 'encoding' => 'scalar'],
-            'whitelistIp' => ['name' => 'whitelist_ip', 'encoding' => 'scalar'],
+            'whitelistIp' => [
+                'name' => 'whitelist_ip',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'indexed',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'prefix' => 'whitelist_ip',
+                    'separator' => '-',
+                    'start' => 0,
+                ],
+            ],
         ],
         'returns' => [
             'type' => 'object',
@@ -62,9 +86,33 @@ final class ApiToolsSpec
         'outcome' => 'flag',
         'params' => [
             'tokenName' => ['name' => 'token_name', 'encoding' => 'scalar'],
-            'acl' => ['name' => 'acl', 'encoding' => 'scalar'],
+            'acl' => [
+                'name' => 'acl',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'indexed',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'prefix' => 'acl',
+                    'separator' => '-',
+                    'start' => 0,
+                ],
+            ],
             'expiresAt' => ['name' => 'expires_at', 'encoding' => 'scalar'],
-            'whitelistIp' => ['name' => 'whitelist_ip', 'encoding' => 'scalar'],
+            'whitelistIp' => [
+                'name' => 'whitelist_ip',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'indexed',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'prefix' => 'whitelist_ip',
+                    'separator' => '-',
+                    'start' => 0,
+                ],
+            ],
         ],
         'returns' => [
             'type' => 'object',
@@ -304,7 +352,19 @@ final class ApiToolsSpec
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [
-            'tokenName' => ['name' => 'token_name', 'encoding' => 'scalar'],
+            'tokenName' => [
+                'name' => 'token_name',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'indexed',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'prefix' => 'token_name',
+                    'separator' => '-',
+                    'start' => 1,
+                ],
+            ],
         ],
         'returns' => null,
     ];
@@ -315,8 +375,32 @@ final class ApiToolsSpec
         'outcome' => 'flag',
         'params' => [
             'tokenName' => ['name' => 'token_name', 'encoding' => 'scalar'],
-            'acl' => ['name' => 'acl', 'encoding' => 'scalar'],
-            'whitelistIp' => ['name' => 'whitelist_ip', 'encoding' => 'scalar'],
+            'acl' => [
+                'name' => 'acl',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'indexed',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'prefix' => 'acl',
+                    'separator' => '-',
+                    'start' => 0,
+                ],
+            ],
+            'whitelistIp' => [
+                'name' => 'whitelist_ip',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'indexed',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'prefix' => 'whitelist_ip',
+                    'separator' => '-',
+                    'start' => 0,
+                ],
+            ],
             'expiresAt' => ['name' => 'expires_at', 'encoding' => 'scalar'],
             'newName' => ['name' => 'new_name', 'encoding' => 'scalar'],
         ],

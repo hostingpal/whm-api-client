@@ -534,3 +534,27 @@ establish transport and validation only. Installing supplies complete replacemen
 SPF records; no clearing semantics, duplicate resolution, DNS propagation, applied
 state, persistence or atomicity is inferred. No read/merge, retry or rollback is
 added. Live follow-up `8x0.2.48` remains open.
+
+## WHM token implementation addendum (2026-11-01)
+
+The four token adopters reuse existing indexed metadata: `createToken()`,
+`createDashboardToken()` and `updateToken()` add ACL and whitelist string lists
+with zero-based `acl-` and `whitelist_ip-` families; `revokeToken()` adds one-based
+`token_name-` lists. Scalars retain bare fields, singleton lists retain suffixes,
+and empty/malformed lists are rejected after metadata reset. All seven collection
+arguments are trace-sensitive without adding semantic secret flags. Dashboard ACL
+remains required; other argument order/defaults and all result contracts remain.
+
+`updateToken()` restores formal pinned optionality (one required argument), with
+null omission and no implicit read/merge. Supplied ACL/IP values replace their
+whole setting; empty strings remain supplied. `expiresAt: 0` and
+`whitelistIp: 'any'` explicitly request nonexpiration and unrestricted IPs.
+The [attributed installed-source review](https://github.com/hostingpal/whm-api-client/pull/72#pullrequestreview-5722427592)
+on `11.138.0.19` corrects pinned reset-on-omission text: only supplied fields are
+copied, while empty lists are dropped. Preservation on older versions is not
+established. The review accepts numeric ACL bases and underscore IP families;
+zero-based ACL examples are selected despite one-based update prose, and mixed
+`whitelist-ip` examples remain a source discrepancy. Pinned source and historical
+evidence remain unchanged. One form POST is sent per explicit call with unchanged
+envelope outcomes; no live list acceptance, persistence, batch atomicity or
+successful credential lifecycle is claimed.
