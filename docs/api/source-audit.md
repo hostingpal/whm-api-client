@@ -8777,3 +8777,15 @@ Older-version preservation, batch atomicity and per-token success remain
 unestablished. Creation defaults, one-time-secret recovery warnings, API outcomes,
 responses, operation counts, generic calls and all unrelated operations are
 unchanged; no retries, automatic revocation, server calls or credentials are used.
+
+### Review 5727875537 caller caveats (2026-11-17)
+
+[Review 5727875537](https://github.com/hostingpal/whm-api-client/pull/127#pullrequestreview-5727875537)
+of `f117157` read the installed cPanel 11.138.0.19 source without executing credential
+changes. Two caller caveats are now documented notes. First, `api_token_revoke` only counts
+names that match a token, so an unknown or misspelt name still returns result OK:
+success does not prove that a named token existed, and callers should confirm with
+`listTokens()`. Second, `_build_create_or_update_args` treats an `any` item anywhere in a
+`whitelist_ip` list as unrestricted and discards the other addresses; this applies to
+`createToken()`, `updateToken()` and `createDashboardToken()`. Neither caveat changes request
+encoding, and neither is a live observation.

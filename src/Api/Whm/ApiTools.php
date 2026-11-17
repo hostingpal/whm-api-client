@@ -221,6 +221,10 @@ final readonly class ApiTools
      * all-version compatibility is established. Review:
      * https://github.com/hostingpal/whm-api-client/pull/72#pullrequestreview-5722427592.
      *
+     * Documented: Attributed reviewer source reading of installed cPanel 11.138.0.19 (PR127 review 5727875537), not
+     * live credential execution: an `any` item anywhere in a whitelistIp list wins and discards every other supplied
+     * address, so ['1.2.3.4', 'any'] creates a token usable from any IP. The client sends list items unchanged.
+     *
      * Policy: Uses form POST under the client mutation transport policy to keep operation parameters out of access-log
      * URLs.
      *
@@ -298,6 +302,10 @@ final readonly class ApiTools
      * example is zero-based, and later create/update IP examples mix whitelist-ip spelling. No live list acceptance or
      * all-version compatibility is established. Review:
      * https://github.com/hostingpal/whm-api-client/pull/72#pullrequestreview-5722427592.
+     *
+     * Documented: Attributed reviewer source reading of installed cPanel 11.138.0.19 (PR127 review 5727875537), not
+     * live credential execution: an `any` item anywhere in a whitelistIp list wins and discards every other supplied
+     * address, so ['1.2.3.4', 'any'] creates a token usable from any IP. The client sends list items unchanged.
      *
      * Policy: Uses form POST under the client mutation transport policy to keep operation parameters out of access-log
      * URLs.
@@ -618,6 +626,11 @@ final readonly class ApiTools
      * empty or malformed lists before I/O after metadata reset. One request; no batch atomicity, partial-failure or
      * per-token success guarantee is added.
      *
+     * Documented: Attributed reviewer source reading of installed cPanel 11.138.0.19 (PR127 review 5727875537), not
+     * live credential execution: api_token_revoke only counts names that match a token and keeps result OK when one
+     * matches nothing. Envelope success does not prove that any named token existed or was revoked, so a misspelt name
+     * leaves the intended token live. Confirm with listTokens() when revocation matters.
+     *
      * Policy: Uses form POST under the client mutation transport policy to keep operation parameters out of access-log
      * URLs.
      *
@@ -672,6 +685,10 @@ final readonly class ApiTools
      * example is zero-based, and later create/update IP examples mix whitelist-ip spelling. No live list acceptance or
      * all-version compatibility is established. Review:
      * https://github.com/hostingpal/whm-api-client/pull/72#pullrequestreview-5722427592.
+     *
+     * Documented: Attributed reviewer source reading of installed cPanel 11.138.0.19 (PR127 review 5727875537), not
+     * live credential execution: an `any` item anywhere in a whitelistIp list wins and discards every other supplied
+     * address, so ['1.2.3.4', 'any'] creates a token usable from any IP. The client sends list items unchanged.
      *
      * Policy: Uses form POST under the client mutation transport policy to keep operation parameters out of access-log
      * URLs.
