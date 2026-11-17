@@ -40,12 +40,15 @@ Issues in Beads are:
 
 ## Bounded agent context
 
-The repository caps `bd prime` memory injection at four entries and an 8,000-byte
-memory budget. These caps affect injection only: all history remains searchable
-with `bd memories <keyword>`. Use `bd ready` and `bd show <id>` for current work.
-Selection is alphabetical, not based on freshness or relevance.
-`00-agent-context-index` supplies retrieval pointers rather than mutable task status;
-AGENTS.md and current user instructions remain authoritative.
+The repository caps `bd prime` memory injection at one entry and an 8,000-byte
+memory budget, so only `00-agent-context-index` is injected. Selection is
+alphabetical, not based on freshness or relevance, so further slots would inject
+whichever uncurated entries sort first. These caps affect injection only: search
+all history with `bd memories <keyword>`, which prints a short preview of each
+match, and read a full record with `bd recall <key>`. Use `bd ready` and
+`bd show <id>` for current work. `00-agent-context-index` supplies retrieval
+pointers rather than mutable task status; AGENTS.md and current user instructions
+remain authoritative.
 
 The byte budget covers whole memory entries, excluding headers and the core
 workflow. Upstream always includes at least one entry, so an oversized first entry
@@ -60,7 +63,8 @@ updated configuration, as do other independent checkouts, before they benefit.
 ```bash
 bd config get prime.max-memories
 bd config get prime.max-memory-chars
-bd memories search-absence-and-flexible-json-contracts
+bd memories search-absence
+bd recall search-absence-and-flexible-json-contracts
 bd ready
 bd show <id>
 ```
