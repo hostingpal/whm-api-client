@@ -823,6 +823,32 @@ final class MailSpec
         ],
     ];
 
+    public const INSTALL_SPF_RECORD_BATCH = [
+        ...self::INSTALL_SPF_RECORDS,
+        'params' => [
+            'records' => [
+                'name' => 'records',
+                'encoding' => 'records',
+                'records' => [
+                    'start' => 1,
+                    'separator' => '-',
+                    'fields' => [
+                        'domain' => [
+                            'prefix' => 'domain',
+                            'type' => 'string',
+                            'required' => true,
+                        ],
+                        'record' => [
+                            'prefix' => 'record',
+                            'type' => 'string',
+                            'required' => true,
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
     public const IS_SNI_SUPPORTED = [
         'function' => 'is_sni_supported',
         'method' => 'GET',

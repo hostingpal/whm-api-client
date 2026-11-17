@@ -15,7 +15,11 @@
         },
         {
           "kind": "documented",
-          "text": "appKey is the required feature app_key in dynamicui.conf. Return a required nonnullable object with all fourteen formal fields optional; height/itemorder/width remain strict integers. Strings including conditional expressions and URL/path values stay open and inert."
+          "text": "appKey is the required feature app_key in dynamicui.conf. Return an object with all formal fields optional, or null when no app has that key. Strings including conditional expressions and URL/path values stay open and inert."
+        },
+        {
+          "kind": "observed",
+          "text": "PR108 review 5725970479 on 11.138.0.19, both routes: height/itemorder/width arrive as digit strings and normalize losslessly to int, as in getApplications(); the same eight extra row fields are kept. An unknown key (including an empty string) leaves the source's app record undefined, so the call succeeds with null data: null means no such app, not a failure."
         },
         {
           "kind": "policy",
@@ -38,13 +42,189 @@
           "note": "The documented app_key is a noncredential application feature/group selector, not an authentication key or secret. Explicit sensitive:false preserves its raw public selector contract.",
           "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
           "pointer": "/paths/~1Branding~1get_application_information/get/parameters/0"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Branding~1get_application_information/get/responses/200/content/application~1json/schema/properties/result/properties/data",
+          "note": "Attributed reviewer observation (PR108 review 5725970479) through direct UAPI and the WHM bridge on a disposable account: an unknown key and an empty string returned status 1 with null data; source leaves $app_info undefined when the key does not exist. Not a committed capture."
         }
       ],
       "params": {
         "app_key": {
           "sensitive": false
         }
-      }
+      },
+      "response": {
+        "height": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Branding~1get_application_information/get/responses/200/content/application~1json/schema/properties/result/properties/data",
+              "note": "Attributed reviewer observation (PR108 review 5725970479) through direct UAPI and the WHM bridge on a disposable account: height arrived as a digit string for every valid key, as in get_applications, because both read the same dynamicui rows. Not a committed capture."
+            }
+          ]
+        },
+        "itemorder": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Branding~1get_application_information/get/responses/200/content/application~1json/schema/properties/result/properties/data",
+              "note": "Attributed reviewer observation (PR108 review 5725970479) through direct UAPI and the WHM bridge on a disposable account: itemorder arrived as a digit string for every valid key, as in get_applications, because both read the same dynamicui rows. Not a committed capture."
+            }
+          ]
+        },
+        "width": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Branding~1get_application_information/get/responses/200/content/application~1json/schema/properties/result/properties/data",
+              "note": "Attributed reviewer observation (PR108 review 5725970479) through direct UAPI and the WHM bridge on a disposable account: width arrived as a digit string for every valid key, as in get_applications, because both read the same dynamicui rows. Not a committed capture."
+            }
+          ]
+        },
+        "acontent": {
+          "add": {
+            "type": "string"
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Branding~1get_application_information/get/responses/200/content/application~1json/schema/properties/result/properties/data",
+              "note": "Attributed reviewer observation (PR108 review 5725970479) through direct UAPI and the WHM bridge on a disposable account: the single-key row carried string acontent, matching the field get_applications already declares for the same dynamicui row. Not a committed capture."
+            }
+          ]
+        },
+        "base64_png_image": {
+          "add": {
+            "type": "string"
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Branding~1get_application_information/get/responses/200/content/application~1json/schema/properties/result/properties/data",
+              "note": "Attributed reviewer observation (PR108 review 5725970479) through direct UAPI and the WHM bridge on a disposable account: the single-key row carried string base64_png_image, matching the field get_applications already declares for the same dynamicui row. Not a committed capture."
+            }
+          ]
+        },
+        "implements": {
+          "add": {
+            "type": "string"
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Branding~1get_application_information/get/responses/200/content/application~1json/schema/properties/result/properties/data",
+              "note": "Attributed reviewer observation (PR108 review 5725970479) through direct UAPI and the WHM bridge on a disposable account: the single-key row carried string implements, matching the field get_applications already declares for the same dynamicui row. Not a committed capture."
+            }
+          ]
+        },
+        "key": {
+          "add": {
+            "type": "string"
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Branding~1get_application_information/get/responses/200/content/application~1json/schema/properties/result/properties/data",
+              "note": "Attributed reviewer observation (PR108 review 5725970479) through direct UAPI and the WHM bridge on a disposable account: the single-key row carried string key, matching the field get_applications already declares for the same dynamicui row. Not a committed capture."
+            }
+          ]
+        },
+        "onclick": {
+          "add": {
+            "type": "string"
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Branding~1get_application_information/get/responses/200/content/application~1json/schema/properties/result/properties/data",
+              "note": "Attributed reviewer observation (PR108 review 5725970479) through direct UAPI and the WHM bridge on a disposable account: the single-key row carried string onclick, matching the field get_applications already declares for the same dynamicui row. Not a committed capture."
+            }
+          ]
+        },
+        "plainitemdesc": {
+          "add": {
+            "type": "string"
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Branding~1get_application_information/get/responses/200/content/application~1json/schema/properties/result/properties/data",
+              "note": "Attributed reviewer observation (PR108 review 5725970479) through direct UAPI and the WHM bridge on a disposable account: the single-key row carried string plainitemdesc, matching the field get_applications already declares for the same dynamicui row. Not a committed capture."
+            }
+          ]
+        },
+        "target": {
+          "add": {
+            "type": "string"
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Branding~1get_application_information/get/responses/200/content/application~1json/schema/properties/result/properties/data",
+              "note": "Attributed reviewer observation (PR108 review 5725970479) through direct UAPI and the WHM bridge on a disposable account: the single-key row carried string target, matching the field get_applications already declares for the same dynamicui row. Not a committed capture."
+            }
+          ]
+        },
+        "touch": {
+          "add": {
+            "type": "string"
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Branding~1get_application_information/get/responses/200/content/application~1json/schema/properties/result/properties/data",
+              "note": "Attributed reviewer observation (PR108 review 5725970479) through direct UAPI and the WHM bridge on a disposable account: the single-key row carried string touch, matching the field get_applications already declares for the same dynamicui row. Not a committed capture."
+            }
+          ]
+        }
+      },
+      "optional_payload": true
     },
     "uapi:Branding/get_applications": {
       "name": "getApplications",
@@ -378,7 +558,11 @@
         },
         {
           "kind": "documented",
-          "text": "nvarglist is a raw pipe-separated group ordering selector; omission requests no sorting. Source arglist is an alias, not a second public argument. Preserve default_group_order integer map, ordered grouporder/groups/items lists, implements string map and index integer-list map. Index prose describes zero-based group/item positions, but does not establish fixed tuple length. Item height/itemorder/width remain strings. Example-only key/plainitemdesc are optional strings; preserve empty lists/maps and dynamic keys."
+          "text": "nvarglist is a raw pipe-separated group ordering selector; omission requests no sorting. Source arglist is an alias, not a second public argument. Preserve default_group_order integer map, ordered grouporder/groups/items lists, implements string map and index integer-list map. Index prose describes zero-based group/item positions, but does not establish fixed tuple length. Item height/itemorder/width normalize to int from native integers or canonical digit strings. Example-only key/plainitemdesc are optional strings; preserve empty lists/maps and dynamic keys."
+        },
+        {
+          "kind": "observed",
+          "text": "PR108 review 5725970479 on 11.138.0.19, both routes: item height/itemorder/width mixed digit strings and native integers across groups, so the pinned string type rejected every call. Both forms now return int."
         },
         {
           "kind": "policy",
@@ -401,6 +585,14 @@
           "note": "The documented nvarglist is a noncredential application feature/group selector, not an authentication key or secret. Explicit sensitive:false preserves its raw public selector contract.",
           "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
           "pointer": "/paths/~1Branding~1get_available_applications/get/parameters/0"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Branding~1get_available_applications/get/responses/200/content/application~1json/schema/properties/result/properties/data",
+          "note": "Attributed reviewer observation (PR108 review 5725970479) through direct UAPI and the WHM bridge on a disposable account: item height/itemorder/width mixed digit strings and native integers, so every call raised PayloadMismatchException under the pinned string type. Not a committed capture."
         }
       ],
       "response": {
@@ -433,6 +625,54 @@
               "pointer": "/paths/~1Branding~1get_available_applications/get/responses/200/content/application~1json/schema/properties/result/properties/data/properties/groups/items/properties/items/items/example/plainitemdesc"
             }
           ]
+        },
+        "groups[].items[].height": {
+          "type": "int",
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Branding~1get_available_applications/get/responses/200/content/application~1json/schema/properties/result/properties/data",
+              "note": "Attributed reviewer observation (PR108 review 5725970479) through direct UAPI and the WHM bridge on a disposable account: item height was a digit string in most rows and a native integer in four rows, so the pinned string type failed every call. Not a committed capture."
+            }
+          ]
+        },
+        "groups[].items[].itemorder": {
+          "type": "int",
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Branding~1get_available_applications/get/responses/200/content/application~1json/schema/properties/result/properties/data",
+              "note": "Attributed reviewer observation (PR108 review 5725970479) through direct UAPI and the WHM bridge on a disposable account: item itemorder was a digit string in most rows and a native integer in four rows, so the pinned string type failed every call. Not a committed capture."
+            }
+          ]
+        },
+        "groups[].items[].width": {
+          "type": "int",
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1Branding~1get_available_applications/get/responses/200/content/application~1json/schema/properties/result/properties/data",
+              "note": "Attributed reviewer observation (PR108 review 5725970479) through direct UAPI and the WHM bridge on a disposable account: item width was a digit string in most rows and a native integer in four rows, so the pinned string type failed every call. Not a committed capture."
+            }
+          ]
         }
       },
       "params": {
@@ -452,6 +692,10 @@
         {
           "kind": "documented",
           "text": "docroot is the absolute server theme directory containing sitemap.json; optional appKeys is a comma-separated raw selector and omission requests all applications. The pinned source uses GET; effective form POST keeps the private noncredential docroot path out of URLs. docroot stays sensitive for library traces. Live POST acceptance is unverified. The client never accesses or validates the path locally. Required nonnullable dynamic map retains optional condition/icon/other formal fields with strict integer dimensions/order. terms is an optional ordered string list supported by formal items:string and array example; null is invalid and omission stays absent."
+        },
+        {
+          "kind": "observed",
+          "text": "PR108 review 5725970479 on 11.138.0.19: a docroot without sitemap.json, including a nonexistent path, returns an empty result at status 1 with no error; only base/webmail/jupiter had a sitemap there. An empty result does not prove that the directory exists."
         },
         {
           "kind": "policy",
@@ -482,6 +726,14 @@
           "note": "The documented app_keys is a noncredential application feature/group selector, not an authentication key or secret. Explicit sensitive:false preserves its raw public selector contract.",
           "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
           "pointer": "/paths/~1Branding~1get_information_for_applications/get/parameters/1"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Branding~1get_information_for_applications/get/responses/200",
+          "note": "Attributed reviewer observation (PR108 review 5725970479) through direct UAPI and the WHM bridge on a disposable account: docroots without sitemap.json, including a nonexistent path, returned [] at status 1. Not a committed capture."
         }
       ],
       "params": {
@@ -534,6 +786,10 @@
           "text": "file is relative to the active theme. Server processes .tt templates; data supplies JSON-encoded template variables only for .tt and raw has no effect for .tt. skipDefault=true skips default fallback except accounts without a branding package always use theme fallback. Null optional values omit; supplied empty strings remain and bool false/true send 0/1. Return exact string content (including empty/HTML/Unicode/zero-like text) or explicit null; missing data is a mismatch."
         },
         {
+          "kind": "observed",
+          "text": "PR108 review 5725970479 on 11.138.0.19: when no file matches, the handler returns nothing, giving status 0 with null errors, so ApiErrorException::errors() is empty. Treat that exception as a missing file."
+        },
+        {
           "kind": "policy",
           "text": "The source GET is x-readonly=true; effective form POST keeps arbitrary potentially private data out of URLs. data remains an unparsed raw string, including malformed, scalar, list or duplicate-key JSON-like text. No JSON serialization, input mode selection, filename-based omission, conflict guards, local templates, sanitization or HTML encoding/decoding occurs."
         },
@@ -570,6 +826,14 @@
           "note": "Retain data string requiredness and exact bytes; mark potentially private theme path/template variables sensitive in library traces. Form POST is privacy policy, not JSON-body encoding.",
           "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
           "pointer": "/paths/~1Branding~1include/get/parameters/1"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Branding~1include/get/responses/200",
+          "note": "Attributed reviewer observation (PR108 review 5725970479) through direct UAPI and the WHM bridge on a disposable account: a nonexistent file returned status 0 with errors null. Not a committed capture."
         }
       ],
       "params": {

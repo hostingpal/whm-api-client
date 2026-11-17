@@ -41,7 +41,7 @@ final class UapiBrandingTest extends TestCase
         self::assertNull($account->responseMeta());
         self::assertSame([], $http->getRequests());
         $signatures = [
-            'getApplicationInformation' => ['array', ['appKey' => ['string', false, false]]],
+            'getApplicationInformation' => ['?array', ['appKey' => ['string', false, false]]],
             'getApplications' => ['array', ['appKeys' => ['?string', true, false]]],
             'getAvailableApplications' => ['array', ['nvarglist' => ['?string', true, false]]],
             'getInformationForApplications' => ['array', [
@@ -183,13 +183,17 @@ final class UapiBrandingTest extends TestCase
     {
         [$client, $http] = self::client('direct');
         $http->addResponse(new Response(200, [], '{"status":1,"data":{'
-            . '"feature":"f","file":"i","group":"g","height":32,"if":"$inert",'
+            . '"feature":"f","file":"i","group":"g","height":"32","if":"$inert",'
             . '"imgtype":"future","itemdesc":"D","itemorder":0,"module":"M","searchtext":"a b",'
-            . '"subtype":"future","type":"future","url":"../inert","width":35}}'));
+            . '"subtype":"future","type":"future","url":"../inert","width":"35","acontent":"tag",'
+            . '"base64_png_image":"inert","implements":"I","key":"f","onclick":"inert()",'
+            . '"plainitemdesc":"P","target":"t","touch":"ftp"}}'));
         self::assertSame(
-            ['feature' => 'f', 'file' => 'i', 'group' => 'g', 'height' => 32, 'if' => '$inert',
-            'imgtype' => 'future', 'itemdesc' => 'D', 'itemorder' => 0, 'module' => 'M', 'searchtext' => 'a b',
-            'subtype' => 'future', 'type' => 'future', 'url' => '../inert', 'width' => 35],
+            ['acontent' => 'tag', 'base64_png_image' => 'inert', 'feature' => 'f', 'file' => 'i', 'group' => 'g',
+            'height' => 32, 'if' => '$inert', 'imgtype' => 'future', 'implements' => 'I', 'itemdesc' => 'D',
+            'itemorder' => 0, 'key' => 'f', 'module' => 'M', 'onclick' => 'inert()', 'plainitemdesc' => 'P',
+            'searchtext' => 'a b', 'subtype' => 'future', 'target' => 't', 'touch' => 'ftp', 'type' => 'future',
+            'url' => '../inert', 'width' => 35],
             $client->uapi()->branding()->getApplicationInformation('f'),
         );
     }
@@ -212,10 +216,10 @@ final class UapiBrandingTest extends TestCase
             'default_group_order' => ['z' => 2, 0 => 0], 'grouporder' => ['z', 'a'],
             'groups' => [['desc' => 'Z', 'group' => 'z', 'items' => [[
                 'acontent' => 'tag', 'base64_png_image' => 'inert', 'feature' => 'f', 'file' => 'i',
-                'group' => 'z', 'height' => '48', 'if' => '$inert', 'imgtype' => 'open', 'implements' => 'M',
-                'itemdesc' => 'D', 'itemorder' => '1', 'key' => 'k', 'module' => 'N', 'onclick' => 'inert()',
+                'group' => 'z', 'height' => 48, 'if' => '$inert', 'imgtype' => 'open', 'implements' => 'M',
+                'itemdesc' => 'D', 'itemorder' => 1, 'key' => 'k', 'module' => 'N', 'onclick' => 'inert()',
                 'plainitemdesc' => 'P', 'searchtext' => 'a b', 'subtype' => 'open', 'target' => 't',
-                'touch' => 'ftp', 'type' => 'open', 'url' => '../inert', 'width' => '48',
+                'touch' => 'ftp', 'type' => 'open', 'url' => '../inert', 'width' => 48,
             ], []]], ['group' => 'a', 'items' => []]],
             'implements' => ['M' => 'k', 0 => 'zero'], 'index' => ['z' => [], 'a' => [2], 'k' => [1, 0, 3]],
         ], $client->uapi('fixture')->branding()->getAvailableApplications());
@@ -270,6 +274,11 @@ final class UapiBrandingTest extends TestCase
             yield "$method empty object" => [$method, '{}', true, []];
             yield "$method inherited empty array" => [$method, '[]', true, []];
             foreach ([null, 'null', '0', '1.5', 'true', '"text"', '[{}]'] as $index => $wrong) {
+                if ($method === 'getApplicationInformation' && $index < 2) {
+                    // Unknown app keys leave data absent or null (PR108 review 5725970479).
+                    yield "$method root $index" => [$method, $wrong, true, null];
+                    continue;
+                }
                 yield "$method root $index" => [$method, $wrong, false, null];
             }
         }
@@ -279,19 +288,24 @@ final class UapiBrandingTest extends TestCase
             }
         }
         foreach (['height', 'itemorder', 'width'] as $field) {
-            foreach (['"48"', 'null', '1.5', 'true'] as $wrong) {
-                yield "single $field $wrong" => ['getApplicationInformation', '{"' . $field . '":'
-                    . $wrong . '}', false, null];
+            // PR108 review 5725970479: all three reads share digit-string/native-int dimensions.
+            $shapes = [
+                'single' => ['getApplicationInformation', '{"' . $field . '":%s}', [$field => 48]],
+                'map' => ['getApplications', '{"a":{"' . $field . '":%s}}', ['a' => [$field => 48]]],
+                'available' => ['getAvailableApplications', '{"groups":[{"items":[{"' . $field . '":%s}]}]}',
+                    ['groups' => [['items' => [[$field => 48]]]]]],
+            ];
+            foreach ($shapes as $label => [$method, $template, $normalized]) {
+                foreach (['48', '"48"'] as $valid) {
+                    yield "$label $field $valid" => [$method, sprintf($template, $valid), true, $normalized];
+                }
+                foreach (
+                    ['"01"', '"+1"', '" 1"', '"1 "', '"1.0"', '"1e2"', '"-0"',
+                    '"9223372036854775808"', '"-9223372036854775809"', '1.5', 'true', 'null'] as $wrong
+                ) {
+                    yield "$label $field $wrong" => [$method, sprintf($template, $wrong), false, null];
+                }
             }
-            foreach (
-                ['"01"', '"+1"', '" 1"', '"1 "', '"1.0"', '"1e2"', '"-0"',
-                '"9223372036854775808"', '"-9223372036854775809"', '1.5', 'true', 'null'] as $wrong
-            ) {
-                yield "map $field $wrong" => ['getApplications', '{"a":{"' . $field . '":'
-                    . $wrong . '}}', false, null];
-            }
-            yield "available dimension $field" => ['getAvailableApplications',
-                '{"groups":[{"items":[{"' . $field . '":48}]}]}', false, null];
         }
         foreach (
             ['icon' => '{"height":"32"}', 'icon width' => '{"width":"35"}', 'order' => '"1"', 'condition' => 'null',

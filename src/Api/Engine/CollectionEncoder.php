@@ -19,7 +19,7 @@ use stdClass;
  *     prefix: string, separator: ''|'-', start: int<0, 2147483647>
  * }|array{
  *     kind: 'map', item_type: 'string'|'int'|'bool'|'string|int', allow_scalar: false,
- *     empty: 'allow'|'reject', prefix: string
+ *     empty: 'allow'|'reject', prefix: string, reject_prefixed_keys?: true
  * }
  * @internal
  */
@@ -52,6 +52,12 @@ final class CollectionEncoder
                 throw new LogicException('Invalid named-map rules.');
             }
             $keys[] = 'prefix';
+            if (array_key_exists('reject_prefixed_keys', $spec)) {
+                if ($spec['reject_prefixed_keys'] !== true || $spec['prefix'] === '') {
+                    throw new LogicException('Invalid named-map prefix rejection policy.');
+                }
+                $keys[] = 'reject_prefixed_keys';
+            }
         }
         if ($spec['kind'] === 'indexed') {
             if (
@@ -71,7 +77,8 @@ final class CollectionEncoder
         }
         if ($spec['kind'] === 'map') {
             return ['kind' => 'map', 'item_type' => $spec['item_type'], 'allow_scalar' => false,
-                'empty' => $spec['empty'], 'prefix' => $spec['prefix']];
+                'empty' => $spec['empty'], 'prefix' => $spec['prefix']]
+                + (isset($spec['reject_prefixed_keys']) ? ['reject_prefixed_keys' => true] : []);
         }
         if ($spec['kind'] === 'indexed') {
             return ['kind' => 'indexed', 'item_type' => $spec['item_type'], 'allow_scalar' => $spec['allow_scalar'],
@@ -133,7 +140,7 @@ final class CollectionEncoder
      * Append literal caller keys without normalization, retaining ownership.
      *
      * @param array{kind: 'map', item_type: 'string'|'int'|'bool'|'string|int',
-     *     allow_scalar: false, empty: 'allow'|'reject', prefix: string} $spec
+     *     allow_scalar: false, empty: 'allow'|'reject', prefix: string, reject_prefixed_keys?: true} $spec
      */
     private static function appendMap(
         #[SensitiveParameter] OrderedFields $fields,
@@ -150,6 +157,9 @@ final class CollectionEncoder
                 || preg_match('/[\\x00-\\x1F\\x7F]/', $key) !== 0
             ) {
                 throw new InvalidArgumentException('Map keys must be nonempty UTF-8 strings without control bytes.');
+            }
+            if (($spec['reject_prefixed_keys'] ?? false) && str_starts_with($key, $spec['prefix'])) {
+                throw new InvalidArgumentException('Map keys must omit the declared wire prefix.');
             }
             $fields->appendMap($origin, $spec['prefix'] . $key, self::item($spec['item_type'], $item));
         }

@@ -140,12 +140,15 @@ final class UapiMailboxesTest extends TestCase
             foreach (self::calls() as $function => $call) {
                 $bad = [null]; // An absent data member differs even from mixed/null.
                 if ($function !== 'expunge_mailbox_messages') {
-                    array_push($bad, 'null', 'true', '1', '1.5', '"text"');
+                    if ($function !== 'expunge_messages_for_mailbox_guid') {
+                        $bad[] = 'null';
+                    }
+                    array_push($bad, 'true', '1', '1.5', '"text"');
                     if ($function === 'get_mailbox_status_list') {
                         array_push($bad, '{}', '[null]', '[1]', '{"0":{}}');
                         foreach (['guid', 'mailbox', 'messages', 'vsize'] as $field) {
                             $values = in_array($field, ['guid', 'mailbox'], true)
-                                ? ['null', '1', 'false'] : ['null', '"0"', 'false', '1.5'];
+                                ? ['null', '1', 'false'] : ['null', '"01"', 'false', '1.5'];
                             foreach ($values as $value) {
                                 $bad[] = '[{"' . $field . '":' . $value . '}]';
                             }
@@ -306,7 +309,7 @@ final class UapiMailboxesTest extends TestCase
             [
             'expungeMailboxMessages' => [['account', 'mailbox', 'query'], ['string', 'string', 'string'], 'mixed'],
             'expungeMessagesForMailboxGuid' => [
-                ['account', 'mailboxGuid', 'query'], ['string', 'string', 'string'], 'array'],
+                ['account', 'mailboxGuid', 'query'], ['string', 'string', 'string'], '?array'],
             'getMailboxStatusList' => [['account'], ['string'], 'array'],
             'hasUtf8MailboxNames' => [['user'], ['?string'], 'array'],
             'setUtf8MailboxNames' => [['enabled'], ['bool'], 'array'],

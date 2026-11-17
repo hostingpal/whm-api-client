@@ -34,7 +34,8 @@ final class NamedMapAdoptersTest extends TestCase
         string $payload,
     ): void {
         [$whm, $http] = self::client();
-        $http->addResponse(new Response(200, [], '{"metadata":{"result":1},"data":' . $payload . '}'));
+        $outer = $operation === 'massmodifyacct' && str_contains($payload, '"result":0') ? 0 : 1;
+        $http->addResponse(new Response(200, [], '{"metadata":{"result":' . $outer . '},"data":' . $payload . '}'));
         $result = $whm->$group()->$method(...$args);
         self::assertSame($payload === 'null' ? null : json_decode($payload, true), $result);
         self::assertCount(1, $http->getRequests());
@@ -65,8 +66,8 @@ final class NamedMapAdoptersTest extends TestCase
             'autotrust_new_common_mail_providers=1&google=0', '{}'];
         yield 'update' => ['hostingPlans', 'updateFeaturelist', 'update_featurelist',
             ['featurelist' => 'A', 'features' => ['a%&' => false]], 'featurelist=A&a%25%26=0',
-            '{"featurelist":"A","invalid_features":[{"bad":0}],"updated_features":{"email":1,"ftp":0}}'];
-        foreach (['create', 'update'] as $verb) {
+            '{"featurelist":"A","invalid_features":["bad"],"updated_features":{"email":1,"ftp":0}}'];
+        foreach (['create'] as $verb) {
             yield "$verb empty" => ['hostingPlans', $verb . 'Featurelist', $verb . '_featurelist',
                 ['featurelist' => 'A', 'features' => []], 'featurelist=A', '{}'];
         }
@@ -78,9 +79,9 @@ final class NamedMapAdoptersTest extends TestCase
         foreach (['reset', 'set'] as $verb) {
             yield "$verb provider" => ['ssl', $verb . 'AutoSslProvider', $verb . '_autossl_provider',
                 ['provider' => 'LetsEncrypt', 'parameters' => ['terms_of_service_accepted' => 'https://a.test/?x=1&y=%',
-                    'x_keep' => '', 'zero' => '0']],
+                    'X_keep' => '', 'zero' => '0']],
                 'provider=LetsEncrypt&x_terms_of_service_accepted=https%3A%2F%2Fa.test%2F%3Fx%3D1%26y%3D%25'
-                    . '&x_x_keep=&x_zero=0',
+                    . '&x_X_keep=&x_zero=0',
                 'null'];
             foreach ([null, []] as $i => $parameters) {
                 yield "$verb empty $i" => ['ssl', $verb . 'AutoSslProvider', $verb . '_autossl_provider',
@@ -101,9 +102,9 @@ final class NamedMapAdoptersTest extends TestCase
             ['domain' => 'a.test', 'username' => 'new', 'copyMysqlDatabases' => [],
                 'moveMysqlDatabases' => '', 'moveMysqlUsers' => '0'],
             'domain=a.test&username=new&movemysqldb=&movemysqluser=0', '{}'];
-        yield 'mass' => ['accounts', 'massmodifyacct', 'massmodifyacct',
-            ['user' => ['a', 'b'], 'mxPriorities' => ['a.test' => 0, 'b%&.test' => 10]],
-            'user-1=a&user-2=b&MXCHECK-a.test=0&MXCHECK-b%25%26.test=10',
+        yield 'mass' => ['accounts', 'massModifyAccount', 'massmodifyacct',
+            ['user' => ['a', 'b']],
+            'user-1=a&user-2=b',
             '{"payload":[{"result":1,"user":"a","warnings":[]},{"reason":"failed","result":0,"user":"b"}]}'];
         yield 'conversion omitted' => ['accounts', 'convertAddonInitiateConversion',
             'convert_addon_initiate_conversion', ['domain' => 'a.test', 'username' => 'new'],
@@ -115,11 +116,10 @@ final class NamedMapAdoptersTest extends TestCase
         yield 'conversion copy singleton' => ['accounts', 'convertAddonInitiateConversion',
             'convert_addon_initiate_conversion', ['domain' => 'a.test', 'username' => 'new',
                 'copyMysqlDatabases' => ['0%' => '0']], 'domain=a.test&username=new&copymysqldb-0%25=0', '{}'];
-        yield 'mass singleton' => ['accounts', 'massmodifyacct', 'massmodifyacct',
-            ['user' => ['a'], 'mxPriorities' => ['a.test' => 0]], 'user-1=a&MXCHECK-a.test=0', '{}'];
-        yield 'mass omitted map' => ['accounts', 'massmodifyacct', 'massmodifyacct', ['user' => 'a'], 'user=a', '{}'];
-        yield 'mass null map' => ['accounts', 'massmodifyacct', 'massmodifyacct',
-            ['user' => 'a', 'mxPriorities' => null], 'user=a', '{}'];
+        yield 'mass singleton' => ['accounts', 'massModifyAccount', 'massmodifyacct',
+            ['user' => ['a']], 'user-1=a', '{}'];
+        yield 'mass omitted settings' => ['accounts', 'massModifyAccount', 'massmodifyacct',
+            ['user' => 'a'], 'user=a', '{}'];
         yield 'grey singleton' => ['mail', 'cpgreylistSaveCommonMailProvidersConfig',
             'cpgreylist_save_common_mail_providers_config', ['providers' => ['google' => true]], 'google=1', '{}'];
         yield 'create singleton' => ['hostingPlans', 'createFeaturelist', 'create_featurelist',
@@ -131,8 +131,8 @@ final class NamedMapAdoptersTest extends TestCase
             yield "$verb singleton" => ['ssl', $verb . 'AutoSslProvider', $verb . '_autossl_provider',
                 ['provider' => 'A', 'parameters' => ['token' => '0']], 'provider=A&x_token=0', 'null'];
         }
-        yield 'mass scalar' => ['accounts', 'massmodifyacct', 'massmodifyacct',
-            ['user' => 'a', 'mxPriorities' => []], 'user=a', '{}'];
+        yield 'mass scalar' => ['accounts', 'massModifyAccount', 'massmodifyacct',
+            ['user' => 'a'], 'user=a', '{}'];
     }
 
     /** @param array<string, mixed> $args */
@@ -198,9 +198,12 @@ final class NamedMapAdoptersTest extends TestCase
             ['domain' => 'a', 'username' => 'b', 'copyMysqlDatabases' => [0 => 'late-secret']]];
         yield 'move empty' => ['accounts', 'convertAddonInitiateConversion',
             ['domain' => 'a', 'username' => 'b', 'moveMysqlDatabases' => []]];
-        yield 'users empty' => ['accounts', 'massmodifyacct', ['user' => []]];
-        yield 'mx string' => ['accounts', 'massmodifyacct', ['user' => 'a', 'mxPriorities' => ['late-secret' => '0']]];
-        yield 'mx int key' => ['accounts', 'massmodifyacct', ['user' => 'a', 'mxPriorities' => [0 => 1]]];
+        yield 'users empty' => ['accounts', 'massModifyAccount', ['user' => []]];
+        yield 'empty update' => ['hostingPlans', 'updateFeaturelist', ['featurelist' => 'A', 'features' => []]];
+        foreach (['resetAutoSslProvider', 'setAutoSslProvider'] as $method) {
+            yield $method . ' prefixed key' => ['ssl', $method,
+                ['provider' => 'A', 'parameters' => ['x_late-secret' => 'late-secret']]];
+        }
     }
 
     /** @return iterable<string, array{string, string, array<string, mixed>, string}> */
@@ -272,11 +275,11 @@ final class NamedMapAdoptersTest extends TestCase
         }
     }
 
-    public function testMassModificationRetainsAllFiftyOneSourceFieldsWithExactCase(): void
+    public function testMassModificationRetainsFiftySourceFieldsWithExactCase(): void
     {
         [$whm, $http] = self::client();
         $http->addResponse(new Response(200, [], '{"metadata":{"result":1},"data":{}}'));
-        $whm->accounts()->massmodifyacct(
+        $whm->accounts()->massModifyAccount(
             user: 'a',
             backup: false,
             bwlimit: 'unlimited',
@@ -302,7 +305,6 @@ final class NamedMapAdoptersTest extends TestCase
             maxDeferFailPercentage: 0,
             maxEmailacctQuota: 'unlimited',
             maxEmailPerHour: 0,
-            mxPriorities: ['a.test' => 0],
             outgoingEmailSuspended: false,
             owner: 'root',
             pushbulletAccessToken: 'opaque%&',
@@ -338,14 +340,14 @@ final class NamedMapAdoptersTest extends TestCase
             [$name, $value] = explode('=', $field, 2);
             $fields[rawurldecode($name)] = rawurldecode($value);
         }
-        self::assertCount(51, $fields);
+        self::assertCount(50, $fields);
         self::assertEquals([
             'user' => 'a', 'BACKUP' => '0', 'BWLIMIT' => 'unlimited', 'CONTACTEMAIL' => '', 'DBOWNER' => 'owner',
             'DISK_BLOCK_LIMIT' => '0', 'HASCGI' => '0', 'HASDKIM' => '1', 'HASDMARC' => '0', 'HASSHELL' => '0',
             'HASSPF' => '1', 'LANG' => 'en', 'LOCALE' => 'en', 'MAILBOX_FORMAT' => 'maildir', 'MAXADDON' => '0',
             'MAXFTP' => '0', 'MAXLST' => '0', 'MAXPARK' => '0', 'MAXPASSENGERAPPS' => '0', 'MAXPOP' => '0',
             'MAXSQL' => '0', 'MAXSUB' => '0', 'MAX_DEFER_FAIL_PERCENTAGE' => '0', 'MAX_EMAILACCT_QUOTA' => 'unlimited',
-            'MAX_EMAIL_PER_HOUR' => '0', 'MXCHECK-a.test' => '0', 'OUTGOING_EMAIL_SUSPENDED' => '0', 'OWNER' => 'root',
+            'MAX_EMAIL_PER_HOUR' => '0', 'OUTGOING_EMAIL_SUSPENDED' => '0', 'OWNER' => 'root',
             'PUSHBULLET_ACCESS_TOKEN' => 'opaque%&', 'QUOTA' => 'unlimited', 'RS' => 'jupiter', 'STARTDATE' => '0',
             'STYLE' => '', 'modify_firewall' => '0', 'notify_account_authn_link' => '0',
             'notify_account_authn_link_notification_disabled' => '0', 'notify_autossl_expiry' => '0',
@@ -356,7 +358,7 @@ final class NamedMapAdoptersTest extends TestCase
             'notify_ssl_expiry' => '0', 'remove_missing_extensions' => '', 'rename_database_objects' => '0',
             'reseller' => '0', 'shell' => '/bin/false', 'spamassassin' => '0',
         ], $fields);
-        self::assertStringContainsString('MXCHECK-a.test=0', $body);
+        self::assertArrayNotHasKey('MXCHECK-*', $fields);
         self::assertCount(1, $http->getRequests());
     }
 
@@ -380,12 +382,11 @@ final class NamedMapAdoptersTest extends TestCase
     public static function outcomeCases(): iterable
     {
         yield 'create' => ['hostingPlans', 'createFeaturelist', ['featurelist' => 'A', 'features' => []]];
-        yield 'update' => ['hostingPlans', 'updateFeaturelist', ['featurelist' => 'A', 'features' => []]];
+        yield 'update' => ['hostingPlans', 'updateFeaturelist', ['featurelist' => 'A', 'features' => ['a' => true]]];
         yield 'grey' => ['mail', 'cpgreylistSaveCommonMailProvidersConfig', []];
         yield 'reset' => ['ssl', 'resetAutoSslProvider', ['provider' => 'A']];
         yield 'set' => ['ssl', 'setAutoSslProvider', ['provider' => 'A']];
         yield 'convert' => ['accounts', 'convertAddonInitiateConversion', ['domain' => 'a', 'username' => 'b']];
-        yield 'mass' => ['accounts', 'massmodifyacct', ['user' => 'a']];
     }
 
     /** @param array<string, mixed> $args */
@@ -424,10 +425,8 @@ final class NamedMapAdoptersTest extends TestCase
             '{"invalid_features":{}}', '{"featurelist":null}'] as $i => $data
         ) {
             yield "feature flag $i" => ['hostingPlans', 'updateFeaturelist',
-                ['featurelist' => 'A', 'features' => []], ',"data":' . $data];
+                ['featurelist' => 'A', 'features' => ['a' => true]], ',"data":' . $data];
         }
-        yield 'mass result flag' => ['accounts', 'massmodifyacct', ['user' => 'a'],
-            ',"data":{"payload":[{"result":true}]}'];
         yield 'grey flag' => ['mail', 'cpgreylistSaveCommonMailProvidersConfig', [],
             ',"data":{"common_mail_providers":{"google":{"autoupdate":"0"}}}'];
     }

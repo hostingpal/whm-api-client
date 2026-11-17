@@ -2359,7 +2359,7 @@
     },
     "whm1:save_connected_application": {
       "exclude": {
-        "reason": "Requires an application/json request body containing name and arbitrary connected-application data; typed JSON-body machinery is available, while this endpoint adoption remains deferred under whm-api-client-8x0.1.18; remaining selection/source/route audit is tracked under whm-api-client-8x0.29.6. Raw callJson() supplies no typed contract and establishes no endpoint compatibility.",
+        "reason": "Requires an application/json request body containing name and arbitrary connected-application data; typed JSON-body support remains tracked under whm-api-client-8x0.1.18. Raw callJson() supplies no typed contract and establishes no endpoint compatibility.",
         "evidence": [
           {
             "kind": "doc",
@@ -2384,11 +2384,23 @@
         },
         {
           "kind": "policy",
-          "text": "Both arguments are required from the body schema despite absent requestBody.required. Sends literal module text followed by a single Upload; routing stays in the WHM query. This can affect server-wide configuration; no retry, rollback, transactional or restart guarantee is provided. No live configuration restore has been performed."
+          "text": "Both arguments are required from the body schema despite absent requestBody.required. Sends literal module text followed by a single Upload; routing stays in the WHM query. This can affect server-wide configuration; no retry, rollback, transactional or restart guarantee is provided."
         },
         {
           "kind": "policy",
           "text": "The formal multipart schema and upload prose govern this request. The empty JSON HTTP sample and its port 2083 are inconsistent examples, not alternate transport or routing contracts."
+        },
+        {
+          "kind": "policy",
+          "text": "Reviewer inspection of the 11.138.0.19 server source found that apply_module_settings rejects invalid values, restores their old values and logs warnings, while _restore_config discards reject details. Success does not mean every setting was applied. Re-read the configuration of interest after the call."
+        },
+        {
+          "kind": "policy",
+          "text": "An unchanged backup does not rewrite the configuration file, but the reviewed 11.138.0.19 handler sets success metadata only when settings are modified. An unchanged restore may therefore surface as an error; the compiled wrapper behavior remains unverified under 8x0.30.7.1. Offline envelope handling raises InvalidResponseException for a missing metadata.result and ApiErrorException for result 0; these are not observed restore responses."
+        },
+        {
+          "kind": "policy",
+          "text": "Reviewer source inspection on 11.138.0.19 indicates a restore may retain a root-only uploaded backup at /root/tmp/Cpanel_Form_file.upload.*. Restore-specific retention remains unverified; a separate read-only WHM file-part check observed a mode-0600 copy. Backups can contain configuration secrets; account for possible server-side retention."
         }
       ],
       "evidence": [

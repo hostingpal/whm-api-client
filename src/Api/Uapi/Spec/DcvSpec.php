@@ -41,8 +41,8 @@ final class DcvSpec
                     'dcv_string' => ['type' => 'string'],
                     'domain' => ['type' => 'string'],
                     'failure_reason' => ['type' => 'string'],
-                    'query_results' => ['type' => 'list', 'items' => ['type' => 'string']],
-                    'succeeded' => ['type' => 'flag'],
+                    'query_results' => ['type' => 'list', 'nullable' => true, 'items' => ['type' => 'string']],
+                    'succeeded' => ['type' => 'flag', 'accept' => ['string-flag']],
                     'zone' => ['type' => 'string'],
                 ],
             ],
@@ -68,16 +68,6 @@ final class DcvSpec
                     'start' => 1,
                 ],
             ],
-            'dcvFileAllowedCharacters' => [
-                'name' => 'dcv_file_allowed_characters',
-                'encoding' => 'collection',
-                'collection' => [
-                    'kind' => 'repeat',
-                    'item_type' => 'string',
-                    'allow_scalar' => false,
-                    'empty' => 'reject',
-                ],
-            ],
             'dcvFileExtension' => ['name' => 'dcv_file_extension', 'encoding' => 'scalar'],
             'dcvFileRandomCharacterCount' => ['name' => 'dcv_file_random_character_count', 'encoding' => 'scalar'],
             'dcvFileRelativePath' => ['name' => 'dcv_file_relative_path', 'encoding' => 'scalar'],
@@ -92,6 +82,7 @@ final class DcvSpec
                     'failure_reason' => ['type' => 'string', 'nullable' => true],
                     'redirects' => [
                         'type' => 'list',
+                        'nullable' => true,
                         'items' => [
                             'type' => 'object',
                             'fields' => [
@@ -110,7 +101,7 @@ final class DcvSpec
                             ],
                         ],
                     ],
-                    'redirects_count' => ['type' => 'int'],
+                    'redirects_count' => ['type' => 'int', 'nullable' => true],
                 ],
             ],
         ],
