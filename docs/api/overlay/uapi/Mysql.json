@@ -114,11 +114,19 @@
         },
         {
           "kind": "documented",
-          "text": "The privileges list replaces the existing privilege list. Pass ALL PRIVILEGES or a comma-separated string, not a PHP array. If database prefixing is enabled, database and user must include the account prefix and underscore. The pinned documentation specifies no default for omitted privileges."
+          "text": "The privileges list replaces the existing privilege list. Pass ALL PRIVILEGES, a comma-separated string or a nonempty sequential string list. If database prefixing is enabled, database and user must include the account prefix and underscore. The pinned documentation specifies no default for omitted privileges."
         },
         {
           "kind": "documented",
           "text": "The pinned response declares a nullable object without a field schema. Null remains null; object fields are preserved as opaque data without assigning them meanings. An omitted data member is not accepted as null. The client's existing empty-map compatibility also accepts an empty JSON list as an empty array; nonempty lists are rejected. This is not a newly observed wire variant."
+        },
+        {
+          "kind": "documented",
+          "text": "Client lists preserve order, duplicates, empty string items and all other bytes, and reject empty, keyed or nonstring lists and items containing a comma before dispatch. Scalars retain commas, percent escapes and empty strings without parsing or pre-encoding. Optional null omits the field; an empty list never means omission. Collection arguments are trace-protected without changing transport or classifying the field as a semantic secret."
+        },
+        {
+          "kind": "documented",
+          "text": "Privilege strings remain open, including ALL PRIVILEGES and names with spaces. The client joins once and percent-encodes once downstream; do not pre-encode commas or spaces. Omitted privileges have no documented default; the client does not infer clear, no-op or grant semantics or read and merge existing privileges."
         }
       ],
       "evidence": [
@@ -127,8 +135,27 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-17",
           "note": "The pinned /Mysql/set_privileges_on_database GET variant has x-readonly=false and x-rollback=none. The generated-client request policy sends mutations and secret-bearing parameters as form POST, keeping operation parameters out of access-log query strings. The pinned nullable object result has no properties or additionalProperties restriction, so its fields remain opaque and preserved; no omitted-payload compatibility is added."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Mysql~1set_privileges_on_database/get/parameters/2",
+          "note": "The formal privileges parameter is a concrete nonnullable string documenting comma-separated values. The generated client additionally accepts a nonempty sequential string list, joins once into the original privileges field, and preserves raw scalar bytes. This is an offline client convenience, not PHP-list live evidence; requiredness, defaults, effective HTTP method and response contracts are unchanged."
         }
-      ]
+      ],
+      "params": {
+        "privileges": {
+          "collection": {
+            "kind": "delimited",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "delimiter": ","
+          }
+        }
+      }
     },
     "uapi:Mysql/delete_user": {
       "method": "POST",

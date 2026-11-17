@@ -67,7 +67,17 @@ final class EmailSpec
             'email' => ['name' => 'email', 'encoding' => 'scalar'],
             'forwardOption' => ['name' => 'fwdopt', 'encoding' => 'scalar'],
             'failureMessage' => ['name' => 'failmsgs', 'encoding' => 'scalar'],
-            'forwardEmail' => ['name' => 'fwdemail', 'encoding' => 'scalar'],
+            'forwardEmail' => [
+                'name' => 'fwdemail',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => ',',
+                ],
+            ],
             'forwardSystem' => ['name' => 'fwdsystem', 'encoding' => 'scalar'],
             'pipeForward' => ['name' => 'pipefwd', 'encoding' => 'scalar'],
         ],
@@ -105,7 +115,17 @@ final class EmailSpec
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [
-            'delegates' => ['name' => 'delegates', 'encoding' => 'scalar'],
+            'delegates' => [
+                'name' => 'delegates',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => ',',
+                ],
+            ],
             'list' => ['name' => 'list', 'encoding' => 'scalar'],
         ],
         'returns' => [

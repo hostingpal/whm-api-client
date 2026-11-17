@@ -31,7 +31,17 @@ final class MimeSpec
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [
-            'extensions' => ['name' => 'extensions', 'encoding' => 'scalar'],
+            'extensions' => [
+                'name' => 'extensions',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => ',',
+                ],
+            ],
             'redirectUrl' => ['name' => 'redirect_url', 'encoding' => 'scalar'],
             'urls' => ['name' => 'urls', 'encoding' => 'scalar'],
             'allowNull' => ['name' => 'allow_null', 'encoding' => 'bool'],
