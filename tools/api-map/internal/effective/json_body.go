@@ -87,19 +87,18 @@ func (b *builder) jsonBody(op model.Operation, v model.Variant, ov overlay.Opera
 			return fail("correction does not select a source schema node")
 		}
 	}
-	if !required && inputHasNull(schema) {
-		return fail("optional nullable roots are unsupported")
+	if len(*params) != 0 {
+		return fail("cannot declare query parameters")
 	}
-	if schema.Type == "object" {
-		for _, name := range schema.Required {
-			if reservedJSONName(name, op.Family) {
-				return fail("requires a reserved root routing member")
-			}
-		}
+	if schema.Type != "object" || schema.Nullable {
+		return fail("requires a nonnullable object root")
 	}
-	for _, p := range *params {
-		if p.PHP == d.PHP {
-			return fail("argument name collides with a query parameter")
+	if op.Family == "whm1" && !required {
+		return fail("WHM JSON bodies must be required to carry API version routing")
+	}
+	for _, field := range schema.Fields {
+		if reservedJSONName(field.Name, op.Family) {
+			return fail("declares a reserved root routing member")
 		}
 	}
 	bodyParam := Param{PHP: d.PHP, Required: required, Sensitive: true, Input: &schema, PHPType: InputNative(schema), DocType: d.Alias}
@@ -110,18 +109,6 @@ func (b *builder) jsonBody(op model.Operation, v model.Variant, ov overlay.Opera
 func reservedJSONName(name, family string) bool {
 	return strings.HasPrefix(name, "api.") || family == "uapi" && (name == "cpanel.user" || name == "cpanel.module" || name == "cpanel.function")
 }
-func inputHasNull(s InputSpec) bool {
-	if s.Nullable || s.Type == "null" {
-		return true
-	}
-	for _, a := range s.AnyOf {
-		if inputHasNull(a) {
-			return true
-		}
-	}
-	return false
-}
-
 func (s schemas) inputFor(source string, raw any, containers, descriptors int, path string, corrections map[string]overlay.InputCorrection, used map[string]bool, locator model.Locator, pointer string) (InputSpec, error) {
 	fail := func(m string) (InputSpec, error) { return InputSpec{}, fmt.Errorf("%s", m) }
 	obj, source, resolved, ok := s.follow(source, raw)
@@ -283,14 +270,19 @@ func (s schemas) inputFor(source string, raw any, containers, descriptors int, p
 				}
 			}
 			if extra, exists := obj["additionalProperties"]; exists && extra != false {
-				if _, ok := asObject(extra); !ok {
-					return fail("additional values require an explicit schema")
+				additional, object := asObject(extra)
+				if extra == true || (object && len(additional) == 0) {
+					result.Values = &InputSpec{Type: "json"}
+				} else {
+					if !object {
+						return fail("additional values require an explicit schema")
+					}
+					value, err := recur(extra, "/additionalProperties")
+					if err != nil {
+						return fail(err.Error())
+					}
+					result.Values = &value
 				}
-				value, err := recur(extra, "/additionalProperties")
-				if err != nil {
-					return fail(err.Error())
-				}
-				result.Values = &value
 			}
 		}
 	default:
@@ -301,10 +293,10 @@ func (s schemas) inputFor(source string, raw any, containers, descriptors int, p
 			return fail("required correction needs an object")
 		}
 		if correction.Nonempty != nil {
-			if !*correction.Nonempty || result.Type != "list" {
-				return fail("nonempty correction needs a list and true")
+			if result.Type != "list" && result.Type != "string" {
+				return fail("nonempty correction needs a list or string")
 			}
-			result.Nonempty = true
+			result.Nonempty = *correction.Nonempty
 		}
 	}
 	return result, nil
@@ -324,8 +316,13 @@ func InputNative(s InputSpec) string {
 			switch p {
 			case "flag":
 				p = "bool"
+			case "json":
+				p = "mixed"
 			case "object", "list":
 				p = "array"
+				if s.Type == "object" && s.Values != nil && s.Values.Type == "json" {
+					p += `|\HostingPal\WhmApiClient\JsonObject`
+				}
 			case "number":
 				p = "int|float"
 			}
@@ -340,6 +337,11 @@ func InputNative(s InputSpec) string {
 	var result []string
 	nullable := false
 	for _, p := range parts {
+		// The runtime json grammar is strict; a native scalar union could coerce
+		// or invoke Stringable before metadata reset in weak callers.
+		if p == "mixed" {
+			return "mixed"
+		}
 		if p == "null" {
 			nullable = true
 			continue

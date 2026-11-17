@@ -80,6 +80,18 @@
         {
           "kind": "documented",
           "text": "Upstream returnUrl must be HTTPS on the same cPanel host, with no userinfo and at most 2048 characters. Invalid values are ignored for a default, not rejected locally. The prompt, return URL and returned magic link are private; never log or fetch the magic link."
+        },
+        {
+          "kind": "documented",
+          "text": "Source-only on cPanel 11.138.0.19, reviewed in PR100 review 5725396130: Cpanel/API/WPX.pm _unsupported_php_response() preserves Cpanel/WPX/PhpCompat.pm check_compatibility() diagnostics with status unsupported_php. This is a successful-envelope refusal: it queues nothing and creates no installation task. Inspect status explicitly; a noncollision result does not imply running. No unsupported_php wire response was observed. The eleven additional diagnostic fields are optional; unknown lookup strings can be null. Existing domain/status remain strings. See docs/api/source-audit.md, WPX review corrections, for local captured-output provenance."
+        },
+        {
+          "kind": "documented",
+          "text": "Source-only remedies: blocked_by domain can require changing the MultiPHP Manager row named by domain_version_vhost; system_default means contact the provider. The client does not repair PHP, poll, fetch sources or start another request automatically. required_version is a string (source constant 7.4); no local PHP-version or closed blocked_by/source enum validation."
+        },
+        {
+          "kind": "documented",
+          "text": "Source-only on 11.138.0.19: Cpanel/API/WPX.pm also requires wp-toolkit-site-import; the shared Nova entitlement requires both nova-wordpress and the ai-app-builder extension. These are source-derived prerequisites, not a live entitlement or installation guarantee."
         }
       ],
       "evidence": [
@@ -118,6 +130,183 @@
         "colorScheme": {
           "php": "colorScheme"
         }
+      },
+      "response": {
+        "compatible": {
+          "add": {
+            "type": "flag"
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "source-only 11.138.0.19; review 5725396130",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WPX~1create_nova_for_wordpress_website/post/description",
+              "note": "Unpinned optional compatible: source-only Cpanel/API/WPX.pm _php_compatibility()/_unsupported_php_response() plus Cpanel/WPX/PhpCompat.pm check_compatibility() and Constants.pm WORDPRESS_MIN_PHP_VERSION. Local reviewer captured-output records 17631, 17649, 17647, 17666, 17759 and 17702, attributed with extracted-byte hashes in docs/api/source-audit.md (WPX review corrections). Some historical lines are truncated; no complete-file hash or wire observation is claimed. This pinned operation-description pointer anchors identity only, not an added-field schema."
+            }
+          ]
+        },
+        "required_version": {
+          "add": {
+            "type": "string"
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "source-only 11.138.0.19; review 5725396130",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WPX~1create_nova_for_wordpress_website/post/description",
+              "note": "Unpinned optional required_version: source-only Cpanel/API/WPX.pm _php_compatibility()/_unsupported_php_response() plus Cpanel/WPX/PhpCompat.pm check_compatibility() and Constants.pm WORDPRESS_MIN_PHP_VERSION. Local reviewer captured-output records 17631, 17649, 17647, 17666, 17759 and 17702, attributed with extracted-byte hashes in docs/api/source-audit.md (WPX review corrections). Some historical lines are truncated; no complete-file hash or wire observation is claimed. This pinned operation-description pointer anchors identity only, not an added-field schema."
+            }
+          ]
+        },
+        "effective_version": {
+          "add": {
+            "type": "string",
+            "nullable": true
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "source-only 11.138.0.19; review 5725396130",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WPX~1create_nova_for_wordpress_website/post/description",
+              "note": "Unpinned optional effective_version: source-only Cpanel/API/WPX.pm _php_compatibility()/_unsupported_php_response() plus Cpanel/WPX/PhpCompat.pm check_compatibility() and Constants.pm WORDPRESS_MIN_PHP_VERSION. Local reviewer captured-output records 17631, 17649, 17647, 17666, 17759 and 17702, attributed with extracted-byte hashes in docs/api/source-audit.md (WPX review corrections). Some historical lines are truncated; no complete-file hash or wire observation is claimed. This pinned operation-description pointer anchors identity only, not an added-field schema."
+            }
+          ]
+        },
+        "blocked_by": {
+          "add": {
+            "type": "list",
+            "items": {
+              "type": "string"
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "source-only 11.138.0.19; review 5725396130",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WPX~1create_nova_for_wordpress_website/post/description",
+              "note": "Unpinned optional blocked_by: source-only Cpanel/API/WPX.pm _php_compatibility()/_unsupported_php_response() plus Cpanel/WPX/PhpCompat.pm check_compatibility() and Constants.pm WORDPRESS_MIN_PHP_VERSION. Local reviewer captured-output records 17631, 17649, 17647, 17666, 17759 and 17702, attributed with extracted-byte hashes in docs/api/source-audit.md (WPX review corrections). Some historical lines are truncated; no complete-file hash or wire observation is claimed. This pinned operation-description pointer anchors identity only, not an added-field schema."
+            }
+          ]
+        },
+        "system_default_package": {
+          "add": {
+            "type": "string",
+            "nullable": true
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "source-only 11.138.0.19; review 5725396130",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WPX~1create_nova_for_wordpress_website/post/description",
+              "note": "Unpinned optional system_default_package: source-only Cpanel/API/WPX.pm _php_compatibility()/_unsupported_php_response() plus Cpanel/WPX/PhpCompat.pm check_compatibility() and Constants.pm WORDPRESS_MIN_PHP_VERSION. Local reviewer captured-output records 17631, 17649, 17647, 17666, 17759 and 17702, attributed with extracted-byte hashes in docs/api/source-audit.md (WPX review corrections). Some historical lines are truncated; no complete-file hash or wire observation is claimed. This pinned operation-description pointer anchors identity only, not an added-field schema."
+            }
+          ]
+        },
+        "system_default_version": {
+          "add": {
+            "type": "string",
+            "nullable": true
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "source-only 11.138.0.19; review 5725396130",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WPX~1create_nova_for_wordpress_website/post/description",
+              "note": "Unpinned optional system_default_version: source-only Cpanel/API/WPX.pm _php_compatibility()/_unsupported_php_response() plus Cpanel/WPX/PhpCompat.pm check_compatibility() and Constants.pm WORDPRESS_MIN_PHP_VERSION. Local reviewer captured-output records 17631, 17649, 17647, 17666, 17759 and 17702, attributed with extracted-byte hashes in docs/api/source-audit.md (WPX review corrections). Some historical lines are truncated; no complete-file hash or wire observation is claimed. This pinned operation-description pointer anchors identity only, not an added-field schema."
+            }
+          ]
+        },
+        "domain_package": {
+          "add": {
+            "type": "string",
+            "nullable": true
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "source-only 11.138.0.19; review 5725396130",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WPX~1create_nova_for_wordpress_website/post/description",
+              "note": "Unpinned optional domain_package: source-only Cpanel/API/WPX.pm _php_compatibility()/_unsupported_php_response() plus Cpanel/WPX/PhpCompat.pm check_compatibility() and Constants.pm WORDPRESS_MIN_PHP_VERSION. Local reviewer captured-output records 17631, 17649, 17647, 17666, 17759 and 17702, attributed with extracted-byte hashes in docs/api/source-audit.md (WPX review corrections). Some historical lines are truncated; no complete-file hash or wire observation is claimed. This pinned operation-description pointer anchors identity only, not an added-field schema."
+            }
+          ]
+        },
+        "domain_version": {
+          "add": {
+            "type": "string",
+            "nullable": true
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "source-only 11.138.0.19; review 5725396130",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WPX~1create_nova_for_wordpress_website/post/description",
+              "note": "Unpinned optional domain_version: source-only Cpanel/API/WPX.pm _php_compatibility()/_unsupported_php_response() plus Cpanel/WPX/PhpCompat.pm check_compatibility() and Constants.pm WORDPRESS_MIN_PHP_VERSION. Local reviewer captured-output records 17631, 17649, 17647, 17666, 17759 and 17702, attributed with extracted-byte hashes in docs/api/source-audit.md (WPX review corrections). Some historical lines are truncated; no complete-file hash or wire observation is claimed. This pinned operation-description pointer anchors identity only, not an added-field schema."
+            }
+          ]
+        },
+        "domain_version_source": {
+          "add": {
+            "type": "string",
+            "nullable": true
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "source-only 11.138.0.19; review 5725396130",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WPX~1create_nova_for_wordpress_website/post/description",
+              "note": "Unpinned optional domain_version_source: source-only Cpanel/API/WPX.pm _php_compatibility()/_unsupported_php_response() plus Cpanel/WPX/PhpCompat.pm check_compatibility() and Constants.pm WORDPRESS_MIN_PHP_VERSION. Local reviewer captured-output records 17631, 17649, 17647, 17666, 17759 and 17702, attributed with extracted-byte hashes in docs/api/source-audit.md (WPX review corrections). Some historical lines are truncated; no complete-file hash or wire observation is claimed. This pinned operation-description pointer anchors identity only, not an added-field schema."
+            }
+          ]
+        },
+        "domain_version_vhost": {
+          "add": {
+            "type": "string",
+            "nullable": true
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "source-only 11.138.0.19; review 5725396130",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WPX~1create_nova_for_wordpress_website/post/description",
+              "note": "Unpinned optional domain_version_vhost: source-only Cpanel/API/WPX.pm _php_compatibility()/_unsupported_php_response() plus Cpanel/WPX/PhpCompat.pm check_compatibility() and Constants.pm WORDPRESS_MIN_PHP_VERSION. Local reviewer captured-output records 17631, 17649, 17647, 17666, 17759 and 17702, attributed with extracted-byte hashes in docs/api/source-audit.md (WPX review corrections). Some historical lines are truncated; no complete-file hash or wire observation is claimed. This pinned operation-description pointer anchors identity only, not an added-field schema."
+            }
+          ]
+        },
+        "is_fallback": {
+          "add": {
+            "type": "flag"
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "source-only 11.138.0.19; review 5725396130",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WPX~1create_nova_for_wordpress_website/post/description",
+              "note": "Unpinned optional is_fallback: source-only Cpanel/API/WPX.pm _php_compatibility()/_unsupported_php_response() plus Cpanel/WPX/PhpCompat.pm check_compatibility() and Constants.pm WORDPRESS_MIN_PHP_VERSION. Local reviewer captured-output records 17631, 17649, 17647, 17666, 17759 and 17702, attributed with extracted-byte hashes in docs/api/source-audit.md (WPX review corrections). Some historical lines are truncated; no complete-file hash or wire observation is claimed. This pinned operation-description pointer anchors identity only, not an added-field schema."
+            }
+          ]
+        }
       }
     },
     "uapi:WPX/create_website": {
@@ -138,6 +327,14 @@
         {
           "kind": "documented",
           "text": "Collision is a successful result that queues nothing. Running returns task_id and install_id without proving completion or health. The client never deletes an existing installation automatically. Use getTaskProgress(installId) explicitly; the SSE path needs an interactive session, not an API token."
+        },
+        {
+          "kind": "documented",
+          "text": "Source-only on cPanel 11.138.0.19, reviewed in PR100 review 5725396130: Cpanel/API/WPX.pm _unsupported_php_response() preserves Cpanel/WPX/PhpCompat.pm check_compatibility() diagnostics with status unsupported_php. This is a successful-envelope refusal: it queues nothing and creates no installation task. Inspect status explicitly; a noncollision result does not imply running. No unsupported_php wire response was observed. The eleven additional diagnostic fields are optional; unknown lookup strings can be null. Existing domain/status remain strings. See docs/api/source-audit.md, WPX review corrections, for local captured-output provenance."
+        },
+        {
+          "kind": "documented",
+          "text": "Source-only remedies: blocked_by domain can require changing the MultiPHP Manager row named by domain_version_vhost; system_default means contact the provider. The client does not repair PHP, poll, fetch sources or start another request automatically. required_version is a string (source constant 7.4); no local PHP-version or closed blocked_by/source enum validation."
         }
       ],
       "evidence": [
@@ -161,7 +358,184 @@
       "order": [
         "domain",
         "title"
-      ]
+      ],
+      "response": {
+        "compatible": {
+          "add": {
+            "type": "flag"
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "source-only 11.138.0.19; review 5725396130",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WPX~1create_website/post/description",
+              "note": "Unpinned optional compatible: source-only Cpanel/API/WPX.pm _php_compatibility()/_unsupported_php_response() plus Cpanel/WPX/PhpCompat.pm check_compatibility() and Constants.pm WORDPRESS_MIN_PHP_VERSION. Local reviewer captured-output records 17631, 17649, 17647, 17666, 17759 and 17702, attributed with extracted-byte hashes in docs/api/source-audit.md (WPX review corrections). Some historical lines are truncated; no complete-file hash or wire observation is claimed. This pinned operation-description pointer anchors identity only, not an added-field schema."
+            }
+          ]
+        },
+        "required_version": {
+          "add": {
+            "type": "string"
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "source-only 11.138.0.19; review 5725396130",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WPX~1create_website/post/description",
+              "note": "Unpinned optional required_version: source-only Cpanel/API/WPX.pm _php_compatibility()/_unsupported_php_response() plus Cpanel/WPX/PhpCompat.pm check_compatibility() and Constants.pm WORDPRESS_MIN_PHP_VERSION. Local reviewer captured-output records 17631, 17649, 17647, 17666, 17759 and 17702, attributed with extracted-byte hashes in docs/api/source-audit.md (WPX review corrections). Some historical lines are truncated; no complete-file hash or wire observation is claimed. This pinned operation-description pointer anchors identity only, not an added-field schema."
+            }
+          ]
+        },
+        "effective_version": {
+          "add": {
+            "type": "string",
+            "nullable": true
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "source-only 11.138.0.19; review 5725396130",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WPX~1create_website/post/description",
+              "note": "Unpinned optional effective_version: source-only Cpanel/API/WPX.pm _php_compatibility()/_unsupported_php_response() plus Cpanel/WPX/PhpCompat.pm check_compatibility() and Constants.pm WORDPRESS_MIN_PHP_VERSION. Local reviewer captured-output records 17631, 17649, 17647, 17666, 17759 and 17702, attributed with extracted-byte hashes in docs/api/source-audit.md (WPX review corrections). Some historical lines are truncated; no complete-file hash or wire observation is claimed. This pinned operation-description pointer anchors identity only, not an added-field schema."
+            }
+          ]
+        },
+        "blocked_by": {
+          "add": {
+            "type": "list",
+            "items": {
+              "type": "string"
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "source-only 11.138.0.19; review 5725396130",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WPX~1create_website/post/description",
+              "note": "Unpinned optional blocked_by: source-only Cpanel/API/WPX.pm _php_compatibility()/_unsupported_php_response() plus Cpanel/WPX/PhpCompat.pm check_compatibility() and Constants.pm WORDPRESS_MIN_PHP_VERSION. Local reviewer captured-output records 17631, 17649, 17647, 17666, 17759 and 17702, attributed with extracted-byte hashes in docs/api/source-audit.md (WPX review corrections). Some historical lines are truncated; no complete-file hash or wire observation is claimed. This pinned operation-description pointer anchors identity only, not an added-field schema."
+            }
+          ]
+        },
+        "system_default_package": {
+          "add": {
+            "type": "string",
+            "nullable": true
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "source-only 11.138.0.19; review 5725396130",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WPX~1create_website/post/description",
+              "note": "Unpinned optional system_default_package: source-only Cpanel/API/WPX.pm _php_compatibility()/_unsupported_php_response() plus Cpanel/WPX/PhpCompat.pm check_compatibility() and Constants.pm WORDPRESS_MIN_PHP_VERSION. Local reviewer captured-output records 17631, 17649, 17647, 17666, 17759 and 17702, attributed with extracted-byte hashes in docs/api/source-audit.md (WPX review corrections). Some historical lines are truncated; no complete-file hash or wire observation is claimed. This pinned operation-description pointer anchors identity only, not an added-field schema."
+            }
+          ]
+        },
+        "system_default_version": {
+          "add": {
+            "type": "string",
+            "nullable": true
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "source-only 11.138.0.19; review 5725396130",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WPX~1create_website/post/description",
+              "note": "Unpinned optional system_default_version: source-only Cpanel/API/WPX.pm _php_compatibility()/_unsupported_php_response() plus Cpanel/WPX/PhpCompat.pm check_compatibility() and Constants.pm WORDPRESS_MIN_PHP_VERSION. Local reviewer captured-output records 17631, 17649, 17647, 17666, 17759 and 17702, attributed with extracted-byte hashes in docs/api/source-audit.md (WPX review corrections). Some historical lines are truncated; no complete-file hash or wire observation is claimed. This pinned operation-description pointer anchors identity only, not an added-field schema."
+            }
+          ]
+        },
+        "domain_package": {
+          "add": {
+            "type": "string",
+            "nullable": true
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "source-only 11.138.0.19; review 5725396130",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WPX~1create_website/post/description",
+              "note": "Unpinned optional domain_package: source-only Cpanel/API/WPX.pm _php_compatibility()/_unsupported_php_response() plus Cpanel/WPX/PhpCompat.pm check_compatibility() and Constants.pm WORDPRESS_MIN_PHP_VERSION. Local reviewer captured-output records 17631, 17649, 17647, 17666, 17759 and 17702, attributed with extracted-byte hashes in docs/api/source-audit.md (WPX review corrections). Some historical lines are truncated; no complete-file hash or wire observation is claimed. This pinned operation-description pointer anchors identity only, not an added-field schema."
+            }
+          ]
+        },
+        "domain_version": {
+          "add": {
+            "type": "string",
+            "nullable": true
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "source-only 11.138.0.19; review 5725396130",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WPX~1create_website/post/description",
+              "note": "Unpinned optional domain_version: source-only Cpanel/API/WPX.pm _php_compatibility()/_unsupported_php_response() plus Cpanel/WPX/PhpCompat.pm check_compatibility() and Constants.pm WORDPRESS_MIN_PHP_VERSION. Local reviewer captured-output records 17631, 17649, 17647, 17666, 17759 and 17702, attributed with extracted-byte hashes in docs/api/source-audit.md (WPX review corrections). Some historical lines are truncated; no complete-file hash or wire observation is claimed. This pinned operation-description pointer anchors identity only, not an added-field schema."
+            }
+          ]
+        },
+        "domain_version_source": {
+          "add": {
+            "type": "string",
+            "nullable": true
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "source-only 11.138.0.19; review 5725396130",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WPX~1create_website/post/description",
+              "note": "Unpinned optional domain_version_source: source-only Cpanel/API/WPX.pm _php_compatibility()/_unsupported_php_response() plus Cpanel/WPX/PhpCompat.pm check_compatibility() and Constants.pm WORDPRESS_MIN_PHP_VERSION. Local reviewer captured-output records 17631, 17649, 17647, 17666, 17759 and 17702, attributed with extracted-byte hashes in docs/api/source-audit.md (WPX review corrections). Some historical lines are truncated; no complete-file hash or wire observation is claimed. This pinned operation-description pointer anchors identity only, not an added-field schema."
+            }
+          ]
+        },
+        "domain_version_vhost": {
+          "add": {
+            "type": "string",
+            "nullable": true
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "source-only 11.138.0.19; review 5725396130",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WPX~1create_website/post/description",
+              "note": "Unpinned optional domain_version_vhost: source-only Cpanel/API/WPX.pm _php_compatibility()/_unsupported_php_response() plus Cpanel/WPX/PhpCompat.pm check_compatibility() and Constants.pm WORDPRESS_MIN_PHP_VERSION. Local reviewer captured-output records 17631, 17649, 17647, 17666, 17759 and 17702, attributed with extracted-byte hashes in docs/api/source-audit.md (WPX review corrections). Some historical lines are truncated; no complete-file hash or wire observation is claimed. This pinned operation-description pointer anchors identity only, not an added-field schema."
+            }
+          ]
+        },
+        "is_fallback": {
+          "add": {
+            "type": "flag"
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "source-only 11.138.0.19; review 5725396130",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WPX~1create_website/post/description",
+              "note": "Unpinned optional is_fallback: source-only Cpanel/API/WPX.pm _php_compatibility()/_unsupported_php_response() plus Cpanel/WPX/PhpCompat.pm check_compatibility() and Constants.pm WORDPRESS_MIN_PHP_VERSION. Local reviewer captured-output records 17631, 17649, 17647, 17666, 17759 and 17702, attributed with extracted-byte hashes in docs/api/source-audit.md (WPX review corrections). Some historical lines are truncated; no complete-file hash or wire observation is claimed. This pinned operation-description pointer anchors identity only, not an added-field schema."
+            }
+          ]
+        }
+      }
     },
     "uapi:WPX/get_admin_account": {
       "method": "GET",
@@ -211,7 +585,7 @@
         },
         {
           "kind": "policy",
-          "text": "Despite its getter name and selected source GET, this token-minting operation uses form POST under mutation policy. Live POST acceptance is unestablished; a GET-only server will fail until route-specific evidence corrects transport."
+          "text": "Despite its getter name and selected source GET, this token-minting operation uses form POST under mutation policy. PR100 review 5725396130 at a4d3145 on 11.138.0.19 reports POST reaching the adminbin on direct UAPI and the WHM bridge, then failing because the WP Toolkit binary was missing. Successful token payloads remain unobserved; this is no universal route-acceptance or success guarantee and adds no fallback."
         }
       ],
       "evidence": [
@@ -222,6 +596,14 @@
           "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
           "pointer": "/paths/~1WPX~1get_credentials/get/description",
           "note": "Selected formal GET variant and ordinary Flag outcome; preserve optional response fields without corrections. The exact description says each call mints a new single-use token, so controller mutation policy selects form POST despite the documented GET. A GET-only server would fail until route-specific evidence corrects transport; no live acceptance is claimed."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1WPX~1get_credentials/get/description",
+          "note": "PR100 review 5725396130 at a4d3145 reports effective form POST reached the adminbin through direct UAPI and WHM bridge and then failed because /usr/local/bin/wp-toolkit was missing. Success/token payload remains unobserved. Supersedes the earlier unestablished-POST statement only for these observed routes/build; selected formal GET, privacy, parameters and no fallback remain unchanged."
         }
       ],
       "order": [
@@ -275,6 +657,10 @@
         {
           "kind": "documented",
           "text": "installId identifies retained progress/outcome logs, which remain readable after completion. Status and percentage do not change the envelope success rules. API-token clients explicitly use this method; SSE needs an interactive session. No automatic polling or path fetch."
+        },
+        {
+          "kind": "observed",
+          "text": "PR100 review 5725396130 on 11.138.0.19 seeded the two documented progress-log formats, not a real install: direct GET percentage was quoted 20/10/40 while bridged GET was integer; no-log 0 and complete 100 were integers on both routes. Only percentage accepts lossless canonical bounded integer strings and returns int; the descriptive 0..100 range adds no validator."
         }
       ],
       "evidence": [
@@ -285,8 +671,33 @@
           "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
           "pointer": "/paths/~1WPX~1get_task_progress/get/description",
           "note": "Selected formal GET variant and ordinary Flag outcome; preserve optional response fields without corrections. Use GET for this selected operation."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1WPX~1get_task_progress/get/responses/200/content/application~1json/schema/properties/result/properties/data/properties/percentage",
+          "note": "PR100 review 5725396130 at a4d31458ec2763fc1b2261adff47b6fa9a79441d: reviewer seeded both documented progress-log formats, not a real install. Direct GET returned quoted 20/10/40 for running/failed; bridged GET integers. No-log 0 and complete 100 were integers on both routes. Accept only existing lossless canonical bounded integer numeric strings at percentage; no new range guard. Formal integer source stays pinned; review report is distinct from source-only compatibility diagnostics."
         }
-      ]
+      ],
+      "response": {
+        "percentage": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WPX~1get_task_progress/get/responses/200/content/application~1json/schema/properties/result/properties/data/properties/percentage",
+              "note": "PR100 review 5725396130 at a4d31458ec2763fc1b2261adff47b6fa9a79441d: reviewer seeded both documented progress-log formats, not a real install. Direct GET returned quoted 20/10/40 for running/failed; bridged GET integers. No-log 0 and complete 100 were integers on both routes. Accept only existing lossless canonical bounded integer numeric strings at percentage; no new range guard. Formal integer source stays pinned; review report is distinct from source-only compatibility diagnostics."
+            }
+          ]
+        }
+      }
     },
     "uapi:WPX/get_task_status": {
       "method": "GET",
@@ -387,6 +798,18 @@
         {
           "kind": "documented",
           "text": "Omitted overwrite uses upstream default 0; explicit false sends 0, while true can replace an existing installation. passwordType remains a supplied string. The background import can fail after API success. Collision queues nothing; running identifiers are not completion or health. Explicit getTaskProgress(installId) works for API tokens; the SSE path needs an interactive session."
+        },
+        {
+          "kind": "documented",
+          "text": "Source-only on cPanel 11.138.0.19, reviewed in PR100 review 5725396130: Cpanel/API/WPX.pm _unsupported_php_response() preserves Cpanel/WPX/PhpCompat.pm check_compatibility() diagnostics with status unsupported_php. This is a successful-envelope refusal: it queues nothing and creates no installation task. Inspect status explicitly; a noncollision result does not imply running. No unsupported_php wire response was observed. The eleven additional diagnostic fields are optional; unknown lookup strings can be null. Existing domain/status remain strings. See docs/api/source-audit.md, WPX review corrections, for local captured-output provenance."
+        },
+        {
+          "kind": "documented",
+          "text": "Source-only remedies: blocked_by domain can require changing the MultiPHP Manager row named by domain_version_vhost; system_default means contact the provider. The client does not repair PHP, poll, fetch sources or start another request automatically. required_version is a string (source constant 7.4); no local PHP-version or closed blocked_by/source enum validation."
+        },
+        {
+          "kind": "documented",
+          "text": "Source-only on 11.138.0.19: Cpanel/API/WPX.pm also requires wp-toolkit-site-import; the shared Nova entitlement requires both nova-wordpress and the ai-app-builder extension. These are source-derived prerequisites, not a live entitlement or installation guarantee."
         }
       ],
       "evidence": [
@@ -424,6 +847,183 @@
         },
         "source_password": {
           "sensitive": true
+        }
+      },
+      "response": {
+        "compatible": {
+          "add": {
+            "type": "flag"
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "source-only 11.138.0.19; review 5725396130",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WPX~1import_website/post/description",
+              "note": "Unpinned optional compatible: source-only Cpanel/API/WPX.pm _php_compatibility()/_unsupported_php_response() plus Cpanel/WPX/PhpCompat.pm check_compatibility() and Constants.pm WORDPRESS_MIN_PHP_VERSION. Local reviewer captured-output records 17631, 17649, 17647, 17666, 17759 and 17702, attributed with extracted-byte hashes in docs/api/source-audit.md (WPX review corrections). Some historical lines are truncated; no complete-file hash or wire observation is claimed. This pinned operation-description pointer anchors identity only, not an added-field schema."
+            }
+          ]
+        },
+        "required_version": {
+          "add": {
+            "type": "string"
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "source-only 11.138.0.19; review 5725396130",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WPX~1import_website/post/description",
+              "note": "Unpinned optional required_version: source-only Cpanel/API/WPX.pm _php_compatibility()/_unsupported_php_response() plus Cpanel/WPX/PhpCompat.pm check_compatibility() and Constants.pm WORDPRESS_MIN_PHP_VERSION. Local reviewer captured-output records 17631, 17649, 17647, 17666, 17759 and 17702, attributed with extracted-byte hashes in docs/api/source-audit.md (WPX review corrections). Some historical lines are truncated; no complete-file hash or wire observation is claimed. This pinned operation-description pointer anchors identity only, not an added-field schema."
+            }
+          ]
+        },
+        "effective_version": {
+          "add": {
+            "type": "string",
+            "nullable": true
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "source-only 11.138.0.19; review 5725396130",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WPX~1import_website/post/description",
+              "note": "Unpinned optional effective_version: source-only Cpanel/API/WPX.pm _php_compatibility()/_unsupported_php_response() plus Cpanel/WPX/PhpCompat.pm check_compatibility() and Constants.pm WORDPRESS_MIN_PHP_VERSION. Local reviewer captured-output records 17631, 17649, 17647, 17666, 17759 and 17702, attributed with extracted-byte hashes in docs/api/source-audit.md (WPX review corrections). Some historical lines are truncated; no complete-file hash or wire observation is claimed. This pinned operation-description pointer anchors identity only, not an added-field schema."
+            }
+          ]
+        },
+        "blocked_by": {
+          "add": {
+            "type": "list",
+            "items": {
+              "type": "string"
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "source-only 11.138.0.19; review 5725396130",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WPX~1import_website/post/description",
+              "note": "Unpinned optional blocked_by: source-only Cpanel/API/WPX.pm _php_compatibility()/_unsupported_php_response() plus Cpanel/WPX/PhpCompat.pm check_compatibility() and Constants.pm WORDPRESS_MIN_PHP_VERSION. Local reviewer captured-output records 17631, 17649, 17647, 17666, 17759 and 17702, attributed with extracted-byte hashes in docs/api/source-audit.md (WPX review corrections). Some historical lines are truncated; no complete-file hash or wire observation is claimed. This pinned operation-description pointer anchors identity only, not an added-field schema."
+            }
+          ]
+        },
+        "system_default_package": {
+          "add": {
+            "type": "string",
+            "nullable": true
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "source-only 11.138.0.19; review 5725396130",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WPX~1import_website/post/description",
+              "note": "Unpinned optional system_default_package: source-only Cpanel/API/WPX.pm _php_compatibility()/_unsupported_php_response() plus Cpanel/WPX/PhpCompat.pm check_compatibility() and Constants.pm WORDPRESS_MIN_PHP_VERSION. Local reviewer captured-output records 17631, 17649, 17647, 17666, 17759 and 17702, attributed with extracted-byte hashes in docs/api/source-audit.md (WPX review corrections). Some historical lines are truncated; no complete-file hash or wire observation is claimed. This pinned operation-description pointer anchors identity only, not an added-field schema."
+            }
+          ]
+        },
+        "system_default_version": {
+          "add": {
+            "type": "string",
+            "nullable": true
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "source-only 11.138.0.19; review 5725396130",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WPX~1import_website/post/description",
+              "note": "Unpinned optional system_default_version: source-only Cpanel/API/WPX.pm _php_compatibility()/_unsupported_php_response() plus Cpanel/WPX/PhpCompat.pm check_compatibility() and Constants.pm WORDPRESS_MIN_PHP_VERSION. Local reviewer captured-output records 17631, 17649, 17647, 17666, 17759 and 17702, attributed with extracted-byte hashes in docs/api/source-audit.md (WPX review corrections). Some historical lines are truncated; no complete-file hash or wire observation is claimed. This pinned operation-description pointer anchors identity only, not an added-field schema."
+            }
+          ]
+        },
+        "domain_package": {
+          "add": {
+            "type": "string",
+            "nullable": true
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "source-only 11.138.0.19; review 5725396130",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WPX~1import_website/post/description",
+              "note": "Unpinned optional domain_package: source-only Cpanel/API/WPX.pm _php_compatibility()/_unsupported_php_response() plus Cpanel/WPX/PhpCompat.pm check_compatibility() and Constants.pm WORDPRESS_MIN_PHP_VERSION. Local reviewer captured-output records 17631, 17649, 17647, 17666, 17759 and 17702, attributed with extracted-byte hashes in docs/api/source-audit.md (WPX review corrections). Some historical lines are truncated; no complete-file hash or wire observation is claimed. This pinned operation-description pointer anchors identity only, not an added-field schema."
+            }
+          ]
+        },
+        "domain_version": {
+          "add": {
+            "type": "string",
+            "nullable": true
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "source-only 11.138.0.19; review 5725396130",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WPX~1import_website/post/description",
+              "note": "Unpinned optional domain_version: source-only Cpanel/API/WPX.pm _php_compatibility()/_unsupported_php_response() plus Cpanel/WPX/PhpCompat.pm check_compatibility() and Constants.pm WORDPRESS_MIN_PHP_VERSION. Local reviewer captured-output records 17631, 17649, 17647, 17666, 17759 and 17702, attributed with extracted-byte hashes in docs/api/source-audit.md (WPX review corrections). Some historical lines are truncated; no complete-file hash or wire observation is claimed. This pinned operation-description pointer anchors identity only, not an added-field schema."
+            }
+          ]
+        },
+        "domain_version_source": {
+          "add": {
+            "type": "string",
+            "nullable": true
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "source-only 11.138.0.19; review 5725396130",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WPX~1import_website/post/description",
+              "note": "Unpinned optional domain_version_source: source-only Cpanel/API/WPX.pm _php_compatibility()/_unsupported_php_response() plus Cpanel/WPX/PhpCompat.pm check_compatibility() and Constants.pm WORDPRESS_MIN_PHP_VERSION. Local reviewer captured-output records 17631, 17649, 17647, 17666, 17759 and 17702, attributed with extracted-byte hashes in docs/api/source-audit.md (WPX review corrections). Some historical lines are truncated; no complete-file hash or wire observation is claimed. This pinned operation-description pointer anchors identity only, not an added-field schema."
+            }
+          ]
+        },
+        "domain_version_vhost": {
+          "add": {
+            "type": "string",
+            "nullable": true
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "source-only 11.138.0.19; review 5725396130",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WPX~1import_website/post/description",
+              "note": "Unpinned optional domain_version_vhost: source-only Cpanel/API/WPX.pm _php_compatibility()/_unsupported_php_response() plus Cpanel/WPX/PhpCompat.pm check_compatibility() and Constants.pm WORDPRESS_MIN_PHP_VERSION. Local reviewer captured-output records 17631, 17649, 17647, 17666, 17759 and 17702, attributed with extracted-byte hashes in docs/api/source-audit.md (WPX review corrections). Some historical lines are truncated; no complete-file hash or wire observation is claimed. This pinned operation-description pointer anchors identity only, not an added-field schema."
+            }
+          ]
+        },
+        "is_fallback": {
+          "add": {
+            "type": "flag"
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "source-only 11.138.0.19; review 5725396130",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1WPX~1import_website/post/description",
+              "note": "Unpinned optional is_fallback: source-only Cpanel/API/WPX.pm _php_compatibility()/_unsupported_php_response() plus Cpanel/WPX/PhpCompat.pm check_compatibility() and Constants.pm WORDPRESS_MIN_PHP_VERSION. Local reviewer captured-output records 17631, 17649, 17647, 17666, 17759 and 17702, attributed with extracted-byte hashes in docs/api/source-audit.md (WPX review corrections). Some historical lines are truncated; no complete-file hash or wire observation is claimed. This pinned operation-description pointer anchors identity only, not an added-field schema."
+            }
+          ]
         }
       }
     },
