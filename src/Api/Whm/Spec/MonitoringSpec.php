@@ -80,7 +80,7 @@ final class MonitoringSpec
                 'token_data' => [
                     'type' => 'object',
                     'fields' => [
-                        'email' => ['type' => 'string'],
+                        'email' => ['type' => 'string', 'nullable' => true],
                         'expires_in' => ['type' => 'int'],
                     ],
                 ],
@@ -129,7 +129,7 @@ final class MonitoringSpec
         'returns' => [
             'type' => 'object',
             'fields' => [
-                'email' => ['type' => 'string'],
+                'email' => ['type' => 'string', 'nullable' => true],
                 'error' => ['type' => 'string'],
                 'expired_at' => ['type' => 'int'],
                 'expires_in' => ['type' => 'int'],

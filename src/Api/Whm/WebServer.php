@@ -537,7 +537,7 @@ final readonly class WebServer
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
-     * @throws InvalidArgumentException If the whole JSON body is invalid or query/root routing names are reserved.
+     * @throws InvalidArgumentException If the whole JSON body is invalid or root routing names are reserved.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/php-fpm/php-php_fpm_config_get
      */
     public function phpFpmConfigGet(
@@ -590,7 +590,7 @@ final readonly class WebServer
      * @param PhpFpmConfigSetInput $configuration Validated whole JSON body. Secrets belong in the body, not URL query
      *     fields. Direct routes only.
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
-     * @throws InvalidArgumentException If the whole JSON body is invalid or query/root routing names are reserved.
+     * @throws InvalidArgumentException If the whole JSON body is invalid or root routing names are reserved.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/php-fpm/php-php_fpm_config_set
      */
     public function phpFpmConfigSet(

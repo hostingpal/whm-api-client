@@ -163,14 +163,19 @@ final class WhmJsonConfigurationTest extends TestCase
         self::assertCount(1, $http->getRequests());
         $request = $http->getRequests()[0];
         self::assertSame('POST', $request->getMethod());
+        // WHM reads JSON arguments only from the body (PR117 review 5726712933): no query, root api.version first.
         self::assertSame(
-            'https://api.example.test:2443/json-api/' . $operation . '?api.version=1',
+            'https://api.example.test:2443/json-api/' . $operation,
             (string) $request->getUri(),
         );
-        self::assertSame('api.version=1', $request->getUri()->getQuery());
+        self::assertSame('', $request->getUri()->getQuery());
         self::assertSame('application/json', $request->getHeaderLine('Content-Type'));
         self::assertSame('whm root:fixture-token', $request->getHeaderLine('Authorization'));
-        self::assertSame($body, (string) $request->getBody());
+        $versioned = $body === '{}' ? '{"api.version":1}' : '{"api.version":1,' . substr($body, 1);
+        self::assertSame($versioned, (string) $request->getBody());
+        $decoded = json_decode((string) $request->getBody(), true, 512, JSON_THROW_ON_ERROR);
+        self::assertIsArray($decoded);
+        self::assertSame(1, $decoded['api.version'] ?? null);
         self::assertSame(1, $client->whm()->responseMeta()?->whmResult());
     }
 

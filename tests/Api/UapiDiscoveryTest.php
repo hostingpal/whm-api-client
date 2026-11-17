@@ -157,6 +157,9 @@ final class UapiDiscoveryTest extends TestCase
             ['getEximPorts', '{"ports":[587,25,65535,1],"unknown":"discard"}',
                 ['ports' => [587, 25, 65535, 1]]],
             ['getEximPortsSsl', '{"ports":[465,0,65535,465]}', ['ports' => [465, 0, 65535, 465]]],
+            // PR116 review 5726617674: the insecure list is split from a string, so ports are digit strings.
+            ['getEximPorts', '{"ports":["25","587","2525"]}', ['ports' => [25, 587, 2525]]],
+            ['getEximPorts', '{"ports":[25,"587"]}', ['ports' => [25, 587]]],
             // General bounds and uniqueness remain source constraints, not runtime checks.
             ['getEximPorts', '{"ports":[0,-1,65536,25,25]}', ['ports' => [0, -1, 65536, 25, 25]]],
             ['getEximPortsSsl', '{"ports":[-1,65536]}', ['ports' => [-1, 65536]]],
@@ -230,7 +233,8 @@ final class UapiDiscoveryTest extends TestCase
                 ) {
                     $cases[] = [$method, $wrong];
                 }
-                foreach (['"25"', '25.0', 'true', 'false', 'null', '[]', '{}'] as $wrong) {
+                $strings = $method === 'getEximPorts' ? ['"025"', '" 25"', '"25.0"', '"+25"'] : ['"25"'];
+                foreach ([...$strings, '25.0', 'true', 'false', 'null', '[]', '{}'] as $wrong) {
                     $cases[] = [$method, '{"ports":[25,' . $wrong . ']}'];
                 }
             }
