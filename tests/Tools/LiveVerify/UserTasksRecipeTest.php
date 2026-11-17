@@ -27,16 +27,18 @@ final class UserTasksRecipeTest extends TestCase
     }
 
     /** The clone source is a path inside the same account, so the server's git never reaches a network. */
-    public function testCloneSourceIsALocalPathInsideTheAccount(): void
+    public function testCloneSourceIsAnUnroutableDocumentationAddressWithoutCredentials(): void
     {
         $recipe = new UserTasksRecipe(self::ENTROPY, self::account());
-        self::assertSame('{"url":"' . self::ROOT . '/source"}', $recipe->sourceRepositoryJson());
+        self::assertSame('{"url":"https://192.0.2.1/whm-api-client-fixture.git"}', $recipe->sourceRepositoryJson());
         $decoded = json_decode($recipe->sourceRepositoryJson(), true, 2, JSON_THROW_ON_ERROR);
-        self::assertSame(['url' => $recipe->sourceRoot()], $decoded);
-        self::assertStringStartsWith(UserTasksRecipe::HOME . '/', $decoded['url']);
-        self::assertStringNotContainsString('://', $decoded['url']);
-        self::assertStringNotContainsString(':', $decoded['url']);
-        self::assertStringNotContainsString('@', $decoded['url']);
+        self::assertSame(['url' => UserTasksRecipe::CLONE_SOURCE], $decoded);
+        $url = parse_url(UserTasksRecipe::CLONE_SOURCE);
+        self::assertSame('https', $url['scheme']);
+        // RFC 5737 TEST-NET-1: no host on the internet answers, so the clone stays queued.
+        self::assertStringStartsWith('192.0.2.', $url['host']);
+        self::assertArrayNotHasKey('user', $url);
+        self::assertArrayNotHasKey('pass', $url);
     }
 
     public function testCreateParametersCarryOnlyTheReviewedFields(): void
@@ -47,7 +49,7 @@ final class UserTasksRecipeTest extends TestCase
         ], $recipe->createParameters('source'));
         self::assertSame([
             'repository_root' => self::ROOT . '/clone', 'name' => 'wltasks-clone-0123456789abcdef', 'type' => 'git',
-            'source_repository' => '{"url":"' . self::ROOT . '/source"}',
+            'source_repository' => '{"url":"https://192.0.2.1/whm-api-client-fixture.git"}',
         ], $recipe->createParameters('clone'));
     }
 
@@ -62,7 +64,7 @@ final class UserTasksRecipeTest extends TestCase
         );
         self::assertSame(
             'repository_root=' . $root . '%2Fclone&name=wltasks-clone-0123456789abcdef&type=git'
-                . '&source_repository=%7B%22url%22%3A%22' . $root . '%2Fsource%22%7D',
+                . '&source_repository=%7B%22url%22%3A%22https%3A%2F%2F192.0.2.1%2Fwhm-api-client-fixture.git%22%7D',
             $recipe->createBody('clone'),
         );
         foreach (['source', 'clone'] as $label) {

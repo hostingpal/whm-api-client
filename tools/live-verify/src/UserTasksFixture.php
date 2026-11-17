@@ -99,7 +99,7 @@ use Throwable;
  *     filesystem_control: FilesystemControl
  * }
  * @phpstan-type Scenario array{
- *     scenario: 'user-tasks-disposable-v2', target_role: 'disposable-test-account',
+ *     scenario: 'user-tasks-disposable-v3', target_role: 'disposable-test-account',
  *     producer: 'version-control-local-path-clone', probes: list<Observation>, queue: array<string, QueueRead>,
  *     ownership: Ownership, deletion: Deletion, discrepancy_review: Assessment, producer_review: Assessment,
  *     fixture: Report, limitations: list<string>
@@ -722,7 +722,7 @@ final class UserTasksFixture
         $reviews = UserTasksEvidence::assess($records, $this->context, $this->deletion['attempted']);
 
         return [
-            'scenario' => 'user-tasks-disposable-v2',
+            'scenario' => 'user-tasks-disposable-v3',
             'target_role' => 'disposable-test-account',
             'producer' => 'version-control-local-path-clone',
             'probes' => $records,

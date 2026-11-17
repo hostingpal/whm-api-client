@@ -51,7 +51,7 @@ final class UserTasksFixtureTest extends TestCase
         $fixture = $scenario['fixture'];
 
         self::assertSame('passed', $fixture['status'], (string) json_encode($fixture['failures']));
-        self::assertSame('user-tasks-disposable-v2', $scenario['scenario']);
+        self::assertSame('user-tasks-disposable-v3', $scenario['scenario']);
         self::assertSame('version-control-local-path-clone', $scenario['producer']);
         self::assertSame('passed', $scenario['discrepancy_review']['status']);
         self::assertSame([], $scenario['discrepancy_review']['findings']);

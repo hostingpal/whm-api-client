@@ -2581,14 +2581,18 @@ Exit 0 requires the lifecycle and the strict UserTasks review to pass. The share
 exact account and domain on every request, then the exact method, URI, complete header set and
 body. Each mutation is consumed once, even when refused.
 
-**Producer.** The run queues one clone of a local repository inside the disposable account, and
-cPanel's own queue runner processes it. First a plain `VersionControl/create` makes an empty
-repository there, which queues nothing. Then a second `VersionControl/create` clones it by
-absolute path, with no scheme, host or credential, which queues one `VersionControl`/`create`
-task. The fixture neither starts nor stops that work. The installed source says a local path
-needs no network transport, so the source was chosen for that; network traffic is not
-monitored, and no absence of contact is claimed. Nothing is installed and no server setting
-changes. Both creates go through generic `call()`, because they are fixture steps rather than
+**Producer.** The run queues one clone inside the disposable account, and cPanel's own queue
+runner processes it. First a plain `VersionControl/create` makes an empty repository there,
+which queues nothing. Then a second `VersionControl/create` clones
+`https://192.0.2.1/whm-api-client-fixture.git`, an RFC 5737 TEST-NET-1 address with no
+credential, which queues one `VersionControl`/`create` task. Scenario v3 replaced the v1/v2
+local-path source: in both earlier captures (2026-11-02 on 11.138.0.19, 2026-11-17 on
+11.138.0.24) that clone finished before the first queue read, so no read listed the task and
+the owned delete was never exercised. The installed source validates only the URL's syntax and
+queues the clone; git then blocks on a TCP connect that no internet host answers, keeping the
+task queued for the reads. The create response also runs a `git ls-remote` with a five-second
+read timeout. The fixture neither starts nor stops that work; account removal ends any clone
+still waiting. Nothing is installed and no server setting changes. Both creates go through generic `call()`, because they are fixture steps rather than
 the subject. The producer rests on the installed sources of `11.138.0.19`, inspected read-only
 for this recipe: see the
 [source audit](../../docs/api/source-audit.md#user-task-queue-fixture-2026-11-02).
