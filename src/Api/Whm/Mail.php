@@ -2213,17 +2213,30 @@ final readonly class Mail
      *
      * Documented: Available in cPanel & WHM 11.44 and later.
      *
-     * Documented: Requires Spam Filter role. allowedIps is a comma-separated string; omission allows connections from
-     * any IP, while a supplied list must include 127.0.0.1 for chkservd. Child and TCP timeout values of 0 mean never
-     * abandon the TCP connection. maxChildren and maxConnPerChild are process/connection limits. The pinned source does
-     * not state timeout units, so the client does not invent units. Changing pidFile on systemd requires matching
-     * PIDFile in spamd.service or the daemon fails. Options are omitted when not supplied; no client retry or restart
-     * is provided.
+     * Documented: Requires Spam Filter role. allowedIps accepts a raw comma-separated string or a nonempty sequential
+     * string list; omission allows connections from any IP, while a supplied list must include 127.0.0.1 for chkservd.
+     * Child and TCP timeout values of 0 mean never abandon the TCP connection. maxChildren and maxConnPerChild are
+     * process/connection limits. The pinned source does not state timeout units, so the client does not invent units.
+     * Changing pidFile on systemd requires matching PIDFile in spamd.service or the daemon fails. Options are omitted
+     * when not supplied; no client retry or restart is provided.
+     *
+     * Policy: Client list convenience: accept a nonempty sequential list of strict strings and join once with a comma
+     * into the original field. Preserve order, duplicates, empty items and all other bytes; reject embedded commas and
+     * malformed or empty lists after metadata reset before I/O. Raw scalars remain unparsed and encoded once.
+     * Collection arguments have trace protection without changing transport. Offline coverage only; historical scalar
+     * captures do not establish PHP-list execution. Live follow-up whm-api-client-8x0.2.86 and wider adoption
+     * whm-api-client-8x0.28.8 remain open.
+     *
+     * Documented: PR120 review 5727013591 read the installed 11.138.0.19 handler and confirmed the request bytes
+     * offline: allowedIps [''] sends allowedips= and the handler deletes the option for a false value, which is the
+     * same as omission, so ANY IP may connect. ['', ''] sends a bare comma, which is truthy, passes validation with
+     * zero items and is stored. An all-empty list therefore does not restrict access. No live call ran. The client
+     * keeps forwarding the empty value unchanged.
      *
      * API-map identity: whm1:save_spamd_config#GET (wire name save_spamd_config; Spam Management).
      *
-     * @param string|null $allowedIps A comma-separated list of IP addresses to authorize to access the spamd daemon.
-     *     Null omits it.
+     * @param string|non-empty-list<string>|null $allowedIps A comma-separated list of IP addresses to authorize to
+     *     access the spamd daemon. Null omits it.
      * @param int|null $maxChildren The maximum number of children per `spamd` process. Null omits it.
      * @param int|null $maxConnPerChild The maximum number of connections that the `spamd` daemon allows per child
      *     process. Null omits it.
@@ -2233,10 +2246,12 @@ final readonly class Mail
      * @param int|null $timeoutTcp The maximum amount of time that the `spamd` daemon waits before it abandons a TCP
      *     connection. Null omits it.
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/spam-management/spamd-save_spamd_config
      */
     public function saveSpamdConfig(
-        ?string $allowedIps = null,
+        #[SensitiveParameter]
+        string|array|null $allowedIps = null,
         ?int $maxChildren = null,
         ?int $maxConnPerChild = null,
         ?string $pidFile = null,

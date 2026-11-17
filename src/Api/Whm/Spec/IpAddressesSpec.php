@@ -20,7 +20,17 @@ final class IpAddressesSpec
         'params' => [
             'ips' => ['name' => 'ips', 'encoding' => 'scalar'],
             'netmask' => ['name' => 'netmask', 'encoding' => 'scalar'],
-            'excludes' => ['name' => 'excludes', 'encoding' => 'scalar'],
+            'excludes' => [
+                'name' => 'excludes',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => ',',
+                ],
+            ],
         ],
         'returns' => null,
     ];
@@ -70,7 +80,17 @@ final class IpAddressesSpec
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [
-            'user' => ['name' => 'user', 'encoding' => 'scalar'],
+            'user' => [
+                'name' => 'user',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => ',',
+                ],
+            ],
         ],
         'returns' => [
             'type' => 'object',
@@ -109,7 +129,17 @@ final class IpAddressesSpec
         'outcome' => 'flag',
         'params' => [
             'range' => ['name' => 'range', 'encoding' => 'scalar'],
-            'user' => ['name' => 'user', 'encoding' => 'scalar'],
+            'user' => [
+                'name' => 'user',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => ',',
+                ],
+            ],
         ],
         'returns' => [
             'type' => 'object',

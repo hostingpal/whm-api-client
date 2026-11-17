@@ -1137,7 +1137,17 @@ final class MailSpec
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [
-            'allowedIps' => ['name' => 'allowedips', 'encoding' => 'scalar'],
+            'allowedIps' => [
+                'name' => 'allowedips',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => ',',
+                ],
+            ],
             'maxChildren' => ['name' => 'maxchildren', 'encoding' => 'scalar'],
             'maxConnPerChild' => ['name' => 'maxconnperchild', 'encoding' => 'scalar'],
             'pidFile' => ['name' => 'pidfile', 'encoding' => 'scalar'],

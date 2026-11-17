@@ -492,7 +492,10 @@ final class WhmIpAddressesTest extends TestCase
                 $reflection->getParameters(),
             ));
             foreach ($reflection->getParameters() as $parameter) {
-                self::assertSame([], $parameter->getAttributes(SensitiveParameter::class));
+                $sensitive = in_array($method . ':' . $parameter->getName(), [
+                    'addIps:excludes', 'disableIpv6Account:user', 'enableIpv6Account:user',
+                ], true);
+                self::assertCount($sensitive ? 1 : 0, $parameter->getAttributes(SensitiveParameter::class));
                 if ($parameter->isOptional()) {
                     self::assertNull($parameter->getDefaultValue());
                 }

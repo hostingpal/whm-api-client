@@ -313,7 +313,7 @@ final class WhmAuthenticationTest extends TestCase
     public function testSensitiveParametersAndExcludedOperations(): void
     {
         $expected = [
-            'authorizeSshKey' => ['text'],
+            'authorizeSshKey' => ['text', 'options'],
             'convertOpenSshToPutty' => ['passphrase'],
             'generateSshKeyPair' => ['passphrase'],
             'getLoginUrl' => ['urlAfterLogin'],

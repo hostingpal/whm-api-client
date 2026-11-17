@@ -96,7 +96,17 @@ final class BackupsSpec
             'backupWeeklyRetention' => ['name' => 'backup_weekly_retention', 'encoding' => 'scalar'],
             'backupaccts' => ['name' => 'backupaccts', 'encoding' => 'bool'],
             'backupbwdata' => ['name' => 'backupbwdata', 'encoding' => 'bool'],
-            'backupdays' => ['name' => 'backupdays', 'encoding' => 'scalar'],
+            'backupdays' => [
+                'name' => 'backupdays',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => ',',
+                ],
+            ],
             'backupdir' => ['name' => 'backupdir', 'encoding' => 'scalar'],
             'backupenable' => ['name' => 'backupenable', 'encoding' => 'bool'],
             'backupfiles' => ['name' => 'backupfiles', 'encoding' => 'bool'],
