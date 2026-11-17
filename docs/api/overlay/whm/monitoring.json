@@ -181,6 +181,14 @@
           "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
           "pointer": "/paths/~1360Monitoring~1webpros_auth_callback/post/requestBody/content/application~1x-www-form-urlencoded/schema/properties/json",
           "note": "Required sensitive plain-string schema and full callback JSON prose. Form field stays body-only; preserve bytes without client JSON validation. Prose keys do not establish a formal nested schema."
+        },
+        {
+          "kind": "doc",
+          "version": "11.138.0.19 attributed source review",
+          "date": "2026-11-01",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1360Monitoring~1webpros_auth_callback/post",
+          "note": "Attributed reviewer finding (PR112 review 5726281163): _store_token writes email => $claims->{'email'} from the ID token, and both get_auth_status and handle_callback pass it through; the handler POD says \"email: user email from token (if available)\". Source reading of installed 11.138.0.19, not a wire observation; whether WebPros omits the claim is unknown."
         }
       ],
       "notes": [
@@ -217,6 +225,10 @@
           "text": "WHM metadata.result=0 fails before payload validation. Payload success=0 or valid=0 under metadata.result=1 is a result for the caller to inspect, not an exception. Inspect responseMeta() warnings and raw metadata, including after a payload mismatch. Integer fields and integer 0|1 flags remain strict native values without quoted, boolean or float coercion; reason strings remain open."
         },
         {
+          "kind": "documented",
+          "text": "PR112 review 5726281163 source reading on 11.138.0.19: email is copied from the ID token's email claim, which the handler documents as present only if available, so email is a nullable string. A null email after the callback does not mean failure: the token bundle is already stored and the single-use state already spent, so never retry the callback."
+        },
+        {
           "kind": "policy",
           "text": "Returned tokens, state, authorization URLs, sessions, account identifiers, email/error details and PayloadMismatchException payloads may be private. Existing SensitiveParameter protections cover library-owned input/response frames, not caller-readable payloads or third-party transport traces. Returned URLs remain inert data and are never fetched. Offline fixtures establish no live server acceptance, POST compatibility, account, authentication or agent behavior; live follow-up whm-api-client-8x0.2.79 remains open."
         }
@@ -224,6 +236,21 @@
       "params": {
         "json": {
           "sensitive": true
+        }
+      },
+      "response": {
+        "token_data.email": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19 attributed source review",
+              "date": "2026-11-01",
+              "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+              "pointer": "/paths/~1360Monitoring~1webpros_auth_callback/post",
+              "note": "Attributed reviewer finding (PR112 review 5726281163): _store_token writes email => $claims->{'email'} from the ID token, and both get_auth_status and handle_callback pass it through; the handler POD says \"email: user email from token (if available)\". Source reading of installed 11.138.0.19, not a wire observation; whether WebPros omits the claim is unknown."
+            }
+          ]
         }
       }
     },
@@ -344,6 +371,14 @@
           "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
           "pointer": "/paths/~1360Monitoring~1webpros_auth_status/get",
           "note": "Complete pinned operation as webProsAuthStatus. Preserve canonical whm1:360Monitoring/webpros_auth_status and all optional nonnullable formal fields, required nonnull known-object root, version 11.132 and normal WHM Flag outcome. Source GET lacks x-readonly; existing unknown-risk policy selects form POST. Source variant is retained and no live POST acceptance is claimed."
+        },
+        {
+          "kind": "doc",
+          "version": "11.138.0.19 attributed source review",
+          "date": "2026-11-01",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1360Monitoring~1webpros_auth_status/get",
+          "note": "Attributed reviewer finding (PR112 review 5726281163): _store_token writes email => $claims->{'email'} from the ID token, and both get_auth_status and handle_callback pass it through; the handler POD says \"email: user email from token (if available)\". Source reading of installed 11.138.0.19, not a wire observation; whether WebPros omits the claim is unknown."
         }
       ],
       "notes": [
@@ -372,10 +407,29 @@
           "text": "WHM metadata.result=0 fails before payload validation. Payload success=0 or valid=0 under metadata.result=1 is a result for the caller to inspect, not an exception. Inspect responseMeta() warnings and raw metadata, including after a payload mismatch. Integer fields and integer 0|1 flags remain strict native values without quoted, boolean or float coercion; reason strings remain open."
         },
         {
+          "kind": "documented",
+          "text": "PR112 review 5726281163 source reading on 11.138.0.19: email is copied from the ID token's email claim, which the handler documents as present only if available, so email is a nullable string."
+        },
+        {
           "kind": "policy",
           "text": "Returned tokens, state, authorization URLs, sessions, account identifiers, email/error details and PayloadMismatchException payloads may be private. Existing SensitiveParameter protections cover library-owned input/response frames, not caller-readable payloads or third-party transport traces. Returned URLs remain inert data and are never fetched. Offline fixtures establish no live server acceptance, POST compatibility, account, authentication or agent behavior; live follow-up whm-api-client-8x0.2.79 remains open."
         }
-      ]
+      ],
+      "response": {
+        "email": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19 attributed source review",
+              "date": "2026-11-01",
+              "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+              "pointer": "/paths/~1360Monitoring~1webpros_auth_status/get",
+              "note": "Attributed reviewer finding (PR112 review 5726281163): _store_token writes email => $claims->{'email'} from the ID token, and both get_auth_status and handle_callback pass it through; the handler POD says \"email: user email from token (if available)\". Source reading of installed 11.138.0.19, not a wire observation; whether WebPros omits the claim is unknown."
+            }
+          ]
+        }
+      }
     },
     "whm1:360Monitoring/webpros_auth_token": {
       "name": "webProsAuthToken",

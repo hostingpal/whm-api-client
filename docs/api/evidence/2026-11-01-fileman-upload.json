@@ -1,0 +1,3088 @@
+{
+    "schema_version": 1,
+    "fileman_upload": {
+        "scenario": "fileman-upload-disposable-v1",
+        "target_role": "disposable-test-account",
+        "probes": [
+            {
+                "operation": "whm1:version",
+                "variant": "whm1:version#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-01T14:11:03Z",
+                "revision": "aa84150664d6e5c48e1668cc833bb9220e11a1bf",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "66d94c254abba1ff8f1c1164d109535ed59a17a1",
+                "overlay_sha256": "5df4885a381f809bbd3d063c5bc34ea90770c42ea4796852b8df66c5a2316f93",
+                "effective_contract_sha256": "a3b55069b379516f20fcf82f959226d68b68ac515a7e55c0bde8842d39effd60",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.version": [
+                        "string"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.version": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "version",
+                "uapi_status": null,
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Fileman/list_files",
+                "variant": "uapi:Fileman/list_files#GET",
+                "argument_variant": "home-presence",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-01T14:11:04Z",
+                "revision": "aa84150664d6e5c48e1668cc833bb9220e11a1bf",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "66d94c254abba1ff8f1c1164d109535ed59a17a1",
+                "overlay_sha256": "5df4885a381f809bbd3d063c5bc34ea90770c42ea4796852b8df66c5a2316f93",
+                "effective_contract_sha256": "3ec38db30e3896451d1fa17e66b9d3ecff20a83e975aa7ef3f8e3897a53ae4cc",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "list"
+                    ],
+                    "$.data[]": [
+                        "object"
+                    ],
+                    "$.data[].absdir": [
+                        "string"
+                    ],
+                    "$.data[].ctime": [
+                        "int"
+                    ],
+                    "$.data[].exists": [
+                        "int"
+                    ],
+                    "$.data[].file": [
+                        "string"
+                    ],
+                    "$.data[].fullpath": [
+                        "string"
+                    ],
+                    "$.data[].gid": [
+                        "int"
+                    ],
+                    "$.data[].humansize": [
+                        "string"
+                    ],
+                    "$.data[].isleaf": [
+                        "missing"
+                    ],
+                    "$.data[].isparent": [
+                        "missing"
+                    ],
+                    "$.data[].mimename": [
+                        "missing"
+                    ],
+                    "$.data[].mimetype": [
+                        "missing"
+                    ],
+                    "$.data[].mode": [
+                        "int"
+                    ],
+                    "$.data[].mtime": [
+                        "int"
+                    ],
+                    "$.data[].nicemode": [
+                        "numeric-string"
+                    ],
+                    "$.data[].path": [
+                        "string"
+                    ],
+                    "$.data[].rawmimename": [
+                        "missing"
+                    ],
+                    "$.data[].rawmimetype": [
+                        "missing"
+                    ],
+                    "$.data[].read": [
+                        "missing"
+                    ],
+                    "$.data[].size": [
+                        "numeric-string"
+                    ],
+                    "$.data[].type": [
+                        "string"
+                    ],
+                    "$.data[].uid": [
+                        "int"
+                    ],
+                    "$.data[].write": [
+                        "missing"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.*": [
+                        "int"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "list"
+                    ],
+                    "$[]": [
+                        "object"
+                    ],
+                    "$[].absdir": [
+                        "string"
+                    ],
+                    "$[].ctime": [
+                        "int"
+                    ],
+                    "$[].exists": [
+                        "int"
+                    ],
+                    "$[].file": [
+                        "string"
+                    ],
+                    "$[].fullpath": [
+                        "string"
+                    ],
+                    "$[].gid": [
+                        "int"
+                    ],
+                    "$[].humansize": [
+                        "string"
+                    ],
+                    "$[].isleaf": [
+                        "missing"
+                    ],
+                    "$[].isparent": [
+                        "missing"
+                    ],
+                    "$[].mimename": [
+                        "missing"
+                    ],
+                    "$[].mimetype": [
+                        "missing"
+                    ],
+                    "$[].mode": [
+                        "int"
+                    ],
+                    "$[].mtime": [
+                        "int"
+                    ],
+                    "$[].nicemode": [
+                        "numeric-string"
+                    ],
+                    "$[].path": [
+                        "string"
+                    ],
+                    "$[].rawmimename": [
+                        "missing"
+                    ],
+                    "$[].rawmimetype": [
+                        "missing"
+                    ],
+                    "$[].read": [
+                        "missing"
+                    ],
+                    "$[].size": [
+                        "numeric-string"
+                    ],
+                    "$[].type": [
+                        "string"
+                    ],
+                    "$[].uid": [
+                        "int"
+                    ],
+                    "$[].write": [
+                        "missing"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "home_initial",
+                "uapi_status": 1,
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Fileman/upload_files",
+                "variant": "uapi:Fileman/upload_files#POST",
+                "argument_variant": "upload-success",
+                "route": "direct-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-01T14:11:04Z",
+                "revision": "aa84150664d6e5c48e1668cc833bb9220e11a1bf",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "66d94c254abba1ff8f1c1164d109535ed59a17a1",
+                "overlay_sha256": "5df4885a381f809bbd3d063c5bc34ea90770c42ea4796852b8df66c5a2316f93",
+                "effective_contract_sha256": "12621cdac4fbf42036fcaf7fb340f850885a3701b0032ce9eb1758b6b1ed72b9",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.diskinfo": [
+                        "object"
+                    ],
+                    "$.data.diskinfo.*": [
+                        "string"
+                    ],
+                    "$.data.diskinfo.file_upload_max_bytes": [
+                        "numeric-string"
+                    ],
+                    "$.data.diskinfo.file_upload_must_leave_bytes": [
+                        "numeric-string"
+                    ],
+                    "$.data.diskinfo.file_upload_remain": [
+                        "numeric-string"
+                    ],
+                    "$.data.diskinfo.fileslimit": [
+                        "string"
+                    ],
+                    "$.data.diskinfo.filesremain": [
+                        "string"
+                    ],
+                    "$.data.diskinfo.filesused": [
+                        "int"
+                    ],
+                    "$.data.diskinfo.spacelimit": [
+                        "numeric-string"
+                    ],
+                    "$.data.diskinfo.spaceremain": [
+                        "numeric-string"
+                    ],
+                    "$.data.diskinfo.spaceused": [
+                        "numeric-string"
+                    ],
+                    "$.data.failed": [
+                        "int"
+                    ],
+                    "$.data.succeeded": [
+                        "int"
+                    ],
+                    "$.data.uploads": [
+                        "list"
+                    ],
+                    "$.data.uploads[]": [
+                        "object"
+                    ],
+                    "$.data.uploads[].file": [
+                        "string"
+                    ],
+                    "$.data.uploads[].reason": [
+                        "string"
+                    ],
+                    "$.data.uploads[].size": [
+                        "int"
+                    ],
+                    "$.data.uploads[].status": [
+                        "int"
+                    ],
+                    "$.data.uploads[].warnings": [
+                        "empty-list"
+                    ],
+                    "$.data.warned": [
+                        "int"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.diskinfo": [
+                        "object"
+                    ],
+                    "$.diskinfo.*": [
+                        "string"
+                    ],
+                    "$.diskinfo.file_upload_max_bytes": [
+                        "numeric-string"
+                    ],
+                    "$.diskinfo.file_upload_must_leave_bytes": [
+                        "numeric-string"
+                    ],
+                    "$.diskinfo.file_upload_remain": [
+                        "numeric-string"
+                    ],
+                    "$.diskinfo.fileslimit": [
+                        "string"
+                    ],
+                    "$.diskinfo.filesremain": [
+                        "string"
+                    ],
+                    "$.diskinfo.filesused": [
+                        "int"
+                    ],
+                    "$.diskinfo.spacelimit": [
+                        "numeric-string"
+                    ],
+                    "$.diskinfo.spaceremain": [
+                        "numeric-string"
+                    ],
+                    "$.diskinfo.spaceused": [
+                        "numeric-string"
+                    ],
+                    "$.failed": [
+                        "int"
+                    ],
+                    "$.succeeded": [
+                        "int"
+                    ],
+                    "$.uploads": [
+                        "list"
+                    ],
+                    "$.uploads[]": [
+                        "object"
+                    ],
+                    "$.uploads[].file": [
+                        "string"
+                    ],
+                    "$.uploads[].reason": [
+                        "string"
+                    ],
+                    "$.uploads[].size": [
+                        "int"
+                    ],
+                    "$.uploads[].status": [
+                        "int"
+                    ],
+                    "$.uploads[].warnings": [
+                        "empty-list"
+                    ],
+                    "$.warned": [
+                        "int"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "upload_success",
+                "uapi_status": 1,
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Fileman/list_files",
+                "variant": "uapi:Fileman/list_files#GET",
+                "argument_variant": "fixture-directory",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-01T14:11:04Z",
+                "revision": "aa84150664d6e5c48e1668cc833bb9220e11a1bf",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "66d94c254abba1ff8f1c1164d109535ed59a17a1",
+                "overlay_sha256": "5df4885a381f809bbd3d063c5bc34ea90770c42ea4796852b8df66c5a2316f93",
+                "effective_contract_sha256": "3ec38db30e3896451d1fa17e66b9d3ecff20a83e975aa7ef3f8e3897a53ae4cc",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "list"
+                    ],
+                    "$.data[]": [
+                        "object"
+                    ],
+                    "$.data[].absdir": [
+                        "string"
+                    ],
+                    "$.data[].ctime": [
+                        "int"
+                    ],
+                    "$.data[].exists": [
+                        "int"
+                    ],
+                    "$.data[].file": [
+                        "string"
+                    ],
+                    "$.data[].fullpath": [
+                        "string"
+                    ],
+                    "$.data[].gid": [
+                        "int"
+                    ],
+                    "$.data[].humansize": [
+                        "string"
+                    ],
+                    "$.data[].isleaf": [
+                        "missing"
+                    ],
+                    "$.data[].isparent": [
+                        "missing"
+                    ],
+                    "$.data[].mimename": [
+                        "missing"
+                    ],
+                    "$.data[].mimetype": [
+                        "missing"
+                    ],
+                    "$.data[].mode": [
+                        "int"
+                    ],
+                    "$.data[].mtime": [
+                        "int"
+                    ],
+                    "$.data[].nicemode": [
+                        "numeric-string"
+                    ],
+                    "$.data[].path": [
+                        "string"
+                    ],
+                    "$.data[].rawmimename": [
+                        "missing"
+                    ],
+                    "$.data[].rawmimetype": [
+                        "missing"
+                    ],
+                    "$.data[].read": [
+                        "int"
+                    ],
+                    "$.data[].size": [
+                        "numeric-string"
+                    ],
+                    "$.data[].type": [
+                        "string"
+                    ],
+                    "$.data[].uid": [
+                        "int"
+                    ],
+                    "$.data[].write": [
+                        "int"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.*": [
+                        "int"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "list"
+                    ],
+                    "$[]": [
+                        "object"
+                    ],
+                    "$[].absdir": [
+                        "string"
+                    ],
+                    "$[].ctime": [
+                        "int"
+                    ],
+                    "$[].exists": [
+                        "int"
+                    ],
+                    "$[].file": [
+                        "string"
+                    ],
+                    "$[].fullpath": [
+                        "string"
+                    ],
+                    "$[].gid": [
+                        "int"
+                    ],
+                    "$[].humansize": [
+                        "string"
+                    ],
+                    "$[].isleaf": [
+                        "missing"
+                    ],
+                    "$[].isparent": [
+                        "missing"
+                    ],
+                    "$[].mimename": [
+                        "missing"
+                    ],
+                    "$[].mimetype": [
+                        "missing"
+                    ],
+                    "$[].mode": [
+                        "int"
+                    ],
+                    "$[].mtime": [
+                        "int"
+                    ],
+                    "$[].nicemode": [
+                        "numeric-string"
+                    ],
+                    "$[].path": [
+                        "string"
+                    ],
+                    "$[].rawmimename": [
+                        "missing"
+                    ],
+                    "$[].rawmimetype": [
+                        "missing"
+                    ],
+                    "$[].read": [
+                        "int"
+                    ],
+                    "$[].size": [
+                        "numeric-string"
+                    ],
+                    "$[].type": [
+                        "string"
+                    ],
+                    "$[].uid": [
+                        "int"
+                    ],
+                    "$[].write": [
+                        "int"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "inventory_success",
+                "uapi_status": 1,
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Fileman/upload_files",
+                "variant": "uapi:Fileman/upload_files#POST",
+                "argument_variant": "upload-partial",
+                "route": "direct-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-01T14:11:04Z",
+                "revision": "aa84150664d6e5c48e1668cc833bb9220e11a1bf",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "66d94c254abba1ff8f1c1164d109535ed59a17a1",
+                "overlay_sha256": "5df4885a381f809bbd3d063c5bc34ea90770c42ea4796852b8df66c5a2316f93",
+                "effective_contract_sha256": "12621cdac4fbf42036fcaf7fb340f850885a3701b0032ce9eb1758b6b1ed72b9",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.diskinfo": [
+                        "missing"
+                    ],
+                    "$.data.failed": [
+                        "int"
+                    ],
+                    "$.data.succeeded": [
+                        "int"
+                    ],
+                    "$.data.uploads": [
+                        "list"
+                    ],
+                    "$.data.uploads[]": [
+                        "object"
+                    ],
+                    "$.data.uploads[].file": [
+                        "string"
+                    ],
+                    "$.data.uploads[].reason": [
+                        "string"
+                    ],
+                    "$.data.uploads[].size": [
+                        "int",
+                        "null"
+                    ],
+                    "$.data.uploads[].status": [
+                        "int"
+                    ],
+                    "$.data.uploads[].warnings": [
+                        "empty-list"
+                    ],
+                    "$.data.warned": [
+                        "int"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.diskinfo": [
+                        "missing"
+                    ],
+                    "$.failed": [
+                        "int"
+                    ],
+                    "$.succeeded": [
+                        "int"
+                    ],
+                    "$.uploads": [
+                        "list"
+                    ],
+                    "$.uploads[]": [
+                        "object"
+                    ],
+                    "$.uploads[].file": [
+                        "string"
+                    ],
+                    "$.uploads[].reason": [
+                        "string"
+                    ],
+                    "$.uploads[].size": [
+                        "int",
+                        "null"
+                    ],
+                    "$.uploads[].status": [
+                        "int"
+                    ],
+                    "$.uploads[].warnings": [
+                        "empty-list"
+                    ],
+                    "$.warned": [
+                        "int"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "upload_partial",
+                "uapi_status": 1,
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Fileman/upload_files",
+                "variant": "uapi:Fileman/upload_files#POST",
+                "argument_variant": "upload-all-failed",
+                "route": "direct-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-01T14:11:05Z",
+                "revision": "aa84150664d6e5c48e1668cc833bb9220e11a1bf",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "66d94c254abba1ff8f1c1164d109535ed59a17a1",
+                "overlay_sha256": "5df4885a381f809bbd3d063c5bc34ea90770c42ea4796852b8df66c5a2316f93",
+                "effective_contract_sha256": "12621cdac4fbf42036fcaf7fb340f850885a3701b0032ce9eb1758b6b1ed72b9",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.diskinfo": [
+                        "missing"
+                    ],
+                    "$.data.failed": [
+                        "int"
+                    ],
+                    "$.data.succeeded": [
+                        "int"
+                    ],
+                    "$.data.uploads": [
+                        "list"
+                    ],
+                    "$.data.uploads[]": [
+                        "object"
+                    ],
+                    "$.data.uploads[].file": [
+                        "string"
+                    ],
+                    "$.data.uploads[].reason": [
+                        "string"
+                    ],
+                    "$.data.uploads[].size": [
+                        "null"
+                    ],
+                    "$.data.uploads[].status": [
+                        "int"
+                    ],
+                    "$.data.uploads[].warnings": [
+                        "empty-list"
+                    ],
+                    "$.data.warned": [
+                        "int"
+                    ],
+                    "$.errors": [
+                        "list"
+                    ],
+                    "$.errors[]": [
+                        "string"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.diskinfo": [
+                        "missing"
+                    ],
+                    "$.failed": [
+                        "int"
+                    ],
+                    "$.succeeded": [
+                        "int"
+                    ],
+                    "$.uploads": [
+                        "list"
+                    ],
+                    "$.uploads[]": [
+                        "object"
+                    ],
+                    "$.uploads[].file": [
+                        "string"
+                    ],
+                    "$.uploads[].reason": [
+                        "string"
+                    ],
+                    "$.uploads[].size": [
+                        "null"
+                    ],
+                    "$.uploads[].status": [
+                        "int"
+                    ],
+                    "$.uploads[].warnings": [
+                        "empty-list"
+                    ],
+                    "$.warned": [
+                        "int"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "upload_all_failed",
+                "uapi_status": 0,
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Fileman/upload_files",
+                "variant": "uapi:Fileman/upload_files#POST",
+                "argument_variant": "upload-raw",
+                "route": "direct-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-01T14:11:05Z",
+                "revision": "aa84150664d6e5c48e1668cc833bb9220e11a1bf",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "66d94c254abba1ff8f1c1164d109535ed59a17a1",
+                "overlay_sha256": "5df4885a381f809bbd3d063c5bc34ea90770c42ea4796852b8df66c5a2316f93",
+                "effective_contract_sha256": "12621cdac4fbf42036fcaf7fb340f850885a3701b0032ce9eb1758b6b1ed72b9",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.diskinfo": [
+                        "missing"
+                    ],
+                    "$.data.failed": [
+                        "int"
+                    ],
+                    "$.data.succeeded": [
+                        "int"
+                    ],
+                    "$.data.uploads": [
+                        "list"
+                    ],
+                    "$.data.uploads[]": [
+                        "object"
+                    ],
+                    "$.data.uploads[].file": [
+                        "string"
+                    ],
+                    "$.data.uploads[].reason": [
+                        "string"
+                    ],
+                    "$.data.uploads[].size": [
+                        "int"
+                    ],
+                    "$.data.uploads[].status": [
+                        "int"
+                    ],
+                    "$.data.uploads[].warnings": [
+                        "empty-list"
+                    ],
+                    "$.data.warned": [
+                        "int"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.diskinfo": [
+                        "missing"
+                    ],
+                    "$.failed": [
+                        "int"
+                    ],
+                    "$.succeeded": [
+                        "int"
+                    ],
+                    "$.uploads": [
+                        "list"
+                    ],
+                    "$.uploads[]": [
+                        "object"
+                    ],
+                    "$.uploads[].file": [
+                        "string"
+                    ],
+                    "$.uploads[].reason": [
+                        "string"
+                    ],
+                    "$.uploads[].size": [
+                        "int"
+                    ],
+                    "$.uploads[].status": [
+                        "int"
+                    ],
+                    "$.uploads[].warnings": [
+                        "empty-list"
+                    ],
+                    "$.warned": [
+                        "int"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "upload_raw",
+                "uapi_status": 1,
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Fileman/list_files",
+                "variant": "uapi:Fileman/list_files#GET",
+                "argument_variant": "fixture-directory",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-01T14:11:05Z",
+                "revision": "aa84150664d6e5c48e1668cc833bb9220e11a1bf",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "66d94c254abba1ff8f1c1164d109535ed59a17a1",
+                "overlay_sha256": "5df4885a381f809bbd3d063c5bc34ea90770c42ea4796852b8df66c5a2316f93",
+                "effective_contract_sha256": "3ec38db30e3896451d1fa17e66b9d3ecff20a83e975aa7ef3f8e3897a53ae4cc",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "list"
+                    ],
+                    "$.data[]": [
+                        "object"
+                    ],
+                    "$.data[].absdir": [
+                        "string"
+                    ],
+                    "$.data[].ctime": [
+                        "int"
+                    ],
+                    "$.data[].exists": [
+                        "int"
+                    ],
+                    "$.data[].file": [
+                        "string"
+                    ],
+                    "$.data[].fullpath": [
+                        "string"
+                    ],
+                    "$.data[].gid": [
+                        "int"
+                    ],
+                    "$.data[].humansize": [
+                        "string"
+                    ],
+                    "$.data[].isleaf": [
+                        "missing"
+                    ],
+                    "$.data[].isparent": [
+                        "missing"
+                    ],
+                    "$.data[].mimename": [
+                        "missing"
+                    ],
+                    "$.data[].mimetype": [
+                        "missing"
+                    ],
+                    "$.data[].mode": [
+                        "int"
+                    ],
+                    "$.data[].mtime": [
+                        "int"
+                    ],
+                    "$.data[].nicemode": [
+                        "numeric-string"
+                    ],
+                    "$.data[].path": [
+                        "string"
+                    ],
+                    "$.data[].rawmimename": [
+                        "missing"
+                    ],
+                    "$.data[].rawmimetype": [
+                        "missing"
+                    ],
+                    "$.data[].read": [
+                        "int"
+                    ],
+                    "$.data[].size": [
+                        "numeric-string"
+                    ],
+                    "$.data[].type": [
+                        "string"
+                    ],
+                    "$.data[].uid": [
+                        "int"
+                    ],
+                    "$.data[].write": [
+                        "int"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.*": [
+                        "int"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "list"
+                    ],
+                    "$[]": [
+                        "object"
+                    ],
+                    "$[].absdir": [
+                        "string"
+                    ],
+                    "$[].ctime": [
+                        "int"
+                    ],
+                    "$[].exists": [
+                        "int"
+                    ],
+                    "$[].file": [
+                        "string"
+                    ],
+                    "$[].fullpath": [
+                        "string"
+                    ],
+                    "$[].gid": [
+                        "int"
+                    ],
+                    "$[].humansize": [
+                        "string"
+                    ],
+                    "$[].isleaf": [
+                        "missing"
+                    ],
+                    "$[].isparent": [
+                        "missing"
+                    ],
+                    "$[].mimename": [
+                        "missing"
+                    ],
+                    "$[].mimetype": [
+                        "missing"
+                    ],
+                    "$[].mode": [
+                        "int"
+                    ],
+                    "$[].mtime": [
+                        "int"
+                    ],
+                    "$[].nicemode": [
+                        "numeric-string"
+                    ],
+                    "$[].path": [
+                        "string"
+                    ],
+                    "$[].rawmimename": [
+                        "missing"
+                    ],
+                    "$[].rawmimetype": [
+                        "missing"
+                    ],
+                    "$[].read": [
+                        "int"
+                    ],
+                    "$[].size": [
+                        "numeric-string"
+                    ],
+                    "$[].type": [
+                        "string"
+                    ],
+                    "$[].uid": [
+                        "int"
+                    ],
+                    "$[].write": [
+                        "int"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "inventory_final",
+                "uapi_status": 1,
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Fileman/get_file_content",
+                "variant": "uapi:Fileman/get_file_content#GET",
+                "argument_variant": "latin1-byte-oracle",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-01T14:11:06Z",
+                "revision": "aa84150664d6e5c48e1668cc833bb9220e11a1bf",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "66d94c254abba1ff8f1c1164d109535ed59a17a1",
+                "overlay_sha256": "5df4885a381f809bbd3d063c5bc34ea90770c42ea4796852b8df66c5a2316f93",
+                "effective_contract_sha256": "1437c2046d218d409a49da8d560aa47ee6bcdd2cdc72096cc0c1eea799c40655",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.content": [
+                        "string"
+                    ],
+                    "$.data.dir": [
+                        "string"
+                    ],
+                    "$.data.filename": [
+                        "string"
+                    ],
+                    "$.data.from_char": [
+                        "missing"
+                    ],
+                    "$.data.from_charset": [
+                        "string"
+                    ],
+                    "$.data.path": [
+                        "string"
+                    ],
+                    "$.data.to_char": [
+                        "missing"
+                    ],
+                    "$.data.to_charset": [
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.content": [
+                        "string"
+                    ],
+                    "$.dir": [
+                        "string"
+                    ],
+                    "$.filename": [
+                        "string"
+                    ],
+                    "$.from_char": [
+                        "missing"
+                    ],
+                    "$.from_charset": [
+                        "string"
+                    ],
+                    "$.path": [
+                        "string"
+                    ],
+                    "$.to_char": [
+                        "missing"
+                    ],
+                    "$.to_charset": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "read_bytes",
+                "uapi_status": 1,
+                "expectation": "failed"
+            },
+            {
+                "operation": "uapi:Fileman/get_file_content",
+                "variant": "uapi:Fileman/get_file_content#GET",
+                "argument_variant": "latin1-byte-oracle",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-01T14:11:06Z",
+                "revision": "aa84150664d6e5c48e1668cc833bb9220e11a1bf",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "66d94c254abba1ff8f1c1164d109535ed59a17a1",
+                "overlay_sha256": "5df4885a381f809bbd3d063c5bc34ea90770c42ea4796852b8df66c5a2316f93",
+                "effective_contract_sha256": "1437c2046d218d409a49da8d560aa47ee6bcdd2cdc72096cc0c1eea799c40655",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.content": [
+                        "string"
+                    ],
+                    "$.data.dir": [
+                        "string"
+                    ],
+                    "$.data.filename": [
+                        "string"
+                    ],
+                    "$.data.from_char": [
+                        "missing"
+                    ],
+                    "$.data.from_charset": [
+                        "string"
+                    ],
+                    "$.data.path": [
+                        "string"
+                    ],
+                    "$.data.to_char": [
+                        "missing"
+                    ],
+                    "$.data.to_charset": [
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.content": [
+                        "string"
+                    ],
+                    "$.dir": [
+                        "string"
+                    ],
+                    "$.filename": [
+                        "string"
+                    ],
+                    "$.from_char": [
+                        "missing"
+                    ],
+                    "$.from_charset": [
+                        "string"
+                    ],
+                    "$.path": [
+                        "string"
+                    ],
+                    "$.to_char": [
+                        "missing"
+                    ],
+                    "$.to_charset": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "read_cursor",
+                "uapi_status": 1,
+                "expectation": "failed"
+            },
+            {
+                "operation": "uapi:Fileman/get_file_content",
+                "variant": "uapi:Fileman/get_file_content#GET",
+                "argument_variant": "latin1-byte-oracle",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-01T14:11:06Z",
+                "revision": "aa84150664d6e5c48e1668cc833bb9220e11a1bf",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "66d94c254abba1ff8f1c1164d109535ed59a17a1",
+                "overlay_sha256": "5df4885a381f809bbd3d063c5bc34ea90770c42ea4796852b8df66c5a2316f93",
+                "effective_contract_sha256": "1437c2046d218d409a49da8d560aa47ee6bcdd2cdc72096cc0c1eea799c40655",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.content": [
+                        "string"
+                    ],
+                    "$.data.dir": [
+                        "string"
+                    ],
+                    "$.data.filename": [
+                        "string"
+                    ],
+                    "$.data.from_char": [
+                        "missing"
+                    ],
+                    "$.data.from_charset": [
+                        "string"
+                    ],
+                    "$.data.path": [
+                        "string"
+                    ],
+                    "$.data.to_char": [
+                        "missing"
+                    ],
+                    "$.data.to_charset": [
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.content": [
+                        "string"
+                    ],
+                    "$.dir": [
+                        "string"
+                    ],
+                    "$.filename": [
+                        "string"
+                    ],
+                    "$.from_char": [
+                        "missing"
+                    ],
+                    "$.from_charset": [
+                        "string"
+                    ],
+                    "$.path": [
+                        "string"
+                    ],
+                    "$.to_char": [
+                        "missing"
+                    ],
+                    "$.to_charset": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "read_path",
+                "uapi_status": 1,
+                "expectation": "failed"
+            },
+            {
+                "operation": "uapi:Fileman/get_file_content",
+                "variant": "uapi:Fileman/get_file_content#GET",
+                "argument_variant": "latin1-byte-oracle",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-01T14:11:06Z",
+                "revision": "aa84150664d6e5c48e1668cc833bb9220e11a1bf",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "66d94c254abba1ff8f1c1164d109535ed59a17a1",
+                "overlay_sha256": "5df4885a381f809bbd3d063c5bc34ea90770c42ea4796852b8df66c5a2316f93",
+                "effective_contract_sha256": "1437c2046d218d409a49da8d560aa47ee6bcdd2cdc72096cc0c1eea799c40655",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.content": [
+                        "string"
+                    ],
+                    "$.data.dir": [
+                        "string"
+                    ],
+                    "$.data.filename": [
+                        "string"
+                    ],
+                    "$.data.from_char": [
+                        "missing"
+                    ],
+                    "$.data.from_charset": [
+                        "string"
+                    ],
+                    "$.data.path": [
+                        "string"
+                    ],
+                    "$.data.to_char": [
+                        "missing"
+                    ],
+                    "$.data.to_charset": [
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.content": [
+                        "string"
+                    ],
+                    "$.dir": [
+                        "string"
+                    ],
+                    "$.filename": [
+                        "string"
+                    ],
+                    "$.from_char": [
+                        "missing"
+                    ],
+                    "$.from_charset": [
+                        "string"
+                    ],
+                    "$.path": [
+                        "string"
+                    ],
+                    "$.to_char": [
+                        "missing"
+                    ],
+                    "$.to_charset": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "read_partial",
+                "uapi_status": 1,
+                "expectation": "failed"
+            },
+            {
+                "operation": "uapi:Fileman/get_file_content",
+                "variant": "uapi:Fileman/get_file_content#GET",
+                "argument_variant": "latin1-byte-oracle",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-01T14:11:07Z",
+                "revision": "aa84150664d6e5c48e1668cc833bb9220e11a1bf",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "66d94c254abba1ff8f1c1164d109535ed59a17a1",
+                "overlay_sha256": "5df4885a381f809bbd3d063c5bc34ea90770c42ea4796852b8df66c5a2316f93",
+                "effective_contract_sha256": "1437c2046d218d409a49da8d560aa47ee6bcdd2cdc72096cc0c1eea799c40655",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.content": [
+                        "string"
+                    ],
+                    "$.data.dir": [
+                        "string"
+                    ],
+                    "$.data.filename": [
+                        "string"
+                    ],
+                    "$.data.from_char": [
+                        "missing"
+                    ],
+                    "$.data.from_charset": [
+                        "string"
+                    ],
+                    "$.data.path": [
+                        "string"
+                    ],
+                    "$.data.to_char": [
+                        "missing"
+                    ],
+                    "$.data.to_charset": [
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.content": [
+                        "string"
+                    ],
+                    "$.dir": [
+                        "string"
+                    ],
+                    "$.filename": [
+                        "string"
+                    ],
+                    "$.from_char": [
+                        "missing"
+                    ],
+                    "$.from_charset": [
+                        "string"
+                    ],
+                    "$.path": [
+                        "string"
+                    ],
+                    "$.to_char": [
+                        "missing"
+                    ],
+                    "$.to_charset": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "read_raw",
+                "uapi_status": 1,
+                "expectation": "failed"
+            },
+            {
+                "operation": "uapi:Fileman/upload_files",
+                "variant": "uapi:Fileman/upload_files#POST",
+                "argument_variant": "upload-empty",
+                "route": "direct-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-01T14:11:07Z",
+                "revision": "aa84150664d6e5c48e1668cc833bb9220e11a1bf",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "66d94c254abba1ff8f1c1164d109535ed59a17a1",
+                "overlay_sha256": "5df4885a381f809bbd3d063c5bc34ea90770c42ea4796852b8df66c5a2316f93",
+                "effective_contract_sha256": "12621cdac4fbf42036fcaf7fb340f850885a3701b0032ce9eb1758b6b1ed72b9",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.diskinfo": [
+                        "missing"
+                    ],
+                    "$.data.failed": [
+                        "int"
+                    ],
+                    "$.data.succeeded": [
+                        "int"
+                    ],
+                    "$.data.uploads": [
+                        "list"
+                    ],
+                    "$.data.uploads[]": [
+                        "object"
+                    ],
+                    "$.data.uploads[].file": [
+                        "string"
+                    ],
+                    "$.data.uploads[].reason": [
+                        "string"
+                    ],
+                    "$.data.uploads[].size": [
+                        "int"
+                    ],
+                    "$.data.uploads[].status": [
+                        "int"
+                    ],
+                    "$.data.uploads[].warnings": [
+                        "empty-list"
+                    ],
+                    "$.data.warned": [
+                        "int"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.diskinfo": [
+                        "missing"
+                    ],
+                    "$.failed": [
+                        "int"
+                    ],
+                    "$.succeeded": [
+                        "int"
+                    ],
+                    "$.uploads": [
+                        "list"
+                    ],
+                    "$.uploads[]": [
+                        "object"
+                    ],
+                    "$.uploads[].file": [
+                        "string"
+                    ],
+                    "$.uploads[].reason": [
+                        "string"
+                    ],
+                    "$.uploads[].size": [
+                        "int"
+                    ],
+                    "$.uploads[].status": [
+                        "int"
+                    ],
+                    "$.uploads[].warnings": [
+                        "empty-list"
+                    ],
+                    "$.warned": [
+                        "int"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "upload_empty",
+                "uapi_status": 1,
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Fileman/list_files",
+                "variant": "uapi:Fileman/list_files#GET",
+                "argument_variant": "fixture-directory",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-01T14:11:07Z",
+                "revision": "aa84150664d6e5c48e1668cc833bb9220e11a1bf",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "66d94c254abba1ff8f1c1164d109535ed59a17a1",
+                "overlay_sha256": "5df4885a381f809bbd3d063c5bc34ea90770c42ea4796852b8df66c5a2316f93",
+                "effective_contract_sha256": "3ec38db30e3896451d1fa17e66b9d3ecff20a83e975aa7ef3f8e3897a53ae4cc",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "list"
+                    ],
+                    "$.data[]": [
+                        "object"
+                    ],
+                    "$.data[].absdir": [
+                        "string"
+                    ],
+                    "$.data[].ctime": [
+                        "int"
+                    ],
+                    "$.data[].exists": [
+                        "int"
+                    ],
+                    "$.data[].file": [
+                        "string"
+                    ],
+                    "$.data[].fullpath": [
+                        "string"
+                    ],
+                    "$.data[].gid": [
+                        "int"
+                    ],
+                    "$.data[].humansize": [
+                        "string"
+                    ],
+                    "$.data[].isleaf": [
+                        "missing"
+                    ],
+                    "$.data[].isparent": [
+                        "missing"
+                    ],
+                    "$.data[].mimename": [
+                        "missing"
+                    ],
+                    "$.data[].mimetype": [
+                        "missing"
+                    ],
+                    "$.data[].mode": [
+                        "int"
+                    ],
+                    "$.data[].mtime": [
+                        "int"
+                    ],
+                    "$.data[].nicemode": [
+                        "numeric-string"
+                    ],
+                    "$.data[].path": [
+                        "string"
+                    ],
+                    "$.data[].rawmimename": [
+                        "missing"
+                    ],
+                    "$.data[].rawmimetype": [
+                        "missing"
+                    ],
+                    "$.data[].read": [
+                        "int"
+                    ],
+                    "$.data[].size": [
+                        "empty-string",
+                        "numeric-string"
+                    ],
+                    "$.data[].type": [
+                        "string"
+                    ],
+                    "$.data[].uid": [
+                        "int"
+                    ],
+                    "$.data[].write": [
+                        "int"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.*": [
+                        "int"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "list"
+                    ],
+                    "$[]": [
+                        "object"
+                    ],
+                    "$[].absdir": [
+                        "string"
+                    ],
+                    "$[].ctime": [
+                        "int"
+                    ],
+                    "$[].exists": [
+                        "int"
+                    ],
+                    "$[].file": [
+                        "string"
+                    ],
+                    "$[].fullpath": [
+                        "string"
+                    ],
+                    "$[].gid": [
+                        "int"
+                    ],
+                    "$[].humansize": [
+                        "string"
+                    ],
+                    "$[].isleaf": [
+                        "missing"
+                    ],
+                    "$[].isparent": [
+                        "missing"
+                    ],
+                    "$[].mimename": [
+                        "missing"
+                    ],
+                    "$[].mimetype": [
+                        "missing"
+                    ],
+                    "$[].mode": [
+                        "int"
+                    ],
+                    "$[].mtime": [
+                        "int"
+                    ],
+                    "$[].nicemode": [
+                        "numeric-string"
+                    ],
+                    "$[].path": [
+                        "string"
+                    ],
+                    "$[].rawmimename": [
+                        "missing"
+                    ],
+                    "$[].rawmimetype": [
+                        "missing"
+                    ],
+                    "$[].read": [
+                        "int"
+                    ],
+                    "$[].size": [
+                        "empty-string",
+                        "numeric-string"
+                    ],
+                    "$[].type": [
+                        "string"
+                    ],
+                    "$[].uid": [
+                        "int"
+                    ],
+                    "$[].write": [
+                        "int"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "inventory_complete",
+                "uapi_status": 1,
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Fileman/get_file_content",
+                "variant": "uapi:Fileman/get_file_content#GET",
+                "argument_variant": "latin1-byte-oracle",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-01T14:11:07Z",
+                "revision": "aa84150664d6e5c48e1668cc833bb9220e11a1bf",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "66d94c254abba1ff8f1c1164d109535ed59a17a1",
+                "overlay_sha256": "5df4885a381f809bbd3d063c5bc34ea90770c42ea4796852b8df66c5a2316f93",
+                "effective_contract_sha256": "1437c2046d218d409a49da8d560aa47ee6bcdd2cdc72096cc0c1eea799c40655",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.content": [
+                        "empty-string"
+                    ],
+                    "$.data.dir": [
+                        "string"
+                    ],
+                    "$.data.filename": [
+                        "string"
+                    ],
+                    "$.data.from_char": [
+                        "missing"
+                    ],
+                    "$.data.from_charset": [
+                        "string"
+                    ],
+                    "$.data.path": [
+                        "string"
+                    ],
+                    "$.data.to_char": [
+                        "missing"
+                    ],
+                    "$.data.to_charset": [
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.content": [
+                        "empty-string"
+                    ],
+                    "$.dir": [
+                        "string"
+                    ],
+                    "$.filename": [
+                        "string"
+                    ],
+                    "$.from_char": [
+                        "missing"
+                    ],
+                    "$.from_charset": [
+                        "string"
+                    ],
+                    "$.path": [
+                        "string"
+                    ],
+                    "$.to_char": [
+                        "missing"
+                    ],
+                    "$.to_charset": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "read_empty",
+                "uapi_status": 1,
+                "expectation": "failed"
+            },
+            {
+                "operation": "uapi:Fileman/delete_file",
+                "variant": "uapi:Fileman/delete_file#GET",
+                "argument_variant": "owned-file",
+                "route": "direct-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-01T14:11:08Z",
+                "revision": "aa84150664d6e5c48e1668cc833bb9220e11a1bf",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "66d94c254abba1ff8f1c1164d109535ed59a17a1",
+                "overlay_sha256": "5df4885a381f809bbd3d063c5bc34ea90770c42ea4796852b8df66c5a2316f93",
+                "effective_contract_sha256": "4cc0d0b70f40d06a244116f0ac3cee4e777341ad4962a48ba206b1f691c89aa1",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.path": [
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.path": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "delete_bytes",
+                "uapi_status": 1,
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Fileman/delete_file",
+                "variant": "uapi:Fileman/delete_file#GET",
+                "argument_variant": "owned-file",
+                "route": "direct-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-01T14:11:08Z",
+                "revision": "aa84150664d6e5c48e1668cc833bb9220e11a1bf",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "66d94c254abba1ff8f1c1164d109535ed59a17a1",
+                "overlay_sha256": "5df4885a381f809bbd3d063c5bc34ea90770c42ea4796852b8df66c5a2316f93",
+                "effective_contract_sha256": "4cc0d0b70f40d06a244116f0ac3cee4e777341ad4962a48ba206b1f691c89aa1",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.path": [
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.path": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "delete_cursor",
+                "uapi_status": 1,
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Fileman/delete_file",
+                "variant": "uapi:Fileman/delete_file#GET",
+                "argument_variant": "owned-file",
+                "route": "direct-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-01T14:11:09Z",
+                "revision": "aa84150664d6e5c48e1668cc833bb9220e11a1bf",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "66d94c254abba1ff8f1c1164d109535ed59a17a1",
+                "overlay_sha256": "5df4885a381f809bbd3d063c5bc34ea90770c42ea4796852b8df66c5a2316f93",
+                "effective_contract_sha256": "4cc0d0b70f40d06a244116f0ac3cee4e777341ad4962a48ba206b1f691c89aa1",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.path": [
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.path": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "delete_path",
+                "uapi_status": 1,
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Fileman/delete_file",
+                "variant": "uapi:Fileman/delete_file#GET",
+                "argument_variant": "owned-file",
+                "route": "direct-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-01T14:11:09Z",
+                "revision": "aa84150664d6e5c48e1668cc833bb9220e11a1bf",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "66d94c254abba1ff8f1c1164d109535ed59a17a1",
+                "overlay_sha256": "5df4885a381f809bbd3d063c5bc34ea90770c42ea4796852b8df66c5a2316f93",
+                "effective_contract_sha256": "4cc0d0b70f40d06a244116f0ac3cee4e777341ad4962a48ba206b1f691c89aa1",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.path": [
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.path": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "delete_partial",
+                "uapi_status": 1,
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Fileman/delete_file",
+                "variant": "uapi:Fileman/delete_file#GET",
+                "argument_variant": "owned-file",
+                "route": "direct-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-01T14:11:09Z",
+                "revision": "aa84150664d6e5c48e1668cc833bb9220e11a1bf",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "66d94c254abba1ff8f1c1164d109535ed59a17a1",
+                "overlay_sha256": "5df4885a381f809bbd3d063c5bc34ea90770c42ea4796852b8df66c5a2316f93",
+                "effective_contract_sha256": "4cc0d0b70f40d06a244116f0ac3cee4e777341ad4962a48ba206b1f691c89aa1",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.path": [
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.path": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "delete_raw",
+                "uapi_status": 1,
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Fileman/delete_file",
+                "variant": "uapi:Fileman/delete_file#GET",
+                "argument_variant": "owned-file",
+                "route": "direct-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-01T14:11:09Z",
+                "revision": "aa84150664d6e5c48e1668cc833bb9220e11a1bf",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "66d94c254abba1ff8f1c1164d109535ed59a17a1",
+                "overlay_sha256": "5df4885a381f809bbd3d063c5bc34ea90770c42ea4796852b8df66c5a2316f93",
+                "effective_contract_sha256": "4cc0d0b70f40d06a244116f0ac3cee4e777341ad4962a48ba206b1f691c89aa1",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.path": [
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.path": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "delete_empty",
+                "uapi_status": 1,
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Fileman/list_files",
+                "variant": "uapi:Fileman/list_files#GET",
+                "argument_variant": "fixture-directory",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-01T14:11:10Z",
+                "revision": "aa84150664d6e5c48e1668cc833bb9220e11a1bf",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "66d94c254abba1ff8f1c1164d109535ed59a17a1",
+                "overlay_sha256": "5df4885a381f809bbd3d063c5bc34ea90770c42ea4796852b8df66c5a2316f93",
+                "effective_contract_sha256": "3ec38db30e3896451d1fa17e66b9d3ecff20a83e975aa7ef3f8e3897a53ae4cc",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "empty-list"
+                    ],
+                    "$.data.dirs": [
+                        "missing"
+                    ],
+                    "$.data.files": [
+                        "missing"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.*": [
+                        "int"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "empty-list"
+                    ],
+                    "$.dirs": [
+                        "missing"
+                    ],
+                    "$.files": [
+                        "missing"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "inventory_empty",
+                "uapi_status": 1,
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Fileman/delete_file",
+                "variant": "uapi:Fileman/delete_file#GET",
+                "argument_variant": "empty-owned-directory",
+                "route": "direct-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-01T14:11:10Z",
+                "revision": "aa84150664d6e5c48e1668cc833bb9220e11a1bf",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "66d94c254abba1ff8f1c1164d109535ed59a17a1",
+                "overlay_sha256": "5df4885a381f809bbd3d063c5bc34ea90770c42ea4796852b8df66c5a2316f93",
+                "effective_contract_sha256": "4cc0d0b70f40d06a244116f0ac3cee4e777341ad4962a48ba206b1f691c89aa1",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.path": [
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.path": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "delete_directory",
+                "uapi_status": 1,
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Fileman/list_files",
+                "variant": "uapi:Fileman/list_files#GET",
+                "argument_variant": "home-presence",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-11-01T14:11:10Z",
+                "revision": "aa84150664d6e5c48e1668cc833bb9220e11a1bf",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "66d94c254abba1ff8f1c1164d109535ed59a17a1",
+                "overlay_sha256": "5df4885a381f809bbd3d063c5bc34ea90770c42ea4796852b8df66c5a2316f93",
+                "effective_contract_sha256": "3ec38db30e3896451d1fa17e66b9d3ecff20a83e975aa7ef3f8e3897a53ae4cc",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "list"
+                    ],
+                    "$.data[]": [
+                        "object"
+                    ],
+                    "$.data[].absdir": [
+                        "string"
+                    ],
+                    "$.data[].ctime": [
+                        "int"
+                    ],
+                    "$.data[].exists": [
+                        "int"
+                    ],
+                    "$.data[].file": [
+                        "string"
+                    ],
+                    "$.data[].fullpath": [
+                        "string"
+                    ],
+                    "$.data[].gid": [
+                        "int"
+                    ],
+                    "$.data[].humansize": [
+                        "string"
+                    ],
+                    "$.data[].isleaf": [
+                        "missing"
+                    ],
+                    "$.data[].isparent": [
+                        "missing"
+                    ],
+                    "$.data[].mimename": [
+                        "missing"
+                    ],
+                    "$.data[].mimetype": [
+                        "missing"
+                    ],
+                    "$.data[].mode": [
+                        "int"
+                    ],
+                    "$.data[].mtime": [
+                        "int"
+                    ],
+                    "$.data[].nicemode": [
+                        "numeric-string"
+                    ],
+                    "$.data[].path": [
+                        "string"
+                    ],
+                    "$.data[].rawmimename": [
+                        "missing"
+                    ],
+                    "$.data[].rawmimetype": [
+                        "missing"
+                    ],
+                    "$.data[].read": [
+                        "missing"
+                    ],
+                    "$.data[].size": [
+                        "numeric-string"
+                    ],
+                    "$.data[].type": [
+                        "string"
+                    ],
+                    "$.data[].uid": [
+                        "int"
+                    ],
+                    "$.data[].write": [
+                        "missing"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.*": [
+                        "int"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "list"
+                    ],
+                    "$[]": [
+                        "object"
+                    ],
+                    "$[].absdir": [
+                        "string"
+                    ],
+                    "$[].ctime": [
+                        "int"
+                    ],
+                    "$[].exists": [
+                        "int"
+                    ],
+                    "$[].file": [
+                        "string"
+                    ],
+                    "$[].fullpath": [
+                        "string"
+                    ],
+                    "$[].gid": [
+                        "int"
+                    ],
+                    "$[].humansize": [
+                        "string"
+                    ],
+                    "$[].isleaf": [
+                        "missing"
+                    ],
+                    "$[].isparent": [
+                        "missing"
+                    ],
+                    "$[].mimename": [
+                        "missing"
+                    ],
+                    "$[].mimetype": [
+                        "missing"
+                    ],
+                    "$[].mode": [
+                        "int"
+                    ],
+                    "$[].mtime": [
+                        "int"
+                    ],
+                    "$[].nicemode": [
+                        "numeric-string"
+                    ],
+                    "$[].path": [
+                        "string"
+                    ],
+                    "$[].rawmimename": [
+                        "missing"
+                    ],
+                    "$[].rawmimetype": [
+                        "missing"
+                    ],
+                    "$[].read": [
+                        "missing"
+                    ],
+                    "$[].size": [
+                        "numeric-string"
+                    ],
+                    "$[].type": [
+                        "string"
+                    ],
+                    "$[].uid": [
+                        "int"
+                    ],
+                    "$[].write": [
+                        "missing"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "home_final",
+                "uapi_status": 1,
+                "expectation": "passed"
+            }
+        ],
+        "uploads": {
+            "upload_success": {
+                "surface": "typed",
+                "uapi_status": 1,
+                "envelope_errors": 0,
+                "succeeded": 3,
+                "failed": 0,
+                "warned": 0,
+                "rows": 3,
+                "stored_rows_exact": true,
+                "refused_rows_exact": true,
+                "diskinfo": "present",
+                "transfer": {
+                    "declared_length": 21149,
+                    "bytes_read": 21149,
+                    "read_calls": 3,
+                    "largest_read": 8192,
+                    "body_exact": true,
+                    "buffered": false,
+                    "sought": false
+                },
+                "framing": {
+                    "http_1_1": true,
+                    "content_length_exact": true,
+                    "transfer_encoding_absent": true,
+                    "expect_absent": true,
+                    "bytes_sent_exact": true
+                }
+            },
+            "upload_partial": {
+                "surface": "typed",
+                "uapi_status": 1,
+                "envelope_errors": 0,
+                "succeeded": 1,
+                "failed": 1,
+                "warned": 0,
+                "rows": 2,
+                "stored_rows_exact": true,
+                "refused_rows_exact": true,
+                "diskinfo": "absent",
+                "transfer": {
+                    "declared_length": 939,
+                    "bytes_read": 939,
+                    "read_calls": 1,
+                    "largest_read": 939,
+                    "body_exact": true,
+                    "buffered": false,
+                    "sought": false
+                },
+                "framing": {
+                    "http_1_1": true,
+                    "content_length_exact": true,
+                    "transfer_encoding_absent": true,
+                    "expect_absent": true,
+                    "bytes_sent_exact": true
+                }
+            },
+            "upload_all_failed": {
+                "surface": "typed",
+                "uapi_status": 0,
+                "envelope_errors": 1,
+                "succeeded": 0,
+                "failed": 1,
+                "warned": 0,
+                "rows": 1,
+                "stored_rows_exact": true,
+                "refused_rows_exact": true,
+                "diskinfo": "absent",
+                "transfer": {
+                    "declared_length": 308,
+                    "bytes_read": 308,
+                    "read_calls": 1,
+                    "largest_read": 308,
+                    "body_exact": true,
+                    "buffered": false,
+                    "sought": false
+                },
+                "framing": {
+                    "http_1_1": true,
+                    "content_length_exact": true,
+                    "transfer_encoding_absent": true,
+                    "expect_absent": true,
+                    "bytes_sent_exact": true
+                }
+            },
+            "upload_raw": {
+                "surface": "generic",
+                "uapi_status": 1,
+                "envelope_errors": 0,
+                "succeeded": 1,
+                "failed": 0,
+                "warned": 0,
+                "rows": 1,
+                "stored_rows_exact": true,
+                "refused_rows_exact": true,
+                "diskinfo": "absent",
+                "transfer": {
+                    "declared_length": 550,
+                    "bytes_read": 550,
+                    "read_calls": 1,
+                    "largest_read": 550,
+                    "body_exact": true,
+                    "buffered": false,
+                    "sought": false
+                },
+                "framing": {
+                    "http_1_1": true,
+                    "content_length_exact": true,
+                    "transfer_encoding_absent": true,
+                    "expect_absent": true,
+                    "bytes_sent_exact": true
+                }
+            },
+            "upload_empty": {
+                "surface": "typed",
+                "uapi_status": 1,
+                "envelope_errors": 0,
+                "succeeded": 1,
+                "failed": 0,
+                "warned": 0,
+                "rows": 1,
+                "stored_rows_exact": true,
+                "refused_rows_exact": true,
+                "diskinfo": "absent",
+                "transfer": {
+                    "declared_length": 252,
+                    "bytes_read": 252,
+                    "read_calls": 1,
+                    "largest_read": 252,
+                    "body_exact": true,
+                    "buffered": false,
+                    "sought": false
+                },
+                "framing": {
+                    "http_1_1": true,
+                    "content_length_exact": true,
+                    "transfer_encoding_absent": true,
+                    "expect_absent": true,
+                    "bytes_sent_exact": true
+                }
+            }
+        },
+        "byte_oracle": {
+            "read_bytes": {
+                "expected_bytes": 261,
+                "expected_utf8_bytes": 390,
+                "returned_utf8_bytes": 390,
+                "content_exact": true,
+                "first_difference": null,
+                "from_charset_exact": false,
+                "to_charset_exact": false
+            },
+            "read_cursor": {
+                "expected_bytes": 256,
+                "expected_utf8_bytes": 384,
+                "returned_utf8_bytes": 384,
+                "content_exact": true,
+                "first_difference": null,
+                "from_charset_exact": false,
+                "to_charset_exact": false
+            },
+            "read_path": {
+                "expected_bytes": 20000,
+                "expected_utf8_bytes": 22500,
+                "returned_utf8_bytes": 22500,
+                "content_exact": true,
+                "first_difference": null,
+                "from_charset_exact": false,
+                "to_charset_exact": false
+            },
+            "read_partial": {
+                "expected_bytes": 440,
+                "expected_utf8_bytes": 520,
+                "returned_utf8_bytes": 520,
+                "content_exact": true,
+                "first_difference": null,
+                "from_charset_exact": false,
+                "to_charset_exact": false
+            },
+            "read_raw": {
+                "expected_bytes": 300,
+                "expected_utf8_bytes": 350,
+                "returned_utf8_bytes": 350,
+                "content_exact": true,
+                "first_difference": null,
+                "from_charset_exact": false,
+                "to_charset_exact": false
+            },
+            "read_empty": {
+                "expected_bytes": 0,
+                "expected_utf8_bytes": 0,
+                "returned_utf8_bytes": 0,
+                "content_exact": true,
+                "first_difference": null,
+                "from_charset_exact": false,
+                "to_charset_exact": false
+            }
+        },
+        "borrowed_streams": {
+            "cursor": true,
+            "partial": true
+        },
+        "discrepancy_review": {
+            "policy": "fileman-upload-no-acknowledgments-v1",
+            "status": "failed",
+            "findings": [
+                "unsuccessful_phase:read_bytes",
+                "unsuccessful_phase:read_cursor",
+                "unsuccessful_phase:read_path",
+                "unsuccessful_phase:read_partial",
+                "unsuccessful_phase:read_raw",
+                "unsuccessful_phase:read_empty"
+            ]
+        },
+        "fixture": {
+            "status": "failed",
+            "setup": "passed",
+            "capture": "failed",
+            "expectations": "failed",
+            "cleanup": "passed",
+            "failures": [
+                "expectation_failure"
+            ],
+            "stopped_at": "read_empty",
+            "resources": {
+                "account": {
+                    "creation": "confirmed",
+                    "cleanup": "confirmed_absent"
+                },
+                "token": {
+                    "creation": "confirmed",
+                    "cleanup": "confirmed_absent"
+                },
+                "directory": {
+                    "creation": "confirmed",
+                    "cleanup": "confirmed_absent"
+                },
+                "files": {
+                    "proven_owned": 6,
+                    "deleted": 6
+                }
+            },
+            "domain_cleanup": "confirmed_absent",
+            "zone_cleanup": "confirmed_absent",
+            "filesystem_cleanup": "not_claimed"
+        },
+        "limitations": [
+            "direct_route_on_one_server_version_only",
+            "byte_oracle_is_reversible_transcoding_not_a_raw_download",
+            "api_absence_only_no_filesystem_or_home_directory_cleanup_claim",
+            "observed_filename_and_size_variants_only",
+            "no_status_0_null_or_empty_rows_observation",
+            "no_antivirus_or_archive_behavior",
+            "no_memory_benchmark"
+        ]
+    }
+}

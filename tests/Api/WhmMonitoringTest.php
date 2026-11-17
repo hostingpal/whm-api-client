@@ -181,12 +181,22 @@ final class WhmMonitoringTest extends TestCase
             ['{"token_data":{}}', ['token_data' => []]],
             ['{"token_data":[]}', ['token_data' => []]],
             ['{"token_data":{"email":"","expires_in":0,"access_token":"private"},"extra":true}',
-                ['token_data' => ['email' => '', 'expires_in' => 0]]]] as [$payload, $expected]
+                ['token_data' => ['email' => '', 'expires_in' => 0]]],
+            ['{"success":1,"token_data":{"email":null,"expires_in":900}}',
+                ['success' => 1, 'token_data' => ['email' => null, 'expires_in' => 900]]]] as [$payload, $expected]
         ) {
             $http->addResponse(new Response(200, [], self::envelope('webpros_auth_callback', $payload)));
             self::assertSame($expected, $client->whm()->monitoring()->webProsAuthCallback('{}'));
         }
-        self::assertCount(3, $http->getRequests());
+        $http->addResponse(new Response(200, [], self::envelope(
+            'webpros_auth_status',
+            '{"valid":1,"expires_in":100,"email":null}',
+        )));
+        self::assertSame(
+            ['email' => null, 'expires_in' => 100, 'valid' => 1],
+            $client->whm()->monitoring()->webProsAuthStatus(),
+        );
+        self::assertCount(5, $http->getRequests());
     }
 
     /** @return iterable<string, array{string, string, array<array-key, mixed>, ?string}> */
@@ -205,7 +215,7 @@ final class WhmMonitoringTest extends TestCase
             ['webpros_auth_callback', 'webProsAuthCallback', ['{}'], 'reason', 'string'],
             ['webpros_auth_callback', 'webProsAuthCallback', ['{}'], 'success', 'flag'],
             ['webpros_auth_callback', 'webProsAuthCallback', ['{}'], 'token_data', 'object'],
-            ['webpros_auth_callback', 'webProsAuthCallback', ['{}'], 'token_data.email', 'string'],
+            ['webpros_auth_callback', 'webProsAuthCallback', ['{}'], 'token_data.email', '?string'],
             ['webpros_auth_callback', 'webProsAuthCallback', ['{}'], 'token_data.expires_in', 'int'],
             ['webpros_auth_clear', 'webProsAuthClear', [], 'error', 'string'],
             ['webpros_auth_clear', 'webProsAuthClear', [], 'reason', 'string'],
@@ -214,7 +224,7 @@ final class WhmMonitoringTest extends TestCase
             ['webpros_auth_start', 'webProsAuthStart', [], 'error', 'string'],
             ['webpros_auth_start', 'webProsAuthStart', [], 'reason', 'string'],
             ['webpros_auth_start', 'webProsAuthStart', [], 'state', 'string'],
-            ['webpros_auth_status', 'webProsAuthStatus', [], 'email', 'string'],
+            ['webpros_auth_status', 'webProsAuthStatus', [], 'email', '?string'],
             ['webpros_auth_status', 'webProsAuthStatus', [], 'expired_at', 'int'],
             ['webpros_auth_status', 'webProsAuthStatus', [], 'error', 'string'],
             ['webpros_auth_status', 'webProsAuthStatus', [], 'expires_in', 'int'],
@@ -228,6 +238,8 @@ final class WhmMonitoringTest extends TestCase
         foreach ($fields as [$leaf, $method, $arguments, $field, $type]) {
             $badValues = match ($type) {
                 'string' => ['null', '1', '1.5', 'false', '[]', '{}'],
+                // PR112 review 5726281163: email comes from an optional ID-token claim.
+                '?string' => ['1', '1.5', 'false', '[]', '{}'],
                 'int' => ['null', '"1"', '1.0', 'true', '[]', '{}'],
                 'flag' => ['null', '"0"', '"1"', 'true', '0.0', '2', '-1', '[]', '{}'],
                 default => ['null', 'false', '1', '"object"', '[1]'],

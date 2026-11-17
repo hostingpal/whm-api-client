@@ -64,7 +64,10 @@ final class GeneratedDelimitedCollectionInputsTest extends TestCase
                 $this->invoke($handle, 'POST', ['value' => ['name' => $wire, 'encoding' => 'collection',
                     'collection' => ['allow_scalar' => false] + self::RULES]], ['value' => ['secret']]);
                 self::fail('Reserved routing accepted.');
-            } catch (InvalidArgumentException $error) {
+            } catch (LogicException $error) {
+                // Static spec lint rejects reserved declarations before encoding, as for other collection kinds.
+                self::assertSame(LogicException::class, $error::class);
+                self::assertSame('Reserved wire name in the parameter specs.', $error->getMessage());
                 self::assertStringNotContainsString('secret', $error->getMessage());
                 self::assertNull($handle->responseMeta());
                 self::assertCount(0, $http->getRequests());

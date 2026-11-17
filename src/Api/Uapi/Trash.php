@@ -15,7 +15,8 @@ use SensitiveParameter;
  *
  * Selected-account trash apparent usage and permanent item removal, available from cPanel 136 with source plugin
  * annotation Trash. Paths and payloads are private remote data; the client forwards exact path bytes without local
- * filesystem operations. Offline source-backed coverage only; live follow-up whm-api-client-8x0.2.73 remains open.
+ * filesystem operations. Original-revision observations are build/route scoped; live follow-up whm-api-client-8x0.2.73
+ * remains open.
  *
  * Each method executes one request immediately for this handle's cPanel account, through direct cPanel access or WHM
  * according to the configured credentials, with a single attempt and no retries. The handle clears responseMeta()
@@ -27,8 +28,8 @@ use SensitiveParameter;
  *     items?: int,
  * }
  * @phpstan-type RemoveItemResult array{
- *     alreadyGone?: bool,
- *     removed?: bool,
+ *     alreadyGone?: 0|1,
+ *     removed?: 0|1,
  * }
  */
 final readonly class Trash
@@ -67,9 +68,17 @@ final readonly class Trash
      * This is not allocated disk blocks or quota impact. The source says the account home is not walked and symlinks
      * outside trash are not followed; these are upstream claims, not client operations or live evidence.
      *
-     * Policy: bytes, exists and items remain strict integers without inferred minimum, range or numeric-string
-     * coercion. Although exists prose describes 0/1, its formal integer schema has no enum. Payload zero does not
-     * replace the ordinary API status outcome.
+     * Policy: bytes and exists remain strict integers without inferred ranges or numeric-string coercion; exists has no
+     * formal enum. Only items accepts lossless canonical in-range integer strings under the existing signed grammar and
+     * returns int. Signed negative strings and boundaries are compatibility policy beyond the nonnegative count
+     * producer, not observed wire values. Reject -0, plus, whitespace, leading zeros, fractions, exponents and
+     * overflow. Payload zero does not override ordinary API status.
+     *
+     * Observed: At original revision 210cc400a55f7cc10c08f06d369fe17d8a5f9e14 on 11.138.0.19, root classified direct
+     * items as is_string && is_numeric, while bridge returned int. Exact lexical bytes were not retained; this
+     * correction cannot prove acceptance of that old payload or its serializer cause. The reviewer independently
+     * observed integer counts on both routes. Retained Trash.pm excerpts produce literal 0 or scalar @entries excluding
+     * dot, dotdot and .trash_restore; source grammar is not recovered wire grammar.
      *
      * API-map identity: uapi:Trash/usage#GET (wire name usage).
      *
@@ -106,22 +115,26 @@ final readonly class Trash
      * compatibility remain; decoding still distinguishes JSON objects from arrays.
      *
      * Documented: Permanently and recursively deletes one item, including permission-locked entries, unlike Fileman
-     * fileop unlink. An already-absent target succeeds; on success a stale restore-map line for the item is pruned if
-     * present. This does not establish quota release, allocated-space change, cross-filesystem behavior or rollback.
+     * fileop unlink. Original review on 11.138.0.19 limits already-absent success to an existing resolvable parent: no
+     * trash or a deeper nonexistent parent can error. Success prunes a stale restore-map line if present. This is not a
+     * general idempotence, quota-release, allocated-space, cross-filesystem or rollback guarantee.
      *
      * Documented: The server requires the resolved target strictly inside the selected account home/.trash, never the
      * trash root. A leading slash is home-relative: /.trash/backup-7.14.2026_16-35-25 is the documented form. The
      * source says the server resolves symlinks and .. before confinement; offline fixtures establish no server
-     * confinement guarantee.
+     * confinement guarantee. The original reviewer observed that an outside-target symlink itself remains unremovable
+     * because confinement follows its target; no Fileman.empty_trash fallback is added.
      *
      * Policy: The required sensitive string path is forwarded unchanged with one form encoding. Empty string sends
      * path=; leading/repeated slashes, dot/dotdot, backslashes, percent escapes, spaces, plus and Unicode stay exact
      * remote data. No local normalization, symlink resolution, confinement, format, extension or range check is added.
      *
-     * Documented: removed and alreadyGone use native booleans, including false under the existing type policy, without
-     * integer or quoted-flag coercion. The source says removed is always true on success and alreadyGone is true when
-     * absent and otherwise omitted, while its alreadyGone example is false. Preserve that prose/example distinction
-     * without truth-only narrowing; API status remains authoritative.
+     * Policy: removed and alreadyGone return integer 0|1 flags. Native integer 1 was observed on both routes in review
+     * 5725860648 at original 210cc400a55f7cc10c08f06d369fe17d8a5f9e14 on 11.138.0.19. Integer 0 and pinned booleans are
+     * bounded compatibility policy; false/true now normalize to integer 0/1 instead of remaining bool. Strings, floats,
+     * null, other integers and containers fail. Fields remain optional and nonnullable. Pinned boolean schema and
+     * alreadyGone false example versus true/omitted prose stay historical evidence; no truth-only narrowing or
+     * quoted-flag coercion is added. API status remains authoritative.
      *
      * API-map identity: uapi:Trash/remove#POST (wire name remove).
      *

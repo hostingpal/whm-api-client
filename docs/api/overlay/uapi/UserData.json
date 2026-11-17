@@ -3,7 +3,7 @@
   "family": "uapi",
   "group": "UserData",
   "accessor": "userData",
-  "description": "Selected-account scoped userdata settings from cPanel 11.32. Both pinned GET variants declare non-read-only behavior and use form POST under repository policy. Preserve raw scalar inputs and dynamic private string-map results; offline coverage only, with live follow-up whm-api-client-8x0.2.74 open.",
+  "description": "Selected-account scoped userdata settings from cPanel 11.32. Preserve exact scalar inputs and required private maps with mixed JSON entries through existing object-to-array handling. Both pinned GET variants are non-read-only; form POST acceptance and mixed response shapes were observed at original 08dacc43 on 11.138.0.19, not on this corrected candidate. Live follow-up whm-api-client-8x0.2.74 remains open.",
   "operations": {
     "uapi:UserData/get_scoped_userdata": {
       "name": "getScopedUserdata",
@@ -16,27 +16,35 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available from cPanel 11.32 with no pinned role or plugin restriction. Both formal source variants are GET and declare x-readonly=false and x-rollback=none. These annotations do not establish a hidden side effect, live POST acceptance or immutability."
+          "text": "The pinned 11.138.0.10 source declares GET, x-readonly=false, x-rollback=none and cPanel 11.32 with no role or plugin restriction. Its additionalProperties string schema is the original contract contradicted by the separately attributed runtime observations."
         },
         {
-          "kind": "documented",
-          "text": "The getter prose says it returns all userdata key/value pairs for the given scope, while the formal source classifies it as non-read-only. Preserve that distinction without guessing a hidden side effect or claiming live immutability."
+          "kind": "observed",
+          "text": "Review 5725906568 of original 08dacc43c15a6d58aa536da8352a3696642d129f on 11.138.0.19 observed both operations as POST through direct UAPI and the WHM bridge. The separate root 25-call artifact at that revision/build confirms mixed writes persisted before response mismatches and later reads also mismatched. These are bounded original-head observations, not current-candidate runtime or every-version guarantees."
         },
         {
-          "kind": "policy",
-          "text": "Use one form POST under repository policy for non-read-only operations and private input fields. scope, json, key and value remain exact scalar strings encoded once; the json field is not an application/json request body. No local JSON parsing, reserialization, format validation or normalization occurs."
-        },
-        {
-          "kind": "documented",
-          "text": "Returns a required nonnullable dynamic map of string values, preserving arbitrary keys and values including empty strings and zero-like strings. Missing data, explicit null, nonempty list roots and nonstring entries fail. Existing empty-array map compatibility and PHP numeric-string object-key conversion remain unchanged; decoding distinguishes objects from arrays."
+          "kind": "observed",
+          "text": "That original review observed the getter on a new scope creating its scoped directory and attributed this to Guard::new_scoped calling CREATE_SCOPED_USERDATA_DIRS. This does not prove why x-readonly=false was chosen, universal path confinement or behavior on every build."
         },
         {
           "kind": "policy",
-          "text": "Scope names, keys, values, raw results, responseMeta() and PayloadMismatchException::$payload can expose private account settings. All input parameters are sensitive as privacy policy, without assuming they are authentication tokens. Library-owned exception frames conceal inputs and response/error arguments; third-party transports control their own traces. Deliberate payload and metadata inspection remains caller responsibility."
+          "text": "Return a required nonnullable dynamic map with mixed decoded JSON entries. Preserve scalar values and null without scalar coercion; existing mixed handling copies lists and recursively converts objects to associative PHP arrays. Numeric object keys follow PHP conversion and empty object/list identity may collapse. Arbitrary keys remain; missing/null data and scalar/nonempty-list roots fail. Empty-object and inherited empty-array map compatibility remain."
+        },
+        {
+          "kind": "observed",
+          "text": "At original 08dacc43 on 11.138.0.19, reviewer t/n/f/l/o shapes returned integer 1 and float 1.5 on write, then strings 1 and 1.5 on read, with null/list/object entries retained. These are server representation observations, not client scalar normalization; accepting other decoded JSON values is compatibility policy. Reviewer Cpanel::JSON::Load source attribution is not retained authenticated implementation bytes or an implementation-file hash."
         },
         {
           "kind": "policy",
-          "text": "The client adds no implicit read, merge, key deletion, readback, retry, rollback, cache of server settings, returned-path access or URL fetch. Offline fixtures establish no live acceptance or server settings behavior; live follow-up whm-api-client-8x0.2.74 remains open."
+          "text": "Use one form POST. scope/json/key/value remain exact scalar strings encoded once; json is a raw form field, not an application/json body. No local JSON parsing, reserialization, input normalization, format validation or implicit mode choice is added."
+        },
+        {
+          "kind": "policy",
+          "text": "Scope identities, keys, values, results, errors, responseMeta() and PayloadMismatchException::$payload can expose private account settings. All input parameters remain sensitive. Library-owned frames conceal private inputs and response/error arguments; third-party transports control their own traces. Deliberate metadata and payload inspection remains private caller-accessible data; do not log it indiscriminately."
+        },
+        {
+          "kind": "policy",
+          "text": "No implicit read, merge, key deletion, readback, retry, rollback, server-settings cache, returned-path access or URL fetch is added. A deliberate caller set/get pair is two invocations. No universal confinement, atomicity, persistence or transaction guarantee is inferred. Offline fixtures establish client behavior; original observations do not establish corrected-head live behavior. Runtime follow-up whm-api-client-8x0.2.74 remains open; root API cleanup is distinct from reviewer cleanup and does not prove filesystem absence."
         }
       ],
       "evidence": [
@@ -55,8 +63,42 @@
           "note": "Preserve required string scope and its PHP/wire name without requiredness or encoding changes. Mark this private account-setting scope identity sensitive as client privacy policy. Exact supplied bytes are forwarded once without normalization or added cross-field validation.",
           "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
           "pointer": "/paths/~1UserData~1get_scoped_userdata/get/parameters/0"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19; original revision 08dacc43c15a6d58aa536da8352a3696642d129f",
+          "date": "2026-11-01",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/107#pullrequestreview-5725906568",
+          "note": "Review 5725906568 reports mixed JSON write and subsequent get payloads on direct UAPI and WHM bridge POST at original 08dacc43c15a6d58aa536da8352a3696642d129f. Root immutable open-pr-live-results-bootstrap107-v5.json SHA-256 56b778e99fb7f2e55ed9c89eb740f0e9d642e070f5f2d14311dc787cfcf7403c independently records six payload observations/25 API calls, null/list/object and write int/float versus read numeric-string classes, persistence predicates and API cleanup. It does not retain exact lexical value bytes or current-candidate runtime. Fixtures use independently authored literals as attributed shapes. Existing mixed recursively converts objects to associative arrays; no new server/client scalar conversion, parser or runtime is added. No implementation-file SHA or filesystem absence is established; nyz/no-retry remains."
         }
-      ]
+      ],
+      "response": {
+        "": {
+          "replace": {
+            "type": "map",
+            "values": {
+              "type": "mixed"
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1UserData~1get_scoped_userdata/get/responses/200/content/application~1json/schema/properties/result/properties/data/additionalProperties",
+              "note": "This pointer anchors the original contradictory string-only value schema, not authenticated handler implementation bytes. Replace only this operation result map value contract with existing mixed; preserve the required nonnullable map root, presence, empty-array compatibility and all requests."
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19; original revision 08dacc43c15a6d58aa536da8352a3696642d129f",
+              "date": "2026-11-01",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/107#pullrequestreview-5725906568",
+              "note": "Review 5725906568 reports mixed JSON write and subsequent get payloads on direct UAPI and WHM bridge POST at original 08dacc43c15a6d58aa536da8352a3696642d129f. Root immutable open-pr-live-results-bootstrap107-v5.json SHA-256 56b778e99fb7f2e55ed9c89eb740f0e9d642e070f5f2d14311dc787cfcf7403c independently records six payload observations/25 API calls, null/list/object and write int/float versus read numeric-string classes, persistence predicates and API cleanup. It does not retain exact lexical value bytes or current-candidate runtime. Fixtures use independently authored literals as attributed shapes. Existing mixed recursively converts objects to associative arrays; no new server/client scalar conversion, parser or runtime is added. No implementation-file SHA or filesystem absence is established; nyz/no-retry remains."
+            }
+          ]
+        }
+      }
     },
     "uapi:UserData/set_scoped_userdata": {
       "name": "setScopedUserdata",
@@ -78,35 +120,39 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available from cPanel 11.32 with no pinned role or plugin restriction. Both formal source variants are GET and declare x-readonly=false and x-rollback=none. These annotations do not establish a hidden side effect, live POST acceptance or immutability."
+          "text": "The pinned 11.138.0.10 source declares GET, x-readonly=false, x-rollback=none and cPanel 11.32 with no role or plugin restriction. Its additionalProperties string schema is the original contract contradicted by the separately attributed runtime observations."
+        },
+        {
+          "kind": "observed",
+          "text": "Review 5725906568 of original 08dacc43c15a6d58aa536da8352a3696642d129f on 11.138.0.19 observed both operations as POST through direct UAPI and the WHM bridge. The separate root 25-call artifact at that revision/build confirms mixed writes persisted before response mismatches and later reads also mismatched. These are bounded original-head observations, not current-candidate runtime or every-version guarantees."
         },
         {
           "kind": "documented",
-          "text": "Creates or updates scoped userdata and returns the full updated mapping. The source does not establish merge-versus-replace behavior, atomicity, persistence, transactionality, key deletion or rollback."
+          "text": "scope is required; json/key/value are optional strings. Null optional arguments omit and empty strings send. The source forbids json with key/value, while this canonical method forwards all supplied strings and leaves conflicts, key/value pairing and scope-only validity to server validation. Whitespace, duplicate keys, percent/plus/Unicode, empty/malformed/scalar/list JSON text pass through unchanged."
         },
         {
-          "kind": "documented",
-          "text": "scope is required; json, key and value are optional strings. Null optional arguments omit and empty strings remain supplied. Source prose forbids json with key or value, but this canonical method forwards every supplied string and leaves conflicts, key/value pairing and scope-only validity to server validation. No input mode is chosen implicitly."
-        },
-        {
-          "kind": "policy",
-          "text": "json has a string schema with an object-shaped string example, not a formal application/json content schema. Forward whitespace, duplicate keys, percent/plus/Unicode, empty or malformed text and scalar/list text verbatim. Callers may encode their desired JSON; no structured alias or local parsing is added."
+          "kind": "observed",
+          "text": "Review 5725906568 at original 08dacc43 on 11.138.0.19 observed both key/value and json writes merging existing keys; empty value stored an empty string instead of deleting. Recovery by overwriting mixed entries with strings was not tested. These observations do not establish universal atomicity, transactionality, persistence or rollback."
         },
         {
           "kind": "policy",
-          "text": "Use one form POST under repository policy for non-read-only operations and private input fields. scope, json, key and value remain exact scalar strings encoded once; the json field is not an application/json request body. No local JSON parsing, reserialization, format validation or normalization occurs."
+          "text": "Return a required nonnullable dynamic map with mixed decoded JSON entries. Preserve scalar values and null without scalar coercion; existing mixed handling copies lists and recursively converts objects to associative PHP arrays. Numeric object keys follow PHP conversion and empty object/list identity may collapse. Arbitrary keys remain; missing/null data and scalar/nonempty-list roots fail. Empty-object and inherited empty-array map compatibility remain."
         },
         {
-          "kind": "documented",
-          "text": "Returns a required nonnullable dynamic map of string values, preserving arbitrary keys and values including empty strings and zero-like strings. Missing data, explicit null, nonempty list roots and nonstring entries fail. Existing empty-array map compatibility and PHP numeric-string object-key conversion remain unchanged; decoding distinguishes objects from arrays."
-        },
-        {
-          "kind": "policy",
-          "text": "Scope names, keys, values, raw results, responseMeta() and PayloadMismatchException::$payload can expose private account settings. All input parameters are sensitive as privacy policy, without assuming they are authentication tokens. Library-owned exception frames conceal inputs and response/error arguments; third-party transports control their own traces. Deliberate payload and metadata inspection remains caller responsibility."
+          "kind": "observed",
+          "text": "At original 08dacc43 on 11.138.0.19, reviewer t/n/f/l/o shapes returned integer 1 and float 1.5 on write, then strings 1 and 1.5 on read, with null/list/object entries retained. These are server representation observations, not client scalar normalization; accepting other decoded JSON values is compatibility policy. Reviewer Cpanel::JSON::Load source attribution is not retained authenticated implementation bytes or an implementation-file hash."
         },
         {
           "kind": "policy",
-          "text": "The client adds no implicit read, merge, key deletion, readback, retry, rollback, cache of server settings, returned-path access or URL fetch. Offline fixtures establish no live acceptance or server settings behavior; live follow-up whm-api-client-8x0.2.74 remains open."
+          "text": "Use one form POST. scope/json/key/value remain exact scalar strings encoded once; json is a raw form field, not an application/json body. No local JSON parsing, reserialization, input normalization, format validation or implicit mode choice is added."
+        },
+        {
+          "kind": "policy",
+          "text": "Scope identities, keys, values, results, errors, responseMeta() and PayloadMismatchException::$payload can expose private account settings. All input parameters remain sensitive. Library-owned frames conceal private inputs and response/error arguments; third-party transports control their own traces. Deliberate metadata and payload inspection remains private caller-accessible data; do not log it indiscriminately."
+        },
+        {
+          "kind": "policy",
+          "text": "No implicit read, merge, key deletion, readback, retry, rollback, server-settings cache, returned-path access or URL fetch is added. A deliberate caller set/get pair is two invocations. No universal confinement, atomicity, persistence or transaction guarantee is inferred. Offline fixtures establish client behavior; original observations do not establish corrected-head live behavior. Runtime follow-up whm-api-client-8x0.2.74 remains open; root API cleanup is distinct from reviewer cleanup and does not prove filesystem absence."
         }
       ],
       "evidence": [
@@ -149,8 +195,42 @@
           "note": "Preserve optional string value and its PHP/wire name without requiredness or encoding changes. Mark this private account-setting input sensitive as client privacy policy. Exact supplied bytes are forwarded once without normalization or added cross-field validation.",
           "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
           "pointer": "/paths/~1UserData~1set_scoped_userdata/get/parameters/3"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19; original revision 08dacc43c15a6d58aa536da8352a3696642d129f",
+          "date": "2026-11-01",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/107#pullrequestreview-5725906568",
+          "note": "Review 5725906568 reports mixed JSON write and subsequent get payloads on direct UAPI and WHM bridge POST at original 08dacc43c15a6d58aa536da8352a3696642d129f. Root immutable open-pr-live-results-bootstrap107-v5.json SHA-256 56b778e99fb7f2e55ed9c89eb740f0e9d642e070f5f2d14311dc787cfcf7403c independently records six payload observations/25 API calls, null/list/object and write int/float versus read numeric-string classes, persistence predicates and API cleanup. It does not retain exact lexical value bytes or current-candidate runtime. Fixtures use independently authored literals as attributed shapes. Existing mixed recursively converts objects to associative arrays; no new server/client scalar conversion, parser or runtime is added. No implementation-file SHA or filesystem absence is established; nyz/no-retry remains."
         }
-      ]
+      ],
+      "response": {
+        "": {
+          "replace": {
+            "type": "map",
+            "values": {
+              "type": "mixed"
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-11-01",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1UserData~1set_scoped_userdata/get/responses/200/content/application~1json/schema/properties/result/properties/data/additionalProperties",
+              "note": "This pointer anchors the original contradictory string-only value schema, not authenticated handler implementation bytes. Replace only this operation result map value contract with existing mixed; preserve the required nonnullable map root, presence, empty-array compatibility and all requests."
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19; original revision 08dacc43c15a6d58aa536da8352a3696642d129f",
+              "date": "2026-11-01",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/107#pullrequestreview-5725906568",
+              "note": "Review 5725906568 reports mixed JSON write and subsequent get payloads on direct UAPI and WHM bridge POST at original 08dacc43c15a6d58aa536da8352a3696642d129f. Root immutable open-pr-live-results-bootstrap107-v5.json SHA-256 56b778e99fb7f2e55ed9c89eb740f0e9d642e070f5f2d14311dc787cfcf7403c independently records six payload observations/25 API calls, null/list/object and write int/float versus read numeric-string classes, persistence predicates and API cleanup. It does not retain exact lexical value bytes or current-candidate runtime. Fixtures use independently authored literals as attributed shapes. Existing mixed recursively converts objects to associative arrays; no new server/client scalar conversion, parser or runtime is added. No implementation-file SHA or filesystem absence is established; nyz/no-retry remains."
+            }
+          ]
+        }
+      }
     }
   }
 }

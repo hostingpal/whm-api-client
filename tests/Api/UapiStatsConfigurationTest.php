@@ -92,6 +92,7 @@ JSON;
         yield 'keyed changes' => [['changes' => ['domain' => []]]];
         yield 'sparse changes' => [['changes' => [1 => ['domain' => 'x', 'analyzers' => []]]]];
         yield 'empty row' => [['changes' => [[]]]];
+        yield 'empty domain' => [['changes' => [['domain' => '', 'analyzers' => []]]]];
         yield 'missing domain' => [['changes' => [['analyzers' => []]]]];
         yield 'missing analyzers' => [['changes' => [['domain' => 'x']]]];
         yield 'null domain' => [['changes' => [['domain' => null, 'analyzers' => []]]]];
@@ -175,10 +176,10 @@ JSON;
         [$client, $http] = self::client();
         $http->addResponse(new Response(200, [], '{"status":1,"warnings":["not_owned","not_available","unrecognized"],'
             . '"data":[{"domain":"returned.test","analyzers":[{"name":"awstats",'
-            . '"available":1,"enabled":0,"locked":1}]}]}'));
+            . '"enabled_by_user":1,"enabled":0}]}]}'));
         self::assertSame([
             [
-                'analyzers' => [['available' => 1, 'enabled' => 0, 'locked' => 1, 'name' => 'awstats']],
+                'analyzers' => [['enabled' => 0, 'enabled_by_user' => 1, 'name' => 'awstats']],
                 'domain' => 'returned.test',
             ],
         ], $client->uapi()->statsManager()->saveConfiguration(self::complete()));
@@ -196,13 +197,13 @@ JSON;
         yield 'empty list' => ['{"status":1,"data":[]}', [], null];
         yield 'optional fields' => [
             '{"status":1,"data":[{}, {"analyzers":[]}, {"analyzers":[{},'
-                . '{"name":"other","available":0,"enabled":1,"locked":0}]}]}',
+                . '{"name":"other","enabled_by_user":0,"enabled":1}]}]}',
             [
                 [],
                 ['analyzers' => []],
                 ['analyzers' => [
                     [],
-                    ['available' => 0, 'enabled' => 1, 'locked' => 0, 'name' => 'other'],
+                    ['enabled' => 1, 'enabled_by_user' => 0, 'name' => 'other'],
                 ]],
             ],
             null,
@@ -210,7 +211,7 @@ JSON;
         yield 'api failure' => ['{"status":0,"errors":["denied"],"data":[]}', null, ApiErrorException::class];
         yield 'null payload' => ['{"status":1,"data":null}', null, PayloadMismatchException::class];
         yield 'absent payload' => ['{"status":1}', null, PayloadMismatchException::class];
-        foreach (['available', 'enabled', 'locked'] as $flag) {
+        foreach (['enabled_by_user', 'enabled'] as $flag) {
             yield 'string ' . $flag => ['{"status":1,"data":[{"analyzers":[{"' . $flag . '":"1"}]}]}',
                 null, PayloadMismatchException::class];
             yield 'null ' . $flag => ['{"status":1,"data":[{"analyzers":[{"' . $flag . '":null}]}]}',
@@ -243,7 +244,7 @@ JSON;
         self::assertNotNull($client->uapi()->responseMeta());
     }
 
-    /** @return array{changes: non-empty-list<array{domain: string, analyzers: list<array{name: string, enabled: bool}>}>} */
+    /** @return array{changes: non-empty-list<array{domain: non-empty-string, analyzers: list<array{name: string, enabled: bool}>}>} */
     private static function complete(): array
     {
         return ['changes' => [['domain' => 'example.test', 'analyzers' => [['name' => 'awstats', 'enabled' => true]]]]];
