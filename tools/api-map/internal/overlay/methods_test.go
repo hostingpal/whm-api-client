@@ -77,3 +77,35 @@ func TestScalarMapJSONFieldDescriptorSchema(t *testing.T) {
 		t.Fatal("unknown key accepted")
 	}
 }
+
+func TestFirstUnsuffixedRecordSchema(t *testing.T) {
+	method := strings.Replace(methodJSON, `"start":1,"separator":""`, `"start":0,"separator":"-","first_unsuffixed":true`, 1)
+	method = strings.Replace(method, `"source":"search"`, `"source":"search","required":true`, 1)
+	load := func(m string) error {
+		_, err := Load(writeOverlay(t, "listed", map[string]string{"whm/Accounts.json": strings.Replace(validWHM, `"name": "listAccounts",`, `"name": "listAccounts", "additional_methods":[`+m+`],`, 1)}))
+		return err
+	}
+	if err := load(method); err != nil {
+		t.Fatal(err)
+	}
+	for _, key := range []string{"first_unsuffixed", "required"} {
+		for _, value := range []string{"false", "null", "1", `"true"`, `{}`} {
+			if err := load(strings.Replace(method, `"`+key+`":true`, `"`+key+`":`+value, 1)); err == nil {
+				t.Errorf("accepted %s=%s", key, value)
+			}
+		}
+		if err := load(strings.Replace(method, `"`+key+`":true`, `"`+key+`":true,"`+key+`":true`, 1)); err == nil {
+			t.Errorf("accepted duplicate %s", key)
+		}
+	}
+	for _, bad := range []string{
+		strings.Replace(method, `"start":0`, `"start":1`, 1),
+		strings.Replace(method, `"separator":"-"`, `"separator":""`, 1),
+		strings.Replace(method, `"first_unsuffixed"`, `"First_unsuffixed"`, 1),
+		strings.Replace(method, `"required":true`, `"unknown":true`, 1),
+	} {
+		if err := load(bad); err == nil {
+			t.Errorf("accepted unsafe descriptor: %s", bad)
+		}
+	}
+}

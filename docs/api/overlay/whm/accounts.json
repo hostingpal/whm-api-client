@@ -202,6 +202,10 @@
         {
           "kind": "observed",
           "text": "On WHM GET 11.138.0.19, no-match searches omit data: success and the exact result 0 reason \"No accounts found.\" return an empty list without rewriting response metadata. Every other failure and every present failure payload remains an error. The recorded 11.138.0.15 successful exact-domain null data also returns an empty list; only structural diagnostics survive, not the original wire body. Other nonnull payloads retain strict validation."
+        },
+        {
+          "kind": "observed",
+          "text": "On 11.138.0.19, reviewer tests found that search is ignored when searchtype is omitted, even with searchmethod supplied. An invalid regular expression with searchtype user or domain, and an empty search with searchtype user, also matched all visible accounts. Specify a nonempty search and searchtype; use searchmethod exact for literal account identifiers. Check returned account identities before applying mutations. The client forwards these inputs without local filtering or rejection."
         }
       ],
       "evidence": [
@@ -216,6 +220,12 @@
           "version": "11.138.0.15",
           "date": "2026-10-17",
           "note": "Historical WHM GET exact-domain no-match was recorded as successful with data:null in the 2026-10-17 finite-Quota preflight diagnostics, reconciled in docs/api/source-audit.md#account-search-absence-reconciliation-2026-11-01. The original wire body was not retained; the PHP fixture is a separate structural replay."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-11-01",
+          "note": "Attributed read-only WHM GET review of revision 08b16f259abaa934e625f9c18c8379002db48431: search alone or with exact/regex searchmethod but no searchtype returned the visible account despite a nonexistent search name. Invalid regex with user/domain and empty search with user also returned it. Reviewer inspection of Whostmgr::Accounts::List::listaccts found filtering inside searchtype branches and empty/invalid regex fallback to match-all. One root-scoped server/account; no new request or raw server-source inspection in this documentation change. Bead whm-api-client-2g3 and https://github.com/hostingpal/whm-api-client/pull/122#pullrequestreview-5727369824; docs/api/source-audit.md#account-search-filtering-caveats-2026-11-01. PR122's separate exact-user error recommendation remains superseded by the accepted account_search_empty policy."
         }
       ],
       "order": [
