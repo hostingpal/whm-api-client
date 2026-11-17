@@ -36,6 +36,23 @@ final class VersionControlSpec
                         'read_write' => ['type' => 'list', 'items' => ['type' => 'string']],
                     ],
                 ],
+                'deployable' => ['type' => 'flag', 'accept' => ['string-flag']],
+                'last_deployment' => [
+                    'type' => 'object',
+                    'nullable' => true,
+                    'fields' => [
+                        'deployment_date' => ['type' => 'int'],
+                        'repository_state' => [
+                            'type' => 'object',
+                            'fields' => [
+                                'author' => ['type' => 'string'],
+                                'date' => ['type' => 'int'],
+                                'identifier' => ['type' => 'string'],
+                                'message' => ['type' => 'string'],
+                            ],
+                        ],
+                    ],
+                ],
                 'last_update' => ['type' => 'mixed', 'nullable' => true],
                 'name' => ['type' => 'string'],
                 'repository_root' => ['type' => 'string'],
@@ -57,6 +74,13 @@ final class VersionControlSpec
                                 'fields' => [
                                     'log_file' => ['type' => 'string'],
                                     'repository_root' => ['type' => 'string'],
+                                ],
+                            ],
+                            'exclusive' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'string'],
+                                    ['type' => 'int'],
                                 ],
                             ],
                             'id' => ['type' => 'string'],

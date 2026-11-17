@@ -361,6 +361,40 @@ final class UapiVersionControlTest extends TestCase
     }
 
     #[DataProvider('routes')]
+    public function testCreateKeepsTheRepositoryFieldsSharedWithRetrieve(string $route): void
+    {
+        // 2026-11-17 name inspection on 11.138.0.24: create returns the retrieve repository object.
+        [$client, $http] = self::client($route);
+        $repositories = $client->uapi('exampleuser')->versionControl();
+        $http->addResponse(new Response(200, [], self::envelope(
+            $route,
+            '{"name":"src","type":"git","repository_root":"/home/u/src","branch":null,"last_update":null,'
+                . '"deployable":0,"last_deployment":null,"available_branches":[],"clone_urls":{},"tasks":[]}',
+        )));
+        $plain = $repositories->create('/home/u/src', 'src', 'git');
+        self::assertSame(0, $plain['deployable'] ?? null);
+        self::assertArrayHasKey('last_deployment', $plain);
+        self::assertNull($plain['last_deployment']);
+        $http->addResponse(new Response(200, [], self::envelope(
+            $route,
+            '{"name":"clone","type":"git","repository_root":"/home/u/clone","deployable":"1","tasks":[{'
+                . '"action":"create","subsystem":"VersionControl","id":"00000000/5a9ec8dd4c345d",'
+                . '"sse_url":"/sse/UserTasks/00000000_5a9ec8dd4c345d","exclusive":"0",'
+                . '"args":{"repository_root":"/home/u/clone","log_file":"/home/u/.cpanel/logs/x.log"}}]}',
+        )));
+        $clone = $repositories->create('/home/u/clone', 'clone', 'git', '{"url":"https://192.0.2.1/x.git"}');
+        self::assertSame(1, $clone['deployable'] ?? null);
+        self::assertSame('0', $clone['tasks'][0]['exclusive'] ?? null);
+        $http->addResponse(new Response(200, [], self::envelope($route, '{"deployable":2}')));
+        try {
+            $repositories->create('/home/u/bad', 'bad', 'git');
+            self::fail('A deployable value outside 0|1 must not validate.');
+        } catch (PayloadMismatchException $error) {
+            self::assertTrue($error->outcomeConfirmed);
+        }
+    }
+
+    #[DataProvider('routes')]
     public function testRetrievedIntegerDeploymentIdCanBeDeletedUnderStrictTypes(string $route): void
     {
         [$client, $http] = self::client($route);
