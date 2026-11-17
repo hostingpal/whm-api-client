@@ -11,7 +11,7 @@ use SensitiveParameter;
 /**
  * Expand strict associative records in original row and declared field order.
  *
- * @phpstan-type RecordSpec array{start: int, separator: string,
+ * @phpstan-type RecordSpec array{start: int, separator: string, first_unsuffixed?: true,
  *     fields: array<string, array{prefix: string, type: string, required: bool}>}
  * @internal
  */
@@ -25,7 +25,9 @@ final class RecordEncoder
             || $spec['start'] < 0 || $spec['start'] > 2147483647
             || !in_array($spec['separator'] ?? null, ['', '-'], true)
             || !is_array($spec['fields'] ?? null) || $spec['fields'] === []
-            || array_diff(array_keys($spec), ['start', 'separator', 'fields']) !== []
+            || array_diff(array_keys($spec), ['start', 'separator', 'first_unsuffixed', 'fields']) !== []
+            || (array_key_exists('first_unsuffixed', $spec)
+                && ($spec['first_unsuffixed'] !== true || $spec['start'] !== 0 || $spec['separator'] !== '-'))
         ) {
             throw new LogicException('Invalid record descriptor.');
         }
@@ -54,7 +56,8 @@ final class RecordEncoder
             $fields[$key] = ['prefix' => $field['prefix'], 'type' => $field['type'], 'required' => $field['required']];
         }
 
-        return ['start' => $spec['start'], 'separator' => $spec['separator'], 'fields' => $fields];
+        return ['start' => $spec['start'], 'separator' => $spec['separator']]
+            + (isset($spec['first_unsuffixed']) ? ['first_unsuffixed' => true] : []) + ['fields' => $fields];
     }
 
     public static function append(
@@ -93,7 +96,8 @@ final class RecordEncoder
                 };
                 $fields->append(
                     $origin,
-                    $field['prefix'] . $spec['separator'] . ($spec['start'] + $position),
+                    $field['prefix'] . (($spec['first_unsuffixed'] ?? false) && $position === 0
+                        ? '' : $spec['separator'] . ($spec['start'] + $position)),
                     $encoded,
                     null,
                     false,
