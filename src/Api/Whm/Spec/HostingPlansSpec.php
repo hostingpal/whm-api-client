@@ -203,6 +203,7 @@ final class HostingPlansSpec
         'returns' => [
             'type' => 'object',
             'fields' => [
+                'applications' => ['type' => 'list', 'items' => ['type' => 'map', 'values' => ['type' => 'mixed']]],
                 'groups' => [
                     'type' => 'list',
                     'items' => [

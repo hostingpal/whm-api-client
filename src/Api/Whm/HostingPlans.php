@@ -38,6 +38,7 @@ use SensitiveParameter;
  *     pkg?: string,
  * }
  * @phpstan-type GetAvailableApplicationsResult array{
+ *     applications?: list<array<array-key, mixed>>,
  *     groups?: list<array{
  *         acl?: string|null,
  *         description?: string,
@@ -712,6 +713,10 @@ final readonly class HostingPlans
      * file option, server-relative path/default semantics and GET. Collection arguments receive trace protection
      * without changing semantic sensitivity or transport. Offline coverage only; live list-input follow-up
      * whm-api-client-8x0.2.81 remains open.
+     *
+     * Observed: PR115 review 5726574983 on 11.138.0.19: with applicationsList set, the server returns only
+     * {applications: [...]}; groups and raw are absent. applications is a list of opaque application records whose
+     * field types are not established; without the selector the result keeps groups and raw and omits applications.
      *
      * API-map identity: whm1:get_available_applications#GET (wire name get_available_applications; Feature Lists).
      *

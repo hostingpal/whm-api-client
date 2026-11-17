@@ -43,7 +43,6 @@ final class InventoryDelimitedInputsTest extends TestCase
                 'Branding/get_available_applications'],
             ['branding', 'getInformationForApplications', 'appKeys', 'app_keys', ',',
                 'Branding/get_information_for_applications'],
-            ['fileman', 'listFiles', 'onlyTheseFiles', 'only_these_files', ',', 'Fileman/list_files'],
             ['statsBar', 'getStats', 'display', 'display', '|', 'StatsBar/get_stats'],
             ['versionControl', 'retrieve', 'fields', 'fields', ',', 'VersionControl/retrieve'],
         ];
@@ -219,7 +218,8 @@ final class InventoryDelimitedInputsTest extends TestCase
             $handle->fileman()->listFiles(
                 '/synthetic',
                 includeMime: false,
-                onlyTheseFiles: ['a', 'b'],
+                // PR115 review 5726574983: no working HTTP list form, so only the raw string remains.
+                onlyTheseFiles: 'a,b',
                 showHidden: false,
                 types: 0,
             );
@@ -304,7 +304,8 @@ final class InventoryDelimitedInputsTest extends TestCase
             'Fileman/list_files' => [['file' => 'a']],
             'StatsBar/get_stats' => [['id' => 'diskusage']],
             'VersionControl/retrieve' => [['name' => 'Repo']],
-            default => ['groups' => []],
+            // PR115 review 5726574983: the selector replaces groups/raw with opaque application rows.
+            default => ['applications' => [['key' => 'k', 'itemdesc' => 'D', 'extra' => ['x' => 1]]]],
         };
     }
 

@@ -542,6 +542,10 @@
         {
           "kind": "documented",
           "text": "applications_list accepts raw strings or nonempty sequential string lists joined once with ,. List items may be empty but cannot contain ,; other bytes, order and duplicates are preserved. Null omits, while an empty string or a single empty list item is supplied. Omission selects the entire dynamicui content. Preserve the file option, server-relative path/default semantics and GET. Collection arguments receive trace protection without changing semantic sensitivity or transport. Offline coverage only; live list-input follow-up whm-api-client-8x0.2.81 remains open."
+        },
+        {
+          "kind": "observed",
+          "text": "PR115 review 5726574983 on 11.138.0.19: with applicationsList set, the server returns only {applications: [...]}; groups and raw are absent. applications is a list of opaque application records whose field types are not established; without the selector the result keeps groups and raw and omits applications."
         }
       ],
       "response": {
@@ -789,6 +793,27 @@
               "note": "The reviewer's follow-up type-only WHM GET inspection, with and without raw, found groups[].description as string on one of 29 groups and absent on 28, with zero null or empty-string values. Item description was string on 204 of 206 items and absent on two, again with zero null or empty strings. Both call forms had the same counts. The pinned Group schema has no description property; this optional string field is live-evidenced, not documented. No null compatibility is established, but the observations do not prove null impossible on every server: Whostmgr/DynamicUI/Loader.pm:153 only rewrites truthy descriptions and does not rule out null elsewhere. No mutation ran. Original review: https://github.com/hostingpal/whm-api-client/pull/56#pullrequestreview-5720810852. Clarification: https://github.com/hostingpal/whm-api-client/pull/56#issuecomment-6539624881."
             }
           ]
+        },
+        "applications": {
+          "add": {
+            "type": "list",
+            "items": {
+              "type": "map",
+              "values": {
+                "type": "mixed"
+              }
+            }
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-11-01",
+              "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+              "pointer": "/paths/~1get_available_applications/get/responses/200",
+              "note": "Attributed reviewer observation (PR115 review 5726574983) through WHM: with applications_list set (string or list), _process_list replaced the result with {applications: [one row]}, so the typed result dropped the only key and returned []. Row fields are not established; rows stay opaque maps. Not a committed capture."
+            }
+          ]
         }
       },
       "evidence": [
@@ -817,6 +842,14 @@
           "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
           "pointer": "/paths/~1get_available_applications/get/parameters/0",
           "note": "The pinned optional nonnullable applications_list is a concrete string with explicit comma-delimited prose. Adopt existing client convenience for nonempty sequential strict string lists joined once with , into the original field. Preserve order, duplicates, empty items and all other bytes; reject embedded selected delimiters and malformed/empty lists after metadata reset before I/O. Scalars stay unparsed and encoded once. Omission selects the entire dynamicui content. Preserve the file option, server-relative path/default semantics and GET. Offline request coverage only; historical scalar captures do not establish PHP-list execution. Live follow-up whm-api-client-8x0.2.81 remains open."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-11-01",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1get_available_applications/get/responses/200",
+          "note": "Attributed reviewer observation (PR115 review 5726574983) through WHM: with applications_list set (string or list), _process_list replaced the result with {applications: [one row]}, so the typed result dropped the only key and returned []. Row fields are not established; rows stay opaque maps. Not a committed capture."
         }
       ],
       "params": {

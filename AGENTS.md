@@ -4363,8 +4363,12 @@ generator, dependency or source-schema correction.
 
 Inventory and discovery selectors also accept nonempty sequential string lists:
 Bandwidth `domains`/`protocols`, Branding `nvarglist` and required StatsBar `display`
-join with `|`; Branding `appKeys` on both methods, Fileman `onlyTheseFiles`,
-VersionControl `fields` and WHM HostingPlans `applicationsList` join with `,`.
+join with `|`; Branding `appKeys` on both methods, VersionControl `fields` and
+WHM HostingPlans `applicationsList` join with `,`. Fileman `onlyTheseFiles` stays a
+raw string: review 5726574983 found that the 11.138.0.19 handler dereferences it as
+a Perl array reference, so no HTTP form works (ignored without `limitToList`, an
+API error with it). With `applicationsList` set, the WHM result is only
+`{applications: [...]}` (opaque rows); `groups` and `raw` are absent.
 Raw strings remain byte-preserved and unparsed. Lists preserve order, duplicates,
 empty items, whitespace, Unicode, binary and URL/percent bytes; an embedded selected
 delimiter rejects, while the other delimiter stays data. No escaping, trimming,
