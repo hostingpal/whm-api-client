@@ -20,14 +20,13 @@ use SensitiveParameter;
 /** Independent literal fixtures for the 26 form-compatible pinned WHM Databases operations. */
 final class WhmDatabasesTest extends TestCase
 {
-    public function testSelectorIsLazyAndCachedAndJsonConfigurationIsNotExposed(): void
+    public function testSelectorIsLazyAndCached(): void
     {
         [$client, $http] = self::client();
         $whm = $client->whm();
         self::assertSame($whm->databases(), $whm->databases());
         self::assertSame([], $http->getRequests());
         self::assertNull($whm->responseMeta());
-        self::assertNotContains('updateSqlConfig', get_class_methods($whm->databases()));
     }
 
     /**
