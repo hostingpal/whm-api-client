@@ -10,7 +10,9 @@ Keep live opt-in, explicit target guards and cleanup checks. Never print, store 
 commit credentials.
 
 [live-testing-operations.md](live-testing-operations.md) assigns every pinned
-operation to one of the groups below.
+operation to one of the groups below. Its `Client` column is a snapshot of master
+before the 2026-11-17 merge batch (1,244 typed operations); 29 operations it lists
+as untyped or excluded have since gained typed methods.
 
 ## The box
 
@@ -20,7 +22,7 @@ operation to one of the groups below.
 | cPanel version | `11.138.0.24` on 2026-11-17 (earlier committed evidence is from `11.138.0.19`; the server updates itself) |
 | License limit | 5 accounts (`get_maximum_users`); 1 in use (`npr`) on 2026-11-17 |
 | Baseline snapshot | image `457432750`, taken powered off at 2026-11-17T12:33:56Z, label `purpose=whm-api-client-live-baseline` |
-| Credentials | `OBLAK_TEST_WHM_KEY`, `OBLAK_TEST_NPR_KEY`, `HETZNER_OBLAKHOST_TOKEN` (owner's interactive shell profile) |
+| Credentials | `OBLAK_TEST_WHM_KEY`, `OBLAK_TEST_NPR_KEY`, `HETZNER_OBLAKHOST_TOKEN` (owner's interactive shell profile; non-interactive agent shells reach the Hetzner token only through `zsh -ic`, and must never print it) |
 
 Evidence records the version it observed. Do not treat `11.138.0.24` results as
 `11.138.0.19` results, or the reverse.
