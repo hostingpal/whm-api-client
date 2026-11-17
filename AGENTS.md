@@ -3080,10 +3080,21 @@ remain unobserved under `8x0.2.59`.
   for each operation, target or rerun within that scope, and do not add a new
   snapshot-confirmation gate for those account-scoped tests. Bind each recipe to
   explicit test-account identifiers; this does not designate unrelated accounts
-  as test accounts. Keep live opt-in, target guards and cleanup checks. Server-wide
-  and lockout tests retain their separate phases; never restore the server
-  automatically. The `live-mutating` lifecycle test ran successfully on 2026-10-15
-  (see `docs/api/source-audit.md`).
+  as test accounts. Keep live opt-in, target guards and cleanup checks. The
+  `live-mutating` lifecycle test ran successfully on 2026-10-15 (see
+  `docs/api/source-audit.md`).
+- **Whole-box live testing (owner authorized 2026-11-17):** `test.oblak.host`
+  (Hetzner server `170057093`) may run all live API tests, including irreversible
+  server-wide and lockout operations, **except operations that cost money**.
+  Follow [docs/live-testing.md](docs/live-testing.md): server-wide batches run
+  inside a snapshot window, lockout and version-changing calls run last, and
+  evidence is committed before an explicit restore from Hetzner snapshot
+  `457432750`. Restores are deliberate steps, never automatic in code. External
+  effects (mail, cPanel support tickets, vendors, certificate issuance, remote
+  hosts, public DNS) survive a restore and need owned or synthetic targets.
+  [docs/live-testing-operations.md](docs/live-testing-operations.md) assigns every
+  pinned operation to a group. The box runs cPanel `11.138.0.24` as of 2026-11-17;
+  keep evidence version-scoped.
 
 ## Generated-client delivery
 
