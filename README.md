@@ -4749,7 +4749,10 @@ $accounts = $account->resellers()->listAccounts();
 
 Chkservd requires cPanel 11.42 and returns `array{ports?: list<int>}`. Missing
 `ports` differs from an empty list. Native integer values and list order are
-preserved; numeric strings, floats, booleans and null are rejected. The pinned
+preserved. `getEximPorts()` also normalizes canonical digit strings, which
+review 5726617674 saw on both routes (the server splits a comma string);
+`getEximPortsSsl()` stays native-integer only. Floats, booleans and null are
+rejected. The pinned
 SMTP source specifies 1..65535 and unique items; SSL specifies 0..65535 without
 uniqueness. Existing validation enforces types, not general bounds or uniqueness.
 Reported ports establish no listening, reachability, TLS or email-delivery result.

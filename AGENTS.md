@@ -4403,7 +4403,9 @@ one GET on direct and bridged UAPI, and retain ordinary Flag outcome.
 
 Chkservd (cPanel 11.42) returns required nonnull objects with optional
 `ports:list<int>`. Preserve omitted versus empty, native integers and order;
-reject strings/floats/bools/null without normalization. Source SMTP constraints
+getEximPorts also normalizes canonical digit strings (review 5726617674:
+the server splits a comma string); SSL ports stay native integers; reject
+floats/bools/null. Source SMTP constraints
 are 1..65535 and uniqueItems:true; SSL has 0..65535 with no uniqueness declaration.
 Existing policy validates types, not general bounds/uniqueness. Resellers (cPanel
 11) returns a required nonnull list of optional `domain`, `select`, `user` strings.

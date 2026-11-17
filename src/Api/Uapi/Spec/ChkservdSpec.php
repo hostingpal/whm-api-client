@@ -22,7 +22,7 @@ final class ChkservdSpec
         'returns' => [
             'type' => 'object',
             'fields' => [
-                'ports' => ['type' => 'list', 'items' => ['type' => 'int']],
+                'ports' => ['type' => 'list', 'items' => ['type' => 'int', 'accept' => ['numeric-string']]],
             ],
         ],
     ];
