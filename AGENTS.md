@@ -3988,7 +3988,7 @@ request with ordinary UAPI status handling; the cached accessor performs no I/O.
 
 | Method | Effective request | Available from |
 | --- | --- | --- |
-| `getApplicationInformation(string $appKey): array` | GET | cPanel 11.42 |
+| `getApplicationInformation(string $appKey): ?array` | GET | cPanel 11.42 |
 | `getApplications(?string $appKeys = null): array` | GET | cPanel 11.52 |
 | `getAvailableApplications(?string $nvarglist = null): array` | GET | cPanel 54 |
 | `getInformationForApplications(string $docroot, ?string $appKeys = null): array` | Form POST | cPanel 11.52 |
@@ -4019,15 +4019,18 @@ forwarded without normalization, local access or path validation. Null optional
 arguments omit, while empty strings, percent/plus/Unicode and exact byte strings
 remain supplied and encoded once. No new enum/range/format validation is added.
 
-All four inventory roots are required nonnullable objects/maps with optional
-fields. `getApplications()` preserves a dynamic application map, including the
+Three inventory roots are required nonnullable objects/maps with optional
+fields; `getApplicationInformation()` returns null for an unknown key. `getApplications()` preserves a dynamic application map, including the
 six example-only optional string fields `acontent`, `base64_png_image`, `key`,
-`onclick`, `plainitemdesc` and `target`. Only this operation's `height`,
-`itemorder` and `width` accept canonical in-range integer strings, because all
-three keyed source examples quote them; outputs remain integers. Fractional,
-exponent, whitespace, plus, leading-zero and overflow strings fail. The single
-application result retains all fourteen formal fields with strict integer
-sizes/order. The available-applications item sizes/order remain strings.
+`onclick`, `plainitemdesc` and `target`. Its `height`, `itemorder` and `width`
+accept canonical in-range integer strings, because all three keyed source
+examples quote them; outputs remain integers. Fractional, exponent, whitespace,
+plus, leading-zero and overflow strings fail. Review 5725970479 on 11.138.0.19
+found the same digit strings in the single-application result, which reads the
+same rows, and mixed digit strings and native integers in available-application
+items. Both now apply the same rule and return integers, and the single result
+keeps the same eight extra row fields. An unknown or empty key returns null data
+under status 1, so null means no such application.
 
 `getAvailableApplications()` preserves integer-map `default_group_order`,
 ordered string-list `grouporder`, group/item lists, string-map `implements`
