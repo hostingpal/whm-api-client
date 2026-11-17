@@ -10,9 +10,9 @@ Keep live opt-in, explicit target guards and cleanup checks. Never print, store 
 commit credentials.
 
 [live-testing-operations.md](live-testing-operations.md) assigns every pinned
-operation to one of the groups below. Its `Client` column is a snapshot of master
-before the 2026-11-17 merge batch (1,244 typed operations); 29 operations it lists
-as untyped or excluded have since gained typed methods.
+operation to one of the groups below. Groups are reviewed decisions; the `Client`
+column follows the generated client. After generating new operations, refresh it with
+`php tools/live-testing/refresh-operations-client.php` (`--check` exits 1 when stale).
 
 ## The box
 
