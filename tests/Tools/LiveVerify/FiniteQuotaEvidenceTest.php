@@ -235,15 +235,21 @@ final class FiniteQuotaEvidenceTest extends TestCase
         $altered = new Probe($selected->operation, $selected->route, [], $selected->uri, $selected->invoke);
         foreach ([[], [...$catalog, $selected], [$catalog[0], $unsupported], [$catalog[0], $altered]] as $probes) {
             $http = new Client();
+            $caught = null;
             try {
                 (new FiniteQuotaEvidence($http, self::context()))->run($probes, 'whm', 'cpanel');
-                self::fail('Incomplete or changed finite recipes must refuse before requests.');
             } catch (RuntimeException $error) {
-                self::assertSame(
-                    'Finite Quota evidence requires the five reviewed catalog recipes.',
-                    $error->getMessage(),
-                );
+                $caught = $error;
             }
+            self::assertInstanceOf(
+                RuntimeException::class,
+                $caught,
+                'Incomplete or changed finite recipes must refuse before requests.',
+            );
+            self::assertSame(
+                'Finite Quota evidence requires the five reviewed catalog recipes.',
+                $caught->getMessage(),
+            );
             self::assertCount(0, $http->getRequests());
         }
     }

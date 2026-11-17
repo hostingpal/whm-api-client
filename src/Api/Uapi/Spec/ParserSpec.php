@@ -22,7 +22,7 @@ final class ParserSpec
         'returns' => [
             'type' => 'object',
             'fields' => [
-                'uri' => ['type' => 'string'],
+                'uri' => ['type' => 'string', 'nullable' => true],
             ],
         ],
     ];

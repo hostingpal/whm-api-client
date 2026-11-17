@@ -22,9 +22,8 @@ var (
 	reservedNames = map[string]bool{
 		"call": true, "responseMeta": true, "username": true, "isBridged": true, "run": true, "dispatch": true,
 		"request": true, "beginRequest": true, "recordResponseMeta": true, "executeGet": true, "executePost": true,
-		"execute": true, "encode": true, "queryValues": true,
+		"execute": true, "encode": true, "callJson": true, "executeJsonPost": true,
 		"callMultipart": true, "executeMultipartPost": true,
-		"callJson": true, "executeJsonPost": true, "validateJsonQuery": true,
 	}
 	// reservedArguments are PHP variables a generated method body already uses.
 	reservedArguments = map[string]bool{"this": true, "result": true}
@@ -179,6 +178,7 @@ func (b *builder) operation(op model.Operation, v model.Variant, ov overlay.Oper
 		VariantID:   v.ID,
 		Family:      op.Family,
 		Function:    b.wireFunction(op, ov),
+		Rows:        ov.Rows,
 		Outcome:     firstNonEmpty(ov.Outcome, "flag"),
 		Body:        ov.Body,
 		Summary:     sentence(text(node["summary"])),
@@ -224,6 +224,12 @@ func (b *builder) operation(op model.Operation, v model.Variant, ov overlay.Oper
 	if ov.Void {
 		returns = nil
 	}
+	// A metadata-only schema can omit an actual retrieval payload. Restore only
+	// the narrowly evidenced opaque boundary; all other absent-payload
+	// corrections keep the ordinary documented-payload rejection below.
+	if restoreOpaqueRetrieval(op, v, ov, payload, node, result.Method) {
+		returns = &TypeSpec{Type: "mixed"}
+	}
 	if returns != nil {
 		for _, path := range sortedKeys(ov.Response) {
 			if err := applyCorrection(returns, path, ov.Response[path]); err != nil {
@@ -249,6 +255,9 @@ func (b *builder) operation(op model.Operation, v model.Variant, ov overlay.Oper
 	if ov.OptionalPayload && returns == nil {
 		b.problem(op.ID + ": optional_payload needs a documented payload")
 	}
+	b.rowsPolicy(op, v, ov, returns)
+	result.EmptyWithoutData = b.emptyWithoutData(op, ov, returns)
+	result.AccountSearchEmpty = b.accountSearchEmpty(result, ov, returns)
 	result.Returns = returns
 	result.AdditionalMethods = b.additionalMethods(op, v, ov, result)
 	return result, b.groupOf(op, v, node), true
@@ -422,6 +431,7 @@ func (b *builder) params(op model.Operation, v model.Variant, ov overlay.Operati
 			spec = TypeSpec{Type: "string"}
 		}
 		param := Param{
+			Source:      p.Name,
 			Wire:        p.Name,
 			PHP:         Camel(p.Name),
 			Required:    decl["required"] == true,
