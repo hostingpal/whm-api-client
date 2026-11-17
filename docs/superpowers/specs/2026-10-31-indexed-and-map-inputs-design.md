@@ -515,3 +515,22 @@ body; dynamic map keys, string payload job_id and per-job statuses are unchanged
 No polling, retry, prior-state read, rollback, conversion initiation, batch atomicity,
 persistence or live compatibility claim follows. Other indexed families and the
 separate token slice remain outside this adoption.
+
+### 2026-11-01 SPF paired-record adoption (`8x0.1.21.4`)
+
+The separate generated `whm()->mail()->installSpfRecordBatch(records)` adopts
+`non-empty-list<SpfRecordInput>`, with required string `domain`/`record` fields.
+The existing scalar `installSpfRecords(domain, record)` and canonical operation
+count/response remain unchanged. Explicit metadata selects start 1 and separator
+`-`: `domain-1`, `record-1`, then `domain-2`, `record-2`, even for a singleton.
+Closed complete rows preserve bytes, empty strings, order and duplicates in one
+sensitive argument and one form POST; parallel arrays and caller numbering are
+not exposed. Pinned pointers `/paths/~1install_spf_records/get/parameters/0` and
+`/1` retain required string types; only domain explicitly documents its suffixes.
+The attributed [PR72 source review](https://github.com/hostingpal/whm-api-client/pull/72#pullrequestreview-5722427592)
+on 11.138.0.19 supports sorted-position pairing of both families and supersedes
+the old serialization gate, without a live batch observation. Offline fixtures
+establish transport and validation only. Installing supplies complete replacement
+SPF records; no clearing semantics, duplicate resolution, DNS propagation, applied
+state, persistence or atomicity is inferred. No read/merge, retry or rollback is
+added. Live follow-up `8x0.2.48` remains open.
