@@ -31,20 +31,23 @@ use Throwable;
 final readonly class DiscrepancyPolicy
 {
     /**
-     * Current immutable reference, captured at 5f9b001 on cPanel 11.138.0.19.
+     * Current immutable reference, captured at 8be370a on cPanel 11.138.0.24 (2026-11-17).
      *
-     * Until 2026-11-01 the same two observations were bound to cPanel 11.138.0.15 through
+     * A name inspection on 11.138.0.24 found exactly the two owner-accepted undeclared fields,
+     * backup_warning_threshold_pct and under_backup_threshold, on both routes.
+     * Earlier bindings stay unchanged as history: cPanel 11.138.0.19 through
+     * docs/api/evidence/2026-11-01-read-only-11.138.0.19.json (SHA-256 4138dbf1d083ddfe6d109c86bb8beb449abde6937e93b2452693d47b2b792b81), and before 2026-11-01 cPanel 11.138.0.15 through
      * docs/api/evidence/2026-10-16-quota-inventory.json (SHA-256
-     * 5f65d66acc36673ee37be1b4e024dad3ac725e5313d45c208abb489d5c9f6811). That file stays
-     * unchanged as history; only this rebinding moved the acknowledgments.
+     * 5f65d66acc36673ee37be1b4e024dad3ac725e5313d45c208abb489d5c9f6811). Only rebinding moves
+     * the acknowledgments.
      */
-    private const EVIDENCE = 'docs/api/evidence/2026-11-01-read-only-11.138.0.19.json';
+    private const EVIDENCE = 'docs/api/evidence/2026-11-17-read-only.json';
 
-    private const SHA256 = '4138dbf1d083ddfe6d109c86bb8beb449abde6937e93b2452693d47b2b792b81';
+    private const SHA256 = '8d3ecb221955b776e3302af7dfaebc0fd334fe3ffc53180355fbdeee7d738814';
 
     private const ROUTES = [
-        'direct-uapi' => 'quota-total-direct-11.138.0.19',
-        'bridged-uapi' => 'quota-total-bridge-11.138.0.19',
+        'direct-uapi' => 'quota-total-direct-11.138.0.24',
+        'bridged-uapi' => 'quota-total-bridge-11.138.0.24',
     ];
 
     /** @param array<string, array{identity: string, signature: string}> $expected */

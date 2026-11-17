@@ -431,7 +431,11 @@ A passing assessment with acknowledgments is **not a discrepancy-free run**.
 ### Reviewed structural acknowledgments
 
 `DiscrepancyPolicy` contains only the two reviewed Quota total observations from
-`docs/api/evidence/2026-11-01-read-only-11.138.0.19.json`. It verifies that file's
+`docs/api/evidence/2026-11-17-read-only.json` (cPanel 11.138.0.24). A name inspection on
+that version found exactly the owner-accepted `backup_warning_threshold_pct` and
+`under_backup_threshold` on both routes. The acknowledgments compare `server_version`, so
+the server's automatic cPanel updates make them stale until they are rebound; the
+11.138.0.19 and 11.138.0.15 bindings stay as history. It verifies that file's
 fixed SHA-256 and, also before any network request, refuses every existing file under
 `docs/api/evidence/` (including filesystem aliases) as an output destination, so history
 stays protected after the reference moves. New paths there and files elsewhere stay
