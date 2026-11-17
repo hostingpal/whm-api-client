@@ -83,7 +83,7 @@ func TestDelimitedArrayOnlyReservesFirstUnsuffixedBase(t *testing.T) {
 	for _, reverse := range []bool{false, true} {
 		pointer := "/parameters/0"
 		otherPointer := "/parameters/1"
-		canonical := Operation{ID: "fixture", Method: "GET", Params: []Param{{PHP: "field", Wire: "field", PHPType: "string", Encoding: "scalar", Required: true}, {PHP: "other", Wire: "group", PHPType: "array", Encoding: "collection", Collection: &collection}}}
+		canonical := Operation{ID: "fixture", Method: "GET", Params: []Param{{PHP: "field", Source: "field", Wire: "field", PHPType: "string", Encoding: "scalar", Required: true}, {PHP: "other", Source: "group", Wire: "group", PHPType: "array", Encoding: "collection", Collection: &collection}}}
 		variant := model.Variant{Parameters: []model.Parameter{{Name: "field", Locator: model.Locator{SourceSHA256: "hash", Pointer: &pointer}}, {Name: "group", Locator: model.Locator{SourceSHA256: "hash", Pointer: &otherPointer}}}}
 		inputs := []overlay.MethodInput{{PHP: "rows", Records: &overlay.Records{Alias: "RowInput", Start: &zero, Separator: &dash, Sensitive: &no, FirstUnsuffixed: &yes, Fields: []overlay.RecordField{{PHP: "field", Source: "field", Prefix: "group"}}}}, {PHP: "other", Source: "group"}}
 		if reverse {

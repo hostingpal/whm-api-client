@@ -710,6 +710,10 @@
         {
           "kind": "policy",
           "text": "Client list convenience: accept a nonempty sequential list of strict strings and join once with a comma into the original field. Preserve order, duplicates, empty items and all other bytes; reject embedded commas and malformed or empty lists after metadata reset before I/O. Raw scalars remain unparsed and encoded once. Collection arguments have trace protection without changing transport. Offline coverage only; historical scalar captures do not establish PHP-list execution. Live follow-up whm-api-client-8x0.2.86 and wider adoption whm-api-client-8x0.28.8 remain open."
+        },
+        {
+          "kind": "documented",
+          "text": "PR120 review 5727013591 read the installed 11.138.0.19 handler and confirmed the request bytes offline: ips [''] (or ['', '']) sends ips= (or a bare comma), which splits to no addresses and clears the delegated IP list. No live call ran. The client keeps forwarding the empty value unchanged."
         }
       ],
       "evidence": [
@@ -820,6 +824,10 @@
         {
           "kind": "policy",
           "text": "Client list convenience: accept a nonempty sequential list of strict strings and join once with a comma into the original field. Preserve order, duplicates, empty items and all other bytes; reject embedded commas and malformed or empty lists after metadata reset before I/O. Raw scalars remain unparsed and encoded once. Collection arguments have trace protection without changing transport. Offline coverage only; historical scalar captures do not establish PHP-list execution. Live follow-up whm-api-client-8x0.2.86 and wider adoption whm-api-client-8x0.28.8 remain open."
+        },
+        {
+          "kind": "documented",
+          "text": "PR120 review 5727013591 read the installed 11.138.0.19 handler and confirmed the request bytes offline: nameservers [''] (or ['', '']) sends nameservers= (or a bare comma), which splits to nothing and resets the nameservers to the server defaults. No live call ran. The client keeps forwarding the empty value unchanged."
         }
       ],
       "evidence": [

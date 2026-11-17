@@ -31,7 +31,7 @@ use SensitiveParameter;
  *     reason?: string,
  *     success?: 0|1,
  *     token_data?: array{
- *         email?: string,
+ *         email?: string|null,
  *         expires_in?: int,
  *     },
  * }
@@ -47,7 +47,7 @@ use SensitiveParameter;
  *     state?: string,
  * }
  * @phpstan-type WebProsAuthStatusResult array{
- *     email?: string,
+ *     email?: string|null,
  *     error?: string,
  *     expired_at?: int,
  *     expires_in?: int,
@@ -260,6 +260,11 @@ final readonly class Monitoring
      * raw metadata, including after a payload mismatch. Integer fields and integer 0|1 flags remain strict native
      * values without quoted, boolean or float coercion; reason strings remain open.
      *
+     * Documented: PR112 review 5726281163 source reading on 11.138.0.19: email is copied from the ID token's email
+     * claim, which the handler documents as present only if available, so email is a nullable string. A null email
+     * after the callback does not mean failure: the token bundle is already stored and the single-use state already
+     * spent, so never retry the callback.
+     *
      * Policy: Returned tokens, state, authorization URLs, sessions, account identifiers, email/error details and
      * PayloadMismatchException payloads may be private. Existing SensitiveParameter protections cover library-owned
      * input/response frames, not caller-readable payloads or third-party transport traces. Returned URLs remain inert
@@ -425,6 +430,9 @@ final readonly class Monitoring
      * metadata.result=1 is a result for the caller to inspect, not an exception. Inspect responseMeta() warnings and
      * raw metadata, including after a payload mismatch. Integer fields and integer 0|1 flags remain strict native
      * values without quoted, boolean or float coercion; reason strings remain open.
+     *
+     * Documented: PR112 review 5726281163 source reading on 11.138.0.19: email is copied from the ID token's email
+     * claim, which the handler documents as present only if available, so email is a nullable string.
      *
      * Policy: Returned tokens, state, authorization URLs, sessions, account identifiers, email/error details and
      * PayloadMismatchException payloads may be private. Existing SensitiveParameter protections cover library-owned

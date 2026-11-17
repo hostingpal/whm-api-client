@@ -895,11 +895,18 @@ final readonly class Authentication
      * Documented: The pinned configurations query parameter carries JSON-encoded key-value text for color,
      * display_name, icon, icon_type, label and textcolor. The effective request uses form POST.
      *
+     * Documented: On cPanel 11.138.0.19, set_display_configuration merges supplied keys over the current configuration;
+     * omitted keys retain their current values. Every call writes the full merged configuration, including {}
+     * (structured []). This pins current values and defaults for that provider/service and prevents later upstream
+     * defaults from applying. An empty call is neither a reset nor a write-free no-op. The server requires color and
+     * textcolor to match ^[0-9a-fA-F]{3,6}$ without a leading #. A key unsupported by the provider, such as icon when
+     * the provider has no icon, can pass local shape validation and still be rejected upstream. These are upstream
+     * constraints; the client does not validate colors or provider-specific key availability.
+     *
      * Policy: setProviderDisplayConfigurations() accepts caller-serialized string text without parsing or reencoding.
      * configureProviderDisplay() validates structured PHP input, serializes it once into the configurations form field
-     * and then form-encodes once. Configuration inputs are sensitive. Omitted members remain absent and source defaults
-     * stay upstream; [] sends {} without a reset or no-op guarantee. Client policy: send one request without automatic
-     * retry or rollback.
+     * and then form-encodes once. Configuration inputs are sensitive. Omitted members remain absent in the request; []
+     * sends {}. Client policy: send one request without automatic retry or rollback.
      *
      * API-map identity: whm1:set_provider_display_configurations#GET (wire name set_provider_display_configurations;
      * External Authentication).
@@ -938,11 +945,18 @@ final readonly class Authentication
      * Documented: The pinned configurations query parameter carries JSON-encoded key-value text for color,
      * display_name, icon, icon_type, label and textcolor. The effective request uses form POST.
      *
+     * Documented: On cPanel 11.138.0.19, set_display_configuration merges supplied keys over the current configuration;
+     * omitted keys retain their current values. Every call writes the full merged configuration, including {}
+     * (structured []). This pins current values and defaults for that provider/service and prevents later upstream
+     * defaults from applying. An empty call is neither a reset nor a write-free no-op. The server requires color and
+     * textcolor to match ^[0-9a-fA-F]{3,6}$ without a leading #. A key unsupported by the provider, such as icon when
+     * the provider has no icon, can pass local shape validation and still be rejected upstream. These are upstream
+     * constraints; the client does not validate colors or provider-specific key availability.
+     *
      * Policy: setProviderDisplayConfigurations() accepts caller-serialized string text without parsing or reencoding.
      * configureProviderDisplay() validates structured PHP input, serializes it once into the configurations form field
-     * and then form-encodes once. Configuration inputs are sensitive. Omitted members remain absent and source defaults
-     * stay upstream; [] sends {} without a reset or no-op guarantee. Client policy: send one request without automatic
-     * retry or rollback.
+     * and then form-encodes once. Configuration inputs are sensitive. Omitted members remain absent in the request; []
+     * sends {}. Client policy: send one request without automatic retry or rollback.
      *
      * API-map identity: whm1:set_provider_display_configurations#GET (wire name set_provider_display_configurations;
      * External Authentication).
@@ -1191,22 +1205,28 @@ final readonly class Authentication
      * Documented: The pinned multiple-user example starts user-1,user-2. Removal requires user setup again.
      * users_modified includes accounts without prior 2FA configuration, so it does not prove an actual removal.
      *
-     * Policy: Client policy supports the documented scalar user form. The existing numbered encoder starts user,user-1,
-     * so the different indexed variant remains unsupported under whm-api-client-8x0.1.21. Inspect failed independently
-     * of envelope success. Client policy: send one request without automatic retry or rollback.
+     * Policy: Scalars retain user; nonempty sequential string lists use user-1,user-2, including singleton lists.
+     * Inspect failed independently of envelope success. One request adds no implicit prior-configuration read, retry or
+     * rollback; batch atomicity and persistence are not established. List support is documentation/offline coverage,
+     * not a live removal observation.
      *
      * API-map identity: whm1:twofactorauth_remove_user_config#GET (wire name twofactorauth_remove_user_config;
      * Two-Factor Authentication).
      *
-     * @param string $user The account's username.
+     * @param string|non-empty-list<string> $user The account username as a string, or a nonempty sequential string
+     *     list. Scalars use user; lists always use user-1,user-2, including a singleton. Preserve order, duplicates and
+     *     supplied string bytes. Empty, sparse, associative or nonstring lists fail locally before I/O.
      * @return TwoFactorAuthRemoveUserConfigResult
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/two-factor-authentication/twofactorauth-twofactorauth_remove_user_config
      */
-    public function twoFactorAuthRemoveUserConfig(string $user): array
-    {
+    public function twoFactorAuthRemoveUserConfig(
+        #[SensitiveParameter]
+        string|array $user,
+    ): array {
         /**
          * @var TwoFactorAuthRemoveUserConfigResult $result
          * Validated against AuthenticationSpec::TWOFACTORAUTH_REMOVE_USER_CONFIG.

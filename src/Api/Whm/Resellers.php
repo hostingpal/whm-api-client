@@ -934,6 +934,10 @@ final readonly class Resellers
      * captures do not establish PHP-list execution. Live follow-up whm-api-client-8x0.2.86 and wider adoption
      * whm-api-client-8x0.28.8 remain open.
      *
+     * Documented: PR120 review 5727013591 read the installed 11.138.0.19 handler and confirmed the request bytes
+     * offline: ips [''] (or ['', '']) sends ips= (or a bare comma), which splits to no addresses and clears the
+     * delegated IP list. No live call ran. The client keeps forwarding the empty value unchanged.
+     *
      * API-map identity: whm1:setresellerips#GET (wire name setresellerips; Account Settings).
      *
      * @param string $user The reseller's username.
@@ -1056,6 +1060,10 @@ final readonly class Resellers
      * Collection arguments have trace protection without changing transport. Offline coverage only; historical scalar
      * captures do not establish PHP-list execution. Live follow-up whm-api-client-8x0.2.86 and wider adoption
      * whm-api-client-8x0.28.8 remain open.
+     *
+     * Documented: PR120 review 5727013591 read the installed 11.138.0.19 handler and confirmed the request bytes
+     * offline: nameservers [''] (or ['', '']) sends nameservers= (or a bare comma), which splits to nothing and resets
+     * the nameservers to the server defaults. No live call ran. The client keeps forwarding the empty value unchanged.
      *
      * API-map identity: whm1:setresellernameservers#GET (wire name setresellernameservers; Account Settings).
      *

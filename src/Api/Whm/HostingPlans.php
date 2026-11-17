@@ -38,6 +38,7 @@ use SensitiveParameter;
  *     pkg?: string,
  * }
  * @phpstan-type GetAvailableApplicationsResult array{
+ *     applications?: list<array<array-key, mixed>>,
  *     groups?: list<array{
  *         acl?: string|null,
  *         description?: string,
@@ -230,7 +231,7 @@ use SensitiveParameter;
  * }
  * @phpstan-type UpdateFeaturelistResult array{
  *     featurelist?: string,
- *     invalid_features?: list<array<array-key, 0|1>>,
+ *     invalid_features?: list<string>,
  *     updated_features?: array<array-key, 0|1>,
  * }
  */
@@ -431,14 +432,17 @@ final readonly class HostingPlans
      *
      * This function creates or updates a feature list.
      *
-     * Documented: Uses form POST. Each call makes one attempt, with no automatic retry or rollback. Typed input support
-     * is source-backed and has no live mutation verification in this slice.
+     * Documented: Uses form POST. Each call makes one attempt, with no automatic retry or rollback.
      *
      * Documented: features preserves literal feature keys and strict bool values (true=1, false=0). An explicit map is
      * required; [] sends no feature fields. Collisions with fixed and reserved fields reject before dispatch.
      *
-     * Documented: A reseller must possess Add/Remove Package permission. Empty create behavior is not specified;
+     * Observed: A reseller must possess Add/Remove Package permission. In the reviewer fixture on 11.138.0.19,
+     * features: [] created an all-disabled list (120 of 120 features disabled). This is version-scoped evidence;
      * overwrite=true may replace an existing list.
+     *
+     * Observed: On reviewed 11.138.0.19, overwrite=true replaces feature selections and disables omitted features;
+     * supply every feature selection you intend to retain.
      *
      * API-map identity: whm1:create_featurelist#GET (wire name create_featurelist; Feature Lists).
      *
@@ -449,7 +453,8 @@ final readonly class HostingPlans
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
-     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
+     * @throws InvalidArgumentException If map keys, values, empty policy, or expanded names are invalid;
+     *     list inputs must be nonempty, sequential, and contain supported values.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/feature-lists/featurelists-create_featurelist
      */
     public function createFeaturelist(
@@ -712,6 +717,10 @@ final readonly class HostingPlans
      * file option, server-relative path/default semantics and GET. Collection arguments receive trace protection
      * without changing semantic sensitivity or transport. Offline coverage only; live list-input follow-up
      * whm-api-client-8x0.2.81 remains open.
+     *
+     * Observed: PR115 review 5726574983 on 11.138.0.19: with applicationsList set, the server returns only
+     * {applications: [...]}; groups and raw are absent. applications is a list of opaque application records whose
+     * field types are not established; without the selector the result keeps groups and raw and omits applications.
      *
      * API-map identity: whm1:get_available_applications#GET (wire name get_available_applications; Feature Lists).
      *
@@ -1139,24 +1148,31 @@ final readonly class HostingPlans
      *
      * This function creates or updates a feature list.
      *
-     * Documented: Uses form POST. Each call makes one attempt, with no automatic retry or rollback. Typed input support
-     * is source-backed and has no live mutation verification in this slice.
+     * Documented: Uses form POST. Each call makes one attempt, with no automatic retry or rollback.
      *
-     * Documented: features preserves literal feature keys and strict bool values (true=1, false=0). An explicit map is
-     * required; [] sends no feature fields. Collisions with fixed and reserved fields reject before dispatch.
+     * Policy: features requires a nonempty map of literal feature keys and strict bool values (true=1, false=0). Empty
+     * input and fixed/reserved collisions reject before I/O.
      *
-     * Documented: The source explicitly says sending no feature fields disables all features. It does not define the
-     * behavior of absent individual features in a populated update.
+     * Observed: On 11.138.0.19 the reviewer observed an empty update changing nothing and omitted keys preserving
+     * state. This conflicts with the pinned no-features claim. Inspect invalid_features for rejected names; no
+     * universal unknown-name failure or atomicity guarantee is inferred.
+     *
+     * Observed: The reviewer observed quoted 0/1 updated_features values and a string list of invalid_features. Exact
+     * quoted flags normalize to integers; siblings retain their pinned presence/null rules. A previous
+     * PayloadMismatchException with outcomeConfirmed=true could follow an applied update; never retry automatically.
      *
      * API-map identity: whm1:update_featurelist#GET (wire name update_featurelist; Feature Lists).
      *
      * @param string $featurelist The feature list's name.
-     * @param array<string, bool> $features Whether to include the feature in the feature list.
+     * @param non-empty-array<string, bool> $features Nonempty map from literal feature names to strict booleans.
+     *     Omitted keys preserve their current state in the reviewer observation on 11.138.0.19; an empty map is
+     *     rejected locally.
      * @return UpdateFeaturelistResult
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
-     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
+     * @throws InvalidArgumentException If map keys, values, empty policy, or expanded names are invalid;
+     *     list inputs must be nonempty, sequential, and contain supported values.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/feature-lists/featurelists-update_featurelist
      */
     public function updateFeaturelist(

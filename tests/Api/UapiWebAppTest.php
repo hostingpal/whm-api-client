@@ -123,9 +123,9 @@ final class UapiWebAppTest extends TestCase
     private static function application(string $kind): string
     {
         $common = '"name":"app-2","build_command":null,"category":"server","container_name":null,'
-            . '"deployed":false,"domain":"app-2.example.test","env":{"A":"0","B":""},"env_editable":true,'
+            . '"deployed":0,"domain":"app-2.example.test","env":{"A":"0","B":""},"env_editable":1,'
             . '"env_status":"ok","framework":null,"mode":null,"package_manager":"npm","runtime":"nodejs",'
-            . '"runtime_tag":"22","staged":true,"startup_command":null,"status":"created",'
+            . '"runtime_tag":"22","staged":1,"startup_command":null,"status":"created",'
             . '"url":"https://never-fetch.example.test","use_existing_domain":0,'
             . '"last_deploy":{"deploy_id":"dp-01","result":"failed","timestamp":"2026-01-01"'
             . ($kind === 'list' ? ',"error_category":{"opaque":[null,false,7]}' : '') . '},'
@@ -177,8 +177,8 @@ final class UapiWebAppTest extends TestCase
             foreach (['configure', 'configureStructured', 'stage', 'list'] as $function) {
                 foreach (
                     ['{"env":{},"last_deploy":null}',
-                    '{"deployed":true,"env_editable":false,"source":{"branch":"main",'
-                        . '"type":"git","url":"git@example.test:a"},"staged":false}',
+                    '{"deployed":1,"env_editable":0,"source":{"branch":"main",'
+                        . '"type":"git","url":"git@example.test:a"},"staged":0}',
                     '{"framework":"custom","last_deploy":{},"mode":"production"}'] as $i => $payload
                 ) {
                     yield "$route $function optional variants $i" => [$route, $function,
@@ -241,7 +241,7 @@ final class UapiWebAppTest extends TestCase
             }
             foreach (['configure', 'configureStructured', 'stage', 'list'] as $function) {
                 foreach (
-                    ['{"staged":1}', '{"deployed":"0"}', '{"env_editable":null}', '{"env":{"A":0}}',
+                    ['{"staged":2}', '{"deployed":"0"}', '{"env_editable":null}', '{"env":{"A":0}}',
                     '{"last_deploy":false}', '{"last_deploy":{"timestamp":null}}', '{"source":{"branch":0}}',
                     '{"source":null}', '{"mode":0}', '{"container_name":false}'] as $i => $bad
                 ) {

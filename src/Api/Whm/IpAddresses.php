@@ -265,6 +265,12 @@ final readonly class IpAddresses
      * captures do not establish PHP-list execution. Live follow-up whm-api-client-8x0.2.86 and wider adoption
      * whm-api-client-8x0.28.8 remain open.
      *
+     * Observed: PR120 review 5727013591 on 11.138.0.19: disable_ipv6_for_user returns (1, {failures, fail_cnt}) when an
+     * account fails and has no (0, ...) return, and the API handler drops that detail, so the call reports result OK
+     * with no data even when some accounts failed. A null result does not prove that every listed account changed; read
+     * the IPv6 state back. A nonexistent account instead fails the whole call with ApiErrorException, and the reviewer
+     * saw no listed account change in that case (enable and disable, missing name first or last).
+     *
      * Returns null when the server sends no data.
      *
      * API-map identity: whm1:ipv6_disable_account#GET (wire name ipv6_disable_account; IPv6 Address Settings).

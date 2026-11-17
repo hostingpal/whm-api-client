@@ -1259,7 +1259,7 @@ final readonly class Databases
      * @param UpdateSqlConfigInput $configuration Validated whole JSON body. Secrets belong in the body, not URL query
      *     fields. Direct routes only.
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
-     * @throws InvalidArgumentException If the whole JSON body is invalid or query/root routing names are reserved.
+     * @throws InvalidArgumentException If the whole JSON body is invalid or root routing names are reserved.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/manage-mysql-server/mysql-update_sql_config
      */
     public function updateSqlConfig(
