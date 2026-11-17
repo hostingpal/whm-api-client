@@ -180,6 +180,21 @@ final class SslSectionFixtureTest extends TestCase
         self::assertSame(1, $server->counts['upload_key'] ?? 0);
     }
 
+    public function testStrictDeleteDiscrepancyIsNotReportedAsAFailedCleanupRequest(): void
+    {
+        $server = new SslSectionServer('delete_unknown');
+        $report = self::fixture($server)->run();
+        self::assertSame('failed', $report['status']);
+        foreach (['direct-uapi', 'bridged-uapi'] as $route) {
+            self::assertContains($route . ':cleanup_strict_discrepancy', $report['failures']);
+            self::assertNotContains($route . ':cleanup_request_failure', $report['failures']);
+            self::assertSame(['key' => 'cleaned', 'cert' => 'cleaned', 'generated_key' => 'cleaned'],
+                $report['resources'][$route]);
+        }
+        self::assertSame([], $server->keys);
+        self::assertSame([], $server->certificates);
+    }
+
     public function testUnrelatedPreexistingStoredKeyIsRetained(): void
     {
         $server = new SslSectionServer();

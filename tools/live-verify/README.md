@@ -754,7 +754,10 @@ all other upload discrepancies and unsuccessful API/payload checks stop continua
 The one-shot guard checks exact opt-ins, account, credentials, routing, fields,
 headers, form bytes and multipart bytes. No request is retried. Each confirmed owned ID gets
 one cleanup attempt, followed by inventory checks for ID and public-modulus
-absence. Uncertain creations remain unresolved and stop later route lifecycles.
+absence. A failed delete request records `route:cleanup_request_failure`; a delete that
+succeeded but carried a strict discrepancy records `route:cleanup_strict_discrepancy`
+instead, so the strict failure stays visible without reading as a failed cleanup.
+Uncertain creations remain unresolved and stop later route lifecycles.
 Existing unrelated resources are retained. No certificates are installed and no
 TLS service certificates, AutoSSL exclusions, SSL defaults, redirects or mail SNI
 configuration are changed. Successful storage calls do not establish HTTPS or

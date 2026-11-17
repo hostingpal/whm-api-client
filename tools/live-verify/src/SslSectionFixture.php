@@ -311,7 +311,13 @@ final class SslSectionFixture
                     $kind === 'generated_key' ? 'delete_key' : 'delete_' . $kind,
                     ['id' => $this->owned[$route . ':' . $kind]],
                 );
-                $this->successful();
+                // A passing delete that only carries a strict discrepancy is not a failed cleanup request.
+                $record = $this->last()['record'];
+                if ($record['probe_outcome'] !== 'passed') {
+                    $this->failures[] = $route . ':cleanup_request_failure';
+                } elseif ($record['discrepancies'] !== []) {
+                    $this->failures[] = $route . ':cleanup_strict_discrepancy';
+                }
             } catch (Throwable) {
                 $this->failures[] = $route . ':cleanup_request_failure';
             }
