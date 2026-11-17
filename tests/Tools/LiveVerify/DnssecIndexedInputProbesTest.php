@@ -124,6 +124,7 @@ final class DnssecIndexedInputProbesTest extends TestCase
     public function testCatalogRequiresExplicitOptInBeforeAnyRequest(): void
     {
         $http = new MockClient();
+        $caught = null;
         try {
             (new ReadOnlySectionRunner($http, self::context()))->run(
                 DnssecIndexedInputProbes::load(),
@@ -131,10 +132,11 @@ final class DnssecIndexedInputProbesTest extends TestCase
                 false,
                 ['whm' => 'test-whm', 'cpanel' => 'test-cpanel'],
             );
-            self::fail('No live opt-in must mean no request.');
-        } catch (RuntimeException) {
-            self::assertSame([], $http->getRequests());
+        } catch (RuntimeException $error) {
+            $caught = $error;
         }
+        self::assertInstanceOf(RuntimeException::class, $caught, 'No live opt-in must mean no request.');
+        self::assertSame([], $http->getRequests());
     }
 
     /** @return list<string> */

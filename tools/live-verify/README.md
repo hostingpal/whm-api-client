@@ -224,6 +224,10 @@ WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 composer live:verify -- \
   --mysql-fixture --output=docs/api/evidence/mysql-populated.json
 ```
 
+`composer live:verify` first calls `Composer\Config::disableProcessTimeout`. Composer
+otherwise stops a script after 300 seconds, which could end a mutation run between creating
+its resources and removing them. Keep that call first in the script.
+
 The recipe uses the existing cPanel token for `npr`; it never creates or deletes
 the cPanel account. Proposed resource names must be absent before any mutation.
 Setup and cleanup use generated UAPI form POST calls for the pinned
@@ -244,9 +248,21 @@ or duplicate observations fail the fixture. Each URI and generated callback bind
 the run's exact database/user names through the existing GET-only request guard.
 Original API, payload and discrepancy outcomes remain recorded when that fixture
 expectation fails. This verifies API-reported privileges, not SQL enforcement.
-An uncertain mutation outcome is reconciled without retrying the mutation.
-Cleanup continues for other owned resources after a failure and requires confirmed
-absence before reporting success. Preexisting resources are never removed.
+A creation the API accepts belongs to the run. A creation the API rejects never
+does, even if the name then exists: the resource stays in place, the report shows
+`creation: rejected` with `cleanup: present`, and the run fails with
+`ownership_unconfirmed`. A rejected create that did take effect is left behind the
+same way, because its response matches a competitor's. Any other uncertain mutation
+outcome, such as a transport failure, is reconciled against inventory without
+retrying the mutation. Cleanup continues for other owned resources after a failure
+and requires confirmed absence before reporting success. Resources found by the
+initial absence check are never removed.
+
+Supported concurrency is one run per suffix. Nothing enforces that across processes
+or machines: the server offers no lease, MySQL names carry no ownership marker, and
+the random suffix only makes a collision unlikely. One race remains. If another
+process creates the exact name while a create of ours has no API outcome,
+reconciliation cannot tell it from ours and deletes it.
 
 Evidence is written after cleanup and includes a separate `mysql_fixture` report
 with fixed lifecycle outcomes, without names, passwords or upstream error text.
@@ -268,7 +284,8 @@ If cleanup reports `present` or `unconfirmed`, inspect the `npr` account's MySQL
 inventory privately in cPanel. Fixture candidates follow `npr_wv<6 lowercase hex>d`
 and `e` for databases, and `npr_wv<6 lowercase hex>u` and `v` for users, sharing
 one suffix per run. Confirm ownership before manually removing exact resources;
-the pattern alone is not proof and must not be used for bulk deletion. A new
+the pattern alone is not proof and must not be used for bulk deletion, and a
+`rejected` resource may belong to another process. A new
 runner invocation uses new names and does not recover a previous run's leftovers.
 
 Quota recipes take no arguments and read account totals in MB and local usage in
@@ -298,6 +315,10 @@ WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 \
   --output=docs/api/evidence/finite-quota.json
 ```
 
+This runs the 67-probe baseline before the fixture, which can take longer than Composer's
+default 300-second script limit; the script disables that limit, so the run is never cut off
+with the account still in place.
+
 The account, domain and DNS zone must be absent before creation. The recipe
 creates an account with a finite 64 MB disk quota, no shell or dedicated IP,
 and no plan override or forced DNS replacement. Through the WHM bridge it
@@ -310,7 +331,7 @@ in memory. Exact guards restrict every request to this recipe and its targets.
 The 67 baseline catalog probes use their existing discrepancy policy.
 Five additional observations—one WHM version request for provenance, plus both
 Quota operations on both routes—are stored under `finite_quota`, with the fixed
-scenario `finite-quota-disposable-v1` and a separate assessment. Historical `npr`
+scenario `finite-quota-disposable-v3` and a separate assessment. Historical `npr`
 acknowledgments never apply to that section. Its initial assessment accepts no
 discrepancies: unresolved unknown fields remain visible and cause exit 1 even
 when the lifecycle and finite-limit checks pass. No policy is widened
@@ -328,24 +349,30 @@ delayed update from distributed allocation. The runner does not retry or change
 server quota settings to make a check pass. Finite inode limits and exhausted
 quota behavior are outside this recipe.
 
-Each run binds account creation to a random contact-email marker held only in
-memory. Account reconciliation requires that marker before token work or account
-deletion, so a concurrent run cannot adopt another run's account. Preflight and
-cleanup select exact account and primary-domain identities from the full account
-inventory, then check the manual-domain
-inventory, and DNS zones. The upstream manual-domain inventory excludes automatic
-service domains; these checks do not claim a complete service-domain inventory.
-
-Cleanup reconciles uncertain creations before removing anything, revokes the
-exact temporary token, and continues account cleanup if token cleanup fails.
-It removes the run-created account with DNS retention disabled and independently
-checks account, domain and DNS-zone absence. No mutation is retried. Evidence is
-written only after cleanup; `finite_quota.fixture` reports each outcome using
-fixed labels without credentials, names or raw values. Exit 0 requires the
+Identity, ownership, the token and cleanup come from the shared
+[disposable-account lifecycle](#disposable-account-lifecycle). Its manual-domain
+inventory excludes automatic service domains, so these checks do not claim a complete
+service-domain inventory. Add `WHM_API_LIVE_FS_CHECK=1` for its filesystem proof.
+Evidence is written only after cleanup; `finite_quota.fixture` reports each outcome
+using fixed labels without credentials, names or raw values. Exit 0 requires the
 baseline assessment, finite assessment and fixture lifecycle all to pass.
-If cleanup remains unconfirmed, inspect the explicitly selected test account and
-domain privately and confirm ownership before manual recovery. A rerun refuses
-preexisting resources and is not a cleanup mechanism.
+
+The current scenario is `finite-quota-disposable-v3`, and **no v3 capture exists**. Each
+version's report means something different. v2 moved onto the shared lifecycle, added the
+filesystem fields, and stopped calling a lost `createacct` `confirmed_absent`. v3 keeps the
+domain, zone and files `unconfirmed` after one, adds the filesystem control, and takes
+`status`, `setup` and `failures` from the lifecycle. Since then, still unreleased, v3 also
+settles token cleanup as `absent_with_account` once the account is confirmed absent, takes a
+missed filesystem control in cleanup, and matches `/etc/userdomains` by whole fields. The
+[v1 artifact](../../docs/api/evidence/2026-10-17-finite-quota.json) stands as the record of
+what ran then.
+
+The [v2 capture](../../docs/api/evidence/2026-11-01-finite-quota-v2.json) at `b3bfc14` on
+`11.138.0.19` is a **failed run**, exit 1, kept unchanged. Its setup, capture, finite
+expectations, cleanup and filesystem proof all pass, and so does the baseline. It fails only
+the strict finite assessment, on the same two `get_quota_info` unknown-field observations
+as v1, which that assessment cannot acknowledge by design. See the
+[source audit](../../docs/api/source-audit.md#shared-disposable-account-lifecycle-2026-11-01).
 
 ## Capture and privacy
 
@@ -404,10 +431,18 @@ A passing assessment with acknowledgments is **not a discrepancy-free run**.
 ### Reviewed structural acknowledgments
 
 `DiscrepancyPolicy` contains only the two reviewed Quota total observations from
-`docs/api/evidence/2026-10-16-quota-inventory.json`. It verifies that file's fixed
-SHA-256 before any network request and refuses it (including filesystem aliases)
-as an output destination. There is no command-line option to create acknowledgments.
+`docs/api/evidence/2026-11-01-read-only-11.138.0.19.json`. It verifies that file's
+fixed SHA-256 and, also before any network request, refuses every existing file under
+`docs/api/evidence/` (including filesystem aliases) as an output destination, so history
+stays protected after the reference moves. New paths there and files elsewhere stay
+allowed. There is no command-line option to create acknowledgments.
 Policy changes require code review and independent tests.
+
+Until 2026-11-01 the same two observations were bound to cPanel `11.138.0.15` through
+`docs/api/evidence/2026-10-16-quota-inventory.json`, SHA-256
+`5f65d66acc36673ee37be1b4e024dad3ac725e5313d45c208abb489d5c9f6811`. That file is
+unchanged. A server version change leaves acknowledgments stale by design; moving
+them requires a new reviewed artifact and a code change, not a broader match.
 
 Each acknowledgment requires exactly one matching operation, HTTP variant, route,
 actual method, server version, pinned source hash and effective generated contract
@@ -609,11 +644,21 @@ The [reviewed integrated capture](../../docs/api/evidence/2026-10-30-domain-feat
 ran the exact 67-probe GET-only catalog once at committed code `27abfe6` after
 normal integration of the reviewed MySQL, FTP and PostgreSQL sections. All 67
 HTTP/API/payload observations pass on `11.138.0.19`, including both mailbox counts.
-The command exits 1 for strict review: 12 unknown-field entries across 10
+That command exited 1 for its strict review: 12 unknown-field entries across 10
 unexpected observations, zero acknowledgments and two stale Quota acknowledgments.
 Historical artifacts remain unchanged; findings are not waived or retried away.
 This run includes no PHP mutation. INI write/read behavior and the omitted
 empty-string userdirprotect variant retain their offline/documentation limits.
+
+The [2026-11-01 capture](../../docs/api/evidence/2026-11-01-read-only-11.138.0.19.json)
+ran the same catalog once at committed code `5f9b001`, after a name inspection allowed
+the DomainInfo and INI fields to be typed. All 67 observations pass and the only
+remaining discrepancies are the two masked Quota observations. Its embedded review
+reports failed because it was assessed against the previous `11.138.0.15` reference;
+the policy could only move to this artifact after the artifact existed.
+Seven of those fields became `mixed` after this capture, so its contract hashes for
+`domains_data`, `single_domain_data`, `php_ini_get_user_basic_directives` and
+`php_ini_get_user_paths` record the earlier contract. The Quota records still match.
 
 ## Owned Email mailbox recipe
 
@@ -1765,3 +1810,1211 @@ A successful result establishes singleton-list wire acceptance only. It establis
 no multi-domain batch, populated DS field, mutation, propagation or DNSSEC resolver
 coverage. Existing artifacts and discrepancy policies are never changed by this
 catalog.
+
+## Webmail session and application inventory
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/webmail-inventory.php \
+  --output=docs/api/evidence/YYYY-MM-DD-webmail-inventory.json
+```
+
+`webmail-inventory-v1` has five fixed GETs: WHM version, then
+`ActiveSessions/list_active_sessions` and `WebmailApps/list_webmail_apps` through
+direct UAPI and the `npr` bridge. Neither call supplies an argument, so the server's
+default theme applies. Existing opt-in, committed-input, exact request guard, TLS
+and immutable structural-output rules apply.
+
+An empty session list proves nothing about session row fields, and upstream prose
+says it can also mean an unreadable session store. Application rows establish
+field types only: returned URLs may carry a session token, so they are neither
+persisted nor fetched, and they prove neither reachability nor login. This catalog runs
+no `Session/*` creator: a reviewer's disposable-account test left four session files
+behind after the account was removed, and cleaning them needs filesystem access. The
+creators run only in the [disposable Webmail session fixture](#disposable-account-webmail-session-fixture),
+which has that access.
+
+The [2026-11-01 capture](../../docs/api/evidence/2026-11-01-webmail-inventory.json)
+at `eba1711` on `11.138.0.19` passes all five GETs and strict assessment with zero
+discrepancies. Session inventory is empty on both routes, so all six session row
+fields stay unobserved. Application rows are populated. Do not repeat this capture
+for a populated result; session rows need a separately reviewed recipe.
+SHA-256: `37ee9760012a45c19100adc379ca59d7b87d46aebea8596a6c1f8e75dc201cd6`.
+
+## UAPI Market reads
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/market-reads.php \
+  --output=docs/api/evidence/YYYY-MM-DD-market-reads.json
+```
+
+`market-reads-v1` has eleven fixed GETs: WHM version, then five `x-readonly: true`
+reads through direct UAPI and the `npr` bridge: `get_providers_list`,
+`get_all_products`, `get_pending_ssl_certificates`,
+`get_provider_specific_dcv_constraints` and `get_login_url`. Existing opt-in,
+committed-input, exact request guard, TLS and immutable structural-output rules apply.
+
+Selectors are not guessed. A private direct-route read of the provider list, catalog
+and pending queue before this catalog was written showed `cPStore` as the only
+provider, three catalog rows and no pending certificates. `url_after_login` selects
+no server resource; the recipe sends the pinned parameter example, on a reserved
+domain, and the returned URL is never followed.
+
+Four of the nine reads in `8x0.2.63` are deliberately not run, and
+`MarketReadsProbes::NOT_RUN` records each reason:
+
+| Operation | Reason |
+| --- | --- |
+| `get_certificate_status_details` | No read available here enumerated a real `order_item_id` |
+| `get_ssl_certificate_if_available` | No read available here enumerated a real `order_item_id` |
+| `get_product_info` | No read enumerates a real `product_name`, and local product files are reported missing |
+| `get_completion_url` | No read enumerates a real `product_name`, and URL construction is reported to fail on token authentication |
+
+The only pinned read that returns `order_item_id` is
+`get_pending_ssl_certificates`. It lists only certificates the system currently
+polls, so its empty list does not show that no order exists: a completed or expired
+order could hold a real ID.
+
+The pinned `product_name` example is `cpanel-ssl`. It was not among the catalog
+labels the private read printed, but that read printed no other catalog field and
+the artifact stores types only, so this was not a search of the whole catalog. The
+labels are in a different form, and the pinned source states no mapping between them
+and `product_name`.
+
+A real selector is necessary for these two, but review 5725042192 reports that it is
+not enough on this server:
+
+- `get_product_info`: upstream reads `/var/cpanel/market/product_info/<name>`, which
+  does not exist here, so both real IDs the reviewer tried raised an API error.
+  Inspecting store product files therefore offers no selector.
+- `get_completion_url`: on token authentication, through both routes, URL
+  construction failed because server information was unavailable from the
+  environment, as the generated `Market::getCompletionUrl()` PHPDoc records. That
+  does not establish universal token or route incompatibility.
+
+Payloads can hold security tokens, action URLs, PEM, CSR and identity data; only
+structural paths and types are saved. No order, cart, checkout, certificate, queue
+or token action runs, no POST is sent, and no returned URL or credential is used.
+`get_license_info` and `get_build_cart_url` are not `x-readonly` and stay out of this
+catalog. A successful read establishes no purchase, payment, issuance, installation,
+trust or served TLS behavior.
+
+The [2026-11-01 capture](../../docs/api/evidence/2026-11-01-market-reads.json) at
+`eba1711` on `11.138.0.19` passes all eleven GETs and strict assessment with zero
+discrepancies. Provider, catalog and DCV payloads are populated, the login URL is a
+string, and the pending list is empty on both routes. Catalog prices are partly
+observed: `x_price_per_domain*` are integers and `x_price_per_wildcard_domain*` are
+numeric strings or omitted. `price`, `maximum_server_price`, `minimum_server_price`
+and `max_users` are null in every row and `base_name` is empty, so other values of
+those fields stay unobserved, as do the object identity branch and pending rows. Do
+not repeat this capture unchanged. The four unrun reads need a real selector and a
+new recipe, and `get_product_info` and `get_completion_url` also need their reported
+blockers cleared. See the source audit for the observed types.
+SHA-256: `4a9ec4fffec130ee099b63cb2f86c24482b332a8101995828426745bdb70da51`.
+
+## Bounded no-match audit
+
+`empty-results-v2` is a separate opt-in catalog for bead `8x0.2.88`. It asks how a
+curated set of read-only collection operations answers when nothing can match. The
+selection was fixed and committed before execution. It follows pinned operation
+semantics and documented filters; a parameter name alone proves nothing. The requests
+have not changed since `empty-results-v1`; only the
+[assessment](#assessment-of-declared-outcomes) differs.
+
+Twenty-seven GETs run once each, in catalog order: WHM `version` for provenance, then
+15 operations. Every request is a typed generated method. WHM routes use the root
+token; UAPI operations run direct as `npr` and bridged to `npr`. No request carries a
+live-derived value.
+
+| Operation | Routes | No-match criterion | Label | Why it belongs |
+| --- | --- | --- | --- | --- |
+| `listaccts` | WHM | `search=wzzemptyaudit`, `searchtype=user`, `searchmethod=exact` | `fixed-path-control` | PR123 control for the fixed path, which also accepts the result-0 form |
+| `showbw` | WHM | `search=wzzemptyaudit`, `searchtype=user` | `absent-user-pcre` | Documented PCRE filter over accounts |
+| `matchpkgs` | WHM | `FEATURELIST=wzzemptyaudit` | `absent-feature-list` | Documented criteria; see the correction under the results |
+| `emailtrack_search` | WHM | `defer`, `failure`, `inprogress`, `success` all `0`, `max_results_by_type=1` | `all-event-types-off` | Documented event selectors; typed method has no value filter |
+| `emailtrack_user_stats` | WHM | `sender=nobody@wzzemptyaudit.invalid`, one-second 2001 window | `absent-sender-past-window` | Documented sender filter and search window |
+| `get_unique_sender_recipient_count_per_user` | WHM | one-second 2001 window | `past-window` | Required time window over mail records |
+| `php_get_vhosts_by_version` | WHM | `version=ea-php00` | `absent-php-package` | Boundary: list keyed by a package that does not exist |
+| `accountsummary` | WHM | `user=wzzemptyaudit` | `entity-lookup-control` | Entity lookup, not a search; must still fail |
+| `Email/list_pops` | direct, bridged | `regex=wzzemptyaudit` | `absent-regex` | Documented PCRE filter over a list holding the main account |
+| `Email/list_pops_with_disk` | direct, bridged | `regex=wzzemptyaudit` | `absent-regex` | Same filter on the disk variant |
+| `Email/list_pops_with_disk` | direct, bridged | `domain=wzzemptyaudit.invalid` | `absent-domain` | Documented domain filter |
+| `SubDomain/listsubdomains` | direct, bridged | `regex=wzzemptyaudit` | `absent-regex` | Documented name filter; `npr` had no subdomains in earlier captures |
+| `Features/list_features_like` | direct, bridged | `pattern=wzzemptyaudit`, `is_regex=0` | `absent-substring` | Documented search with a pinned no-match example |
+| `Fileman/autocompletedir` | direct, bridged | `path=wzzemptyaudit` | `absent-prefix` | Documented prefix match |
+| `Bandwidth/query` | direct, bridged | `grouping=domain`, `domains=wzzemptyaudit.invalid` | `absent-domain` | Documented domain filter on a map result |
+| `Bandwidth/query` | direct, bridged | `grouping=domain`, one-second 2001 window | `past-window` | Documented report window on a map result |
+| `SSL/list_ssl_items` | direct, bridged | `domains=wzzemptyaudit.invalid` | `absent-domain` | Documented domain selection over SSL items |
+
+Each probe's guard allows only its exact URI, GET, no body and no extra parameter.
+`tests/Tools/LiveVerify/EmptyResultProbesTest.php` repeats the whole allowlist as
+literals, independent of the catalog constants. `wzzemptyaudit` was chosen so nothing
+on `npr` uses it, the `.invalid` TLD is reserved, and the window ends on 2001-09-09
+UTC, decades before this cPanel release line. `ea-php00` names no PHP package a real
+build provides. The audit changes no account, configuration or file.
+
+Excluded on purpose: parameterless inventories, which cannot be made empty safely;
+entity lookups other than the single control; `Park/listparkeddomains`,
+`AddonDomain/listaddondomains`, `Mime/list_redirects` and `Email/list_forwarders`,
+because `npr` already returned empty lists for them, so a filter could prove nothing;
+`Ftp/list_ftp`, whose empty form is already recorded in the FTP section;
+`DomainRecommendations/domain_suggestions`, which calls an external service.
+
+The empty-list reason covers those four operations only. It is not a rule over the
+catalog: `SubDomain/listsubdomains` meets the same condition and is included, as its
+table row says, so its probe shows how one request was answered and proves nothing
+about its filter.
+
+An operation is classified from its record as one of the forms below. `api_outcome`
+is the harness's reading of the typed call, not an upstream field: `EvidenceRunner`
+sets `success` once the method returns, and envelope `result` and `status` values are
+retained as types only.
+
+- **empty collection**: the typed method returned an empty result. Every audited
+  operation uses the Flag policy, so that means the API reported success, with one
+  exception. `listaccts` reaches `[]` through `account_search_empty`, which returns it
+  on result 1 with `data` omitted or null, and on result 0 with the exact
+  `No accounts found.` diagnostic and `data` omitted. For that control, `success`
+  says only that the method returned.
+- **API error**: the API reported failure and the typed method raised
+  `ApiErrorException`.
+- **client exception**: the typed method raised `PayloadMismatchException` or another
+  failure that is not an API-reported error. Only a mismatch after a confirmed outcome
+  follows an API success; `request_failure` and `probe_failure` records have none.
+
+Evidence keeps structure only. An API error's text is not retained, so a record cannot
+distinguish a no-match failure from any other failure by itself.
+
+### Assessment of declared outcomes
+
+`empty-results-v2` assesses each record against the outcome its probe declares, which
+is the form the 2026-11-01 capture recorded. `EmptyResultProbes` holds the
+declarations and `tests/Tools/LiveVerify/EmptyResultProbesTest.php` repeats them as
+literals. Provenance, label, method and HTTP checks are the shared strict ones.
+
+| Declared outcome | Probes | A record matches when |
+| --- | --- | --- |
+| `value` | WHM `version` | the method returned, with no discrepancy |
+| `empty` | 22 records | the method returned, with no discrepancy, and the declared path holds exactly `empty-list`, or `empty-object` for the `Bandwidth/query` past window |
+| `fixed_path_empty` | `listaccts` | the method returned, the payload is `missing`, and the only discrepancy is `missing_required` at `$` |
+| `api_failure` | `accountsummary`; `Bandwidth/query` absent domain on both routes | `ApiErrorException` was raised, with `null` at `$.acct` or `$` |
+
+Exit 0 and `status: passed` mean the run reproduced those forms on its server. Exit 1
+and `status: failed` mean at least one record deviated and needs review: a client
+exception, an API error on a probe declared empty, a success on a probe declared
+`api_failure`, a populated result, or a changed form. A failed run is a finding, not
+an expected result. It also names each deviating probe on stdout, by operation, route,
+label and the record's fixed outcome values, with no URI, path or upstream text. The
+published report does not change.
+
+A `passed` report can hold records with `probe_outcome: failed`, because
+`accountsummary` must fail. Declaring the `listaccts` discrepancy does not waive it:
+the record keeps it, and any other discrepancy fails.
+
+A declaration is one recorded form from one capture, not a contract. A pass confirms
+no no-match: `matchpkgs` and `listsubdomains` stay unconfirmed. Declaring
+`Bandwidth/query` absent domain as `api_failure` rules nothing on its cause, and a
+match cannot show why a call failed, because no upstream text is kept. If a later
+version legitimately changes a form, review it and change the declaration under a new
+label.
+
+`empty-results-v2` has [one capture](#no-match-audit-v2-capture-2026-11-01), which
+passed. The offline test checks both artifacts against the declarations by identity,
+outcome, capture revision and SHA-256. It compares no contract hash, so each artifact
+stays a valid historical record when a spec later changes.
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+  php tools/live-verify/empty-results.php --output=docs/api/evidence/YYYY-MM-DD-empty-results.json
+```
+
+An empty result covers only that operation, route, criterion, version and account
+state. It establishes no other filter value, server or account, and no operation
+outside this table.
+
+### No-match audit results, 2026-11-01
+
+The capture ran once under `empty-results-v1` at
+`fc5264d97f0c9d90ebbf9148b714d69e4a288959` on `11.138.0.19`. It exited 1 with
+`status: failed`. All 27 GETs returned HTTP 200. The artifact is
+[2026-11-01-empty-results.json](../../docs/api/evidence/2026-11-01-empty-results.json),
+SHA-256 `2ec7d60176b4354c01d1016849e0e3d62ae85a7182354010ab8d89e77a39894f`.
+
+No typed method threw a client exception. Twenty-three records returned an empty
+result and three raised `ApiErrorException`; the remaining record is WHM `version`.
+No client behavior changed. [The source audit](../../docs/api/source-audit.md#empty-result-audit-2026-11-01)
+holds the per-operation table and limits.
+
+`empty-results-v1` applied the shared strict rule, which needs every probe to succeed
+with no discrepancy. Four records failed it: `accountsummary`, `listaccts` and
+`Bandwidth/query` absent domain on both routes.
+
+Predicted at `fc5264d`, before execution:
+
+- `status: failed` and exit 1.
+- `accountsummary` fails.
+- `listaccts` returns an empty list from a response that omits `data`.
+
+Only observed, never predicted:
+
+- Both `Bandwidth/query` absent-domain API errors. No document predicted them. The
+  only assumption on record was the `fc5264d` test fixture, which gave that probe a
+  status-1 `{}` success on both routes, and the capture contradicted it.
+- The other 23 records, WHM `version` and 22 empty results. No outcome was stated for
+  any of them. The catalog said only that an API error on any probe would fail the
+  assessment.
+
+The predicted status held, but it could not have done otherwise: the two controls
+forced it whatever the other 25 records did. Only two of the four failing records were
+predicted. That is why `empty-results-v2` declares an outcome per probe.
+
+`whm1:listaccts` carries the only discrepancy, `missing_required` at `$`. The client
+accepts that omission through `account_search_empty`, while the evidence tool still
+reports it, so the record passes and the strict rule does not. The record cannot
+confirm the result-0 form the pre-execution catalog row named: `metadata.result` is
+kept as a type only, and no `reason` is kept.
+
+Correction: the pre-execution row for `matchpkgs` called its plan list populated,
+which implied an empty match could be credited to the filter. It cannot.
+`listPackages()` returns plans, but `matchPackages()` results on this server conflict.
+One selector-free read returned an empty `pkg` list while a plan existed. A later
+review with two plans returned one of them without selectors and the matching plan
+for `MAXSQL=5`, but none for `QUOTA=100`, that plan's real quota. The cause is unknown
+and stays open under `8x0.2.43`, and `matchPackages()` documents that an empty match
+does not prove absence. Its empty result here is not a confirmed no-match.
+
+### No-match audit v2 capture, 2026-11-01
+
+`empty-results-v2` ran once at `e8021d20d859efc84b6532c6b78a4e4471a6ba0d` on
+`11.138.0.19`, with no retry. It exited 0 with `status: passed`. All 27 GETs returned
+HTTP 200, and all 27 records match their declared outcomes: one `value`, one
+`fixed_path_empty`, 22 `empty` and three `api_failure`. The artifact is
+[2026-11-01-empty-results-v2.json](../../docs/api/evidence/2026-11-01-empty-results-v2.json),
+SHA-256 `e1258f73d56221a60dee6fdab3d7fee6b2a3036ee062f8a5935449134b2fce15`.
+
+Unlike v1, every outcome here was declared and committed before the run, at `0e0262f`,
+and all of them held. The three `api_failure` records still show
+`probe_outcome: failed`, and `listaccts` keeps its `missing_required` discrepancy. That
+is what a pass means under this recipe. Every record's outcome fields, payload paths,
+response paths and discrepancies are identical to the v1 capture, about three hours
+earlier.
+
+This shows the rule passes on the real server, and no more. The declarations came from
+the v1 capture of the same version, so this is a repeat, not independent evidence, and
+it establishes nothing about another cPanel version. No live run has produced a
+deviation, so the failure path and the deviation lines are proven offline only. It
+confirms no no-match: `matchpkgs` and `listsubdomains` stay unconfirmed, the cause of
+the `Bandwidth/query` absent-domain error stays unestablished, and the record still
+cannot separate the two `listaccts` result forms.
+
+## Disposable-account lifecycle
+
+`DisposableAccountLifecycle` is what every account-scoped recipe builds on. It creates
+one account and one token, hands the token to the recipe, always cleans up, and reports
+every resource in fixed labels. `run()` is its whole surface, so cleanup cannot be
+forgotten and a recipe keeps only its own domain logic:
+
+```php
+$account = DisposableAccount::fresh(
+    'wexample',
+    'wexample.example.com',
+    'wexample-fixture',
+    tokenLifetime: 900,
+    readOnlyToken: false,
+);
+// On every request: $account->requireLiveOptIn(). Admit each POST only if
+// $posts->admit($uri, $body) says so, where $posts = $account->controlPostAdmission() is made
+// once per guard: it admits each exact control mutation once and never keeps the marker. Admit
+// only controlReads() plus the recipe's own requests otherwise. FiniteQuotaGuard is the
+// smallest example.
+$guard = new ExampleGuard($http, $whmToken, $account);
+$capture = new CaptureClient($guard);
+$factory = new Psr17Factory();
+$root = new Client([
+    'host' => 'test.oblak.host', 'port' => 2087, 'authType' => 'whm',
+    'username' => 'root', 'token' => $whmToken,
+], new HttpTransport($capture, $factory, $factory));
+
+$outcome = (new DisposableAccountLifecycle(
+    $account,
+    $capture,
+    $root,
+    SshFilesystemAbsenceProof::fromEnvironment(),
+))->run(
+    function (#[SensitiveParameter] string $token) use ($guard): void {
+        $guard->bindToken($token);
+        // Build a direct client from $token and run the recipe's probes. On any failure,
+        // record what the report needs, then throw new ExerciseFailure(['your_label']).
+    },
+    // Optional: remove what the recipe made inside the account, returning failure labels.
+    fn (): array => $this->removeOwnFiles(),
+    // Optional: once the proven account reads removed, settle what removal takes or leaves, returning labels.
+    fn (): array => $this->proveExtraDomainsAbsent(),
+);
+```
+
+The account must be disposable and designated, and both live opt-ins and exact
+`WHM_API_LIVE_ACCOUNT` and `WHM_API_LIVE_DOMAIN` values are required. Accounts are
+created with a 64 MB quota, no shell and no dedicated IP. `fresh()` draws the 128-bit
+marker. A token's life is capped at an hour, and the binding enforces that however it is
+built. A second `run()`, or a missing opt-in, throws `LogicException` before any request,
+so a fixture needs no check of its own. The recipe's guard still re-checks every request.
+
+`$outcome` is the only truth about a run. `status` is `passed` only if setup, the exercise
+and cleanup all passed. A recipe never computes its own: it spreads
+`DisposableAccountLifecycle::reportFields($outcome)` into its report, merging `resources`
+with its own. That carries every field except `exercise`, which a recipe reports as its own
+phases, so a field the lifecycle gains reaches every report. Never copy fields one by one.
+
+Because the outcome is the only truth, an exercise never swallows a failure: it records the
+detail its report needs, then throws, even for a failed expectation in a capture that
+finished. `ExerciseFailure` names the failure with the recipe's own labels, and anything
+else that escapes is `exercise_failure`. Binding the token is the exercise's first step, so
+a token that cannot be bound fails the exercise, not setup.
+
+`failures` holds fixed labels, in order: `setup_failure`, the exercise's, then cleanup. An
+exception from either callback stops nothing, so a test must not assert inside a callback:
+PHPUnit failures are `Throwable`, and one raised there would be swallowed. Assert after
+`run()` returns.
+
+**Identity.** Account, manual-domain and zone inventories must first prove absence. The
+server always hosts others, so an empty list proves nothing, and neither does `{}`. An
+existing account is never adopted.
+
+**Ownership.** The random contact-email marker, held only in memory, is the sole proof
+that an account is this run's. It is no property of the binding, so no JSON encoding,
+`var_export`, array cast or dump of any public object shows it, and a binding cannot be
+cloned. Only `createAccountParameters()`, for the one `createacct` call, and
+`controlPosts()` carry it; anything else asks `isContactMarker()`. It is read again at
+every gate, and nothing is mutated on an account it does not prove. Only an explicit API
+refusal is a known `createacct` outcome. After a lost response, gateway error or unreadable
+body, an absent read cannot rule out a creation still in flight, so the account stays
+`unconfirmed` and fails with `account_creation_outcome_unknown`. Its domain, zone and files would arrive with it, so they
+stay `unconfirmed` too, unless a list shows them `present`. The marker settles the outcome:
+once it proves the account, its removal can be proven as usual.
+
+**Token.** A short-lived token lives in memory only and is confirmed before the recipe
+sees it, with its requested access and exact expiry. Its name is fixed, so it proves
+nothing alone. A revoke needs the marker, read again at that moment, plus a listing that
+shows the token or this run's own confirmed creation: setup read the name absent just
+before its one create. An unreadable listing therefore cannot withhold the revoke of a
+token this run created, which matters if account removal then fails too. As with the
+account, only an explicit refusal is a known outcome, so a lost creation that no listing
+can show is never revoked and never reported absent by a listing.
+
+A token cannot outlive its account. So once the account reads `confirmed_absent`, a token
+that no listing could settle, after a lost creation or an unreadable listing, has `cleanup`
+`absent_with_account`: absent through the account's removal, never shown absent by a token
+listing. While the account remains, the same token stays `unconfirmed` and fails with
+`token_creation_outcome_unknown` or `token_absence_unconfirmed`. A revoke that failed or did
+not take effect keeps `token_revoke_failure` or `token_still_present` as a failure even after
+the account is gone, because the token was proven present when it was revoked.
+
+**Cleanup.** No mutation repeats. The ownership read that gates a cleanup decision is the
+only request ever repeated, at most three reads per decision and only after a
+`TransportException`: one lost read must not abandon an account and its token, while
+anything the server returned is final, including a result-0, HTTP or unreadable reply.
+Failure at one resource never stops the next. The recipe's cleanup runs first, only on an
+account the marker proves and while the token still works, then the token is revoked and
+the account removed, and token, account, domain and zone absence are each read
+independently, except that a token is settled by its account as above. A failed or
+uncertain step fails `cleanup`; the resource fields still say what each one showed. If
+cleanup remains unconfirmed, inspect the explicitly selected test account and domain
+privately and confirm ownership before manual recovery. A rerun refuses preexisting
+resources and is not a cleanup mechanism.
+
+**Removed resources.** Some things a recipe makes live outside the account and go only
+with its removal, such as an addon domain's zone, and a removal can leave things behind.
+Both can only be settled after removal, so `run()` takes an optional third callback. It is
+called at most once, and only when the marker proved the account this run's and the
+account then read `confirmed_absent` after removal: after the lifecycle's own domain and
+zone reads and before the filesystem proof. It returns failure labels, which fail
+`cleanup` and the run; if it throws, the run fails with
+`removed_resource_absence_unconfirmed`. Otherwise, after a refused, lost or unreadable
+removal or an account never proven, it is never called, and the lifecycle's own failures
+already fail the run. A recipe that passes nothing is unaffected. The callback receives the
+recorded `filesystem_control`, its `status` and `counts` exactly as reported, so a recipe that
+depends on the control gates on the lifecycle's own result rather than a copy of its rule. A
+callback that declares no parameter ignores it.
+
+**Reads.** Every decision reads the account inventory afresh. Each domain check reuses the
+account read just before it, because nothing changed in between and each read is the
+server's full inventory; when that read gave no rows, or a mutation came after it, the
+check reads again. A clean run makes six account reads: preflight, after creation, the
+cleanup gate, the token gate, before removal and after removal.
+
+**Filesystem proof.** `WHM_API_LIVE_FS_CHECK=1` adds a read-only check, run twice: once
+after setup as a positive control, and once after API cleanup. It runs one fixed script
+over the `oblak.test` SSH alias:
+
+```sh
+ssh -T -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=10 \
+  -o UpdateHostKeys=no -o ControlMaster=no -o ControlPath=none \
+  oblak.test sh -s -- <user> <domain>
+```
+
+The script arrives on standard input and is constant. It only counts, so it prints no
+contents, filenames, tokens or values, and it holds no name: the account and domain are
+positional arguments, used only after strict validation, and an invalid one starts no
+process. Strict checking refuses an unknown or changed host key and key updates are off,
+so the check never accepts or changes one. Connection sharing is off too, as a shared
+master can outlive the session and hold its output open. It checks `/home/<user>`,
+`/var/cpanel/users/<user>`, `/var/cpanel/userdata/<user>`, `/etc/userdomains`,
+`/etc/passwd`, zone files under `/var/named`, and any file whose name contains the account
+name under `/var/cpanel/sessions`.
+
+`/etc/userdomains` lines are `<domain>: <owner>`. A line counts only when its domain field
+equals the domain or its owner field equals the account, compared whole with `awk`, so
+another account whose name or domain merely contains these never counts; a domain's dots
+are literal. `/etc/passwd` is matched on its whole first field. The session match stays
+deliberately wide: until the [Webmail session capture](#disposable-account-webmail-session-fixture),
+nothing had shown how session files are named, and whether to tighten it is a separate
+decision. Its cost is
+stated plainly: a session name that merely contains this account's name, such as another
+account's, reads as residue. That can fail a run, but never pass one.
+
+A search that fails prints no count, and the strict parser refuses a report with a blank
+one, so an unreadable place can never read as absent. That reaches subtrees no top-level
+count can see, and it refuses the whole report, so a failed search also hides residue
+elsewhere: the result is `unconfirmed`, never `present`. Each location also reports its
+inventory, because an empty place cannot show absence, just as an empty identity list
+cannot.
+
+Nothing else ties `oblak.test` to the server the API changed, so the control runs right
+after setup, before the exercise. If setup stopped after creating the account, cleanup
+takes the control instead, once the marker proves the account and before `removeacct`. It
+must show the account in `home`, `users`, `userdata`,
+`userdomains`, `passwd` and `zones`. Sessions are excepted: a fresh account has no session to
+show, and before the Webmail session capture nothing had shown how they are named. `filesystem_control` records its `status`, `not_run`, `passed` or `failed`,
+and its `counts` by fixed label. A failed control fails with `filesystem_control_failed` but
+costs only the filesystem claim: the exercise still runs and API cleanup stays exact.
+The check kills its `ssh` process only while it is still running, after a timeout or too
+much output, never after its exit was collected, so a reused process number is never
+signalled.
+
+`filesystem_cleanup` is `not_claimed` unless the final check ran:
+
+| Value | Meaning |
+| --- | --- |
+| `not_claimed` | No opt-in, or nothing was attempted, so no connection was made. |
+| `confirmed_absent` | The control passed, every inventory is usable and no location matches. |
+| `present` | A location matches; `filesystem_residue` holds its count by fixed label. |
+| `unconfirmed` | Anything else: an SSH failure, bad exit, timeout, unexpected report, failed search or unusable inventory, a control that failed or never ran, or an unknown `createacct`. |
+
+The proof only reports. `present` or `unconfirmed` fails `cleanup` and the run, as the claim
+the run opted into was not proven, but neither ever causes a mutation or a retry, and the
+API fields keep what the API showed. The final check also runs after a failed API cleanup,
+where it shows what really remains. Credentials stay out of the SSH process's environment,
+and its standard error is discarded.
+
+The proof covers those locations at one moment. A passed control shows that each spelling
+but sessions found this run's account on this server. It does not cover other paths,
+backups, logs or mail queues.
+
+## Disposable-account Fileman upload fixture
+
+`fileman-upload.php` proves typed `Fileman/upload_files` once, on a fresh disposable
+account, with no write to `npr` or any other account. It runs at committed code,
+reads only `OBLAK_TEST_WHM_KEY`, and creates its own short-lived writable token:
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 \
+  WHM_API_LIVE_ACCOUNT=wlupload WHM_API_LIVE_DOMAIN=wlupload.example.com \
+  php tools/live-verify/fileman-upload.php \
+  --output=docs/api/evidence/YYYY-MM-DD-fileman-upload.json
+```
+
+Use a new output path. Run it once; a failed run keeps its artifact and is never
+rerun to obtain a better one. Correcting a recipe needs evidence of what was wrong, a
+new scenario version and a new output path. The output is written only after cleanup, as a
+new-only protected file; if publication fails the complete report stays beside the
+destination and its path is printed. Exit 0 requires the lifecycle and the strict
+discrepancy review to pass.
+
+**Lifecycle.** The shared [disposable-account lifecycle](#disposable-account-lifecycle)
+owns identity, ownership, the token and account cleanup. Setup creates a 900-second
+writable token. Add `WHM_API_LIVE_FS_CHECK=1` for its filesystem proof.
+`FilemanUploadGuard` checks both opt-ins and the exact account and domain on every
+request, then the exact method, URI, complete header set and body. Each mutation is
+consumed once even when refused.
+
+**Transport.** `CurlClient` casts its body to a string and stays unchanged for every
+other fixture. `StreamingCurlClient` reads at most 8192 bytes at a time through
+`CURLOPT_READFUNCTION`. `CURLOPT_POST` with a read callback would silently select
+chunked framing, and PHP does not export `CURLOPT_POSTFIELDSIZE`, so it uses
+`CURLOPT_UPLOAD` with `CURLOPT_INFILESIZE` and a custom POST verb. That sends the
+exact `Content-Length`, no `Transfer-Encoding` and no `Expect`. No seek callback
+exists and the connection is fresh and unreusable, so libcurl cannot rewind or
+replay. The sent head is reduced in memory to booleans under each upload's `framing`.
+Because a forward-only body cannot be inspected before dispatch, the guard compares
+it with an independently assembled expectation as it streams and aborts at the first
+differing byte, before the closing delimiter. String conversion and buffering are
+refused outright.
+
+**Requests.** All uploads use `overwrite=0`, `permissions=0600` and one fresh
+high-entropy directory, on the direct route only, in this order:
+
+| Phase | Surface | Parts | Expected |
+| --- | --- | --- | --- |
+| `upload_success` | typed | all bytes (`fromString`), borrowed cursor (`fromStream`), 20 KB local file (`fromPath`) | status 1, three stored rows, disk info |
+| `upload_partial` | typed | existing name with conflicting bytes, plus a fresh stream with explicit size | status 1, one refused and one stored row |
+| `upload_all_failed` | typed | existing name with conflicting bytes | status 0, one refused row returned normally |
+| `upload_raw` | `callMultipart` default Flag | one fresh file | status 1, one stored row |
+| `upload_empty` | typed | one true empty file | status 1, one stored row of size 0 |
+
+Each upload is gated by the previous rows and inventory. The batches with rows run
+before any readback because `get_file_content` has no earlier recorded observation,
+so a problem there costs no row evidence. The empty file goes alone and last: listings
+report a zero-byte size as an empty string on this server, so its row is the least
+certain, and a surprise there costs only that file. A readback mismatch withholds the
+empty upload, so no mutation follows an unexpected read.
+
+Status-0 handling is the merged rows-aware rule, not a fixture assumption: a batch
+with rows returns normally, while explicit null or a validated empty `uploads` raises
+`ApiErrorException` and missing rows raise `PayloadMismatchException`. Either of those
+fails this run. The two expected statuses are reviewer-reported observations, so a
+different status with correct rows is recorded and fails the run.
+
+**Byte oracle.** `Fileman/get_file_content` transcodes, so it is not a raw download.
+Each file is read with `from_charset=ISO-8859-1`, `to_charset=UTF-8` and
+`update_html_document_encoding=0`, then compared with
+`FilemanUploadRecipe::latin1ToUtf8()`, which maps each byte N to U+00NN by definition,
+without a conversion library. The mapping is injective, so an added encoding layer,
+replacement character, truncation or dropped NUL differs; size is never enough. The
+first file holds all 256 byte values plus extra NUL and CRLF bytes. Every read follows
+both refusals, so one match proves both byte fidelity and that `overwrite=0` kept the
+original. The returned charset must be exactly the requested label or its lowercase
+form, because charset labels are case-insensitive, and evidence records `exact`,
+`lowercase` or `other`. `from_char`/`to_char` are the documented echoes; their
+schema-less `from_charset`/`to_charset` twins are read only when those are absent. Any
+other echo over exact content fails `expectations` without stopping capture, since it
+cannot affect how later uploads are read.
+
+**Ownership and cleanup.** A file is owned only after fresh directory absence, its
+original validated row and a matching readback for this run. Capture stops at the
+first unexpected state, and only owned files are deleted individually, each by an
+exact single-use guard authorization. `delete_file` is recursive upstream, so the
+directory is deleted only when it is owned and an inventory with hidden entries and
+no type filter is empty. A `types` filter would hide links and other special entries.
+Emptiness is read from the original response, as `{}` decodes to the same empty array
+as a real list. Anything unproven is left for account removal and reported. File
+cleanup failure never prevents token or account cleanup.
+
+**Evidence.** `fileman_upload` holds structural probe records, per-upload counts and
+transfer statistics, oracle outcomes and fixed-label lifecycle results. No file bytes,
+names, paths, tokens or upstream text are persisted. Its `discrepancy_review` accepts
+no discrepancies and has no acknowledgment mechanism.
+
+`capture` says whether every planned observation finished and `expectations` whether
+they held. A failed observation leaves `expectations` at `not_run`, an expectation that
+stops capture fails both, and a wrong charset echo fails `expectations` alone. `stopped_at`
+names the phase that stopped capture, which is the first read without exact content in a
+readback batch, and stays null when capture finished.
+
+`payload_validation` is `not_checked` on `home_initial`, `upload_raw` and `home_final`,
+because generic `call()` and `callMultipart()` run no `ShapeValidator`, and the assessment
+requires exactly that. Their structural discrepancies still reach the review, and the
+`upload_raw` rows are checked exactly. The committed captures predate this and are kept:
+see the [source audit](../../docs/api/source-audit.md#fixture-corrections-after-the-corrected-capture).
+
+Claim API absence only, unless the proof confirmed more. The
+`api_absence_only_no_filesystem_or_home_directory_cleanup_claim` limitation stays for
+every other outcome, including a proof that failed. Only `filesystem_cleanup:
+confirmed_absent` replaces it, with `filesystem_proof_covers_fixed_locations_at_one_moment`.
+The evidence covers the observed filenames, sizes and server version on the direct route.
+It establishes no raw-download identity, antivirus or archive behavior, null or empty
+status-0 observation, memory benchmark, or WHM or bridged upload coverage.
+
+The current scenario is `fileman-upload-disposable-v5`, assessed under policy
+`fileman-upload-no-acknowledgments-v2`, and **no v5 capture exists**. A v4 capture exists, and
+v5's report means something different: token `cleanup` can read `absent_with_account`, a
+setup that stopped after creation takes the filesystem control in cleanup, the `userdomains`
+count matches whole fields only, and the account is read six times rather than eight. v4 had
+added `filesystem_control`, made a proof without
+one never `confirmed_absent`, taken `status` and `setup` from the lifecycle and kept the
+API-only limitation for a failed proof. Earlier artifacts stay the valid record of what ran
+at their revisions.
+
+The [v4 capture](../../docs/api/evidence/2026-11-01-fileman-upload-v4.json) at `e309912` on
+`11.138.0.19` is a **passed run**, exit 0, with the filesystem proof enabled. All 25 phases
+passed with no review findings, all six files were proven owned and deleted, and token,
+account, directory, domain and zone cleanup are `confirmed_absent`. The control passed with
+`home=1, users=1, userdata=1, userdomains=1, passwd=1, zones=2`, so `filesystem_cleanup:
+confirmed_absent` is bound to the server the run changed. Sessions read 0, so their naming
+stays unobserved. See the
+[source audit](../../docs/api/source-audit.md#review-corrections-and-the-v4-capture).
+
+The [v3 capture](../../docs/api/evidence/2026-11-01-fileman-upload-v3.json) at `b3bfc14` on
+`11.138.0.19` is a **passed run**, exit 0, through the shared lifecycle with the filesystem
+proof enabled. All 25 phases passed with no review findings, all six files were proven owned
+and deleted, and token, account, directory, domain and zone cleanup are `confirmed_absent`,
+as is `filesystem_cleanup`, though that claim predates the control. See the
+[source audit](../../docs/api/source-audit.md#shared-disposable-account-lifecycle-2026-11-01).
+
+The [corrected capture](../../docs/api/evidence/2026-11-01-fileman-upload-v2.json) at
+`1c8bbce` on `11.138.0.19` is a **passed run**, exit 0. All five uploads passed their
+row, count and framing expectations, including the status-0 batch. Content matched the
+oracle exactly for all six files, every echo was `lowercase`, and token, account,
+domain and zone cleanup are confirmed through the API.
+
+The [first capture](../../docs/api/evidence/2026-11-01-fileman-upload.json) at `aa84150`
+is a **failed run**, exit 1, kept unchanged. It required the exact requested spelling,
+but this server omits `from_char`/`to_char` and lowercases `from_charset`/`to_charset`.
+See the [source audit](../../docs/api/source-audit.md#charset-echo-classification-and-corrected-capture)
+for what these captures do and do not establish.
+
+## Disposable-account domain rows and multi-value DNS reads
+
+`domain-rows.php` reads every DomainInfo record kind and the multi-value DNS reads with two
+distinct owned domains, once, on a fresh disposable account. It writes to no other account,
+reads only `OBLAK_TEST_WHM_KEY` and creates its own short-lived writable token:
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 WHM_API_LIVE_FS_CHECK=1 \
+  WHM_API_LIVE_ACCOUNT=wldomains WHM_API_LIVE_DOMAIN=wldomains.example.com \
+  php tools/live-verify/domain-rows.php \
+  --output=docs/api/evidence/YYYY-MM-DD-domain-rows.json
+```
+
+Use a new output path and run it once. Publication, exit status and the failed-run rule
+are the same as for the [Fileman upload fixture](#disposable-account-fileman-upload-fixture).
+
+**Account.** The shared [lifecycle](#disposable-account-lifecycle) owns the account, token
+and cleanup. Every extra name is fixed in `DomainRowsRecipe` and is an RFC 2606 name under
+`example.com` carrying the recipe's prefix: addon `wldomains-addon.example.com` on label
+`wldaddon`, alias `wldomains-alias.example.com` and subdomain `wldsub.wldomains.example.com`.
+Before any of them is made, each name and zone must read absent in the server-wide
+`get_domain_info` and `listzones` inventories, which must be nonempty, and the account's
+marker is read again. Only then does WHM `modifyacct` raise this account's own limits
+(`MAXADDON=1`, `MAXFTP=2`, `MAXPARK=1`, `MAXSUB=2`), and the account's own token creates the
+addon, the alias on the main domain and the subdomain, each once. Each creation is followed
+by the inventories its names depend on: `get_domain_info` always, and `listzones` only after
+the addon and the alias, which make zones. A name counts as made only once it is listed for
+this account. An explicit refusal is a known outcome; after a lost reply a name stays
+unconfirmed for good.
+`DomainRowsGuard` admits the binding's control requests and exactly these four mutations,
+each once, the direct ones only with the account's token.
+
+**Reads.** Nothing is retried, and a failed read never stops the others.
+
+| Operation | Routes | Arguments |
+| --- | --- | --- |
+| `has_local_authority` | WHM, direct, bridged | main and addon, both orders |
+| `ensure_domains_reside_only_locally` | direct, bridged | main and addon, both orders |
+| `ensure_domains_use_recognized_nameservers` | direct, bridged | main and addon, both orders |
+| `fetch_ds_records_for_domains` | WHM | main and addon, both orders |
+| `list_domains` | direct, bridged | none |
+| `domains_data` | direct, bridged | `format=hash`, then `format=list` |
+| `single_domain_data` | direct, bridged | main, addon, alias, subdomain |
+
+The addon sorts before the main domain, so neither order is also the sorted one. Each DNS
+read must return two results, and where results name their domain they must be exactly the
+two requested; `dns_results` records each sample's order as `request`, `reverse`, `other` or
+`not_observable`, and `dns_order_samples` counts them. The `ensure_*` results name no
+domain, so their order is never observable. No general order is claimed from any sample.
+`export_zone_files` is not called with more than one zone, after an earlier refused raw
+export. Every inventory must list the main domain, addon and subdomain, and every one but
+`domains_data` `format=list` must list the alias, which that form has held no row for on
+`11.138.0.19`. `domain_kinds` records what each inventory lists, including the subdomain an
+addon is parked on, which is never required. Each single-domain read must return the record
+of exactly the domain it asked for; `single_domain` records `requested_domain`, or which other
+of the run's records came back (`main_domain`, `addon_subdomain`) or `other`, which fails the
+expectation.
+
+**Cleanup.** Account removal takes every extra domain and zone. Once the proven account
+reads removed, the lifecycle's removed-resource proof reads `get_domain_info` and `listzones`
+once each and requires every attempted name and zone to be absent; an unreadable inventory
+or a lost creation leaves it `unconfirmed`. After any other cleanup the lifecycle never calls
+the proof, so every attempted name and zone, and each extra filesystem claim whose control
+ran, stays `unconfirmed`. With `WHM_API_LIVE_FS_CHECK=1`, the unchanged read-only proof also runs for the
+addon and the alias, the two extra domains with zones of their own: a control while they
+exist, then a final check after removal. Each extra domain's absence counts only after its
+own passed control, and `extra_filesystem` reports both. A subdomain has no zone of its own,
+and its `/etc/userdomains` line is already counted by owner.
+
+**Inspection.** `--inspect-names` runs the same recipe with the same cleanup but writes no
+artifact. It prints, for each phase, the undeclared key names and JSON types that
+`DomainRowsInspection` finds against the effective contract, then the sanitized outcome
+labels. A key's name is printed only for an undeclared key in an object whose contract
+declares named fields, and only as a plain identifier. Every key beneath an undeclared key,
+in an object declaring no fields, or at a map position prints as `<key>` or `*`, as such keys
+can be data such as user or token names. No value, path, token or upstream text is printed. It is the private step before typing a
+field, and its output is never committed.
+
+The current scenario is `domain-rows-disposable-v2`, and **no v2 capture exists**. v2 means
+something different from v1: a single-domain read must return exactly the requested record,
+no zone inventory follows the subdomain's creation, the removed-resource proof runs only once
+the proven account reads removed, and the unreachable expected-refusal support is gone.
+
+The [v1 capture](../../docs/api/evidence/2026-11-02-domain-rows.json) at `e6df465` on
+`11.138.0.19` is a **passed run**, exit 0, and stays the valid record of what ran at that
+revision. Its `single_domain` labels show every single-domain read returning the requested
+record, which v1 recorded without requiring. See the
+[source audit](../../docs/api/source-audit.md#disposable-domain-rows-and-multi-value-dns-reads-2026-11-02).
+
+## Disposable-account user task queue fixture
+
+`user-tasks.php` observes one real `UserTasks` queue entry through both routes and deletes it,
+once, on a fresh disposable account, with no write to `npr` or any other account. It runs at
+committed code, reads only `OBLAK_TEST_WHM_KEY`, and creates its own short-lived writable token:
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 WHM_API_LIVE_FS_CHECK=1 \
+  WHM_API_LIVE_ACCOUNT=wltasks WHM_API_LIVE_DOMAIN=wltasks.example.com \
+  php tools/live-verify/user-tasks.php \
+  --output=docs/api/evidence/YYYY-MM-DD-user-tasks.json
+```
+
+Use a new output path and run it once; a failed run keeps its artifact and is never rerun to
+obtain a better one. The output is written only after cleanup, as a new-only protected file.
+Exit 0 requires the lifecycle and the strict UserTasks review to pass. The shared
+[disposable-account lifecycle](#disposable-account-lifecycle) owns identity, ownership, the
+900-second writable token and account cleanup. `UserTasksGuard` checks both opt-ins and the
+exact account and domain on every request, then the exact method, URI, complete header set and
+body. Each mutation is consumed once, even when refused.
+
+**Producer.** The run queues one clone of a local repository inside the disposable account, and
+cPanel's own queue runner processes it. First a plain `VersionControl/create` makes an empty
+repository there, which queues nothing. Then a second `VersionControl/create` clones it by
+absolute path, with no scheme, host or credential, which queues one `VersionControl`/`create`
+task. The fixture neither starts nor stops that work. The installed source says a local path
+needs no network transport, so the source was chosen for that; network traffic is not
+monitored, and no absence of contact is claimed. Nothing is installed and no server setting
+changes. Both creates go through generic `call()`, because they are fixture steps rather than
+the subject. The producer rests on the installed sources of `11.138.0.19`, inspected read-only
+for this recipe: see the
+[source audit](../../docs/api/source-audit.md#user-task-queue-fixture-2026-11-02).
+
+**Requests**, in order, all on the direct route unless named bridged:
+
+| Phase | Request | Gate |
+| --- | --- | --- |
+| `version` | WHM version | usable version |
+| `home` | `Variables/get_user_information` for `home`, generic GET | exactly `/home/wltasks` |
+| `tasks_initial_direct`, `tasks_initial_bridged` | typed `listTasks()` | an empty JSON list |
+| `source_create` | `VersionControl/create`, no source, generic POST | its own root, no task rows |
+| `clone_create` | `VersionControl/create` from the local path, generic POST | API success |
+| `tasks_queued_direct`, `tasks_queued_bridged` | typed `listTasks()` | recorded |
+| `delete_owned` | typed `deleteTask()`, only while the latest read shows the owned row | recorded |
+| `tasks_after_direct`, `tasks_after_bridged` | typed `listTasks()` | recorded |
+
+Capture stops at the first unexpected state before the producer, so nothing is created on an
+account that does not look as planned. After the producer nothing stops capture: every read
+still runs, and unmet expectations are recorded and fail the run.
+
+**Ownership and the one delete.** Both routes must read an empty queue first, but ownership
+still needs an exact `VersionControl` subsystem, `create` action and this run's clone root,
+read from the original JSON, never from typed results. Task creation is `confirmed` only when
+the producer's response or a queue read showed that row; API success alone leaves it
+`unconfirmed`.
+
+The delete is sent only when the latest readable queue read showed the owned row, by the one ID
+that the producer response and every read agree on, and only if it is a
+`Directory::Queue::Normal` element name. Otherwise it is `not_attempted`, with
+`deletion.reason` saying why:
+
+| `reason` | Meaning |
+| --- | --- |
+| `owned_row_never_seen` | Neither the producer response nor any read showed the row. |
+| `owned_row_not_seen_by_reads` | Only the producer response showed it. |
+| `owned_row_absent_from_latest_read` | An earlier read showed it; the latest readable read did not. |
+| `owned_task_ambiguous` | Several distinct owned IDs; `ownership.distinct_owned_ids` says how many. |
+| `owned_id_not_queue_element` | The one owned ID is no queue element name. |
+
+So a race with the runner is an expectation outcome, `owned_delete_not_attempted`, and never a
+contract failure: the subject review then expects no delete record. Exactly one delete is ever
+authorized, by its literal body, and a refusal is recorded and never retried.
+`deletion.owned_row_in_latest_reads` gives each route's latest queued read, null when that read
+was unreadable. Apart from the producer and that one delete, no queued work is started,
+polled, cancelled or otherwise touched, and other rows are only counted. Deletion proves
+neither completion nor that a process stopped. Both repositories stay for account removal,
+which takes the whole home directory.
+
+**Evidence.** `user_tasks` holds structural probe records, per-read counts (`rows`,
+`owned_rows`, `foreign_rows`), the ownership proof and the delete's outcome, reason and data
+type. Payload paths carry each queue field's wire type; no task ID, argument, path, name, token
+or upstream text is persisted. `expectation_findings` names every unmet expectation by fixed
+label, and each finding fails the expectation of the one record it concerns, or none when it
+concerns the run as a whole. A read after the delete that still shows the row records
+`owned_row_present_after_delete`, or `owned_row_still_queued` when no delete was sent. Task
+`cleanup` keeps `present` when a read saw it; only an unsettled cleanup becomes
+`absent_with_account` once the account is gone.
+
+Two reviews read the records. `discrepancy_review`, policy
+`user-tasks-subject-no-acknowledgments-v2`, gates the run: every planned UserTasks phase and the
+version must appear once, in order, with its contract and route, a successful outcome, UAPI
+status 1 and no discrepancy. `producer_review`, policy `user-tasks-producer-structure-v2`, holds
+the home read and both creates to the same rule with validation `not_checked`. Their
+discrepancies are Variables and VersionControl evidence: they fail that review and are
+reported, but never gate the UserTasks result.
+
+The current scenario is `user-tasks-disposable-v2`, and **no v2 capture exists**. It differs
+from v1 in meaning: v1 deleted on the producer response's word alone, confirmed creation on API
+success, could rewrite observed residue as `absent_with_account`, blamed findings on whichever
+record came last, and reported only the bridged route's latest read. See the
+[source audit](../../docs/api/source-audit.md#user-task-review-corrections-2026-11-02).
+
+The [v1 capture](../../docs/api/evidence/2026-11-02-user-tasks.json) at `fea2d7d` on
+`11.138.0.19` is a **failed run**, exit 1, kept unchanged and not rerun. The producer response
+listed the owned task, then every queue read through both routes was an empty list, and the
+delete v1 sent by that ID returned UAPI status 0. Cleanup and the filesystem proof passed. A
+populated read needs a task that is still queued at the next read, which this producer did not
+give on this server; that is a new recipe, not a rerun. See the
+[source audit](../../docs/api/source-audit.md#user-task-queue-capture).
+
+## Disposable-account LangPHP setters
+
+`php-mutations.php` proves the three LangPHP setters once, on a fresh disposable account,
+through the generated client on direct and WHM-bridged UAPI, with no write to `npr` or any
+other account. It runs at committed code, reads only `OBLAK_TEST_WHM_KEY`, and creates its
+own short-lived writable token:
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 WHM_API_LIVE_FS_CHECK=1 \
+  WHM_API_LIVE_ACCOUNT=wlphpset WHM_API_LIVE_DOMAIN=wlphpset.example.com \
+  php tools/live-verify/php-mutations.php \
+  --output=docs/api/evidence/YYYY-MM-DD-langphp-mutations.json
+```
+
+Use a new output path and run it once; a failed run keeps its artifact. The output is
+written only after cleanup, as a new-only protected file, and exit 0 requires the lifecycle
+and the strict review to pass. The shared [lifecycle](#disposable-account-lifecycle) owns
+identity, ownership, the 900-second token, cleanup and the filesystem proof.
+`LangPhpMutationGuard` checks both opt-ins and the exact account and domain on every
+request, then the exact method, URI, header set and body. Reads come from a fixed list. Each
+mutation needs a single-use authorization naming its phase, and `LangPhpMutationRecipe`
+spells its body independently of the client's encoder.
+
+**Phases.** Preflight reads installed versions, all vhost versions, home basic directives
+and home INI content through both routes, and both routes must agree before anything
+changes. Three groups follow, each writing and then reading back through the matching
+getter on the same route:
+
+| Group | Direct UAPI | WHM bridge | Readback |
+| --- | --- | --- | --- |
+| directives | one scalar `directive` | a numbered `directive`/`directive-1` pair | basic directives must show exactly the written values |
+| content | home INI text | other home INI text | content through the oracle, and the directive getter must show the text's `max_input_vars` and none of the earlier directive values |
+| content `host` | the pinned enum's `type=host` | the same | must be an explicit API refusal, and the home content must read back unchanged |
+| versions | the main domain to another installed version | to a third | `php_get_vhost_versions` with the vhost selector must show the new version |
+
+A group stops at its first unexpected state, and the later groups still run, because they
+touch separate state or replace it whole. No mutation in a group follows an unexpected
+outcome in that group, and nothing repeats. A group whose original state cannot show its
+change, such as a directive already at its target or fewer than two other installed
+versions, sends nothing and blames the preflight read. Everything the run changes lives
+inside the account, so account removal is its only cleanup.
+
+**Content oracle.** The content setter HTML-entity-decodes on write, every write prepends
+the server's comment block, and the getter HTML-entity-encodes on read: this is the
+reviewed 11.138.0.19 handler. Each text holds `+`, `%41`, a quoted word and `&amp;`, so a
+second URL decode, a missing decode on write and a missing encode on read each give a
+different reply. `classifyContent()` reports `verbatim`, `entity_model`, either of those
+`_after_server_comments`, `other` or `absent`, and counts the comment and blank lines in
+front without depending on their wording. Only `other` and `absent` fail.
+
+**Evidence.** `langphp_mutations` holds the structural probe records, the original state,
+the outcome of each change by route, the `host` outcomes, the vhost readback root, and the
+lifecycle report. No account names, versions, paths, directive values, INI content, tokens
+or upstream text are persisted. The two `host` records stay failed probes with `api_failure`
+and UAPI status 0, while their expectations pass. Policy
+`langphp-mutations-no-acknowledgments-v1` has no acknowledgment mechanism.
+
+Readback proves what the API stores and reports, not what PHP does at runtime. The run
+covers the home INI scope only, one main domain with no FPM or impacted-domain variants,
+and one server version.
+
+The [first capture](../../docs/api/evidence/2026-11-02-langphp-mutations.json) at `c4a124a`
+on `11.138.0.19` is a **passed run**, exit 0, with the filesystem proof enabled. All 27
+phases passed with no review findings. Both directive encodings read back exactly, both
+content writes classified as `entity_model_after_server_comments` behind four comment lines
+and a blank line, `host` was refused on both routes with the content unchanged, and both
+version writes read back as a single object. Account, token, domain, zone and filesystem
+cleanup are `confirmed_absent`. See the
+[source audit](../../docs/api/source-audit.md#disposable-account-langphp-setters-2026-11-02).
+
+## Disposable-account Mime and directory-access mutations
+
+`mime-directory.php` proves the eight Mime mutations and the four directory-access
+mutations once, through the generated client on both UAPI routes, on a fresh disposable
+account. It writes to no other account. It runs at committed code, reads only
+`OBLAK_TEST_WHM_KEY`, and creates its own short-lived writable token:
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 WHM_API_LIVE_FS_CHECK=1 \
+  WHM_API_LIVE_ACCOUNT=wlmime WHM_API_LIVE_DOMAIN=wlmime.example.com \
+  php tools/live-verify/mime-directory.php \
+  --output=docs/api/evidence/YYYY-MM-DD-mime-directory.json
+```
+
+Use a new output path and run it once. A failed run keeps its artifact and is never rerun
+for a better one; correcting the recipe needs evidence of what was wrong, a new scenario
+version and a new output path. Publication follows `fileman-upload.php`: a protected
+new-only file, written after cleanup. Exit 0 requires the lifecycle and the strict review
+to pass.
+
+**Lifecycle.** The shared [disposable-account lifecycle](#disposable-account-lifecycle)
+owns identity, ownership, the 1200-second writable token and account cleanup. The recipe
+passes no cleanup callback: everything it changes lives inside the account, and account
+removal takes whatever a stopped section left. The directory is reported
+`absent_with_account` once the account reads `confirmed_absent`.
+
+**Guard.** `MimeDirectoryGuard` checks both opt-ins and the exact account and domain on
+every request. Each fixture request needs the single-use authorization of its phase, then
+must equal that phase's method, URI, complete header set and body, which
+`MimeDirectoryRecipe` spells by hand rather than through the client's encoder. A phase is
+consumed even when its request is refused, so nothing below the guard can retry a mutation
+or repeat a read. Outside a phase only the lifecycle's control requests pass. The one
+multipart upload streams through `StreamingCurlClient` and is compared with its
+hand-assembled body as it goes.
+
+**Mime section.** Fresh baselines on direct UAPI show none of this run's names: user MIME
+types, user handlers, redirects, the domain redirect (`redirection_enabled` 0, `url` null)
+and hotlink protection (disabled, `redirect_url` null). Then each kind runs two rounds:
+round a adds through direct UAPI and removes through the WHM bridge, round b the reverse.
+Every mutation is followed by a read on its own route that must show exactly the expected
+row or its absence, so each route reads back a populated row and its removal:
+
+| Kind | Round a (add direct, remove bridged) | Round b (add bridged, remove direct) |
+| --- | --- | --- |
+| MIME type | `addMime`, `deleteMime(type)` | same, another type |
+| Handler | `addHandler`, `deleteHandler(extension)` | same, another extension |
+| Redirect | `addRedirect(domain, redirect, src)`, `deleteRedirect(domain, src)` | `addRedirect` with `redirectWildcard: false`, `redirectWww: 0`, `type: 'temp'`; `deleteRedirect` with `docroot` |
+| Hotlink | `addHotlink(..., allowNull: true)`, one referrer | `addHotlink(..., allowNull: false)`, two referrers and two extensions |
+
+Each of these mutations must itself return null data, as the inspected server source sets
+none. Redirect readbacks check the `list_redirects` row and `get_redirect`. Targets use the
+reserved `example.net` domain. Hotlink protection is account-wide, which is acceptable on
+this run's own account.
+
+**Directory section.** A generic listing of `public_html` must be a real listing without the
+fresh directory: a JSON list, or the documented object holding both `dirs` and `files` lists.
+An empty `{}` decodes like an empty list, so it is refused. Uploading one synthetic file then creates it: `Fileman/upload_files`
+is the only documented API that creates a directory, and the setting calls require an
+existing one. An unfiltered inventory with hidden entries must show exactly that file. Then:
+
+| Step | Direct UAPI | WHM bridge |
+| --- | --- | --- |
+| Indexing | `setIndexing('disabled')`, then `'inherit'` | `setIndexing('fancy')`, plus the indexes listing |
+| Protection | enable with realm a, disable | disable, enable with realm b |
+| Protected users | add user one, remove user two | add user two, remove user one |
+
+Each change is read back on its own route with `getIndexing()`, `isDirectoryProtected()`,
+the privacy listing or `listUsers()`. The two passwords come from fresh randomness, live in
+memory only and reach the server only in their own `add_user` body. Each protected-user
+mutation must return null data; `setIndexing()` must echo the requested type and
+protection must return its new state. Leech protection has no UAPI mutation in the pinned
+surface, so `DirectoryProtection/list_directories` reads it through direct UAPI at the
+start and through the bridge at the end, and both must show 0.
+
+**Sections and capture.** Within a section, capture stops at the first unexpected state.
+The sections share no state, so a stopped Mime section does not withhold the directory
+section. `sections` records each section's `capture`, `expectations` and `stopped_at`, and
+failures carry `mime_` or `directory_` labels; a failed server-version read is
+`capture_failure` and runs neither. Absence is never judged from `{}`: every typed list
+contract here refuses it as a payload mismatch, which stops the section as a capture
+failure before any expectation runs.
+
+**Evidence.** `mime_directory` holds the structural records of all 73 phases, each
+mutation's result kind with its message and warning counts, list row counts and upload
+transfer statistics. No names, paths, passwords, URLs, values or upstream text are
+persisted. The discrepancy review, policy `mime-directory-no-acknowledgments-v1`, requires
+every phase once, in order, with its contract, UAPI status 1, a passed expectation and no
+discrepancy, and has no acknowledgment mechanism. Only the generic `public_html` listing
+reports `payload_validation: not_checked`.
+
+**Limits.** API readback is not enforcement. Nothing fetches a URL, so the run shows no
+HTTP redirect, indexing, password authentication or hotlink blocking. It covers the
+argument variants above on one server version, and leech protection only as a read. The
+filesystem proof, when enabled, covers its fixed locations at one moment.
+
+The scenario is `mime-directory-disposable-v2`, and **no v2 capture exists**. v2 adds the
+null-data checks on the 20 Mime and protected-user mutations, so a v2 record's passed
+expectation on those phases means its result was checked, which a v1 record's does not. The
+v1 capture below ran before that change and stays the valid record of what ran at its
+revision. Its own structural paths record a null root for all 20 of those mutations and a
+JSON `empty-list` for every empty read.
+
+The [capture](../../docs/api/evidence/2026-11-02-mime-directory.json) at `965b329` on
+`11.138.0.19` is a **passed run**, exit 0, with the filesystem proof enabled. All 73 phases
+passed with no review findings and both sections finished. Every mutation returned null data
+except `set_indexing`, `configure_directory_protection` and the upload, and each
+`add_redirect` carried one message. Both
+disables returned null `auth_name` and `auth_type`, as the existing correction expects.
+Token, account, domain and zone cleanup are `confirmed_absent`, the directory is
+`absent_with_account`, the control passed with
+`home=1, users=1, userdata=1, userdomains=1, passwd=1, zones=2`, and `filesystem_cleanup` is
+`confirmed_absent`. See the
+[source audit](../../docs/api/source-audit.md#disposable-account-mime-and-directory-access-mutations-2026-11-02).
+
+## Disposable-account Webmail session fixture
+
+`webmail-sessions.php` creates Webmail session credentials through all three
+`Session/*` creators on a fresh disposable account, once, and, only when separately opted in,
+removes the session files that account removal leaves behind. It writes nothing to `npr` or
+any other account, reads only `OBLAK_TEST_WHM_KEY`, and creates its own short-lived writable
+token:
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 WHM_API_LIVE_FS_CHECK=1 \
+  WHM_API_LIVE_SESSION_CLEANUP=1 \
+  WHM_API_LIVE_ACCOUNT=wlsession WHM_API_LIVE_DOMAIN=wlsession.example.com \
+  php tools/live-verify/webmail-sessions.php \
+  --output=docs/api/evidence/YYYY-MM-DD-webmail-sessions.json
+```
+
+The filesystem proof is mandatory here: without it the command stops before any request,
+because only the proof can see what account removal leaves. `WHM_API_LIVE_SESSION_CLEANUP=1`
+is a separate opt-in for the one root filesystem write described below. It exists because
+AGENTS.md says never to restore the server automatically, and whether it should carry an
+exception for this bounded cleanup is the owner's decision, not this recipe's; AGENTS.md is
+unchanged. Without it, the run deletes nothing, leaves the session files for the owner, and
+fails. Use a new output path and run
+it once. A failed run keeps its artifact and is never rerun for a better one; a corrected
+recipe needs evidence of what was wrong, a new scenario version and a new output path. The
+output is written only after every cleanup step, as a new-only protected file.
+
+**Lifecycle.** The shared [disposable-account lifecycle](#disposable-account-lifecycle)
+owns identity, ownership, the 900-second writable token, account cleanup and the run's
+status. `WebmailSessionGuard` checks both opt-ins and the exact account and domain on every
+request, then the exact method, URI, complete header set and body. Reads may repeat; each
+mutation is admitted once. Consuming it is the last step, after the headers and token binding
+are checked too, so a request that differs in any part consumes nothing. Only the two API
+ports and the recipe's URIs exist in the guard, so a returned credential can never reach
+Webmail.
+
+**Requests.** In order, all through the typed client:
+
+| Phase | Request | Route |
+| --- | --- | --- |
+| `version` | WHM `version` | WHM |
+| `sessions_initial_*` | `ActiveSessions/list_active_sessions` GET | direct, bridge |
+| `create_mailbox` | `Email/add_pop` POST, `quota=16`, `send_welcome_email=0` | direct |
+| `self_*`, `mail_user_*`, `check_password_*` | the three `Session/*` creators, POST | direct, then bridge |
+| `sessions_final_*` | `ActiveSessions/list_active_sessions` GET | direct, bridge |
+
+The mailbox name is `box` plus 16 hexadecimal characters of per-run entropy, so it never
+contains the account name, and its random password stays in memory. `send_welcome_email=0`
+suppresses the client configuration instructions, the one message the pinned `add_pop`
+parameters control; the recipe sends and delivers no mail. Every creator call carries
+`remote_address=192.0.2.10`, an RFC 5737 documentation address, because the bridge needed an
+explicit address on the reviewed build. The mail-user creators name the owned mailbox, and the
+checking creator its correct password. Locale is omitted.
+
+**Credentials are never used.** Nothing logs in, posts to Webmail on port 2096 or fetches a
+URL. From each creator only the kind of `hostname`, `session` and `token` leaves memory:
+`absent`, `null`, `empty_string`, `string` or `other`. A creator whose session or token is
+not a nonempty string fails its expectation. A failed creator is recorded and the others
+still run, as each is independent and none is retried. Capture stops only at a failed
+version read or at a mailbox not proven created with the exact `<mailbox>+<domain>` result.
+
+**Inventory.** Each read keeps only counts: rows, rows with `is_current`, `is_possessed`
+or `tfa_verified` equal to 1, rows whose address is the supplied documentation address, and
+rows with an empty address. `appeared` compares final with initial rows per route. An empty
+list cannot separate no sessions from an unreadable store.
+
+**Session files: a root filesystem write.** This cleanup deletes files as root over SSH. It
+may delete only regular files under `/var/cpanel/sessions` whose names begin with this run's
+exact account name followed by `:`, or with this run's owned mailbox address followed by `:`,
+the `@` either literal or encoded as `%40`. It runs only after the lifecycle has confirmed the
+account removed, only with `WHM_API_LIVE_SESSION_CLEANUP=1`, and it counts before and after
+the deletion. AGENTS.md says never to restore the server automatically; whether this bounded
+cleanup needs a recorded exception there is the owner's decision, and AGENTS.md is unchanged.
+
+The fixture offers the cleanup to the lifecycle as its [removed-resource
+callback](#disposable-account-lifecycle), and it never runs unless the lifecycle calls it. The
+lifecycle calls it at most once, only after the marker proved the account this run's and the
+account then read `confirmed_absent`, after its own domain and zone reads and before its final
+filesystem proof, and passes its own recorded control. So that final proof is the proof after
+the cleanup, and a run that removes every session file its creators left can pass. When
+called, the cleanup:
+
+1. Refuses, touching and reading nothing, unless the lifecycle's control `passed` and its
+   counts hold no session name. A session name before the exercise could predate this run,
+   and the cleanup never deletes a file the current run did not create.
+2. Without `WHM_API_LIVE_SESSION_CLEANUP=1`, deletes nothing. One fixed read-only script
+   counts what remains and the run fails with `session_files_left_for_owner`.
+3. With it, sends one fixed removal script. It walks `/var/cpanel/sessions` once and gives
+   every entry the first class it matches: `own` (`<account>:`), `mailbox_encoded`
+   (`<mailbox>%40<domain>:`), `mailbox_literal` (`<mailbox>@<domain>:`), `unexplained` (any
+   other name containing the account name) or unrelated. One type rule splits the anchored
+   classes: regular files count by class and by depth, top level or in subfolders, and any
+   other anchored entry is `anchored_other`. If it cannot count, it stops before deleting.
+   It then deletes only the anchored regular files through a single `find -type f ...
+   -delete`, and walks once more to count what remains. A deletion that find reports as
+   failed, partly or wholly, still gives a full report with `deletion_failed` and both
+   counts. Directories, symbolic links and unexplained names are never touched.
+
+Records in both scripts carry fixed tokens, a type letter and a depth, never a name or path, a
+folder's included, so no name can split or forge a record; find's exit status follows them,
+and a failed or unparseable walk gives no count. The scripts arrive on standard input, hold no
+name, and re-check their arguments. The connection is `SshScriptRunner`'s, shared with the
+filesystem proof: its fixed options, argument check, environment whitelist, bounds,
+kill-only-while-running rule and strict `label=count` parsing. `SshSessionFileCleanup` itself
+starts no removal process without the opt-in, whoever calls it.
+
+`session_files` reports `status` (`not_run`, `not_required`, `removed`, `residue_left` or
+`unconfirmed`), a fixed `reason`, the counts before (`observed`) and, after a removal, the
+attempts, the deletion flag and the counts after. Its `reason` is `not_called` when the
+lifecycle never called it, and `filesystem_proof_not_enabled` when it was never offered. Its
+failure labels reach the lifecycle and fail `cleanup` and the run:
+
+| Label | Meaning |
+| --- | --- |
+| `session_file_removal_refused` | The control did not pass, or saw a session name before the exercise. |
+| `session_files_left_for_owner` | Without the opt-in, session files remain for the owner. |
+| `session_file_deletion_failed` | find reported the deletion as failed; both counts are kept. |
+| `session_files_unconfirmed` | The observation or the removal gave no readable report. |
+| `session_files_remain` | Anchored files, other anchored entries or unexplained names remain. |
+
+An exception from it would be the lifecycle's `removed_resource_absence_unconfirmed`. Exit 0
+needs the lifecycle and the strict review to pass and the session files to be `not_required`
+or `removed`.
+
+**Manual recovery.** A run that leaves session files blocks every later run, by design: the
+next run's control sees a name containing `wlsession` before its exercise and refuses to
+delete anything, and its final proof fails. Only the owner can clear that, by hand, as root on
+the test server, before the recipe can run again:
+
+1. Confirm that no account named `wlsession` exists, through WHM, and that no other account's
+   name contains `wlsession`. If the lifecycle left the account itself unconfirmed, recover it
+   first as the [disposable-account lifecycle](#disposable-account-lifecycle) describes.
+2. List, privately and without saving the names anywhere, the entries under
+   `/var/cpanel/sessions` whose names contain `wlsession`.
+3. Remove only regular files whose names begin with `wlsession:`, or with a mailbox address
+   of this recipe's form at the recipe's domain, followed by `:`: `box`, 16 lowercase
+   hexadecimal characters, then `@wlsession.example.com:` or `%40wlsession.example.com:`.
+   The mailbox name is random per run and never recorded, so match that form, never a
+   remembered name. Leave anything else, a directory, a link or an unexplained name, and
+   investigate it before going further.
+4. Run the read-only filesystem proof for `wlsession` and `wlsession.example.com` and
+   continue only when it reads `confirmed_absent`, with sessions at 0.
+
+**Evidence.** `webmail_sessions` holds structural probe records, credential kinds,
+inventory counts, the session-file counts and lifecycle results. No names, paths, tokens,
+session values, passwords, addresses or upstream text are persisted. Its
+`discrepancy_review`, policy `webmail-sessions-no-acknowledgments-v1`, requires every phase
+once, in order, on its own route and contract, with UAPI status 1 and no discrepancy.
+
+The current scenario is `webmail-sessions-disposable-v4`, and **no v4 capture exists**. v4's
+report means something different from v3's: the cleanup needs its own opt-in and otherwise only
+records the residue for the owner; the removal reports `attempted` and `deletion_failed` in
+place of a deleted count; anchored files are counted by depth in place of folders; the
+separate read-only pre-check is gone from the removal path; and there are new failure labels.
+v3, which also has no capture, had moved the cleanup inside the lifecycle before its final
+proof, so `filesystem_cleanup` reflects the state after it, `session_files` has no separate
+`reproof`, its failures are lifecycle failures, and `not_called` is a reason. v2, also without
+a capture, had changed v1's report: the session-file counts carry
+`anchored_other` instead of v1's any-type `anchored`, the removal reports a full
+classification before and after with the number deleted, where v1 reported four counts, and a
+request refused for its headers no longer consumes its mutation. The v1 artifact stays the
+valid record of what ran at its revision.
+
+The [2026-11-02 v1 capture](../../docs/api/evidence/2026-11-02-webmail-sessions.json) at
+`f930653` on `11.138.0.19` exits 1. All twelve phases pass with no review findings: all six
+creators returned status 1, a null `hostname` and nonempty `session` and `token`, and the
+inventory went from 0 to 2 populated rows on each route. Account, token, domain and zone are
+`confirmed_absent`. At v1 the cleanup ran after the lifecycle, so the lifecycle's final proof
+found 8 session files and failed the run; the cleanup then removed all 8 and its separate rerun
+of the proof read `confirmed_absent`. See the
+[source audit](../../docs/api/source-audit.md#disposable-webmail-session-capture-2026-11-02).

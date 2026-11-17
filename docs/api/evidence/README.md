@@ -1264,3 +1264,258 @@ Sitejet/get_commerce GET and nullable commission IDs; see
 the Commerce/Market contract notes. All remaining methods/variants stay under
 `8x0.2.52`. SHA-256:
 `8b1b468eb3ab91072cd0a676ac7d9337c3359bbde80497703451b24ecda1ee7d`.
+
+## Webmail inventory evidence
+
+The [Webmail inventory capture](2026-11-01-webmail-inventory.json) at
+`eba1711a62e71d614a50cb5eeb2259aa00adbbea` on `11.138.0.19` passes all five GET
+observations and strict assessment with zero discrepancies, through direct UAPI and
+the `npr` bridge. Session inventory is empty on both routes and proves nothing about
+session row fields. Webmail application rows are populated. No `Session/*` creator
+ran, and no returned URL was fetched or login attempted. The creators stay open under
+`8x0.2.69`. SHA-256:
+`37ee9760012a45c19100adc379ca59d7b87d46aebea8596a6c1f8e75dc201cd6`.
+
+## UAPI Market read evidence
+
+The [Market reads capture](2026-11-01-market-reads.json) at
+`eba1711a62e71d614a50cb5eeb2259aa00adbbea` on `11.138.0.19` passes all eleven GET
+observations and strict assessment with zero discrepancies, through direct UAPI and
+the `npr` bridge. It covers five of the nine reads in `8x0.2.63`: provider list,
+catalog, pending certificates, DCV constraints and login URL. The pending list is
+empty and observes no row fields. The login URL was not followed.
+
+Certificate status details, certificate availability, product information and
+completion URL did not run, because no read available here enumerated an order item
+or a product name. The empty pending list covers only certificates the system
+currently polls, so it does not show that no order exists. Review 5725042192 also
+reports missing local product files and a completion URL failure on token
+authentication, so a real selector may not be enough for those two. Their absence is
+a recorded decision, not a failure or a pass. No purchase, payment, issuance,
+installation, trust or served TLS behavior is established. SHA-256:
+`4a9ec4fffec130ee099b63cb2f86c24482b332a8101995828426745bdb70da51`.
+
+The [no-match audit capture](2026-11-01-empty-results.json) at
+`fc5264d97f0c9d90ebbf9148b714d69e4a288959` on `11.138.0.19` records 27 GET observations
+across WHM version and 15 curated operations, under recipe `empty-results-v1`.
+Twenty-three return empty results and three raise API errors, including the required
+entity-lookup control. No typed method threw a client exception.
+
+Its `failed` status and exit 1 were predicted before execution from the two controls
+only: `accountsummary` fails, and `listaccts` omits `data`. The two `Bandwidth/query`
+absent-domain API errors, which also failed that assessment, were not predicted. They
+and the other 23 records were only observed.
+
+Recipe `empty-results-v2` assesses a declared outcome per probe. This artifact keeps its
+recipe and `failed` status unchanged, and its records match those declarations. Empty
+results establish no item fields, and several have no populated baseline; see the
+[source audit](../source-audit.md#empty-result-audit-2026-11-01).
+SHA-256: `2ec7d60176b4354c01d1016849e0e3d62ae85a7182354010ab8d89e77a39894f`.
+
+The [v2 capture](2026-11-01-empty-results-v2.json) at
+`e8021d20d859efc84b6532c6b78a4e4471a6ba0d` on `11.138.0.19` passes recipe
+`empty-results-v2`, exit 0: all 27 GETs returned HTTP 200 and all 27 records match the
+outcomes committed before the run. Three records still raise API errors and `listaccts`
+keeps its discrepancy, as declared, and every structural field matches the v1 capture.
+It repeats one server version from declarations drawn from v1, so it is not independent
+evidence and establishes no other version. No live run has produced a deviation.
+SHA-256: `e1258f73d56221a60dee6fdab3d7fee6b2a3036ee062f8a5935449134b2fce15`.
+
+## cPanel 11.138.0.19 default read-only capture
+
+The [default-catalog capture](2026-11-01-read-only-11.138.0.19.json) at
+`5f9b001466a30bc45828c4fb3dd8007f7f811ad0` on `11.138.0.19` passes all 67 GET
+HTTP/API/payload/probe observations across 37 operations. DomainInfo `domains_data`,
+`single_domain_data` and LangPHP `php_ini_get_user_basic_directives`,
+`php_ini_get_user_paths` report their typed fields as named paths with no discrepancy
+through both direct and bridged UAPI. The only discrepancies left are the two masked
+Quota `$.*` integer observations.
+
+Its embedded `discrepancy_review` says failed (0 acknowledged, 2 unexpected, 2 stale)
+because this run was assessed against the previous `11.138.0.15` reference. The review
+stays as captured. `DiscrepancyPolicy` now uses this file as its reference, which is a
+later code change and not a change to this artifact. Masked Quota keys establish neither
+names nor counts, and empty addon, parked and subdomain lists establish no row fields.
+Seven of those fields became `mixed` after this capture, so its contract hashes for those
+four operations record the earlier contract; see the
+[source audit](../source-audit.md#correction-carried-not-typed).
+SHA-256: `4138dbf1d083ddfe6d109c86bb8beb449abde6937e93b2452693d47b2b792b81`.
+
+## Disposable-account Fileman upload evidence
+
+The [v4 capture](2026-11-01-fileman-upload-v4.json) at
+`e309912ba42d20988c0f32e2c9355b3ac9c5007c` on `11.138.0.19` passes recipe
+`fileman-upload-disposable-v4`, exit 0, with the filesystem proof enabled. All 25 phases
+passed with no review findings, all six files were proven owned and deleted, and token,
+account, directory, domain and zone cleanup are `confirmed_absent`. Its `filesystem_control`
+passed with `home=1, users=1, userdata=1, userdomains=1, passwd=1, zones=2`, which binds
+`filesystem_cleanup: confirmed_absent` to the server the run changed. Sessions read 0, so
+their naming stays unobserved. See the
+[source audit](../source-audit.md#review-corrections-and-the-v4-capture). SHA-256:
+`239e3417565c511c9177a2d298bfed883d738b102dc653fc2bd8e5ae980ce780`. It stays the valid record
+of what ran at that revision. The fixture has since moved to `fileman-upload-disposable-v5`,
+and no v5 capture exists; see the
+[source audit](../source-audit.md#re-review-corrections-2026-11-02).
+
+The [v3 capture](2026-11-01-fileman-upload-v3.json) at
+`b3bfc1474729fb2ce60207d9b3d5a3d0bbe51232` on `11.138.0.19` passes recipe
+`fileman-upload-disposable-v3`, exit 0, through the shared disposable-account lifecycle
+with the filesystem proof enabled. All 25 phases passed with no review findings, all six
+files were proven owned and deleted, and token, account, directory, domain and zone cleanup
+are `confirmed_absent`, as is `filesystem_cleanup`, a claim made before the proof gained its
+control, so no in-run control binds it to this server. See the
+[source audit](../source-audit.md#shared-disposable-account-lifecycle-2026-11-01). SHA-256:
+`7f5f46ccd0c02d0d883d1221c6e80c8219406766a261f1a7552b4b853e750a90`.
+
+The [corrected capture](2026-11-01-fileman-upload-v2.json) at
+`1c8bbce3325f5b758837e1615cdcba199f3bd2ce` on `11.138.0.19` passes recipe
+`fileman-upload-disposable-v2`, exit 0: five multipart uploads, six exact content
+readbacks through the Latin-1 oracle, and token, account, domain and zone absence
+confirmed through the API. It claims no filesystem cleanup, raw-download identity, or
+WHM or bridged upload coverage. SHA-256:
+`10eecbe1be592a3872fc59d74f2e24187fad98bb4f0e3c700f38af9afcd874d3`. It stays the valid
+record of what ran at that revision. The fixture has since moved to
+`fileman-upload-disposable-v3` and policy `fileman-upload-no-acknowledgments-v2`; see the
+[source audit](../source-audit.md#fixture-corrections-after-the-corrected-capture).
+
+The [first capture](2026-11-01-fileman-upload.json) at
+`aa84150664d6e5c48e1668cc833bb9220e11a1bf` is a failed run, exit 1, kept unchanged. It
+required the exact requested charset spelling, which this server does not return. See
+the [source audit](../source-audit.md#charset-echo-classification-and-corrected-capture).
+SHA-256: `34e31bfd989c84deee7568a5d8fca72b1b6c657346cf5d81dcd3f760c7f2f41a`.
+
+## Disposable-account finite-Quota evidence
+
+The [v2 capture](2026-11-01-finite-quota-v2.json) at
+`b3bfc1474729fb2ce60207d9b3d5a3d0bbe51232` on `11.138.0.19` is a failed run, exit 1, kept
+unchanged. Scenario `finite-quota-disposable-v2` ran through the shared lifecycle with the
+filesystem proof enabled. Setup, capture, finite expectations and cleanup all pass, token,
+account, domain and zone are `confirmed_absent`, as is `filesystem_cleanup`, and the 67-probe
+baseline passes. It fails only the strict finite assessment, on the same two unknown-field
+observations as the [v1 artifact](2026-10-17-finite-quota.json). See the
+[source audit](../source-audit.md#shared-disposable-account-lifecycle-2026-11-01). SHA-256:
+`82fe5c4f332f37cc444e588e57496f20d7d15f00db6495b52c0e1aad263d758a`. It stays the valid record
+of what ran at that revision, including its `filesystem_cleanup`, which predates the control.
+The fixture has since moved to `finite-quota-disposable-v3`, and no v3 capture exists; see
+the [source audit](../source-audit.md#re-review-corrections-2026-11-02).
+
+## Disposable-account domain rows and multi-value DNS reads
+
+The [domain-rows capture](2026-11-02-domain-rows.json) at
+`e6df4652d7b44c170f76250d85c200d516c748b5` on `11.138.0.19` is a **passed run**, exit 0,
+scenario `domain-rows-disposable-v1` under policy `domain-rows-no-acknowledgments-v1`, with
+the filesystem proof enabled. A fresh `wldomains` account gained an addon, an alias of its
+main domain and a subdomain, and all 35 observations passed with zero review findings: WHM
+version, the account-limit and three domain-creation POSTs, 16 multi-value DNS GETs and 14
+DomainInfo GETs across every record kind. Token, account, main domain and zone, all four
+extra domain names and both extra zones are `confirmed_absent`, and the filesystem proof is
+`confirmed_absent` for the account and for each extra zone, each after its own passed
+control. The eight DNS results that name their domain, `has_local_authority` on three routes
+and `fetch_ds_records_for_domains` on WHM, each in both orders, all came back in request
+order; that is recorded per sample and is not a general ordering claim. See the
+[source audit](../source-audit.md#disposable-domain-rows-and-multi-value-dns-reads-2026-11-02).
+SHA-256: `031e989c1035966b2696fec08975b8846e07381ec0c5fd1e5718992c7f547f16`. It stays the
+valid record of what ran at that revision. Its `single_domain` labels show every single-domain
+read returning the requested record, which v1 recorded without requiring. The recipe has
+since moved to `domain-rows-disposable-v2`, and no v2 capture exists; see the
+[source audit](../source-audit.md#review-corrections-2026-11-02).
+
+## Disposable-account user task queue evidence
+
+The [capture](2026-11-02-user-tasks.json) at `fea2d7d612acd215c452f5d710b5d0813f3e590b` on
+`11.138.0.19` is a **failed run**, exit 1, kept unchanged. Scenario `user-tasks-disposable-v1`
+queued one clone of a local repository inside the disposable account `wltasks`, which cPanel's
+own queue runner processed. The source was a local path chosen to need no network transport;
+traffic was not monitored.
+
+Observed: the producer's own response listed one owned task row with a queue element ID. All six
+`UserTasks/retrieve` reads, through both routes, returned an empty list, the first after the
+producer beginning within two seconds of it. The delete v1 sent by that ID returned UAPI status
+0. Setup and cleanup passed, and `filesystem_cleanup` is `confirmed_absent` after a passed
+control. Both reviews fail: the UserTasks review on the refused delete, the producer review on
+masked VersionControl create fields.
+
+Inferred, not observed: that the runner removed the task before the first read, and that the
+delete was refused because the element was gone. It establishes no populated `retrieve` row and
+no successful delete. The fixture is now `user-tasks-disposable-v2`, which withholds a delete no
+read supports, and no v2 capture exists. See the
+[source audit](../source-audit.md#user-task-queue-capture). SHA-256:
+`470a6271daedbf78ab07b0769ffa967251c7ca1619940780d65ac0f26fda4e6c`.
+
+## Disposable-account LangPHP setter evidence
+
+The [capture](2026-11-02-langphp-mutations.json) at
+`c4a124a247b2575ef09a47e8dabb5f84f51ac50d` on `11.138.0.19` passes scenario
+`langphp-mutations-disposable-v1` and policy `langphp-mutations-no-acknowledgments-v1`,
+exit 0, on the fresh disposable account `wlphpset` through the shared lifecycle with the
+filesystem proof enabled. All 27 phases passed with no review findings: 8 POST and 19 GET
+observations through direct UAPI and the WHM bridge, including WHM version.
+
+- `php_ini_set_user_basic_directives`: a scalar `directive` (direct) and a numbered
+  `directive`/`directive-1` pair (bridge) each read back exactly through
+  `php_ini_get_user_basic_directives`. Both returned null data.
+- `php_ini_set_user_content` with `type=home`: both routes read back through
+  `php_ini_get_user_content` as `entity_model_after_server_comments`, behind four comment
+  lines and one blank line. The directive getter confirmed each text's `max_input_vars` and
+  that the earlier directive values were gone. Both returned null data.
+- `php_ini_set_user_content` with the pinned enum's `type=host`: refused on both routes
+  with UAPI status 0, one error and null data, and the home content read back unchanged.
+- `php_set_vhost_versions`: each route moved the main domain to another installed version.
+  The result `vhosts` listed exactly that domain, and `php_get_vhost_versions` with the
+  vhost selector returned a single object with the new version. Without the selector the
+  preflight returned a list on both routes.
+
+The original home INI content read as an empty string on both routes. Account, token,
+domain, zone and filesystem cleanup are `confirmed_absent`; the control read
+`home=1, users=1, userdata=1, userdomains=1, passwd=1, zones=2`. The artifact holds no
+names, versions, paths, values, INI content or upstream text. It establishes API storage
+and readback only, not PHP runtime behavior, vhost-scope INI files, FPM pools or
+impacted-domain variants. See the
+[source audit](../source-audit.md#disposable-account-langphp-setters-2026-11-02). SHA-256:
+`66af9e3c509fbb9cf51c91d72a56eb25c6509f97b0dd4667a3881f20c7124748`.
+
+## Disposable-account Mime and directory-access evidence
+
+The [capture](2026-11-02-mime-directory.json) at
+`965b329e5befee939ff47ac6117a4d3bf03472e5` on `11.138.0.19` is a **passed run**, exit 0, of
+recipe `mime-directory-disposable-v1` on the disposable account `wlmime`, with the
+filesystem proof enabled. All 73 phases passed and the strict review, policy
+`mime-directory-no-acknowledgments-v1`, has no findings. The eight Mime mutations and the
+four directory-access mutations each ran on direct UAPI and the WHM bridge, each read back
+on its own route, including the first committed populated MIME type and redirect rows.
+Token, account, domain and zone cleanup are `confirmed_absent`, the directory is
+`absent_with_account`, the filesystem control passed and `filesystem_cleanup` is
+`confirmed_absent`. It establishes no HTTP redirect, indexing, authentication or hotlink
+enforcement, and leech protection only as a read, through direct UAPI before the changes
+and the bridge after them. See the
+[source audit](../source-audit.md#disposable-account-mime-and-directory-access-mutations-2026-11-02).
+SHA-256: `03797505ac97f67a384d8da4c9741eaec0e12f2f4aa6785d2d03d1c6447573cb`. It stays the
+valid record of what ran at that revision. The fixture has since moved to
+`mime-directory-disposable-v2`, which also requires null data from the 20 Mime and
+protected-user mutations, and no v2 capture exists; see the
+[source audit](../source-audit.md#review-corrections-to-the-mime-and-directory-recipe-2026-11-02).
+
+## Disposable-account Webmail session evidence
+
+The [Webmail session capture](2026-11-02-webmail-sessions.json) at
+`f9306532f2d0c0b5a5831be27ec2d2cac9af0e0c` on `11.138.0.19` is a failed run, exit 1, kept
+unchanged. Scenario `webmail-sessions-disposable-v1` ran on the fresh `wlsession` account
+through the shared lifecycle with the filesystem proof. All twelve phases pass, and the
+strict review passes with no findings: one mailbox created with welcome mail disabled, all
+three `Session/*` creators on direct UAPI and the WHM bridge with a null `hostname` and
+nonempty credential strings, and the session inventory going from 0 to 2 populated rows on
+each route, with all six row fields observed. No returned credential was used and no URL was
+fetched. Account, token, domain and zone are `confirmed_absent`.
+
+The run fails only `filesystem_residue_present`: account removal left 8 session files, the
+first positive control for the proof's session check. The scoped cleanup removed all 8 and
+the rerun proof read `confirmed_absent`. See the
+[source audit](../source-audit.md#disposable-webmail-session-capture-2026-11-02). SHA-256:
+`d0751e2b059d574583bfa216441e370058a3233de685180e0f8b9f4bcb68acd6`. It stays the valid record
+of what ran at that revision. The fixture has since moved to `webmail-sessions-disposable-v4`,
+whose session-file cleanup runs inside the lifecycle before its final proof, only with its own
+opt-in `WHM_API_LIVE_SESSION_CLEANUP=1`, and whose report differs. No v2, v3 or v4 capture
+exists; see the [review corrections](../source-audit.md#webmail-session-review-corrections-2026-11-02),
+[the cleanup move](../source-audit.md#webmail-session-cleanup-inside-the-lifecycle-2026-11-02)
+and the
+[second review](../source-audit.md#webmail-session-second-review-corrections-2026-11-02).

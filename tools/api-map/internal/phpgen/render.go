@@ -583,6 +583,9 @@ func specClass(g effective.Group) string {
 					w.line("                'records' => [")
 					w.line(fmt.Sprintf("                    'start' => %d,", c.Start))
 					w.line("                    'separator' => " + phpString(c.Separator) + ",")
+					if c.FirstUnsuffixed {
+						w.line("                    'first_unsuffixed' => true,")
+					}
 					w.line("                    'fields' => [")
 					for _, f := range c.Fields {
 						w.line("                        " + phpString(f.PHP) + " => [")

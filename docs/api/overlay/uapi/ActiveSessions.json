@@ -1,0 +1,39 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "ActiveSessions",
+  "class": "ActiveSessions",
+  "accessor": "activeSessions",
+  "description": "Active cPanel session inventory for the selected account.",
+  "operations": {
+    "uapi:ActiveSessions/list_active_sessions": {
+      "name": "listActiveSessions",
+      "method": "GET",
+      "order": [],
+      "notes": [
+        {
+          "kind": "policy",
+          "text": "Supplied strings retain case, punctuation and exact bytes and are encoded once. Optional null omits; empty strings remain supplied. No local locale, host, IP, password or name normalization or extra enum/range validation. One request only; no implicit lookup, login, redirect, retry, polling, cleanup or rollback. Live follow-up whm-api-client-8x0.2.69 remains OPEN."
+        },
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 138. Read-only inventory despite no x-readonly extension. Lists current session first, then most recently active; server order is retained. Generic sorting can replace source order, but this typed no-parameter method adds no generic controls or client sorting. Empty can mean no unexpired sessions or an unreadable session store. Demo/shared accounts cannot call it."
+        },
+        {
+          "kind": "documented",
+          "text": "ip_address may be empty and session addresses are private. Native integer timestamps and strict integer 0|1 flags remain unchanged. is_possessed indicates reseller/root acting on behalf of user; tfa_verified describes only the returned session. No inference about current token authentication, revocation capabilities or session identifiers from IP/time."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1ActiveSessions~1list_active_sessions/get/description",
+          "note": "Selected formal GET variant and ordinary Flag outcome; no response or requiredness correction. Read-only inventory retains effective GET."
+        }
+      ]
+    }
+  }
+}

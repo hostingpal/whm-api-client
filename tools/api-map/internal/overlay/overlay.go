@@ -55,16 +55,18 @@ type MethodInput struct {
 	Records *Records   `json:"records,omitempty"`
 }
 type Records struct {
-	Alias     string        `json:"alias"`
-	Start     *int          `json:"start"`
-	Separator *string       `json:"separator"`
-	Sensitive *bool         `json:"sensitive"`
-	Fields    []RecordField `json:"fields"`
+	FirstUnsuffixed *bool         `json:"first_unsuffixed,omitempty"`
+	Alias           string        `json:"alias"`
+	Start           *int          `json:"start"`
+	Separator       *string       `json:"separator"`
+	Sensitive       *bool         `json:"sensitive"`
+	Fields          []RecordField `json:"fields"`
 }
 type RecordField struct {
-	Source string `json:"source"`
-	PHP    string `json:"php"`
-	Prefix string `json:"prefix"`
+	Required *bool  `json:"required,omitempty"`
+	Source   string `json:"source"`
+	PHP      string `json:"php"`
+	Prefix   string `json:"prefix"`
 }
 
 // Operation holds per-operation decisions; zero values keep generator defaults.
