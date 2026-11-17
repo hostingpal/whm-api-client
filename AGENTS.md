@@ -4307,8 +4307,9 @@ server out by removing the stored bundle; no-token success is unverified source
 idempotency, and removal_failed leaves the token in place. Add no implicit read,
 registration, redirect, OAuth exchange, token storage, polling, retry or rollback.
 
-Required nonnull known-object roots retain every optional nonnullable field,
-including callback token_data/email/expires_in. user_id remains strict string
+Required nonnull known-object roots retain every optional field, nonnullable
+except callback token_data.email and status email, which are nullable because the
+handler copies an optional ID-token claim (review 5726281163). user_id remains strict string
 despite numeric example 12345. Poll status remains strict int: enum[1] documents
 only success 1, and the existing validator does not enforce singleton membership
 or establish other integer semantics. success/valid are strict native integer

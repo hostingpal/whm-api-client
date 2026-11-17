@@ -4654,10 +4654,10 @@ are optional and nonnullable:
 | --- | --- |
 | `registerServerWith360Monitoring()` | `user_id?: string` |
 | `set360AgentPolling()` | `status?: int` |
-| `webProsAuthCallback()` | `error?: string`, `reason?: string`, `success?: 0\|1`, `token_data?: array{email?: string, expires_in?: int}` |
+| `webProsAuthCallback()` | `error?: string`, `reason?: string`, `success?: 0\|1`, `token_data?: array{email?: string\|null, expires_in?: int}` |
 | `webProsAuthClear()` | `error?: string`, `reason?: string`, `success?: 0\|1` |
 | `webProsAuthStart()` | `auth_url?: string`, `error?: string`, `reason?: string`, `state?: string` |
-| `webProsAuthStatus()` | `email?: string`, `expired_at?: int`, `error?: string`, `expires_in?: int`, `reason?: string`, `valid?: 0\|1` |
+| `webProsAuthStatus()` | `email?: string\|null`, `expired_at?: int`, `error?: string`, `expires_in?: int`, `reason?: string`, `valid?: 0\|1` |
 | `webProsAuthToken()` | `access_token?: string`, `error?: string`, `expires_in?: int`, `reason?: string` |
 
 `user_id` stays strict string despite the pinned numeric example. Polling's
