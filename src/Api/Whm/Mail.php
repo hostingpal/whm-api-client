@@ -1366,23 +1366,38 @@ final readonly class Mail
      * Documented: Available in cPanel & WHM 11.52 and later.
      *
      * Documented: Receive Mail role is required. Returns a base64 configuration profile as private payload data; the
-     * client does not decode, install or send it. selectedAccountServices is caller-prepared comma-separated email,
-     * caldav and carddav; omission retains all three defaults and unsupported values are ignored upstream.
+     * client does not decode, install or send it. selectedAccountServices accepts a comma-separated string or a
+     * nonempty sequential string list for email, caldav and carddav; omission retains all three defaults and
+     * unsupported values are ignored upstream.
+     *
+     * Documented: Client lists preserve order, duplicates, empty string items and all other bytes, and reject empty,
+     * keyed or nonstring lists and items containing a comma before dispatch. Scalars retain commas, percent escapes and
+     * empty strings without parsing or pre-encoding. Optional null omits the field; an empty list never means omission.
+     * Collection arguments are trace-protected without changing transport or classifying the field as a semantic
+     * secret.
+     *
+     * Documented: Collection trace protection retains GET and does not add a semantic secret flag. Omission retains the
+     * upstream email,caldav,carddav default; no enum validation or unsupported-service filtering is added.
      *
      * API-map identity: whm1:generate_mobileconfig#GET (wire name generate_mobileconfig; Mail Server Settings).
      *
      * @param string $account The email account's username.
      * @param bool $useSsl Whether to use an SSL-encrypted connection.
-     * @param string|null $selectedAccountServices A comma-separated list of the email account service's `.mobileconfig`
-     *     file names. Null omits it.
+     * @param string|non-empty-list<string>|null $selectedAccountServices A comma-separated list of the email account
+     *     service's `.mobileconfig` file names. Null omits it.
      * @return GenerateMobileconfigResult
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/mail-server-settings/email-generate_mobileconfig
      */
-    public function generateMobileconfig(string $account, bool $useSsl, ?string $selectedAccountServices = null): array
-    {
+    public function generateMobileconfig(
+        string $account,
+        bool $useSsl,
+        #[SensitiveParameter]
+        string|array|null $selectedAccountServices = null,
+    ): array {
         /** @var GenerateMobileconfigResult $result Validated against MailSpec::GENERATE_MOBILECONFIG. */
         $result = ($this->run)(MailSpec::GENERATE_MOBILECONFIG, [
             'account' => $account,
@@ -2198,17 +2213,30 @@ final readonly class Mail
      *
      * Documented: Available in cPanel & WHM 11.44 and later.
      *
-     * Documented: Requires Spam Filter role. allowedIps is a comma-separated string; omission allows connections from
-     * any IP, while a supplied list must include 127.0.0.1 for chkservd. Child and TCP timeout values of 0 mean never
-     * abandon the TCP connection. maxChildren and maxConnPerChild are process/connection limits. The pinned source does
-     * not state timeout units, so the client does not invent units. Changing pidFile on systemd requires matching
-     * PIDFile in spamd.service or the daemon fails. Options are omitted when not supplied; no client retry or restart
-     * is provided.
+     * Documented: Requires Spam Filter role. allowedIps accepts a raw comma-separated string or a nonempty sequential
+     * string list; omission allows connections from any IP, while a supplied list must include 127.0.0.1 for chkservd.
+     * Child and TCP timeout values of 0 mean never abandon the TCP connection. maxChildren and maxConnPerChild are
+     * process/connection limits. The pinned source does not state timeout units, so the client does not invent units.
+     * Changing pidFile on systemd requires matching PIDFile in spamd.service or the daemon fails. Options are omitted
+     * when not supplied; no client retry or restart is provided.
+     *
+     * Policy: Client list convenience: accept a nonempty sequential list of strict strings and join once with a comma
+     * into the original field. Preserve order, duplicates, empty items and all other bytes; reject embedded commas and
+     * malformed or empty lists after metadata reset before I/O. Raw scalars remain unparsed and encoded once.
+     * Collection arguments have trace protection without changing transport. Offline coverage only; historical scalar
+     * captures do not establish PHP-list execution. Live follow-up whm-api-client-8x0.2.86 and wider adoption
+     * whm-api-client-8x0.28.8 remain open.
+     *
+     * Documented: PR120 review 5727013591 read the installed 11.138.0.19 handler and confirmed the request bytes
+     * offline: allowedIps [''] sends allowedips= and the handler deletes the option for a false value, which is the
+     * same as omission, so ANY IP may connect. ['', ''] sends a bare comma, which is truthy, passes validation with
+     * zero items and is stored. An all-empty list therefore does not restrict access. No live call ran. The client
+     * keeps forwarding the empty value unchanged.
      *
      * API-map identity: whm1:save_spamd_config#GET (wire name save_spamd_config; Spam Management).
      *
-     * @param string|null $allowedIps A comma-separated list of IP addresses to authorize to access the spamd daemon.
-     *     Null omits it.
+     * @param string|non-empty-list<string>|null $allowedIps A comma-separated list of IP addresses to authorize to
+     *     access the spamd daemon. Null omits it.
      * @param int|null $maxChildren The maximum number of children per `spamd` process. Null omits it.
      * @param int|null $maxConnPerChild The maximum number of connections that the `spamd` daemon allows per child
      *     process. Null omits it.
@@ -2218,10 +2246,12 @@ final readonly class Mail
      * @param int|null $timeoutTcp The maximum amount of time that the `spamd` daemon waits before it abandons a TCP
      *     connection. Null omits it.
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/spam-management/spamd-save_spamd_config
      */
     public function saveSpamdConfig(
-        ?string $allowedIps = null,
+        #[SensitiveParameter]
+        string|array|null $allowedIps = null,
         ?int $maxChildren = null,
         ?int $maxConnPerChild = null,
         ?string $pidFile = null,
@@ -2307,20 +2337,31 @@ final readonly class Mail
      *
      * Documented: Available in cPanel & WHM 11.52 and later.
      *
-     * Documented: Changes a system account forwarding destination. forwardTo is a caller-prepared comma-separated list
-     * of system accounts or email addresses. root commonly receives server notices and nobody may receive CGI bounce
-     * mail without suexec. This call does not send a welcome or configuration message.
+     * Documented: Changes a system account forwarding destination. forwardTo accepts a comma-separated string or a
+     * nonempty sequential string list of system accounts or email addresses. root commonly receives server notices and
+     * nobody may receive CGI bounce mail without suexec. This call does not send a welcome or configuration message.
+     *
+     * Documented: Client lists preserve order, duplicates, empty string items and all other bytes, and reject empty,
+     * keyed or nonstring lists and items containing a comma before dispatch. Scalars retain commas, percent escapes and
+     * empty strings without parsing or pre-encoding. Optional null omits the field; an empty list never means omission.
+     * Collection arguments are trace-protected without changing transport or classifying the field as a semantic
+     * secret.
      *
      * API-map identity: whm1:set_user_email_forward_destination#GET (wire name set_user_email_forward_destination;
      * cPanel Account Mail Management).
      *
      * @param string $user The system account name to forward.
-     * @param string $forwardTo The system account name or email address to which you wish to forward email.
+     * @param string|non-empty-list<string> $forwardTo The system account name or email address to which you wish to
+     *     forward email.
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/cpanel-account-mail-management/email-set_user_email_forward_destination
      */
-    public function setUserEmailForwardDestination(string $user, string $forwardTo): void
-    {
+    public function setUserEmailForwardDestination(
+        string $user,
+        #[SensitiveParameter]
+        string|array $forwardTo,
+    ): void {
         ($this->run)(MailSpec::SET_USER_EMAIL_FORWARD_DESTINATION, ['user' => $user, 'forwardTo' => $forwardTo]);
     }
 

@@ -141,7 +141,17 @@ final class SslSpec
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [
-            'domains' => ['name' => 'domains', 'encoding' => 'scalar'],
+            'domains' => [
+                'name' => 'domains',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => ',',
+                ],
+            ],
         ],
         'returns' => [
             'type' => 'object',
@@ -302,7 +312,17 @@ final class SslSpec
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [
-            'domains' => ['name' => 'domains', 'encoding' => 'scalar'],
+            'domains' => [
+                'name' => 'domains',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => ',',
+                ],
+            ],
             'countryName' => ['name' => 'countryName', 'encoding' => 'scalar'],
             'emailAddress' => ['name' => 'emailAddress', 'encoding' => 'scalar'],
             'keysize' => ['name' => 'keysize', 'encoding' => 'scalar'],

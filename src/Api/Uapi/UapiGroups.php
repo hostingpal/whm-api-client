@@ -29,9 +29,15 @@ trait UapiGroups
 
     private ?BoxTrapper $boxTrapperGroup = null;
 
+    private ?Branding $brandingGroup = null;
+
     private ?CacheBuster $cacheBusterGroup = null;
 
     private ?Ccs $ccsGroup = null;
+
+    private ?Chkservd $chkservdGroup = null;
+
+    private ?Chrome $chromeGroup = null;
 
     private ?ClamScanner $clamScannerGroup = null;
 
@@ -44,6 +50,8 @@ trait UapiGroups
     private ?CpGreyList $cpGreyListGroup = null;
 
     private ?Dav $davGroup = null;
+
+    private ?Dcv $dcvGroup = null;
 
     private ?DirectoryIndexes $directoryIndexesGroup = null;
 
@@ -85,6 +93,10 @@ trait UapiGroups
 
     private ?ImageManager $imageManagerGroup = null;
 
+    private ?InProductSurvey $inProductSurveyGroup = null;
+
+    private ?Integration $integrationGroup = null;
+
     private ?KnownHosts $knownHostsGroup = null;
 
     private ?LangPhp $langPhpGroup = null;
@@ -113,13 +125,21 @@ trait UapiGroups
 
     private ?Park $parkGroup = null;
 
+    private ?Parser $parserGroup = null;
+
     private ?PassengerApps $passengerAppsGroup = null;
 
     private ?PasswdStrength $passwdStrengthGroup = null;
 
+    private ?Personalization $personalizationGroup = null;
+
+    private ?Plugins $pluginsGroup = null;
+
     private ?Postgresql $postgresqlGroup = null;
 
     private ?Quota $quotaGroup = null;
+
+    private ?Resellers $resellersGroup = null;
 
     private ?ResourceUsage $resourceUsageGroup = null;
 
@@ -176,6 +196,8 @@ trait UapiGroups
     private ?WebApp $webAppGroup = null;
 
     private ?WebDisk $webDiskGroup = null;
+
+    private ?WebProsMcp $webProsMcpGroup = null;
 
     private ?WebVhosts $webVhostsGroup = null;
 
@@ -270,6 +292,18 @@ trait UapiGroups
     }
 
     /**
+     * Select the Branding operations without making a request.
+     *
+     * Complete five-operation pinned Branding module: account-scoped application/theme inventory and server-rendered
+     * include content. Preserve source-specific response types and inert strings; offline coverage only with live
+     * follow-up whm-api-client-8x0.2.75 open.
+     */
+    public function branding(): Branding
+    {
+        return $this->brandingGroup ??= new Branding($this->run(...));
+    }
+
+    /**
      * Select the CacheBuster operations without making a request.
      *
      * The CacheBuster module for UAPI.
@@ -287,6 +321,28 @@ trait UapiGroups
     public function ccs(): Ccs
     {
         return $this->ccsGroup ??= new Ccs($this->run(...));
+    }
+
+    /**
+     * Select the Chkservd operations without making a request.
+     *
+     * Complete pinned Chkservd module for the selected account. Offline coverage only; live follow-up
+     * whm-api-client-8x0.2.82 remains open.
+     */
+    public function chkservd(): Chkservd
+    {
+        return $this->chkservdGroup ??= new Chkservd($this->run(...));
+    }
+
+    /**
+     * Select the Chrome operations without making a request.
+     *
+     * Complete pinned Chrome module for the selected account. Offline coverage only; live follow-up
+     * whm-api-client-8x0.2.77 remains open.
+     */
+    public function chrome(): Chrome
+    {
+        return $this->chromeGroup ??= new Chrome($this->run(...));
     }
 
     /**
@@ -347,6 +403,17 @@ trait UapiGroups
     public function dav(): Dav
     {
         return $this->davGroup ??= new Dav($this->run(...));
+    }
+
+    /**
+     * Select the DCV operations without making a request.
+     *
+     * Complete two-operation nondeprecated DCV module for the selected account. Checks may affect server state; one
+     * immediate form POST per invocation. Offline coverage only; live follow-up whm-api-client-8x0.2.76 remains open.
+     */
+    public function dcv(): Dcv
+    {
+        return $this->dcvGroup ??= new Dcv($this->run(...));
     }
 
     /**
@@ -551,6 +618,28 @@ trait UapiGroups
     }
 
     /**
+     * Select the InProductSurvey operations without making a request.
+     *
+     * Complete pinned InProductSurvey module for the selected account. Offline coverage only; live follow-up
+     * whm-api-client-8x0.2.77 remains open.
+     */
+    public function inProductSurvey(): InProductSurvey
+    {
+        return $this->inProductSurveyGroup ??= new InProductSurvey($this->run(...));
+    }
+
+    /**
+     * Select the Integration operations without making a request.
+     *
+     * Complete pinned Integration module for the selected account. Offline coverage only; live follow-up
+     * whm-api-client-8x0.2.77 remains open.
+     */
+    public function integration(): Integration
+    {
+        return $this->integrationGroup ??= new Integration($this->run(...));
+    }
+
+    /**
      * Select the KnownHosts operations without making a request.
      *
      * The KnownHosts module for UAPI.
@@ -703,6 +792,17 @@ trait UapiGroups
     }
 
     /**
+     * Select the Parser operations without making a request.
+     *
+     * Complete pinned Parser module for the selected account. Offline coverage only; live follow-up
+     * whm-api-client-8x0.2.77 remains open.
+     */
+    public function parser(): Parser
+    {
+        return $this->parserGroup ??= new Parser($this->run(...));
+    }
+
+    /**
      * Select the PassengerApps operations without making a request.
      *
      * The PassengerApps module for UAPI.
@@ -723,6 +823,27 @@ trait UapiGroups
     }
 
     /**
+     * Select the Personalization operations without making a request.
+     *
+     * The Personalization module for UAPI.
+     */
+    public function personalization(): Personalization
+    {
+        return $this->personalizationGroup ??= new Personalization($this->run(...));
+    }
+
+    /**
+     * Select the Plugins operations without making a request.
+     *
+     * Partial Plugins module: one of two pinned operations; create_user remains source/input-gated under
+     * whm-api-client-8x0.1.22. Offline coverage only; live follow-up whm-api-client-8x0.2.77 remains open.
+     */
+    public function plugins(): Plugins
+    {
+        return $this->pluginsGroup ??= new Plugins($this->run(...));
+    }
+
+    /**
      * Select the Postgresql operations without making a request.
      *
      * The Postgresql module for UAPI.
@@ -740,6 +861,17 @@ trait UapiGroups
     public function quota(): Quota
     {
         return $this->quotaGroup ??= new Quota($this->run(...));
+    }
+
+    /**
+     * Select the Resellers operations without making a request.
+     *
+     * Complete pinned Resellers module for the selected account. Offline coverage only; live follow-up
+     * whm-api-client-8x0.2.82 remains open.
+     */
+    public function resellers(): Resellers
+    {
+        return $this->resellersGroup ??= new Resellers($this->run(...));
     }
 
     /**
@@ -1041,6 +1173,17 @@ trait UapiGroups
     public function webDisk(): WebDisk
     {
         return $this->webDiskGroup ??= new WebDisk($this->run(...));
+    }
+
+    /**
+     * Select the WebProsMCP operations without making a request.
+     *
+     * Complete pinned WebProsMCP module for the selected account. Offline coverage only; live follow-up
+     * whm-api-client-8x0.2.78 remains open.
+     */
+    public function webProsMcp(): WebProsMcp
+    {
+        return $this->webProsMcpGroup ??= new WebProsMcp($this->run(...));
     }
 
     /**

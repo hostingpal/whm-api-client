@@ -190,11 +190,23 @@
         },
         {
           "kind": "documented",
-          "text": "domains is caller-supplied comma-separated text, form-encoded once. Literal dotted issuer and subject keys remain literal payload keys. The separately recorded WHM review establishes the narrow certificate-field compatibility corrections."
+          "text": "domains accepts caller-supplied comma-separated text or a nonempty sequential string list joined with commas, form-encoded once. Literal dotted issuer and subject keys remain literal payload keys. The separately recorded WHM review establishes the narrow certificate-field compatibility corrections."
         },
         {
           "kind": "observed",
           "text": "The independent review on 11.138.0.19 observed digit strings for created, not_before, not_after and modulus_length, a quoted is_self_signed flag, and null verify_error and literal issuer.organizationName. Only these integer leaves use canonical bounded integer-string normalization; the quoted flag accepts exact 0 or 1. Null remains distinct from omission. Other certificate fields retain their existing contracts."
+        },
+        {
+          "kind": "documented",
+          "text": "Client lists preserve order, duplicates and empty string items, and reject empty, keyed or nonstring lists and items containing a comma before dispatch. Scalars retain delimiters, percent escapes and empty strings without parsing or pre-encoding. Collection arguments are trace-protected; this does not classify domains as semantic secrets or change transport."
+        },
+        {
+          "kind": "documented",
+          "text": "The source URI-encoded-comma guidance describes downstream serialization. Supply raw list items; the client form-encodes once and does not pre-encode items."
+        },
+        {
+          "kind": "documented",
+          "text": "Some multi-domain source examples embed domains= inside the example value. The formal parameter remains domains; callers do not add that prefix. List order and duplicates are preserved, including the duplicate CSR example."
         }
       ],
       "response": {
@@ -292,8 +304,27 @@
           "version": "11.138.0.19",
           "date": "2026-10-31",
           "note": "Independent review of revision b94526897f82dcd5e7045b02b799498b780bd069 through WHM on cPanel 11.138.0.19: fetch_ssl_certificates_for_fqdns records exposed digit strings for created, not_before, not_after and modulus_length; a quoted is_self_signed flag; and null verify_error and literal issuer.organizationName. These are WHM-specific observations. The reviewer did not run service certificate reset or installation. Evidence is the type-only review report, not a new capture artifact. Review: https://github.com/hostingpal/whm-api-client/pull/53#pullrequestreview-5720639651."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1fetch_ssl_certificates_for_fqdns/get/parameters/0",
+          "note": "The formal domains parameter is a concrete nonnullable string documenting a comma-delimited domain list. The generated client additionally accepts a nonempty sequential string list, joins once into the original domains field, and preserves scalar bytes. This is an offline client convenience, not PHP-list live evidence; effective form POST and response contracts are unchanged."
         }
-      ]
+      ],
+      "params": {
+        "domains": {
+          "collection": {
+            "kind": "delimited",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "delimiter": ","
+          }
+        }
+      }
     },
     "whm1:fetch_ssl_vhosts": {
       "name": "fetchSslVhosts",
@@ -422,14 +453,41 @@
         {
           "kind": "documented",
           "text": "Creates and stores a key and CSR even when skipCertificate is true. Omitting optional subject fields preserves the upstream CSR defaults."
+        },
+        {
+          "kind": "documented",
+          "text": "Client lists preserve order, duplicates and empty string items, and reject empty, keyed or nonstring lists and items containing a comma before dispatch. Scalars retain delimiters, percent escapes and empty strings without parsing or pre-encoding. Collection arguments are trace-protected; this does not classify domains as semantic secrets or change transport."
+        },
+        {
+          "kind": "documented",
+          "text": "The multi-domain example uses singular domain= despite the formal domains parameter. Retain domains without inferring an alias or parsing example prefixes."
         }
       ],
       "params": {
         "pass": {
           "sensitive": true,
           "php": "passphrase"
+        },
+        "domains": {
+          "collection": {
+            "kind": "delimited",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "delimiter": ","
+          }
         }
-      }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1generatessl/get/parameters/0",
+          "note": "The formal domains parameter is a concrete nonnullable string documenting a comma-delimited domain list. The generated client additionally accepts a nonempty sequential string list, joins once into the original domains field, and preserves scalar bytes. This is an offline client convenience, not PHP-list live evidence; effective form POST and response contracts are unchanged."
+        }
+      ]
     },
     "whm1:get_autossl_check_schedule": {
       "name": "getAutoSslCheckSchedule",

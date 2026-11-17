@@ -176,8 +176,28 @@ final class FtpSpec
         'method' => 'GET',
         'outcome' => 'flag',
         'params' => [
-            'includeAcctTypes' => ['name' => 'include_acct_types', 'encoding' => 'scalar'],
-            'skipAcctTypes' => ['name' => 'skip_acct_types', 'encoding' => 'scalar'],
+            'includeAcctTypes' => [
+                'name' => 'include_acct_types',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => '|',
+                ],
+            ],
+            'skipAcctTypes' => [
+                'name' => 'skip_acct_types',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => '|',
+                ],
+            ],
         ],
         'returns' => [
             'type' => 'list',
@@ -198,8 +218,28 @@ final class FtpSpec
         'method' => 'GET',
         'outcome' => 'flag',
         'params' => [
-            'includeAcctTypes' => ['name' => 'include_acct_types', 'encoding' => 'scalar'],
-            'skipAcctTypes' => ['name' => 'skip_acct_types', 'encoding' => 'scalar'],
+            'includeAcctTypes' => [
+                'name' => 'include_acct_types',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => '|',
+                ],
+            ],
+            'skipAcctTypes' => [
+                'name' => 'skip_acct_types',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => '|',
+                ],
+            ],
         ],
         'returns' => [
             'type' => 'list',

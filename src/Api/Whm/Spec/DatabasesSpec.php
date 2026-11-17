@@ -571,4 +571,36 @@ final class DatabasesSpec
             ],
         ],
     ];
+
+    public const UPDATE_SQL_CONFIG = [
+        'function' => 'update_sql_config',
+        'method' => 'POST',
+        'body' => 'json',
+        'outcome' => 'flag',
+        'json_body' => [
+            'php' => 'configuration',
+            'required' => true,
+            'routes' => 'direct',
+            'schema' => [
+                'type' => 'object',
+                'fields' => [
+                    'data' => [
+                        'type' => 'list',
+                        'items' => [
+                            'type' => 'object',
+                            'fields' => [
+                                'name' => ['type' => 'string'],
+                                'remove' => ['type' => 'bool'],
+                                'section' => ['type' => 'string'],
+                                'value' => ['type' => 'string'],
+                            ],
+                        ],
+                    ],
+                ],
+                'required' => ['data'],
+            ],
+        ],
+        'params' => [],
+        'returns' => null,
+    ];
 }

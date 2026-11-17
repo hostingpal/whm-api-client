@@ -400,6 +400,19 @@ use SensitiveParameter;
  * @phpstan-type StartProfileActivationResult array{
  *     log_id?: string,
  * }
+ * @phpstan-type SystemNeedsRebootResult array{
+ *     details?: array{
+ *         kernel?: array{
+ *             boot_version?: string,
+ *             running_version?: string,
+ *         },
+ *         needs_cloudlinux?: int,
+ *         quota?: int,
+ *         securetmp_size_update?: int,
+ *         updates?: array<array-key, mixed>,
+ *     },
+ *     needs_reboot?: 0|1,
+ * }
  * @phpstan-type UnlinkServerNodeResult array{
  *     alias?: string,
  *     enabled_services?: list<string>,
@@ -580,24 +593,34 @@ final readonly class Server
      * or rollback.
      *
      * Documented: With only the clustering ACL, only named may be configured. Never disable cpsrvd. Omitting enabled or
-     * monitored leaves that status unchanged; explicit false sends 0. eximAltportnum is comma-separated port text used
-     * only for exim-altport. Changes service availability or monitoring immediately.
+     * monitored leaves that status unchanged; explicit false sends 0. eximAltportnum accepts raw comma-separated port
+     * text or a nonempty sequential string list, used only for exim-altport. Omission retains the documented 26
+     * default; list items are strings without integer coercion. Changes service availability or monitoring immediately.
+     *
+     * Policy: Client list convenience: accept a nonempty sequential list of strict strings and join once with a comma
+     * into the original field. Preserve order, duplicates, empty items and all other bytes; reject embedded commas and
+     * malformed or empty lists after metadata reset before I/O. Raw scalars remain unparsed and encoded once.
+     * Collection arguments have trace protection without changing transport. Offline coverage only; historical scalar
+     * captures do not establish PHP-list execution. Live follow-up whm-api-client-8x0.2.86 and wider adoption
+     * whm-api-client-8x0.28.8 remain open.
      *
      * API-map identity: whm1:configureservice#GET (wire name configureservice; Services).
      *
      * @param string $service The service to configure.
      * @param bool|null $enabled Whether to enable the service. Null omits it.
-     * @param string|null $eximAltportnum A port or list of comma-separated ports on which Exim will listen for inbound
-     *     connections. Null omits it.
+     * @param string|non-empty-list<string>|null $eximAltportnum A port or list of comma-separated ports on which Exim
+     *     will listen for inbound connections. Null omits it.
      * @param bool|null $monitored Whether to monitor the service in WHM's *Service Status* interface (*WHM >> Home >>
      *     Server Status >> Service Status*). Null omits it.
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/services/services-configureservice
      */
     public function configureService(
         string $service,
         ?bool $enabled = null,
-        ?string $eximAltportnum = null,
+        #[SensitiveParameter]
+        string|array|null $eximAltportnum = null,
         ?bool $monitored = null,
     ): void {
         ($this->run)(ServerSpec::CONFIGURESERVICE, [
@@ -2496,6 +2519,64 @@ final readonly class Server
     ): array {
         /** @var StartProfileActivationResult $result Validated against ServerSpec::START_PROFILE_ACTIVATION. */
         $result = ($this->run)(ServerSpec::START_PROFILE_ACTIVATION, ['code' => $code, 'optional' => $optional]);
+
+        return $result;
+    }
+
+    /**
+     * Return whether system needs reboot.
+     *
+     * This function determines if your system requires a reboot to apply quotas, software package updates, or kernel
+     * updates.
+     *
+     * Documented: Available from cPanel 64. This function cannot detect whether the system needs a reboot inside a
+     * Linux Container (LXC).
+     *
+     * Documented: details contains reasons for reboot. kernel is returned only if the kernel updates and requires a
+     * reboot; boot_version is the version the kernel updated to, and running_version is the version the server
+     * currently runs.
+     *
+     * Documented: quota describes whether a reboot is required to enable quotas, with documented value 1. The pinned
+     * quota note says: The function only returns this value if the kernel updates and requires a reboot.
+     *
+     * Documented: updates lists software packages requiring an update and their most recent versions, and is returned
+     * only if software packages on the server require updates.
+     *
+     * Observed: External review5727236239 at HEAD 789dfb0 on 11.138.0.19 observed needs_reboot 0 and details [] under
+     * ordinary data on GET and typed form POST (HTTP 200/API result 1); the pinned sibling envelope is incorrect.
+     * Populated reasons were source-read/offline cases, not live observations.
+     *
+     * Policy: Use ordinary required nonnullable data-object extraction with no sibling fallback. All result fields are
+     * optional; omission stays omitted and does not establish no reboot. needs_reboot is strict native integer 0|1;
+     * quota remains int and updates preserves opaque mixed values.
+     *
+     * Policy: The sole documented variant is GET, but x-readonly is false, so the established method policy sends one
+     * empty form POST. External review5727236239 establishes POST acceptance only on 11.138.0.19; live follow-up
+     * 8x0.2.87 retains other unobserved states.
+     *
+     * Policy: Reviewer handler-source observation in Whostmgr/API/1/ApplicationVersions.pm: the server schedules
+     * recache_system_reboot_data unless unpinned no_cache_update is set; no typed argument is added. The client adds no
+     * request, polling or retry.
+     *
+     * Policy: Reviewer handler-source observation: a failed sub-check other than Unsupported sets API result 0 and
+     * raises the ordinary ApiErrorException. Unsupported is skipped, so needs_reboot 0 does not prove every check ran.
+     *
+     * Policy: Reviewer handler-source observation: details.needs_cloudlinux and details.securetmp_size_update are
+     * optional int reasons assigned 1 by the handler. These additions have source-read/offline evidence only, with no
+     * live observation of either condition; the existing singleton-integer policy does not restrict them to literal 1.
+     *
+     * API-map identity: whm1:system_needs_reboot#GET (wire name system_needs_reboot; System Information).
+     *
+     * @return SystemNeedsRebootResult
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/system-information/applicationversions-system_needs_reboot
+     */
+    public function systemNeedsReboot(): array
+    {
+        /** @var SystemNeedsRebootResult $result Validated against ServerSpec::SYSTEM_NEEDS_REBOOT. */
+        $result = ($this->run)(ServerSpec::SYSTEM_NEEDS_REBOOT, []);
 
         return $result;
     }

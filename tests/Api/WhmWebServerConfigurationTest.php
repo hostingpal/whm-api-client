@@ -366,14 +366,12 @@ final class WhmWebServerConfigurationTest extends TestCase
         $client->whm()->webServer()->{$method}(...$arguments);
     }
 
-    public function testSensitiveIniAndPoolInputsAndExcludedJsonBodies(): void
+    public function testSensitiveIniAndPoolInputs(): void
     {
         [$client, $http] = self::client();
         $group = $client->whm()->webServer();
         self::assertSame($group, $client->whm()->webServer());
         self::assertSame([], $http->getRequests());
-        self::assertNotContains('phpFpmConfigGet', get_class_methods($group));
-        self::assertNotContains('phpFpmConfigSet', get_class_methods($group));
         foreach (
             ['phpIniSetContent' => 'content', 'phpIniSetDirectives' => 'directives',
             'phpSetVhostVersions' => 'phpFpmPoolParms'] as $method => $name

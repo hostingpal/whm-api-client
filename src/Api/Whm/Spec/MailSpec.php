@@ -615,7 +615,17 @@ final class MailSpec
         'params' => [
             'account' => ['name' => 'account', 'encoding' => 'scalar'],
             'useSsl' => ['name' => 'use_ssl', 'encoding' => 'bool'],
-            'selectedAccountServices' => ['name' => 'selected_account_services', 'encoding' => 'scalar'],
+            'selectedAccountServices' => [
+                'name' => 'selected_account_services',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => ',',
+                ],
+            ],
         ],
         'returns' => [
             'type' => 'object',
@@ -1127,7 +1137,17 @@ final class MailSpec
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [
-            'allowedIps' => ['name' => 'allowedips', 'encoding' => 'scalar'],
+            'allowedIps' => [
+                'name' => 'allowedips',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => ',',
+                ],
+            ],
             'maxChildren' => ['name' => 'maxchildren', 'encoding' => 'scalar'],
             'maxConnPerChild' => ['name' => 'maxconnperchild', 'encoding' => 'scalar'],
             'pidFile' => ['name' => 'pidfile', 'encoding' => 'scalar'],
@@ -1179,7 +1199,17 @@ final class MailSpec
         'outcome' => 'flag',
         'params' => [
             'user' => ['name' => 'user', 'encoding' => 'scalar'],
-            'forwardTo' => ['name' => 'forward_to', 'encoding' => 'scalar'],
+            'forwardTo' => [
+                'name' => 'forward_to',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => ',',
+                ],
+            ],
         ],
         'returns' => null,
     ];

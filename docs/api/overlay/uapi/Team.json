@@ -57,6 +57,15 @@
       "params": {
         "password": {
           "sensitive": true
+        },
+        "roles": {
+          "collection": {
+            "kind": "delimited",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "delimiter": ","
+          }
         }
       },
       "notes": [
@@ -70,7 +79,7 @@
         },
         {
           "kind": "documented",
-          "text": "roles is a comma-separated string; this operation rejects the singular role parameter. A team user without roles cannot use any features. Adding a team user can grant team owner level privileges. notes must not contain private information and is documented with a 100-character maximum."
+          "text": "roles uses one comma-separated wire field; this operation rejects the singular role parameter. A team user without roles cannot use any features. Adding a team user can grant team owner level privileges. notes must not contain private information and is documented with a 100-character maximum."
         },
         {
           "kind": "documented",
@@ -83,6 +92,10 @@
         {
           "kind": "documented",
           "text": "Reviewed upstream source on cPanel 11.138.0.19 returns null when expire_date is omitted and an expiration timestamp when supplied. Canonical integer-string timestamps normalize to int within PHP's integer range; explicit null stays null and absent data is a payload mismatch. Team was unavailable on that server, so this correction has source and offline replay evidence only."
+        },
+        {
+          "kind": "documented",
+          "text": "Client lists preserve order, duplicates, empty string items and all other bytes, and reject empty, keyed or nonstring lists and items containing a comma before dispatch. Scalars retain commas, percent escapes and empty strings without parsing or pre-encoding. Optional null omits the field; an empty list never means omission. Collection arguments are trace-protected without changing transport or classifying the field as a semantic secret."
         }
       ],
       "evidence": [
@@ -91,6 +104,14 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /Team/add_team_user declares x-readonly=false. Use form POST for this selected-account mutation; password inputs, where present, are sensitive. Pinned parameter requiredness/types are retained; the response correction is separately supported by reviewed upstream source."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Team~1add_team_user/get/parameters/8",
+          "note": "The formal roles parameter is a concrete nonnullable string documenting comma-separated values. The generated client additionally accepts a nonempty sequential string list, joins once into the original roles field, and preserves raw scalar bytes. This is an offline client convenience, not PHP-list live evidence; requiredness, defaults, effective HTTP method and response contracts are unchanged."
         }
       ],
       "response": {

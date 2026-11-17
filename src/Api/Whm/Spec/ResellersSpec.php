@@ -425,7 +425,17 @@ final class ResellersSpec
         'params' => [
             'user' => ['name' => 'user', 'encoding' => 'scalar'],
             'delegate' => ['name' => 'delegate', 'encoding' => 'bool'],
-            'ips' => ['name' => 'ips', 'encoding' => 'scalar'],
+            'ips' => [
+                'name' => 'ips',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => ',',
+                ],
+            ],
         ],
         'returns' => [
             'type' => 'object',
@@ -473,7 +483,17 @@ final class ResellersSpec
         'outcome' => 'flag',
         'params' => [
             'user' => ['name' => 'user', 'encoding' => 'scalar'],
-            'nameservers' => ['name' => 'nameservers', 'encoding' => 'scalar'],
+            'nameservers' => [
+                'name' => 'nameservers',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => ',',
+                ],
+            ],
         ],
         'returns' => null,
     ];

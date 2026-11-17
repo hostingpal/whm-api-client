@@ -41,7 +41,17 @@ final class ModSecuritySpec
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [
-            'domains' => ['name' => 'domains', 'encoding' => 'scalar'],
+            'domains' => [
+                'name' => 'domains',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => ',',
+                ],
+            ],
         ],
         'returns' => [
             'type' => 'union',
@@ -100,7 +110,17 @@ final class ModSecuritySpec
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [
-            'domains' => ['name' => 'domains', 'encoding' => 'scalar'],
+            'domains' => [
+                'name' => 'domains',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => ',',
+                ],
+            ],
         ],
         'returns' => [
             'type' => 'union',

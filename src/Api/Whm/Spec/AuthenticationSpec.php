@@ -21,7 +21,17 @@ final class AuthenticationSpec
             'authorize' => ['name' => 'authorize', 'encoding' => 'bool'],
             'file' => ['name' => 'file', 'encoding' => 'scalar'],
             'text' => ['name' => 'text', 'encoding' => 'scalar'],
-            'options' => ['name' => 'options', 'encoding' => 'scalar'],
+            'options' => [
+                'name' => 'options',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => ',',
+                ],
+            ],
         ],
         'returns' => [
             'type' => 'object',

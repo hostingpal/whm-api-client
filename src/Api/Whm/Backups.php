@@ -8,6 +8,7 @@ use Closure;
 use HostingPal\WhmApiClient\Api\Whm\Spec\BackupsSpec;
 use HostingPal\WhmApiClient\Exception\ApiException;
 use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
+use InvalidArgumentException;
 use SensitiveParameter;
 
 /**
@@ -282,6 +283,18 @@ final readonly class Backups
      * without inversion; deletion semantics require source clarification and live verification under
      * whm-api-client-8x0.2.29.
      *
+     * Policy: backupdays accepts a raw comma-delimited string or a nonempty sequential string list, including string
+     * '0'; integers in a list are rejected without coercion. Null omits it and retains the documented 0,2,4,6 default.
+     * backupMonthlyDates remains string|int|null under separate source gate whm-api-client-8x0.28.8.6; backupWeeklyDay
+     * remains integer.
+     *
+     * Policy: Client list convenience: accept a nonempty sequential list of strict strings and join once with a comma
+     * into the original field. Preserve order, duplicates, empty items and all other bytes; reject embedded commas and
+     * malformed or empty lists after metadata reset before I/O. Raw scalars remain unparsed and encoded once.
+     * Collection arguments have trace protection without changing transport. Offline coverage only; historical scalar
+     * captures do not establish PHP-list execution. Live follow-up whm-api-client-8x0.2.86 and wider adoption
+     * whm-api-client-8x0.28.8 remain open.
+     *
      * API-map identity: whm1:backup_config_set#GET (wire name backup_config_set; Backup Settings).
      *
      * @param bool|null $backupDailyEnable Whether to enable daily backups. Null omits it.
@@ -294,7 +307,7 @@ final readonly class Backups
      * @param int|null $backupWeeklyRetention The number of weekly backups to retain. Null omits it.
      * @param bool|null $backupaccts Whether to back up cPanel user accounts. Null omits it.
      * @param bool|null $backupbwdata Whether to back up bandwidth tracking data. Null omits it.
-     * @param string|null $backupdays Which days of the week to run daily backups. Null omits it.
+     * @param string|non-empty-list<string>|null $backupdays Which days of the week to run daily backups. Null omits it.
      * @param string|null $backupdir The primary backup directory. Null omits it.
      * @param bool|null $backupenable Whether to enable backups. Null omits it.
      * @param bool|null $backupfiles Whether to back up system files. Null omits it.
@@ -334,6 +347,7 @@ final readonly class Backups
      * @param string|null $remoteRestoreStagingDir The directory that temporarily stores a remote backup's data during a
      *     backup restoration. Null omits it.
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/backup-settings/backup-backup_config_set
      */
     public function backupConfigSet(
@@ -347,7 +361,8 @@ final readonly class Backups
         ?int $backupWeeklyRetention = null,
         ?bool $backupaccts = null,
         ?bool $backupbwdata = null,
-        ?string $backupdays = null,
+        #[SensitiveParameter]
+        string|array|null $backupdays = null,
         ?string $backupdir = null,
         ?bool $backupenable = null,
         ?bool $backupfiles = null,

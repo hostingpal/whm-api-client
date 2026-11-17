@@ -560,19 +560,27 @@ final readonly class Email
      *
      * Documented: Changes mail routing; forward, pipe and failure actions have distinct delivery effects.
      *
+     * Documented: Client lists preserve order, duplicates, empty string items and all other bytes, and reject empty,
+     * keyed or nonstring lists and items containing a comma before dispatch. Scalars retain commas, percent escapes and
+     * empty strings without parsing or pre-encoding. Optional null omits the field; an empty list never means omission.
+     * Collection arguments are trace-protected without changing transport or classifying the field as a semantic
+     * secret.
+     *
      * API-map identity: uapi:Email/add_forwarder#GET (wire name add_forwarder).
      *
      * @param string $domain The domain.
      * @param string $email The email address to forward.
      * @param string $forwardOption The method to use to handle the email address's mail.
      * @param string|null $failureMessage The failure message for the message's sender. Null omits it.
-     * @param string|null $forwardEmail The email address to which the system forwards messages. Null omits it.
+     * @param string|non-empty-list<string>|null $forwardEmail The email address to which the system forwards messages.
+     *     Null omits it.
      * @param string|null $forwardSystem The system user to whom the system forwards messages. Null omits it.
      * @param string|null $pipeForward The application to which the system pipes messages. Null omits it.
      * @return AddForwarderResult
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-forwarding/email-add_forwarder
      */
     public function addForwarder(
@@ -581,7 +589,8 @@ final readonly class Email
         string $forwardOption,
         #[SensitiveParameter]
         ?string $failureMessage = null,
-        ?string $forwardEmail = null,
+        #[SensitiveParameter]
+        string|array|null $forwardEmail = null,
         ?string $forwardSystem = null,
         #[SensitiveParameter]
         ?string $pipeForward = null,
@@ -669,18 +678,31 @@ final readonly class Email
      * Documented: delegates: A list of the administrators to add. **Note:** Separate multiple email addresses with
      * commas.
      *
+     * Documented: Client lists preserve order, duplicates, empty string items and all other bytes, and reject empty,
+     * keyed or nonstring lists and items containing a comma before dispatch. Scalars retain commas, percent escapes and
+     * empty strings without parsing or pre-encoding. Optional null omits the field; an empty list never means omission.
+     * Collection arguments are trace-protected without changing transport or classifying the field as a semantic
+     * secret.
+     *
+     * Documented: Delegates receive mailing-list administrative privileges. The pinned multiple-delegate example
+     * includes delegates= inside its value; the client does not insert that prefix.
+     *
      * API-map identity: uapi:Email/add_mailman_delegates#GET (wire name add_mailman_delegates).
      *
-     * @param string $delegates A list of the administrators to add.
+     * @param string|non-empty-list<string> $delegates A list of the administrators to add.
      * @param string $list The mailing list.
      * @return AddMailmanDelegatesResult
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/mailing-lists/email-add_mailman_delegates
      */
-    public function addMailmanDelegates(string $delegates, string $list): array
-    {
+    public function addMailmanDelegates(
+        #[SensitiveParameter]
+        string|array $delegates,
+        string $list,
+    ): array {
         /** @var AddMailmanDelegatesResult $result Validated against EmailSpec::ADD_MAILMAN_DELEGATES. */
         $result = ($this->run)(EmailSpec::ADD_MAILMAN_DELEGATES, ['delegates' => $delegates, 'list' => $list]);
 

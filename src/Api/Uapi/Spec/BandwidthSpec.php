@@ -47,10 +47,30 @@ final class BandwidthSpec
         'outcome' => 'flag',
         'params' => [
             'grouping' => ['name' => 'grouping', 'encoding' => 'scalar'],
-            'domains' => ['name' => 'domains', 'encoding' => 'scalar'],
+            'domains' => [
+                'name' => 'domains',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => '|',
+                ],
+            ],
             'end' => ['name' => 'end', 'encoding' => 'scalar'],
             'interval' => ['name' => 'interval', 'encoding' => 'scalar'],
-            'protocols' => ['name' => 'protocols', 'encoding' => 'scalar'],
+            'protocols' => [
+                'name' => 'protocols',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => '|',
+                ],
+            ],
             'start' => ['name' => 'start', 'encoding' => 'scalar'],
             'timezone' => ['name' => 'timezone', 'encoding' => 'scalar'],
         ],

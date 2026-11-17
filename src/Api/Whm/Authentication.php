@@ -191,7 +191,9 @@ final readonly class Authentication
      *
      * Documented: Only root and root-enabled resellers may authorize root public keys. file must exist under
      * /root/.ssh; text takes precedence when both are supplied. The documented file mode needs text to be omitted,
-     * despite the formal required marker. options is a comma-separated string and defaults to no options.
+     * despite the formal required marker. options accepts a raw comma-separated string or a nonempty sequential string
+     * list and defaults to no options. Raw quoted commas remain unparsed; list items containing commas reject even when
+     * quoted, so use the scalar form for those SSH options.
      *
      * Policy: Client policy: retain the required file argument and existing argument positions; optional text=null
      * omits text so the server can use file. Key text is sensitive. Client policy: send one request without automatic
@@ -200,16 +202,25 @@ final readonly class Authentication
      * Policy: Client encoding policy: omit optional arguments supplied as null and preserve explicit false or zero
      * where accepted by the parameter. This does not assert an undocumented server default.
      *
+     * Policy: Client list convenience: accept a nonempty sequential list of strict strings and join once with a comma
+     * into the original field. Preserve order, duplicates, empty items and all other bytes; reject embedded commas and
+     * malformed or empty lists after metadata reset before I/O. Raw scalars remain unparsed and encoded once.
+     * Collection arguments have trace protection without changing transport. Offline coverage only; historical scalar
+     * captures do not establish PHP-list execution. Live follow-up whm-api-client-8x0.2.86 and wider adoption
+     * whm-api-client-8x0.28.8 remain open.
+     *
      * API-map identity: whm1:authorizesshkey#GET (wire name authorizesshkey; SSH Keys and Connections).
      *
      * @param bool $authorize Whether to authorize the public SSH key to access the server.
      * @param string $file The public SSH key file's name.
      * @param string|null $text The text of the SSH public key file. Null omits it.
-     * @param string|null $options A comma-separated list of options to include with the public SSH key. Null omits it.
+     * @param string|non-empty-list<string>|null $options A comma-separated list of options to include with the public
+     *     SSH key. Null omits it.
      * @return AuthorizeSshKeyResult
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/ssh-keys-and-connections/ssh-authorizesshkey
      */
     public function authorizeSshKey(
@@ -217,7 +228,8 @@ final readonly class Authentication
         string $file,
         #[SensitiveParameter]
         ?string $text = null,
-        ?string $options = null,
+        #[SensitiveParameter]
+        string|array|null $options = null,
     ): array {
         /** @var AuthorizeSshKeyResult $result Validated against AuthenticationSpec::AUTHORIZESSHKEY. */
         $result = ($this->run)(AuthenticationSpec::AUTHORIZESSHKEY, [

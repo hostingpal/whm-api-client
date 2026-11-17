@@ -51,7 +51,17 @@ final class ServerSpec
         'params' => [
             'service' => ['name' => 'service', 'encoding' => 'scalar'],
             'enabled' => ['name' => 'enabled', 'encoding' => 'bool'],
-            'eximAltportnum' => ['name' => 'exim-altportnum', 'encoding' => 'scalar'],
+            'eximAltportnum' => [
+                'name' => 'exim-altportnum',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'delimited',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'delimiter' => ',',
+                ],
+            ],
             'monitored' => ['name' => 'monitored', 'encoding' => 'bool'],
         ],
         'returns' => null,
@@ -1521,6 +1531,35 @@ final class ServerSpec
             'type' => 'object',
             'fields' => [
                 'log_id' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const SYSTEM_NEEDS_REBOOT = [
+        'function' => 'system_needs_reboot',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'details' => [
+                    'type' => 'object',
+                    'fields' => [
+                        'kernel' => [
+                            'type' => 'object',
+                            'fields' => [
+                                'boot_version' => ['type' => 'string'],
+                                'running_version' => ['type' => 'string'],
+                            ],
+                        ],
+                        'needs_cloudlinux' => ['type' => 'int'],
+                        'quota' => ['type' => 'int'],
+                        'securetmp_size_update' => ['type' => 'int'],
+                        'updates' => ['type' => 'map', 'values' => ['type' => 'mixed']],
+                    ],
+                ],
+                'needs_reboot' => ['type' => 'flag'],
             ],
         ],
     ];

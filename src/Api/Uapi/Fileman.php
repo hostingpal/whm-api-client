@@ -477,6 +477,12 @@ final readonly class Fileman
      * strings, distinct from numeric zero and omission. Only file information and observed flat listing rows gain these
      * forms; other integer fields and unobserved dirs/files object rows remain strict.
      *
+     * Observed: PR115 review 5726574983 on 11.138.0.19, both routes: onlyTheseFiles has no working HTTP form.
+     * Cpanel::API::Fileman::list_files dereferences only_these_files as an array reference that only Perl callers can
+     * supply, so a string (or comma-joined list) is ignored without limitToList and raises ApiErrorException (Can't use
+     * string ... as an ARRAY ref) with limitToList true. The pinned comma-separated prose does not hold on that build;
+     * the client keeps the raw string argument unchanged and adds no list form.
+     *
      * API-map identity: uapi:Fileman/list_files#GET (wire name list_files).
      *
      * @param string $dir The directory from which to list files.

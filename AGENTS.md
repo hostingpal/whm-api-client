@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 116 typed groups cover 1,244 documented operations:
+and cPanel UAPI surface. The 128 typed groups cover 1,273 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -193,6 +193,20 @@ grants. Preserve per-method role/version caveats in overlay notes and regenerate
 Mutations use form POST; addFtp password/passHash map to pass/pass_hash and are
 sensitive. Preserve omitted defaults, false/zero, pipe-delimited filters, decimal
 string disk amounts, quota unlimited semantics and optional nullable htmldir.
+Both listFtp() and listFtpWithDisk() accept raw strings or nonempty sequential
+string lists for includeAcctTypes and skipAcctTypes. Lists join once with | into
+the original GET field; preserve order, duplicates, empty items and all other
+bytes. Reject embedded pipes and malformed/empty lists locally after metadata
+reset; null omits, [''] sends empty and ['', 'sub', ''] sends |sub|. Raw scalar
+pipes, %7C and empty strings stay unparsed; query serialization encodes once.
+Omitted include returns all account types; omitted skip excludes none. Do not
+infer an enum, defaults or cross-field validation. All four generated collection
+positions have SensitiveParameter for trace protection without a semantic
+secret flag or POST override. Both direct and bridged calls remain GET; responses,
+counts and all other FTP operations are unchanged. This list convenience has
+only offline evidence. Filter live follow-up 8x0.2.80 remains open, as do existing
+unknown-field/settings follow-ups 8x0.2.10/8x0.2.11 and wider adopter audit 8x0.28.8.
+Historical scalar captures do not establish execution with PHP lists.
 getQuota preserves documented strings and observed finite JSON integers as int|string;
 its evidence-bound root union accepts no float/boolean/null coercion.
 ftpExists returns a nullable opaque payload or API error, not a boolean.
@@ -221,15 +235,43 @@ and direct cPanel UAPI; bridged UAPI rejects JSON locally after metadata reset.
 Separate callMultipart() entrypoints stream ordered text/file parts through WHM
 and direct cPanel UAPI; generic bridged multipart rejects before source I/O. The
 pinned inventory includes 13 JSON operations (8 WHM, 5 UAPI) and 9 multipart
-operations (1 WHM, 8 UAPI). StatsManager/save_configuration is the first typed
-JSON-body adopter; the other 12 JSON endpoints remain deferred, with remaining
-selection/source/route audit under `whm-api-client-8x0.29.6`. Selected
+operations (1 WHM, 8 UAPI). Five of thirteen JSON-body operations are typed:
+StatsManager/save_configuration, Personalization/get and WHM php_fpm_config_get,
+php_fpm_config_set and update_sql_config. The other eight JSON endpoints remain
+deferred, with remaining selection/source/route audit under `whm-api-client-8x0.29.6`. Selected
 implementations and the StatsManager successful-live-write gate remain open under
 `whm-api-client-8x0.1.18` and `whm-api-client-8x0.1.19`. Generic access is not
 typed or live-verified coverage. The 2026-10-13 spec's
 [scaling decision (typed core plus generic calls)](docs/superpowers/specs/2026-10-13-php-client-design.md#scaling-decision-typed-core-plus-generic-calls)
 is superseded: its hand-written-group decision is replaced by the generated-client
 design (bead `whm-api-client-8x0.10`).
+
+`uapi()->personalization()->get(array $query)` is a required whole JSON object
+body on direct UAPI only (cPanel 74+), with optional nonnullable `names: list<string>`.
+Preserve `{}` versus `{"names":[]}`, empty strings, duplicates, order and bytes;
+add no NVData byte/format checks or server-default inference. The whole input is
+sensitive. WHM bridge refusal and structural rejection clear metadata before I/O;
+native argument failures retain pre-entry behavior. Keep the formal optional
+`personalization` map, optional reason:string, success:integer 0|1 and nullable mixed value;
+row success 0 under envelope status 1 is data. Preserve omission/null and inherited
+empty-array object/map compatibility. Do not log private names/values/reasons or
+mismatch payloads. The earlier failed protocol probe establishes only structural
+wrapper observations: its parser lost actual API outcome and row identity.
+No API/typed outcome follows from that original probe. A separate bounded typed
+capture through clean committed 646612249d9b86dc19ed17dea0b7babf15b3c516 on
+11.138.0.19 passed exactly two requests (WHM version GET, direct getter JSON POST),
+both HTTP 200/API status 1. The exact two fresh requested rows had value:null and
+both row success flags 1; the bare data.personalization wrapper supports the formal schema.
+This is custom developer evidence, not schema-2 catalog or strict unknown-field
+acceptance. Review 5728223669 on 11.138.0.19 observed stored float, boolean, list and
+object values read back as those JSON types (integer 5 as "5"); value is therefore
+nullable mixed, so one non-string name cannot fail the whole call. It also saw API
+errors for omitted/empty names and row success 0 for an empty-string name. Keep other
+versions, setter and persistence unverified. Original failed evidence remains
+unchanged; source-audit records exact hashes. This group is 1/2; Personalization/set
+remains excluded under 8x0.29.6. No implicit reads, retries, fallbacks, URL fetches,
+writes or persistence claims are added.
+
 The complete Email module exposes 96 pinned functions. Mutations and secret-bearing
 requests use form POST. Preserve password/passwordHash alternatives, receive-mail
 role/default/zero-unlimited caveats, and integer/floating-point quota units. Email
@@ -627,11 +669,12 @@ well-formed raw direct-JSON requests bypassed this client and were blocked by
 `_can_self_manage` on 11.138.0.19: “You may not modify the weblog analyzer
 configuration”. Passing the gate requires a root/reseller server-wide statistics
 setting change; this work authorizes no such change and ran no live calls.
-Twelve other pinned JSON-body operations remain deferred; remaining
+Eight other pinned JSON-body operations remain deferred; remaining
 selection/source/route audit is tracked under `8x0.29.6`.
 
-Pipe-separated grouping, domain, protocol and display arguments are supplied as
-strings and encoded once. Omitted options preserve server defaults; explicit
+Bandwidth grouping remains a pipe-separated scalar string. Domain, protocol
+and required StatsBar display selectors also accept nonempty sequential string
+lists joined once with |; all supplied values are encoded once. Omitted options preserve server defaults; explicit
 false flags are sent as zero. Keep bytes, timestamps, per-resource units and
 formatted display strings distinct. Resource `maximum: null` means unlimited;
 zero and omission remain separate. Dynamic domain/date/grouping keys remain keys
@@ -1069,8 +1112,8 @@ literally, content is form-encoded once, and omitted options retain server defau
 Explicit false, zero and empty values remain distinct from omission.
 
 Team role operations can grant owner privileges. `setRoles()` replaces the whole
-role set; omitting its role value removes all roles. Creation's `roles` field is
-comma-separated, while role updates use singular `role`. Activation and password
+role set; omitting its role value removes all roles. Creation's `roles` field accepts a comma-separated string or a nonempty sequential
+string list, while role updates use singular `role`. Activation and password
 reset requests can send email. Service changes can create, associate or remove
 service subaccounts. Team creation without an expiry can return null; supplied
 expiry results preserve integer timestamps with canonical numeric-string
@@ -1120,7 +1163,7 @@ Typed ClamScanner JSON disinfection remains excluded under `8x0.1.18`; generic f
 calls cannot provide that body contract.
 
 IP block inputs retain documented address, hostname and range spellings. ModSecurity
-domain filters are caller-supplied comma-separated strings, encoded once; dependency
+domain filters accept comma-separated strings or nonempty sequential string lists, encoded once; dependency
 lists identify other affected domains. Per-domain exception fields preserve both
 explicit null and omission. A failed call can still change some domains: re-read
 `listDomains()` before deciding how to proceed. API status remains checked and no
@@ -1263,9 +1306,9 @@ plugin availability and lifecycle behavior. No repeat capture was run merely to
 seek a passing status. SHA-256:
 `c06b329f50f2ebd16ae43d52a7be4afb8b37d0267956d2d557287113209956f3`.
 
-`whm()->databases()` exposes 26 compatible database-administration methods: nine
-explicit reads use GET and seventeen operations use form POST. The JSON
-`update_sql_config` endpoint remains excluded under `8x0.1.18`. Remote profile reads
+`whm()->databases()` exposes all 27 pinned database-administration methods: nine
+explicit reads use GET, seventeen operations use form POST, and `updateSqlConfig()`
+uses a typed JSON POST (see WHM JSON configuration below). Remote profile reads
 marked non-readonly in the pinned source also use POST, and their returned password
 fields remain sensitive payload data.
 
@@ -1677,18 +1720,18 @@ and follow-up `8x0.2.37` retains all remaining live coverage.
 
 ### Expanded WHM server administration
 
-`whm()->server()` now exposes 76 of the 79 pinned Server Administration functions,
-including 72 additions for services, profiles, updates, configuration, linked nodes,
-notifications, licensing and inventory. The new calls use 23 GET requests and 49
-form POST requests. The four existing server methods retain their contracts.
+`whm()->server()` now exposes 78 of the 79 pinned Server Administration functions.
+The original 72 additions for services, profiles, updates, configuration, linked
+nodes, notifications, licensing and inventory use 23 GET requests and 49 form POST
+requests. Configuration upload and reboot status add two further form/body POST
+methods. The four original server methods retain their contracts.
 Missing read-only declarations remain conservative POST calls, including the
 three namespaced EcosystemFeatures functions.
 
-JSON connected-application saving remains under `8x0.1.18`, binary configuration
-upload under `8x0.1.19`, and `system_needs_reboot` under `8x0.1.27`. The latter's
-result fields are envelope siblings outside `data`; neither the typed runner nor
-the generic call currently preserves that result. No misleading void method is
-provided. Connected-application reads preserve declared typed fields and opaque
+JSON connected-application saving remains under `8x0.1.18`. Configuration upload
+is described below. `systemNeedsReboot()` returns the evidence-corrected ordinary
+`data` payload; generic calls retain their existing data-only extraction.
+Connected-application reads preserve declared typed fields and opaque
 additional properties through the existing object-values mechanism. Treat their
 results and service/configuration values as private payload data.
 
@@ -2572,22 +2615,36 @@ Development Tools group: token lifecycle, session/login-link creation, applicati
 inventory and legacy API usage. Five reads use GET and seven calls use form POST.
 The remaining five execution wrappers are separate work under `8x0.4.17`.
 
-`updateToken()` requires the token name, ACL, IP restriction and expiration as
-explicit arguments. These replace the complete current settings. The pinned
-upstream contract says omitted ACL grants all caller privileges, omitted IP
-restrictions allow any IP, and omitted expiration means never expire. A rename
-must therefore include the intended settings too; omission is not preservation.
-Use `whitelistIp: 'any'` or `expiresAt: 0` only to deliberately choose those
-unrestricted/non-expiring states. `createDashboardToken()` puts `tokenName`
-before `acl`, matching token creation's key-first order.
+`createToken()` and `createDashboardToken()` accept scalar ACL/IP fields or
+nonempty sequential string lists. Lists use `acl-0`/`acl-1` and
+`whitelist_ip-0`/`whitelist_ip-1`; scalars keep their bare fields. Dashboard ACL
+remains required and non-null. Regular creation with omitted ACL grants all caller
+privileges; omitted creation IP restrictions allow any IP and omitted expiration
+means no expiration. The dashboard method keeps `tokenName` before `acl`.
 
-ACL, whitelist and revoke-name inputs currently represent one scalar field.
-The typed create/update methods cannot create or preserve multiple ACLs or IP
-restrictions. Do not rename a multi-value restricted token through this scalar
-update interface or substitute `all` to work around it. Source ACL prose/examples
-disagree about starting indices, and whitelist examples disagree about spelling.
-The existing numbered encoder does not establish these forms. Their explicit
-encoding and validation remain priority-one work under `8x0.1.21` before release.
+`updateToken()` requires only `tokenName`; ACL, IP restriction, expiration and
+new name are optional, preserving the previous positional order. Supplied ACL/IP
+values replace the entire respective setting. Explicit null omits each option;
+empty strings remain supplied values, never preservation sentinels.
+`whitelistIp: 'any'` explicitly clears IP restrictions and `expiresAt: 0` explicitly
+means no expiration. A rename-only call sends only its two fields, with no read
+or merge. The [attributed source review of 11.138.0.19](https://github.com/hostingpal/whm-api-client/pull/72#pullrequestreview-5722427592)
+reports omitted ACL/IP/expiry are preserved, correcting the earlier PR57 assumption
+based on pinned reset prose. Older-version preservation is unestablished.
+
+`revokeToken()` also accepts a nonempty sequential string list, always using
+`token_name-1`/`token_name-2`, including a singleton list. It sends one request;
+no atomicity or per-token success guarantee is added. All seven collection inputs
+preserve exact string bytes, order, duplicates and empty string items. Empty,
+associative, sparse or non-string-item lists fail locally after metadata reset.
+No client format validation or privilege enum is inferred.
+
+The zero-based update ACL choice and underscore IP spelling follow the attributed
+source review: update ACL prose starts at one but its example starts at zero;
+later IP examples mix `whitelist-ip`, which the inspected handler does not accept.
+These calls remain form POST. This implementation and its offline fixtures establish
+no live list transport, persistence or successful credential lifecycle. Separate
+live acceptance remains open under `8x0.2.44`.
 
 Raw token lookup uses sensitive form POST despite the pinned GET declaration;
 this is client policy, and POST compatibility remains live-unverified. Token,
@@ -2635,10 +2692,11 @@ Artifact SHA-256:
 
 ### WHM web-server configuration
 
-`whm()->webServer()` exposes 28 of 30 pinned functions: eighteen GET reads and
-ten form POST operations for EasyApache profiles, PHP/FPM configuration, INI
-content/directives and PHP versions. The two typed FPM JSON-body operations remain
-excluded under `8x0.1.18`.
+`whm()->webServer()` exposes all 30 pinned functions: eighteen GET reads, ten
+form POST operations and two typed JSON POST methods for EasyApache profiles,
+PHP/FPM configuration, INI content/directives and PHP versions.
+`phpFpmConfigGet()` and `phpFpmConfigSet()` use the required JSON body contracts
+in WHM JSON configuration below.
 
 Package, tag and directive lists use repeated wire fields; virtual hosts use the
 reviewed numbered family. `ea4SaveProfile()` omits an explicitly empty optional
@@ -4755,3 +4813,812 @@ This correction performs no live call or account-settings access. Live follow-up
 `whm-api-client-8x0.2.74`, filesystem follow-up nyz and broader runtime work stay
 OPEN. Generated coverage is 1,244 operations (648 UAPI, 596 WHM), 116 groups and
 235 outputs (234 PHP plus coverage); construction is separate from live coverage.
+
+
+## Branding application inventory and include content
+
+`uapi()->branding()` exposes all five pinned Branding operations through the
+selected account, on direct UAPI and the WHM bridge. Each invocation makes one
+request with ordinary UAPI status handling; the cached accessor performs no I/O.
+
+| Method | Effective request | Available from |
+| --- | --- | --- |
+| `getApplicationInformation(string $appKey): ?array` | GET | cPanel 11.42 |
+| `getApplications(string\|array\|null $appKeys = null): array` | GET | cPanel 11.52 |
+| `getAvailableApplications(string\|array\|null $nvarglist = null): array` | GET | cPanel 54 |
+| `getInformationForApplications(string $docroot, string\|array\|null $appKeys = null): array` | Form POST | cPanel 11.52 |
+| `includeFile(string $file, ?string $data = null, ?bool $raw = null, ?bool $skipDefault = null): ?string` | Form POST | cPanel 11.42 |
+
+The source specifies GET for every method, including `include` with
+`x-readonly=true`. The two effective POSTs follow client privacy policy for the
+private server theme root and arbitrary template variables. Their live POST
+acceptance remains unverified. `docroot`, `file` and `data` carry
+`SensitiveParameter`; application/group selectors remain noncredential inputs,
+with independent collection trace protection.
+
+```php
+$branding = $client->uapi('example')->branding();
+$applications = $branding->getApplications(appKeys: 'email_accounts,boxtrapper');
+$groups = $branding->getAvailableApplications(nvarglist: 'mail|files|domains');
+// Synthetic server-side theme path; the client does not access this path locally.
+$sitemap = $branding->getInformationForApplications(docroot: '/example/theme');
+// This explicit call asks the server to render a template; it returns inert text.
+$content = $branding->includeFile(file: 'header.tt', data: '{"showBanner":1}');
+```
+
+`appKey` identifies a feature in `dynamicui.conf`. Optional `appKeys` accepts a raw
+comma-separated selector or a nonempty sequential string list joined with comma; omission requests all source applications. `nvarglist`
+accepts a raw pipe-separated group ordering selector or a nonempty sequential
+string list joined with |; omission requests no sorting.
+The source documents `arglist` as its alias; no extra public alias is added.
+`docroot` is an absolute server theme root containing `sitemap.json` and is
+forwarded without normalization, local access or path validation. Null optional
+arguments omit, while empty strings, percent/plus/Unicode and exact byte strings
+remain supplied and encoded once. No new enum/range/format validation is added.
+
+Three inventory roots are required nonnullable objects/maps with optional
+fields; `getApplicationInformation()` returns null for an unknown key. `getApplications()` preserves a dynamic application map, including the
+six example-only optional string fields `acontent`, `base64_png_image`, `key`,
+`onclick`, `plainitemdesc` and `target`. Its `height`, `itemorder` and `width`
+accept canonical in-range integer strings, because all three keyed source
+examples quote them; outputs remain integers. Fractional, exponent, whitespace,
+plus, leading-zero and overflow strings fail. Review 5725970479 on 11.138.0.19
+found the same digit strings in the single-application result, which reads the
+same rows, and mixed digit strings and native integers in available-application
+items. Both now apply the same rule and return integers, and the single result
+keeps the same eight extra row fields. An unknown or empty key returns null data
+under status 1, so null means no such application.
+
+`getAvailableApplications()` preserves integer-map `default_group_order`,
+ordered string-list `grouporder`, group/item lists, string-map `implements`
+and integer-list-map `index`. Index prose describes zero-based group and item
+positions, but its list schema does not impose a two-element tuple. The nested
+item example supplies optional string `key` and `plainitemdesc` missing from
+formal properties; both are retained without additional inferred semantics.
+The sitemap map retains optional condition/icon records with strict integer
+sizes/order and optional `terms` as an ordered string list, supported by formal
+string items and its array example. Omission stays distinct from explicit null.
+Dynamic keys, list order and empty containers survive, including inherited
+empty-array object/map compatibility and PHP numeric object-key conversion.
+Unknown fields follow the existing validator policy. Missing/null inventory
+roots and wrong known-field types fail.
+
+`includeFile()` forwards theme-relative `file`, then raw string `data`, then
+`raw` and `skip_default`. `data` applies only to `.tt` templates, and `raw` has no
+effect for `.tt`. The client forwards malformed/scalar/list/duplicate-key
+JSON-like text without parsing, reserializing, mode selection, conflicts or
+filename-based omission. False sends 0, true sends 1 and null omits.
+`skipDefault: true` prevents default fallback except accounts without a branding
+package always use theme fallback. The server renders; the client returns exact
+string content, including empty, HTML, Unicode and zero-like strings, or explicit
+null. Missing data remains a mismatch. No HTML encoding/decoding or sanitization
+is performed by the client.
+
+Returned HTML, JavaScript, expressions, URLs, paths and image strings are inert
+payload. The client never renders, executes, fetches, decodes or locally reads
+them. Private input and response/error arguments are concealed in library-owned
+trace frames; third-party transports control their own traces. Caller-accessible
+`PayloadMismatchException::$payload`, results and `responseMeta()` can expose
+private content. API and outer-WHM failures precede payload validation; metadata
+clears before I/O and captures warnings/raw metadata before API or payload failure.
+Native pre-entry argument errors retain the previous snapshot. No implicit
+read/merge/sort, retry, rollback or remote-data cache is added.
+
+Generated coverage at the Branding delivery was 1,212 canonical operations (624 UAPI, 588 WHM),
+109 groups and 221 outputs (220 PHP plus coverage). Delivery
+`whm-api-client-8x0.4.33` establishes synthetic offline coverage only. Live follow-up
+`whm-api-client-8x0.2.75` remains OPEN; no live theme visibility, rendering,
+route compatibility or server persistence is established.
+
+
+## DCV checks (2026-11-01)
+
+The complete nondeprecated `uapi()->dcv()` group exposes two operations:
+`checkDomainsViaDns(domain)` (cPanel 74, source POST) and
+`checkDomainsViaHttp(domain, dcvFileExtension, dcvFileRandomCharacterCount,
+dcvFileRelativePath, dcvMaxRedirects, dcvUserAgentString)` (cPanel 60, source GET). Both have `x-readonly:false` and
+`x-rollback:none`; the existing mutation policy sends one immediate form POST on
+direct and bridged routes, including HTTP's deliberate source-GET/effective-POST
+difference. Successful live POST acceptance remains unestablished. Only standard
+routing stays in the URL. Do not describe DNS checking as passive inventory: the
+zone is altered and queried, and failure_reason can report a zone update failure.
+
+Domain inputs are strings or nonempty sequential string lists. Scalar uses
+`domain`; every DNS list uses `domain-0/domain-1/...`, every HTTP list uses
+`domain-1/domain-2/...`, including singleton lists. Ordinary PHP arrays hide the
+distinct source numbering. Preserve order, duplicates, empty strings and exact
+bytes without local syntax checks, lowercasing, sorting or deduplication.
+`checkDomainsViaHttp()` omits `dcv_file_allowed_characters`: review 5726048230
+found that the 11.138.0.19 handler JSON-decodes one field and the pinned
+repeated query form fails on both routes. Use generic `call()` with
+caller-serialized JSON array text until a typed JSON-list encoding exists.
+Malformed collections reject after metadata reset before I/O; native scalar
+rejection occurs before entry/reset.
+
+Every optional null omits. Empty strings and integer zero are supplied. The server
+owns defaults: alphabet A-Z/0-9, empty extension, random count 100 (minimum 1),
+relative path .well-known/pki-validation relative to the DOMAIN DOCUMENT ROOT,
+max redirects null (minimum 0), and a changeable user-agent default. Zero max
+redirects means NO LIMIT ON REDIRECT RETURNS; N yields N+1 redirect records so
+excess failures are visible. No client-side defaults or new integer range guards.
+
+Both payloads are required nonnull possibly-empty lists in input order with
+optional row fields. DNS retains dcv_string/domain/failure_reason/zone as nonnull
+strings, query_results as a possibly-empty string list or null, succeeded as
+integer 0|1 (direct UAPI digit strings normalize).
+API success can contain succeeded=0. HTTP has failure_reason string|null,
+redirects list|null and redirects_count int|null (null on a failed check); no row domain field is pinned, so associate
+positionally. Redirect content/protocol/reason/url are strings, status is int and
+success is exactly ''|0|1, preserving empty string and rejecting quoted 0/1,
+whitespace, arbitrary strings, other ints, floats, booleans and null. This sole
+source-bound correction must not widen siblings or borrow unrelated observations.
+headers is an opaque object with arbitrary values; nested redirects is
+list<opaque object>|null, not a recursive model. Unknown fields survive only in
+those opaque nodes; other known objects retain filtering. Omission and null remain
+distinct. Missing/null roots fail. Retain the existing individual empty-array
+object compatibility under 8x0.2.50 without shared runtime changes.
+
+Use normal Flag outcome: row succeeded=0 or redirect success=0/'' is distinct
+from UAPI status 0. Envelope and outer WHM failures still throw. Keep warnings/raw
+metadata and mismatch payload access, with no hidden retry after failure. Domain
+and alphabet collections inherit SensitiveParameter; extension, relative path and
+user-agent text explicitly remain sensitive. Challenge strings, DNS values,
+content, headers, URLs, metadata and PayloadMismatchException::$payload can be
+private. Response frames retain protection; third-party traces are outside library
+guarantees. No implicit read, polling, merge, supplied-value normalization, local
+filesystem access, URL fetch, retry, cleanup or rollback is added.
+
+Coverage is 1,214 canonical operations (626 UAPI, 588 WHM), 110 groups and 223
+outputs (222 PHP plus coverage). The original deprecated
+ensure_domains_can_pass_dcv exclusion remains semantically identical and uncounted.
+Delivery 8x0.4.34 covers synthetic offline fixtures only; live follow-up 8x0.2.76
+remains OPEN. Do not claim live DCV compatibility, DNS propagation, certificate
+issuance or completed external delivery from these tests.
+
+
+## UI and application discovery (2026-11-01)
+
+The five-operation delivery `whm-api-client-8x0.4.35` adds complete Chrome,
+Parser, Integration and InProductSurvey modules and one of two Plugins operations.
+`chrome()->getDom(pageTitle)` and `parser()->getFirstFileRelativeUri()` use GET
+from cPanel 11.42, matching source x-readonly:true. Chrome sends required
+page_title once in the query and returns optional exact footer/header strings,
+including arbitrary HTML/scripts/line breaks/empty values. Title input is not an
+HTML safety contract. Parser's method/prose says cPanel-base relative, summary
+session relative, but formal uri field/example says absolute server path
+/usr/local/cpanel/base/favicon.ico. Preserve this contradiction and unchanged
+bytes without base resolution, normalization or local file access.
+
+`integration()->fetchUrl(app)` (cPanel 54) and
+`inProductSurvey()->getInProductSurveyUrl()` (literal 11.32) use form POST because
+source GET declares x-readonly:false/x-rollback:none. app is required and body
+encoded once; Survey has no parameters and sends an empty POST body. Integration
+preserves optional string redirect_url (primary) and url (fallback) separately,
+without URL validation, navigation, fetch or fallback. All three required string
+selectors, including Chrome title and Plugins plugin, retain empty, whitespace,
+Unicode, percent/ampersand/plus bytes without local validation or normalization.
+
+Survey retains seven optional fields. display/new_user use existing generator
+flag-enum normalization of exact quoted 0/1 and native integers to int 0|1;
+other strings, bools, floats and null fail. This is not an overlay response
+correction or live observation. max_dismiss, link and submit_event are nullable
+strings (null when no survey is configured, review 5726184111); server_type and
+user_type stay strings; general string enums remain open. Parser uri is nullable:
+outside a template it is null (direct) or a meaningless value such as [stdin]. Source
+display 0 means do not render the banner, compared as normalized integer 0.
+Source webmail versus cPanel/Team link templates establish no added authentication
+mode/session route or tested webmail credentials/session coverage.
+
+`plugins()->canShowPromotions(plugin)` requires the Plugins plugin and pinned
+integer version 110. Source summary says Enable while description/result describe
+visibility without an enabled argument. Source readonly/rollback are absent;
+risk remains UNKNOWN and rollback is not established. Existing default selects
+form POST despite source GET; do not claim read-only safety or known enabling
+mutation. Formal plugin is required although CLI/URL samples omit it; only koality
+is documented. Keep an open string signature without claiming server acceptance
+of alternatives. can_show_promotions is strict native int 0|1; quoted flags,
+bools, floats and null reject. Payload 0 under status 1 is normal; status 0 and
+outer WHM failures still throw. Plugins/create_user stays absent and uncounted
+under source/input gate 8x0.1.22; no new exclusion/waiver.
+
+Every root is a required nonnull optional-field object. Preserve omission,
+known-object filtering and inherited empty-array object compatibility (8x0.2.50).
+Selectors are lazy/cached/account-bound without I/O or reset; each invocation
+makes one immediate request with ordinary Flag outcome and plain payload.
+No implicit rendering, evaluation, URL navigation/fetch/fallback, local file
+access, extra request, cache of server data, retry or rollback. Returned content,
+paths, URLs, metadata and mismatch payloads can be private; library-owned response
+frames retain SensitiveParameter protection without third-party/caller secrecy
+claims. Inspect warnings/raw metadata, including after mismatches; native pre-entry
+TypeErrors retain prior metadata. Synthetic fixtures establish no live server
+acceptance or UI/session/plugin/survey behavior. Live follow-up 8x0.2.77 stays OPEN.
+
+Coverage is 1,219 canonical operations (631 UAPI, 588 WHM), 115 groups and 233
+outputs (232 PHP plus coverage). Original sources/evidence, earlier operations
+and shared generator/engine behavior stay unchanged. PHP 8.3 remains external CI;
+local verification uses PHP 8.4.26.
+
+
+## WebPros MCP connection configuration and account unlinking
+
+`uapi()->webProsMcp()` covers both pinned `WebProsMCP` operations from cPanel
+138 and requires the WebProsMCP plugin. Its lazy cached handle belongs to the
+selected account; selecting it makes no request or metadata reset.
+
+```php
+$webPros = $client->uapi('fixture')->webProsMcp();
+$config = $webPros->getConnectionConfig();
+$isLinked = $config['is_linked'] ?? null;
+$sessionRelativeLink = $config['link_url'] ?? null;
+$snippet = $config['mcp_config'] ?? null; // Data only; no installation or connection.
+```
+
+Both `getConnectionConfig()` and `unlinkWebProsAccount()` are parameterless and
+send one immediate empty form POST on direct cPanel and WHM bridge routes;
+routing fields remain in the URL. The pinned declarations stay GET.
+Configuration discovery lacks readonly/rollback annotations, so its source risk
+remains UNKNOWN and the existing default POST policy applies despite its name.
+This establishes neither a read-only guarantee nor a known mutation. Unlink
+explicitly declares `x-readonly:false`; neither operation documents rollback.
+
+`unlinkWebProsAccount()` removes **all WebPros authentication links** for the
+selected cPanel account. It disables WebPros Account login and other WebPros
+integrations as well as MCP until relinked. Call it only when that complete
+unlink is intended. The source describes an idempotent no-op when no link exists;
+this is documented behavior, not successful live verification or evidence that
+an uncertain current state is safe. The example above does not invoke unlink.
+The client adds no inventory/read before unlink, retry, relink or rollback.
+
+The [generated result shapes](src/Api/Uapi/WebProsMcp.php) preserve optional fields:
+configuration has `is_linked`, `link_url`, `environment` and `mcp_config`; the
+snippet has `name`, `type`, `url` and `oauth`, whose exact keys are `clientId`
+and `callbackPort`. Unlink has only optional `is_linked`. All scalar fields are
+strings except strict native integer `is_linked` and `callbackPort`. No quoted,
+boolean or float conversion, inferred `0|1` enum, constant-zero narrowing or port
+range guard is added. Source prose describes linked 0/1 and successful unlink 0;
+the formal integer schemas have no enum. Synthetic acceptance of integer 2 does
+not claim that a server returns it. General string values stay open.
+
+`link_url` is session-relative according to the source. `environment` describes
+production defaults versus overridden MCP settings, and `mcp_config` contains a
+connection snippet. Empty strings, Unicode and URL/path punctuation remain exact.
+Returned links, configuration, URLs and OAuth client IDs are inert private payload;
+the client does not navigate, authenticate, exchange tokens, install configuration
+or contact an MCP server, and does not promise installability or reachability.
+
+Both roots are required nonnull known objects. All fields and nested objects are
+optional and nonnullable; omission differs from a present empty object. Unknown
+fields are filtered at every known-object level. Existing empty JSON array object
+compatibility (`whm-api-client-8x0.2.50`) remains; absent/null root data mismatches.
+Payload `is_linked: 0` under UAPI status 1 is valid. UAPI status 0 and outer WHM
+failure throw before payload validation. Inspect `responseMeta()` warnings and
+raw metadata, including after a mismatch; exception snapshots retain their data
+after later calls. Existing library response-frame protections do not conceal
+caller-readable values, mismatch payloads or third-party transport traces.
+
+At LinkedNode delivery, coverage was 1,221 canonical operations (633 UAPI, 588 WHM), 116 groups
+and 235 outputs (234 PHP plus coverage). Delivery `whm-api-client-8x0.4.36` is
+offline synthetic coverage only. Live follow-up `whm-api-client-8x0.2.78` remains
+OPEN; no live POST acceptance, authentication/link changes, login, MCP connectivity
+or integration behavior is established.
+
+## WHM 360 Monitoring (2026-11-01)
+
+`whm()->monitoring()` exposes the complete seven-function pinned Monitoring group
+from cPanel & WHM 11.132: `registerServerWith360Monitoring()`,
+`set360AgentPolling()`, `webProsAuthCallback()`, `webProsAuthClear()`,
+`webProsAuthStart()`, `webProsAuthStatus()` and `webProsAuthToken()`.
+Canonical identities already include `360Monitoring/`; no wire correction or
+new router is needed. All seven use one immediate form POST with api.version=1
+only in the URL and normal WHM outcome. Callback source formally requires
+body-only POST. The other six source GET declarations lack x-readonly and use
+existing unknown-risk POST policy, without live acceptance claims.
+
+Registration can create an external account and configure the local agent;
+credentials remain server-side. Already-registered no-op/idempotency is source
+prose, not observed behavior. Polling retains source-order optional arguments
+`(globalSections, interval, maxDataSpan, pluginSections)`. Both section filters
+accept literal comma strings or nonempty sequential strict-string lists through
+explicit shared delimited descriptors. Strings preserve every byte without
+parsing/rejoining; arrays join once to the original field with a comma, preserving
+item bytes, order, duplicates, spaces and empty strings. Reject commas inside list
+items, empty lists, nonsequential lists and nonstring items before I/O after
+metadata reset. Null omits; [''] sends empty and ['', 'cpu', ''] sends ,cpu,.
+Collection arguments receive SensitiveParameter for library trace protection;
+section lists do not alter transport sensitivity or the original POST policy.
+Do not infer defaults or introduce indexed lists. Empty scalar strings and zero
+remain supplied. Interval or maxDataSpan is required server-side; positive timing,
+documented section choices and filter/interval relationships remain server
+validation without local enum/range/cross-field guards. Interval without filters
+updates all core/default plugin sections, and maxDataSpan controls batched
+metrics. Source matching-values no-restart behavior is unverified; other changes
+may restart agent360. The four FTP inventory filters also adopt the shared
+delimiter convention; other delimited adopters remain under 8x0.28.8.
+
+Callback is a required sensitive raw string in one form `json` field, encoded
+once, never URL query data or callJson. Preserve JSON bytes/whitespace, unknown
+keys and invalid/scalar JSON for server validation; no invented nested schema,
+automatic serialization or companion. README explicitly json_encodes synthetic
+code/state/session strings with JSON_THROW_ON_ERROR. Structured callback
+foundation/adoption remains under 8x0.1.22. Code/state are required by source
+prose; optional session_id applies without a request session, whose session takes
+precedence. Legacy verifier is ignored with later removal documented. Server PKCE
+verifier stays server-side. Validate state before exchange per source; matching
+state is consumed on success or failure, unknown/other-session state consumes
+nothing. Never retry implicitly. token_unusable may follow a stored unusable
+token, so promise no rollback or all-or-nothing behavior.
+
+Auth start's sensitive optional sessionId preserves leading zeros and empty
+strings without local digits validation. Token/Basic callers need the intended
+existing WHM session; the library has no browser-session transport or implicit
+session creation. State is a ten-minute single-use secret bound to that session.
+Authorization URLs/state remain private inert payload. Status checks identity
+and expiry without tokens; token returns only bearer access_token, never refresh
+bundle, with expires_in=0 meaning unknown remaining lifetime. Clear signs the
+server out by removing the stored bundle; no-token success is unverified source
+idempotency, and removal_failed leaves the token in place. Add no implicit read,
+registration, redirect, OAuth exchange, token storage, polling, retry or rollback.
+
+Required nonnull known-object roots retain every optional field, nonnullable
+except callback token_data.email and status email, which are nullable because the
+handler copies an optional ID-token claim (review 5726281163). user_id remains strict string
+despite numeric example 12345. Poll status remains strict int: enum[1] documents
+only success 1, and the existing validator does not enforce singleton membership
+or establish other integer semantics. success/valid are strict native integer
+0|1 flags, without quoted/bool/float coercion. Reason strings stay open. Preserve
+missing fields versus present empty objects/strings; null/missing roots mismatch.
+Known-object filtering and inherited empty-array object compatibility remain.
+WHM metadata.result=0 precedes payload validation; payload success/valid=0 under
+result1 requires caller inspection. Preserve raw WHM warnings/metadata and
+mismatch snapshots. Selectors perform no I/O/reset; invocation resets normally,
+while strict native argument failure occurs before entry/reset.
+
+Tokens, URLs/state/session/account/error contents and mismatch payloads may be
+private. json and sessionId have SensitiveParameter; library response frames are
+protected without promising caller/third-party trace secrecy. Never log returned
+tokens/state or fetch authorization URLs automatically. Synthetic offline tests
+establish no external account/authentication, session/replay/expiry, registration,
+agent/settings, persistence, sign-out or POST acceptance behavior. Live follow-up
+8x0.2.79 remains OPEN; delivery 8x0.4.37 adds seven canonical operations once.
+At Monitoring delivery, totals were 1,228 operations (633 UAPI, 595 WHM), 117 groups and 237 outputs
+(236 PHP plus coverage). Original sources/evidence and previous endpoints remain
+unchanged. The original Monitoring delivery changed no shared runtime or
+generator policy. This subsequent filter adoption uses the accepted explicit
+shared delimited descriptor convention; it adds no further shared runtime,
+generator, dependency or source-schema correction.
+
+Inventory and discovery selectors also accept nonempty sequential string lists:
+Bandwidth `domains`/`protocols`, Branding `nvarglist` and required StatsBar `display`
+join with `|`; Branding `appKeys` on both methods, VersionControl `fields` and
+WHM HostingPlans `applicationsList` join with `,`. Fileman `onlyTheseFiles` stays a
+raw string: review 5726574983 found that the 11.138.0.19 handler dereferences it as
+a Perl array reference, so no HTTP form works (ignored without `limitToList`, an
+API error with it). With `applicationsList` set, the WHM result is only
+`{applications: [...]}` (opaque rows); `groups` and `raw` are absent.
+Raw strings remain byte-preserved and unparsed. Lists preserve order, duplicates,
+empty items, whitespace, Unicode, binary and URL/percent bytes; an embedded selected
+delimiter rejects, while the other delimiter stays data. No escaping, trimming,
+splitting, deduplication, enum validation or default insertion occurs. Optional
+null omits, `[]` rejects, `['']` supplies empty and `['', 'x', '']` supplies `|x|`
+or `,x,`. Malformed lists fail before I/O after metadata reset. StatsBar `display`
+remains required `string|array`; native omission/null errors precede method entry
+and do not reset prior metadata. Other selectors are `string|array|null = null`.
+
+```php
+// Synthetic request inputs; these calls use the selected account.
+$account->bandwidth()->query(grouping: 'domain', domains: ['example.test', 'UNKNOWN']);
+$account->branding()->getApplications(appKeys: ['email_accounts', 'boxtrapper']);
+$account->statsBar()->getStats(display: ['diskusage', 'bandwidthusage']);
+```
+
+GET routes stay GET. Branding `getInformationForApplications()` retains form POST
+and its required sensitive `docroot`; VersionControl `retrieve()` retains form POST
+and no retry. Collection trace attributes do not classify selectors as secret
+inputs or change transport. Omission retains each source default: all domains,
+all dynamicui features/sitemap keys/files/WHM content, no group sorting, or the
+VersionControl `*` field default. Explicit `*` or `['*']` remains supplied.
+Bandwidth `grouping` and Fileman `types` keep their existing scalar boundaries
+under separate composed-source gate `8x0.28.8.6`. Returned payloads and all companion
+false/zero options are unchanged. This is offline request coverage; historical
+scalar captures do not establish PHP-list execution or server filtering/empty
+semantics. Live follow-up `whm-api-client-8x0.2.81` remains OPEN.
+
+## UAPI Exim ports and reseller account discovery (2026-11-01)
+
+Delivery `whm-api-client-8x0.4.38` generates complete Chkservd (two) and Resellers
+(one) modules from the pinned source. Cached/account-bound/lazy accessors expose
+`chkservd()->getEximPorts()`, `chkservd()->getEximPortsSsl()` and
+`resellers()->listAccounts()`. All are zero-argument native-array methods, use
+one GET on direct and bridged UAPI, and retain ordinary Flag outcome.
+
+Chkservd (cPanel 11.42) returns required nonnull objects with optional
+`ports:list<int>`. Preserve omitted versus empty, native integers and order;
+getEximPorts also normalizes canonical digit strings (review 5726617674:
+the server splits a comma string); SSL ports stay native integers; reject
+floats/bools/null. Source SMTP constraints
+are 1..65535 and uniqueItems:true; SSL has 0..65535 with no uniqueness declaration.
+Existing policy validates types, not general bounds/uniqueness. Resellers (cPanel
+11) returns a required nonnull list of optional `domain`, `select`, `user` strings.
+Preserve quoted select markers `'1'`/`''`, omission, exact identity bytes and row
+order; ordinary-string enums remain unenforced. Numeric/bool markers mismatch.
+
+Missing/null roots mismatch; existing empty-array object compatibility and unknown
+field filtering stay unchanged. API/outer-WHM failures precede payload validation;
+metadata resets each attempt and records warnings/status before API/payload errors.
+Treat results/account/infrastructure data and mismatch payloads as private;
+library SensitiveParameter response frames do not promise third-party trace or
+payload-field redaction. No implicit login, account switching, probe, URL fetch,
+file access, retry, listening/reachability/TLS/email guarantee or permission check
+is added. These are offline synthetic contracts; live `8x0.2.82` stays OPEN.
+
+Current totals are 1,234 operations (636 UAPI, 598 WHM), 119 groups and 241 outputs
+including coverage. All 55 inherited source diagnostics remain visible/unwaived;
+runtime/generator/schema/dependencies/source and historical evidence are unchanged.
+
+
+## WHM JSON configuration
+
+Three generated methods send one JSON POST through the configured WHM route:
+`whm()->webServer()->phpFpmConfigGet(array $configuration): array`,
+`phpFpmConfigSet(array $configuration): void`, and
+`whm()->databases()->updateSqlConfig(array $configuration): void`. Each required
+whole-body array has `SensitiveParameter`, no default and no nullable alternative.
+The input aliases are `PhpFpmConfigGetInput`, `PhpFpmConfigSetInput` and
+`UpdateSqlConfigInput`. Selectors are lazy and cached. The request has exactly
+`Content-Type: application/json`, no query string and a library-owned root
+`"api.version":1` member inserted first (WHM reads JSON arguments only from the
+body, so a query version gets HTTP 400 per review 5726712933); body fields
+never become query/form fields. All `api.` root controls remain reserved.
+
+PHP-FPM methods require cPanel 78 and the Web Server role. The get method remains
+POST despite its name and source `x-readonly: true`. Its root has only optional
+`domain: string`; `[]` sends the required present `{}`. Omitted domain keeps the
+source empty/system default; an explicit empty string stays supplied. A nonempty
+local domain selects that domain's configuration. The response requires nonnull
+object data with optional `config`, a list of objects with optional string
+`base_flag_name`, integer `trinary_admin_value` and string `value`. Omitted fields,
+empty lists and empty objects remain distinct; existing empty-array object
+compatibility and unknown-field filtering remain. Null or missing root data fails.
+
+The setter requires `config`, a list of objects requiring all three fields:
+`base_flag_name: string`, `trinary_admin_value: int`, `value: string`. Optional
+`domain` is a string and optional `validate_only` is a native bool. Omitted domain
+retains the empty/system default; omitted `validate_only` retains false. Explicit
+false/true encode as JSON booleans, while trinary 0 (pool), 1 (INI ADMIN) and
+2 (INI) remain integers. General enum/range enforcement is unchanged, so other
+integers are type-valid without a server-acceptance promise. `config: []` is
+formally permitted; no no-op or reset behavior is inferred. Setting configuration
+can affect applications. The source recommends at least 2 GB RAM available or
+30 MB per domain before enabling Apache PHP-FPM, to avoid severe performance
+issues. Validation-only is a documented mode, not proof of no side effects.
+
+SQL configuration requires cPanel 11.100; it is disabled when the MySQL/MariaDB
+role is disabled and remote MySQL is not configured. Root `data` is a required
+list whose object rows have only optional `name: string`, `remove: bool`,
+`section: string` and `value: string`. `data: []` sends `[]`, whereas `data: [[]]`
+sends `[{}]`. Native false stays false and zero-looking values remain strings.
+Empty rows/lists imply no server acceptance, no-op or atomicity guarantee.
+
+```php
+// These explicit calls send requests; all values shown are synthetic.
+$system = $client->whm()->webServer()->phpFpmConfigGet(configuration: []);
+$client->whm()->webServer()->phpFpmConfigSet(configuration: [
+    'domain' => 'example.test',
+    'config' => [
+        ['base_flag_name' => 'pm_max_children', 'trinary_admin_value' => 0, 'value' => '10'],
+    ],
+    'validate_only' => true,
+]);
+$client->whm()->databases()->updateSqlConfig(configuration: ['data' => [
+    ['name' => 'max_allowed_packet', 'section' => 'mysqld', 'value' => '268435456', 'remove' => false],
+]]);
+// Inspect responseMeta() warnings and raw metadata after each call.
+```
+
+Both setters return void because the formal responses declare metadata only.
+The existing void policy ignores unspecified data if present and checks normal
+WHM Flag outcomes. Metadata result 0 wins over invalid payload data. Success
+alone does not establish application or persistence. Get payload mismatches after
+result 1 retain confirmed-outcome metadata; callers inspect warnings and snapshots.
+
+The pinned PHP-FPM HTTP samples use port 2083/cpsess cookies and include quoted
+`api.version` in the body despite WHM identity. The client retains its configured
+WHM route/authentication and reserved body controls. Set samples also quote trinary
+values, contradicting the formal integer schema; strict formal integers govern,
+without coercion. Samples are source evidence, not live observations.
+
+Source names, array insertion order, row order/duplicates and string bytes are
+preserved. Unknown members, nulls, wrong native types, non-list/sparse collections,
+objects/resources/JsonSerializable and malformed UTF-8 reject before I/O after
+metadata reset; an invalid last row sends no partial request. PHP signature errors
+occur before method entry and retain the previous snapshot. Whole bodies are
+private. Existing library frames hide sensitive arguments/responses; returned
+configuration, mismatch payloads, raw metadata and caller/third-party transport
+traces still require care. The client evaluates no INI/SQL/path/URL values and adds
+no implicit read, polling, auth/account change, retry, merge, restore or rollback.
+
+Coverage is 1,234 canonical operations (636 UAPI, 598 WHM), 119 groups and
+241 generated outputs. Four of thirteen pinned JSON-body operations now have
+typed methods; nine remain deferred under the broader `8x0.29.6` audit.
+StatsManager stays direct-UAPI-only with its independent successful-live-write
+gates `8x0.1.18`/`8x0.1.19` open. WHM configuration delivery is `8x0.4.39`;
+its separate live follow-up `8x0.2.83` stays OPEN. All fixtures are offline and
+synthetic: no request, validation-only call, server setting or credential access
+ran. No persistent configuration, role enforcement or live acceptance is established.
+All 55 inherited source diagnostics remain visible and unwaived.
+
+
+### SSL and domain-security domain lists
+
+These existing `domains` arguments accept a compatible scalar string or a
+nonempty sequential string list. The generated client joins lists into one
+original form field using the pinned convention:
+
+| Group | Methods | List delimiter |
+| --- | --- | --- |
+| `uapi()->modSecurity()` | `disableDomains`, `enableDomains` | comma |
+| `uapi()->ssl()` | `addAutosslExcludedDomains`, `fetchCertificatesForFqdns`, `generateCert`, `generateCsr`, `setAutosslExcludedDomains`, `toggleSslRedirectForDomains` | comma |
+| `uapi()->ssl()` | `disableMailSni`, `enableMailSni` | pipe |
+| `whm()->ssl()` | `fetchSslCertificatesForFqdns`, `generateSsl` | comma |
+
+```php
+// Synthetic inputs. Calling this method immediately requests a redirect change.
+$account->ssl()->toggleSslRedirectForDomains(
+    domains: ['addon.example.test', 'addon.main.example.test'],
+    state: false,
+);
+
+// Certificate inventory also accepts ordinary lists.
+$certificates = $client->whm()->ssl()->fetchSslCertificatesForFqdns(
+    ['one.example.test', 'two.example.test'],
+);
+```
+
+Lists preserve order, duplicates, empty items and exact bytes. `['']` supplies an
+empty field; `['', 'a', '']` retains both delimiters. Empty, sparse, keyed and
+nonstring lists, nested/object items and items containing the selected delimiter
+fail locally before dispatch. The other delimiter remains data. Scalars retain
+raw delimiters, literal `%2C`/`%7C` and empty strings without parsing. Supply raw
+values: the whole joined field is form-encoded once. No trimming, domain
+validation, sorting or deduplication occurs.
+
+Only `setAutosslExcludedDomains()` has optional `domains = null`: omission or null
+removes every exclusion and enables AutoSSL for every account domain. It replaces
+the complete list; `addAutosslExcludedDomains()` is additive. `[]` is rejected,
+and an empty scalar or `['']` remains a supplied field without an invented reset
+or no-op meaning. Every other listed domains argument is required. Certificate
+and CSR generation keep `countryName` before `domains` and the existing `keyId`;
+the client never generates a prerequisite key implicitly. WHM `generateSsl()`
+stores a key and CSR even with `skipCertificate: true`.
+
+All twelve remain one form POST: UAPI uses the direct or WHM bridge route, WHM
+uses its native route. Role/version restrictions remain in generated PHPDoc.
+ModSecurity requires account-owned domains and the WebServer role; an API failure
+can follow partial changes. Mail SNI is documented as always enabled: enabling
+succeeds with a warning, disabling fails without changes, and rebuild guidance
+remains caller-driven. Webmail uses the cPanel service certificate. Redirect
+changes retain the documented ownership/certificate conditions and require both
+an addon domain and its associated subdomain. No implicit read, merge, rebuild,
+restore, retry, rollback or contact with supplied/returned domains occurs.
+
+All twelve collection arguments have `SensitiveParameter` trace protection
+without a semantic secret flag. Returned PEM/private material, response metadata
+and `PayloadMismatchException::$payload` can be sensitive; third-party transport
+traces remain their own responsibility. This adoption adds no operations or
+response changes: coverage stays 1,234 operations, 119 groups and 241 generated
+outputs. These are offline synthetic tests; historical scalar captures do not
+establish PHP-list live acceptance. Live follow-up `8x0.2.84` and the wider
+adopter audit `8x0.28.8` remain open.
+
+
+### Mail and account comma-separated inputs
+
+Eight existing arguments accept raw strings or nonempty sequential string lists.
+The client joins each list once with a comma into its original field:
+
+| Group and method | PHP argument → wire field | Required |
+| --- | --- | --- |
+| `uapi()->boxTrapper()->saveConfiguration()` | `fromAddresses` → `from_addresses` | yes |
+| `uapi()->email()->addForwarder()` | `forwardEmail` → `fwdemail` | no |
+| `uapi()->email()->addMailmanDelegates()` | `delegates` → `delegates` | yes |
+| `uapi()->mime()->addHotlink()` | `extensions` → `extensions` | yes |
+| `uapi()->mysql()->setPrivilegesOnDatabase()` | `privileges` → `privileges` | no |
+| `uapi()->team()->addTeamUser()` | `roles` → `roles` | no |
+| `whm()->mail()->generateMobileconfig()` | `selectedAccountServices` → `selected_account_services` | no |
+| `whm()->mail()->setUserEmailForwardDestination()` | `forwardTo` → `forward_to` | yes |
+
+```php
+// Synthetic inputs: these explicit calls change forwarding and database privileges.
+$account->email()->addForwarder(
+    domain: 'example.test',
+    email: 'alias@example.test',
+    forwardOption: 'fwd',
+    forwardEmail: ['first@example.test', 'second@example.test'],
+);
+$account->mysql()->setPrivilegesOnDatabase(
+    database: 'fixture_db',
+    user: 'fixture_user',
+    privileges: ['SELECT', 'CREATE TEMPORARY TABLES'],
+);
+// Explicit profile read; retain the private returned payload without decoding it.
+$profile = $client->whm()->mail()->generateMobileconfig(
+    account: 'fixture-account',
+    useSsl: true,
+    selectedAccountServices: ['email', 'caldav'],
+);
+```
+
+Lists retain order, duplicates, empty items, whitespace, Unicode, binary, pipes
+and URL/percent bytes. `['']` supplies an empty field and `['', 'a', '']` supplies
+`,a,`. Empty, sparse, keyed, nested and nonstring lists and items containing a
+comma reject locally before I/O after metadata reset; captured metadata snapshots
+remain intact. A quoted email address containing a comma also rejects as a list
+item; no quoting or escaping grammar is added. Scalar commas, literal `%2C` and
+empty strings remain unparsed. Supply raw bytes: ordinary serialization encodes
+the complete field once. No trimming, splitting, sorting, deduplication, coercion,
+email/domain/role/privilege enum validation or implicit defaults are added.
+The four optional arguments retain `null = null` omission; `[]` never becomes
+omission. The four required arguments remain required; native wrong-type errors
+precede method entry and retain prior metadata. Argument names and order stay
+unchanged, including `forwardEmail` and system forwarding's user-first order.
+
+The six UAPI methods retain direct and WHM bridge form POST; native WHM system
+forwarding retains form POST. Mobile profile generation retains GET, including
+its supplied service field in the query. All eight collection arguments have
+`SensitiveParameter` trace protection without a semantic secret flag or transport
+override. This covers library argument frames; caller/third-party traces, memory,
+returned profile/configuration, response metadata and mismatch payloads can still
+contain private data. Inspect warnings and raw metadata; API failure still wins
+over a valid-looking payload and no request is retried.
+
+BoxTrapper (cPanel 82, Receive Mail) changes message handling. Webmail overrides
+the mailbox selector, while direct/bridge calls retain it. `queueDays` minimum one
+is a server constraint; omitted `spamScore` retains current configuration, and
+false/zero flags, float scores and empty `fromName` remain supplied. Email
+forwarding and delegates (11.42, MailReceive/Receive Mail) retain their no-rollback
+caveats. `forwardEmail` remains optional in the interface although required by the
+server for `fwd`; fail/system/pipe alternatives and FileStorage requirements stay
+unchanged, as do `failureMessage`/`pipeForward` trace protections. Delegates gain
+mailing-list administrative privileges. The client does not insert the source
+example's literal `delegates=` prefix into values.
+
+Mime (11.42, WebServer) widens only `extensions`: `urls` stays one raw
+newline-separated string and `redirectUrl` stays scalar. `allowNull: false` still
+sends 0 and referrer behavior remains server-controlled. MySQL (11.44) privilege
+assignment replaces existing privileges; there is no read/merge. Names with spaces
+and `ALL PRIVILEGES` stay open strings. No default or clear/no-op/grant meaning is
+inferred for omitted/null/empty privileges. Account prefixes and the disabled
+MySQL/MariaDB-without-remote-MySQL caveat remain.
+
+Team (104, selected account) uses plural `roles`; no roles means no features, and
+creation can grant owner privileges. Password or activation email is required by
+the server, without a client cross-field guard. Password protection, literal dotted
+service fields, expiry/default/false/zero semantics and the self-referential FTP
+homedir source condition remain. Its reviewed nullable canonical integer-string
+timestamp result is unchanged; no live Team support is established. WHM profile
+generation (11.52, Receive Mail) omits services to retain `email,caldav,carddav`;
+unsupported services remain server-handled. Its private payload stays exact without
+format validation, decoding, installation or sending. WHM system forwarding (11.52)
+changes system-account destinations; root notices and nobody CGI bounce-mail
+caveats remain. The client contacts no destination or supplied URL and performs
+no implicit mail message, read, merge, settings change, retry or rollback.
+
+This adds no endpoints or response changes: 1,234 canonical operations, 119 groups
+and 241 generated outputs remain. Verification uses offline synthetic fixtures:
+no mailbox/list/team/settings/database/server change, activation/welcome/configuration
+message or mail delivery ran. Historical scalar captures cannot establish live
+PHP-list acceptance. Live follow-up `8x0.2.85`, the wider `8x0.28.8` adopter audit
+and existing module live/source follow-ups remain OPEN.
+
+## WHM administration delimited inputs (2026-11-01)
+
+Eleven generated positions use the accepted comma descriptor without a semantic
+`sensitive:true` flag. Exact public → wire mappings are:
+
+| Group/method | Public → wire | Position | Required |
+| --- | --- | --- | --- |
+| IpAddresses/addIps | `excludes` → `excludes` | 2 | no |
+| Authentication/authorizeSshKey | `options` → `options` | 3 | no |
+| Backups/backupConfigSet | `backupdays` → `backupdays` | 10 | no |
+| Server/configureService | `eximAltportnum` → `exim-altportnum` | 2 | no |
+| IpAddresses/disableIpv6Account | `user` → `user` | 0 | yes |
+| IpAddresses/enableIpv6Account | `user` → `user` | 1 | yes |
+| ModSecurity/getRules | `config` → `config` | 0 | no |
+| ModSecurity/getRules | `vendorId` → `vendor_id` | 3 | no |
+| Mail/saveSpamdConfig | `allowedIps` → `allowedips` | 0 | no |
+| Resellers/setResellerIps | `ips` → `ips` | 2 | no |
+| Resellers/setResellerNameservers | `nameservers` → `nameservers` | 1 | no |
+
+```php
+// Synthetic inputs; these explicit calls change server settings or account assignments.
+$client->whm()->backups()->backupConfigSet(backupdays: ['0', '2', '6']);
+$client->whm()->ipAddresses()->enableIpv6Account('SHARED', ['fixture-one', 'fixture-two']);
+```
+
+Required users remain `string|array`; nine optional positions remain
+`string|array|null = null`. Nonempty sequential strict-string lists join once into
+one original field, preserving order, duplicates, empty items and every other
+byte. Reject embedded commas, empty/sparse/keyed lists and null/int/bool/float/
+nested/object items after metadata reset before I/O. Raw commas, quoted commas,
+percent escapes, pipes and empty scalars remain unparsed. Null omits; `['']`
+supplies empty, `['', 'a', '']` supplies `,a,`, and `[]` never omits. Old captured
+metadata remains intact. Native wrong types precede entry/reset. Add no coercion,
+trim, sorting, parsing, enum/network/port/SSH syntax validation or cross-field guard.
+Quoted SSH commas require scalar input; quotes cannot escape a list-item comma.
+Days and ports remain strict strings in lists. Keep `backupdays` spelling,
+`backupMonthlyDates` string|int|null, `backupWeeklyDay` integer and all aliases/order.
+
+Omission excludes no IPv4 addresses, adds no SSH options, retains backup days
+0,2,4,6 and Exim alternate port 26. ModSecurity selectors remain optional despite
+source config-or-vendor prose; omission retains exclusion flag defaults 1 while
+false sends 0. Omitted spamd allowedIps allows any IP; supplied loopback inclusion
+is server validation without client insertion. Reseller ips omission clears the
+list; nameservers omission resets defaults. Explicit empty stays supplied, and
+review 5727013591 read its 11.138.0.19 effect: spamd allowedIps [''] equals
+omission (any IP may connect), reseller ips [''] clears the delegated list and
+nameservers [''] resets defaults. disableIpv6Account discards per-account
+failures, so a null result does not prove every account changed; read it back. Preserve root SSH file/text precedence, required file
+and sensitive text; IPv4 network effects and metadata.output.messages; IPv6
+role/listening/range prerequisites, address loss/reassignment and per-account
+failures; backup persistence, false/zero/timeouts/strict-prune/keeplocal caveats;
+service clustering-ACL named-only and never-disable-cpsrvd caveats; spamd role,
+zero-timeout/systemd PIDFile caveats; reseller delegate default 1/false 0, existing
+all:int/ip:list<string> and separate main/shared IP assignment. Existing version
+floors and all returned optional/null/mixed/strict fields remain in the overlays.
+
+ModSecurity stays GET with both selected fields; the other nine methods stay form
+POST. Generated SensitiveParameter covers all 11 collection positions and existing
+SSH text without changing transport policy. Library frames conceal arguments;
+caller/transport frames, memory and response/mismatch payloads remain outside that
+guarantee. All 276 generated return specs and method bodies in these seven groups
+and 266 nontarget contracts remain unchanged. No endpoint-count change: 1,234
+canonical operations, 119 groups, 241 outputs. No implicit read/merge/retry/rollback,
+local key/path access, DNS/network contact or restart is added. This convenience
+has offline evidence only; historical scalar captures cannot prove PHP-list
+acceptance. Live 2.86, wider 28.8, monthly-date gate 28.8.6 and existing module gaps
+remain OPEN. Original source/checksum/evidence and 55 inherited diagnostics remain
+unchanged. Exact-HEAD PHP 8.3 CI and external acceptance are separate gates.
+
+
+### WHM reboot status and corrected ordinary data payload
+
+`whm()->server()->systemNeedsReboot(): array` exposes the cPanel 64+ reboot-status
+operation. It determines whether quotas, software package updates or kernel
+updates require a reboot; upstream says detection cannot work inside LXC.
+The pinned schema incorrectly puts `details` and `needs_reboot` beside `metadata`.
+[External review5727236239](https://github.com/hostingpal/whm-api-client/pull/121#pullrequestreview-5727236239)
+at HEAD `789dfb0` on `11.138.0.19` observed the ordinary `data` envelope on GET
+and typed form POST (HTTP 200/API result 1), with no reboot and empty details.
+The overlay corrects that exact pinned response root. The shared runtime uses
+ordinary data extraction; no sibling fallback or projection descriptor exists.
+Missing data and explicit null are mismatches. Omitted optional fields remain
+omitted; `{data:{details:[],needs_reboot:0}}` retains that exact result shape.
+
+Every result field is optional and nonnullable. `needs_reboot` accepts only
+native integer `0|1`. `details.kernel` has optional string `boot_version` (the
+version the kernel updated to) and `running_version` (the current version).
+The kernel object appears only if the kernel updates and requires a reboot.
+`quota` stays an ordinary integer under the existing singleton-enum policy;
+its pinned note says it appears only if the kernel updates and requires a reboot.
+`updates` preserves an opaque map of mixed values; its pinned note says it appears
+only if software packages require updates. Existing empty-array object
+compatibility remains unchanged. The same external review reports handler source
+in `Whostmgr/API/1/ApplicationVersions.pm` assigning integer 1 to optional
+`details.needs_cloudlinux` and `details.securetmp_size_update`; both remain `int`
+under the existing singleton-integer policy. Populated kernel/quota/updates and
+these two reasons are source-read/offline cases, not observed live conditions.
+
+The documented variant/example uses GET, while `x-readonly: false` selects one
+empty form POST to `/json-api/system_needs_reboot?api.version=1`. The external
+review establishes POST acceptance only on `11.138.0.19`. Reviewer handler-source
+observations also say the server schedules `recache_system_reboot_data` unless
+the unpinned `no_cache_update` option is set; no typed argument is added. A failed
+sub-check other than `Unsupported` sets API result 0 and raises the ordinary
+`ApiErrorException`. `Unsupported` is skipped, so `needs_reboot: 0` does not prove
+every check ran. The client adds no request, retry, polling or implicit read.
+
+This correction uses attributed external evidence and offline synthetic fixtures;
+it performs no new live capture. Other unobserved states remain under live
+follow-up `8x0.2.87`. Current totals remain 1,235 canonical operations (636 UAPI,
+599 WHM), 119 groups and 241 outputs. Source snapshots, historical evidence and
+all 55 inherited diagnostics remain unchanged and unwaived.
