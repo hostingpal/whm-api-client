@@ -2149,6 +2149,12 @@ final readonly class Mail
      * captures do not establish PHP-list execution. Live follow-up whm-api-client-8x0.2.86 and wider adoption
      * whm-api-client-8x0.28.8 remain open.
      *
+     * Documented: PR120 review 5727013591 read the installed 11.138.0.19 handler and confirmed the request bytes
+     * offline: allowedIps [''] sends allowedips= and the handler deletes the option for a false value, which is the
+     * same as omission, so ANY IP may connect. ['', ''] sends a bare comma, which is truthy, passes validation with
+     * zero items and is stored. An all-empty list therefore does not restrict access. No live call ran. The client
+     * keeps forwarding the empty value unchanged.
+     *
      * API-map identity: whm1:save_spamd_config#GET (wire name save_spamd_config; Spam Management).
      *
      * @param string|non-empty-list<string>|null $allowedIps A comma-separated list of IP addresses to authorize to

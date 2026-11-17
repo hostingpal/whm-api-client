@@ -4721,8 +4721,11 @@ Omission excludes no IPv4 addresses, adds no SSH options, retains backup days
 source config-or-vendor prose; omission retains exclusion flag defaults 1 while
 false sends 0. Omitted spamd allowedIps allows any IP; supplied loopback inclusion
 is server validation without client insertion. Reseller ips omission clears the
-list; nameservers omission resets defaults. Explicit empty stays supplied without
-an inferred server meaning. Preserve root SSH file/text precedence, required file
+list; nameservers omission resets defaults. Explicit empty stays supplied, and
+review 5727013591 read its 11.138.0.19 effect: spamd allowedIps [''] equals
+omission (any IP may connect), reseller ips [''] clears the delegated list and
+nameservers [''] resets defaults. disableIpv6Account discards per-account
+failures, so a null result does not prove every account changed; read it back. Preserve root SSH file/text precedence, required file
 and sensitive text; IPv4 network effects and metadata.output.messages; IPv6
 role/listening/range prerequisites, address loss/reassignment and per-account
 failures; backup persistence, false/zero/timeouts/strict-prune/keeplocal caveats;
