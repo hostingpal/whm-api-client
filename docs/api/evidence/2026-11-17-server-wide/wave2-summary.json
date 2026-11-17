@@ -1,0 +1,146 @@
+{
+    "schema": "server-wide-battery-wave2-v1",
+    "host": "test.oblak.host",
+    "server_version": "11.138.0.24",
+    "date": "2026-11-17T16:19:43+00:00",
+    "counts": {
+        "passed": 23
+    },
+    "steps": [
+        {
+            "id": "whm1:version",
+            "group": "read-only",
+            "outcome": "passed",
+            "shape": "string"
+        },
+        {
+            "id": "whm1:cpgreylist_status(before)",
+            "group": "read-only",
+            "outcome": "passed",
+            "shape": "array"
+        },
+        {
+            "id": "whm1:enable_cpgreylist",
+            "group": "server-wide",
+            "outcome": "passed",
+            "shape": "null"
+        },
+        {
+            "id": "whm1:cpgreylist_status(enabled)",
+            "group": "read-only",
+            "outcome": "passed",
+            "shape": "array"
+        },
+        {
+            "id": "whm1:cpgreylist_is_server_netblock_trusted",
+            "group": "read-only",
+            "outcome": "passed",
+            "shape": "array"
+        },
+        {
+            "id": "whm1:cpgreylist_load_common_mail_providers_config",
+            "group": "read-only",
+            "outcome": "passed",
+            "shape": "array"
+        },
+        {
+            "id": "whm1:read_cpgreylist_trusted_hosts",
+            "group": "read-only",
+            "outcome": "passed",
+            "shape": "array"
+        },
+        {
+            "id": "whm1:load_cpgreylist_config",
+            "group": "read-only",
+            "outcome": "passed",
+            "shape": "array"
+        },
+        {
+            "id": "whm1:disable_cpgreylist",
+            "group": "server-wide",
+            "outcome": "passed",
+            "shape": "null"
+        },
+        {
+            "id": "whm1:modsec_get_settings",
+            "group": "read-only",
+            "outcome": "passed",
+            "shape": "array"
+        },
+        {
+            "id": "modsec setting with id and state found",
+            "group": "expectation",
+            "outcome": "passed"
+        },
+        {
+            "id": "whm1:modsec_batch_settings(record list)",
+            "group": "server-wide",
+            "outcome": "passed",
+            "shape": "array"
+        },
+        {
+            "id": "whm1:modsec_deploy_settings_changes",
+            "group": "lockout",
+            "outcome": "passed",
+            "shape": "array"
+        },
+        {
+            "id": "whm1:modsec_get_settings(after)",
+            "group": "read-only",
+            "outcome": "passed",
+            "shape": "array"
+        },
+        {
+            "id": "modsec setting state unchanged after re-save",
+            "group": "expectation",
+            "outcome": "passed"
+        },
+        {
+            "id": "whm1:cphulk_status(before)",
+            "group": "read-only",
+            "outcome": "passed",
+            "shape": "array"
+        },
+        {
+            "id": "whm1:enable_cphulk",
+            "group": "lockout",
+            "outcome": "passed",
+            "shape": "null"
+        },
+        {
+            "id": "whm1:load_cphulk_config",
+            "group": "read-only",
+            "outcome": "passed",
+            "shape": "array"
+        },
+        {
+            "id": "whm1:create_cphulk_record(list)",
+            "group": "lockout",
+            "outcome": "passed",
+            "shape": "array"
+        },
+        {
+            "id": "whm1:read_cphulk_records(white)",
+            "group": "read-only",
+            "outcome": "passed",
+            "shape": "array"
+        },
+        {
+            "id": "whitelist records readable",
+            "group": "expectation",
+            "outcome": "passed"
+        },
+        {
+            "id": "whm1:delete_cphulk_record(list)",
+            "group": "lockout",
+            "outcome": "passed",
+            "shape": "array"
+        },
+        {
+            "id": "whm1:version(after lockout group)",
+            "group": "read-only",
+            "outcome": "passed",
+            "shape": "string"
+        }
+    ]
+}
