@@ -43,7 +43,7 @@
         },
         {
           "kind": "observed",
-          "text": "On cPanel 11.138.0.24 create returns the same repository object as retrieve, including deployable (0/1 flag) and, for a repository without deployments, last_deployment null; a queued clone's task row also carries exclusive (string|int, as in UserTasks). These fields are now typed instead of dropped."
+          "text": "On cPanel 11.138.0.24 create returns the same repository object as retrieve, including deployable (0/1 flag) and, for a repository without deployments, last_deployment null; a queued clone's task row also carries exclusive (string|int, as in UserTasks). These fields are now typed instead of dropped. available_branches is null when the clone source cannot be reached, as retrieve and update already declare."
         }
       ],
       "evidence": [
@@ -139,6 +139,19 @@
               "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
               "pointer": "/paths/~1VersionControl~1create/post/responses/200/content/application~1json/schema/properties/result/properties/data",
               "note": "Name inspection through the WHM bridge on throwaway account wsinspect (removed afterwards): the queued clone's task row carried a string exclusive key, the UserTasks queue key that UserTasks/retrieve types as string|int. The UserTasks captures of 2026-11-02 and 2026-11-17 recorded these as masked unknown fields at $.* and $.tasks[].*."
+            }
+          ]
+        },
+        "available_branches": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.24",
+              "date": "2026-11-17",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1VersionControl~1create/post/responses/200/content/application~1json/schema/properties/result/properties/data",
+              "note": "UserTasks v3 capture docs/api/evidence/2026-11-17-user-tasks-v3-typed.json and the wsinspect name inspection: a clone whose remote is unreachable returned available_branches null, because the unnarrowed serialization isolates each field call and leaves an unreachable remote undefined (installed Cpanel/API/VersionControl.pm). retrieve and update already declare it nullable."
             }
           ]
         }

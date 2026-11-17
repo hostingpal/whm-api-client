@@ -27,7 +27,7 @@ final class VersionControlSpec
         'returns' => [
             'type' => 'object',
             'fields' => [
-                'available_branches' => ['type' => 'list', 'items' => ['type' => 'string']],
+                'available_branches' => ['type' => 'list', 'nullable' => true, 'items' => ['type' => 'string']],
                 'branch' => ['type' => 'string', 'nullable' => true],
                 'clone_urls' => [
                     'type' => 'object',

@@ -297,7 +297,10 @@ final class UapiVersionControlTest extends TestCase
                 $fields['tasks[].sse_url'] = ['null', '1', '[]'];
             }
             if ($function === 'create') {
-                $fields['available_branches'][] = 'null';
+                // 2026-11-17: create shares retrieve's deployable/last_deployment and the queue row's exclusive.
+                $fields['deployable'] = ['null', '"00"', '"2"', '"1.0"', '2', 'false', '0.0'];
+                $fields['last_deployment'] = ['1', 'false', '[1]'];
+                $fields['tasks[].exclusive'] = ['null', 'false', '[]', '1.5'];
             }
             if ($function !== 'create') {
                 $fields['deployable'] = ['null', '"00"', '"2"', '"1.0"', '2', 'false', '0.0'];
@@ -377,13 +380,17 @@ final class UapiVersionControlTest extends TestCase
         self::assertNull($plain['last_deployment']);
         $http->addResponse(new Response(200, [], self::envelope(
             $route,
-            '{"name":"clone","type":"git","repository_root":"/home/u/clone","deployable":"1","tasks":[{'
+            '{"name":"clone","type":"git","repository_root":"/home/u/clone","deployable":"1",'
+                . '"available_branches":null,"tasks":[{'
                 . '"action":"create","subsystem":"VersionControl","id":"00000000/5a9ec8dd4c345d",'
                 . '"sse_url":"/sse/UserTasks/00000000_5a9ec8dd4c345d","exclusive":"0",'
                 . '"args":{"repository_root":"/home/u/clone","log_file":"/home/u/.cpanel/logs/x.log"}}]}',
         )));
         $clone = $repositories->create('/home/u/clone', 'clone', 'git', '{"url":"https://192.0.2.1/x.git"}');
         self::assertSame(1, $clone['deployable'] ?? null);
+        // An unreachable clone source leaves available_branches undefined in the unnarrowed response.
+        self::assertArrayHasKey('available_branches', $clone);
+        self::assertNull($clone['available_branches']);
         self::assertSame('0', $clone['tasks'][0]['exclusive'] ?? null);
         $http->addResponse(new Response(200, [], self::envelope($route, '{"deployable":2}')));
         try {
