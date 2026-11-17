@@ -129,7 +129,11 @@ trait UapiGroups
 
     private ?ServerInformation $serverInformationGroup = null;
 
+    private ?ServiceProxy $serviceProxyGroup = null;
+
     private ?Session $sessionGroup = null;
+
+    private ?SiteQuality $siteQualityGroup = null;
 
     private ?Sitejet $sitejetGroup = null;
 
@@ -153,9 +157,15 @@ trait UapiGroups
 
     private ?Themes $themesGroup = null;
 
+    private ?Trash $trashGroup = null;
+
     private ?TwoFactorAuth $twoFactorAuthGroup = null;
 
+    private ?UserData $userDataGroup = null;
+
     private ?UserManager $userManagerGroup = null;
+
+    private ?UserTasks $userTasksGroup = null;
 
     private ?Users $usersGroup = null;
 
@@ -775,6 +785,21 @@ trait UapiGroups
     }
 
     /**
+     * Select the ServiceProxy operations without making a request.
+     *
+     * Selected-account service proxy backend inventory and configuration. Backend/general address inputs and paired
+     * records are sensitive; read results reveal infrastructure information. Writes may rebuild vhosts and restart the
+     * web server, with API-success rebuild warnings retained in responseMeta(). No backend contact, DNS/IP validation,
+     * retry or rollback is performed. Review 5725574081 at original 4462b68 reports direct UAPI success and WHM bridge
+     * module-load failure on 11.138.0.19; this build-scoped reviewer observation does not restrict supported routes.
+     * Live follow-up whm-api-client-8x0.2.70 remains open.
+     */
+    public function serviceProxy(): ServiceProxy
+    {
+        return $this->serviceProxyGroup ??= new ServiceProxy($this->run(...));
+    }
+
+    /**
      * Select the Session operations without making a request.
      *
      * Temporary Webmail session credentials (three of four pinned Session operations). Session-URL create_temp_user
@@ -783,6 +808,21 @@ trait UapiGroups
     public function session(): Session
     {
         return $this->sessionGroup ??= new Session($this->run(...));
+    }
+
+    /**
+     * Select the SiteQuality operations without making a request.
+     *
+     * Selected-account Site Quality Monitoring account, project, token, status and activation operations (10 of 13
+     * pinned functions), available from cPanel 110. Token-bearing responses are sensitive payload data. Single request
+     * only; no implicit email, polling, login, URL fetch, retry or rollback. Offline source-backed coverage only: live
+     * follow-up whm-api-client-8x0.2.71 remains open. get_monitored_domains/get_monitored_system_scores result
+     * locations remain gated under whm-api-client-8x0.1.34; get_all_scores required nullable verbose serialization
+     * remains gated under whm-api-client-8x0.1.35. SiteQuality is incomplete.
+     */
+    public function siteQuality(): SiteQuality
+    {
+        return $this->siteQualityGroup ??= new SiteQuality($this->run(...));
     }
 
     /**
@@ -898,6 +938,19 @@ trait UapiGroups
     }
 
     /**
+     * Select the Trash operations without making a request.
+     *
+     * Selected-account trash apparent usage and permanent item removal, available from cPanel 136 with source plugin
+     * annotation Trash. Paths and payloads are private remote data; the client forwards exact path bytes without local
+     * filesystem operations. Original-revision observations are build/route scoped; live follow-up
+     * whm-api-client-8x0.2.73 remains open.
+     */
+    public function trash(): Trash
+    {
+        return $this->trashGroup ??= new Trash($this->run(...));
+    }
+
+    /**
      * Select the TwoFactorAuth operations without making a request.
      *
      * The TwoFactorAuth module for UAPI.
@@ -908,6 +961,19 @@ trait UapiGroups
     }
 
     /**
+     * Select the UserData operations without making a request.
+     *
+     * Selected-account scoped userdata settings from cPanel 11.32. Preserve exact scalar inputs and required private
+     * maps with mixed JSON entries through existing object-to-array handling. Both pinned GET variants are
+     * non-read-only; form POST acceptance and mixed response shapes were observed at original 08dacc43 on 11.138.0.19,
+     * not on this corrected candidate. Live follow-up whm-api-client-8x0.2.74 remains open.
+     */
+    public function userData(): UserData
+    {
+        return $this->userDataGroup ??= new UserData($this->run(...));
+    }
+
+    /**
      * Select the UserManager operations without making a request.
      *
      * The UserManager module for UAPI.
@@ -915,6 +981,18 @@ trait UapiGroups
     public function userManager(): UserManager
     {
         return $this->userManagerGroup ??= new UserManager($this->run(...));
+    }
+
+    /**
+     * Select the UserTasks operations without making a request.
+     *
+     * Selected-account user task queue inventory and deletion, available from cPanel 72. Task IDs and queue payloads
+     * are private. The client preserves identifier bytes and performs no task execution, polling, retry, restore or
+     * rollback. Offline source-backed coverage only; live follow-up whm-api-client-8x0.2.72 remains open.
+     */
+    public function userTasks(): UserTasks
+    {
+        return $this->userTasksGroup ??= new UserTasks($this->run(...));
     }
 
     /**

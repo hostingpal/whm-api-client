@@ -13,7 +13,13 @@ use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use RuntimeException;
 
-/** Minimal independent account/token state double, with failures before or after real fixture side effects. */
+/**
+ * Minimal independent account/token state double, with failures before or after real fixture side effects.
+ *
+ * Other zones and domains always exist, as on a real server, because an empty list cannot prove absence. Failures fire
+ * `_before` or `_after` a request's effect: `throw` loses the response, `api` is an explicit refusal, `http` a 502
+ * gateway error and `invalid` an unreadable 200 body.
+ */
 final class FiniteQuotaServer implements ClientInterface
 {
     public bool $account = false;
@@ -82,6 +88,9 @@ final class FiniteQuotaServer implements ClientInterface
         if ($failure === 'api_before') {
             return self::response('null', $bridge, false);
         }
+        if ($failure === 'http_before' || $failure === 'invalid_before') {
+            return self::unusable($failure);
+        }
         if ($request->getMethod() === 'POST') {
             $this->mutations[] = $function;
         }
@@ -124,6 +133,9 @@ final class FiniteQuotaServer implements ClientInterface
         if ($failure === 'api_after') {
             return self::response('null', $bridge, false);
         }
+        if ($failure === 'http_after' || $failure === 'invalid_after') {
+            return self::unusable($failure);
+        }
         $data = match ($function) {
             'version' => ['version' => '11.138.0.15'],
             'listaccts' => ['acct' => array_merge([
@@ -131,10 +143,14 @@ final class FiniteQuotaServer implements ClientInterface
                 ['user' => 'wqfiniteextra', 'domain' => 'wqfinite.example.com.other'],
             ], $this->account
                 ? [['user' => 'wqfinite', 'domain' => 'wqfinite.example.com', 'email' => $this->contactEmail]] : [])],
-            'listzones' => ['zone' => $this->zone
-                ? [['domain' => 'wqfinite.example.com', 'zonefile' => 'private.db']] : []],
-            'get_domain_info' => ['domains' => $this->account
-                ? [['domain' => 'wqfinite.example.com', 'user' => 'wqfinite']] : []],
+            'listzones' => ['zone' => array_merge(
+                [['domain' => 'existing.example', 'zonefile' => 'private.db']],
+                $this->zone ? [['domain' => 'wqfinite.example.com', 'zonefile' => 'private.db']] : [],
+            )],
+            'get_domain_info' => ['domains' => array_merge(
+                [['domain' => 'existing.example', 'user' => 'existing']],
+                $this->account ? [['domain' => 'wqfinite.example.com', 'user' => 'wqfinite']] : [],
+            )],
             'Tokens/list' => array_map(fn (string $name): array => array_replace([
                 'name' => $name, 'readonly' => 1,
                 'expires_at' => $this->expirationWireValue === null
@@ -169,6 +185,14 @@ final class FiniteQuotaServer implements ClientInterface
         }
 
         return new Response(200, [], '{' . $metadata . ',"data":' . $payload . '}');
+    }
+
+    /** A reply that says nothing about the request's outcome, as a gateway or a truncated response does. */
+    private static function unusable(string $failure): ResponseInterface
+    {
+        return str_starts_with($failure, 'http')
+            ? new Response(502, [], 'private upstream gateway text')
+            : new Response(200, [], 'private unreadable upstream text');
     }
 
     private static function failTransport(): never

@@ -480,3 +480,81 @@ Implementation plans should be filed in the owning Bead with exact files, interf
 and failing-test-first steps when the relevant work begins. Source-specific method
 names not fixed above, internal helper layout and test organization are left to the
 builder; changing these public semantics requires a reviewed design amendment.
+
+## Remaining simple WHM indexed-input adoption (2026-11-01)
+
+This bounded adoption adds two collection positions through the existing indexed
+metadata, with no engine, generator, response, endpoint or transport change:
+
+| Method | Scalar field/type | Nonempty list fields/type |
+| --- | --- | --- |
+| `twoFactorAuthRemoveUserConfig(user)` | `user`, native string | `user-1`, `user-2`, native strings |
+| `convertAddonGetConversionStatus(jobId)` | `job_id`, native integer | `job_id-0`, `job_id-1`, native integers |
+
+Both inputs remain required. Singleton lists retain their index. Lists preserve
+order, duplicates and exact values, reject nonsequential/empty/wrong-type contents
+before I/O after metadata reset, and receive generated SensitiveParameter trace
+protection without semantic secret flags or verb overrides. Native wrong scalars
+and top-level null retain PHP's pre-entry TypeError lifecycle. Conversion's pinned
+minimum 1 is documented; no range validation or numeric coercion is introduced.
+
+The parameter pointers are respectively
+`/paths/~1twofactorauth_remove_user_config/get/parameters/0` and
+`/paths/~1convert_addon_get_conversion_status/get/parameters/0` in WHM source
+SHA-256 `6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594`.
+TFA explicitly documents suffixes starting at 1. Conversion prose starts at 0
+while its example starts at 1; the attributed reviewer source inspection in
+review 5722427592 above supports either base on `11.138.0.19`, with zero chosen
+explicitly here. No live multi-job list was observed. The historical contradiction
+and reviewer attribution remain intact.
+
+TFA remains one form POST: inspect the failed map separately from API success;
+users_modified can include users without prior configuration and proves no actual
+removal. Removal requires setup again. Conversion remains one GET with an empty
+body; dynamic map keys, string payload job_id and per-job statuses are unchanged.
+No polling, retry, prior-state read, rollback, conversion initiation, batch atomicity,
+persistence or live compatibility claim follows. Other indexed families and the
+separate token slice remain outside this adoption.
+
+### 2026-11-01 SPF paired-record adoption (`8x0.1.21.4`)
+
+The separate generated `whm()->mail()->installSpfRecordBatch(records)` adopts
+`non-empty-list<SpfRecordInput>`, with required string `domain`/`record` fields.
+The existing scalar `installSpfRecords(domain, record)` and canonical operation
+count/response remain unchanged. Explicit metadata selects start 1 and separator
+`-`: `domain-1`, `record-1`, then `domain-2`, `record-2`, even for a singleton.
+Closed complete rows preserve bytes, empty strings, order and duplicates in one
+sensitive argument and one form POST; parallel arrays and caller numbering are
+not exposed. Pinned pointers `/paths/~1install_spf_records/get/parameters/0` and
+`/1` retain required string types; only domain explicitly documents its suffixes.
+The attributed [PR72 source review](https://github.com/hostingpal/whm-api-client/pull/72#pullrequestreview-5722427592)
+on 11.138.0.19 supports sorted-position pairing of both families and supersedes
+the old serialization gate, without a live batch observation. Offline fixtures
+establish transport and validation only. Installing supplies complete replacement
+SPF records; no clearing semantics, duplicate resolution, DNS propagation, applied
+state, persistence or atomicity is inferred. No read/merge, retry or rollback is
+added. Live follow-up `8x0.2.48` remains open.
+
+## WHM token implementation addendum (2026-11-01)
+
+The four token adopters reuse existing indexed metadata: `createToken()`,
+`createDashboardToken()` and `updateToken()` add ACL and whitelist string lists
+with zero-based `acl-` and `whitelist_ip-` families; `revokeToken()` adds one-based
+`token_name-` lists. Scalars retain bare fields, singleton lists retain suffixes,
+and empty/malformed lists are rejected after metadata reset. All seven collection
+arguments are trace-sensitive without adding semantic secret flags. Dashboard ACL
+remains required; other argument order/defaults and all result contracts remain.
+
+`updateToken()` restores formal pinned optionality (one required argument), with
+null omission and no implicit read/merge. Supplied ACL/IP values replace their
+whole setting; empty strings remain supplied. `expiresAt: 0` and
+`whitelistIp: 'any'` explicitly request nonexpiration and unrestricted IPs.
+The [attributed installed-source review](https://github.com/hostingpal/whm-api-client/pull/72#pullrequestreview-5722427592)
+on `11.138.0.19` corrects pinned reset-on-omission text: only supplied fields are
+copied, while empty lists are dropped. Preservation on older versions is not
+established. The review accepts numeric ACL bases and underscore IP families;
+zero-based ACL examples are selected despite one-based update prose, and mixed
+`whitelist-ip` examples remain a source discrepancy. Pinned source and historical
+evidence remain unchanged. One form POST is sent per explicit call with unchanged
+envelope outcomes; no live list acceptance, persistence, batch atomicity or
+successful credential lifecycle is claimed.

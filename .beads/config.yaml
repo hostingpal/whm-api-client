@@ -74,3 +74,9 @@
 sync.remote: "git+https://github.com/hostingpal/whm-api-client"
 agent:
     profile: team-maintainer
+
+# Inject only 00-agent-context-index; search history with bd memories, read full
+# records with bd recall <key>.
+prime:
+    max-memories: 1
+    max-memory-chars: 8000
