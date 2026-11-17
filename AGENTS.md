@@ -487,6 +487,21 @@ every session that changes files.
 - If any commit, push, sync, or pull request step fails, stop and report the
   exact command and error.
 
+## Beads Memories
+
+`bd prime` injects memories at session start in key order, under the budget in
+`.beads/config.yaml`; see the "Bounded agent context" section of `.beads/README.md`.
+
+- A memory is a standing fact, policy or gotcha of one or two sentences. Update it
+  in place with `bd remember "<fact>" --key <key>`; do not save a dated copy.
+- Do not store reports, handoffs, rulings, review ledgers, commit hashes or worktree
+  paths as memories. Put them on the bead (`bd update <id> --append-notes "..."`)
+  or in the pull request.
+- Only memories that every session needs get a key starting with `00-`
+  (`00-policy-*`, `00-env-*`, `00-lesson-*`). Check `bd prime --hook-json | wc -m`
+  stays under 10,000 after adding one.
+- Module findings belong in `docs/agents/modules/`, not in memories.
+
 ## Maintaining Agent Guidance
 
 `AGENTS.md` is the single source of agent guidance. `CLAUDE.md` only imports it

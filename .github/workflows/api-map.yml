@@ -35,6 +35,17 @@ jobs:
           composer install --no-interaction --prefer-dist --no-progress
           go -C tools/api-map mod download
           go -C tools/api-map mod verify
+      - name: Check agent context budgets
+        run: |
+          # Codex stops reading AGENTS.md at 32 KiB by default. Claude Code truncates
+          # session-start hook output above 10,000 characters, which .beads/PRIME.md
+          # shares with the injected memories.
+          size="$(wc -c < AGENTS.md)"
+          echo "AGENTS.md: ${size} bytes (limit 32000)"
+          test "$size" -le 32000
+          size="$(wc -c < .beads/PRIME.md)"
+          echo ".beads/PRIME.md: ${size} bytes (limit 2200)"
+          test "$size" -le 2200
       - name: Validate offline
         env:
           GOPROXY: 'off'
