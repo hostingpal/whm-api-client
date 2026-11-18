@@ -4635,11 +4635,13 @@ client will perform the import. Keep the ID and authenticated URL private.
 The installed 11.138.0.24 CSVImport source creates three files in
 `~/tmp/cpcsvimport/` for each prepared batch: `<id>` (upload), `<id>.parsed`
 (parsed rows) and `<id>.import` (configured rows). These can contain mailbox
-passwords. After reconciling the import, select those three filenames for the
-specific ID in the account's File Manager and click **Delete**. The installed
-Jupiter File Manager confirmation template offers **Skip the trash and
-permanently delete the files**. The live test removed the disposable account
-and then verified that its home and CSV staging directory were absent.
+passwords. After reconciling the import, select those three filenames for this
+import ID in the account's File Manager and click **Delete**. In the confirmation
+dialog, select **Skip the trash and permanently delete the files**, verify the
+selection contains only this batch's three files, and confirm deletion. These
+instructions follow the installed Jupiter File Manager template. The live test
+removed the disposable account and then verified that its home and CSV staging
+directory were absent.
 
 The method makes one POST. The server can create rows before and after a failed
 row, without rollback. A nonempty list returns even when every row failed.
