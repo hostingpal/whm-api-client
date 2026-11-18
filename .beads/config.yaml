@@ -75,8 +75,9 @@ sync.remote: "git+https://github.com/hostingpal/whm-api-client"
 agent:
     profile: team-maintainer
 
-# Inject only 00-agent-context-index; search history with bd memories, read full
-# records with bd recall <key>.
+# Inject the memories whose keys start with 00- (they sort first). Claude Code
+# truncates hook output above 10,000 characters, so this budget plus PRIME.md must
+# stay below that; see README.md. Search the rest with bd memories, read a full
+# record with bd recall <key>.
 prime:
-    max-memories: 1
-    max-memory-chars: 8000
+    max-memory-chars: 7400

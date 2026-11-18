@@ -19,6 +19,7 @@
 /AGENTS.md export-ignore
 /CLAUDE.md export-ignore
 /composer.lock export-ignore
+/docs/agents export-ignore
 /docs/api export-ignore
 /docs/superpowers export-ignore
 /phpcs.xml.dist export-ignore
