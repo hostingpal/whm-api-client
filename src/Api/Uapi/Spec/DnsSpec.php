@@ -145,6 +145,53 @@ final class DnsSpec
         'returns' => ['type' => 'list', 'nullable' => true, 'items' => ['type' => 'string']],
     ];
 
+    public const MASS_EDIT_ZONE = [
+        'function' => 'mass_edit_zone',
+        'module' => 'DNS',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'serial' => ['name' => 'serial', 'encoding' => 'scalar'],
+            'zone' => ['name' => 'zone', 'encoding' => 'scalar'],
+            'add' => [
+                'name' => 'add',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'repeat',
+                    'item_type' => 'string',
+                    'allow_scalar' => false,
+                    'empty' => 'reject',
+                ],
+            ],
+            'edit' => [
+                'name' => 'edit',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'repeat',
+                    'item_type' => 'string',
+                    'allow_scalar' => false,
+                    'empty' => 'reject',
+                ],
+            ],
+            'remove' => [
+                'name' => 'remove',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'repeat',
+                    'item_type' => 'int',
+                    'allow_scalar' => false,
+                    'empty' => 'reject',
+                ],
+            ],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'new_serial' => ['type' => 'int', 'accept' => ['numeric-string']],
+            ],
+        ],
+    ];
+
     public const PARSE_ZONE = [
         'function' => 'parse_zone',
         'module' => 'DNS',
@@ -165,6 +212,41 @@ final class DnsSpec
                     'text_b64' => ['type' => 'string'],
                     'ttl' => ['type' => 'int'],
                     'type' => ['type' => 'string'],
+                ],
+            ],
+        ],
+    ];
+
+    public const SWAP_IP_IN_ZONES = [
+        'function' => 'swap_ip_in_zones',
+        'module' => 'DNS',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domain' => [
+                'name' => 'domain',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'repeat',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                ],
+            ],
+            'destIp' => ['name' => 'dest_ip', 'encoding' => 'scalar'],
+            'sourceIp' => ['name' => 'source_ip', 'encoding' => 'scalar'],
+            'ftpIp' => ['name' => 'ftp_ip', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'list',
+            'items' => [
+                'type' => 'object',
+                'fields' => [
+                    'new_value' => ['type' => 'string'],
+                    'old_value' => ['type' => 'string'],
+                    'record_name' => ['type' => 'string'],
+                    'record_type' => ['type' => 'string'],
+                    'zone_name' => ['type' => 'string'],
                 ],
             ],
         ],
