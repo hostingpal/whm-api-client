@@ -6,7 +6,6 @@ namespace HostingPal\WhmApiClient\Tools\LiveVerify;
 
 use Closure;
 use LogicException;
-use RuntimeException;
 use SensitiveParameter;
 use Throwable;
 
@@ -37,8 +36,7 @@ final class SectionCommand
         string $reportKey,
         Closure $fixture,
     ): int {
-        $temporary = null;
-        $recovery = null;
+        $publication = null;
         $safeLabel = 'Section';
         try {
             if (
@@ -76,54 +74,28 @@ final class SectionCommand
             require $root . '/vendor/autoload.php';
             $context = RepositoryContext::load($root);
             $output = substr($argument, 9);
-            if (is_link($output) || file_exists($output)) {
-                throw new LogicException('Section evidence needs a new destination.');
-            }
-            $directory = dirname($output);
-            if (!is_dir($directory) && !@mkdir($directory, 0700, true) && !is_dir($directory)) {
-                throw new RuntimeException('Evidence directory unavailable.');
-            }
-            $temporary = @tempnam($directory, '.' . substr($scriptName, 0, -4) . '-');
-            if ($temporary === false) {
-                $temporary = null;
-                throw new RuntimeException('Evidence file unavailable.');
-            }
-            if (dirname($temporary) !== realpath($directory) || !@chmod($temporary, 0600)) {
-                throw new RuntimeException('Evidence file protection unavailable.');
-            }
+            $publication = new EvidencePublication($output, '.' . substr($scriptName, 0, -4) . '-');
             $report = $fixture(['whm' => $whm, 'cpanel' => $cpanel], bin2hex(random_bytes(3)), $context);
             $json = json_encode(
                 ['schema_version' => 1, $reportKey => $report],
                 JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR,
             ) . "\n";
-            if (@file_put_contents($temporary, $json) !== strlen($json)) {
-                throw new RuntimeException('Evidence persistence failed.');
-            }
-            // Preserve the complete protected report if atomic new-only publication cannot succeed.
-            $recovery = $temporary;
-            if (!@link($temporary, $output)) {
-                throw new RuntimeException('Evidence publication failed.');
-            }
-            @unlink($temporary);
-            $temporary = null;
-            $recovery = null;
+            $publication->publish($json);
             $passed = $report['status'] === 'passed';
             fwrite(STDOUT, $safeLabel . ' section fixture: ' . ($passed ? 'passed' : 'failed') . "\n");
 
             return $passed ? 0 : 1;
         } catch (Throwable $error) {
             $kind = $error instanceof LogicException ? 'configuration_failure' : 'execution_failure';
+            $recovery = $publication?->quotedRecoveryPath();
             if ($recovery !== null) {
-                fwrite(STDERR, 'Recovery evidence retained at '
-                    . json_encode($recovery, JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE) . ".\n");
+                fwrite(STDERR, 'Recovery evidence retained at ' . $recovery . ".\n");
             }
             fwrite(STDERR, $safeLabel . ' section verification failed (' . $kind . ").\n");
 
             return 1;
         } finally {
-            if ($temporary !== null && $recovery === null) {
-                @unlink($temporary);
-            }
+            $publication?->finish();
         }
     }
 }

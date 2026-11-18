@@ -7,12 +7,12 @@ GET reads and two form POST zone writes, `massEditZone()` and `swapIpInZones()`.
 writes require cPanel 96 and declare no rollback. The pinned source lists them as GET
 with `x-readonly=false`; the client sends form POST.
 
-Everything marked "observed" below comes from one-off runs on 2026-11-18 against
+The original implementation observations below come from one-off runs on 2026-11-18 against
 `test.oblak.host` on cPanel `11.138.0.24`, on the disposable account `wldnszed`
 (created and removed by each run, absence confirmed). The first run used the generic
 `call()` at master `8c2834de` and recorded value types and error text only. The second
 run called the generated methods of this slice. Both used direct UAPI and the WHM
-bridge. No capture artifact is committed; a recipe is tracked under `8x0.2.97`.
+bridge. Those two runs produced no committed capture.
 "Source read" means the server's own Perl on that version, not the pinned documents.
 
 ## massEditZone
@@ -44,7 +44,7 @@ Read [WHM DNS management](whm-dns.md) for the shared rules.
   only after the admin call applied the changes and produced the new serial.
 - Source read: the function needs one of the `simplezoneedit`, `zoneedit` or
   `changemx` features and is refused in demo mode. Accepted record types depend on
-  those features. Only `TXT` records were exercised live.
+  those features. The original runs used `TXT` records. The two-zone recipe exercised `A` records.
 
 ## swapIpInZones
 
@@ -87,10 +87,16 @@ Read [WHM DNS management](whm-dns.md) for the shared rules.
   zone. The first zone processed that yields an address decides it for every zone
   processed after it, and that order is not the caller's. A zone without a candidate is
   skipped only until an address has been found; after that it is processed with the
-  found address and its SPF records are rewritten. Unobserved: both test domains shared
-  one zone.
-- Source read: temporary domains are skipped with a warning in `responseMeta()`; if
-  all are skipped the result is an empty list. Unobserved.
+  found address and its SPF records are rewritten. The two-zone recipe below independently confirmed reuse of one source across zones with distinct apices.
+- A separate one-off test on 2026-11-18 used the generated `swapIpInZones()` at
+  `1e3f79c3` on cPanel `11.138.0.24`. cPanel assigned a temporary addon domain
+  to a new disposable account. The client's account-scoped inventory returned one
+  addon, and `isTemporaryDomain()` confirmed its type. For that domain alone,
+  direct UAPI and the WHM bridge each returned HTTP 200, UAPI status 1, an empty
+  list, and a warning naming the skipped domain. This case exits before the zone
+  update. The lifecycle confirmed account, token, primary domain and zone absence.
+  A separate server check found zero temporary-domain assignments for the account.
+  This observation is independent of the two-zone recipe.
 - Source read: the function declares no feature requirement; the admin layer checks
   that the caller owns every domain.
 
@@ -100,3 +106,17 @@ Read [WHM DNS management](whm-dns.md) for the shared rules.
 
 Neither method rereads, retries or rolls back. Changes to public zones are published
 and cached by resolvers.
+
+## Reproducible account-scoped evidence
+
+The `dns-zone-writes.php` recipe captured 30 typed probes on cPanel
+`11.138.0.24`. On each route it added, edited and removed an A record, deriving
+the serial and edit index from live readback. It gave each of two distinct
+zones a different apex address and put both candidate addresses in both zones.
+Direct UAPI returned matching A change rows for both zones. Only the markers
+for one detected source changed, and both SOA serials advanced. The WHM bridge
+returned the known inner API error. Both complete typed zone snapshots stayed
+unchanged across that request. See the [live recipe](../../../tools/live-verify/README.md#uapi-dns-zone-writes-on-a-disposable-account)
+for the evidence policy and command. The v4 run inspected the original responses
+and verified that the optional resource-record field `dname_raw` was a string equal
+to decoded `dname_b64`. The typed parse now preserves this field when present.

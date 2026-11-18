@@ -319,6 +319,49 @@ final class DisposableAccountLifecycle
      */
     private function domainListed(array $accounts): bool
     {
+        $owners = $this->configuredDomainOwners();
+
+        return in_array($this->account->domain, array_column($accounts, 'domain'), true)
+            || isset($owners[$this->account->domain]);
+    }
+
+    /** Verify the current marker and primary domain immediately before a recipe mutates its account. */
+    public function requireOwnership(): void
+    {
+        if (!$this->owns($this->accounts())) {
+            throw new RuntimeException('Disposable account ownership is unconfirmed.');
+        }
+    }
+
+    /** Read a domain's owner from fresh primary and configured-domain inventories. Absence requires both reads. */
+    public function domainOwner(string $domain): ?string
+    {
+        $owner = null;
+        foreach ($this->accounts() as $row) {
+            if ($row->domain === $domain) {
+                if (!is_string($row->user) || ($owner !== null && $owner !== $row->user)) {
+                    throw new RuntimeException('Disposable domain ownership is ambiguous.');
+                }
+                $owner = $row->user;
+            }
+        }
+
+        $configured = $this->configuredDomainOwners()[$domain] ?? null;
+        if ($owner !== null && $configured !== null && $owner !== $configured) {
+            throw new RuntimeException('Disposable domain ownership is ambiguous.');
+        }
+
+        return $owner ?? $configured;
+    }
+
+    /**
+     * Read one nonempty server-wide inventory of manually configured domains and their owners.
+     *
+     * @return array<string, string>
+     * @phpstan-impure
+     */
+    public function configuredDomainOwners(): array
+    {
         $this->whm->call('get_domain_info', [], RequestMethod::Get);
         $payload = $this->rawPayload(false);
         $rows = self::identityRows($payload instanceof stdClass ? ($payload->domains ?? null) : null, 'domain', 'user');
@@ -326,8 +369,11 @@ final class DisposableAccountLifecycle
             throw new RuntimeException('Disposable account domain inventory cannot prove absence.');
         }
 
-        return in_array($this->account->domain, array_column($accounts, 'domain'), true)
-            || in_array($this->account->domain, array_column($rows, 'domain'), true);
+        // identityRows checked that every domain is a distinct nonempty string paired with a nonempty user.
+        /** @var array<string, string> $owners */
+        $owners = array_column($rows, 'user', 'domain');
+
+        return $owners;
     }
 
     /**
@@ -350,6 +396,23 @@ final class DisposableAccountLifecycle
     /** @phpstan-impure */
     private function zoneExists(): bool
     {
+        return $this->zoneListed($this->account->domain);
+    }
+
+    /** Read one zone's presence from a fresh, nonempty inventory with distinct identities. */
+    public function zoneListed(string $domain): bool
+    {
+        return in_array($domain, $this->zoneNames(), true);
+    }
+
+    /**
+     * Read one nonempty server-wide inventory of distinct DNS zone names.
+     *
+     * @return list<string>
+     * @phpstan-impure
+     */
+    public function zoneNames(): array
+    {
         $this->whm->call('listzones', [], RequestMethod::Get);
         $payload = $this->rawPayload(false);
         $rows = self::identityRows($payload instanceof stdClass ? ($payload->zone ?? null) : null, 'domain');
@@ -357,7 +420,11 @@ final class DisposableAccountLifecycle
             throw new RuntimeException('Disposable account zone inventory cannot prove absence.');
         }
 
-        return in_array($this->account->domain, array_column($rows, 'domain'), true);
+        // identityRows checked the type and uniqueness of every zone name.
+        /** @var list<string> $names */
+        $names = array_column($rows, 'domain');
+
+        return $names;
     }
 
     /**

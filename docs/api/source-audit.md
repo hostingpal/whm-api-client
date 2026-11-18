@@ -12654,7 +12654,9 @@ Read over SSH from `/usr/local/cpanel`, not from the pinned documents:
   the first zone processed decides it for the batch; the loop iterates a hash. Every
   processed zone has its serial increased and is synchronized and reloaded.
 
-### Not observed
+### Outside the original one-off runs
+
+The later two-zone recipe and the separate temporary-domain observation are recorded below.
 
 - A bridged `swap_ip_in_zones` success, so the list container is unobserved there.
 - A swap across two separate zones (both test domains shared one zone), and therefore
@@ -12666,3 +12668,41 @@ Read over SSH from `/usr/local/cpanel`, not from the pinned documents:
 
 A committed disposable-account recipe and these variants are tracked under
 `whm-api-client-8x0.2.97`.
+
+## 2026-11-18 — UAPI DNS two-zone live recipe (8x0.2.97)
+
+The [v4 capture](evidence/2026-11-18-uapi-dns-zone-writes-v4.json) ran from clean
+recipe revision `ec817b8a7471b34fbd4304d60c11eedf3439fc24` on `test.oblak.host`,
+cPanel `11.138.0.24`. Its 30 probes cover 20 zone parses, eight mass edits and
+two IP swaps. Each observation carries its route, request method, pinned variant,
+revision and source/effective-contract hashes.
+
+- Direct and bridged UAPI each added, edited and removed an A record. Fresh reads
+  confirmed the owner's address, TTL, index and zone serial at the relevant phases.
+- With two distinct test-zone apices and matching markers in each, direct UAPI
+  reused one detected source address across both zones. Both zone serials advanced
+  and the returned rows matched the changed markers. The bridge returned the
+  known undefined-subroutine API failure. Both complete parsed snapshots were
+  unchanged across that request.
+- All 20 parse observations retained a masked unknown-field discrepancy. Inspection
+  of each original response verified that its only extra row field was a string
+  `dname_raw` on record rows equal to the decoded `dname_b64`. This recipe review
+  preserves the generated parse contract. The fixture and evidence review passed.
+  Account, token, primary domain, alias and both zones were confirmed absent.
+- An independent one-off at `1e3f79c3` verified the temporary-domain-only swap.
+  See the [module notes](../agents/modules/uapi-dns.md) for its target and cleanup.
+
+The [first run](evidence/2026-11-18-uapi-dns-zone-writes.json) stopped at alias
+parking. The [second run](evidence/2026-11-18-uapi-dns-zone-writes-v2.json) stopped
+on the first zone parse with a masked unknown field. Its artifact cannot establish
+that field's name. Both cleaned up. The [third run](evidence/2026-11-18-uapi-dns-zone-writes-v3.json)
+completed the two-zone exercise while the evidence reviewer was being finalized.
+The v4 capture verified that reviewer on a fresh disposable fixture.
+
+The [v5 capture](evidence/2026-11-18-uapi-dns-zone-writes-v5.json) exercised the reviewed recipe at
+`1e1891a7084f09a8981a3bb780feb363c432b575` on cPanel `11.138.0.24`. All 30
+phases ran. The typed parse preserved the optional `dname_raw` field and the
+stricter evidence review passed with zero discrepancies. The ordinary bridged
+swap returned the known handler failure with both zone snapshots unchanged.
+The direct swap matched the controlled A changes in both zones. The account,
+token, primary and alias domains, and both zones were confirmed absent.

@@ -1,0 +1,3496 @@
+{
+    "schema_version": 1,
+    "dns_zone_writes": {
+        "scenario": "uapi-dns-zone-disposable-v1",
+        "target_role": "disposable-test-account",
+        "server_version": "11.138.0.24",
+        "bridge_outcome": "known_failure",
+        "probes": [
+            {
+                "operation": "uapi:DNS/parse_zone",
+                "variant": "uapi:DNS/parse_zone#GET",
+                "argument_variant": "direct-mass-before",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.24",
+                "observed_at": "2026-11-18T11:39:30Z",
+                "revision": "07080b1e65d047323a8e2fd11038f69a3ea3b15d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "fc0c5b0646b9f4f16335f2412206e9779d8d09e7",
+                "overlay_sha256": "3df098f09e39982fe3e472cce9b961ff04e9c86993c3b757cecc17c6235d7e3b",
+                "effective_contract_sha256": "9d318e929dc7b2c9f5eb506a482e9af44e1e864548977432beded9f5ed63afd7",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "list"
+                    ],
+                    "$.data[]": [
+                        "object"
+                    ],
+                    "$.data[].*": [
+                        "string"
+                    ],
+                    "$.data[].data_b64": [
+                        "list",
+                        "missing"
+                    ],
+                    "$.data[].data_b64[]": [
+                        "string"
+                    ],
+                    "$.data[].dname_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data[].line_index": [
+                        "int"
+                    ],
+                    "$.data[].record_type": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data[].text_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data[].ttl": [
+                        "int",
+                        "missing"
+                    ],
+                    "$.data[].type": [
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.*": [
+                        "int"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "list"
+                    ],
+                    "$[]": [
+                        "object"
+                    ],
+                    "$[].*": [
+                        "string"
+                    ],
+                    "$[].data_b64": [
+                        "list",
+                        "missing"
+                    ],
+                    "$[].data_b64[]": [
+                        "string"
+                    ],
+                    "$[].dname_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].line_index": [
+                        "int"
+                    ],
+                    "$[].record_type": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].text_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].ttl": [
+                        "int",
+                        "missing"
+                    ],
+                    "$[].type": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [
+                    {
+                        "path": "$[].*",
+                        "kind": "unknown_field"
+                    }
+                ],
+                "readback_review": "known_dname_raw_string"
+            },
+            {
+                "operation": "uapi:DNS/mass_edit_zone",
+                "variant": "uapi:DNS/mass_edit_zone#GET",
+                "argument_variant": "direct-mass-add",
+                "route": "direct-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.24",
+                "observed_at": "2026-11-18T11:39:30Z",
+                "revision": "07080b1e65d047323a8e2fd11038f69a3ea3b15d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "fc0c5b0646b9f4f16335f2412206e9779d8d09e7",
+                "overlay_sha256": "3df098f09e39982fe3e472cce9b961ff04e9c86993c3b757cecc17c6235d7e3b",
+                "effective_contract_sha256": "5cb922874c35c71f4d5a866d5ea47fabf945668d4b2d35921cd205f82ecea38d",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.new_serial": [
+                        "numeric-string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.new_serial": [
+                        "numeric-string"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "uapi:DNS/parse_zone",
+                "variant": "uapi:DNS/parse_zone#GET",
+                "argument_variant": "direct-mass-added",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.24",
+                "observed_at": "2026-11-18T11:39:31Z",
+                "revision": "07080b1e65d047323a8e2fd11038f69a3ea3b15d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "fc0c5b0646b9f4f16335f2412206e9779d8d09e7",
+                "overlay_sha256": "3df098f09e39982fe3e472cce9b961ff04e9c86993c3b757cecc17c6235d7e3b",
+                "effective_contract_sha256": "9d318e929dc7b2c9f5eb506a482e9af44e1e864548977432beded9f5ed63afd7",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "list"
+                    ],
+                    "$.data[]": [
+                        "object"
+                    ],
+                    "$.data[].*": [
+                        "string"
+                    ],
+                    "$.data[].data_b64": [
+                        "list",
+                        "missing"
+                    ],
+                    "$.data[].data_b64[]": [
+                        "string"
+                    ],
+                    "$.data[].dname_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data[].line_index": [
+                        "int"
+                    ],
+                    "$.data[].record_type": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data[].text_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data[].ttl": [
+                        "int",
+                        "missing"
+                    ],
+                    "$.data[].type": [
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.*": [
+                        "int"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "list"
+                    ],
+                    "$[]": [
+                        "object"
+                    ],
+                    "$[].*": [
+                        "string"
+                    ],
+                    "$[].data_b64": [
+                        "list",
+                        "missing"
+                    ],
+                    "$[].data_b64[]": [
+                        "string"
+                    ],
+                    "$[].dname_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].line_index": [
+                        "int"
+                    ],
+                    "$[].record_type": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].text_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].ttl": [
+                        "int",
+                        "missing"
+                    ],
+                    "$[].type": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [
+                    {
+                        "path": "$[].*",
+                        "kind": "unknown_field"
+                    }
+                ],
+                "readback_review": "known_dname_raw_string"
+            },
+            {
+                "operation": "uapi:DNS/mass_edit_zone",
+                "variant": "uapi:DNS/mass_edit_zone#GET",
+                "argument_variant": "direct-mass-edit",
+                "route": "direct-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.24",
+                "observed_at": "2026-11-18T11:39:31Z",
+                "revision": "07080b1e65d047323a8e2fd11038f69a3ea3b15d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "fc0c5b0646b9f4f16335f2412206e9779d8d09e7",
+                "overlay_sha256": "3df098f09e39982fe3e472cce9b961ff04e9c86993c3b757cecc17c6235d7e3b",
+                "effective_contract_sha256": "5cb922874c35c71f4d5a866d5ea47fabf945668d4b2d35921cd205f82ecea38d",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.new_serial": [
+                        "numeric-string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.new_serial": [
+                        "numeric-string"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "uapi:DNS/parse_zone",
+                "variant": "uapi:DNS/parse_zone#GET",
+                "argument_variant": "direct-mass-edited",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.24",
+                "observed_at": "2026-11-18T11:39:32Z",
+                "revision": "07080b1e65d047323a8e2fd11038f69a3ea3b15d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "fc0c5b0646b9f4f16335f2412206e9779d8d09e7",
+                "overlay_sha256": "3df098f09e39982fe3e472cce9b961ff04e9c86993c3b757cecc17c6235d7e3b",
+                "effective_contract_sha256": "9d318e929dc7b2c9f5eb506a482e9af44e1e864548977432beded9f5ed63afd7",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "list"
+                    ],
+                    "$.data[]": [
+                        "object"
+                    ],
+                    "$.data[].*": [
+                        "string"
+                    ],
+                    "$.data[].data_b64": [
+                        "list",
+                        "missing"
+                    ],
+                    "$.data[].data_b64[]": [
+                        "string"
+                    ],
+                    "$.data[].dname_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data[].line_index": [
+                        "int"
+                    ],
+                    "$.data[].record_type": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data[].text_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data[].ttl": [
+                        "int",
+                        "missing"
+                    ],
+                    "$.data[].type": [
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.*": [
+                        "int"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "list"
+                    ],
+                    "$[]": [
+                        "object"
+                    ],
+                    "$[].*": [
+                        "string"
+                    ],
+                    "$[].data_b64": [
+                        "list",
+                        "missing"
+                    ],
+                    "$[].data_b64[]": [
+                        "string"
+                    ],
+                    "$[].dname_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].line_index": [
+                        "int"
+                    ],
+                    "$[].record_type": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].text_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].ttl": [
+                        "int",
+                        "missing"
+                    ],
+                    "$[].type": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [
+                    {
+                        "path": "$[].*",
+                        "kind": "unknown_field"
+                    }
+                ],
+                "readback_review": "known_dname_raw_string"
+            },
+            {
+                "operation": "uapi:DNS/mass_edit_zone",
+                "variant": "uapi:DNS/mass_edit_zone#GET",
+                "argument_variant": "direct-mass-remove",
+                "route": "direct-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.24",
+                "observed_at": "2026-11-18T11:39:32Z",
+                "revision": "07080b1e65d047323a8e2fd11038f69a3ea3b15d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "fc0c5b0646b9f4f16335f2412206e9779d8d09e7",
+                "overlay_sha256": "3df098f09e39982fe3e472cce9b961ff04e9c86993c3b757cecc17c6235d7e3b",
+                "effective_contract_sha256": "5cb922874c35c71f4d5a866d5ea47fabf945668d4b2d35921cd205f82ecea38d",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.new_serial": [
+                        "numeric-string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.new_serial": [
+                        "numeric-string"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "uapi:DNS/parse_zone",
+                "variant": "uapi:DNS/parse_zone#GET",
+                "argument_variant": "direct-mass-removed",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.24",
+                "observed_at": "2026-11-18T11:39:33Z",
+                "revision": "07080b1e65d047323a8e2fd11038f69a3ea3b15d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "fc0c5b0646b9f4f16335f2412206e9779d8d09e7",
+                "overlay_sha256": "3df098f09e39982fe3e472cce9b961ff04e9c86993c3b757cecc17c6235d7e3b",
+                "effective_contract_sha256": "9d318e929dc7b2c9f5eb506a482e9af44e1e864548977432beded9f5ed63afd7",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "list"
+                    ],
+                    "$.data[]": [
+                        "object"
+                    ],
+                    "$.data[].*": [
+                        "string"
+                    ],
+                    "$.data[].data_b64": [
+                        "list",
+                        "missing"
+                    ],
+                    "$.data[].data_b64[]": [
+                        "string"
+                    ],
+                    "$.data[].dname_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data[].line_index": [
+                        "int"
+                    ],
+                    "$.data[].record_type": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data[].text_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data[].ttl": [
+                        "int",
+                        "missing"
+                    ],
+                    "$.data[].type": [
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.*": [
+                        "int"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "list"
+                    ],
+                    "$[]": [
+                        "object"
+                    ],
+                    "$[].*": [
+                        "string"
+                    ],
+                    "$[].data_b64": [
+                        "list",
+                        "missing"
+                    ],
+                    "$[].data_b64[]": [
+                        "string"
+                    ],
+                    "$[].dname_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].line_index": [
+                        "int"
+                    ],
+                    "$[].record_type": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].text_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].ttl": [
+                        "int",
+                        "missing"
+                    ],
+                    "$[].type": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [
+                    {
+                        "path": "$[].*",
+                        "kind": "unknown_field"
+                    }
+                ],
+                "readback_review": "known_dname_raw_string"
+            },
+            {
+                "operation": "uapi:DNS/parse_zone",
+                "variant": "uapi:DNS/parse_zone#GET",
+                "argument_variant": "bridged-mass-before",
+                "route": "bridged-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.24",
+                "observed_at": "2026-11-18T11:39:33Z",
+                "revision": "07080b1e65d047323a8e2fd11038f69a3ea3b15d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "fc0c5b0646b9f4f16335f2412206e9779d8d09e7",
+                "overlay_sha256": "3df098f09e39982fe3e472cce9b961ff04e9c86993c3b757cecc17c6235d7e3b",
+                "effective_contract_sha256": "9d318e929dc7b2c9f5eb506a482e9af44e1e864548977432beded9f5ed63afd7",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "list"
+                    ],
+                    "$.data.uapi.data[]": [
+                        "object"
+                    ],
+                    "$.data.uapi.data[].*": [
+                        "string"
+                    ],
+                    "$.data.uapi.data[].data_b64": [
+                        "list",
+                        "missing"
+                    ],
+                    "$.data.uapi.data[].data_b64[]": [
+                        "string"
+                    ],
+                    "$.data.uapi.data[].dname_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data.uapi.data[].line_index": [
+                        "int"
+                    ],
+                    "$.data.uapi.data[].record_type": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data.uapi.data[].text_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data.uapi.data[].ttl": [
+                        "int",
+                        "missing"
+                    ],
+                    "$.data.uapi.data[].type": [
+                        "string"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "object"
+                    ],
+                    "$.data.uapi.metadata.*": [
+                        "int"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "list"
+                    ],
+                    "$[]": [
+                        "object"
+                    ],
+                    "$[].*": [
+                        "string"
+                    ],
+                    "$[].data_b64": [
+                        "list",
+                        "missing"
+                    ],
+                    "$[].data_b64[]": [
+                        "string"
+                    ],
+                    "$[].dname_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].line_index": [
+                        "int"
+                    ],
+                    "$[].record_type": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].text_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].ttl": [
+                        "int",
+                        "missing"
+                    ],
+                    "$[].type": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [
+                    {
+                        "path": "$[].*",
+                        "kind": "unknown_field"
+                    }
+                ],
+                "readback_review": "known_dname_raw_string"
+            },
+            {
+                "operation": "uapi:DNS/mass_edit_zone",
+                "variant": "uapi:DNS/mass_edit_zone#GET",
+                "argument_variant": "bridged-mass-add",
+                "route": "bridged-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.24",
+                "observed_at": "2026-11-18T11:39:33Z",
+                "revision": "07080b1e65d047323a8e2fd11038f69a3ea3b15d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "fc0c5b0646b9f4f16335f2412206e9779d8d09e7",
+                "overlay_sha256": "3df098f09e39982fe3e472cce9b961ff04e9c86993c3b757cecc17c6235d7e3b",
+                "effective_contract_sha256": "5cb922874c35c71f4d5a866d5ea47fabf945668d4b2d35921cd205f82ecea38d",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.new_serial": [
+                        "numeric-string"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "empty-object"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.new_serial": [
+                        "numeric-string"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "uapi:DNS/parse_zone",
+                "variant": "uapi:DNS/parse_zone#GET",
+                "argument_variant": "bridged-mass-added",
+                "route": "bridged-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.24",
+                "observed_at": "2026-11-18T11:39:34Z",
+                "revision": "07080b1e65d047323a8e2fd11038f69a3ea3b15d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "fc0c5b0646b9f4f16335f2412206e9779d8d09e7",
+                "overlay_sha256": "3df098f09e39982fe3e472cce9b961ff04e9c86993c3b757cecc17c6235d7e3b",
+                "effective_contract_sha256": "9d318e929dc7b2c9f5eb506a482e9af44e1e864548977432beded9f5ed63afd7",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "list"
+                    ],
+                    "$.data.uapi.data[]": [
+                        "object"
+                    ],
+                    "$.data.uapi.data[].*": [
+                        "string"
+                    ],
+                    "$.data.uapi.data[].data_b64": [
+                        "list",
+                        "missing"
+                    ],
+                    "$.data.uapi.data[].data_b64[]": [
+                        "string"
+                    ],
+                    "$.data.uapi.data[].dname_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data.uapi.data[].line_index": [
+                        "int"
+                    ],
+                    "$.data.uapi.data[].record_type": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data.uapi.data[].text_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data.uapi.data[].ttl": [
+                        "int",
+                        "missing"
+                    ],
+                    "$.data.uapi.data[].type": [
+                        "string"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "object"
+                    ],
+                    "$.data.uapi.metadata.*": [
+                        "int"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "list"
+                    ],
+                    "$[]": [
+                        "object"
+                    ],
+                    "$[].*": [
+                        "string"
+                    ],
+                    "$[].data_b64": [
+                        "list",
+                        "missing"
+                    ],
+                    "$[].data_b64[]": [
+                        "string"
+                    ],
+                    "$[].dname_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].line_index": [
+                        "int"
+                    ],
+                    "$[].record_type": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].text_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].ttl": [
+                        "int",
+                        "missing"
+                    ],
+                    "$[].type": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [
+                    {
+                        "path": "$[].*",
+                        "kind": "unknown_field"
+                    }
+                ],
+                "readback_review": "known_dname_raw_string"
+            },
+            {
+                "operation": "uapi:DNS/mass_edit_zone",
+                "variant": "uapi:DNS/mass_edit_zone#GET",
+                "argument_variant": "bridged-mass-edit",
+                "route": "bridged-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.24",
+                "observed_at": "2026-11-18T11:39:34Z",
+                "revision": "07080b1e65d047323a8e2fd11038f69a3ea3b15d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "fc0c5b0646b9f4f16335f2412206e9779d8d09e7",
+                "overlay_sha256": "3df098f09e39982fe3e472cce9b961ff04e9c86993c3b757cecc17c6235d7e3b",
+                "effective_contract_sha256": "5cb922874c35c71f4d5a866d5ea47fabf945668d4b2d35921cd205f82ecea38d",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.new_serial": [
+                        "numeric-string"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "empty-object"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.new_serial": [
+                        "numeric-string"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "uapi:DNS/parse_zone",
+                "variant": "uapi:DNS/parse_zone#GET",
+                "argument_variant": "bridged-mass-edited",
+                "route": "bridged-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.24",
+                "observed_at": "2026-11-18T11:39:35Z",
+                "revision": "07080b1e65d047323a8e2fd11038f69a3ea3b15d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "fc0c5b0646b9f4f16335f2412206e9779d8d09e7",
+                "overlay_sha256": "3df098f09e39982fe3e472cce9b961ff04e9c86993c3b757cecc17c6235d7e3b",
+                "effective_contract_sha256": "9d318e929dc7b2c9f5eb506a482e9af44e1e864548977432beded9f5ed63afd7",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "list"
+                    ],
+                    "$.data.uapi.data[]": [
+                        "object"
+                    ],
+                    "$.data.uapi.data[].*": [
+                        "string"
+                    ],
+                    "$.data.uapi.data[].data_b64": [
+                        "list",
+                        "missing"
+                    ],
+                    "$.data.uapi.data[].data_b64[]": [
+                        "string"
+                    ],
+                    "$.data.uapi.data[].dname_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data.uapi.data[].line_index": [
+                        "int"
+                    ],
+                    "$.data.uapi.data[].record_type": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data.uapi.data[].text_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data.uapi.data[].ttl": [
+                        "int",
+                        "missing"
+                    ],
+                    "$.data.uapi.data[].type": [
+                        "string"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "object"
+                    ],
+                    "$.data.uapi.metadata.*": [
+                        "int"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "list"
+                    ],
+                    "$[]": [
+                        "object"
+                    ],
+                    "$[].*": [
+                        "string"
+                    ],
+                    "$[].data_b64": [
+                        "list",
+                        "missing"
+                    ],
+                    "$[].data_b64[]": [
+                        "string"
+                    ],
+                    "$[].dname_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].line_index": [
+                        "int"
+                    ],
+                    "$[].record_type": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].text_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].ttl": [
+                        "int",
+                        "missing"
+                    ],
+                    "$[].type": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [
+                    {
+                        "path": "$[].*",
+                        "kind": "unknown_field"
+                    }
+                ],
+                "readback_review": "known_dname_raw_string"
+            },
+            {
+                "operation": "uapi:DNS/mass_edit_zone",
+                "variant": "uapi:DNS/mass_edit_zone#GET",
+                "argument_variant": "bridged-mass-remove",
+                "route": "bridged-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.24",
+                "observed_at": "2026-11-18T11:39:35Z",
+                "revision": "07080b1e65d047323a8e2fd11038f69a3ea3b15d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "fc0c5b0646b9f4f16335f2412206e9779d8d09e7",
+                "overlay_sha256": "3df098f09e39982fe3e472cce9b961ff04e9c86993c3b757cecc17c6235d7e3b",
+                "effective_contract_sha256": "5cb922874c35c71f4d5a866d5ea47fabf945668d4b2d35921cd205f82ecea38d",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.new_serial": [
+                        "numeric-string"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "empty-object"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.new_serial": [
+                        "numeric-string"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "uapi:DNS/parse_zone",
+                "variant": "uapi:DNS/parse_zone#GET",
+                "argument_variant": "bridged-mass-removed",
+                "route": "bridged-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.24",
+                "observed_at": "2026-11-18T11:39:36Z",
+                "revision": "07080b1e65d047323a8e2fd11038f69a3ea3b15d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "fc0c5b0646b9f4f16335f2412206e9779d8d09e7",
+                "overlay_sha256": "3df098f09e39982fe3e472cce9b961ff04e9c86993c3b757cecc17c6235d7e3b",
+                "effective_contract_sha256": "9d318e929dc7b2c9f5eb506a482e9af44e1e864548977432beded9f5ed63afd7",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "list"
+                    ],
+                    "$.data.uapi.data[]": [
+                        "object"
+                    ],
+                    "$.data.uapi.data[].*": [
+                        "string"
+                    ],
+                    "$.data.uapi.data[].data_b64": [
+                        "list",
+                        "missing"
+                    ],
+                    "$.data.uapi.data[].data_b64[]": [
+                        "string"
+                    ],
+                    "$.data.uapi.data[].dname_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data.uapi.data[].line_index": [
+                        "int"
+                    ],
+                    "$.data.uapi.data[].record_type": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data.uapi.data[].text_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data.uapi.data[].ttl": [
+                        "int",
+                        "missing"
+                    ],
+                    "$.data.uapi.data[].type": [
+                        "string"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "object"
+                    ],
+                    "$.data.uapi.metadata.*": [
+                        "int"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "list"
+                    ],
+                    "$[]": [
+                        "object"
+                    ],
+                    "$[].*": [
+                        "string"
+                    ],
+                    "$[].data_b64": [
+                        "list",
+                        "missing"
+                    ],
+                    "$[].data_b64[]": [
+                        "string"
+                    ],
+                    "$[].dname_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].line_index": [
+                        "int"
+                    ],
+                    "$[].record_type": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].text_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].ttl": [
+                        "int",
+                        "missing"
+                    ],
+                    "$[].type": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [
+                    {
+                        "path": "$[].*",
+                        "kind": "unknown_field"
+                    }
+                ],
+                "readback_review": "known_dname_raw_string"
+            },
+            {
+                "operation": "uapi:DNS/parse_zone",
+                "variant": "uapi:DNS/parse_zone#GET",
+                "argument_variant": "direct-seed-main-before",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.24",
+                "observed_at": "2026-11-18T11:39:36Z",
+                "revision": "07080b1e65d047323a8e2fd11038f69a3ea3b15d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "fc0c5b0646b9f4f16335f2412206e9779d8d09e7",
+                "overlay_sha256": "3df098f09e39982fe3e472cce9b961ff04e9c86993c3b757cecc17c6235d7e3b",
+                "effective_contract_sha256": "9d318e929dc7b2c9f5eb506a482e9af44e1e864548977432beded9f5ed63afd7",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "list"
+                    ],
+                    "$.data[]": [
+                        "object"
+                    ],
+                    "$.data[].*": [
+                        "string"
+                    ],
+                    "$.data[].data_b64": [
+                        "list",
+                        "missing"
+                    ],
+                    "$.data[].data_b64[]": [
+                        "string"
+                    ],
+                    "$.data[].dname_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data[].line_index": [
+                        "int"
+                    ],
+                    "$.data[].record_type": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data[].text_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data[].ttl": [
+                        "int",
+                        "missing"
+                    ],
+                    "$.data[].type": [
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.*": [
+                        "int"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "list"
+                    ],
+                    "$[]": [
+                        "object"
+                    ],
+                    "$[].*": [
+                        "string"
+                    ],
+                    "$[].data_b64": [
+                        "list",
+                        "missing"
+                    ],
+                    "$[].data_b64[]": [
+                        "string"
+                    ],
+                    "$[].dname_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].line_index": [
+                        "int"
+                    ],
+                    "$[].record_type": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].text_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].ttl": [
+                        "int",
+                        "missing"
+                    ],
+                    "$[].type": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [
+                    {
+                        "path": "$[].*",
+                        "kind": "unknown_field"
+                    }
+                ],
+                "readback_review": "known_dname_raw_string"
+            },
+            {
+                "operation": "uapi:DNS/mass_edit_zone",
+                "variant": "uapi:DNS/mass_edit_zone#GET",
+                "argument_variant": "direct-seed-main",
+                "route": "direct-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.24",
+                "observed_at": "2026-11-18T11:39:36Z",
+                "revision": "07080b1e65d047323a8e2fd11038f69a3ea3b15d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "fc0c5b0646b9f4f16335f2412206e9779d8d09e7",
+                "overlay_sha256": "3df098f09e39982fe3e472cce9b961ff04e9c86993c3b757cecc17c6235d7e3b",
+                "effective_contract_sha256": "5cb922874c35c71f4d5a866d5ea47fabf945668d4b2d35921cd205f82ecea38d",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.new_serial": [
+                        "numeric-string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.new_serial": [
+                        "numeric-string"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "uapi:DNS/parse_zone",
+                "variant": "uapi:DNS/parse_zone#GET",
+                "argument_variant": "direct-seed-main-after",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.24",
+                "observed_at": "2026-11-18T11:39:37Z",
+                "revision": "07080b1e65d047323a8e2fd11038f69a3ea3b15d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "fc0c5b0646b9f4f16335f2412206e9779d8d09e7",
+                "overlay_sha256": "3df098f09e39982fe3e472cce9b961ff04e9c86993c3b757cecc17c6235d7e3b",
+                "effective_contract_sha256": "9d318e929dc7b2c9f5eb506a482e9af44e1e864548977432beded9f5ed63afd7",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "list"
+                    ],
+                    "$.data[]": [
+                        "object"
+                    ],
+                    "$.data[].*": [
+                        "string"
+                    ],
+                    "$.data[].data_b64": [
+                        "list",
+                        "missing"
+                    ],
+                    "$.data[].data_b64[]": [
+                        "string"
+                    ],
+                    "$.data[].dname_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data[].line_index": [
+                        "int"
+                    ],
+                    "$.data[].record_type": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data[].text_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data[].ttl": [
+                        "int",
+                        "missing"
+                    ],
+                    "$.data[].type": [
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.*": [
+                        "int"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "list"
+                    ],
+                    "$[]": [
+                        "object"
+                    ],
+                    "$[].*": [
+                        "string"
+                    ],
+                    "$[].data_b64": [
+                        "list",
+                        "missing"
+                    ],
+                    "$[].data_b64[]": [
+                        "string"
+                    ],
+                    "$[].dname_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].line_index": [
+                        "int"
+                    ],
+                    "$[].record_type": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].text_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].ttl": [
+                        "int",
+                        "missing"
+                    ],
+                    "$[].type": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [
+                    {
+                        "path": "$[].*",
+                        "kind": "unknown_field"
+                    }
+                ],
+                "readback_review": "known_dname_raw_string"
+            },
+            {
+                "operation": "uapi:DNS/parse_zone",
+                "variant": "uapi:DNS/parse_zone#GET",
+                "argument_variant": "direct-seed-alias-before",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.24",
+                "observed_at": "2026-11-18T11:39:37Z",
+                "revision": "07080b1e65d047323a8e2fd11038f69a3ea3b15d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "fc0c5b0646b9f4f16335f2412206e9779d8d09e7",
+                "overlay_sha256": "3df098f09e39982fe3e472cce9b961ff04e9c86993c3b757cecc17c6235d7e3b",
+                "effective_contract_sha256": "9d318e929dc7b2c9f5eb506a482e9af44e1e864548977432beded9f5ed63afd7",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "list"
+                    ],
+                    "$.data[]": [
+                        "object"
+                    ],
+                    "$.data[].*": [
+                        "string"
+                    ],
+                    "$.data[].data_b64": [
+                        "list",
+                        "missing"
+                    ],
+                    "$.data[].data_b64[]": [
+                        "string"
+                    ],
+                    "$.data[].dname_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data[].line_index": [
+                        "int"
+                    ],
+                    "$.data[].record_type": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data[].text_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data[].ttl": [
+                        "int",
+                        "missing"
+                    ],
+                    "$.data[].type": [
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.*": [
+                        "int"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "list"
+                    ],
+                    "$[]": [
+                        "object"
+                    ],
+                    "$[].*": [
+                        "string"
+                    ],
+                    "$[].data_b64": [
+                        "list",
+                        "missing"
+                    ],
+                    "$[].data_b64[]": [
+                        "string"
+                    ],
+                    "$[].dname_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].line_index": [
+                        "int"
+                    ],
+                    "$[].record_type": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].text_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].ttl": [
+                        "int",
+                        "missing"
+                    ],
+                    "$[].type": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [
+                    {
+                        "path": "$[].*",
+                        "kind": "unknown_field"
+                    }
+                ],
+                "readback_review": "known_dname_raw_string"
+            },
+            {
+                "operation": "uapi:DNS/mass_edit_zone",
+                "variant": "uapi:DNS/mass_edit_zone#GET",
+                "argument_variant": "direct-seed-alias",
+                "route": "direct-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.24",
+                "observed_at": "2026-11-18T11:39:37Z",
+                "revision": "07080b1e65d047323a8e2fd11038f69a3ea3b15d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "fc0c5b0646b9f4f16335f2412206e9779d8d09e7",
+                "overlay_sha256": "3df098f09e39982fe3e472cce9b961ff04e9c86993c3b757cecc17c6235d7e3b",
+                "effective_contract_sha256": "5cb922874c35c71f4d5a866d5ea47fabf945668d4b2d35921cd205f82ecea38d",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.new_serial": [
+                        "numeric-string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.new_serial": [
+                        "numeric-string"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "uapi:DNS/parse_zone",
+                "variant": "uapi:DNS/parse_zone#GET",
+                "argument_variant": "direct-seed-alias-after",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.24",
+                "observed_at": "2026-11-18T11:39:38Z",
+                "revision": "07080b1e65d047323a8e2fd11038f69a3ea3b15d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "fc0c5b0646b9f4f16335f2412206e9779d8d09e7",
+                "overlay_sha256": "3df098f09e39982fe3e472cce9b961ff04e9c86993c3b757cecc17c6235d7e3b",
+                "effective_contract_sha256": "9d318e929dc7b2c9f5eb506a482e9af44e1e864548977432beded9f5ed63afd7",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "list"
+                    ],
+                    "$.data[]": [
+                        "object"
+                    ],
+                    "$.data[].*": [
+                        "string"
+                    ],
+                    "$.data[].data_b64": [
+                        "list",
+                        "missing"
+                    ],
+                    "$.data[].data_b64[]": [
+                        "string"
+                    ],
+                    "$.data[].dname_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data[].line_index": [
+                        "int"
+                    ],
+                    "$.data[].record_type": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data[].text_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data[].ttl": [
+                        "int",
+                        "missing"
+                    ],
+                    "$.data[].type": [
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.*": [
+                        "int"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "list"
+                    ],
+                    "$[]": [
+                        "object"
+                    ],
+                    "$[].*": [
+                        "string"
+                    ],
+                    "$[].data_b64": [
+                        "list",
+                        "missing"
+                    ],
+                    "$[].data_b64[]": [
+                        "string"
+                    ],
+                    "$[].dname_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].line_index": [
+                        "int"
+                    ],
+                    "$[].record_type": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].text_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].ttl": [
+                        "int",
+                        "missing"
+                    ],
+                    "$[].type": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [
+                    {
+                        "path": "$[].*",
+                        "kind": "unknown_field"
+                    }
+                ],
+                "readback_review": "known_dname_raw_string"
+            },
+            {
+                "operation": "uapi:DNS/parse_zone",
+                "variant": "uapi:DNS/parse_zone#GET",
+                "argument_variant": "bridged-swap-main-before",
+                "route": "bridged-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.24",
+                "observed_at": "2026-11-18T11:39:38Z",
+                "revision": "07080b1e65d047323a8e2fd11038f69a3ea3b15d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "fc0c5b0646b9f4f16335f2412206e9779d8d09e7",
+                "overlay_sha256": "3df098f09e39982fe3e472cce9b961ff04e9c86993c3b757cecc17c6235d7e3b",
+                "effective_contract_sha256": "9d318e929dc7b2c9f5eb506a482e9af44e1e864548977432beded9f5ed63afd7",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "list"
+                    ],
+                    "$.data.uapi.data[]": [
+                        "object"
+                    ],
+                    "$.data.uapi.data[].*": [
+                        "string"
+                    ],
+                    "$.data.uapi.data[].data_b64": [
+                        "list",
+                        "missing"
+                    ],
+                    "$.data.uapi.data[].data_b64[]": [
+                        "string"
+                    ],
+                    "$.data.uapi.data[].dname_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data.uapi.data[].line_index": [
+                        "int"
+                    ],
+                    "$.data.uapi.data[].record_type": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data.uapi.data[].text_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data.uapi.data[].ttl": [
+                        "int",
+                        "missing"
+                    ],
+                    "$.data.uapi.data[].type": [
+                        "string"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "object"
+                    ],
+                    "$.data.uapi.metadata.*": [
+                        "int"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "list"
+                    ],
+                    "$[]": [
+                        "object"
+                    ],
+                    "$[].*": [
+                        "string"
+                    ],
+                    "$[].data_b64": [
+                        "list",
+                        "missing"
+                    ],
+                    "$[].data_b64[]": [
+                        "string"
+                    ],
+                    "$[].dname_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].line_index": [
+                        "int"
+                    ],
+                    "$[].record_type": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].text_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].ttl": [
+                        "int",
+                        "missing"
+                    ],
+                    "$[].type": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [
+                    {
+                        "path": "$[].*",
+                        "kind": "unknown_field"
+                    }
+                ],
+                "readback_review": "known_dname_raw_string"
+            },
+            {
+                "operation": "uapi:DNS/parse_zone",
+                "variant": "uapi:DNS/parse_zone#GET",
+                "argument_variant": "bridged-swap-alias-before",
+                "route": "bridged-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.24",
+                "observed_at": "2026-11-18T11:39:38Z",
+                "revision": "07080b1e65d047323a8e2fd11038f69a3ea3b15d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "fc0c5b0646b9f4f16335f2412206e9779d8d09e7",
+                "overlay_sha256": "3df098f09e39982fe3e472cce9b961ff04e9c86993c3b757cecc17c6235d7e3b",
+                "effective_contract_sha256": "9d318e929dc7b2c9f5eb506a482e9af44e1e864548977432beded9f5ed63afd7",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "list"
+                    ],
+                    "$.data.uapi.data[]": [
+                        "object"
+                    ],
+                    "$.data.uapi.data[].*": [
+                        "string"
+                    ],
+                    "$.data.uapi.data[].data_b64": [
+                        "list",
+                        "missing"
+                    ],
+                    "$.data.uapi.data[].data_b64[]": [
+                        "string"
+                    ],
+                    "$.data.uapi.data[].dname_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data.uapi.data[].line_index": [
+                        "int"
+                    ],
+                    "$.data.uapi.data[].record_type": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data.uapi.data[].text_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data.uapi.data[].ttl": [
+                        "int",
+                        "missing"
+                    ],
+                    "$.data.uapi.data[].type": [
+                        "string"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "object"
+                    ],
+                    "$.data.uapi.metadata.*": [
+                        "int"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "list"
+                    ],
+                    "$[]": [
+                        "object"
+                    ],
+                    "$[].*": [
+                        "string"
+                    ],
+                    "$[].data_b64": [
+                        "list",
+                        "missing"
+                    ],
+                    "$[].data_b64[]": [
+                        "string"
+                    ],
+                    "$[].dname_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].line_index": [
+                        "int"
+                    ],
+                    "$[].record_type": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].text_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].ttl": [
+                        "int",
+                        "missing"
+                    ],
+                    "$[].type": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [
+                    {
+                        "path": "$[].*",
+                        "kind": "unknown_field"
+                    }
+                ],
+                "readback_review": "known_dname_raw_string"
+            },
+            {
+                "operation": "uapi:DNS/swap_ip_in_zones",
+                "variant": "uapi:DNS/swap_ip_in_zones#GET",
+                "argument_variant": "bridged-swap",
+                "route": "bridged-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.24",
+                "observed_at": "2026-11-18T11:39:39Z",
+                "revision": "07080b1e65d047323a8e2fd11038f69a3ea3b15d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "fc0c5b0646b9f4f16335f2412206e9779d8d09e7",
+                "overlay_sha256": "3df098f09e39982fe3e472cce9b961ff04e9c86993c3b757cecc17c6235d7e3b",
+                "effective_contract_sha256": "67ba199b0bbbe253e723a1db51d2307d8f7b1a98f0c4dee8cf939ca35c6e47f1",
+                "http_status": 200,
+                "api_outcome": "failure",
+                "payload_validation": "not_checked",
+                "probe_outcome": "failed",
+                "failure_kind": "api_failure",
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "null"
+                    ],
+                    "$.data.uapi.errors": [
+                        "list"
+                    ],
+                    "$.data.uapi.errors[]": [
+                        "string"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "empty-object"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "null"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "uapi:DNS/parse_zone",
+                "variant": "uapi:DNS/parse_zone#GET",
+                "argument_variant": "bridged-swap-main-after",
+                "route": "bridged-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.24",
+                "observed_at": "2026-11-18T11:39:39Z",
+                "revision": "07080b1e65d047323a8e2fd11038f69a3ea3b15d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "fc0c5b0646b9f4f16335f2412206e9779d8d09e7",
+                "overlay_sha256": "3df098f09e39982fe3e472cce9b961ff04e9c86993c3b757cecc17c6235d7e3b",
+                "effective_contract_sha256": "9d318e929dc7b2c9f5eb506a482e9af44e1e864548977432beded9f5ed63afd7",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "list"
+                    ],
+                    "$.data.uapi.data[]": [
+                        "object"
+                    ],
+                    "$.data.uapi.data[].*": [
+                        "string"
+                    ],
+                    "$.data.uapi.data[].data_b64": [
+                        "list",
+                        "missing"
+                    ],
+                    "$.data.uapi.data[].data_b64[]": [
+                        "string"
+                    ],
+                    "$.data.uapi.data[].dname_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data.uapi.data[].line_index": [
+                        "int"
+                    ],
+                    "$.data.uapi.data[].record_type": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data.uapi.data[].text_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data.uapi.data[].ttl": [
+                        "int",
+                        "missing"
+                    ],
+                    "$.data.uapi.data[].type": [
+                        "string"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "object"
+                    ],
+                    "$.data.uapi.metadata.*": [
+                        "int"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "list"
+                    ],
+                    "$[]": [
+                        "object"
+                    ],
+                    "$[].*": [
+                        "string"
+                    ],
+                    "$[].data_b64": [
+                        "list",
+                        "missing"
+                    ],
+                    "$[].data_b64[]": [
+                        "string"
+                    ],
+                    "$[].dname_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].line_index": [
+                        "int"
+                    ],
+                    "$[].record_type": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].text_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].ttl": [
+                        "int",
+                        "missing"
+                    ],
+                    "$[].type": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [
+                    {
+                        "path": "$[].*",
+                        "kind": "unknown_field"
+                    }
+                ],
+                "readback_review": "known_dname_raw_string"
+            },
+            {
+                "operation": "uapi:DNS/parse_zone",
+                "variant": "uapi:DNS/parse_zone#GET",
+                "argument_variant": "bridged-swap-alias-after",
+                "route": "bridged-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.24",
+                "observed_at": "2026-11-18T11:39:39Z",
+                "revision": "07080b1e65d047323a8e2fd11038f69a3ea3b15d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "fc0c5b0646b9f4f16335f2412206e9779d8d09e7",
+                "overlay_sha256": "3df098f09e39982fe3e472cce9b961ff04e9c86993c3b757cecc17c6235d7e3b",
+                "effective_contract_sha256": "9d318e929dc7b2c9f5eb506a482e9af44e1e864548977432beded9f5ed63afd7",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "list"
+                    ],
+                    "$.data.uapi.data[]": [
+                        "object"
+                    ],
+                    "$.data.uapi.data[].*": [
+                        "string"
+                    ],
+                    "$.data.uapi.data[].data_b64": [
+                        "list",
+                        "missing"
+                    ],
+                    "$.data.uapi.data[].data_b64[]": [
+                        "string"
+                    ],
+                    "$.data.uapi.data[].dname_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data.uapi.data[].line_index": [
+                        "int"
+                    ],
+                    "$.data.uapi.data[].record_type": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data.uapi.data[].text_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data.uapi.data[].ttl": [
+                        "int",
+                        "missing"
+                    ],
+                    "$.data.uapi.data[].type": [
+                        "string"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "object"
+                    ],
+                    "$.data.uapi.metadata.*": [
+                        "int"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "list"
+                    ],
+                    "$[]": [
+                        "object"
+                    ],
+                    "$[].*": [
+                        "string"
+                    ],
+                    "$[].data_b64": [
+                        "list",
+                        "missing"
+                    ],
+                    "$[].data_b64[]": [
+                        "string"
+                    ],
+                    "$[].dname_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].line_index": [
+                        "int"
+                    ],
+                    "$[].record_type": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].text_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].ttl": [
+                        "int",
+                        "missing"
+                    ],
+                    "$[].type": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [
+                    {
+                        "path": "$[].*",
+                        "kind": "unknown_field"
+                    }
+                ],
+                "readback_review": "known_dname_raw_string"
+            },
+            {
+                "operation": "uapi:DNS/parse_zone",
+                "variant": "uapi:DNS/parse_zone#GET",
+                "argument_variant": "direct-swap-main-before",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.24",
+                "observed_at": "2026-11-18T11:39:40Z",
+                "revision": "07080b1e65d047323a8e2fd11038f69a3ea3b15d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "fc0c5b0646b9f4f16335f2412206e9779d8d09e7",
+                "overlay_sha256": "3df098f09e39982fe3e472cce9b961ff04e9c86993c3b757cecc17c6235d7e3b",
+                "effective_contract_sha256": "9d318e929dc7b2c9f5eb506a482e9af44e1e864548977432beded9f5ed63afd7",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "list"
+                    ],
+                    "$.data[]": [
+                        "object"
+                    ],
+                    "$.data[].*": [
+                        "string"
+                    ],
+                    "$.data[].data_b64": [
+                        "list",
+                        "missing"
+                    ],
+                    "$.data[].data_b64[]": [
+                        "string"
+                    ],
+                    "$.data[].dname_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data[].line_index": [
+                        "int"
+                    ],
+                    "$.data[].record_type": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data[].text_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data[].ttl": [
+                        "int",
+                        "missing"
+                    ],
+                    "$.data[].type": [
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.*": [
+                        "int"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "list"
+                    ],
+                    "$[]": [
+                        "object"
+                    ],
+                    "$[].*": [
+                        "string"
+                    ],
+                    "$[].data_b64": [
+                        "list",
+                        "missing"
+                    ],
+                    "$[].data_b64[]": [
+                        "string"
+                    ],
+                    "$[].dname_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].line_index": [
+                        "int"
+                    ],
+                    "$[].record_type": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].text_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].ttl": [
+                        "int",
+                        "missing"
+                    ],
+                    "$[].type": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [
+                    {
+                        "path": "$[].*",
+                        "kind": "unknown_field"
+                    }
+                ],
+                "readback_review": "known_dname_raw_string"
+            },
+            {
+                "operation": "uapi:DNS/parse_zone",
+                "variant": "uapi:DNS/parse_zone#GET",
+                "argument_variant": "direct-swap-alias-before",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.24",
+                "observed_at": "2026-11-18T11:39:40Z",
+                "revision": "07080b1e65d047323a8e2fd11038f69a3ea3b15d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "fc0c5b0646b9f4f16335f2412206e9779d8d09e7",
+                "overlay_sha256": "3df098f09e39982fe3e472cce9b961ff04e9c86993c3b757cecc17c6235d7e3b",
+                "effective_contract_sha256": "9d318e929dc7b2c9f5eb506a482e9af44e1e864548977432beded9f5ed63afd7",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "list"
+                    ],
+                    "$.data[]": [
+                        "object"
+                    ],
+                    "$.data[].*": [
+                        "string"
+                    ],
+                    "$.data[].data_b64": [
+                        "list",
+                        "missing"
+                    ],
+                    "$.data[].data_b64[]": [
+                        "string"
+                    ],
+                    "$.data[].dname_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data[].line_index": [
+                        "int"
+                    ],
+                    "$.data[].record_type": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data[].text_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data[].ttl": [
+                        "int",
+                        "missing"
+                    ],
+                    "$.data[].type": [
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.*": [
+                        "int"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "list"
+                    ],
+                    "$[]": [
+                        "object"
+                    ],
+                    "$[].*": [
+                        "string"
+                    ],
+                    "$[].data_b64": [
+                        "list",
+                        "missing"
+                    ],
+                    "$[].data_b64[]": [
+                        "string"
+                    ],
+                    "$[].dname_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].line_index": [
+                        "int"
+                    ],
+                    "$[].record_type": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].text_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].ttl": [
+                        "int",
+                        "missing"
+                    ],
+                    "$[].type": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [
+                    {
+                        "path": "$[].*",
+                        "kind": "unknown_field"
+                    }
+                ],
+                "readback_review": "known_dname_raw_string"
+            },
+            {
+                "operation": "uapi:DNS/swap_ip_in_zones",
+                "variant": "uapi:DNS/swap_ip_in_zones#GET",
+                "argument_variant": "direct-swap",
+                "route": "direct-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.24",
+                "observed_at": "2026-11-18T11:39:40Z",
+                "revision": "07080b1e65d047323a8e2fd11038f69a3ea3b15d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "fc0c5b0646b9f4f16335f2412206e9779d8d09e7",
+                "overlay_sha256": "3df098f09e39982fe3e472cce9b961ff04e9c86993c3b757cecc17c6235d7e3b",
+                "effective_contract_sha256": "67ba199b0bbbe253e723a1db51d2307d8f7b1a98f0c4dee8cf939ca35c6e47f1",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "list"
+                    ],
+                    "$.data[]": [
+                        "object"
+                    ],
+                    "$.data[].new_value": [
+                        "string"
+                    ],
+                    "$.data[].old_value": [
+                        "string"
+                    ],
+                    "$.data[].record_name": [
+                        "string"
+                    ],
+                    "$.data[].record_type": [
+                        "string"
+                    ],
+                    "$.data[].zone_name": [
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.*": [
+                        "int"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "list"
+                    ],
+                    "$[]": [
+                        "object"
+                    ],
+                    "$[].new_value": [
+                        "string"
+                    ],
+                    "$[].old_value": [
+                        "string"
+                    ],
+                    "$[].record_name": [
+                        "string"
+                    ],
+                    "$[].record_type": [
+                        "string"
+                    ],
+                    "$[].zone_name": [
+                        "string"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "uapi:DNS/parse_zone",
+                "variant": "uapi:DNS/parse_zone#GET",
+                "argument_variant": "direct-swap-main-after",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.24",
+                "observed_at": "2026-11-18T11:39:41Z",
+                "revision": "07080b1e65d047323a8e2fd11038f69a3ea3b15d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "fc0c5b0646b9f4f16335f2412206e9779d8d09e7",
+                "overlay_sha256": "3df098f09e39982fe3e472cce9b961ff04e9c86993c3b757cecc17c6235d7e3b",
+                "effective_contract_sha256": "9d318e929dc7b2c9f5eb506a482e9af44e1e864548977432beded9f5ed63afd7",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "list"
+                    ],
+                    "$.data[]": [
+                        "object"
+                    ],
+                    "$.data[].*": [
+                        "string"
+                    ],
+                    "$.data[].data_b64": [
+                        "list",
+                        "missing"
+                    ],
+                    "$.data[].data_b64[]": [
+                        "string"
+                    ],
+                    "$.data[].dname_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data[].line_index": [
+                        "int"
+                    ],
+                    "$.data[].record_type": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data[].text_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data[].ttl": [
+                        "int",
+                        "missing"
+                    ],
+                    "$.data[].type": [
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.*": [
+                        "int"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "list"
+                    ],
+                    "$[]": [
+                        "object"
+                    ],
+                    "$[].*": [
+                        "string"
+                    ],
+                    "$[].data_b64": [
+                        "list",
+                        "missing"
+                    ],
+                    "$[].data_b64[]": [
+                        "string"
+                    ],
+                    "$[].dname_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].line_index": [
+                        "int"
+                    ],
+                    "$[].record_type": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].text_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].ttl": [
+                        "int",
+                        "missing"
+                    ],
+                    "$[].type": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [
+                    {
+                        "path": "$[].*",
+                        "kind": "unknown_field"
+                    }
+                ],
+                "readback_review": "known_dname_raw_string"
+            },
+            {
+                "operation": "uapi:DNS/parse_zone",
+                "variant": "uapi:DNS/parse_zone#GET",
+                "argument_variant": "direct-swap-alias-after",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.24",
+                "observed_at": "2026-11-18T11:39:41Z",
+                "revision": "07080b1e65d047323a8e2fd11038f69a3ea3b15d",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "fc0c5b0646b9f4f16335f2412206e9779d8d09e7",
+                "overlay_sha256": "3df098f09e39982fe3e472cce9b961ff04e9c86993c3b757cecc17c6235d7e3b",
+                "effective_contract_sha256": "9d318e929dc7b2c9f5eb506a482e9af44e1e864548977432beded9f5ed63afd7",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "list"
+                    ],
+                    "$.data[]": [
+                        "object"
+                    ],
+                    "$.data[].*": [
+                        "string"
+                    ],
+                    "$.data[].data_b64": [
+                        "list",
+                        "missing"
+                    ],
+                    "$.data[].data_b64[]": [
+                        "string"
+                    ],
+                    "$.data[].dname_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data[].line_index": [
+                        "int"
+                    ],
+                    "$.data[].record_type": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data[].text_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data[].ttl": [
+                        "int",
+                        "missing"
+                    ],
+                    "$.data[].type": [
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.*": [
+                        "int"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "list"
+                    ],
+                    "$[]": [
+                        "object"
+                    ],
+                    "$[].*": [
+                        "string"
+                    ],
+                    "$[].data_b64": [
+                        "list",
+                        "missing"
+                    ],
+                    "$[].data_b64[]": [
+                        "string"
+                    ],
+                    "$[].dname_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].line_index": [
+                        "int"
+                    ],
+                    "$[].record_type": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].text_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].ttl": [
+                        "int",
+                        "missing"
+                    ],
+                    "$[].type": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [
+                    {
+                        "path": "$[].*",
+                        "kind": "unknown_field"
+                    }
+                ],
+                "readback_review": "known_dname_raw_string"
+            }
+        ],
+        "discrepancy_review": {
+            "status": "passed",
+            "policy": "uapi-dns-two-zone-v1",
+            "findings": []
+        },
+        "fixture": {
+            "status": "passed",
+            "setup": "passed",
+            "cleanup": "passed",
+            "failures": [],
+            "domain_cleanup": "confirmed_absent",
+            "zone_cleanup": "confirmed_absent",
+            "filesystem_cleanup": "not_claimed",
+            "filesystem_residue": [],
+            "filesystem_control": {
+                "status": "not_run",
+                "counts": []
+            },
+            "resources": {
+                "account": {
+                    "creation": "confirmed",
+                    "cleanup": "confirmed_absent"
+                },
+                "token": {
+                    "creation": "confirmed",
+                    "cleanup": "confirmed_absent"
+                },
+                "alias_domain": {
+                    "creation": "confirmed",
+                    "cleanup": "confirmed_absent"
+                },
+                "alias_zone": {
+                    "creation": "confirmed",
+                    "cleanup": "confirmed_absent"
+                }
+            },
+            "alias_setup": "passed",
+            "stopped_at": null
+        }
+    }
+}
