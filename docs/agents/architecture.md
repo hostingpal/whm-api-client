@@ -4,6 +4,18 @@
 > Moved verbatim from `AGENTS.md` on 2026-11-17. Read the relevant section before changing `src/`, the
 > generator or request encoding. The live-test authorizations stay in `AGENTS.md`.
 
+## Caller-owned authenticated sessions (2026-11-18)
+
+`SessionUrlClient` is a separate capability for the pinned UAPI operation
+`Session/create_temp_user`. The token selectors continue to use their existing
+direct and bridged routing. Construct the session handle with an independently
+trusted HTTPS origin, a caller-owned complete session endpoint URL, its one
+service cookie value, and an explicitly configured transport. Construction
+validates scope locally. The generated operation sends a single form POST
+to that bound path and records metadata on its own handle. Login, logout and
+session ownership belong to the caller. The constructor and generated method
+document service ports and the observed Webmail refusal on 11.138.0.24.
+
 ## Generated surface and the operation runner
 
 - Generated surface details: results are arrays read with wire keys

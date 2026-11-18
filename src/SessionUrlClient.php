@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace HostingPal\WhmApiClient;
 
 use HostingPal\WhmApiClient\Api\Engine\OperationRunner;
-use HostingPal\WhmApiClient\Api\OutcomePolicy;
+use HostingPal\WhmApiClient\Api\Engine\OperationSpec;
+use HostingPal\WhmApiClient\Api\Engine\OrderedFields;
 use HostingPal\WhmApiClient\Api\Uapi\SessionUrlOperations;
-use HostingPal\WhmApiClient\Exception\ApiException;
+use HostingPal\WhmApiClient\Config\HostName;
 use HostingPal\WhmApiClient\Exception\TransportException;
-use HostingPal\WhmApiClient\Exception\TransportFailure;
 use HostingPal\WhmApiClient\Http\HttpTransport;
 use HostingPal\WhmApiClient\Response\ApiResponse;
 use HostingPal\WhmApiClient\Response\EnvelopeReader;
@@ -17,23 +17,26 @@ use HostingPal\WhmApiClient\Response\ResponseMetadata;
 use HostingPal\WhmApiClient\Response\ResponseRoute;
 use InvalidArgumentException;
 use LogicException;
-use Psr\Http\Client\NetworkExceptionInterface;
-use Psr\Http\Client\RequestExceptionInterface;
+use Psr\Http\Client\ClientExceptionInterface;
+use RuntimeException;
 use SensitiveParameter;
 use Throwable;
+use TypeError;
+use ValueError;
 
 /**
  * Run the reviewed UAPI operation in one existing cPanel or Webmail session.
  *
  * This handle holds an authenticated URL and a single service cookie. Its metadata belongs
- * to that session. The caller supplies a PSR-18 transport with verified TLS, redirects and
- * retries disabled, bounded timeouts and no ambient credentials or cookie jar.
+ * to that session. Configure the transport to verify TLS, disable redirects and retries,
+ * enforce timeouts and omit ambient credentials and cookies. cPanel 11.138.0.24 refused
+ * this operation through its Webmail AppSafe allowlist after successful authentication.
  */
 final class SessionUrlClient
 {
     use SessionUrlOperations;
 
-    private const ENDPOINT_PATH = '~\A/cpsess[0-9]+/execute/Session/create_temp_user\z~';
+    private readonly string $operationPath;
 
     private readonly string $cookieName;
     private ?ResponseMetadata $metadata = null;
@@ -42,8 +45,8 @@ final class SessionUrlClient
      * Bind a caller-owned authenticated endpoint to its independently trusted service origin.
      *
      * The origin is an HTTPS host (DNS, IPv4 or bracketed IPv6) with explicit service port 2083
-     * or 2096. The complete URL must start with that exact origin and end with the session's
-     * /cpsess<digits>/execute/Session/create_temp_user path. Pass only the service cookie value,
+     * or 2096. The endpoint must match this origin (scheme and host are case-insensitive) and
+     * its path must be /cpsess<digits>/execute/Session/create_temp_user. Pass only the service cookie value,
      * as sent on the wire, from the same authenticated session. The service selects the cookie
      * name. Construction performs no I/O and retains the opaque credentials for this handle only.
      *
@@ -57,22 +60,27 @@ final class SessionUrlClient
         #[SensitiveParameter] private readonly HttpTransport $transport,
     ) {
         if (
-            preg_match('~\Ahttps://(\[[a-fA-F0-9:.]+\]|[A-Za-z0-9.-]+):(2083|2096)\z~', $trustedOrigin, $parts) !== 1
-            || !str_starts_with($endpointUrl, $trustedOrigin . '/')
-            || preg_match(self::ENDPOINT_PATH, substr($endpointUrl, strlen($trustedOrigin))) !== 1
+            preg_match('~\Ahttps://(\[[a-f0-9:.]+\]|[a-z0-9.-]+):(2083|2096)\z~i', $trustedOrigin, $parts) !== 1
+            || strncasecmp($endpointUrl, $trustedOrigin . '/', strlen($trustedOrigin) + 1) !== 0
+            || preg_match('~\A/cpsess[0-9]+(/execute/[A-Za-z0-9_]+/[A-Za-z0-9_]+)\z~', substr(
+                $endpointUrl,
+                strlen($trustedOrigin),
+            ), $path) !== 1
+            || !in_array($path[1], self::SESSION_PATHS, true)
             || preg_match('/\A[\x21\x23-\x2b\x2d-\x3a\x3c-\x5b\x5d-\x7e]+\z/', $cookieValue) !== 1
         ) {
             throw new InvalidArgumentException('Invalid authenticated session endpoint or cookie.');
         }
-        $host = $parts[1];
-        $valid = match (true) {
-            str_starts_with($host, '[') => filter_var(substr($host, 1, -1), FILTER_VALIDATE_IP, FILTER_FLAG_IPV6),
-            preg_match('/\A[0-9.]+\z/', $host) === 1 => filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4),
-            default => filter_var($host, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME),
-        };
-        if ($valid === false) {
+        $host = HostName::normalize($parts[1]);
+        // Some HTTP clients interpret shortened, octal, integer or hexadecimal IPv4 hostnames as addresses.
+        if (
+            str_ends_with($host, '.')
+            || (preg_match('/\A(?:0x[0-9a-f]+|[0-9]+)(?:\.(?:0x[0-9a-f]+|[0-9]+))*\z/', $host) === 1
+                && filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) === false)
+        ) {
             throw new InvalidArgumentException('Invalid trusted session host.');
         }
+        $this->operationPath = $path[1];
         $this->cookieName = $parts[2] === '2083' ? 'cpsession' : 'webmailsession';
     }
 
@@ -98,35 +106,54 @@ final class SessionUrlClient
         return OperationRunner::run($spec, $arguments, $this->dispatch(...));
     }
 
-    private function dispatch(): ApiResponse
+    /** @param array<mixed> $spec */
+    private function dispatch(array $spec, #[SensitiveParameter] OrderedFields $fields): ApiResponse
     {
+        $path = '/execute/' . OperationSpec::text($spec, 'module') . '/' . OperationSpec::text($spec, 'function');
+        if ($path !== $this->operationPath) {
+            throw new LogicException('Generated operation differs from the bound session endpoint.');
+        }
+        $fields->assertNoReserved([]);
+        $method = OperationSpec::method($spec);
+        $outcome = OperationSpec::outcome($spec);
         try {
-            $response = $this->transport->send('POST', $this->endpointUrl, [
+            $response = $this->transport->send($method->value, $this->endpointUrl, [
                 'Cookie' => $this->cookieName . '=' . $this->cookieValue,
                 'Accept' => 'application/json',
                 'Content-Type' => 'application/x-www-form-urlencoded',
-            ], '');
+            ], $fields->encode());
+        } catch (ClientExceptionInterface $cause) {
+            throw TransportException::fromClient($cause, self::safeDiagnostic($cause->getMessage()));
         } catch (Throwable $cause) {
-            // A factory or client may echo either the private request target or the complete Cookie header.
-            throw new TransportException(
-                match (true) {
-                    $cause instanceof NetworkExceptionInterface => TransportFailure::Network,
-                    $cause instanceof RequestExceptionInterface => TransportFailure::Request,
-                    default => TransportFailure::Other,
-                },
-                $cause::class,
-                'Authenticated session request failed.',
-            );
+            // Factory and client bugs may retain the request or quote its URL or cookie.
+            $message = 'HTTP implementation failed while preparing or sending the session request.';
+            throw match (true) {
+                $cause instanceof TypeError => new TypeError($message),
+                $cause instanceof ValueError => new ValueError($message),
+                $cause instanceof LogicException => new LogicException($message),
+                default => new RuntimeException($message),
+            };
         }
 
-        try {
-            $result = EnvelopeReader::read($response, ResponseRoute::DirectUapi, OutcomePolicy::Flag);
-        } catch (ApiException $cause) {
-            $this->metadata = $cause->metadata;
-            throw $cause;
-        }
-        $this->metadata = $result->metadata;
-        return $result;
+        return EnvelopeReader::readAndRecord(
+            $response,
+            ResponseRoute::DirectUapi,
+            $outcome,
+            function (ResponseMetadata $metadata): void {
+                $this->metadata = $metadata;
+            },
+        );
+    }
+
+    /** Report recognized transport diagnoses without copying any request-derived bytes into the exception. */
+    private static function safeDiagnostic(#[SensitiveParameter] string $message): string
+    {
+        return match (true) {
+            preg_match('/\Acurl error (?:51|60):/i', $message) === 1 => 'TLS certificate verification failed.',
+            preg_match('/\Acurl error 28:/i', $message) === 1 => 'Session request timed out.',
+            preg_match('/\Acurl error 6:/i', $message) === 1 => 'Host resolution failed.',
+            default => 'Authenticated session request failed.',
+        };
     }
 
     /** @return array{} */

@@ -12731,3 +12731,13 @@ Explicit logouts returned HTTP 200 for both services. Readbacks established
 token, account, domain and zone absence and zero account-matching session
 entries after each lifecycle. The returned temporary identity was never used
 to authenticate or check database privileges.
+
+A third, purpose-created fixture repeated typed verification after the contract
+was restored to the pin's optional fields and the session router began dispatching
+from its generated spec. This worktree was based on `88558743`. The serialized
+spec SHA-256 was `1861312cb22efd1800be28483985ac40d1ea8c3a3972492e29b2ba0307bb8c5f`.
+cPanel again returned one with a string identifier on first setup, then zero
+with the identifier absent. Authenticated Webmail returned HTTP 200, UAPI 0
+and the same AppSafe refusal. Both explicit logouts returned HTTP 200. Readbacks
+confirmed token, account, domain and zone absence and zero account-matching
+session entries.

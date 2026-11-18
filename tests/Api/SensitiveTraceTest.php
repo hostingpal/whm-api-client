@@ -1590,6 +1590,57 @@ final class SensitiveTraceTest extends TestCase
         }
     }
 
+    /** @return iterable<string, array{int,string,class-string<ApiException>}> */
+    public static function sessionResponseFailures(): iterable
+    {
+        yield 'HTTP' => [500, '{}', HttpException::class];
+        yield 'API' => [200, '{"status":0,"errors":["PRIVATE"]}', ApiErrorException::class];
+        yield 'malformed envelope' => [200, 'PRIVATE', InvalidResponseException::class];
+        yield 'payload' => [200, '{"status":1,"data":{"created":"PRIVATE"}}', PayloadMismatchException::class];
+    }
+
+    /** @param class-string<ApiException> $expected */
+    #[DataProvider('sessionResponseFailures')]
+    public function testSessionSecretsStayOutOfResponseFailureTraces(int $status, string $body, string $expected): void
+    {
+        $factory = new Psr17Factory();
+        $http = new MockClient();
+        $origin = 'https://example.test:2083';
+        $endpoint = $origin . '/cpsess' . self::STRING_TOTP . '/execute/Session/create_temp_user';
+        $session = new SessionUrlClient($origin, $endpoint, self::SECRET, new HttpTransport($http, $factory, $factory));
+        $http->addResponse(new Response($status, [], str_replace('PRIVATE', self::SECRET . $endpoint, $body)));
+        try {
+            $session->createTempUser();
+            self::fail('Expected a response failure.');
+        } catch (ApiException $exception) {
+            self::assertInstanceOf($expected, $exception);
+            self::assertSame($session->responseMeta(), $exception->metadata);
+            self::assertSecretAbsent($exception);
+        }
+    }
+
+    public function testSessionTransportProgrammingErrorsStayDistinctAndPrivate(): void
+    {
+        $factory = new Psr17Factory();
+        $http = new class implements ClientInterface {
+            public function sendRequest(RequestInterface $request): ResponseInterface
+            {
+                throw new \TypeError($request->getHeaderLine('Cookie') . $request->getRequestTarget());
+            }
+        };
+        $origin = 'https://example.test:2083';
+        $endpoint = $origin . '/cpsess' . self::STRING_TOTP . '/execute/Session/create_temp_user';
+        $session = new SessionUrlClient($origin, $endpoint, self::SECRET, new HttpTransport($http, $factory, $factory));
+        try {
+            $session->createTempUser();
+            self::fail('Expected a programming error.');
+        } catch (\TypeError $exception) {
+            self::assertNull($exception->getPrevious());
+            self::assertSecretAbsent($exception);
+            self::assertNull($session->responseMeta());
+        }
+    }
+
     private static function assertSecretAbsent(Throwable $exception): void
     {
         for ($current = $exception; $current !== null; $current = $current->getPrevious()) {

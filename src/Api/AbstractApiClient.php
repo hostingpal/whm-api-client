@@ -12,7 +12,6 @@ use HostingPal\WhmApiClient\Api\Engine\ParameterExpander;
 use HostingPal\WhmApiClient\Config\ClientConfig;
 use HostingPal\WhmApiClient\Exception\ApiException;
 use HostingPal\WhmApiClient\Exception\TransportException;
-use HostingPal\WhmApiClient\Exception\TransportFailure;
 use HostingPal\WhmApiClient\Http\HttpTransport;
 use HostingPal\WhmApiClient\Http\StreamingMultipartBody;
 use HostingPal\WhmApiClient\Http\StreamingMultipartEncoder;
@@ -22,8 +21,6 @@ use HostingPal\WhmApiClient\Response\ResponseMetadata;
 use HostingPal\WhmApiClient\Response\ResponseRoute;
 use InvalidArgumentException;
 use Psr\Http\Client\ClientExceptionInterface;
-use Psr\Http\Client\NetworkExceptionInterface;
-use Psr\Http\Client\RequestExceptionInterface;
 use RuntimeException;
 use SensitiveParameter;
 use Throwable;
@@ -268,29 +265,13 @@ abstract class AbstractApiClient
                 if (!$exception instanceof ClientExceptionInterface) {
                     throw $exception;
                 }
-                throw new TransportException(
-                    match (true) {
-                        $exception instanceof NetworkExceptionInterface => TransportFailure::Network,
-                        $exception instanceof RequestExceptionInterface => TransportFailure::Request,
-                        default => TransportFailure::Other,
-                    },
-                    $exception::class,
+                throw TransportException::fromClient(
+                    $exception,
                     $this->config->credentials->redact($exception->getMessage()),
                 );
             }
 
-            try {
-                $result = EnvelopeReader::read($response, $route, $outcome);
-            } catch (ApiException $exception) {
-                if ($exception->metadata !== null) {
-                    $this->recordResponseMeta($exception->metadata);
-                }
-                throw $exception;
-            }
-
-            $this->recordResponseMeta($result->metadata);
-
-            return $result;
+            return EnvelopeReader::readAndRecord($response, $route, $outcome, $this->recordResponseMeta(...));
         } finally {
             if ($content instanceof StreamingMultipartBody) {
                 $content->close();

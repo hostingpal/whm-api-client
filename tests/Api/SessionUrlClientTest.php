@@ -60,6 +60,20 @@ final class SessionUrlClientTest extends TestCase
         self::assertSame(['created' => 0], $session->createTempUser());
     }
 
+    public function testOriginComparisonAcceptsSchemeAndHostCaseDifferences(): void
+    {
+        $http = new Client();
+        $session = new SessionUrlClient(
+            'HTTPS://PANEL.example.test:2083',
+            'https://panel.example.test:2083' . self::PATH,
+            self::COOKIE,
+            self::transport($http),
+        );
+        $http->addResponse(new Response(200, [], '{"status":1,"data":{"created":0}}'));
+        self::assertSame(['created' => 0], $session->createTempUser());
+        self::assertCount(1, $http->getRequests());
+    }
+
     public function testBindingStartsWithoutResponseMetadata(): void
     {
         $origin = 'https://example.test:2083';
@@ -67,13 +81,17 @@ final class SessionUrlClientTest extends TestCase
         self::assertNull($session->responseMeta());
     }
 
-    public function testIdentifierRemainsOptionalInThePinnedPayload(): void
+    public function testEitherPayloadFieldMayBeOmitted(): void
     {
         $origin = 'https://example.test:2083';
         $http = new Client();
         $session = new SessionUrlClient($origin, $origin . self::PATH, self::COOKIE, self::transport($http));
         $http->addResponse(new Response(200, [], '{"status":1,"data":{"created":1}}'));
         self::assertSame(['created' => 1], $session->createTempUser());
+        $http->addResponse(new Response(200, [], '{"status":1,"data":{"session_temp_user":"id"}}'));
+        self::assertSame(['session_temp_user' => 'id'], $session->createTempUser());
+        $http->addResponse(new Response(200, [], '{"status":1,"data":{}}'));
+        self::assertSame([], $session->createTempUser());
     }
 
     /** @return iterable<string, array{string,string,string}> */
@@ -89,6 +107,11 @@ final class SessionUrlClientTest extends TestCase
             'https://example.test:2083#x',
             'https://999.999.999.999:2083',
             'https://[::::]:2083',
+            'https://127.1:2083',
+            'https://0x7f000001:2083',
+            'https://0x7f.0.0.1:2083',
+            'https://0177.0.0.1:2083',
+            'https://example.test.:2083',
         ];
         foreach ($badOrigins as $bad) {
             yield 'origin ' . $bad => [$bad, $bad . self::PATH, self::COOKIE];
@@ -146,7 +169,7 @@ final class SessionUrlClientTest extends TestCase
             self::assertTrue($e->outcomeConfirmed);
             self::assertSame($e->metadata, $session->responseMeta());
         }
-        $diagnostic = self::COOKIE . self::PATH;
+        $diagnostic = 'cURL error 60: ' . self::COOKIE . self::PATH;
         $http->addException(new class ($diagnostic) extends RuntimeException implements ClientExceptionInterface {
         });
         try {
@@ -154,6 +177,7 @@ final class SessionUrlClientTest extends TestCase
             self::fail('Expected transport failure.');
         } catch (TransportException $e) {
             self::assertNull($e->getPrevious());
+            self::assertSame('TLS certificate verification failed.', $e->causeMessage);
             self::assertNull($session->responseMeta());
             self::assertStringNotContainsString(self::COOKIE, $e->causeMessage . $e->getMessage());
             self::assertStringNotContainsString(self::PATH, $e->causeMessage . $e->getMessage());

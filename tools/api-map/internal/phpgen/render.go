@@ -99,13 +99,14 @@ func FamilyDirs() []string {
 func Render(result effective.Result) map[string][]byte {
 	files := map[string][]byte{}
 	byFamily := map[string][]effective.Group{}
+	var sessionOps []effective.Operation
 	for _, group := range result.Groups {
 		dir := familyDir(group.Family)
 		ordinary := group
 		ordinary.Operations = nil
 		for _, op := range group.Operations {
 			if op.SessionURL {
-				files["src/Api/Uapi/SessionUrlOperations.php"] = []byte(sessionURLTrait(group, op))
+				sessionOps = append(sessionOps, op)
 			} else {
 				ordinary.Operations = append(ordinary.Operations, op)
 			}
@@ -114,6 +115,7 @@ func Render(result effective.Result) map[string][]byte {
 		files["src/Api/"+dir+"/Spec/"+group.Class+"Spec.php"] = []byte(specClass(group))
 		byFamily[group.Family] = append(byFamily[group.Family], group)
 	}
+	files["src/Api/Uapi/SessionUrlOperations.php"] = []byte(sessionURLTrait(sessionOps))
 	for _, family := range families {
 		dir := familyDir(family)
 		files["src/Api/"+dir+"/"+dir+"Groups.php"] = []byte(groupsTrait(family, byFamily[family]))
@@ -284,24 +286,40 @@ func groupClass(g effective.Group) string {
 
 // Session URL operations run only on the explicit session handle. The token group's
 // spec class remains the source of the contract, while its API exposes only token routes.
-func sessionURLTrait(g effective.Group, op effective.Operation) string {
+func sessionURLTrait(ops []effective.Operation) string {
 	w := &writer{}
 	ns := rootNamespace + `\Api\Uapi`
 	header(w, ns)
-	w.line("use " + ns + `\Spec\` + g.Class + "Spec;")
-	w.line("use " + rootNamespace + `\Exception\ApiException;`)
-	w.line("use " + rootNamespace + `\Exception\PayloadMismatchException;`)
-	w.line("")
+	if len(ops) > 0 {
+		w.line("use " + ns + `\Spec\SessionSpec;`)
+		w.line("use " + rootNamespace + `\Exception\ApiException;`)
+		w.line("use " + rootNamespace + `\Exception\PayloadMismatchException;`)
+		w.line("")
+	}
 	w.line("/**")
 	w.doc("", Marker)
 	w.line(" *")
-	w.doc("", "Authenticated cPanel and Webmail session URL operations. Each call sends one request with the caller's session cookie.")
-	w.line(" *")
-	w.typeAlias(op.Alias, *op.Returns)
+	w.doc("", "Each method executes one request in the bound cPanel or Webmail session with a single attempt and no retries. The handle clears responseMeta() before each attempt and records the envelope snapshot before API or payload errors.")
+	for _, op := range ops {
+		w.line(" *")
+		w.typeAlias(op.Alias, *op.Returns)
+	}
 	w.line(" */")
 	w.line("trait SessionUrlOperations")
 	w.line("{")
-	method(w, g, op)
+	if len(ops) == 0 {
+		w.line("    private const SESSION_PATHS = [];")
+	} else {
+		w.line("    private const SESSION_PATHS = [")
+		for _, op := range ops {
+			w.line("        " + phpString("/execute/"+op.Module+"/"+op.Function) + ",")
+		}
+		w.line("    ];")
+	}
+	for _, op := range ops {
+		w.line("")
+		method(w, effective.Group{Family: "uapi", Class: "Session"}, op)
+	}
 	w.line("}")
 	return w.b.String()
 }
@@ -404,6 +422,10 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 		w.docTag(indent, "@return "+docReturn(op, *ret))
 	}
 	w.line(indent + " * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.")
+	if op.SessionURL {
+		w.line(indent + ` * @throws \TypeError|\ValueError|\LogicException|\RuntimeException If the HTTP implementation fails outside its`)
+		w.line(indent + " *     PSR transport contract. Its original request and diagnostics are discarded.")
+	}
 	if ret != nil && op.Outcome == "flag" {
 		w.line(indent + " * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;")
 		w.line(indent + " *     the operation may already have changed state; do not retry automatically.")

@@ -23,12 +23,14 @@ $session = new SessionUrlClient(
     transport: $transport,
 );
 $result = $session->createTempUser();
-$temporaryUser = $result['created'] === 1 ? ($result['session_temp_user'] ?? null) : null;
+$creation = $result['created'] ?? null; // null = unknown, 0 = no creation, 1 = created
+$temporaryUser = $creation === 1 ? ($result['session_temp_user'] ?? null) : null;
 ```
 
-The return type requires a `created` flag and checks the identifier's string
-type when present. Use the identifier only when the flag is one and the key
-exists. A zero flag indicates that this invocation did not set up a temporary user.
+The pin makes both fields optional. The client validates each field when present.
+An absent flag leaves creation unknown after the accepted mutation. Avoid
+retrying according to that absence alone. A present zero flag indicates that
+this invocation did not set up a temporary user.
 
 Construction performs no I/O. Each call sends one empty form POST with
 `cpsession` on port 2083 or `webmailsession` on port 2096. The caller owns

@@ -17,27 +17,13 @@
         },
         {
           "kind": "documented",
-          "text": "On cPanel 11.138.0.24 the handler returns created=1 with session_temp_user when setup takes place; it returns created=0 without that key when setup does not take place, including when already set up. Inspect created separately from the UAPI status."
+          "text": "The pinned data object has two optional fields. When present, created is an integer flag (1 means creation succeeded, 0 means it failed) and session_temp_user is a string. Omission leaves creation unknown."
         },
         {
           "kind": "observed",
-          "text": "On cPanel 11.138.0.24 the cPanel service returned created=1 and an identifier, then created=0 alone for the same session. Webmail authentication succeeded but its application allowlist refused this operation. The client preserves the selected service and its response metadata."
+          "text": "On 11.138.0.24 cPanel returned created=1 with an identifier, then created=0 alone for the same session. The installed handler and setup helper confirm that an already-set-up user takes the zero branch. Webmail authenticated but AppSafe refused this operation. Inspect responseMeta() for the service outcome."
         }
       ],
-      "response": {
-        "created": {
-          "type": "flag",
-          "required": true,
-          "evidence": [
-            {
-              "kind": "doc",
-              "version": "11.138.0.24",
-              "date": "2026-11-18",
-              "note": "Installed Cpanel/API/Session.pm create_temp_user returns created on both branches. Cpanel/Admin/Modules/Cpanel/session_call.pm SETUP_TEMP_SESSION returns zero when the temporary user is already set up."
-            }
-          ]
-        }
-      },
       "evidence": [
         {
           "kind": "doc",
@@ -46,12 +32,6 @@
           "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
           "pointer": "/paths/~1Session~1create_temp_user/get/description",
           "note": "Requires an existing authenticated session URL. The pinned URL example includes its security token. The formal GET declares x-readonly=false and x-rollback=none."
-        },
-        {
-          "kind": "doc",
-          "version": "11.138.0.24",
-          "date": "2026-11-18",
-          "note": "Installed Cpanel/API/Session.pm create_temp_user returns created on both branches. Cpanel/Admin/Modules/Cpanel/session_call.pm SETUP_TEMP_SESSION returns zero when the temporary user is already set up."
         },
         {
           "kind": "live",

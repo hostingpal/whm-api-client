@@ -25,7 +25,6 @@ final class SessionSpec
                 'created' => ['type' => 'flag'],
                 'session_temp_user' => ['type' => 'string'],
             ],
-            'required' => ['created'],
         ],
     ];
 

@@ -271,18 +271,33 @@ func (b *builder) operation(op model.Operation, v model.Variant, ov overlay.Oper
 	b.rowsPolicy(op, v, ov, returns)
 	result.EmptyWithoutData = b.emptyWithoutData(op, ov, returns)
 	result.AccountSearchEmpty = b.accountSearchEmpty(result, ov, returns)
-	if ov.SessionURL {
-		if op.ID != "uapi:Session/create_temp_user" || result.Method != "POST" || len(result.Params) != 0 ||
-			result.Body != "" || result.Outcome != "flag" || ov.AdditionalMethods != nil || returns == nil || returns.Type != "object" {
-			b.problem(op.ID + ": session_url requires the parameterless Session/create_temp_user form POST and object result")
-		}
-		result.SessionURL = true
-	} else if op.ID == "uapi:Session/create_temp_user" {
-		b.problem(op.ID + ": create_temp_user requires session_url")
-	}
+	result.SessionURL = b.sessionURL(result, ov, returns)
 	result.Returns = returns
 	result.AdditionalMethods = b.additionalMethods(op, v, ov, result)
 	return result, b.groupOf(op, v, node), true
+}
+
+// The public session client binds only this reviewed account-scoped operation.
+// Keep the public name stable and reject incompatible or silently ignored policies.
+func (b *builder) sessionURL(op Operation, ov overlay.Operation, returns *TypeSpec) bool {
+	if op.ID != "uapi:Session/create_temp_user" {
+		if ov.SessionURL {
+			b.problem(op.ID + ": session_url requires the reviewed Session/create_temp_user operation")
+		}
+		return false
+	}
+	if !ov.SessionURL {
+		b.problem(op.ID + ": create_temp_user requires session_url")
+		return false
+	}
+	if op.PHPName != "createTempUser" || op.Module != "Session" || op.Function != "create_temp_user" ||
+		op.Method != "POST" || op.Outcome != "flag" || op.Body != "" || len(op.Params) != 0 ||
+		ov.Rows != "" || ov.EmptyWithoutData || ov.OptionalPayload || ov.Void || ov.Unwrap != "" ||
+		ov.AdditionalMethods != nil || returns == nil || returns.Type != "object" {
+		b.problem(op.ID + ": session_url requires createTempUser with a parameterless form POST, flag outcome and object result")
+		return false
+	}
+	return true
 }
 
 // wireFunction applies only a single namespace to a bare WHM canonical leaf.

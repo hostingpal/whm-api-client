@@ -67,6 +67,7 @@ func TestRenderMatchesGoldenFiles(t *testing.T) {
 	want := []string{
 		"docs/api/coverage.md",
 		"src/Api/Uapi/DomainInfo.php",
+		"src/Api/Uapi/SessionUrlOperations.php",
 		"src/Api/Uapi/Spec/DomainInfoSpec.php",
 		"src/Api/Uapi/UapiGroups.php",
 		"src/Api/Whm/Accounts.php",
@@ -160,4 +161,24 @@ func methodDoc(t *testing.T, class, name string) string {
 		t.Fatalf("method %s not rendered", name)
 	}
 	return class[strings.LastIndex(class[:end], "/**"):end]
+}
+
+func TestSessionOperationsAreCollectedBeforeRendering(t *testing.T) {
+	result := goldenResult()
+	g := &result.Groups[0]
+	g.Name, g.Class = "Session", "Session"
+	for i := range g.Operations {
+		g.Operations[i].SessionURL = true
+		g.Operations[i].Module = "Session"
+		g.Operations[i].Unwrap = ""
+	}
+	files := Render(result)
+	trait := string(files["src/Api/Uapi/SessionUrlOperations.php"])
+	tokenGroup := string(files["src/Api/Uapi/Session.php"])
+	for _, op := range g.Operations {
+		if !strings.Contains(trait, "function "+op.PHPName+"(") || !strings.Contains(trait, "/execute/Session/"+op.Function) ||
+			strings.Contains(tokenGroup, "function "+op.PHPName+"(") {
+			t.Fatalf("%s lost from its dedicated handle or exposed on a token handle", op.PHPName)
+		}
+	}
 }
