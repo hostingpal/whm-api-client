@@ -12538,3 +12538,131 @@ Not established: `whitelist_ips` with values, delivery of the creation notificat
 meaning of `expires_at` 0, and any version other than `11.138.0.24`. These are tracked in
 `whm-api-client-8x0.2.98`. Coverage after this change is read from
 [coverage.md](coverage.md).
+
+## 2026-11-18 — UAPI DNS zone writes (8x0.4.41)
+
+`uapi:DNS/mass_edit_zone` and `uapi:DNS/swap_ip_in_zones` are generated as
+`uapi()->dns()->massEditZone()` and `swapIpInZones()`. The pinned UAPI source is
+unchanged: decompressed SHA-256
+`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`, at
+`/paths/~1DNS~1mass_edit_zone/get` and `/paths/~1DNS~1swap_ip_in_zones/get`. Both
+declare `x-readonly=false` and `x-rollback=none` on a GET variant; the client sends
+form POST. Coverage after this change is read from [coverage.md](coverage.md).
+
+### Source decisions
+
+- `mass_edit_zone` parameters 2 to 4 (`add`, `edit`, `remove`) are arrays with
+  `explode: true`. They use repeated literal fields, as the delivered
+  `whm1:mass_edit_dns_zone` does: strict string items for `add`/`edit`, integer items
+  for `remove`, no scalar alternative, empty lists rejected.
+- `swap_ip_in_zones` parameter 1 (`domain`) is a formal string whose description
+  allows incrementing or duplicating the name. Its prose names `domain-0` as the first
+  numbered name while its `multiple` example leaves the first unsuffixed. The
+  `multiple-alternative` example repeats `domain`. The method uses repeated literal
+  fields with a scalar alternative and adopts no numbered family.
+- The `swap_ip_in_zones` `data` node is described as "an array of objects" and has an
+  `items` schema with five string properties, but no `type: array`. Unrepaired, the
+  result lowers to `mixed`. A root replacement restores the list around exactly the
+  pinned item fields, each optional and non-nullable.
+- `swap_ip_in_zones` signature order is `domain`, `destIp`, `sourceIp`, `ftpIp`; the
+  pinned order is `dest_ip`, `domain`, `ftp_ip`, `source_ip`. Wire order follows the
+  signature.
+
+### Observations on cPanel 11.138.0.24
+
+Two one-off runs on 2026-11-18 against `test.oblak.host`. Each created the disposable
+account `wldnszed` (`wldnszed.example.com`, plus the subdomain `sub`), minted a
+30-minute cPanel token for the direct route through the bridged generic
+`Tokens/create_full_access`, removed the account and confirmed its absence through
+`listaccts`. Each `mass_edit_zone` and `swap_ip_in_zones` request was a form POST sent
+once per route. The zone readbacks between them used the generated `parseZone()`, a
+GET, and account setup and removal used their own WHM and UAPI calls. Nothing but value
+types, counts, record types and upstream error text was recorded, and no artifact is
+committed.
+
+Run 1 used the generic `call()` with `OutcomePolicy::Unchecked` at master `8c2834de`,
+so its failures were read as UAPI status 0 responses and raised no exception. Run 2
+called the generated methods from this change's working tree (base `8c2834de`, before
+its first commit), where a failure is an exception.
+
+Run 1, generic `call()`:
+
+| Call | Direct UAPI | WHM bridge |
+| --- | --- | --- |
+| `mass_edit_zone`, two repeated `add` | status 1; both records created; `new_serial` a JSON string of digits | same |
+| `mass_edit_zone`, one `edit` and one `remove` by `parse_zone` `line_index` | status 1; exactly those records changed; `new_serial` a string of digits | same |
+| `mass_edit_zone`, no change | status 0, null data | same |
+| `mass_edit_zone`, stale serial | status 0; data `{type: string, detail: null}` | same |
+| `mass_edit_zone`, malformed `add` JSON | status 0, null data; error text quotes the supplied text | same |
+| `mass_edit_zone`, zone not controlled | status 0, null data | same |
+| `swap_ip_in_zones`, one domain, detected source | status 1; 6 rows | status 0, `Undefined subroutine &Cpanel::AdminBin::Call::call` |
+| `swap_ip_in_zones`, two domains, explicit `source_ip` and `ftp_ip` | status 1; 6 rows | same failure |
+| `swap_ip_in_zones`, `source_ip` matching nothing | status 1; 2 rows | same failure |
+| `swap_ip_in_zones`, invalid `dest_ip` | status 0 | status 0 |
+| `swap_ip_in_zones`, domain not controlled | status 0 | status 0 |
+| `swap_ip_in_zones`, no `domain` | status 0 | status 0 |
+
+Every swap row in run 1 had exactly the five pinned keys with string values. Run 1
+recorded no record types and did not read the serial around the swaps.
+
+Run 2, generated methods:
+
+| Call | Direct UAPI | WHM bridge |
+| --- | --- | --- |
+| `massEditZone()`, two repeated `add` | integer `new_serial` equal to the serial on the next `parseZone()` read; both records present | same |
+| `massEditZone()`, one `edit` and one `remove` by `parseZone()` `line_index` | integer `new_serial` equal to the serial on the next read; record edited, other removed | same |
+| `massEditZone()`, no change | `ApiErrorException` | `ApiErrorException` |
+| `massEditZone()`, stale serial | `ApiErrorException` | `ApiErrorException` |
+| `swapIpInZones()`, one domain, detected source | 6 rows: 4 `A`, 2 `TXT` | `ApiErrorException`, same undefined-subroutine text |
+| `swapIpInZones()`, two domains, explicit `sourceIp` and `ftpIp` | 6 rows: 4 `A`, 2 `TXT` | `ApiErrorException` |
+| `swapIpInZones()`, `sourceIp` matching nothing | 2 `TXT` rows; zone serial increased | `ApiErrorException` |
+| `swapIpInZones()`, invalid `destIp` | `ApiErrorException` | `ApiErrorException` |
+| `swapIpInZones()`, domain not controlled | `ApiErrorException` | `ApiErrorException` |
+
+Run 2 did not send malformed `add` JSON or a zone the account does not control: for
+those two cases only the status 0 responses of run 1 exist, and the exception follows
+from the client's `Flag` policy, which the offline tests cover. A request with no
+`domain` cannot be sent through `swapIpInZones()`, whose `domain` argument is required;
+that row exists only in run 1.
+
+`new_serial` therefore accepts canonical in-range integer strings and returns `int`,
+as `whm1:mass_edit_dns_zone` does. The pinned integer is wrong for this build on both
+routes.
+
+### Server source read on the same version
+
+Read over SSH from `/usr/local/cpanel`, not from the pinned documents:
+
+- `Cpanel/API/DNS.pm` `mass_edit_zone`: `get_length_required` for `zone` and `serial`;
+  `get_length_multiple` for `add`, `edit` and `remove`; refuses temporary domains;
+  rejects an empty change set; decodes each `add`/`edit` with `Cpanel::JSON::Load`;
+  authorizes every `record_type` against the types allowed by the account features.
+  Its `%API` entry requires any of `simplezoneedit`, `zoneedit`, `changemx` and sets
+  `allow_demo => 0`. `InvalidZoneFile` and `Stale` failures put a payload in `data`
+  before dying; `Flag` raises before payload handling, so the client does not expose it.
+- `Cpanel/API/DNS.pm` `swap_ip_in_zones`: line 587 calls
+  `Cpanel::AdminBin::Call::call` with no `require Cpanel::AdminBin::Call` in the
+  function, unlike `mass_edit_zone` and `has_local_authority`. This matches the
+  bridged failure; why the direct route has the module loaded was not inspected.
+  Domains come from `validate_domains_or_die`
+  (`get_length_required_multiple('domain')`), `ftp_ip` defaults to `dest_ip`,
+  temporary domains are skipped with `raw_warning`, and the `%API` entry is `undef`.
+- `Whostmgr/DNS/SwapIP.pm`: `A` records whose address is a source address are
+  replaced, names starting with `ftp.` receive the FTP address, and every `TXT` record
+  that starts with `v=spf1` is rewritten and reported without checking for a match.
+  A missing source address is detected inside the loop over zones and then kept, so
+  the first zone processed decides it for the batch; the loop iterates a hash. Every
+  processed zone has its serial increased and is synchronized and reloaded.
+
+### Not observed
+
+- A bridged `swap_ip_in_zones` success, so the list container is unobserved there.
+- A swap across two separate zones (both test domains shared one zone), and therefore
+  the single source-address detection.
+- A skipped temporary domain and its warning.
+- `mass_edit_zone` record types other than `TXT`, the `InvalidZoneFile` failure, and
+  an account without the zone-edit features.
+- Any version other than `11.138.0.24`.
+
+A committed disposable-account recipe and these variants are tracked under
+`whm-api-client-8x0.2.97`.

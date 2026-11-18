@@ -591,8 +591,8 @@ refresh it with `php tools/live-testing/refresh-operations-client.php`.
 | `uapi:DCV/check_domains_via_dns` | typed |
 | `uapi:DCV/check_domains_via_http` | typed |
 | `uapi:DCV/ensure_domains_can_pass_dcv` | excluded |
-| `uapi:DNS/mass_edit_zone` | untyped |
-| `uapi:DNS/swap_ip_in_zones` | untyped |
+| `uapi:DNS/mass_edit_zone` | typed |
+| `uapi:DNS/swap_ip_in_zones` | typed |
 | `uapi:DNSSEC/activate_zone_key` | typed |
 | `uapi:DNSSEC/add_zone_key` | typed |
 | `uapi:DNSSEC/deactivate_zone_key` | typed |

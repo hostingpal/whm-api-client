@@ -412,7 +412,7 @@ remain unobserved under `8x0.2.59`.
 | `uapi()->dav()` | `getCalendarContactsConfig()`, `isDavServiceEnabled()`, `isHordeEnabled()`, `hasSharedGlobalAddressbook()`, `enableSharedGlobalAddressbook()`, `disableSharedGlobalAddressbook()`; see version-specific limitations below. |
 | `uapi()->cpDavd()` | `listUsers()`, `listDelegates()`, `addDelegate()`, `updateDelegate()`, `removeDelegate()`, `manageCollection()` |
 | `uapi()->postgresql()` | `createDatabase()`, `createUser()`, `deleteDatabase()`, `deleteUser()`, `getRestrictions()`, `grantAllPrivileges()`, `listDatabases()`, `listUsers()`, `renameDatabase()`, `renameUser()`, `renameUserNoPassword()`, `revokeAllPrivileges()`, `setPassword()`, `updatePrivileges()` |
-| `uapi()->dns()` | `lookup()`, `fetchCpanelGeneratedDomains()`, `parseZone()`, `hasLocalAuthority()`, `ensureDomainsResideOnlyLocally()`, `ensureDomainsUseRecognizedNameservers()`, `isAliasAvailable()`, `isHttpsAvailable()`, `isSvcbAvailable()` |
+| `uapi()->dns()` | `lookup()`, `fetchCpanelGeneratedDomains()`, `parseZone()`, `hasLocalAuthority()`, `ensureDomainsResideOnlyLocally()`, `ensureDomainsUseRecognizedNameservers()`, `isAliasAvailable()`, `isHttpsAvailable()`, `isSvcbAvailable()`, and the zone writes `massEditZone()` and `swapIpInZones()` |
 | `uapi()->dnssec()` | All 12 pinned functions: key lifecycle, DNSKEY/private-key exports, DS records and NSEC settings. `fetchDsRecords()` and `exportZoneDnskey()` use GET; the other ten use form POST, including private-key export. |
 | `uapi()->dynamicDns()` | All 5 pinned functions: `listDomains()` uses GET; `create()`, `recreate()`, `setDescription()` and `delete()` use form POST. |
 
@@ -1244,7 +1244,8 @@ Certificate deletion/installation, account-wide AutoSSL and redirect changes tak
 effect immediately. Live verification is bounded to fresh owned fixture material,
 without installing certificates or changing existing hosted services.
 
-The DNS methods are read-only (GET):
+The DNS methods below are read-only (GET); the zone writes are described under
+[WHM DNS management](#whm-dns-management) and [UAPI DNS zone writes](#uapi-dns-zone-writes):
 
 ```php
 $zone = $client->whm()->dns()->parseDnsZone('example.com'); // array{payload?: list<...>}
@@ -2311,6 +2312,113 @@ remove-record pass was rejected before execution with `[Modify Shared Resources]
 and was not retried. Those corrections remain source/offline evidence. Server-wide
 writes and other remaining variants stay under `8x0.2.42`; existing artifacts are
 unchanged.
+
+### UAPI DNS zone writes
+
+`uapi()->dns()` covers all eleven pinned DNS functions. Besides the nine reads it has
+two form POST zone writes for the selected account, both from cPanel 96 and neither
+with a rollback.
+
+```php
+$dns = $client->uapi('example')->dns();
+$zoneName = 'example.test';
+
+// Names come back as the zone stores them: fully qualified with a trailing dot, or relative to the zone.
+$fullName = static fn (string $name): string => str_ends_with($name, '.') ? $name : $name . '.' . $zoneName . '.';
+
+// One read supplies both the SOA serial and the line_index of the record to remove.
+$serial = null;
+$targets = [];
+foreach ($dns->parseZone($zoneName) as $line) {
+    if (($line['type'] ?? null) !== 'record') {
+        continue;
+    }
+    $name = $fullName((string) base64_decode($line['dname_b64'] ?? '', true));
+    $data = array_map(
+        static fn (string $part): string => (string) base64_decode($part, true),
+        $line['data_b64'] ?? [],
+    );
+    if (($line['record_type'] ?? null) === 'SOA' && ctype_digit($data[2] ?? '')) {
+        $serial = (int) $data[2]; // SOA data: primary name server, contact, serial, ...
+    }
+    // Select the record by what it is, never by a line number you remembered.
+    if (($line['record_type'] ?? null) === 'TXT' && $name === 'old.example.test.' && $data === ['obsolete text']) {
+        $targets[] = $line['line_index'] ?? null;
+    }
+}
+if ($serial === null || count($targets) !== 1 || !is_int($targets[0])) {
+    throw new RuntimeException('The zone serial or the record to remove was not identified uniquely.');
+}
+
+// One request: add a record and remove the one selected above.
+$result = $dns->massEditZone(
+    serial: $serial,
+    zone: $zoneName,
+    add: [json_encode([
+        'dname' => 'www', 'ttl' => 14400, 'record_type' => 'TXT', 'data' => ['example text'],
+    ], JSON_THROW_ON_ERROR)],
+    remove: [$targets[0]],
+);
+$nextSerial = $result['new_serial'] ?? null; // int
+
+// Replace an IPv4 address in the zones of one domain or a list of domains.
+$rows = $dns->swapIpInZones(
+    domain: ['example.test', 'example.net'],
+    destIp: '192.0.2.10',
+    sourceIp: '192.0.2.1',
+);
+```
+
+`massEditZone()` follows the same rules as the WHM `massEditDnsZone()` above: `add` and
+`edit` are nonempty lists of JSON strings you serialize yourself, `remove` is a nonempty
+integer list, and `remove` indexes and `edit.line_index` are 0-based, as returned by
+`parseZone()`. Take the serial and every index from the same read, and select records
+by name, type and data: an index only identifies whatever occupies that line, so a
+wrong one removes a different record while the call succeeds. The serial must
+match the zone's current serial. A call without changes,
+a stale serial or malformed JSON raises `ApiErrorException` and leaves the zone
+unchanged. The malformed-JSON error text quotes the record you sent, so treat
+`errors()` as private. The account needs one of the `simplezoneedit`, `zoneedit` or
+`changemx` features, which also decide the record types it may write.
+
+`swapIpInZones()` returns a list of rows, each with optional string `zone_name`,
+`record_name`, `record_type`, `old_value` and `new_value`. Without `ftpIp`, records
+whose name starts with `ftp.` receive `destIp`. Without `sourceIp` the documented rule
+detects the address to replace in each zone:
+
+1. the zone root's `A` record, if its address is not a loopback address;
+2. otherwise the first `A` record in the zone file whose address is not a loopback
+   address, which may belong to another name such as `www`;
+3. if the zone has no `A` record, or only loopback addresses, the zone is not updated.
+
+Things to know before calling it:
+
+- **It fails through the WHM bridge on cPanel 11.138.0.24.** With WHM credentials every
+  real swap raises `ApiErrorException` ("Undefined subroutine
+  &Cpanel::AdminBin::Call::call"), because the server function calls a module it never
+  loads. Use direct cPanel credentials. The client adds no fallback.
+- Every SPF `TXT` record in the zone is rewritten and returned, even when no address
+  matched, and the zone still gets a new serial. Rows are not proof that an address
+  changed: check their `record_type` and values.
+- With several domains and no `sourceIp`, the code on cPanel 11.138.0.24 applies that
+  rule once per call instead of once per zone: the first zone it handles that yields
+  an address decides it for every zone handled afterwards, and that order is not the
+  order you passed. Pass `sourceIp` when the zones may hold different addresses. This
+  comes from reading the server's code; it was not observed, because both test domains
+  shared one zone.
+- If the result does not match the documented shape after a successful response
+  (`PayloadMismatchException`), the zones may or may not have changed: a successful
+  call can also skip every domain. Read the zones before deciding whether to retry.
+- Domains and addresses are sent unchanged, with no local validation. Changes to public
+  zones are published and resolvers cache the old answers.
+
+The digit-string `new_serial`, the no-change and stale-serial exceptions, the swap rows
+and the bridge failure were observed on 2026-11-18 on a disposable account through
+both routes. Malformed JSON and a zone the account does not control were seen only as
+failed responses to the generic `call()`. The SPF rewriting was observed and matches
+the server's code; the once-per-call detection comes from the code alone. See the
+[source audit](docs/api/source-audit.md#2026-11-18--uapi-dns-zone-writes-8x0441) for
+what was and was not observed.
 
 ### Expanded WHM account management
 
