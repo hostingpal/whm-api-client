@@ -13,6 +13,22 @@ namespace HostingPal\WhmApiClient\Api\Uapi\Spec;
  */
 final class SessionSpec
 {
+    public const CREATE_TEMP_USER = [
+        'function' => 'create_temp_user',
+        'module' => 'Session',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'created' => ['type' => 'flag'],
+                'session_temp_user' => ['type' => 'string'],
+            ],
+            'required' => ['created'],
+        ],
+    ];
+
     public const CREATE_WEBMAIL_SESSION_FOR_MAIL_USER = [
         'function' => 'create_webmail_session_for_mail_user',
         'module' => 'Session',

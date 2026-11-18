@@ -101,7 +101,16 @@ func Render(result effective.Result) map[string][]byte {
 	byFamily := map[string][]effective.Group{}
 	for _, group := range result.Groups {
 		dir := familyDir(group.Family)
-		files["src/Api/"+dir+"/"+group.Class+".php"] = []byte(groupClass(group))
+		ordinary := group
+		ordinary.Operations = nil
+		for _, op := range group.Operations {
+			if op.SessionURL {
+				files["src/Api/Uapi/SessionUrlOperations.php"] = []byte(sessionURLTrait(group, op))
+			} else {
+				ordinary.Operations = append(ordinary.Operations, op)
+			}
+		}
+		files["src/Api/"+dir+"/"+group.Class+".php"] = []byte(groupClass(ordinary))
 		files["src/Api/"+dir+"/Spec/"+group.Class+"Spec.php"] = []byte(specClass(group))
 		byFamily[group.Family] = append(byFamily[group.Family], group)
 	}
@@ -269,6 +278,30 @@ func groupClass(g effective.Group) string {
 		w.line("")
 		method(w, g, op)
 	}
+	w.line("}")
+	return w.b.String()
+}
+
+// Session URL operations run only on the explicit session handle. The token group's
+// spec class remains the source of the contract, while its API exposes only token routes.
+func sessionURLTrait(g effective.Group, op effective.Operation) string {
+	w := &writer{}
+	ns := rootNamespace + `\Api\Uapi`
+	header(w, ns)
+	w.line("use " + ns + `\Spec\` + g.Class + "Spec;")
+	w.line("use " + rootNamespace + `\Exception\ApiException;`)
+	w.line("use " + rootNamespace + `\Exception\PayloadMismatchException;`)
+	w.line("")
+	w.line("/**")
+	w.doc("", Marker)
+	w.line(" *")
+	w.doc("", "Authenticated cPanel and Webmail session URL operations. Each call sends one request with the caller's session cookie.")
+	w.line(" *")
+	w.typeAlias(op.Alias, *op.Returns)
+	w.line(" */")
+	w.line("trait SessionUrlOperations")
+	w.line("{")
+	method(w, g, op)
 	w.line("}")
 	return w.b.String()
 }
@@ -465,7 +498,11 @@ func body(w *writer, g effective.Group, op effective.Operation, ret *effective.T
 	for i, p := range op.Params {
 		arguments[i] = phpString(p.PHP) + " => $" + p.PHP
 	}
-	call := "($this->run)(" + constant + ", [" + strings.Join(arguments, ", ") + "])"
+	run := "($this->run)"
+	if op.SessionURL {
+		run = "$this->run"
+	}
+	call := run + "(" + constant + ", [" + strings.Join(arguments, ", ") + "])"
 	prefix := "        "
 	if ret != nil {
 		prefix = "        $result = "
@@ -482,7 +519,7 @@ func body(w *writer, g effective.Group, op effective.Operation, ret *effective.T
 	if len(prefix+call)+1 <= lineWidth {
 		w.line(prefix + call + ";")
 	} else {
-		w.line(prefix + "($this->run)(" + constant + ", [")
+		w.line(prefix + run + "(" + constant + ", [")
 		for _, argument := range arguments {
 			w.line("            " + argument + ",")
 		}
@@ -749,7 +786,13 @@ func coverage(result effective.Result) string {
 	w.line("| --- | --- | --- | ---: |")
 	for _, g := range result.Groups {
 		handle := map[string]string{"uapi": "uapi()", "whm1": "whm()"}[g.Family]
-		w.line(fmt.Sprintf("| %s | %s | `%s->%s()` | %d |", label[g.Family], g.Name, handle, g.Accessor, len(g.Operations)))
+		accessor := "`" + handle + "->" + g.Accessor + "()`"
+		for _, op := range g.Operations {
+			if op.SessionURL {
+				accessor += ", `$sessionUrlClient->" + op.PHPName + "()`"
+			}
+		}
+		w.line(fmt.Sprintf("| %s | %s | %s | %d |", label[g.Family], g.Name, accessor, len(g.Operations)))
 	}
 	aliases := false
 	for _, g := range result.Groups {

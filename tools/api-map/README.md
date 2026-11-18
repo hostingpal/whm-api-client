@@ -56,6 +56,12 @@ Generated PHP and `docs/api/coverage.md` are regenerated with
 
 ## Overlay and PHP generation
 
+The `session_url` operation setting binds the parameterless
+`uapi:Session/create_temp_user` form POST to the dedicated `SessionUrlClient`.
+The generator emits one method on a trait used by this handle and one spec in
+the module's normal spec class. Token-authenticated UAPI handles expose only
+the module's ordinary operations. Coverage identifies the required accessor.
+
 The generated client (see `docs/superpowers/specs/2026-10-14-generated-client-design.md`)
 is rendered from the canonical map plus `docs/api/overlay/`:
 

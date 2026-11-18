@@ -20,6 +20,7 @@ use HostingPal\WhmApiClient\Exception\InvalidResponseException;
 use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
 use HostingPal\WhmApiClient\Exception\TransportException;
 use HostingPal\WhmApiClient\Http\HttpTransport;
+use HostingPal\WhmApiClient\SessionUrlClient;
 use HostingPal\WhmApiClient\UapiClient;
 use HostingPal\WhmApiClient\Upload;
 use HostingPal\WhmApiClient\WhmClient;
@@ -1553,6 +1554,39 @@ final class SensitiveTraceTest extends TestCase
         } catch (ApiErrorException | PayloadMismatchException $exception) {
             self::assertCount(1, $http->getRequests());
             self::assertSecretAbsent($exception);
+        }
+    }
+
+    public function testSessionUrlAndCookieStayOutOfValidationAndTransportFailureTraces(): void
+    {
+        $factory = new Psr17Factory();
+        $http = new MockClient();
+        $transport = new HttpTransport($http, $factory, $factory);
+        $origin = 'https://example.test:2083';
+        $endpoint = $origin . '/cpsess' . self::STRING_TOTP . '/execute/Session/create_temp_user';
+        try {
+            new SessionUrlClient($origin, $endpoint . '?invalid', self::SECRET, $transport);
+            self::fail('Expected session URL rejection.');
+        } catch (InvalidArgumentException $exception) {
+            self::assertSecretAbsent($exception);
+        }
+        $session = new SessionUrlClient($origin, $endpoint, self::SECRET, $transport);
+        $http->addException(new class ($endpoint . self::SECRET) extends RuntimeException implements
+            NetworkExceptionInterface
+        {
+            public function getRequest(): RequestInterface
+            {
+                throw new LogicException('The transport must not inspect the private request.');
+            }
+        });
+        try {
+            $session->createTempUser();
+            self::fail('Expected transport failure.');
+        } catch (TransportException $exception) {
+            self::assertNull($exception->getPrevious());
+            self::assertSecretAbsent($exception);
+            self::assertStringNotContainsString(self::STRING_TOTP, $exception->causeMessage);
+            self::assertStringNotContainsString(self::SECRET, $exception->causeMessage);
         }
     }
 

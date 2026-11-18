@@ -519,6 +519,7 @@
         "void": {"type": "boolean"},
         "optional_payload": {"type": "boolean"},
         "empty_without_data": {"const": true},
+        "session_url": {"const": true},
         "account_search_empty": {"const": true},
         "order": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
         "params": {"type": "object", "additionalProperties": {"$ref": "#/$defs/param"}},

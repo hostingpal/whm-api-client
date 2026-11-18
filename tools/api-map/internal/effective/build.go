@@ -271,6 +271,15 @@ func (b *builder) operation(op model.Operation, v model.Variant, ov overlay.Oper
 	b.rowsPolicy(op, v, ov, returns)
 	result.EmptyWithoutData = b.emptyWithoutData(op, ov, returns)
 	result.AccountSearchEmpty = b.accountSearchEmpty(result, ov, returns)
+	if ov.SessionURL {
+		if op.ID != "uapi:Session/create_temp_user" || result.Method != "POST" || len(result.Params) != 0 ||
+			result.Body != "" || result.Outcome != "flag" || ov.AdditionalMethods != nil || returns == nil || returns.Type != "object" {
+			b.problem(op.ID + ": session_url requires the parameterless Session/create_temp_user form POST and object result")
+		}
+		result.SessionURL = true
+	} else if op.ID == "uapi:Session/create_temp_user" {
+		b.problem(op.ID + ": create_temp_user requires session_url")
+	}
 	result.Returns = returns
 	result.AdditionalMethods = b.additionalMethods(op, v, ov, result)
 	return result, b.groupOf(op, v, node), true

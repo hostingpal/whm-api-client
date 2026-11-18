@@ -3,6 +3,47 @@
 > Agent contract notes for `session()`, `activeSessions()`, `webmailApps()`. Moved verbatim from `AGENTS.md` on 2026-11-17;
 > dated headings and coverage totals inside are historical. Index: [docs/agents](../README.md).
 
+### Create a temporary user in an authenticated session
+
+`SessionUrlClient` binds one caller-owned cPanel or Webmail session to
+`Session/create_temp_user` (cPanel 54.0.16+). Supply an independently trusted
+HTTPS service origin and the complete endpoint URL for the active session,
+including its `/cpsess<digits>/execute/Session/create_temp_user` path. Pass
+the opaque cookie value as sent on the wire, without its name or attributes.
+Configure a dedicated PSR-18 transport to verify TLS, disable redirects and
+retries, and enforce bounded timeouts. Omit ambient authentication and cookies.
+
+```php
+use HostingPal\WhmApiClient\SessionUrlClient;
+
+$session = new SessionUrlClient(
+    trustedOrigin: 'https://panel.example.test:2083',
+    endpointUrl: $authenticatedEndpointUrl,
+    cookieValue: $existingSessionCookieValue,
+    transport: $transport,
+);
+$result = $session->createTempUser();
+$temporaryUser = $result['created'] === 1 ? ($result['session_temp_user'] ?? null) : null;
+```
+
+The return type requires a `created` flag and checks the identifier's string
+type when present. Use the identifier only when the flag is one and the key
+exists. A zero flag indicates that this invocation did not set up a temporary user.
+
+Construction performs no I/O. Each call sends one empty form POST with
+`cpsession` on port 2083 or `webmailsession` on port 2096. The caller owns
+session establishment and logout. Keep the URL, cookie, returned identifier,
+response metadata and raw failures out of logs and object exports.
+
+On `11.138.0.24` cPanel returned `['created' => 1, 'session_temp_user' => <string>]`
+when it created the temporary user and `['created' => 0]` on a second call in
+the same session. Both carried UAPI status 1. The official operation also
+names Webmail, but on this build its application allowlist refused the call
+after authentication. The client returns that failure as an `ApiErrorException`
+with status 0 in `responseMeta()`. A new attempt clears earlier metadata.
+Inspect any confirmed payload mismatch before issuing another mutation.
+[Official session operation](https://api.docs.cpanel.net/specifications/cpanel.openapi/webmail-sessions/session-create_temp_user).
+
 ### UAPI Webmail credentials and session inventory (2026-11-01)
 
 Five operations span three generated groups. `session()` implements three of the
@@ -13,9 +54,8 @@ locale: null, remoteAddress: null)` and
 `createWebmailSessionForSelf(locale: null, remoteAddress: null)`. All require
 cPanel 86 and send form POST on direct UAPI and WHM bridge: each selected formal
 GET declares `x-readonly=false` and `x-rollback=none`. Reviewer evidence below
-establishes form POST acceptance only through original `5b005fb` on the reviewed build. `Session/create_temp_user` requires an
-authenticated session URL; it remains visible as unsupported under `8x0.1.33`.
-This is Session 3/4 plus complete ActiveSessions and WebmailApps coverage.
+establishes form POST acceptance through original `5b005fb` on the reviewed build.
+The fourth Session operation uses the authenticated session URL described above.
 
 The mail-user creators require the calling cPanel account to own the Webmail
 account. The password-checking method also requires the correct password; wrong
@@ -88,7 +128,7 @@ was submitted 2026-10-31T23:39:57Z against original `5b005fb` on `11.138.0.19`:
 all three credential creators passed as form POST with an address on both routes,
 and populated inventory responses matched their specs. This is reviewer evidence,
 not root verification or integrated-HEAD wire coverage. No returned credentials
-were used for login/access; non-null hostname and create_temp_user remain unobserved.
+were used for login/access. That review did not observe a non-null hostname or create_temp_user.
 The reviewer reports four lingering session files manually removed after account
 removal, not an account-deletion cleanup guarantee. Root's four GETs observed only
 empty ActiveSessions and populated WebmailApps. This integration performs no live
