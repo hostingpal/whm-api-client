@@ -154,6 +154,8 @@ type Operation struct {
 	// EmptyWithoutData reads an omitted data member on a confirmed WHM success
 	// as an empty unwrapped list. It needs live evidence of that wire form.
 	EmptyWithoutData bool `json:"empty_without_data,omitempty"`
+	// SingleResultStatus requires a single nested rebuild outcome after successful dispatch.
+	SingleResultStatus bool `json:"single_result_status,omitempty"`
 	// AccountSearchEmpty accepts only the evidenced WHM listaccts absence forms.
 	AccountSearchEmpty bool `json:"account_search_empty,omitempty"`
 }

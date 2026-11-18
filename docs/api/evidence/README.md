@@ -1541,3 +1541,19 @@ zero discrepancies and both tokens absent. v3 revokes each token once; the secon
 of the freed name, and its `0` result, appear only in the v1 and v2 artifacts. The current
 recipe is `tokens-lifecycle-v4`, which has no capture: it sends the same requests on a
 passing run and differs only in what it leaves untouched after a lost reply.
+
+- [UAPI ZoneEdit reset](2026-11-18-uapi-zone-reset.json) records two form POSTs
+  on `11.138.0.24` from a one-off owned-zone fixture using `EvidenceRunner`.
+  Each route removed its own custom A record and returned one successful rebuild row.
+  Both payloads validated without discrepancies, and lifecycle cleanup passed.
+  Artifact SHA-256: `a86c66f8d2c0a82bafadbd931996923b8aebd6c41b6c9f9e86871a964b0fc429`.
+  The controls are in-memory readback assertions. The artifact includes structural
+  captures of the reset calls only. Committing the reusable recipe and independent
+  readback observations is tracked in `whm-api-client-8x0.2.99`.
+
+- [UAPI ZoneEdit reset after outcome-policy review](2026-11-18-uapi-zone-reset-v2.json),
+  SHA-256 `9941e9860081f33610b80c08e87f033afaeeaf029a852d85fa0c2a3f69fbbaa9`, records eight successful probes
+  at `323496bc`. The three zone reads for each route checked the control record
+  before it was planted, immediately before reset, and after reset. Each reset
+  confirmed the nested outcome and removed the control. Every payload passed
+  with zero discrepancies. Cleanup confirmed account, token, domain and zone absence.

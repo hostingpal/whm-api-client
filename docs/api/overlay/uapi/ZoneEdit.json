@@ -1,0 +1,90 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "ZoneEdit",
+  "accessor": "zoneEdit",
+  "class": "ZoneEdit",
+  "operations": {
+    "uapi:ZoneEdit/resetzone": {
+      "name": "resetZone",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 138 with the DNS role enabled. The pin says resetting to the default template destroys every custom record, including manually added MX, TXT and CNAME records the template does not recreate. There is no rollback."
+        },
+        {
+          "kind": "policy",
+          "text": "Back up the zone first. On cPanel 11.138.0.24 the installed handler checks domain ownership and the zoneedit feature. Its rebuild helper copies uncommented TXT lines from the old zone when it can read it. Other server versions and individual records can differ."
+        },
+        {
+          "kind": "policy",
+          "text": "A return confirms one rebuild row with integer result.status 1. Integer 0 raises ZoneRebuildException, an ApiErrorException with a fixed message. Its upstreamReason() accessor returns the untrusted statusmsg string, including an empty string, or null when unavailable. The protected diagnostic prevents exception serialization. Keep private upstream text out of logs. A missing, malformed or ambiguous outcome raises PayloadMismatchException with outcomeConfirmed false. If the inner status is 1 and another field is malformed, outcomeConfirmed is true. Read the zone before considering another reset."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.24 both direct and bridged successes had an empty statusmsg and a checkmx object. The pin leaves MX metadata fields unspecified. Failed rebuilds were not observed live. The client requires a strict integer status and makes no assumptions about alternative encodings."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-18",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1ZoneEdit~1resetzone/get",
+          "note": "The GET variant declares an account-scoped destructive rebuild with no rollback. Its flattened response describes a single rebuild row and distinguishes UAPI dispatch from the rebuild outcome. Send the required domain in a form POST."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-18",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1ZoneEdit~1resetzone/get/responses/200/content/application~1json/schema/properties/data/items/properties/result/properties/status",
+          "note": "The data description specifies one entry, and result.status documents integer 1 for a successful rebuild and integer 0 for failure. Dispatch alone cannot confirm this operation."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.24",
+          "date": "2026-11-18",
+          "note": "Installed source inspection on test.oblak.host: Cpanel/API/ZoneEdit.pm selects returns=list, Cpanel/ZoneEdit.pm wraps one result row, and Cpanel/Admin/Modules/Cpanel/zone.pm::RESET checks domain ownership and the zoneedit feature. Whostmgr/DNS/Rebuild.pm filters old zone lines for TXT records."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.24",
+          "date": "2026-11-18",
+          "note": "Direct and bridged typed reset at aee6a547 each returned HTTP 200 with one row, status 1, an empty statusmsg and an object checkmx. Each reset removed its independently seeded A record. The v2 run at 323496bc captured two successful resets under the reviewed outcome policy and six marker readbacks. Failure payloads and the private failure accessor were tested only offline. See docs/api/evidence/2026-11-18-uapi-zone-reset.json and docs/api/evidence/2026-11-18-uapi-zone-reset-v2.json."
+        }
+      ],
+      "single_result_status": true,
+      "response": {
+        "[].result": {
+          "required": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-11-18",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1ZoneEdit~1resetzone/get/responses/200/content/application~1json/schema/properties/data/items/properties/result/properties/status",
+              "note": "The data description specifies one entry, and result.status documents integer 1 for a successful rebuild and integer 0 for failure. Dispatch alone cannot confirm this operation."
+            }
+          ]
+        },
+        "[].result.status": {
+          "required": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13 (11.138.0.10)",
+              "date": "2026-11-18",
+              "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+              "pointer": "/paths/~1ZoneEdit~1resetzone/get/responses/200/content/application~1json/schema/properties/data/items/properties/result/properties/status",
+              "note": "The data description specifies one entry, and result.status documents integer 1 for a successful rebuild and integer 0 for failure. Dispatch alone cannot confirm this operation."
+            }
+          ]
+        }
+      }
+    }
+  }
+}

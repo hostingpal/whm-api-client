@@ -387,6 +387,12 @@ call are problems here too: every `required` name must be a declared field (also
 after `replace` or `add`), `unwrap` needs a non-nullable object payload, and a
 wire name may appear only once.
 
+The `single_result_status: true` overlay policy binds ZoneEdit/resetzone to its
+pinned nested status pointer and source hash. It requires the flag-policy form
+POST and a non-null list of rows with a strict integer `result.status` flag.
+The runtime requires exactly one row and distinguishes inner failure from
+missing or ambiguous confirmation. Optional diagnostics remain private.
+
 Additional public input mappings use operation-level `additional_methods`:
 
 ```json

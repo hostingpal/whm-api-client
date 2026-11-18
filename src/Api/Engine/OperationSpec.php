@@ -107,6 +107,9 @@ use LogicException;
  *   success with omitted/null data and result 0 with the exact No accounts found.
  *   reason and omitted data. Other failures and all present failure payloads throw.
  *   Mutually exclusive with optional, rows and empty_without_data.
+ * - single_result_status: literal true for the ZoneEdit reset form POST under Flag. One raw rebuild row with
+ *   strict result.status 1 confirms success. A 0 raises a sanitized ApiErrorException. An ambiguous outcome
+ *   raises PayloadMismatchException without confirmation, even when dispatch succeeded.
  * - optional: optional boolean (only with a non-null "returns"). When true, an
  *   omitted or null data member is a valid response and the operation returns
  *   null; any other payload is validated as usual.
