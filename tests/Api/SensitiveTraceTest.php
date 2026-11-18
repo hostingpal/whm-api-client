@@ -1619,13 +1619,33 @@ final class SensitiveTraceTest extends TestCase
         }
     }
 
-    public function testSessionTransportProgrammingErrorsStayDistinctAndPrivate(): void
+    /** @return iterable<string, array{class-string<\Error>,class-string<\Error>}> */
+    public static function sessionEngineErrors(): iterable
+    {
+        yield 'type' => [\TypeError::class, \TypeError::class];
+        yield 'value' => [\ValueError::class, \ValueError::class];
+        yield 'engine' => [\Error::class, \Error::class];
+        yield 'arithmetic' => [\ArithmeticError::class, \Error::class];
+        yield 'assertion' => [\AssertionError::class, \Error::class];
+    }
+
+    /**
+     * @param class-string<\Error> $source
+     * @param class-string<\Error> $expected
+     */
+    #[DataProvider('sessionEngineErrors')]
+    public function testSessionTransportProgrammingErrorsStayDistinctAndPrivate(string $source, string $expected): void
     {
         $factory = new Psr17Factory();
-        $http = new class implements ClientInterface {
+        $http = new class ($source) implements ClientInterface {
+            /** @param class-string<\Error> $source */
+            public function __construct(private readonly string $source)
+            {
+            }
+
             public function sendRequest(RequestInterface $request): ResponseInterface
             {
-                throw new \TypeError($request->getHeaderLine('Cookie') . $request->getRequestTarget());
+                throw new ($this->source)($request->getHeaderLine('Cookie') . $request->getRequestTarget());
             }
         };
         $origin = 'https://example.test:2083';
@@ -1634,7 +1654,8 @@ final class SensitiveTraceTest extends TestCase
         try {
             $session->createTempUser();
             self::fail('Expected a programming error.');
-        } catch (\TypeError $exception) {
+        } catch (\Error $exception) {
+            self::assertSame($expected, $exception::class);
             self::assertNull($exception->getPrevious());
             self::assertSecretAbsent($exception);
             self::assertNull($session->responseMeta());

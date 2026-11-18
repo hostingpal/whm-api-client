@@ -423,7 +423,7 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 	}
 	w.line(indent + " * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.")
 	if op.SessionURL {
-		w.line(indent + ` * @throws \TypeError|\ValueError|\LogicException|\RuntimeException If the HTTP implementation fails outside its`)
+		w.line(indent + ` * @throws \Error|\LogicException|\RuntimeException If the HTTP implementation fails outside its`)
 		w.line(indent + " *     PSR transport contract. Its original request and diagnostics are discarded.")
 	}
 	if ret != nil && op.Outcome == "flag" {

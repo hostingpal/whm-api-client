@@ -45,7 +45,7 @@ trait SessionUrlOperations
      *
      * @return CreateTempUserResult
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
-     * @throws \TypeError|\ValueError|\LogicException|\RuntimeException If the HTTP implementation fails outside its
+     * @throws \Error|\LogicException|\RuntimeException If the HTTP implementation fails outside its
      *     PSR transport contract. Its original request and diagnostics are discarded.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.

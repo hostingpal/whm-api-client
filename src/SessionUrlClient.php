@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace HostingPal\WhmApiClient;
 
+use Error;
 use HostingPal\WhmApiClient\Api\Engine\OperationRunner;
 use HostingPal\WhmApiClient\Api\Engine\OperationSpec;
 use HostingPal\WhmApiClient\Api\Engine\OrderedFields;
@@ -130,6 +131,7 @@ final class SessionUrlClient
             throw match (true) {
                 $cause instanceof TypeError => new TypeError($message),
                 $cause instanceof ValueError => new ValueError($message),
+                $cause instanceof Error => new Error($message),
                 $cause instanceof LogicException => new LogicException($message),
                 default => new RuntimeException($message),
             };
