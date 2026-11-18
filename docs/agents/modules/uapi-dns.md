@@ -139,7 +139,7 @@ rebuild status of 1. Either outer WHM rejection, inner UAPI rejection, or rebuil
 status 0 raises `ApiErrorException`. A failed rebuild specifically raises `ZoneRebuildException` with a
 fixed message and an explicit `upstreamReason()` accessor for the untrusted
 string diagnostic. Empty text is preserved. Missing, null and non-string
-diagnostics give null. Missing or ambiguous outcomes raise `PayloadMismatchException` with
+diagnostics give null. The protected diagnostic prevents exception serialization. Missing or ambiguous outcomes raise `PayloadMismatchException` with
 `outcomeConfirmed` false. When status 1 is established, malformed ancillary data
 raises the same exception with `outcomeConfirmed` true. The pin leaves MX metadata
 fields unspecified. The client preserves the map, explicit null and omission.
@@ -157,4 +157,6 @@ Reproducible readback capture is tracked in `whm-api-client-8x0.2.99`.
 At `323496bc`, the revised policy also passed on both routes with a fresh
 disposable zone. The [v2 capture](../../api/evidence/2026-11-18-uapi-zone-reset-v2.json)
 includes all six typed readbacks and both reset responses. Each route's record
-was absent before planting, present before reset and absent afterwards.
+was absent before planting, present before reset and absent afterwards. Both
+live rebuilds succeeded. Only the offline tests exercised rebuild failure and
+its diagnostic accessor.

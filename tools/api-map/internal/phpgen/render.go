@@ -184,6 +184,9 @@ func groupClass(g effective.Group) string {
 		if op.Returns != nil {
 			uses = append(uses, rootNamespace+`\Exception\PayloadMismatchException`)
 		}
+		if op.SingleResultStatus {
+			uses = append(uses, rootNamespace+`\Exception\ZoneRebuildException`)
+		}
 		for _, p := range op.Params {
 			if isMultiple(p.Encoding) || p.RejectEmpty || p.PositiveInt || p.Input != nil {
 				uses = append(uses, "InvalidArgumentException")
@@ -375,6 +378,9 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 		w.docTag(indent, "@return "+docReturn(op, *ret))
 	}
 	w.line(indent + " * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.")
+	if op.SingleResultStatus {
+		w.line(indent + " * @throws ZoneRebuildException If dispatch succeeded and the zone rebuild reported integer status 0.")
+	}
 	if ret != nil && op.Outcome == "flag" {
 		w.line(indent + " * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;")
 		w.line(indent + " *     the operation may already have changed state; do not retry automatically.")

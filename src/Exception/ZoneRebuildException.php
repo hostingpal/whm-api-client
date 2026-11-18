@@ -8,7 +8,11 @@ use HostingPal\WhmApiClient\Response\ResponseMetadata;
 use SensitiveParameter;
 use SensitiveParameterValue;
 
-/** The zone rebuild reported failure after successful UAPI dispatch. */
+/**
+ * The zone rebuild reported failure after successful UAPI dispatch.
+ *
+ * The private diagnostic uses SensitiveParameterValue, which prevents serialization of this exception.
+ */
 final class ZoneRebuildException extends ApiErrorException
 {
     private readonly SensitiveParameterValue $reason;
