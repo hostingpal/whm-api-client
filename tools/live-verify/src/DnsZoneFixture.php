@@ -38,8 +38,8 @@ use Throwable;
  *         alias_zone: ResourceOutcome}
  * }
  * @phpstan-type Scenario array{
- *     scenario: string, target_role: string, server_version: ?string, probes: list<Observation>, bridge_outcome: string,
- *     discrepancy_review: Assessment,
+ *     scenario: string, target_role: string, server_version: ?string, probes: list<Observation>,
+ *     bridge_outcome: string, discrepancy_review: Assessment,
  *     fixture: Report
  * }
  */

@@ -2420,7 +2420,7 @@ and the bridge failure were observed on 2026-11-18 on a disposable account throu
 both routes. Malformed JSON and a zone the account does not control were seen only as
 failed responses to the generic `call()`. The SPF rewriting was observed and matches
 the server's code; the two-zone recipe independently verified once-per-call detection. See the
-[source audit](docs/api/source-audit.md#2026-11-18--uapi-dns-zone-writes-8x0441) for
+[two-zone source audit](docs/api/source-audit.md#2026-11-18--uapi-dns-two-zone-live-recipe-8x0297) for
 what was and was not observed.
 
 ### Expanded WHM account management
