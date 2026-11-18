@@ -12671,7 +12671,7 @@ A committed disposable-account recipe and these variants are tracked under
 
 ## 2026-11-18 — UAPI DNS two-zone live recipe (8x0.2.97)
 
-The [final capture](evidence/2026-11-18-uapi-dns-zone-writes-v4.json) ran from clean
+The [v4 capture](evidence/2026-11-18-uapi-dns-zone-writes-v4.json) ran from clean
 recipe revision `ec817b8a7471b34fbd4304d60c11eedf3439fc24` on `test.oblak.host`,
 cPanel `11.138.0.24`. Its 30 probes cover 20 zone parses, eight mass edits and
 two IP swaps. Each observation carries its route, request method, pinned variant,
@@ -12697,4 +12697,12 @@ parking. The [second run](evidence/2026-11-18-uapi-dns-zone-writes-v2.json) stop
 on the first zone parse with a masked unknown field. Its artifact cannot establish
 that field's name. Both cleaned up. The [third run](evidence/2026-11-18-uapi-dns-zone-writes-v3.json)
 completed the two-zone exercise while the evidence reviewer was being finalized.
-The final capture verifies the committed reviewer on a fresh disposable fixture.
+The v4 capture verified that reviewer on a fresh disposable fixture.
+
+The [v5 capture](evidence/2026-11-18-uapi-dns-zone-writes-v5.json) exercised the reviewed recipe at
+`1e1891a7084f09a8981a3bb780feb363c432b575` on cPanel `11.138.0.24`. All 30
+phases ran. The typed parse preserved the optional `dname_raw` field and the
+stricter evidence review passed with zero discrepancies. The ordinary bridged
+swap returned the known handler failure with both zone snapshots unchanged.
+The direct swap matched the controlled A changes in both zones. The account,
+token, primary and alias domains, and both zones were confirmed absent.

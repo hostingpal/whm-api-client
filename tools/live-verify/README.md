@@ -3187,3 +3187,5 @@ The evidence review checks all 30 ordered probes. Every successful phase must
 contain its expected raw payload paths and types. Any undeclared field fails
 the review. The historical v4 capture identified the optional record field
 `dname_raw`, which the generated parse contract now preserves as a string.
+The [v5 capture](../../docs/api/evidence/2026-11-18-uapi-dns-zone-writes-v5.json)
+exercised these checks on cPanel 11.138.0.24 with zero structural discrepancies.

@@ -220,7 +220,9 @@ final class DnsZoneEvidenceTest extends TestCase
                 'failure_kind' => $defect ? 'api_failure' : null, 'discrepancies' => [],
                 'response_paths' => ['$' => ['object']], 'payload_paths' => match (true) {
                     $defect => ['$' => ['null']],
-                    $operation === 'uapi:DNS/mass_edit_zone' => ['$' => ['object'], '$.new_serial' => ['numeric-string']],
+                    $operation === 'uapi:DNS/mass_edit_zone' => [
+                        '$' => ['object'], '$.new_serial' => ['numeric-string'],
+                    ],
                     $operation === 'uapi:DNS/swap_ip_in_zones' => ['$' => ['list'], '$[]' => ['object'],
                         '$[].new_value' => ['string'], '$[].old_value' => ['string'], '$[].record_name' => ['string'],
                         '$[].record_type' => ['string'], '$[].zone_name' => ['string']],
