@@ -54,9 +54,10 @@ func Validate(set Set) []string {
 				len(op.AdditionalMethods) > 0 || op.Function != "" || op.Rows != "" || op.OptionalPayload || op.Variant != "" || op.Body != "" || len(op.BodyFields) > 0 || op.MultipartUploads != nil || op.MultipartUpload != nil || op.MultipartUploadFamily != nil) {
 				problems = append(problems, id+": excluded operations take no other settings")
 			}
-			if op.FormRecord != nil && ((id != "whm1:addzonerecord" && id != "whm1:editzonerecord") ||
-				op.Method != "POST" || op.Exclude != nil || op.Body != "" || len(op.Order) != 0 || len(op.Params) != 0 || len(op.AdditionalMethods) != 0) {
-				problems = append(problems, id+": form_record requires the reviewed WHM DNS form POST without other input mappings")
+			if op.FormRecord != nil && (file.Family != "whm1" || op.Method != "POST" || op.Exclude != nil ||
+				op.Body != "" || op.BodyFields != nil || op.JSONBody != nil || op.MultipartUpload != nil ||
+				op.MultipartUploadFamily != nil || op.MultipartUploads != nil || op.AdditionalMethods != nil) {
+				problems = append(problems, id+": form_record requires an exclusive WHM form POST body")
 			}
 			if op.Rows != "" && (file.Family != "uapi" || op.Outcome != "unchecked" || op.Void || op.OptionalPayload || op.Unwrap != "") {
 				problems = append(problems, id+": rows requires unchecked UAPI without void, optional_payload or unwrap")
@@ -100,6 +101,9 @@ func Validate(set Set) []string {
 					if param.Omit || param.Encoding != "" || param.Type != "" || param.Wire != "" || param.OmitEmpty != nil || param.RejectEmpty != nil {
 						problems = append(problems, id+": parameter "+wire+": collection cannot combine with omit, encoding, type, wire, omit_empty or reject_empty")
 					}
+				}
+				if param.PositiveInt != nil && (!*param.PositiveInt || param.Omit || param.OmitEmpty != nil || param.RejectEmpty != nil || param.Collection != nil || param.Type != "" || (param.Encoding != "" && param.Encoding != "scalar")) {
+					problems = append(problems, id+": positive_int requires an exclusive scalar integer guard")
 				}
 				if param.RejectEmpty != nil {
 					if !*param.RejectEmpty || param.Omit || param.OmitEmpty != nil {
@@ -163,6 +167,9 @@ func missingEvidence(id string, op Operation) []string {
 		return nil
 	}
 	var settings []string
+	if op.FormRecord != nil {
+		settings = append(settings, "form_record")
+	}
 	if op.Function != "" {
 		settings = append(settings, "function")
 	}
@@ -219,6 +226,9 @@ func missingEvidence(id string, op Operation) []string {
 		}
 		if op.Params[wire].Required != nil {
 			settings = append(settings, "required on parameter "+wire)
+		}
+		if op.Params[wire].PositiveInt != nil {
+			settings = append(settings, "positive_int on parameter "+wire)
 		}
 		if op.Params[wire].RejectEmpty != nil {
 			settings = append(settings, "reject_empty on parameter "+wire)

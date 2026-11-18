@@ -11,16 +11,16 @@ import (
 )
 
 var formFieldName = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
-var formRecordTag = regexp.MustCompile(`^[A-Z][A-Z0-9]*$`)
+var formRecordTag = regexp.MustCompile(`^[A-Za-z][A-Za-z0-9_-]*$`)
 
 // formRecord lowers the reviewed WHM anyOf into a common scalar parameter list
 // and a single typed RDATA argument. Each alternative must extend the same
 // referenced object and contribute exactly one object of scalar fields.
 func (b *builder) formRecord(op model.Operation, v model.Variant, ov overlay.Operation, node map[string]any, method string) (*FormRecord, []Param, error) {
 	d := ov.FormRecord
-	edit := op.ID == "whm1:editzonerecord"
-	if (!edit && op.ID != "whm1:addzonerecord") || op.Family != "whm1" || v.Method != "POST" || ov.Method != "POST" || len(v.Parameters) != 0 || d.RetainExisting != edit {
-		return nil, nil, fmt.Errorf("requires the reviewed DNS POST variant and matching edit policy")
+	if op.Family != "whm1" || v.Method != "POST" || ov.Method != "POST" || len(v.Parameters) != 0 ||
+		!IsMethodName(d.PHP) || reservedArguments[d.PHP] {
+		return nil, nil, fmt.Errorf("requires WHM form POST without query parameters and a valid PHP argument")
 	}
 	if v.OperationLocator.Pointer == nil || !boundInputEvidence(ov.Evidence, v.OperationLocator, *v.OperationLocator.Pointer+"/requestBody") {
 		return nil, nil, fmt.Errorf("needs doc evidence bound to the selected requestBody pointer and source hash")
@@ -37,18 +37,19 @@ func (b *builder) formRecord(op model.Operation, v model.Variant, ov overlay.Ope
 		return nil, nil, fmt.Errorf("requires separate versioned handler or live evidence")
 	}
 	source := v.OperationLocator.SourceID
-	body, _, _, ok := b.schemas.follow(source, node["requestBody"])
+	body, bodySource, _, ok := b.schemas.follow(source, node["requestBody"])
 	content, _ := asObject(body["content"])
 	media, found := asObject(content["application/x-www-form-urlencoded"])
-	if !ok || !found || len(content) != 1 || len(media) != 1 {
+	if !ok || bodySource != source || !found || len(content) != 1 || len(media) != 1 {
 		return nil, nil, fmt.Errorf("requires a single unencoded form media schema")
 	}
-	schema, source, _, ok := b.schemas.follow(source, media["schema"])
+	schema, schemaSource, _, ok := b.schemas.follow(source, media["schema"])
 	disc, _ := asObject(schema["discriminator"])
 	mapping, _ := asObject(disc["mapping"])
 	alternatives, _ := schema["anyOf"].([]any)
-	if !ok || len(schema) != 2 || disc["propertyName"] != "type" || len(mapping) == 0 || len(mapping) != len(alternatives) {
-		return nil, nil, fmt.Errorf("requires type discriminator with one mapping per alternative")
+	discriminator := text(disc["propertyName"])
+	if !ok || schemaSource != source || len(schema) != 2 || !formFieldName.MatchString(discriminator) || len(mapping) == 0 || len(mapping) != len(alternatives) {
+		return nil, nil, fmt.Errorf("requires a named discriminator with one mapping per alternative")
 	}
 	refs := map[string]bool{}
 	for _, alt := range alternatives {
@@ -59,7 +60,8 @@ func (b *builder) formRecord(op model.Operation, v model.Variant, ov overlay.Ope
 		}
 		refs[ref] = true
 	}
-	record := &FormRecord{Alias: Pascal(method) + "Input", Required: !edit, Untagged: edit}
+	record := &FormRecord{Alias: Pascal(method) + "Input", PHP: d.PHP, Discriminator: discriminator, Untagged: d.RetainExisting, ChangeParams: d.ChangeParams}
+	var commonProps map[string]any
 	var commonMap map[string]FormField
 	var baseReference string
 	tags := map[string]bool{}
@@ -77,9 +79,9 @@ func (b *builder) formRecord(op model.Operation, v model.Variant, ov overlay.Ope
 			return nil, nil, fmt.Errorf("invalid or duplicate variant %q", tag)
 		}
 		tags[tag] = true
-		alt, _, _, ok := b.schemas.follow(source, map[string]any{"$ref": ref})
+		alt, altSource, _, ok := b.schemas.follow(source, map[string]any{"$ref": ref})
 		parts, _ := alt["allOf"].([]any)
-		if !ok || len(alt) != 1 || len(parts) != 2 {
+		if !ok || altSource != source || len(alt) != 1 || len(parts) != 2 {
 			return nil, nil, fmt.Errorf("%s needs an allOf base and fields", tag)
 		}
 		first, _ := asObject(parts[0])
@@ -89,8 +91,8 @@ func (b *builder) formRecord(op model.Operation, v model.Variant, ov overlay.Ope
 		}
 		if commonMap == nil {
 			baseReference = baseRef
-			base, _, _, ok := b.schemas.follow(source, first)
-			if !ok {
+			base, baseSource, baseKey, ok := b.schemas.follow(source, first)
+			if !ok || baseSource != source || baseKey != source+baseRef {
 				return nil, nil, fmt.Errorf("unresolved base")
 			}
 			var err error
@@ -98,11 +100,13 @@ func (b *builder) formRecord(op model.Operation, v model.Variant, ov overlay.Ope
 			if err != nil {
 				return nil, nil, fmt.Errorf("base: %w", err)
 			}
-			discriminator, ok := commonMap["type"]
-			if !ok || discriminator.Type != "string" || discriminator.Required != record.Required {
-				return nil, nil, fmt.Errorf("base discriminator does not match record policy")
+			commonProps, _ = asObject(base["properties"])
+			selector, ok := commonMap[discriminator]
+			if !ok || selector.Type != "string" || selector.Required && d.RetainExisting {
+				return nil, nil, fmt.Errorf("base discriminator must be a string and optional for untagged updates")
 			}
-			delete(commonMap, "type")
+			record.Required = selector.Required
+			delete(commonMap, discriminator)
 		}
 		spec, ok := asObject(parts[1])
 		if !ok {
@@ -114,12 +118,12 @@ func (b *builder) formRecord(op model.Operation, v model.Variant, ov overlay.Ope
 		}
 		variant := FormVariant{Tag: tag}
 		for _, name := range sortedKeys(fields) {
-			if _, overlap := commonMap[name]; overlap || name == "type" || name == "record" {
+			if _, overlap := commonMap[name]; overlap || name == discriminator {
 				return nil, nil, fmt.Errorf("%s field %s collides with common input", tag, name)
 			}
 			f := fields[name]
 			// The edit handler merges supplied fields over the current line.
-			if edit {
+			if d.RetainExisting {
 				f.Required = false
 			}
 			variant.Fields = append(variant.Fields, f)
@@ -137,33 +141,79 @@ func (b *builder) formRecord(op model.Operation, v model.Variant, ov overlay.Ope
 		}
 	}
 	sort.Slice(record.Variants, func(i, j int) bool { return record.Variants[i].Tag < record.Variants[j].Tag })
-	target, typ := "name", "string"
-	if edit {
-		target, typ = "line", "int"
-	}
-	if domain := commonMap["domain"]; !domain.Required || domain.Type != "string" || !commonMap[target].Required || commonMap[target].Type != typ {
-		return nil, nil, fmt.Errorf("requires a domain and the %s target", target)
-	}
-	var params []Param
-	for _, name := range sortedKeys(commonMap) {
-		f := commonMap[name]
-		if name == "record" || !IsMethodName(name) || reservedArguments[name] {
-			return nil, nil, fmt.Errorf("invalid common parameter %q", name)
+	params, err := b.formRecordParams(op, v, ov, record, commonMap, commonProps, strings.TrimPrefix(baseReference, "#"))
+	return record, params, err
+}
+
+// Common arguments use the ordinary parameter lowering and its provenance and guard checks.
+// Only the composite record itself bypasses scalar parameter serialization.
+func (b *builder) formRecordParams(op model.Operation, v model.Variant, ov overlay.Operation, record *FormRecord, common map[string]FormField, props map[string]any, basePointer string) ([]Param, error) {
+	var body []model.Parameter
+	for _, name := range sortedKeys(common) {
+		f := common[name]
+		raw, pinned := props[name]
+		locator := model.Locator{SourceID: v.OperationLocator.SourceID}
+		if pinned {
+			pointer := basePointer + "/properties/" + name
+			locator.SourceSHA256 = v.OperationLocator.SourceSHA256
+			locator.Pointer = &pointer
+		} else {
+			typ := f.Type
+			if typ == "int" {
+				typ = "integer"
+			}
+			raw = map[string]any{"type": typ}
 		}
-		param := Param{
-			PHP: name, Wire: name, Source: name, Required: f.Required, PHPType: f.Type, DocType: f.Type,
-			Encoding: "scalar", Description: firstSentence(f.Description),
-		}
-		if edit && name == "line" {
-			param.PositiveInt = true
-			param.DocType = "positive-int"
-		}
-		params = append(params, param)
+		body = append(body, model.Parameter{Name: name, In: "body", Locator: locator, Definition: model.Object{
+			"required": f.Required, "schema": raw, "description": f.Description,
+		}})
 	}
-	params = append(params, Param{PHP: "record", Wire: "record", Required: record.Required, PHPType: "array", DocType: record.Alias, Encoding: "form_record", Sensitive: true, Description: "Record type and its fields, sent as individual form values."})
-	params = orderParams(params, []string{"domain", "line", "name", "record"})
+	scalarOverlay := ov
+	scalarOverlay.Order = nil
+	for _, name := range ov.Order {
+		if name != record.PHP {
+			scalarOverlay.Order = append(scalarOverlay.Order, name)
+		}
+	}
+	params := b.params(op, v, scalarOverlay, body)
+	mutable := map[string]bool{}
+	occupied := map[string]bool{record.Discriminator: true}
+	for _, v := range record.Variants {
+		for _, f := range v.Fields {
+			occupied[f.Name] = true
+		}
+	}
+	for _, p := range params {
+		if p.Encoding != "scalar" || occupied[p.Wire] || p.PHP == record.PHP || p.Source == record.PHP {
+			return nil, fmt.Errorf("common parameter %s must remain a distinct scalar", p.Source)
+		}
+		mutable[p.PHP] = !p.Required
+	}
+	for _, name := range record.ChangeParams {
+		if !record.Untagged || !mutable[name] {
+			return nil, fmt.Errorf("change_params must name distinct optional scalar companions of an untagged record")
+		}
+		delete(mutable, name)
+	}
+	params = append(params, Param{Source: record.PHP, PHP: record.PHP, Wire: record.PHP, Required: record.Required, PHPType: "array", DocType: record.Alias, Encoding: "form_record", Sensitive: true, Description: "Discriminator and its variant-specific fields, sent as individual form values."})
+	bySource := map[string]Param{}
+	for _, p := range params {
+		bySource[p.Source] = p
+	}
+	var wireOrder []string
+	optional := false
+	for _, name := range ov.Order {
+		if p, found := bySource[name]; found {
+			if optional && p.Required {
+				return nil, fmt.Errorf("order places required argument %s after an optional argument", name)
+			}
+			optional = !p.Required
+			wireOrder = append(wireOrder, p.Wire)
+		}
+	}
+	params = orderParams(params, wireOrder)
 	sort.SliceStable(params, func(i, j int) bool { return params[i].Required && !params[j].Required })
-	return record, params, nil
+	return params, nil
 }
 
 // formFields preserves source requiredness unless the overlay explicitly

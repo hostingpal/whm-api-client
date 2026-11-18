@@ -262,6 +262,7 @@ final class DnsSpec
             'discriminator' => 'type',
             'required' => false,
             'untagged' => true,
+            'change_params' => ['name', 'class', 'ttl'],
             'variants' => [
                 'A' => [
                     'address' => ['type' => 'string', 'required' => false],

@@ -581,15 +581,27 @@ final readonly class Dns
      *
      * Documented: A6 is deprecated.
      *
+     * Policy: The typed methods accept only the 18 mapped record families and their declared wire fields. For a
+     * server-supported type or field outside this set, use whm()->call() with form POST.
+     *
+     * Policy: Source inspection on cPanel 11.138.0.24: the LOC serializer emits altitude, size, horiz_pre and vert_pre
+     * in that order, skipping false values. Give each preceding position a nonzero value when setting a later one. The
+     * integer size and precisions are centimeters despite the pinned meter descriptions. For example, altitude '5m',
+     * size 1000, horiz_pre 2000 and vert_pre 3000 serialize as 5m, 10m, 20m and 30m.
+     *
+     * Policy: The pinned TTL minimum is 1. The client forwards an explicit zero. On cPanel 11.138.0.24 the inspected
+     * A-record serializer falls back to the effective default TTL for zero. On edit this can replace an existing
+     * nondefault TTL.
+     *
      * API-map identity: whm1:addzonerecord#POST (wire name addzonerecord; Domain Management).
      *
      * @param string $domain The new zone record's domain.
      * @param string $name The record's name.
-     * @param AddZoneRecordInput $record Record type and its fields, sent as individual form values.
+     * @param AddZoneRecordInput $record Discriminator and its variant-specific fields, sent as individual form values.
      * @param string|null $class The record's class. Null omits it.
      * @param int|null $ttl The record's Time To Live (TTL), in seconds. Null omits it.
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
-     * @throws InvalidArgumentException If the record type or its fields are invalid.
+     * @throws InvalidArgumentException If the form record or a guarded scalar argument is invalid.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/domain-management/dns-addzonerecord
      */
     public function addZoneRecord(
@@ -838,18 +850,33 @@ final readonly class Dns
      * need additional fields suited to the new type. An omitted record sends only the common fields. CNAME flatten and
      * flatten_to apply to apex edits.
      *
+     * Policy: The typed methods accept only the 18 mapped record families and their declared wire fields. For a
+     * server-supported type or field outside this set, use whm()->call() with form POST.
+     *
+     * Policy: Source inspection on cPanel 11.138.0.24: the LOC serializer emits altitude, size, horiz_pre and vert_pre
+     * in that order, skipping false values. Give each preceding position a nonzero value when setting a later one. The
+     * integer size and precisions are centimeters despite the pinned meter descriptions. For example, altitude '5m',
+     * size 1000, horiz_pre 2000 and vert_pre 3000 serialize as 5m, 10m, 20m and 30m.
+     *
+     * Policy: The pinned TTL minimum is 1. The client forwards an explicit zero. On cPanel 11.138.0.24 the inspected
+     * A-record serializer falls back to the effective default TTL for zero. On edit this can replace an existing
+     * nondefault TTL.
+     *
+     * Policy: Supply at least one record or editable common field. The zone, line and optional integer serialnum
+     * identify and guard the edit.
+     *
      * API-map identity: whm1:editzonerecord#POST (wire name editzonerecord; DNS Zones).
      *
      * @param string $domain The zone record's domain.
      * @param positive-int $line The zone record's file line number.
      * @param string|null $name The record's name. Null omits it.
-     * @param EditZoneRecordInput|null $record Record type and its fields, sent as individual form values. Null omits
-     *     it.
+     * @param EditZoneRecordInput|null $record Discriminator and its variant-specific fields, sent as individual form
+     *     values. Null omits it.
      * @param string|null $class The record's class. Null omits it.
-     * @param string|null $serialnum The expected current zone serial. Null omits it.
+     * @param int|null $serialnum The expected current zone serial. Null omits it.
      * @param int|null $ttl The record's Time To Live (TTL), in seconds. Null omits it.
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
-     * @throws InvalidArgumentException If the record fields are invalid or the edit line is not positive.
+     * @throws InvalidArgumentException If the form record or a guarded scalar argument is invalid.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/dns-zones/dns-editzonerecord
      */
     public function editZoneRecord(
@@ -859,7 +886,7 @@ final readonly class Dns
         #[SensitiveParameter]
         ?array $record = null,
         ?string $class = null,
-        ?string $serialnum = null,
+        ?int $serialnum = null,
         ?int $ttl = null,
     ): void {
         ($this->run)(DnsSpec::EDITZONERECORD, [

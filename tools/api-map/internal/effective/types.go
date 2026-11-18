@@ -77,10 +77,13 @@ type Param struct {
 
 // FormRecord describes a single discriminated argument flattened into form fields.
 type FormRecord struct {
-	Alias    string
-	Required bool
-	Untagged bool
-	Variants []FormVariant
+	PHP           string
+	Discriminator string
+	ChangeParams  []string
+	Alias         string
+	Required      bool
+	Untagged      bool
+	Variants      []FormVariant
 }
 type FormVariant struct {
 	Tag    string

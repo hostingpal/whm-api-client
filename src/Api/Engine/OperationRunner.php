@@ -58,7 +58,7 @@ final class OperationRunner
         #[SensitiveParameter]
         Closure $dispatch,
     ): mixed {
-        SpecChecker::check($spec);
+        $formRecord = SpecChecker::check($spec);
         $params = $spec['params'] ?? null;
         if (!is_array($params)) {
             throw new LogicException('Operation spec is missing "params".');
@@ -92,8 +92,8 @@ final class OperationRunner
             $uploads = UploadList::parts($arguments[$descriptor['php']] ?? null, $descriptor['prefix']);
             unset($arguments[$descriptor['php']]);
         }
-        $parameters = isset($spec['form_record'])
-            ? FormRecord::from($spec)->encode($params, $arguments)
+        $parameters = $formRecord !== null
+            ? $formRecord->encode($params, $arguments)
             : ArgumentEncoder::encode($params, $arguments);
         if ($uploads !== null) {
             $body = MultipartInput::generated($uploads, $parameters);

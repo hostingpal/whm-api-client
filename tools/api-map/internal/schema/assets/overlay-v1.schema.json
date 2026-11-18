@@ -58,12 +58,15 @@
     "formRecord": {
       "type": "object",
       "properties": {
+        "php": {"type": "string", "pattern": "^[a-z][A-Za-z0-9]*$"},
+        "change_params": {"type": "array", "minItems": 1, "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^[a-z][A-Za-z0-9]*$"}},
         "common": {"$ref": "#/$defs/formRecordChanges"},
         "variants": {"type": "object", "additionalProperties": {"$ref": "#/$defs/formRecordChanges"}},
-        "labels": {"type": "object", "additionalProperties": {"type": "string", "pattern": "^[A-Z][A-Z0-9]*$"}},
+        "labels": {"type": "object", "additionalProperties": {"type": "string", "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"}},
         "retain_existing": {"const": true}
       },
-      "required": ["common"], "additionalProperties": false
+      "required": ["php", "common"], "additionalProperties": false
     },
     "multipartUpload": {
       "type": "object",
@@ -355,6 +358,7 @@
         "sensitive": {"type": "boolean"},
         "omit": {"type": "boolean"},
         "omit_empty": {"const": true},
+        "positive_int": {"const": true},
         "reject_empty": {"const": true},
         "required": {"type": "boolean"},
         "enum_doc": {"type": "boolean"}

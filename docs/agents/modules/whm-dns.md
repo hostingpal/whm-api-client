@@ -29,6 +29,26 @@ record while preserving its name, type and TTL. A stale serial refuses the edit.
 An add has no serial check. Read the zone after a write with an uncertain outcome
 before deciding whether another change is needed.
 
+The typed methods accept only the 18 mapped record families and their declared wire
+fields. For a server-supported type or field outside this set, use whm()->call() with form
+POST.
+
+The pinned TTL minimum is 1. The client forwards an explicit zero. On cPanel 11.138.0.24
+the inspected A-record serializer falls back to the effective default TTL for zero. On
+edit this can replace an existing nondefault TTL.
+
+For LOC, the 11.138.0.24 serializer takes bare integer size and precision in
+centimeters. It appends only truthy values in altitude, size, horizontal precision,
+vertical precision order. Skipping an earlier position shifts later values on the wire.
+For a LOC record with latitude and longitude set, this optional tail represents
+altitude 5 m, size 10 m, horizontal precision 20 m and vertical precision 30 m:
+
+```php
+['altitude' => '5m', 'size' => 1000, 'horiz_pre' => 2000, 'vert_pre' => 3000]
+```
+
+This example follows the installed serializer. The live runs did not populate LOC.
+
 ### Contract check on cPanel 11.138.0.24
 
 On 2026-11-18 two one-off runs used `whm()->call()` with form POST and

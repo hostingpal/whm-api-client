@@ -25,6 +25,8 @@ use LogicException;
  *   The descriptor specifies its PHP argument, wire discriminator, requiredness, and variants mapping
  *   each discriminator literal to field names with strict native string/int types and requiredness.
  *   Optional untagged: true permits partial input matching a single all-optional variant.
+ *   When change_params lists mutable scalar argument names, an omitted, null or empty record requires
+ *   at least one of those arguments to be non-null. Routing, target and concurrency arguments do not count.
  *   Common fields precede the supplied discriminator and variant fields in declaration order.
  * - multipart_upload: reviewed WHM required module text and scalar Upload only;
  * - multipart_upload_family: reviewed UAPI scalar or nonempty one-based Upload lists;
@@ -46,7 +48,7 @@ use LogicException;
  *   the encoded object unchanged. Bridged UAPI fails locally without I/O.
  * - params: PHP argument name => array{name: wire name, encoding: 'scalar'|
  *   'bool'|'repeat'|'numbered'|'suffix-numbered'|'suffix-numbered-scalar', omit_empty?: true}, in
- *   signature order. The scalar WHM editzonerecord line uses positive_int: true to require
+ *   signature order. The positive_int: true scalar policy requires
  *   a positive native integer before dispatch. Suffix encodings replace terminal * with one-based indices
  *   (action1, action2); the scalar form also permits integer list items.
  *   omit_empty is accepted only with repeat and skips exactly [] before wrapping

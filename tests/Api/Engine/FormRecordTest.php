@@ -59,7 +59,7 @@ final class FormRecordTest extends TestCase
     public function testUntaggedEditOmitsTheDiscriminatorAndAcceptsPartOfOneBranch(): void
     {
         $spec = self::editSpec();
-        self::assertSame('', self::encode($spec, ['record' => []]));
+        self::assertSame('ttl=0', self::encode($spec, ['record' => [], 'ttl' => 0]));
         self::assertSame('preference=0', self::encode($spec, ['record' => ['preference' => 0]]));
         self::assertSame('type=MX', self::encode($spec, ['record' => ['type' => 'MX']]));
         self::assertSame('exchange=x', self::encode($spec, ['record' => ['exchange' => 'x']]));
@@ -68,6 +68,7 @@ final class FormRecordTest extends TestCase
     /** @return iterable<string, array{array<string, mixed>}> */
     public static function invalidUntagged(): iterable
     {
+        yield 'empty record without a mutable companion' => [[]];
         yield 'mixed branches' => [['txtdata' => 'x', 'exchange' => 'y']];
         yield 'invalid native type' => [['preference' => '0']];
         yield 'explicit null field' => [['exchange' => null]];
@@ -83,11 +84,13 @@ final class FormRecordTest extends TestCase
         OperationRunner::run(self::editSpec(), ['record' => $record], static fn () => self::fail('Dispatched.'));
     }
 
-    /** @return array<mixed> */
+    /** @return array{form_record: array<string, mixed>, params: array<string, mixed>, ...} */
     private static function editSpec(): array
     {
         $spec = self::SPEC;
         $spec['function'] = 'editzonerecord';
+        $spec['params']['ttl'] = ['name' => 'ttl', 'encoding' => 'scalar'];
+        $spec['form_record']['change_params'] = ['ttl'];
         $spec['form_record']['required'] = false;
         $spec['form_record']['untagged'] = true;
         $spec['form_record']['variants']['TXT']['txtdata']['required'] = false;
@@ -139,16 +142,38 @@ final class FormRecordTest extends TestCase
         }
     }
 
+    public function testCheckedFormDescriptorIsReusedAcrossCalls(): void
+    {
+        $form = SpecChecker::check(self::SPEC);
+        self::assertNotNull($form);
+        self::assertSame($form, SpecChecker::check(self::SPEC));
+        $other = ['function' => 'another'] + self::SPEC;
+        self::assertNotSame($form, SpecChecker::check($other));
+    }
+
+    public function testPositiveIntegerPolicyValidatesAnUnrelatedScalar(): void
+    {
+        $spec = ['function' => 'example', 'method' => 'GET', 'outcome' => 'flag', 'returns' => null,
+            'params' => ['first' => ['encoding' => 'scalar', 'name' => 'index', 'positive_int' => true]]];
+        self::assertSame('index=1', self::encode($spec, ['first' => 1]));
+        $this->expectException(InvalidArgumentException::class);
+        OperationRunner::run($spec, ['first' => -1], static fn () => self::fail('Dispatched.'));
+    }
+
     /** @return iterable<string, array{array<mixed>}> */
     public static function malformedSpecs(): iterable
     {
         $form = self::SPEC['form_record'];
         $line = ['name' => 'line', 'encoding' => 'scalar', 'positive_int' => true];
-        yield 'positive line on add' => [['params' => ['line' => $line]]];
-        yield 'positive policy on unrelated field' => [['function' => 'editzonerecord',
-            'params' => ['ttl' => ['name' => 'ttl'] + $line]]];
+        yield 'positive policy on flag' => [['params' => ['line' => ['encoding' => 'bool'] + $line]]];
         yield 'non-true positive policy' => [['function' => 'editzonerecord',
             'params' => ['line' => ['positive_int' => false] + $line]]];
+        yield 'change params on required form' => [['form_record' => ['change_params' => ['zone']] + $form]];
+        $edit = self::editSpec();
+        foreach ([[], null, [1 => 'ttl'], ['absent'], ['ttl', 'ttl'], [0]] as $i => $changes) {
+            yield 'invalid change parameters ' . $i => [['form_record' => ['change_params' => $changes]
+                + $edit['form_record'], 'params' => $edit['params']]];
+        }
         yield 'GET' => [['method' => 'GET']];
         yield 'UAPI' => [['module' => 'DNS']];
         yield 'multipart' => [['body' => 'multipart']];

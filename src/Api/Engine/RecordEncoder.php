@@ -34,17 +34,16 @@ final class RecordEncoder
         $fields = [];
         foreach ($spec['fields'] as $key => $field) {
             if (
-                !is_string($key) || preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/D', $key) !== 1
-                || !is_array($field) || !is_string($field['prefix'] ?? null)
-                || preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/D', $field['prefix']) !== 1
-                || !in_array($field['type'] ?? null, ['string', 'int', 'bool', 'string|int'], true)
-                || !is_bool($field['required'] ?? null)
-                || array_diff(array_keys($field), ['prefix', 'type', 'required']) !== []
+                !RecordFields::identifier($key) || !is_array($field)
+                || !RecordFields::identifier($field['prefix'] ?? null)
             ) {
                 throw new LogicException('Invalid record field descriptor.');
             }
+            $prefix = $field['prefix'];
+            unset($field['prefix']);
+            $descriptor = RecordFields::descriptor($field);
             foreach ($fields as $other) {
-                $a = $field['prefix'] . $spec['separator'];
+                $a = $prefix . $spec['separator'];
                 $b = $other['prefix'] . $spec['separator'];
                 if (
                     $a === $b || preg_match('/^' . preg_quote($a, '/') . '[1-9][0-9]*$/D', $b) === 1
@@ -53,7 +52,7 @@ final class RecordEncoder
                     throw new LogicException('Overlapping record field prefixes.');
                 }
             }
-            $fields[$key] = ['prefix' => $field['prefix'], 'type' => $field['type'], 'required' => $field['required']];
+            $fields[$key] = ['prefix' => $prefix] + $descriptor;
         }
 
         return ['start' => $spec['start'], 'separator' => $spec['separator']]
@@ -71,29 +70,18 @@ final class RecordEncoder
             throw new InvalidArgumentException('Record input requires a nonempty sequential list.');
         }
         foreach ($value as $position => $row) {
-            if (
-                !is_array($row) || $row === [] || array_is_list($row)
-                || array_diff(array_keys($row), array_keys($spec['fields'])) !== []
-            ) {
-                throw new InvalidArgumentException('Record rows require only declared named fields.');
+            if (!is_array($row) || $row === [] || array_is_list($row)) {
+                throw new InvalidArgumentException('Record rows require named fields.');
+            }
+            $values = RecordFields::values($spec['fields'], $row);
+            if ($values === null) {
+                throw new InvalidArgumentException('Record row does not match its declared fields.');
             }
             if ($position > PHP_INT_MAX - $spec['start']) {
                 throw new InvalidArgumentException('Record index exceeds the integer range.');
             }
-            foreach ($spec['fields'] as $key => $field) {
-                if (!array_key_exists($key, $row)) {
-                    if ($field['required']) {
-                        throw new InvalidArgumentException('Record row is missing a required field.');
-                    }
-                    continue;
-                }
-                $item = $row[$key];
-                $encoded = match (true) {
-                    $field['type'] === 'bool' && is_bool($item) => (int) $item,
-                    in_array($field['type'], ['string', 'string|int'], true) && is_string($item) => $item,
-                    in_array($field['type'], ['int', 'string|int'], true) && is_int($item) => $item,
-                    default => throw new InvalidArgumentException('Record field does not match its strict type.'),
-                };
+            foreach ($values as $key => $encoded) {
+                $field = $spec['fields'][$key];
                 $fields->append(
                     $origin,
                     $field['prefix'] . (($spec['first_unsuffixed'] ?? false) && $position === 0

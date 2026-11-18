@@ -328,7 +328,9 @@
       "name": "addZoneRecord",
       "method": "POST",
       "void": true,
+      "order": ["domain", "name", "record"],
       "form_record": {
+        "php": "record",
         "common": {
           "required": [
             "domain",
@@ -514,6 +516,18 @@
         {
           "kind": "documented",
           "text": "A6 is deprecated."
+        },
+        {
+          "kind": "policy",
+          "text": "The typed methods accept only the 18 mapped record families and their declared wire fields. For a server-supported type or field outside this set, use whm()->call() with form POST."
+        },
+        {
+          "kind": "policy",
+          "text": "Source inspection on cPanel 11.138.0.24: the LOC serializer emits altitude, size, horiz_pre and vert_pre in that order, skipping false values. Give each preceding position a nonzero value when setting a later one. The integer size and precisions are centimeters despite the pinned meter descriptions. For example, altitude '5m', size 1000, horiz_pre 2000 and vert_pre 3000 serialize as 5m, 10m, 20m and 30m."
+        },
+        {
+          "kind": "policy",
+          "text": "The pinned TTL minimum is 1. The client forwards an explicit zero. On cPanel 11.138.0.24 the inspected A-record serializer falls back to the effective default TTL for zero. On edit this can replace an existing nondefault TTL."
         }
       ],
       "evidence": [
@@ -536,6 +550,12 @@
           "version": "11.138.0.24",
           "date": "2026-11-18",
           "note": "Generic form POST returned successful metadata without a data member on add (A, PTR, TXT) and edit (partial untagged A and explicit A with retained address). Missing A address and stale edit serialnum failed. On a fresh zone, CAA, NS delegation and DS under the delegated child succeeded with identifiable records. Two A6 attempts reported success without an identifiable A6 row."
+        },
+        {
+          "kind": "doc",
+          "version": "cPanel 11.138.0.24 serializer inspection",
+          "date": "2026-11-18",
+          "note": "Cpanel/ZoneFile.pm: derefalt and tomts preserve meter-suffixed altitude, tomts divides bare values by 100, the LOC branch appends truthy optional positions, and _build_basic_record uses forcedttl || ttl || defaultttl. This is a source inspection."
         }
       ]
     },
@@ -725,7 +745,11 @@
       "name": "editZoneRecord",
       "method": "POST",
       "void": true,
+      "order": ["domain", "line", "name", "record"],
+      "params": {"line": {"positive_int": true}},
       "form_record": {
+        "php": "record",
+        "change_params": ["name", "class", "ttl"],
         "common": {
           "required": [
             "domain",
@@ -733,7 +757,7 @@
           ],
           "add": {
             "serialnum": {
-              "type": "string",
+              "type": "int",
               "description": "The expected current zone serial. A stale value causes the edit to fail."
             }
           }
@@ -817,9 +841,33 @@
         {
           "kind": "policy",
           "text": "The cPanel 11.138.0.24 edit handler merges supplied fields with the current record. A type change can need additional fields suited to the new type. An omitted record sends only the common fields. CNAME flatten and flatten_to apply to apex edits."
+        },
+        {
+          "kind": "policy",
+          "text": "The typed methods accept only the 18 mapped record families and their declared wire fields. For a server-supported type or field outside this set, use whm()->call() with form POST."
+        },
+        {
+          "kind": "policy",
+          "text": "Source inspection on cPanel 11.138.0.24: the LOC serializer emits altitude, size, horiz_pre and vert_pre in that order, skipping false values. Give each preceding position a nonzero value when setting a later one. The integer size and precisions are centimeters despite the pinned meter descriptions. For example, altitude '5m', size 1000, horiz_pre 2000 and vert_pre 3000 serialize as 5m, 10m, 20m and 30m."
+        },
+        {
+          "kind": "policy",
+          "text": "The pinned TTL minimum is 1. The client forwards an explicit zero. On cPanel 11.138.0.24 the inspected A-record serializer falls back to the effective default TTL for zero. On edit this can replace an existing nondefault TTL."
+        },
+        {
+          "kind": "policy",
+          "text": "Supply at least one record or editable common field. The zone, line and optional integer serialnum identify and guard the edit."
         }
       ],
       "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-18",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/components/schemas/DnsEditZoneParameterBase/properties/line",
+          "note": "The one-based edit line is a required integer with minimum 1. The reviewed handler normalizes negative lines to their positive counterpart, so this input opts into rejecting nonpositive values before dispatch."
+        },
         {
           "kind": "doc",
           "version": "pinned 2026-10-13",
@@ -839,6 +887,12 @@
           "version": "11.138.0.24",
           "date": "2026-11-18",
           "note": "Generic form POST returned successful metadata without a data member on add (A, PTR, TXT) and edit (partial untagged A and explicit A with retained address). Missing A address and stale edit serialnum failed."
+        },
+        {
+          "kind": "doc",
+          "version": "cPanel 11.138.0.24 serializer inspection",
+          "date": "2026-11-18",
+          "note": "Cpanel/ZoneFile.pm: derefalt and tomts preserve meter-suffixed altitude, tomts divides bare values by 100, the LOC branch appends truthy optional positions, and _build_basic_record uses forcedttl || ttl || defaultttl. This is a source inspection."
         }
       ]
     },

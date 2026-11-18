@@ -21,13 +21,17 @@ use SensitiveParameter;
  */
 final readonly class FormRecord
 {
-    /** @param array<string, Fields> $variants */
+    /**
+     * @param array<string, Fields> $variants
+     * @param list<string> $changeParams
+     */
     private function __construct(
         private string $php,
         private string $discriminator,
         private bool $required,
         private bool $untagged,
         private array $variants,
+        private array $changeParams,
     ) {
     }
 
@@ -40,14 +44,15 @@ final readonly class FormRecord
     {
         $form = $spec['form_record'] ?? null;
         $params = $spec['params'] ?? null;
+        $keys = ['php', 'discriminator', 'required', 'variants', 'untagged', 'change_params'];
         if (
             ($spec['method'] ?? null) !== 'POST' || isset($spec['module'])
             || OperationSpec::body($spec) !== RequestBodyFormat::Form || !is_array($params)
-            || !is_array($form) || !self::identifier($form['php'] ?? null)
-            || !self::identifier($form['discriminator'] ?? null) || array_key_exists($form['php'], $params)
+            || !is_array($form) || !RecordFields::identifier($form['php'] ?? null)
+            || !RecordFields::identifier($form['discriminator'] ?? null) || array_key_exists($form['php'], $params)
             || !is_bool($form['required'] ?? null) || !is_array($form['variants'] ?? null) || $form['variants'] === []
             || (array_key_exists('untagged', $form) && $form['untagged'] !== true)
-            || array_diff(array_keys($form), ['php', 'discriminator', 'required', 'variants', 'untagged']) !== []
+            || array_diff(array_keys($form), $keys) !== []
         ) {
             throw new LogicException('Invalid form record descriptor.');
         }
@@ -63,6 +68,21 @@ final readonly class FormRecord
             $reserved[$param['name']] = true;
         }
         $untagged = $form['untagged'] ?? false;
+        $changes = [];
+        if (array_key_exists('change_params', $form)) {
+            if (
+                !$untagged || $form['required'] || !is_array($form['change_params'])
+                || !array_is_list($form['change_params']) || $form['change_params'] === []
+            ) {
+                throw new LogicException('Invalid form record change parameters.');
+            }
+            foreach ($form['change_params'] as $name) {
+                if (!is_string($name) || !isset($params[$name]) || in_array($name, $changes, true)) {
+                    throw new LogicException('Invalid form record change parameter.');
+                }
+                $changes[] = $name;
+            }
+        }
         $variants = [];
         foreach ($form['variants'] as $tag => $fields) {
             if (!is_string($tag) || $tag === '' || !is_array($fields)) {
@@ -70,20 +90,19 @@ final readonly class FormRecord
             }
             $checked = [];
             foreach ($fields as $name => $field) {
+                $descriptor = RecordFields::descriptor($field);
                 if (
-                    !self::identifier($name) || isset($reserved[$name]) || !is_array($field)
-                    || !in_array($field['type'] ?? null, ['string', 'int'], true)
-                    || !is_bool($field['required'] ?? null) || ($untagged && $field['required'])
-                    || array_diff(array_keys($field), ['type', 'required']) !== []
+                    !RecordFields::identifier($name) || isset($reserved[$name])
+                    || !in_array($descriptor['type'], ['string', 'int'], true) || ($untagged && $descriptor['required'])
                 ) {
                     throw new LogicException('Invalid form record field descriptor.');
                 }
-                $checked[$name] = ['type' => $field['type'], 'required' => $field['required']];
+                $checked[$name] = $descriptor;
             }
             $variants[$tag] = $checked;
         }
 
-        return new self($form['php'], $form['discriminator'], $form['required'], $untagged, $variants);
+        return new self($form['php'], $form['discriminator'], $form['required'], $untagged, $variants, $changes);
     }
 
     /**
@@ -98,6 +117,14 @@ final readonly class FormRecord
         $record = $arguments[$this->php] ?? null;
         unset($arguments[$this->php]);
         $encoded = ArgumentEncoder::encode($params, $arguments);
+        if (($record === null || $record === []) && $this->changeParams !== []) {
+            foreach ($this->changeParams as $name) {
+                if (isset($arguments[$name])) {
+                    return $encoded;
+                }
+            }
+            throw new InvalidArgumentException('Supply a record change or a mutable companion parameter.');
+        }
         if (!$this->required && $record === null) {
             return $encoded;
         }
@@ -118,7 +145,7 @@ final readonly class FormRecord
             throw new InvalidArgumentException('Form record requires a discriminator.');
         }
         foreach ($variants as $fields) {
-            $values = self::values($fields, $record);
+            $values = RecordFields::values($fields, $record);
             if ($values !== null) {
                 foreach ($values as $name => $value) {
                     $encoded->append($this->php, $name, $value, multipart: false);
@@ -127,36 +154,5 @@ final readonly class FormRecord
             }
         }
         throw new InvalidArgumentException('Form record fields do not match a declared variant.');
-    }
-
-    /**
-     * @param Fields $fields
-     * @param array<mixed> $record
-     * @return array<string, int|string>|null Null when this variant does not accept the complete input.
-     */
-    private static function values(array $fields, #[SensitiveParameter] array $record): ?array
-    {
-        if (array_diff_key($record, $fields) !== []) {
-            return null;
-        }
-        $values = [];
-        foreach ($fields as $name => $field) {
-            if (!array_key_exists($name, $record) && !$field['required']) {
-                continue;
-            }
-            $value = $record[$name] ?? null;
-            if (($field['type'] === 'string' && is_string($value)) || ($field['type'] === 'int' && is_int($value))) {
-                $values[$name] = $value;
-            } else {
-                return null;
-            }
-        }
-        return $values;
-    }
-
-    /** @phpstan-assert-if-true string $name */
-    private static function identifier(mixed $name): bool
-    {
-        return is_string($name) && preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/D', $name) === 1;
     }
 }

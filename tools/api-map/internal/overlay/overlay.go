@@ -98,6 +98,8 @@ type MultipartUploadFamily struct {
 // FormRecord opts into the two reviewed WHM DNS forms. Changes describe
 // differences between the pinned OpenAPI components and the reviewed handler.
 type FormRecord struct {
+	PHP            string                       `json:"php"`
+	ChangeParams   []string                     `json:"change_params,omitempty"`
 	Common         FormRecordChanges            `json:"common"`
 	Variants       map[string]FormRecordChanges `json:"variants,omitempty"`
 	Labels         map[string]string            `json:"labels,omitempty"`
@@ -216,6 +218,7 @@ type Collection struct {
 // public PHP name or source-based order. All corrections require operation evidence
 // and cannot target omitted inputs.
 type Param struct {
+	PositiveInt *bool       `json:"positive_int,omitempty"`
 	Collection  *Collection `json:"collection,omitempty"`
 	Wire        string      `json:"wire,omitempty"`
 	Type        string      `json:"type,omitempty"`

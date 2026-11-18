@@ -10,7 +10,7 @@ import (
 func formRecordShape(record *effective.FormRecord) string {
 	var shapes []string
 	for _, variant := range record.Variants {
-		tag := "type"
+		tag := record.Discriminator
 		if record.Untagged {
 			tag += "?"
 		}
@@ -29,11 +29,14 @@ func formRecordShape(record *effective.FormRecord) string {
 
 func renderFormRecord(w *writer, d *effective.FormRecord) {
 	w.line("        'form_record' => [")
-	w.line("            'php' => 'record',")
-	w.line("            'discriminator' => 'type',")
+	w.line("            'php' => " + phpString(d.PHP) + ",")
+	w.line("            'discriminator' => " + phpString(d.Discriminator) + ",")
 	w.line(fmt.Sprintf("            'required' => %t,", d.Required))
 	if d.Untagged {
 		w.line("            'untagged' => true,")
+	}
+	if len(d.ChangeParams) > 0 {
+		w.line("            'change_params' => " + listLiteral(d.ChangeParams, "            ", len("            'change_params' => ")) + ",")
 	}
 	w.line("            'variants' => [")
 	for _, v := range d.Variants {
