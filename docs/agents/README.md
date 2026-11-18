@@ -56,6 +56,7 @@ Add new module notes to the matching file here, never to `AGENTS.md`.
 | [UAPI SiteQuality](modules/uapi-sitequality.md) | `uapi()->siteQuality()` |
 | [UAPI SSL](modules/uapi-ssl.md) | `uapi()->ssl()` |
 | [UAPI team and user management](modules/uapi-team-user-management.md) | `team()`, `teamRoles()`, `userManager()`, `webDisk()`, `users()`, `passwdStrength()` |
+| [UAPI API tokens](modules/uapi-tokens.md) | `uapi()->tokens()` |
 | [UAPI Trash](modules/uapi-trash.md) | `uapi()->trash()` |
 | [UAPI user task queue](modules/uapi-user-tasks.md) | `uapi()->userTasks()` |
 | [UAPI scoped userdata settings](modules/uapi-userdata.md) | `uapi()->userData()` |

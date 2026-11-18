@@ -279,7 +279,7 @@ refresh it with `php tools/live-testing/refresh-operations-client.php`.
 | `uapi:TeamRoles/list_feature_descriptions` | typed |
 | `uapi:Themes/get_theme_base` | excluded |
 | `uapi:Themes/list` | typed |
-| `uapi:Tokens/list` | untyped |
+| `uapi:Tokens/list` | typed |
 | `uapi:TwoFactorAuth/get_user_configuration` | typed |
 | `uapi:UserManager/check_account_conflicts` | typed |
 | `uapi:UserManager/list_users` | typed |
@@ -846,9 +846,9 @@ refresh it with `php tools/live-testing/refresh-operations-client.php`.
 | `uapi:Team/set_roles` | typed |
 | `uapi:Team/suspend_team_user` | typed |
 | `uapi:Themes/update` | typed |
-| `uapi:Tokens/create_full_access` | untyped |
-| `uapi:Tokens/rename` | untyped |
-| `uapi:Tokens/revoke` | untyped |
+| `uapi:Tokens/create_full_access` | typed |
+| `uapi:Tokens/rename` | typed |
+| `uapi:Tokens/revoke` | typed |
 | `uapi:Trash/remove` | typed |
 | `uapi:Trash/usage` | typed |
 | `uapi:TwoFactorAuth/generate_user_configuration` | typed |

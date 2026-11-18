@@ -175,6 +175,8 @@ trait UapiGroups
 
     private ?Themes $themesGroup = null;
 
+    private ?Tokens $tokensGroup = null;
+
     private ?Trash $trashGroup = null;
 
     private ?TwoFactorAuth $twoFactorAuthGroup = null;
@@ -1055,6 +1057,18 @@ trait UapiGroups
     public function themes(): Themes
     {
         return $this->themesGroup ??= new Themes($this->run(...));
+    }
+
+    /**
+     * Select the Tokens operations without making a request.
+     *
+     * cPanel API tokens of the selected account, available from cPanel 80: create a full-access token, list token
+     * metadata, rename and revoke. A created token's secret is returned once and is a credential; list never returns
+     * it. The client stores, refreshes, retries and revokes nothing on its own.
+     */
+    public function tokens(): Tokens
+    {
+        return $this->tokensGroup ??= new Tokens($this->run(...));
     }
 
     /**
