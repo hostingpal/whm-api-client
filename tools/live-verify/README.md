@@ -3032,7 +3032,7 @@ of the proof read `confirmed_absent`. See the
 
 ## API token lifecycle
 
-`tokens-section.php` (recipe `tokens-lifecycle-v3`) verifies `uapi()->tokens()` on the
+`tokens-section.php` (recipe `tokens-lifecycle-v4`) verifies `uapi()->tokens()` on the
 designated `npr` account through the generated client, on direct UAPI and the WHM bridge.
 The shared `SectionCommand` handles authorization, committed-input checks and protected,
 new-only publication.
@@ -3089,35 +3089,50 @@ route `uncertain`.
 
 | Event | First name | Renamed name |
 | --- | --- | --- |
-| Create accepted, or its outcome unknown | held | never |
+| Create accepted | held | never |
+| Create outcome unknown | unknown | never |
 | Create refused | never (route ends `not_created`, no cleanup) | never |
 | Rename accepted | released | held |
 | Rename refused | unchanged | never |
-| Rename outcome unknown | held | held |
+| Rename outcome unknown | unknown | unknown |
 | Revoke answered 1 | | released |
-| Revoke refused, unknown or answered anything else | | held |
+| Revoke refused | | held |
+| Revoke outcome unknown, or answered anything else | | unknown |
+
+An unknown outcome is not ownership: the run's token may be under that name, or another
+party's may be. Expiry and the two flags are attributes any token can share, not an
+identity, so matching them proves nothing.
 
 After a failed phase, cleanup is one list, at most one revoke per name, and one more
-list. It revokes a name only when the run holds it **and** the list shows it with exactly
-the run's expiry, read-only flag and full access. What the last list shows then decides:
+list. It revokes a name only when the run is confirmed to hold it **and** the list shows
+it with exactly the run's expiry, read-only flag and full access. What the last list shows
+then decides:
 
 | Name is | Listed as | Result |
 | --- | --- | --- |
 | never the run's | anything | ignored: it is someone else's |
 | held | with the run's settings | `cleanup_unconfirmed`: the token survived |
 | held | with other settings | `unproven_token_under_run_name`: left untouched |
-| released | present at all | `unproven_token_under_run_name`: left untouched |
+| released or unknown | present at all | `unproven_token_under_run_name`: left untouched |
 
 The route's token state becomes `absent` only when none of these applies. A create of
-unknown outcome that never showed itself also stays `uncertain` (`creation_outcome_unknown`):
-an empty list cannot settle it, because that request can still take effect afterwards. So
-does a cleanup list that could not be used.
+unknown outcome always stays `uncertain` (`creation_outcome_unknown`): an empty list
+cannot settle it, because that request can still take effect afterwards, and a listed row
+cannot, because nothing shows the run created it. A cleanup list that could not be used
+also leaves the route `uncertain`. After a lost rename or revoke reply the route is
+`absent` only when no row carries either name.
+
+The price of this rule is that a plain timeout leaves the run's own token in place. It is
+read-only and expires within the hour, and the report says `uncertain`.
 
 `uncertain` means the route's names must be checked by hand. Cleanup requests are
 separate phases, never retries, and `TokensSectionEvidence` treats them as unexpected, so
 a run that needed cleanup exits 1.
 
 ### Captures
+
+v4 has no capture. On a passing run it sends the same requests with the same expectations
+as v3 and differs only in failure handling, so the v3 capture stands for it.
 
 All three captures are on `11.138.0.24`, pass every observation with zero discrepancies
 and left both tokens `absent`. None needed cleanup; the failure paths above are covered
@@ -3127,7 +3142,8 @@ reply was lost.
 
 - [v3, 2026-11-18](../../docs/api/evidence/2026-11-18-tokens-section-v3.json) at
   `1c05e6d6`: 17 observations (11 GET, 6 POST), `notification_targets` `none_configured`
-  on both routes. The current recipe.
+  on both routes. The latest capture. Its cleanup still treated a name as held after a
+  lost rename reply.
 - [v2, 2026-11-18](../../docs/api/evidence/2026-11-18-tokens-section-v2.json) at
   `bd654671`: 19 observations (11 GET, 8 POST), including the second revoke. Its cleanup
   still treated a renamed-away or revoked name as the run's.

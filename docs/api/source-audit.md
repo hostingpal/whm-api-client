@@ -12513,10 +12513,16 @@ Evidence:
   revoke, revokes in cleanup only a held name whose row shows the run's settings, and no
   longer revokes the freed name a second time. The revoke result `0` for a missing token
   is therefore recorded by the v1 and v2 captures only.
+- The current recipe is `tokens-lifecycle-v4` and has no capture. It differs from v3 only
+  in failure handling: after a mutation whose reply was lost, no name that mutation could
+  have touched is revoked. Its passing path is v3's, so the v3 capture stands for it; the
+  failure paths are covered by synthetic tests.
 - A separate sanitized probe on the same day with throwaway tokens, all revoked, is the
   source for the API-error cases (duplicate name, missing rename source, rename to the
   same name) and for the first observation of each row above. It is not a committed
-  capture.
+  capture. It did not list between rename and revoke: that a renamed token keeps its
+  expiry and read-only flag is shown by the lifecycle captures, and that it keeps its
+  secret and creation time was read in `Write.pm` (`update_token`), not observed.
 - Server source read on the same version: `Cpanel/API/Tokens.pm` (revoke passes the
   admin result to result data; rename sets no data; create strips every admin field
   except `whitelist_ips`; module needs the `apitokens` feature; team users are refused),

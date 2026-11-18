@@ -47,7 +47,10 @@ Read in the handler and its validation and admin classes on `11.138.0.24`:
   meaning was not observed.
 - A duplicate name on create, a missing source on rename and a rename to the same name
   are API errors (all three observed).
-- `rename` sets no result data.
+- `rename` sets no result data. It changes only the stored name in place, leaving the
+  secret and creation time, and refuses a name already in use. The captures confirm only
+  that the renamed row keeps its expiry and read-only flag; that the secret still
+  authenticates after a rename was not exercised.
 
 ## Secrets
 
@@ -59,7 +62,7 @@ token a direct client authenticates with ends that client's access.
 
 ## Live recipe and evidence
 
-`tools/live-verify/tokens-section.php` (recipe `tokens-lifecycle-v3`) runs the
+`tools/live-verify/tokens-section.php` (recipe `tokens-lifecycle-v4`) runs the
 lifecycle through the generated client on the designated `npr` account, which is shared.
 Each route owns one throwaway token named `whmapiclient-live-<suffix>-<route>`, created
 read-only with a one-hour expiry: list, read notification targets, create, list, rename,
@@ -73,28 +76,38 @@ list, revoke (expects 1), list. The rules a change to the recipe must keep:
 - **A released name is someone else's.** The run holds a name after an accepted create
   or rename and releases the old one after an accepted rename or revoke. A refused
   mutation changes nothing; a refused create ends the route as `not_created` with no
-  cleanup. After a rename of unknown outcome the run may hold either name.
-- **Cleanup revokes only a held name with the run's settings.** The row must show
-  exactly the run's expiry, read-only flag and full access. A held name with other
-  settings, or a released name that is listed again, may be another party's token: it
-  is left untouched and the route stays `uncertain`. A name the run never had is ignored.
+  cleanup.
+- **An unknown outcome is not ownership.** A create, rename or revoke whose reply the
+  run never got makes every name it could have touched `unknown`. Expiry and the two
+  flags are attributes any token can share, not an identity, so a row under an unknown
+  name is never revoked, however well it matches.
+- **Cleanup revokes only a confirmed held name with the run's settings.** A held name
+  with other settings, a released name that is listed again, or any row under an unknown
+  name may be another party's token: it is left untouched and the route stays
+  `uncertain`. A name the run never had is ignored.
 - **No mutation targets a freed name.** The lifecycle revokes each token once. v1 and
   v2 revoked the freed name a second time to observe the `0` result; on a shared account
   that would hit whoever reused the name. Repeating it belongs on a disposable account
   (`whm-api-client-8x0.2.98`).
 - **Absence needs evidence.** A list proves absence only when every row has a name and
-  none holds a secret. After a create of unknown outcome, an empty list settles nothing,
-  because the request can still take effect: the route stays `uncertain` unless the
-  token showed itself and was then revoked.
+  none holds a secret. A create of unknown outcome is never settled: an empty list does
+  not settle it, because the request can still take effect, and a listed row does not,
+  because nothing shows the run created it. A lost revoke reply settles only when no row
+  carries the name.
 - The guard admits only the run's own names, each phase once. Cleanup requests are
   separate phases, never retries, and a run that needed them cannot pass.
 - The created secret is checked in place, never used and never recorded.
+
+v4 has no capture. Its passing path sends the same requests with the same expectations
+as v3; only the handling of failures changed, and those paths are synthetic-only. A
+cost of the v4 rule: after a lost reply the run's own token is left in place until it
+expires within the hour, and the route is reported `uncertain`.
 
 Captures, all on `11.138.0.24` with zero discrepancies and both tokens absent:
 
 - [v3](../../api/evidence/2026-11-18-tokens-section-v3.json) at `1c05e6d6`: 17
   observations (11 GET, 6 POST), `notification_targets` `none_configured` on both routes.
-  The current recipe.
+  The latest capture. Its cleanup treated a name as held after a lost rename reply.
 - [v2](../../api/evidence/2026-11-18-tokens-section-v2.json) at `bd654671`: 19
   observations (11 GET, 8 POST). Same checks as v3 plus the second revoke returning `0`;
   its cleanup kept a renamed-away or revoked name as the run's.
