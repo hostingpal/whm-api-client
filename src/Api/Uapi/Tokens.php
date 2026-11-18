@@ -129,9 +129,10 @@ final readonly class Tokens
      * Documented: newName follows the creation rule: only letters, digits, dashes and underscores, at most 50
      * characters.
      *
-     * Observed: On cPanel 11.138.0.24 through both routes a successful rename returned null. Renaming a token that does
-     * not exist, or to its current name, is an API error. The token secret, creation time, expiry and read-only setting
-     * are untouched.
+     * Observed: On cPanel 11.138.0.24 through both routes a successful rename returned null, and the renamed token
+     * listed the same expiry and read-only flag. Renaming a token that does not exist, or to its current name, is an
+     * API error. The server's handler changes only the stored name, leaving the secret and creation time, and refuses a
+     * name that is already in use.
      *
      * Policy: One invocation sends one form POST with no prior read. The token secret does not change, so clients
      * holding it keep working; only references by name must follow the new name.

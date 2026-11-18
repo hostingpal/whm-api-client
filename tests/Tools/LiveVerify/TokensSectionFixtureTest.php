@@ -55,7 +55,7 @@ final class TokensSectionFixtureTest extends TestCase
         $server = new TokensSectionServer();
         $report = self::fixture($server)->run();
 
-        self::assertSame('tokens-lifecycle-v3', $report['recipe']);
+        self::assertSame('tokens-lifecycle-v4', $report['recipe']);
         self::assertSame('passed', $report['status']);
         self::assertSame(['status' => 'passed', 'findings' => []], $report['assessment']);
         self::assertSame(['direct-uapi' => 'absent', 'bridged-uapi' => 'absent'], $report['tokens']);
@@ -331,23 +331,89 @@ final class TokensSectionFixtureTest extends TestCase
         self::assertSame([self::CREATE, self::RENAME], self::bodies($server));
     }
 
-    public function testAnUnknownCreationIsRevokedOnlyWhenItsRowShowsThisRunsSettings(): void
+    /**
+     * Every case loses a reply, so the run never learns the outcome; some also add a lookalike under a freed name.
+     *
+     * @return iterable<string,array{string,string,string|null,list<string>,list<string>,list<string>}>
+     */
+    public static function unknownOutcomes(): iterable
     {
+        $phase = ['direct-uapi:phase_failure'];
+        $unproven = [...$phase, 'direct-uapi:unproven_token_under_run_name'];
+        $created = [...$unproven, 'direct-uapi:creation_outcome_unknown'];
+        $revoke = 'name=' . self::RENAMED;
+        yield 'create applied, reply lost' => ['create_full_access/direct/1', 'lost', null,
+            [self::CREATE], [self::ORIGINAL], $created];
+        yield 'create not applied, a lookalike takes the name' => ['create_full_access/direct/1', 'delayed',
+            'list/direct/2:' . self::ORIGINAL, [self::CREATE], [self::ORIGINAL], $created];
+        yield 'rename applied, reply lost' => ['rename/direct/1', 'lost', null,
+            [self::CREATE, self::RENAME], [self::RENAMED], $unproven];
+        yield 'rename applied, a lookalike takes the freed name' => ['rename/direct/1', 'lost',
+            'list/direct/3:' . self::ORIGINAL, [self::CREATE, self::RENAME], [self::RENAMED, self::ORIGINAL],
+            $unproven];
+        yield 'rename not applied' => ['rename/direct/1', 'delayed', null,
+            [self::CREATE, self::RENAME], [self::ORIGINAL], $unproven];
+        yield 'rename not applied, a lookalike takes the target name' => ['rename/direct/1', 'delayed',
+            'list/direct/3:' . self::RENAMED, [self::CREATE, self::RENAME], [self::ORIGINAL, self::RENAMED],
+            $unproven];
+        yield 'revoke not applied' => ['revoke/direct/1', 'delayed', null,
+            [self::CREATE, self::RENAME, $revoke], [self::RENAMED], $unproven];
+        yield 'revoke applied, a lookalike takes the freed name' => ['revoke/direct/1', 'lost',
+            'list/direct/4:' . self::RENAMED, [self::CREATE, self::RENAME, $revoke], [self::RENAMED], $unproven];
+    }
+
+    /**
+     * @param list<string> $bodies
+     * @param list<string> $survivors
+     * @param list<string> $failures
+     */
+    #[DataProvider('unknownOutcomes')]
+    public function testAfterAnUnknownOutcomeNoCandidateIsRevokedAndTheRouteStaysUncertain(
+        string $key,
+        string $failure,
+        ?string $arrival,
+        array $bodies,
+        array $survivors,
+        array $failures,
+    ): void {
         $server = new TokensSectionServer();
-        $server->failures['create_full_access/direct/1'] = 'lost';
-        // Both cleanup lists show the name with another expiry: nothing proves that this run created it.
-        $other = '[{"name":"' . self::ORIGINAL . '","expires_at":"1795080068","readonly":1,"has_full_access":1}]';
-        $server->overrides['list/direct/2'] = $other;
-        $server->overrides['list/direct/3'] = $other;
+        $server->foreign = self::LOOKALIKE;
+        $server->failures[$key] = $failure;
+        if ($arrival !== null) {
+            [$at, $name] = explode(':', $arrival);
+            $server->arrivals[$at] = $name;
+        }
         $report = self::fixture($server)->run();
 
         self::assertSame('failed', $report['status']);
         self::assertSame(['direct-uapi' => 'uncertain', 'bridged-uapi' => 'not_started'], $report['tokens']);
-        self::assertSame([
-            'direct-uapi:phase_failure', 'direct-uapi:unproven_token_under_run_name',
-            'direct-uapi:creation_outcome_unknown',
-        ], $report['failures']);
-        self::assertSame([self::CREATE], self::bodies($server));
+        self::assertSame($failures, $report['failures']);
+        // Nothing is sent after the mutation whose reply was lost: no candidate row is revoked.
+        self::assertSame($bodies, self::bodies($server));
+        self::assertSame(
+            ['cleanup_inspect_direct', 'cleanup_check_direct'],
+            array_slice(array_column($report['probes'], 'phase'), -2),
+        );
+        // Every row under the run's names survives, whether it is the run's token or the other party's.
+        $names = array_keys($server->tokens);
+        sort($names);
+        $expected = ['existing', ...$survivors];
+        sort($expected);
+        self::assertSame($expected, $names);
+    }
+
+    public function testALostRevokeReplySettlesOnlyWhenTheNameIsGone(): void
+    {
+        $server = new TokensSectionServer();
+        $server->failures['revoke/direct/1'] = 'lost';
+        $report = self::fixture($server)->run();
+
+        // The revoke took effect and no row carries the name: the confirmed token is gone, and nothing was revoked.
+        self::assertSame('failed', $report['status']);
+        self::assertSame(['direct-uapi' => 'absent', 'bridged-uapi' => 'not_started'], $report['tokens']);
+        self::assertSame(['direct-uapi:phase_failure'], $report['failures']);
+        self::assertSame([self::CREATE, self::RENAME, 'name=' . self::RENAMED], self::bodies($server));
+        self::assertSame(self::EXISTING, $server->tokens);
     }
 
     /** @return iterable<string,array{string,string,string,string,list<string>}> */
@@ -356,7 +422,6 @@ final class TokensSectionFixtureTest extends TestCase
         $original = ['cleanup_original_direct'];
         $renamed = ['cleanup_renamed_direct'];
         $create = 'create_full_access/direct/1';
-        yield 'creation reply lost after it took effect' => ['failures', $create, 'lost', 'create_direct', $original];
         yield 'creation without a secret' => ['overrides', $create,
             '{"create_time":1794993667,"whitelist_ips":null}', 'create_direct', $original];
         yield 'creation without a creation time' => ['overrides', $create,
@@ -385,10 +450,6 @@ final class TokensSectionFixtureTest extends TestCase
             '[' . self::SETTLED_ROW . ',{}]', 'listed_direct', $original];
         yield 'rename refused' => ['failures', 'rename/direct/1', 'api', 'rename_direct', $original];
         yield 'rename returning data' => ['overrides', 'rename/direct/1', '{"renamed":1}', 'rename_direct', $renamed];
-        yield 'rename reply lost after it took effect' => ['failures', 'rename/direct/1', 'lost', 'rename_direct',
-            $renamed];
-        yield 'rename reply lost before it took effect' => ['failures', 'rename/direct/1', 'delayed',
-            'rename_direct', $original];
         yield 'old name still listed after rename' => ['overrides', 'list/direct/3',
             '[' . self::SETTLED_ROW . ']', 'renamed_direct', $renamed];
         yield 'renamed with another expiry' => ['overrides', 'list/direct/3',
@@ -398,7 +459,6 @@ final class TokensSectionFixtureTest extends TestCase
             $renamed];
         yield 'revoke refused' => ['failures', 'revoke/direct/1', 'api', 'revoke_direct', $renamed];
         yield 'revoke reporting nothing removed' => ['overrides', 'revoke/direct/1', '0', 'revoke_direct', []];
-        yield 'revoke reply lost after it took effect' => ['failures', 'revoke/direct/1', 'lost', 'revoke_direct', []];
         yield 'token still listed after revoke' => ['overrides', 'list/direct/4',
             '[{"name":"' . self::RENAMED . '"}]', 'absent_direct', []];
     }

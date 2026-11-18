@@ -22,13 +22,17 @@ use Throwable;
  *
  * The account is shared, so the run tracks which of its two names it holds. An accepted creation or rename makes it
  * hold the new name; an accepted rename or revoke releases the old one, which may be anyone's from then on; a refused
- * mutation changes nothing. After an outcome this process never learned, the run may hold either name. Cleanup after
- * a failed phase revokes only a held name, and only when a list shows it with exactly the settings this run creates
- * its token with. Everything ambiguous is left untouched and reported. Cleanup requests are separate phases, never
- * retries, and a run that needed them cannot pass.
+ * mutation changes nothing. A mutation whose outcome this process never learned makes every name it could have
+ * touched unknown, which is not ownership: a row under such a name may be the run's token or another party's, and
+ * its expiry and flags are attributes that anyone's token can share, not an identity.
  *
- * A route's token is reported absent only on evidence. In particular, an empty list after a creation whose outcome is
- * unknown settles nothing, because that request can still take effect later: the route then stays uncertain.
+ * Cleanup after a failed phase revokes only a name the run is confirmed to hold, and only when a list shows it with
+ * exactly the settings this run creates its token with. Everything else is left untouched and reported. Cleanup
+ * requests are separate phases, never retries, and a run that needed them cannot pass.
+ *
+ * A route's token is reported absent only on evidence. After a creation of unknown outcome nothing settles it: an
+ * empty list does not, because that request can still take effect later, and a listed row does not, because nothing
+ * shows that this run created it. The route then stays uncertain.
  *
  * @phpstan-import-type Context from EvidenceRunner
  * @phpstan-import-type Alternative from EvidenceRunner
@@ -45,7 +49,7 @@ use Throwable;
  * }
  * @phpstan-type State 'not_started'|'not_created'|'uncertain'|'absent'
  * @phpstan-type Targets 'not_checked'|'not_established'|'none_configured'
- * @phpstan-type Holding 'never'|'held'|'released'
+ * @phpstan-type Holding 'never'|'held'|'released'|'unknown'
  * @phpstan-type Report array{
  *   recipe:string,status:'passed'|'failed',probes:list<Observation>,assessment:Assessment,
  *   tokens:array{direct-uapi:State,bridged-uapi:State},
@@ -161,9 +165,11 @@ final class TokensSectionFixture
                 $this->observe('create_' . $name);
             } finally {
                 $creation = $this->outcome('create_' . $name);
-                if ($creation !== 'refused') {
-                    $names['original'] = 'held';
-                }
+                $names['original'] = match ($creation) {
+                    'accepted' => 'held',
+                    'refused' => 'never',
+                    default => 'unknown',
+                };
             }
             $this->observe('listed_' . $name);
             try {
@@ -174,14 +180,24 @@ final class TokensSectionFixture
                     // The first name is free again and may be anyone's from here on.
                     $names = ['original' => 'released', 'renamed' => 'held'];
                 } elseif ($renaming === 'unknown') {
-                    // The token is under one of the two names; only a list can say which.
-                    $names['renamed'] = 'held';
+                    // The token is under one of the two names, and a list cannot say which row is the run's.
+                    $names = ['original' => 'unknown', 'renamed' => 'unknown'];
                 }
             }
             $this->observe('renamed_' . $name);
-            // Passing means the server answered 1: it removed the token and the name is free again.
-            $this->observe('revoke_' . $name);
-            $names['renamed'] = 'released';
+            $revoked = false;
+            try {
+                $this->observe('revoke_' . $name);
+                $revoked = true;
+            } finally {
+                if ($revoked) {
+                    // The server answered 1: it removed the token and the name is free again.
+                    $names['renamed'] = 'released';
+                } elseif ($this->outcome('revoke_' . $name) !== 'refused') {
+                    // Unless the server refused, the token may or may not still be there.
+                    $names['renamed'] = 'unknown';
+                }
+            }
             $this->observe('absent_' . $name);
             $this->tokens[$route] = 'absent';
 
@@ -202,10 +218,11 @@ final class TokensSectionFixture
     /**
      * Revoke what this run still holds on one route and accept only evidence that nothing of it is left.
      *
-     * Only a name the run holds is revoked, and only when a list shows it with exactly the run's settings. A name the
-     * run never had is someone else's and is ignored. Any other presence is ambiguous: a held name with other
-     * settings, or a released name that is listed again, may be this run's token or another party's. It is left
-     * untouched and the route stays uncertain for a person to check.
+     * Only a name the run is confirmed to hold is revoked, and only when a list shows it with exactly the run's
+     * settings. A name the run never had is someone else's and is ignored. Any other presence is ambiguous: a held
+     * name with other settings, a released name that is listed again, or any row under a name of unknown standing
+     * may be this run's token or another party's. It is left untouched and the route stays uncertain for a person
+     * to check.
      *
      * @param 'direct'|'bridge' $name
      * @param array{original:Holding,renamed:Holding} $names
@@ -243,8 +260,8 @@ final class TokensSectionFixture
                 ? $route . ':cleanup_unconfirmed'
                 : $route . ':unproven_token_under_run_name';
         }
-        if ($creationUnknown && $before['original'] !== 'settled') {
-            // The creation never showed itself, so it may still take effect after these lists.
+        if ($creationUnknown) {
+            // Absent now, the creation can still take effect; listed, nothing shows the row is this run's.
             $unsettled[] = $route . ':creation_outcome_unknown';
         }
         if ($unsettled === []) {

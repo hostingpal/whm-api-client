@@ -37,7 +37,7 @@ use Throwable;
  */
 final readonly class TokensSectionRecipe
 {
-    public const RECIPE = 'tokens-lifecycle-v3';
+    public const RECIPE = 'tokens-lifecycle-v4';
 
     /** The account variables that hold a cPanel user's notification targets. */
     private const TARGETS = ['contact_email', 'contact_email_2', 'pushbullet_access_token'];
