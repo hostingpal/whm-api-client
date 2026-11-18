@@ -1,0 +1,67 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "CSVImport",
+  "accessor": "csvImport",
+  "class": "CsvImport",
+  "operations": {
+    "uapi:CSVImport/doimport": {
+      "name": "doImport",
+      "method": "POST",
+      "params": {
+        "id": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 94. The selected account needs a prepared import ID. Use type email for mailboxes or fwd for forwarders. This mutation has no rollback."
+        },
+        {
+          "kind": "policy",
+          "text": "cPanel API 2 CSVImport/uploadimport supplies an account-local ID. Process or load the CSV data and apply column mappings with configimport before invoking this method. Keep the ID and staging files private. Mailbox batches can contain passwords. The import leaves its staging files in the account."
+        },
+        {
+          "kind": "policy",
+          "text": "The csvimport feature is required and demo mode is refused on the reviewed server. The handler attempts all configured rows. Inspect each returned row status plus responseMeta()->uapiStatus() and errors(). A failed batch with nonempty rows returns them even if every row failed. Earlier and later rows may have created resources. Reconcile affected mailboxes or forwarders before retrying. Reasons and metadata may contain private values."
+        },
+        {
+          "kind": "policy",
+          "text": "On status 1 a prepared empty batch may return results: null. On status 0 explicit null data or a validated null or empty results list raises ApiErrorException. Missing data, missing status-0 results and malformed rows are payload mismatches. The outer WHM result is always checked."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-18",
+          "note": "The pinned /CSVImport/doimport GET operation declares x-readonly=false and x-rollback=none. Required domain, id and type are scalar fields. The results list describes the outcome for each attempted row. Bind this row field to preserve individually reported effects when the UAPI status is zero.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1CSVImport~1doimport/get/responses/200/content/application~1json/schema/properties/result/properties/data/properties/results"
+        },
+        {
+          "kind": "doc",
+          "version": "cPanel 11.138.0.24 installed source",
+          "date": "2026-11-18",
+          "note": "Cpanel::CSVImport implements uploadimport, processdata/loaddata and configimport. Cpanel::API::CSVImport reads an account-local prepared batch, loops over all rows, adds email accounts or forwarders and marks overall failure if any row failed. Protect the staging ID as a reference to private import data."
+        }
+      ],
+      "outcome": "unchecked",
+      "rows": "results",
+      "response": {
+        "results": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.24",
+              "date": "2026-11-18",
+              "note": "Direct form POST with a freshly prepared header-only forwarder import returned status 1 and an explicit results:null on the disposable account. Preserve this empty-batch representation."
+            }
+          ]
+        }
+      }
+    }
+  }
+}

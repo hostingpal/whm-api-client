@@ -577,7 +577,7 @@ refresh it with `php tools/live-testing/refresh-operations-client.php`.
 | `uapi:CPDAVD/manage_collection` | typed |
 | `uapi:CPDAVD/remove_delegate` | typed |
 | `uapi:CPDAVD/update_delegate` | typed |
-| `uapi:CSVImport/doimport` | untyped |
+| `uapi:CSVImport/doimport` | typed |
 | `uapi:CacheBuster/update` | typed |
 | `uapi:ClamScanner/disinfect_files` | excluded |
 | `uapi:ClamScanner/start_scan` | typed |

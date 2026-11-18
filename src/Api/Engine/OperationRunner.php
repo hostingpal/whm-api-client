@@ -186,7 +186,8 @@ final class OperationRunner
                 if (!is_array($value) || (!$root && !array_key_exists($rows, $value))) {
                     return $read->fail();
                 }
-                if (($root ? $value : $value[$rows]) === []) {
+                $batch = $root ? $value : $value[$rows];
+                if ($batch === [] || $batch === null) {
                     throw new ApiErrorException(
                         'UAPI operation failed; inspect errors() or response metadata.',
                         $response->metadata,

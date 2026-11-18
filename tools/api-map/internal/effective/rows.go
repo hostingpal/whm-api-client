@@ -30,7 +30,9 @@ func (b *builder) rowsPolicy(op model.Operation, v model.Variant, ov overlay.Ope
 		}
 		field = returns.Fields[i].Spec
 	}
-	if field.Type != "list" || field.Nullable || field.Items == nil || field.Items.Type != "object" || field.Items.Nullable {
+	// A prepared empty CSV import returns a null results field on cPanel 11.138.0.24.
+	nullableBatch := op.ID == "uapi:CSVImport/doimport" && ov.Rows == "results"
+	if field.Type != "list" || (field.Nullable && !nullableBatch) || field.Items == nil || field.Items.Type != "object" || field.Items.Nullable {
 		fail()
 		return
 	}

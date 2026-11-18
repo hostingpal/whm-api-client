@@ -49,6 +49,8 @@ trait UapiGroups
 
     private ?CpGreyList $cpGreyListGroup = null;
 
+    private ?CsvImport $csvImportGroup = null;
+
     private ?Dav $davGroup = null;
 
     private ?Dcv $dcvGroup = null;
@@ -395,6 +397,16 @@ trait UapiGroups
     public function cpGreyList(): CpGreyList
     {
         return $this->cpGreyListGroup ??= new CpGreyList($this->run(...));
+    }
+
+    /**
+     * Select the CSVImport operations without making a request.
+     *
+     * The CSVImport module for UAPI.
+     */
+    public function csvImport(): CsvImport
+    {
+        return $this->csvImportGroup ??= new CsvImport($this->run(...));
     }
 
     /**

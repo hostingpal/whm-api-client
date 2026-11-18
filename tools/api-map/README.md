@@ -289,8 +289,9 @@ Operation entries (all keys optional):
   secret-bearing ones default to POST, and GET is refused for secret-bearing ones.
 - `rows`: a nonempty declared result-field name for an unchecked UAPI object
   batch, or `$` selecting a nonnullable root list of nonnullable objects, without
-  void, optional_payload or unwrap. Root, list and object rows must
-  be nonnullable. Exact source hash/pointer evidence binds the selected row field
+  void, optional_payload or unwrap. The root and each object row must be nonnullable.
+  Only CSVImport/doimport permits its selected `results` field to be null. A prepared
+  empty batch returns it on status 1. Status 0 with a null list raises API error. Exact source hash/pointer evidence binds the selected row field
   in the reviewed result/data response schema; other source layouts are unsupported.
   Status 0 plus explicit null or a fully validated empty row list raises API error;
   missing data/rows or malformed known fields remain payload mismatches. Status 1

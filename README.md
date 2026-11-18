@@ -4616,6 +4616,21 @@ metadata/release gaps and deferred consumer integration remain unwaived.
 Historical PR95 provenance finding I1 / `whm-api-client-qrk` remains open.
 
 
+### UAPI mailbox and forwarder CSV imports
+
+`$account->csvImport()->doImport($domain, $preparedId, 'email')` creates mailboxes
+from a prepared batch. Use `'fwd'` for forwarders. Supply the ID from the selected
+account's cPanel API 2 CSVImport upload, parsing and column-configuration workflow.
+The staging files may contain passwords and remain in the account after import.
+
+The method makes one POST. The server can create rows before and after a failed
+row, without rollback. A nonempty list returns even when every row failed.
+Inspect each row's `status` and the account handle's `responseMeta()->uapiStatus()`
+and `errors()` before deciding which addresses need attention. Verify mailbox or
+forwarder inventory before any retry. A successful header-only batch can return
+`['results' => null]`. Failed imports with explicit null data or an empty or null
+row list raise `ApiErrorException`. [Contract and route-specific evidence](docs/agents/modules/uapi-csv-import.md).
+
 ### UAPI Mailboxes (2026-10-31)
 
 `uapi()->mailboxes()` covers all five pinned Mailboxes functions. The two inventory
