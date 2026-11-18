@@ -395,8 +395,8 @@ final readonly class Dns
      * Observed: On cPanel 11.138.0.24 a sourceIp that matched no record still returned two TXT rows and increased the
      * zone serial. The server code on that version explains it: every SPF TXT record is rewritten and reported whether
      * or not an address matched, A records whose address equals a source address are replaced (names starting with ftp.
-     * receive the FTP address), and each processed zone gets a new serial and is synchronized and reloaded. An empty
-     * list is therefore not what a call that replaced no address returns.
+     * receive the FTP address), and each processed zone gets a new serial and is synchronized and reloaded. A call that
+     * replaces no address can still return SPF TXT rows.
      *
      * Policy: Server code on cPanel 11.138.0.24, read but not observed at runtime because both test domains shared one
      * zone: detection follows the documented order but runs once per call, not once per zone. The first zone processed

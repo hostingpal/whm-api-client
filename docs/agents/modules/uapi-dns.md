@@ -73,8 +73,9 @@ Read [WHM DNS management](whm-dns.md) for the shared rules.
 - Observed: a `sourceIp` that matched no record still returned two `TXT` rows and
   increased the zone serial. Source read: every SPF `TXT` record is rewritten and
   reported whether or not an address matched, and each processed zone gets a new
-  serial and is synchronized and reloaded. An empty list is therefore not what a
-  "nothing replaced" call returns.
+  serial and is synchronized and reloaded. A call that replaces no address can still
+  return SPF `TXT` rows. The reverse also holds: a call that skips every temporary
+  domain replaces no address and returns an empty list (see below).
 - Pinned rule for an omitted `sourceIp`, per zone: the zone root's `A` record if its
   address is not a loopback address; otherwise the first `A` record in the zone file
   whose address is not a loopback address, which can belong to another name; with no
