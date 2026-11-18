@@ -4620,14 +4620,17 @@ Historical PR95 provenance finding I1 / `whm-api-client-qrk` remains open.
 
 `$account->csvImport()->doImport($domain, $preparedId, 'email')` creates mailboxes
 from a prepared batch. Use `'fwd'` for forwarders. This client runs the final
-import. Prepare the file in the target cPanel account using **Email → Address
-Importer**. Choose the batch
-type, upload the file, select the delimiter and header setting, then map the
-columns, select the domain and click **Next**. On cPanel 11.138.0.24 the review
-page has already prepared the batch. Take the `csvimportid` value from its
-**Finish** link and pass that value as `$preparedId`. Leave **Finish** unclicked
-when completing the import with this client. Keep the ID and authenticated URL
-private. [cPanel Address Importer guide](https://docs.cpanel.net/cpanel/email/address-importer/).
+import. The disposable-account live tests prepared each batch with the account's
+cPanel API 2 upload, parsing and column-configuration functions.
+
+The following UI path comes from reading the Jupiter Address Importer templates
+installed on cPanel 11.138.0.24. In the target account, open **Email → Address
+Importer**, choose the batch type, upload the file and select its delimiter and
+header setting. Map the columns, select the domain and click **Next**. The review
+page template prepares the batch and places its `csvimportid` in the **Finish**
+link. Pass that value as `$preparedId` and leave **Finish** unclicked when the
+client will perform the import. Keep the ID and authenticated URL private.
+[cPanel Address Importer guide](https://docs.cpanel.net/cpanel/email/address-importer/).
 
 After reconciling the import, use the account's File Manager to permanently delete
 the three files for that specific ID in `~/tmp/cpcsvimport/` on 11.138.0.24:
