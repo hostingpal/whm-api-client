@@ -496,7 +496,22 @@ an inline multipart string contract.
 The fields of a documented `application/x-www-form-urlencoded` request body
 become parameters after the query parameters (required only when the body and
 its schema require them) and force POST, which form-encodes every operation
-parameter in the body. Reviewed UAPI operations may select `body: "multipart"` with operation-level evidence.
+parameter in the body.
+
+The WHM `addzonerecord` and `editzonerecord` overlays select `form_record`.
+The generator resolves the source discriminator and checks that every mapped
+alternative appears once in `anyOf`. Each alternative extends the same base
+through `allOf`. Common fields become named scalar arguments and type-specific
+fields become one sensitive `record` argument with a PHPStan array-shape union.
+The runtime sends its members as individual form fields. The overlay binds the
+source hash and request-body pointer and separately records the versioned handler
+evidence for `common` and `variants` field additions, omissions and requiredness.
+`labels` corrects a display label to its wire discriminator. On edit,
+`retain_existing` allows partial fields of one variant with an optional type.
+The positive one-based line guard prevents the server from normalizing a negative
+index to a different target.
+
+Reviewed UAPI operations may select `body: "multipart"` with operation-level evidence.
 Only inline, non-nullable string fields are supported. Query declarations may repeat
 body fields only when their schemas match (documentation annotations are ignored);
 the query declaration retains its requiredness. Every query field must have a matching

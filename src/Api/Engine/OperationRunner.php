@@ -92,7 +92,9 @@ final class OperationRunner
             $uploads = UploadList::parts($arguments[$descriptor['php']] ?? null, $descriptor['prefix']);
             unset($arguments[$descriptor['php']]);
         }
-        $parameters = ArgumentEncoder::encode($params, $arguments);
+        $parameters = isset($spec['form_record'])
+            ? FormRecord::from($spec)->encode($params, $arguments)
+            : ArgumentEncoder::encode($params, $arguments);
         if ($uploads !== null) {
             $body = MultipartInput::generated($uploads, $parameters);
         }

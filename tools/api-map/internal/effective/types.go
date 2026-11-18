@@ -70,12 +70,32 @@ type Param struct {
 	Description string
 	Required    bool
 	Sensitive   bool
+	PositiveInt bool `json:",omitempty"` // guard against server normalization of a negative edit line
 	RejectEmpty bool `json:",omitempty"` // explicit nonblank, nonzero target policy
 	OmitEmpty   bool `json:",omitempty"` // explicit omission of [] for optional repeat string-list inputs
 }
 
+// FormRecord describes a single discriminated argument flattened into form fields.
+type FormRecord struct {
+	Alias    string
+	Required bool
+	Untagged bool
+	Variants []FormVariant
+}
+type FormVariant struct {
+	Tag    string
+	Fields []FormField
+}
+type FormField struct {
+	Name        string
+	Type        string
+	Description string
+	Required    bool
+}
+
 // Operation owns one canonical response/route contract and its public input mappings.
 type Operation struct {
+	FormRecord            *FormRecord                    `json:",omitempty"`
 	MultipartUploadFamily *overlay.MultipartUploadFamily `json:",omitempty"`
 	MultipartUpload       *overlay.MultipartUpload       `json:",omitempty"`
 	MultipartUploads      *overlay.MultipartUploads      `json:",omitempty"`

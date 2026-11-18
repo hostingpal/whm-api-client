@@ -54,6 +54,10 @@ func Validate(set Set) []string {
 				len(op.AdditionalMethods) > 0 || op.Function != "" || op.Rows != "" || op.OptionalPayload || op.Variant != "" || op.Body != "" || len(op.BodyFields) > 0 || op.MultipartUploads != nil || op.MultipartUpload != nil || op.MultipartUploadFamily != nil) {
 				problems = append(problems, id+": excluded operations take no other settings")
 			}
+			if op.FormRecord != nil && ((id != "whm1:addzonerecord" && id != "whm1:editzonerecord") ||
+				op.Method != "POST" || op.Exclude != nil || op.Body != "" || len(op.Order) != 0 || len(op.Params) != 0 || len(op.AdditionalMethods) != 0) {
+				problems = append(problems, id+": form_record requires the reviewed WHM DNS form POST without other input mappings")
+			}
 			if op.Rows != "" && (file.Family != "uapi" || op.Outcome != "unchecked" || op.Void || op.OptionalPayload || op.Unwrap != "") {
 				problems = append(problems, id+": rows requires unchecked UAPI without void, optional_payload or unwrap")
 			}

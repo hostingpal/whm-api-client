@@ -16,6 +16,7 @@ use Nyholm\Psr7\Response;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
+use ReflectionMethod;
 use ReflectionParameter;
 use SensitiveParameter;
 use SensitiveParameterValue;
@@ -72,6 +73,31 @@ final class WhmDnsManagementTest extends TestCase
         foreach (self::reviewedKeyContracts() as $name => $case) {
             yield $name => [$case];
         }
+        yield 'partial SOA edit keeps case-sensitive line count and minimum field' => [[
+            'editZoneRecord', 'editzonerecord', 'POST',
+            ['domain' => 'example.test', 'line' => 3, 'record' => ['type' => 'SOA', 'minimum' => 900, 'Lines' => 7]],
+            'domain=example.test&line=3&type=SOA&Lines=7&minimum=900', null, null,
+        ]];
+        yield 'explicit CNAME apex edit sends flatten controls' => [[
+            'editZoneRecord', 'editzonerecord', 'POST',
+            ['domain' => 'example.test', 'name' => 'example.test.', 'line' => 8,
+                'record' => ['type' => 'CNAME', 'flatten' => 1, 'flatten_to' => '192.0.2.20',
+                    'cname' => 'alias.example.test.']],
+            'domain=example.test&line=8&name=example.test.&type=CNAME&cname=alias.example.test.'
+                . '&flatten=1&flatten_to=192.0.2.20', null, null,
+        ]];
+        yield 'delegated DS uses handler fields' => [[
+            'addZoneRecord', 'addzonerecord', 'POST',
+            ['domain' => 'example.test', 'name' => 'child.example.test.',
+                'record' => ['type' => 'DS', 'keytag' => 42, 'algorithm' => 13, 'digtype' => 2, 'digest' => 'ABCD']],
+            'domain=example.test&name=child.example.test.&type=DS&algorithm=13&digest=ABCD&digtype=2&keytag=42',
+            null, null,
+        ]];
+        yield 'edit TTL checks serial and retains record data' => [[
+            'editZoneRecord', 'editzonerecord', 'POST',
+            ['domain' => 'example.test', 'line' => 9, 'ttl' => 300, 'serialnum' => '2026111801'],
+            'domain=example.test&line=9&serialnum=2026111801&ttl=300', null, null,
+        ]];
         $deleted = self::operations()['delete_domain'];
         $deleted[5] = '{"type":null,"username":null}';
         $deleted[6] = ['type' => null, 'username' => null];
@@ -88,6 +114,13 @@ final class WhmDnsManagementTest extends TestCase
                 ['algoNum' => 13, 'domain' => 'example.test', 'keyType' => 'ksk', 'active' => false, 'keySize' => 256],
                 'algo_num=13&domain=example.test&key_type=ksk&active=0&key_size=256',
                 '{"new_key_id":"12","future":"ignored"}', ['new_key_id' => 12]],
+            'addzonerecord' => ['addZoneRecord', 'addzonerecord', 'POST',
+                ['domain' => 'example.test', 'name' => 'proof.example.test.',
+                    'record' => ['type' => 'TXT', 'txtdata' => 'token + & %']],
+                'domain=example.test&name=proof.example.test.&type=TXT&txtdata=token%20%2B%20%26%20%25', null, null],
+            'editzonerecord' => ['editZoneRecord', 'editzonerecord', 'POST',
+                ['domain' => 'example.test', 'line' => 7, 'record' => ['address' => '192.0.2.21']],
+                'domain=example.test&line=7&address=192.0.2.21', null, null],
             'adddns' => ['addDns', 'adddns', 'POST',
                 ['domain' => 'example.test', 'ip' => '192.0.2.1', 'ipv6' => '2001:db8::1',
                     'template' => 'custom + template', 'trueowner' => 'fixture'],
@@ -423,6 +456,34 @@ final class WhmDnsManagementTest extends TestCase
             ) {
                 yield $source . ' to ' . $target => [$source, $target];
             }
+        }
+    }
+
+    /** @return iterable<string, array{int}> */
+    public static function nonpositiveEditLines(): iterable
+    {
+        yield 'zero' => [0];
+        yield 'negative' => [-1];
+    }
+
+    #[DataProvider('nonpositiveEditLines')]
+    public function testNonpositiveEditLineClearsMetadataWithoutDispatch(int $line): void
+    {
+        [$client, $http] = self::client();
+        $whm = $client->whm();
+        $dns = $whm->dns();
+        $http->addResponse(new Response(200, [], self::envelope('editzonerecord', null)));
+        $dns->editZoneRecord(domain: 'example.test', line: 1);
+        self::assertNotNull($whm->responseMeta());
+
+        $http->addResponse(new Response(200, [], self::envelope('editzonerecord', null)));
+        try {
+            // Exercise the runtime guard with values outside the generated positive-int PHPDoc.
+            (new ReflectionMethod(Dns::class, 'editZoneRecord'))->invoke($dns, 'example.test', $line);
+            self::fail('An edit with a nonpositive line reached the transport.');
+        } catch (InvalidArgumentException) {
+            self::assertNull($whm->responseMeta());
+            self::assertCount(1, $http->getRequests());
         }
     }
 

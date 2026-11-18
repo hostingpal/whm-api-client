@@ -95,7 +95,26 @@ type MultipartUploadFamily struct {
 	Routes string `json:"routes"`
 }
 
+// FormRecord opts into the two reviewed WHM DNS forms. Changes describe
+// differences between the pinned OpenAPI components and the reviewed handler.
+type FormRecord struct {
+	Common         FormRecordChanges            `json:"common"`
+	Variants       map[string]FormRecordChanges `json:"variants,omitempty"`
+	Labels         map[string]string            `json:"labels,omitempty"`
+	RetainExisting bool                         `json:"retain_existing,omitempty"`
+}
+type FormRecordChanges struct {
+	Add      map[string]FormRecordField `json:"add,omitempty"`
+	Omit     []string                   `json:"omit,omitempty"`
+	Required *[]string                  `json:"required,omitempty"`
+}
+type FormRecordField struct {
+	Type        string `json:"type"`
+	Description string `json:"description"`
+}
+
 type Operation struct {
+	FormRecord            *FormRecord            `json:"form_record,omitempty"`
 	MultipartUploadFamily *MultipartUploadFamily `json:"multipart_upload_family,omitempty"`
 	MultipartUpload       *MultipartUpload       `json:"multipart_upload,omitempty"`
 	MultipartUploads      *MultipartUploads      `json:"multipart_uploads,omitempty"`

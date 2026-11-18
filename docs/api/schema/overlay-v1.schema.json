@@ -43,6 +43,28 @@
       "required": ["kind", "text"],
       "additionalProperties": false
     },
+    "formRecordChanges": {
+      "type": "object",
+      "properties": {
+        "required": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "omit": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "add": {"type": "object", "additionalProperties": {
+          "type": "object", "required": ["type", "description"], "additionalProperties": false,
+          "properties": {"type": {"enum": ["int", "string"]}, "description": {"type": "string", "minLength": 1}}
+        }}
+      },
+      "additionalProperties": false
+    },
+    "formRecord": {
+      "type": "object",
+      "properties": {
+        "common": {"$ref": "#/$defs/formRecordChanges"},
+        "variants": {"type": "object", "additionalProperties": {"$ref": "#/$defs/formRecordChanges"}},
+        "labels": {"type": "object", "additionalProperties": {"type": "string", "pattern": "^[A-Z][A-Z0-9]*$"}},
+        "retain_existing": {"const": true}
+      },
+      "required": ["common"], "additionalProperties": false
+    },
     "multipartUpload": {
       "type": "object",
       "properties": {
@@ -476,6 +498,7 @@
     "operation": {
       "type": "object",
       "properties": {
+        "form_record": {"$ref": "#/$defs/formRecord"},
         "multipart_upload_family": {"$ref": "#/$defs/multipartUploadFamily"},
         "multipart_upload": {"$ref": "#/$defs/multipartUpload"},
         "multipart_uploads": {"$ref": "#/$defs/multipartUploads"},

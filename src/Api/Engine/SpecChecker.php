@@ -131,11 +131,14 @@ final class SpecChecker
             OperationSpec::text($spec, 'module');
         }
 
-        self::params($spec['params'] ?? null, OperationSpec::body($spec), isset($spec['module']));
+        self::params($spec);
         if (OperationSpec::body($spec) === RequestBodyFormat::Json) {
             self::jsonBody($spec);
         } elseif (array_key_exists('json_body', $spec)) {
             throw new LogicException('JSON body metadata requires JSON encoding.');
+        }
+        if (array_key_exists('form_record', $spec)) {
+            FormRecord::from($spec);
         }
         if (array_key_exists('multipart_upload_family', $spec)) {
             UploadFamily::descriptor($spec);
@@ -299,9 +302,16 @@ final class SpecChecker
         }
     }
 
-    /** Check every parameter spec, whether or not a call supplies its argument. */
-    private static function params(mixed $params, RequestBodyFormat $body, bool $uapi): void
+    /**
+     * Check every parameter spec, whether or not a call supplies its argument.
+     *
+     * @param array<mixed> $spec
+     */
+    private static function params(array $spec): void
     {
+        $params = $spec['params'] ?? null;
+        $body = OperationSpec::body($spec);
+        $uapi = isset($spec['module']);
         if (!is_array($params)) {
             throw new LogicException('Operation spec is missing "params".');
         }
@@ -349,6 +359,15 @@ final class SpecChecker
                 && ($param['omit_empty'] !== true || $param['encoding'] !== 'repeat')
             ) {
                 throw new LogicException('Invalid "omit_empty" parameter spec.');
+            }
+
+            if (
+                array_key_exists('positive_int', $param)
+                && ($param['positive_int'] !== true || ($spec['function'] ?? null) !== 'editzonerecord'
+                    || $uapi || ($spec['method'] ?? null) !== 'POST' || $body !== RequestBodyFormat::Form
+                    || $wire !== 'line' || $param['encoding'] !== 'scalar' || array_key_exists('reject_empty', $param))
+            ) {
+                throw new LogicException('Invalid "positive_int" parameter spec.');
             }
 
             if (

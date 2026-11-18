@@ -202,7 +202,16 @@ func (b *builder) operation(op model.Operation, v model.Variant, ov overlay.Oper
 	result.PHPName = b.methodName(op, ov)
 	result.Constant = b.constant(op, result.PHPName)
 	result.Alias = Pascal(result.PHPName) + "Result"
-	result.Params = b.params(op, v, ov, body)
+	if ov.FormRecord != nil {
+		record, params, err := b.formRecord(op, v, ov, node, result.PHPName)
+		if err != nil {
+			b.problem(op.ID + ": form record " + err.Error())
+			return Operation{}, "", false
+		}
+		result.FormRecord, result.Params = record, params
+	} else {
+		result.Params = b.params(op, v, ov, body)
+	}
 	if ov.MultipartUploadFamily != nil {
 		result.MultipartUploadFamily = b.multipartUploadFamily(op, v, ov, node, &result.Params)
 	}
@@ -317,7 +326,7 @@ func (b *builder) methodName(op model.Operation, ov overlay.Operation) string {
 // only when the body is required and its schema requires the field. It reports
 // false, with a problem, for any other body, which is never dropped silently.
 func (b *builder) formBody(op model.Operation, v model.Variant, ov overlay.Operation, node map[string]any) ([]model.Parameter, bool) {
-	if ov.Body == "json" {
+	if ov.Body == "json" || ov.FormRecord != nil {
 		return nil, true
 	}
 	if ov.Body == "multipart" {
@@ -757,7 +766,7 @@ func (b *builder) finish(groups map[string]*Group) {
 			for _, method := range op.Methods() {
 				for _, p := range method.Params {
 					alias := ""
-					if p.Encoding == "json" {
+					if p.Encoding == "json" || p.Encoding == "form_record" {
 						alias = p.DocType
 					} else if p.Records != nil {
 						alias = p.Records.Alias

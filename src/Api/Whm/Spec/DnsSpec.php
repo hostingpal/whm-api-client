@@ -57,6 +57,106 @@ final class DnsSpec
         ],
     ];
 
+    public const ADDZONERECORD = [
+        'function' => 'addzonerecord',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'form_record' => [
+            'php' => 'record',
+            'discriminator' => 'type',
+            'required' => true,
+            'variants' => [
+                'A' => [
+                    'address' => ['type' => 'string', 'required' => true],
+                ],
+                'A6' => [
+                    'address' => ['type' => 'string', 'required' => false],
+                    'prefix' => ['type' => 'int', 'required' => true],
+                    'refer' => ['type' => 'string', 'required' => false],
+                ],
+                'AAAA' => [
+                    'address' => ['type' => 'string', 'required' => true],
+                ],
+                'AFSDB' => [
+                    'hostname' => ['type' => 'string', 'required' => true],
+                    'subtype' => ['type' => 'int', 'required' => true],
+                ],
+                'ALIAS' => [
+                    'alias' => ['type' => 'string', 'required' => true],
+                ],
+                'CAA' => [
+                    'flag' => ['type' => 'int', 'required' => true],
+                    'tag' => ['type' => 'string', 'required' => true],
+                    'value' => ['type' => 'string', 'required' => true],
+                ],
+                'CNAME' => [
+                    'cname' => ['type' => 'string', 'required' => true],
+                ],
+                'DNAME' => [
+                    'dname' => ['type' => 'string', 'required' => true],
+                ],
+                'DS' => [
+                    'algorithm' => ['type' => 'int', 'required' => true],
+                    'digest' => ['type' => 'string', 'required' => true],
+                    'digtype' => ['type' => 'int', 'required' => true],
+                    'keytag' => ['type' => 'int', 'required' => true],
+                ],
+                'HINFO' => [
+                    'cpu' => ['type' => 'string', 'required' => true],
+                    'os' => ['type' => 'string', 'required' => true],
+                ],
+                'LOC' => [
+                    'altitude' => ['type' => 'string', 'required' => false],
+                    'horiz_pre' => ['type' => 'int', 'required' => false],
+                    'latitude' => ['type' => 'string', 'required' => true],
+                    'longitude' => ['type' => 'string', 'required' => true],
+                    'size' => ['type' => 'int', 'required' => false],
+                    'vert_pre' => ['type' => 'int', 'required' => false],
+                ],
+                'MX' => [
+                    'exchange' => ['type' => 'string', 'required' => true],
+                    'preference' => ['type' => 'int', 'required' => true],
+                ],
+                'NS' => [
+                    'nsdname' => ['type' => 'string', 'required' => true],
+                ],
+                'PTR' => [
+                    'ptrdname' => ['type' => 'string', 'required' => true],
+                ],
+                'RP' => [
+                    'mbox' => ['type' => 'string', 'required' => true],
+                    'txtdname' => ['type' => 'string', 'required' => true],
+                ],
+                'SOA' => [
+                    'Lines' => ['type' => 'int', 'required' => false],
+                    'expire' => ['type' => 'int', 'required' => true],
+                    'minimum' => ['type' => 'int', 'required' => true],
+                    'mname' => ['type' => 'string', 'required' => true],
+                    'refresh' => ['type' => 'int', 'required' => true],
+                    'retry' => ['type' => 'int', 'required' => true],
+                    'rname' => ['type' => 'string', 'required' => true],
+                    'serial' => ['type' => 'int', 'required' => true],
+                ],
+                'SRV' => [
+                    'port' => ['type' => 'int', 'required' => true],
+                    'priority' => ['type' => 'int', 'required' => true],
+                    'target' => ['type' => 'string', 'required' => true],
+                    'weight' => ['type' => 'int', 'required' => true],
+                ],
+                'TXT' => [
+                    'txtdata' => ['type' => 'string', 'required' => true],
+                ],
+            ],
+        ],
+        'params' => [
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+            'name' => ['name' => 'name', 'encoding' => 'scalar'],
+            'class' => ['name' => 'class', 'encoding' => 'scalar'],
+            'ttl' => ['name' => 'ttl', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
     public const CLUSTER_MEMBER_HAS_TRUST_WITH = [
         'function' => 'cluster_member_has_trust_with',
         'method' => 'GET',
@@ -151,6 +251,111 @@ final class DnsSpec
                 ],
             ],
         ],
+    ];
+
+    public const EDITZONERECORD = [
+        'function' => 'editzonerecord',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'form_record' => [
+            'php' => 'record',
+            'discriminator' => 'type',
+            'required' => false,
+            'untagged' => true,
+            'variants' => [
+                'A' => [
+                    'address' => ['type' => 'string', 'required' => false],
+                ],
+                'A6' => [
+                    'address' => ['type' => 'string', 'required' => false],
+                    'prefix' => ['type' => 'int', 'required' => false],
+                    'refer' => ['type' => 'string', 'required' => false],
+                ],
+                'AAAA' => [
+                    'address' => ['type' => 'string', 'required' => false],
+                ],
+                'AFSDB' => [
+                    'hostname' => ['type' => 'string', 'required' => false],
+                    'subtype' => ['type' => 'int', 'required' => false],
+                ],
+                'ALIAS' => [
+                    'alias' => ['type' => 'string', 'required' => false],
+                ],
+                'CAA' => [
+                    'flag' => ['type' => 'int', 'required' => false],
+                    'tag' => ['type' => 'string', 'required' => false],
+                    'value' => ['type' => 'string', 'required' => false],
+                ],
+                'CNAME' => [
+                    'cname' => ['type' => 'string', 'required' => false],
+                    'flatten' => ['type' => 'int', 'required' => false],
+                    'flatten_to' => ['type' => 'string', 'required' => false],
+                ],
+                'DNAME' => [
+                    'dname' => ['type' => 'string', 'required' => false],
+                ],
+                'DS' => [
+                    'algorithm' => ['type' => 'int', 'required' => false],
+                    'digest' => ['type' => 'string', 'required' => false],
+                    'digtype' => ['type' => 'int', 'required' => false],
+                    'keytag' => ['type' => 'int', 'required' => false],
+                ],
+                'HINFO' => [
+                    'cpu' => ['type' => 'string', 'required' => false],
+                    'os' => ['type' => 'string', 'required' => false],
+                ],
+                'LOC' => [
+                    'altitude' => ['type' => 'string', 'required' => false],
+                    'horiz_pre' => ['type' => 'int', 'required' => false],
+                    'latitude' => ['type' => 'string', 'required' => false],
+                    'longitude' => ['type' => 'string', 'required' => false],
+                    'size' => ['type' => 'int', 'required' => false],
+                    'vert_pre' => ['type' => 'int', 'required' => false],
+                ],
+                'MX' => [
+                    'exchange' => ['type' => 'string', 'required' => false],
+                    'preference' => ['type' => 'int', 'required' => false],
+                ],
+                'NS' => [
+                    'nsdname' => ['type' => 'string', 'required' => false],
+                ],
+                'PTR' => [
+                    'ptrdname' => ['type' => 'string', 'required' => false],
+                ],
+                'RP' => [
+                    'mbox' => ['type' => 'string', 'required' => false],
+                    'txtdname' => ['type' => 'string', 'required' => false],
+                ],
+                'SOA' => [
+                    'Lines' => ['type' => 'int', 'required' => false],
+                    'expire' => ['type' => 'int', 'required' => false],
+                    'minimum' => ['type' => 'int', 'required' => false],
+                    'mname' => ['type' => 'string', 'required' => false],
+                    'refresh' => ['type' => 'int', 'required' => false],
+                    'retry' => ['type' => 'int', 'required' => false],
+                    'rname' => ['type' => 'string', 'required' => false],
+                    'serial' => ['type' => 'int', 'required' => false],
+                ],
+                'SRV' => [
+                    'port' => ['type' => 'int', 'required' => false],
+                    'priority' => ['type' => 'int', 'required' => false],
+                    'target' => ['type' => 'string', 'required' => false],
+                    'weight' => ['type' => 'int', 'required' => false],
+                ],
+                'TXT' => [
+                    'txtdata' => ['type' => 'string', 'required' => false],
+                ],
+            ],
+        ],
+        'params' => [
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+            'line' => ['name' => 'line', 'encoding' => 'scalar', 'positive_int' => true],
+            'name' => ['name' => 'name', 'encoding' => 'scalar'],
+            'class' => ['name' => 'class', 'encoding' => 'scalar'],
+            'serialnum' => ['name' => 'serialnum', 'encoding' => 'scalar'],
+            'ttl' => ['name' => 'ttl', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
     ];
 
     public const ENABLE_DNSSEC_FOR_DOMAINS = [

@@ -223,6 +223,10 @@ func groupClass(g effective.Group) string {
 		w.typeAlias(op.Alias, *spec)
 	}
 	for _, op := range g.Operations {
+		if d := op.FormRecord; d != nil {
+			w.line(" *")
+			w.docTag("", "@phpstan-type "+d.Alias+" "+formRecordShape(d))
+		}
 		if d := op.JSONBody; d != nil {
 			w.line(" *")
 			w.docTag("", "@phpstan-type "+d.Alias+" "+inputShape(d.Schema, ""))
@@ -376,7 +380,13 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 	for _, p := range op.Params {
 		jsonField = jsonField || p.Encoding == "json"
 	}
-	if jsonField {
+	if op.FormRecord != nil {
+		if op.FormRecord.Untagged {
+			w.line(indent + " * @throws InvalidArgumentException If the record fields are invalid or the edit line is not positive.")
+		} else {
+			w.line(indent + " * @throws InvalidArgumentException If the record type or its fields are invalid.")
+		}
+	} else if jsonField {
 		w.line(indent + " * @throws InvalidArgumentException If a structured JSON field is invalid; no request is sent.")
 	} else if op.JSONBody != nil {
 		if g.Family == "uapi" {
@@ -545,6 +555,9 @@ func specClass(g effective.Group) string {
 			w.line("            'filename_forbidden' => " + phpString(d.FilenameForbidden) + ",")
 			w.line("        ],")
 		}
+		if d := op.FormRecord; d != nil {
+			renderFormRecord(w, d)
+		}
 		if d := op.JSONBody; d != nil {
 			w.line("        'json_body' => [")
 			w.line("            'php' => " + phpString(d.PHP) + ",")
@@ -558,10 +571,13 @@ func specClass(g effective.Group) string {
 		} else {
 			w.line("        'params' => [")
 			for _, p := range op.Params {
-				if (p.Input != nil && p.Encoding != "json") || (op.MultipartUploads != nil && p.PHP == op.MultipartUploads.PHP) || (op.MultipartUploadFamily != nil && p.PHP == op.MultipartUploadFamily.PHP) {
+				if p.Encoding == "form_record" || (p.Input != nil && p.Encoding != "json") || (op.MultipartUploads != nil && p.PHP == op.MultipartUploads.PHP) || (op.MultipartUploadFamily != nil && p.PHP == op.MultipartUploadFamily.PHP) {
 					continue
 				}
 				setting := ""
+				if p.PositiveInt {
+					setting = ", 'positive_int' => true"
+				}
 				if p.OmitEmpty {
 					setting = ", 'omit_empty' => true"
 				}
@@ -622,6 +638,9 @@ func specClass(g effective.Group) string {
 						w.line(fmt.Sprintf("                    'start' => %d,", *c.Start))
 					}
 					w.line("                ],")
+				}
+				if p.PositiveInt {
+					w.line("                'positive_int' => true,")
 				}
 				if p.OmitEmpty {
 					w.line("                'omit_empty' => true,")
@@ -783,7 +802,7 @@ func uniqueSorted(values []string) []string {
 
 // isMultiple identifies encodings whose array inputs require element PHPDoc.
 func isMultiple(encoding string) bool {
-	return encoding == "records" || encoding == "collection" || encoding == "repeat" || encoding == "numbered" || encoding == "suffix-numbered" || encoding == "suffix-numbered-scalar"
+	return encoding == "form_record" || encoding == "records" || encoding == "collection" || encoding == "repeat" || encoding == "numbered" || encoding == "suffix-numbered" || encoding == "suffix-numbered-scalar"
 }
 
 // publicMethods expands input-only aliases without adding canonical operations.
