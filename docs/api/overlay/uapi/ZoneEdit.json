@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "ZoneEdit",
+  "accessor": "zoneEdit",
+  "class": "ZoneEdit",
+  "operations": {
+    "uapi:ZoneEdit/resetzone": {
+      "name": "resetZone",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 138 with the DNS role enabled. Resetting an account-owned zone applies the server's default template with no rollback. Custom records the template does not recreate can be lost, including manually added MX, TXT and CNAME records. Back up the zone before calling."
+        },
+        {
+          "kind": "policy",
+          "text": "Inspect the returned row's result.status for 1 before treating the rebuild as successful. A 0 reports rebuild failure, with details in result.statusmsg. The outer UAPI status records dispatch. The optional nullable checkmx object contains upstream mail-routing metadata whose fields the pin leaves unspecified."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-18",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1ZoneEdit~1resetzone/get",
+          "note": "The GET variant documents a destructive, non-read-only zone rebuild with no rollback. Send the one required domain in a form POST. Its flattened response properties.data describes the list of rebuild replies. The installed 11.138.0.24 Cpanel/API/ZoneEdit.pm explicitly configures FromAPI2 with returns=list, and Cpanel/ZoneEdit.pm returns one result row from the caller-authorized RESET admin action."
+        }
+      ]
+    }
+  }
+}

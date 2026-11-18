@@ -413,6 +413,7 @@ remain unobserved under `8x0.2.59`.
 | `uapi()->cpDavd()` | `listUsers()`, `listDelegates()`, `addDelegate()`, `updateDelegate()`, `removeDelegate()`, `manageCollection()` |
 | `uapi()->postgresql()` | `createDatabase()`, `createUser()`, `deleteDatabase()`, `deleteUser()`, `getRestrictions()`, `grantAllPrivileges()`, `listDatabases()`, `listUsers()`, `renameDatabase()`, `renameUser()`, `renameUserNoPassword()`, `revokeAllPrivileges()`, `setPassword()`, `updatePrivileges()` |
 | `uapi()->dns()` | `lookup()`, `fetchCpanelGeneratedDomains()`, `parseZone()`, `hasLocalAuthority()`, `ensureDomainsResideOnlyLocally()`, `ensureDomainsUseRecognizedNameservers()`, `isAliasAvailable()`, `isHttpsAvailable()`, `isSvcbAvailable()`, and the zone writes `massEditZone()` and `swapIpInZones()` |
+| `uapi()->zoneEdit()` | `resetZone()` rebuilds an account-owned DNS zone using the server template. Inspect the returned rebuild status. |
 | `uapi()->dnssec()` | All 12 pinned functions: key lifecycle, DNSKEY/private-key exports, DS records and NSEC settings. `fetchDsRecords()` and `exportZoneDnskey()` use GET; the other ten use form POST, including private-key export. |
 | `uapi()->dynamicDns()` | All 5 pinned functions: `listDomains()` uses GET; `create()`, `recreate()`, `setDescription()` and `delete()` use form POST. |
 
@@ -2329,6 +2330,25 @@ remove-record pass was rejected before execution with `[Modify Shared Resources]
 and was not retried. Those corrections remain source/offline evidence. Server-wide
 writes and other remaining variants stay under `8x0.2.42`; existing artifacts are
 unchanged.
+
+### Reset an account's DNS zone
+
+On cPanel 138 and later with the DNS role enabled, `resetZone()` replaces an
+account-owned zone with the server's default template. Back up custom records
+first. The reset has no rollback and custom MX, TXT and CNAME records can be lost.
+
+```php
+$rows = $client->uapi('example')->zoneEdit()->resetZone(domain: 'example.com');
+$result = $rows[0]['result'] ?? [];
+if (($result['status'] ?? null) !== 1) {
+    throw new RuntimeException($result['statusmsg'] ?? 'DNS zone rebuild was not confirmed.');
+}
+```
+
+UAPI status 1 confirms dispatch. The nested `result.status` is the rebuild
+outcome. The optional `checkmx` object contains upstream mail-routing metadata
+and may be omitted or null. If response validation fails after dispatch, read
+the zone before deciding whether another reset is appropriate.
 
 ### UAPI DNS zone writes
 

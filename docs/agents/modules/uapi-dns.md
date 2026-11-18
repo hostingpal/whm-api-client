@@ -120,3 +120,23 @@ unchanged across that request. See the [live recipe](../../../tools/live-verify/
 for the evidence policy and command. The v4 run inspected the original responses
 and verified that the optional resource-record field `dname_raw` was a string equal
 to decoded `dname_b64`. The typed parse now preserves this field when present.
+
+## ZoneEdit/resetzone
+
+The cPanel 138 pin documents a destructive rebuild from the server template, with
+no rollback. The DNS role must be enabled. The installed 11.138.0.24 handler in
+`Cpanel/API/ZoneEdit.pm` sets `returns => 'list'` on the FromAPI2 adapter.
+`Cpanel/ZoneEdit.pm::api2_resetzone` wraps the admin reply in a single result
+row. `Cpanel/Admin/Modules/Cpanel/zone.pm::RESET` verifies ownership and the
+`zoneedit` feature, then selects the rebuild status, message and MX check
+from `Whostmgr/DNS/Rebuild.pm`. The helper also returns serialized zone text,
+which the admin handler discards. On this build it incorporates certain TXT
+records into the new template. Rely on a backup for custom records.
+
+The flat pinned OpenAPI response describes the inner UAPI envelope. The typed
+method posts the account-owned domain and returns its data list. Check
+`$rows[0]['result']['status']` for integer 1 before reporting a successful reset.
+A dispatched rebuild failure has integer 0 and can supply `statusmsg`.
+Dispatch failures raise `ApiErrorException`. The pin leaves `checkmx` contents
+unspecified. If supplied, the client retains the object's fields or explicit
+null. A payload mismatch after accepted dispatch can follow a completed rebuild.
