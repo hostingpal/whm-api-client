@@ -52,24 +52,24 @@ final class SpecChecker
 
     private const TYPES = ['string', 'int', 'number', 'bool', 'flag', 'mixed', 'list', 'map', 'object', 'union'];
 
-    /** @var array<string, true> Hashes of specs that passed the check. */
+    /** @var array<string, FormRecord|null> Validated specs, retaining the compiled form record when present. */
     private static array $sound = [];
 
     /**
-     * Reject a defective operation spec; sound specs are remembered.
+     * Reject a defective spec and return the compiled form record when present. Sound specs are remembered.
      *
      * @param array<mixed> $spec
      * @throws LogicException If any part of the spec is defective.
      */
-    public static function check(array $spec): void
+    public static function check(array $spec): ?FormRecord
     {
         $key = hash('xxh128', serialize($spec));
-        if (isset(self::$sound[$key])) {
-            return;
+        if (!array_key_exists($key, self::$sound)) {
+            self::operation($spec);
+            self::$sound[$key] = array_key_exists('form_record', $spec) ? FormRecord::from($spec) : null;
         }
 
-        self::operation($spec);
-        self::$sound[$key] = true;
+        return self::$sound[$key];
     }
 
     /**
@@ -131,7 +131,7 @@ final class SpecChecker
             OperationSpec::text($spec, 'module');
         }
 
-        self::params($spec['params'] ?? null, OperationSpec::body($spec), isset($spec['module']));
+        self::params($spec);
         if (OperationSpec::body($spec) === RequestBodyFormat::Json) {
             self::jsonBody($spec);
         } elseif (array_key_exists('json_body', $spec)) {
@@ -299,9 +299,16 @@ final class SpecChecker
         }
     }
 
-    /** Check every parameter spec, whether or not a call supplies its argument. */
-    private static function params(mixed $params, RequestBodyFormat $body, bool $uapi): void
+    /**
+     * Check every parameter spec, whether or not a call supplies its argument.
+     *
+     * @param array<mixed> $spec
+     */
+    private static function params(array $spec): void
     {
+        $params = $spec['params'] ?? null;
+        $body = OperationSpec::body($spec);
+        $uapi = isset($spec['module']);
         if (!is_array($params)) {
             throw new LogicException('Operation spec is missing "params".');
         }
@@ -349,6 +356,14 @@ final class SpecChecker
                 && ($param['omit_empty'] !== true || $param['encoding'] !== 'repeat')
             ) {
                 throw new LogicException('Invalid "omit_empty" parameter spec.');
+            }
+
+            if (
+                array_key_exists('positive_int', $param)
+                && ($param['positive_int'] !== true || $param['encoding'] !== 'scalar'
+                    || array_key_exists('reject_empty', $param))
+            ) {
+                throw new LogicException('Invalid "positive_int" parameter spec.');
             }
 
             if (

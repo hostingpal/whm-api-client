@@ -325,17 +325,239 @@
       ]
     },
     "whm1:addzonerecord": {
-      "exclude": {
-        "reason": "The referenced form body uses anyOf/discriminator DNS record alternatives unsupported by the current generator; preserving every required record field needs reviewed body-schema support. Tracked under whm-api-client-8x0.1.30.",
-        "evidence": [
-          {
-            "kind": "doc",
-            "version": "pinned 2026-10-13",
-            "date": "2026-10-31",
-            "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. addzonerecord: The referenced form body uses anyOf/discriminator DNS record alternatives unsupported by the current generator; preserving every required record field needs reviewed body-schema support."
+      "name": "addZoneRecord",
+      "method": "POST",
+      "void": true,
+      "order": ["domain", "name", "record"],
+      "form_record": {
+        "php": "record",
+        "common": {
+          "required": [
+            "domain",
+            "name",
+            "type"
+          ]
+        },
+        "labels": {
+          "PTR (Reverse DNS)": "PTR"
+        },
+        "variants": {
+          "A": {
+            "required": [
+              "address"
+            ]
+          },
+          "A6": {
+            "add": {
+              "address": {
+                "type": "string",
+                "description": "The IPv6 address or suffix serialized with the prefix length."
+              }
+            },
+            "required": [
+              "prefix"
+            ]
+          },
+          "AAAA": {
+            "required": [
+              "address"
+            ]
+          },
+          "AFSDB": {
+            "required": [
+              "hostname",
+              "subtype"
+            ]
+          },
+          "ALIAS": {
+            "required": [
+              "alias"
+            ]
+          },
+          "CAA": {
+            "required": [
+              "flag",
+              "tag",
+              "value"
+            ]
+          },
+          "CNAME": {
+            "omit": [
+              "flatten",
+              "flatten_to"
+            ],
+            "required": [
+              "cname"
+            ]
+          },
+          "DNAME": {
+            "required": [
+              "dname"
+            ]
+          },
+          "DS": {
+            "omit": [
+              "keyname"
+            ],
+            "add": {
+              "keytag": {
+                "type": "int",
+                "description": "The DS key tag."
+              },
+              "digest": {
+                "type": "string",
+                "description": "The delegation signer digest."
+              }
+            },
+            "required": [
+              "keytag",
+              "algorithm",
+              "digtype",
+              "digest"
+            ]
+          },
+          "HINFO": {
+            "required": [
+              "cpu",
+              "os"
+            ]
+          },
+          "LOC": {
+            "omit": [
+              "version"
+            ],
+            "required": [
+              "latitude",
+              "longitude"
+            ]
+          },
+          "MX": {
+            "required": [
+              "preference",
+              "exchange"
+            ]
+          },
+          "NS": {
+            "required": [
+              "nsdname"
+            ]
+          },
+          "PTR": {
+            "omit": [
+              "zone"
+            ],
+            "required": [
+              "ptrdname"
+            ]
+          },
+          "RP": {
+            "required": [
+              "mbox",
+              "txtdname"
+            ]
+          },
+          "SOA": {
+            "add": {
+              "minimum": {
+                "type": "int",
+                "description": "The SOA minimum field, in seconds."
+              }
+            },
+            "required": [
+              "mname",
+              "rname",
+              "serial",
+              "refresh",
+              "retry",
+              "expire",
+              "minimum"
+            ]
+          },
+          "SRV": {
+            "required": [
+              "priority",
+              "weight",
+              "port",
+              "target"
+            ]
+          },
+          "TXT": {
+            "required": [
+              "txtdata"
+            ]
           }
-        ]
-      }
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "The DNS role must be enabled. Temporary domains are unsupported. Include necessary trailing periods in DNS names."
+        },
+        {
+          "kind": "policy",
+          "text": "The record argument accepts the selected DNS type and its wire field names. Add and edit make one form POST. The method returns void after WHM reports success. Inspect responseMeta() for WHM metadata. A successful response alone does not establish that the desired RDATA was written or propagated."
+        },
+        {
+          "kind": "policy",
+          "text": "The typed variants cover the pinned record families. DS takes keytag and digest with algorithm and digtype. SOA uses minimum and the case-sensitive Lines field. A6 uses prefix with address and/or refer according to the prefix length. The server handles DNS syntax and zone consistency."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.24 adding an A record succeeded without line, class or TTL; omitting address failed. A PTR append used PTR as the wire type."
+        },
+        {
+          "kind": "policy",
+          "text": "The handler appends the record. Omit class and TTL for server defaults; the reviewed handler uses IN and the zone TTL. No line is sent. PTR uses domain for the zone and ptrdname for RDATA. Apex CNAME flatten controls belong to edits."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.24 a CAA record and a DS at a delegated child were added. An A6 add reported success twice with no identifiable A6 record in the subsequent parseDnsZone() output. Verify the resulting zone before relying on it."
+        },
+        {
+          "kind": "documented",
+          "text": "A6 is deprecated."
+        },
+        {
+          "kind": "policy",
+          "text": "The typed methods accept only the 18 mapped record families and their declared wire fields. For a server-supported type or field outside this set, use whm()->call() with form POST."
+        },
+        {
+          "kind": "policy",
+          "text": "Source inspection on cPanel 11.138.0.24: the LOC serializer emits altitude, size, horiz_pre and vert_pre in that order, skipping false values. Give each preceding position a nonzero value when setting a later one. The integer size and precisions are centimeters despite the pinned meter descriptions. For example, altitude '5m', size 1000, horiz_pre 2000 and vert_pre 3000 serialize as 5m, 10m, 20m and 30m."
+        },
+        {
+          "kind": "policy",
+          "text": "The pinned TTL minimum is 1. The client forwards an explicit zero. On cPanel 11.138.0.24 the inspected A-record serializer falls back to the effective default TTL for zero. On edit this can replace an existing nondefault TTL."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-18",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1addzonerecord/post/requestBody",
+          "note": "Referenced form anyOf/discriminator lists the record components. Every allOf combines a shared base with type-specific fields. Source operation uses form POST and documents metadata without data."
+        },
+        {
+          "kind": "doc",
+          "version": "cPanel 11.138.0.24 handler inspection",
+          "date": "2026-11-18",
+          "note": "Reviewed Whostmgr/DNS.pm and zone-file serializer. Add appends and defaults class/TTL, edit merges fields with the line and accepts a serial guard. Use serializer names for A6, DS, SOA and LOC; ignore PTR zone alias and add CNAME flatten controls. Field corrections and partial-edit policy describe these source paths."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.24",
+          "date": "2026-11-18",
+          "note": "Generic form POST returned successful metadata without a data member on add (A, PTR, TXT) and edit (partial untagged A and explicit A with retained address). Missing A address and stale edit serialnum failed. On a fresh zone, CAA, NS delegation and DS under the delegated child succeeded with identifiable records. Two A6 attempts reported success without an identifiable A6 row."
+        },
+        {
+          "kind": "doc",
+          "version": "cPanel 11.138.0.24 serializer inspection",
+          "date": "2026-11-18",
+          "note": "Cpanel/ZoneFile.pm: derefalt and tomts preserve meter-suffixed altitude, tomts divides bare values by 100, the LOC branch appends truthy optional positions, and _build_basic_record uses forcedttl || ttl || defaultttl. This is a source inspection."
+        }
+      ]
     },
     "whm1:cluster_member_has_trust_with": {
       "method": "GET",
@@ -520,17 +742,159 @@
       ]
     },
     "whm1:editzonerecord": {
-      "exclude": {
-        "reason": "The referenced form body uses anyOf/discriminator DNS record alternatives unsupported by the current generator; preserving every required record field needs reviewed body-schema support. Tracked under whm-api-client-8x0.1.30.",
-        "evidence": [
-          {
-            "kind": "doc",
-            "version": "pinned 2026-10-13",
-            "date": "2026-10-31",
-            "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. editzonerecord: The referenced form body uses anyOf/discriminator DNS record alternatives unsupported by the current generator; preserving every required record field needs reviewed body-schema support."
+      "name": "editZoneRecord",
+      "method": "POST",
+      "void": true,
+      "order": ["domain", "line", "name", "record"],
+      "params": {"line": {"positive_int": true}},
+      "form_record": {
+        "php": "record",
+        "change_params": ["name", "class", "ttl"],
+        "common": {
+          "required": [
+            "domain",
+            "line"
+          ],
+          "add": {
+            "serialnum": {
+              "type": "int",
+              "description": "The expected current zone serial. A stale value causes the edit to fail."
+            }
           }
-        ]
-      }
+        },
+        "retain_existing": true,
+        "variants": {
+          "A6": {
+            "add": {
+              "address": {
+                "type": "string",
+                "description": "The IPv6 address or suffix serialized with the prefix length."
+              }
+            }
+          },
+          "DS": {
+            "omit": [
+              "keyname"
+            ],
+            "add": {
+              "keytag": {
+                "type": "int",
+                "description": "The DS key tag."
+              },
+              "digest": {
+                "type": "string",
+                "description": "The delegation signer digest."
+              }
+            }
+          },
+          "LOC": {
+            "omit": [
+              "version"
+            ]
+          },
+          "SOA": {
+            "add": {
+              "minimum": {
+                "type": "int",
+                "description": "The SOA minimum field, in seconds."
+              },
+              "Lines": {
+                "type": "int",
+                "description": "The number of zone-file lines used for this SOA record."
+              }
+            },
+            "omit": [
+              "lines"
+            ]
+          }
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "The DNS role must be enabled. Temporary domains are unsupported. Include necessary trailing periods in DNS names."
+        },
+        {
+          "kind": "policy",
+          "text": "The record argument accepts the selected DNS type and its wire field names. Add and edit make one form POST. The method returns void after WHM reports success. Inspect responseMeta() for WHM metadata. A successful response alone does not establish that the desired RDATA was written or propagated."
+        },
+        {
+          "kind": "policy",
+          "text": "The typed variants cover the pinned record families. DS takes keytag and digest with algorithm and digtype. SOA uses minimum and the case-sensitive Lines field. A6 uses prefix with address and/or refer according to the prefix length. The server handles DNS syntax and zone consistency."
+        },
+        {
+          "kind": "policy",
+          "text": "Pass a positive one-based zone-file line. From a fresh parseDnsZone() read, select exactly one intended record, pass its line_index plus one and use the SOA serial from that same read as serialnum. A stale or incorrect line can change another record. The server can turn a negative line into its positive counterpart. The typed method rejects zero and negative lines before sending the edit."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.24 an omitted type and TTL preserved an existing A record type and TTL during an address edit. An explicit A type and TTL preserved the existing address. A stale serialnum failed."
+        },
+        {
+          "kind": "documented",
+          "text": "This operation cannot edit other DNS zones on Write-only servers in a DNS cluster."
+        },
+        {
+          "kind": "documented",
+          "text": "A6 is deprecated. The pinned edit form includes an A6 alternative and discriminator mapping, although the shared type enum omits A6."
+        },
+        {
+          "kind": "policy",
+          "text": "The cPanel 11.138.0.24 edit handler merges supplied fields with the current record. A type change can need additional fields suited to the new type. An omitted record sends only the common fields. CNAME flatten and flatten_to apply to apex edits."
+        },
+        {
+          "kind": "policy",
+          "text": "The typed methods accept only the 18 mapped record families and their declared wire fields. For a server-supported type or field outside this set, use whm()->call() with form POST."
+        },
+        {
+          "kind": "policy",
+          "text": "Source inspection on cPanel 11.138.0.24: the LOC serializer emits altitude, size, horiz_pre and vert_pre in that order, skipping false values. Give each preceding position a nonzero value when setting a later one. The integer size and precisions are centimeters despite the pinned meter descriptions. For example, altitude '5m', size 1000, horiz_pre 2000 and vert_pre 3000 serialize as 5m, 10m, 20m and 30m."
+        },
+        {
+          "kind": "policy",
+          "text": "The pinned TTL minimum is 1. The client forwards an explicit zero. On cPanel 11.138.0.24 the inspected A-record serializer falls back to the effective default TTL for zero. On edit this can replace an existing nondefault TTL."
+        },
+        {
+          "kind": "policy",
+          "text": "Supply at least one record or editable common field. The zone, line and optional integer serialnum identify and guard the edit."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-18",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/components/schemas/DnsEditZoneParameterBase/properties/line",
+          "note": "The one-based edit line is a required integer with minimum 1. The reviewed handler normalizes negative lines to their positive counterpart, so this input opts into rejecting nonpositive values before dispatch."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-11-18",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1editzonerecord/post/requestBody",
+          "note": "Referenced form anyOf/discriminator lists the record components. Every allOf combines a shared base with type-specific fields. Source operation uses form POST and documents metadata without data."
+        },
+        {
+          "kind": "doc",
+          "version": "cPanel 11.138.0.24 handler inspection",
+          "date": "2026-11-18",
+          "note": "Reviewed Whostmgr/DNS.pm and zone-file serializer. Add appends and defaults class/TTL, edit merges fields with the line and accepts a serial guard. Use serializer names for A6, DS, SOA and LOC; ignore PTR zone alias and add CNAME flatten controls. Field corrections and partial-edit policy describe these source paths."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.24",
+          "date": "2026-11-18",
+          "note": "Generic form POST returned successful metadata without a data member on add (A, PTR, TXT) and edit (partial untagged A and explicit A with retained address). Missing A address and stale edit serialnum failed."
+        },
+        {
+          "kind": "doc",
+          "version": "cPanel 11.138.0.24 serializer inspection",
+          "date": "2026-11-18",
+          "note": "Cpanel/ZoneFile.pm: derefalt and tomts preserve meter-suffixed altitude, tomts divides bare values by 100, the LOC branch appends truthy optional positions, and _build_basic_record uses forcedttl || ttl || defaultttl. This is a source inspection."
+        }
+      ]
     },
     "whm1:enable_dnssec_for_domains": {
       "method": "POST",
@@ -899,7 +1263,7 @@
         },
         {
           "kind": "documented",
-          "text": "The pinned operation gives A and TXT as record_type examples rather than a complete accepted-type list. Reviewer inspection of the 11.138.0.19 handler found a fixed set excluding SOA; no closed record-type enum or local validation is inferred. Composed addzonerecord/editzonerecord forms remain deferred under whm-api-client-8x0.1.30."
+          "text": "The pinned operation gives A and TXT as record_type examples rather than a complete accepted-type list. Reviewer inspection of the 11.138.0.19 handler found a fixed set excluding SOA; no closed record-type enum or local validation is inferred."
         }
       ],
       "response": {

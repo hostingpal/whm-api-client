@@ -943,7 +943,7 @@ refresh it with `php tools/live-testing/refresh-operations-client.php`.
 | `whm1:addips` | typed |
 | `whm1:addpkg` | typed |
 | `whm1:addpkgext` | typed |
-| `whm1:addzonerecord` | excluded |
+| `whm1:addzonerecord` | typed |
 | `whm1:allow_all_whm_root_access` | typed |
 | `whm1:api_token_create` | typed |
 | `whm1:api_token_update` | typed |
@@ -1011,7 +1011,7 @@ refresh it with `php tools/live-testing/refresh-operations-client.php`.
 | `whm1:edit_rpm_version` | typed |
 | `whm1:editpkg` | typed |
 | `whm1:editquota` | typed |
-| `whm1:editzonerecord` | excluded |
+| `whm1:editzonerecord` | typed |
 | `whm1:enable_authentication_provider` | typed |
 | `whm1:enable_cpgreylist` | typed |
 | `whm1:enable_dkim` | typed |

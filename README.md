@@ -2220,11 +2220,29 @@ Follow-up `8x0.2.39` retains remaining live behavior.
 
 ### WHM DNS management
 
-`whm()->dns()` exposes 41 of the 44 pinned DNS functions: sixteen GET reads and
-25 form POST methods for zone inventory, DNSSEC keys, domains, MX records,
-resolvers, nameservers and maintenance. Deprecated `dumpzone` remains excluded.
-Two record-write operations remain under `8x0.1.30`: `addzonerecord` and
-`editzonerecord` require composed form schemas.
+The WHM DNS group covers 43 of 44 pinned functions. It includes two single-record
+form POST operations, `addZoneRecord()` and `editZoneRecord()`. The remaining
+exclusion is the deprecated `dumpzone`. Both writes return `void` on success.
+The record array uses wire keys such as `txtdata`. The client sends them as form
+fields and checks that the supplied fields belong to one record type.
+
+```php
+$dns = $client->whm()->dns();
+$dns->addZoneRecord(
+    domain: 'example.test',
+    name: 'verify.example.test.',
+    record: ['type' => 'TXT', 'txtdata' => 'proof of ownership'],
+);
+```
+
+For an edit, read the zone immediately beforehand. Identify the intended row
+uniquely by owner, type and current data, and take the SOA serial from that same
+read. Pass `line_index + 1` as the positive `line` and the serial as `serialnum`.
+The handler merges supplied fields into the current row. For example,
+`record: ['address' => '192.0.2.42']` replaces the address of the selected A
+record while preserving its name, type and TTL. A stale serial refuses the edit.
+An add has no serial check. Read the zone after a write with an uncertain outcome
+before deciding whether another change is needed.
 
 `massEditDnsZone(int $serial, string $zone, ?array $add = null, ?array $edit = null,
 ?array $remove = null): array` sends repeated literal form fields in one POST
@@ -2270,8 +2288,7 @@ detail path in server source but did not exercise it. The pinned operation gives
 `A` and `TXT` as examples without a complete record-type enum; reviewer inspection
 of the `11.138.0.19` handler found a fixed set excluding `SOA`. These observations
 are attributed in [the correction audit](docs/api/source-audit.md#whm-dns-mass-edit-review-correction-2026-11-01),
-separately from committed captures. Composed `addzonerecord`/`editzonerecord` forms
-remain deferred under `whm-api-client-8x0.1.30`.
+separately from committed captures.
 
 DNSSEC enable/disable uses repeated domain fields; other selectors retain their
 own scalar contracts. `addZoneKey()` and each `enableDnssecForDomains()` row return

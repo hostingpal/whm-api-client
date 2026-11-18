@@ -88,6 +88,9 @@ final class ArgumentEncoder
         }
         foreach ($params as $name => $param) {
             $value = $arguments[$name] ?? null;
+            if (is_array($param) && ($param['positive_int'] ?? false) === true && (!is_int($value) || $value < 1)) {
+                throw new InvalidArgumentException('Expected a positive integer argument.');
+            }
             if (is_array($param) && ($param['reject_empty'] ?? false) === true) {
                 self::requireTarget($value);
             }

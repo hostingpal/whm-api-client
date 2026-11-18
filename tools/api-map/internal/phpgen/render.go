@@ -36,7 +36,7 @@ func (w *writer) paramDoc(indent string, p effective.Param, description string) 
 	// Enum literals come from the pinned documents and could contain "*/".
 	docType := escapeDoc(paramDocType(p))
 	head := func(t string) string { return indent + " * @param " + t + " $" + p.PHP }
-	if p.Collection == nil && p.Records == nil && len(head(docType)) > lineWidth {
+	if p.Collection == nil && p.Records == nil && p.Encoding != "form_record" && len(head(docType)) > lineWidth {
 		docType = p.PHPType
 		if isMultiple(p.Encoding) {
 			docType = "string|list<string>"
@@ -185,7 +185,7 @@ func groupClass(g effective.Group) string {
 			uses = append(uses, rootNamespace+`\Exception\PayloadMismatchException`)
 		}
 		for _, p := range op.Params {
-			if isMultiple(p.Encoding) || p.RejectEmpty || p.Input != nil {
+			if isMultiple(p.Encoding) || p.RejectEmpty || p.PositiveInt || p.Input != nil {
 				uses = append(uses, "InvalidArgumentException")
 			}
 			if redactArgument(p) {
@@ -223,6 +223,10 @@ func groupClass(g effective.Group) string {
 		w.typeAlias(op.Alias, *spec)
 	}
 	for _, op := range g.Operations {
+		if d := op.FormRecord; d != nil {
+			w.line(" *")
+			w.docTag("", "@phpstan-type "+d.Alias+" "+formRecordShape(d))
+		}
 		if d := op.JSONBody; d != nil {
 			w.line(" *")
 			w.docTag("", "@phpstan-type "+d.Alias+" "+inputShape(d.Schema, ""))
@@ -334,6 +338,7 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 	records := false
 	omitEmpty := false
 	rejectEmpty := false
+	positiveInt := false
 	for _, p := range op.Params {
 		description := p.Description
 		if !p.Required {
@@ -356,6 +361,7 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 		w.paramDoc(indent, p, description)
 		records = records || p.Records != nil
 		omitEmpty = omitEmpty || p.OmitEmpty
+		positiveInt = positiveInt || p.PositiveInt
 		rejectEmpty = rejectEmpty || p.RejectEmpty
 		multi = multi || isMultiple(p.Encoding)
 		namedMap = namedMap || (p.Collection != nil && p.Collection.Kind == "map")
@@ -376,7 +382,9 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 	for _, p := range op.Params {
 		jsonField = jsonField || p.Encoding == "json"
 	}
-	if jsonField {
+	if op.FormRecord != nil {
+		w.line(indent + " * @throws InvalidArgumentException If the form record or a guarded scalar argument is invalid.")
+	} else if jsonField {
 		w.line(indent + " * @throws InvalidArgumentException If a structured JSON field is invalid; no request is sent.")
 	} else if op.JSONBody != nil {
 		if g.Family == "uapi" {
@@ -389,6 +397,8 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 		w.line(indent + " * @throws InvalidArgumentException If the upload or multipart fields are invalid; no retry occurs.")
 	} else if op.MultipartUploads != nil || op.MultipartUploadFamily != nil {
 		w.line(indent + " * @throws InvalidArgumentException If uploads are empty, keyed, invalid, or this handle uses the WHM bridge.")
+	} else if positiveInt {
+		w.line(indent + " * @throws InvalidArgumentException If a guarded integer argument is not positive.")
 	} else if rejectEmpty {
 		w.line(indent + " * @throws InvalidArgumentException If an explicit target is absent, blank, zero, or an invalid string list.")
 	} else if multi {
@@ -545,6 +555,9 @@ func specClass(g effective.Group) string {
 			w.line("            'filename_forbidden' => " + phpString(d.FilenameForbidden) + ",")
 			w.line("        ],")
 		}
+		if d := op.FormRecord; d != nil {
+			renderFormRecord(w, d)
+		}
 		if d := op.JSONBody; d != nil {
 			w.line("        'json_body' => [")
 			w.line("            'php' => " + phpString(d.PHP) + ",")
@@ -558,12 +571,15 @@ func specClass(g effective.Group) string {
 		} else {
 			w.line("        'params' => [")
 			for _, p := range op.Params {
-				if (p.Input != nil && p.Encoding != "json") || (op.MultipartUploads != nil && p.PHP == op.MultipartUploads.PHP) || (op.MultipartUploadFamily != nil && p.PHP == op.MultipartUploadFamily.PHP) {
+				if p.Encoding == "form_record" || (p.Input != nil && p.Encoding != "json") || (op.MultipartUploads != nil && p.PHP == op.MultipartUploads.PHP) || (op.MultipartUploadFamily != nil && p.PHP == op.MultipartUploadFamily.PHP) {
 					continue
 				}
 				setting := ""
+				if p.PositiveInt {
+					setting = ", 'positive_int' => true"
+				}
 				if p.OmitEmpty {
-					setting = ", 'omit_empty' => true"
+					setting += ", 'omit_empty' => true"
 				}
 				if p.RejectEmpty {
 					setting += ", 'reject_empty' => true"
@@ -622,6 +638,9 @@ func specClass(g effective.Group) string {
 						w.line(fmt.Sprintf("                    'start' => %d,", *c.Start))
 					}
 					w.line("                ],")
+				}
+				if p.PositiveInt {
+					w.line("                'positive_int' => true,")
 				}
 				if p.OmitEmpty {
 					w.line("                'omit_empty' => true,")
@@ -783,7 +802,7 @@ func uniqueSorted(values []string) []string {
 
 // isMultiple identifies encodings whose array inputs require element PHPDoc.
 func isMultiple(encoding string) bool {
-	return encoding == "records" || encoding == "collection" || encoding == "repeat" || encoding == "numbered" || encoding == "suffix-numbered" || encoding == "suffix-numbered-scalar"
+	return encoding == "form_record" || encoding == "records" || encoding == "collection" || encoding == "repeat" || encoding == "numbered" || encoding == "suffix-numbered" || encoding == "suffix-numbered-scalar"
 }
 
 // publicMethods expands input-only aliases without adding canonical operations.

@@ -245,6 +245,172 @@ use SensitiveParameter;
  *         error?: string,
  *     }>,
  * }
+ *
+ * @phpstan-type AddZoneRecordInput array{
+ *     type: 'A',
+ *     address: string,
+ * }|array{
+ *     type: 'A6',
+ *     address?: string,
+ *     prefix: int,
+ *     refer?: string,
+ * }|array{
+ *     type: 'AAAA',
+ *     address: string,
+ * }|array{
+ *     type: 'AFSDB',
+ *     hostname: string,
+ *     subtype: int,
+ * }|array{
+ *     type: 'ALIAS',
+ *     alias: string,
+ * }|array{
+ *     type: 'CAA',
+ *     flag: int,
+ *     tag: string,
+ *     value: string,
+ * }|array{
+ *     type: 'CNAME',
+ *     cname: string,
+ * }|array{
+ *     type: 'DNAME',
+ *     dname: string,
+ * }|array{
+ *     type: 'DS',
+ *     algorithm: int,
+ *     digest: string,
+ *     digtype: int,
+ *     keytag: int,
+ * }|array{
+ *     type: 'HINFO',
+ *     cpu: string,
+ *     os: string,
+ * }|array{
+ *     type: 'LOC',
+ *     altitude?: string,
+ *     horiz_pre?: int,
+ *     latitude: string,
+ *     longitude: string,
+ *     size?: int,
+ *     vert_pre?: int,
+ * }|array{
+ *     type: 'MX',
+ *     exchange: string,
+ *     preference: int,
+ * }|array{
+ *     type: 'NS',
+ *     nsdname: string,
+ * }|array{
+ *     type: 'PTR',
+ *     ptrdname: string,
+ * }|array{
+ *     type: 'RP',
+ *     mbox: string,
+ *     txtdname: string,
+ * }|array{
+ *     type: 'SOA',
+ *     Lines?: int,
+ *     expire: int,
+ *     minimum: int,
+ *     mname: string,
+ *     refresh: int,
+ *     retry: int,
+ *     rname: string,
+ *     serial: int,
+ * }|array{
+ *     type: 'SRV',
+ *     port: int,
+ *     priority: int,
+ *     target: string,
+ *     weight: int,
+ * }|array{
+ *     type: 'TXT',
+ *     txtdata: string,
+ * }
+ *
+ * @phpstan-type EditZoneRecordInput array{
+ *     type?: 'A',
+ *     address?: string,
+ * }|array{
+ *     type?: 'A6',
+ *     address?: string,
+ *     prefix?: int,
+ *     refer?: string,
+ * }|array{
+ *     type?: 'AAAA',
+ *     address?: string,
+ * }|array{
+ *     type?: 'AFSDB',
+ *     hostname?: string,
+ *     subtype?: int,
+ * }|array{
+ *     type?: 'ALIAS',
+ *     alias?: string,
+ * }|array{
+ *     type?: 'CAA',
+ *     flag?: int,
+ *     tag?: string,
+ *     value?: string,
+ * }|array{
+ *     type?: 'CNAME',
+ *     cname?: string,
+ *     flatten?: int,
+ *     flatten_to?: string,
+ * }|array{
+ *     type?: 'DNAME',
+ *     dname?: string,
+ * }|array{
+ *     type?: 'DS',
+ *     algorithm?: int,
+ *     digest?: string,
+ *     digtype?: int,
+ *     keytag?: int,
+ * }|array{
+ *     type?: 'HINFO',
+ *     cpu?: string,
+ *     os?: string,
+ * }|array{
+ *     type?: 'LOC',
+ *     altitude?: string,
+ *     horiz_pre?: int,
+ *     latitude?: string,
+ *     longitude?: string,
+ *     size?: int,
+ *     vert_pre?: int,
+ * }|array{
+ *     type?: 'MX',
+ *     exchange?: string,
+ *     preference?: int,
+ * }|array{
+ *     type?: 'NS',
+ *     nsdname?: string,
+ * }|array{
+ *     type?: 'PTR',
+ *     ptrdname?: string,
+ * }|array{
+ *     type?: 'RP',
+ *     mbox?: string,
+ *     txtdname?: string,
+ * }|array{
+ *     type?: 'SOA',
+ *     Lines?: int,
+ *     expire?: int,
+ *     minimum?: int,
+ *     mname?: string,
+ *     refresh?: int,
+ *     retry?: int,
+ *     rname?: string,
+ *     serial?: int,
+ * }|array{
+ *     type?: 'SRV',
+ *     port?: int,
+ *     priority?: int,
+ *     target?: string,
+ *     weight?: int,
+ * }|array{
+ *     type?: 'TXT',
+ *     txtdata?: string,
+ * }
  */
 final readonly class Dns
 {
@@ -384,6 +550,75 @@ final readonly class Dns
         ]);
 
         return $result;
+    }
+
+    /**
+     * Create DNS zone record.
+     *
+     * This function adds a DNS zone record.
+     *
+     * Documented: The DNS role must be enabled. Temporary domains are unsupported. Include necessary trailing periods
+     * in DNS names.
+     *
+     * Policy: The record argument accepts the selected DNS type and its wire field names. Add and edit make one form
+     * POST. The method returns void after WHM reports success. Inspect responseMeta() for WHM metadata. A successful
+     * response alone does not establish that the desired RDATA was written or propagated.
+     *
+     * Policy: The typed variants cover the pinned record families. DS takes keytag and digest with algorithm and
+     * digtype. SOA uses minimum and the case-sensitive Lines field. A6 uses prefix with address and/or refer according
+     * to the prefix length. The server handles DNS syntax and zone consistency.
+     *
+     * Observed: On cPanel 11.138.0.24 adding an A record succeeded without line, class or TTL; omitting address failed.
+     * A PTR append used PTR as the wire type.
+     *
+     * Policy: The handler appends the record. Omit class and TTL for server defaults; the reviewed handler uses IN and
+     * the zone TTL. No line is sent. PTR uses domain for the zone and ptrdname for RDATA. Apex CNAME flatten controls
+     * belong to edits.
+     *
+     * Observed: On cPanel 11.138.0.24 a CAA record and a DS at a delegated child were added. An A6 add reported success
+     * twice with no identifiable A6 record in the subsequent parseDnsZone() output. Verify the resulting zone before
+     * relying on it.
+     *
+     * Documented: A6 is deprecated.
+     *
+     * Policy: The typed methods accept only the 18 mapped record families and their declared wire fields. For a
+     * server-supported type or field outside this set, use whm()->call() with form POST.
+     *
+     * Policy: Source inspection on cPanel 11.138.0.24: the LOC serializer emits altitude, size, horiz_pre and vert_pre
+     * in that order, skipping false values. Give each preceding position a nonzero value when setting a later one. The
+     * integer size and precisions are centimeters despite the pinned meter descriptions. For example, altitude '5m',
+     * size 1000, horiz_pre 2000 and vert_pre 3000 serialize as 5m, 10m, 20m and 30m.
+     *
+     * Policy: The pinned TTL minimum is 1. The client forwards an explicit zero. On cPanel 11.138.0.24 the inspected
+     * A-record serializer falls back to the effective default TTL for zero. On edit this can replace an existing
+     * nondefault TTL.
+     *
+     * API-map identity: whm1:addzonerecord#POST (wire name addzonerecord; Domain Management).
+     *
+     * @param string $domain The new zone record's domain.
+     * @param string $name The record's name.
+     * @param AddZoneRecordInput $record Discriminator and its variant-specific fields, sent as individual form values.
+     * @param string|null $class The record's class. Null omits it.
+     * @param int|null $ttl The record's Time To Live (TTL), in seconds. Null omits it.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws InvalidArgumentException If the form record or a guarded scalar argument is invalid.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/domain-management/dns-addzonerecord
+     */
+    public function addZoneRecord(
+        string $domain,
+        string $name,
+        #[SensitiveParameter]
+        array $record,
+        ?string $class = null,
+        ?int $ttl = null,
+    ): void {
+        ($this->run)(DnsSpec::ADDZONERECORD, [
+            'domain' => $domain,
+            'name' => $name,
+            'record' => $record,
+            'class' => $class,
+            'ttl' => $ttl,
+        ]);
     }
 
     /**
@@ -578,6 +813,91 @@ final readonly class Dns
         $result = ($this->run)(DnsSpec::DISABLE_DNSSEC_FOR_DOMAINS, ['domains' => $domains]);
 
         return $result;
+    }
+
+    /**
+     * Update DNS zone record.
+     *
+     * This function edits a DNS zone record. To effectively use this function, use the following workflow: 1. Run the
+     * `dumpzone` function on the DNS zone record to edit. 1. Locate the `Line` value that corresponds to the data to
+     * edit. 1. Use the values from that zone record to formulate the appropriate `editzonerecord` parameters.
+     *
+     * Documented: The DNS role must be enabled. Temporary domains are unsupported. Include necessary trailing periods
+     * in DNS names.
+     *
+     * Policy: The record argument accepts the selected DNS type and its wire field names. Add and edit make one form
+     * POST. The method returns void after WHM reports success. Inspect responseMeta() for WHM metadata. A successful
+     * response alone does not establish that the desired RDATA was written or propagated.
+     *
+     * Policy: The typed variants cover the pinned record families. DS takes keytag and digest with algorithm and
+     * digtype. SOA uses minimum and the case-sensitive Lines field. A6 uses prefix with address and/or refer according
+     * to the prefix length. The server handles DNS syntax and zone consistency.
+     *
+     * Policy: Pass a positive one-based zone-file line. From a fresh parseDnsZone() read, select exactly one intended
+     * record, pass its line_index plus one and use the SOA serial from that same read as serialnum. A stale or
+     * incorrect line can change another record. The server can turn a negative line into its positive counterpart. The
+     * typed method rejects zero and negative lines before sending the edit.
+     *
+     * Observed: On cPanel 11.138.0.24 an omitted type and TTL preserved an existing A record type and TTL during an
+     * address edit. An explicit A type and TTL preserved the existing address. A stale serialnum failed.
+     *
+     * Documented: This operation cannot edit other DNS zones on Write-only servers in a DNS cluster.
+     *
+     * Documented: A6 is deprecated. The pinned edit form includes an A6 alternative and discriminator mapping, although
+     * the shared type enum omits A6.
+     *
+     * Policy: The cPanel 11.138.0.24 edit handler merges supplied fields with the current record. A type change can
+     * need additional fields suited to the new type. An omitted record sends only the common fields. CNAME flatten and
+     * flatten_to apply to apex edits.
+     *
+     * Policy: The typed methods accept only the 18 mapped record families and their declared wire fields. For a
+     * server-supported type or field outside this set, use whm()->call() with form POST.
+     *
+     * Policy: Source inspection on cPanel 11.138.0.24: the LOC serializer emits altitude, size, horiz_pre and vert_pre
+     * in that order, skipping false values. Give each preceding position a nonzero value when setting a later one. The
+     * integer size and precisions are centimeters despite the pinned meter descriptions. For example, altitude '5m',
+     * size 1000, horiz_pre 2000 and vert_pre 3000 serialize as 5m, 10m, 20m and 30m.
+     *
+     * Policy: The pinned TTL minimum is 1. The client forwards an explicit zero. On cPanel 11.138.0.24 the inspected
+     * A-record serializer falls back to the effective default TTL for zero. On edit this can replace an existing
+     * nondefault TTL.
+     *
+     * Policy: Supply at least one record or editable common field. The zone, line and optional integer serialnum
+     * identify and guard the edit.
+     *
+     * API-map identity: whm1:editzonerecord#POST (wire name editzonerecord; DNS Zones).
+     *
+     * @param string $domain The zone record's domain.
+     * @param positive-int $line The zone record's file line number.
+     * @param string|null $name The record's name. Null omits it.
+     * @param EditZoneRecordInput|null $record Discriminator and its variant-specific fields, sent as individual form
+     *     values. Null omits it.
+     * @param string|null $class The record's class. Null omits it.
+     * @param int|null $serialnum The expected current zone serial. Null omits it.
+     * @param int|null $ttl The record's Time To Live (TTL), in seconds. Null omits it.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws InvalidArgumentException If the form record or a guarded scalar argument is invalid.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/dns-zones/dns-editzonerecord
+     */
+    public function editZoneRecord(
+        string $domain,
+        int $line,
+        ?string $name = null,
+        #[SensitiveParameter]
+        ?array $record = null,
+        ?string $class = null,
+        ?int $serialnum = null,
+        ?int $ttl = null,
+    ): void {
+        ($this->run)(DnsSpec::EDITZONERECORD, [
+            'domain' => $domain,
+            'line' => $line,
+            'name' => $name,
+            'record' => $record,
+            'class' => $class,
+            'serialnum' => $serialnum,
+            'ttl' => $ttl,
+        ]);
     }
 
     /**
@@ -1112,8 +1432,7 @@ final readonly class Dns
      *
      * Documented: The pinned operation gives A and TXT as record_type examples rather than a complete accepted-type
      * list. Reviewer inspection of the 11.138.0.19 handler found a fixed set excluding SOA; no closed record-type enum
-     * or local validation is inferred. Composed addzonerecord/editzonerecord forms remain deferred under
-     * whm-api-client-8x0.1.30.
+     * or local validation is inferred.
      *
      * API-map identity: whm1:mass_edit_dns_zone#GET (wire name mass_edit_dns_zone; DNS Zones).
      *

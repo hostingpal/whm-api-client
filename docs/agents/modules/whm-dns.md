@@ -5,11 +5,92 @@
 
 ### WHM DNS management
 
-`whm()->dns()` exposes 41 of the 44 pinned DNS functions: sixteen GET reads and
-25 form POST methods for zone inventory, DNSSEC keys, domains, MX records,
-resolvers, nameservers and maintenance. Deprecated `dumpzone` remains excluded.
-Two record-write operations remain under `8x0.1.30`: `addzonerecord` and
-`editzonerecord` require composed form schemas.
+The WHM DNS group covers 43 of 44 pinned functions. It includes two single-record
+form POST operations, `addZoneRecord()` and `editZoneRecord()`. The remaining
+exclusion is the deprecated `dumpzone`. Both writes return `void` on success.
+The record array uses wire keys such as `txtdata`. The client sends them as form
+fields and checks that the supplied fields belong to one record type.
+
+```php
+$dns = $client->whm()->dns();
+$dns->addZoneRecord(
+    domain: 'example.test',
+    name: 'verify.example.test.',
+    record: ['type' => 'TXT', 'txtdata' => 'proof of ownership'],
+);
+```
+
+For an edit, read the zone immediately beforehand. Identify the intended row
+uniquely by owner, type and current data, and take the SOA serial from that same
+read. Pass `line_index + 1` as the positive `line` and the serial as `serialnum`.
+The handler merges supplied fields into the current row. For example,
+`record: ['address' => '192.0.2.42']` replaces the address of the selected A
+record while preserving its name, type and TTL. A stale serial refuses the edit.
+An add has no serial check. Read the zone after a write with an uncertain outcome
+before deciding whether another change is needed.
+
+The typed methods accept only the 18 mapped record families and their declared wire
+fields. For a server-supported type or field outside this set, use `whm()->call()` with form
+POST.
+
+The pinned TTL minimum is 1. The client forwards an explicit zero. On cPanel 11.138.0.24
+the inspected A-record serializer falls back to the effective default TTL for zero. On
+edit this can replace an existing nondefault TTL.
+
+For LOC, the 11.138.0.24 serializer takes bare integer size and precision in
+centimeters. It appends only truthy values in altitude, size, horizontal precision,
+vertical precision order. Skipping an earlier position shifts later values on the wire.
+For a LOC record with latitude and longitude set, this optional tail represents
+altitude 5 m, size 10 m, horizontal precision 20 m and vertical precision 30 m:
+
+```php
+['altitude' => '5m', 'size' => 1000, 'horiz_pre' => 2000, 'vert_pre' => 3000]
+```
+
+This example follows the installed serializer. The live runs did not populate LOC.
+
+### Contract check on cPanel 11.138.0.24
+
+On 2026-11-18 two one-off runs used `whm()->call()` with form POST and
+`OutcomePolicy::Unchecked` at client revision `1e3f79c3` on `test.oblak.host`.
+The disposable account, token, domain and zone were confirmed absent after each
+run. Successful writes returned WHM result 1 with the data member absent.
+
+- An A add omitted line, class and TTL. An edit using only the one-based line,
+  domain and replacement address retained the owner, type and TTL. An explicit
+  A edit supplying TTL retained its address. The stale-serial edit returned
+  result 0 and readback confirmed the preceding TTL and address.
+- TXT and PTR adds produced identifiable rows. On a fresh zone, CAA, NS, and
+  DS under the delegated child produced identifiable rows. The working DS fields
+  were `keytag`, `algorithm`, `digtype`, and `digest`. A missing A address
+  returned result 0. An earlier DS and CAA call following an A6 add both returned
+  result 0. Those observations do not isolate the cause.
+- Both A6 adds (prefix zero and an IPv6 address) returned result 1. Neither
+  subsequent `parseDnsZone()` identified an A6 row for the supplied owner.
+  Check persisted zone state before relying on this variant.
+
+An initial generated-method run exercised a pre-commit version in this worktree (base `1e3f79c3`,
+generated `DnsSpec.php` SHA-256
+`1267254fb3c94ad6c600944e08e6a5f55c25b2fc59d813203c76167de1ed11b8`).
+A, PTR and TXT adds succeeded. Untagged address and explicit A TTL-only edits
+passed readback. A stale serial raised `ApiErrorException`, and readback confirmed
+the preceding address and TTL. Account, token, domain and zone cleanup passed.
+
+A fourth run on the same server exercised commit
+`963c98f8b76c6c1d154eb47ff10c3bb2eed1c80a`, generated `DnsSpec.php` SHA-256
+`3b4baa617281b2a422df3fe3bb0f3756a298373f12d05a523ef93d421996a254`.
+The six form POSTs covered A, PTR and TXT additions, an untagged A address edit,
+a tagged A TTL edit and stale-serial refusal with the integer guard. Fresh reads
+confirmed the changes, preserved fields, and unchanged A record after refusal.
+The account, token, domain and zone were confirmed absent after cleanup.
+
+The installed `Whostmgr::DNS` and `Cpanel::ZoneFile` sources explain several
+pin discrepancies. Add appends, and the serializer defaults class to IN.
+Edit reads the one-based line and overlays only supplied fields before validating
+the result. It accepts `serialnum` for optimistic concurrency. The serializer
+spells the SOA line-count key `Lines` and consumes `minimum`. It uses `address`
+for A6. Apex CNAME flattening is implemented by the edit handler. These source
+readings extend beyond the variants exercised by the HTTP checks.
 
 `massEditDnsZone(int $serial, string $zone, ?array $add = null, ?array $edit = null,
 ?array $remove = null): array` sends repeated literal form fields in one POST
@@ -55,8 +136,7 @@ detail path in server source but did not exercise it. The pinned operation gives
 `A` and `TXT` as examples without a complete record-type enum; reviewer inspection
 of the `11.138.0.19` handler found a fixed set excluding `SOA`. These observations
 are attributed in [the correction audit](../../api/source-audit.md#whm-dns-mass-edit-review-correction-2026-11-01),
-separately from committed captures. Composed `addzonerecord`/`editzonerecord` forms
-remain deferred under `whm-api-client-8x0.1.30`.
+separately from committed captures.
 
 DNSSEC enable/disable uses repeated domain fields; other selectors retain their
 own scalar contracts. `addZoneKey()` and each `enableDnssecForDomains()` row return

@@ -21,6 +21,13 @@ use LogicException;
  * - outcome: 'flag' or 'unchecked'.
  * - body: optional 'form' (default), 'multipart' (POST: reviewed UAPI string/list bodies
  *   or the reviewed WHM scalar text/file descriptor) or 'json' (POST).
+ * - form_record: a sensitive discriminated record for WHM form POST with scalar companions.
+ *   The descriptor specifies its PHP argument, wire discriminator, requiredness, and variants mapping
+ *   each discriminator literal to field names with strict native string/int types and requiredness.
+ *   Optional untagged: true permits partial input matching a single all-optional variant.
+ *   When change_params lists mutable scalar argument names, an omitted, null or empty record requires
+ *   at least one of those arguments to be non-null. Routing, target and concurrency arguments do not count.
+ *   Common fields precede the supplied discriminator and variant fields in declaration order.
  * - multipart_upload: reviewed WHM required module text and scalar Upload only;
  * - multipart_upload_family: reviewed UAPI scalar or nonempty one-based Upload lists;
  *   php argument, literal source and direct route policy. Mutually exclusive with other upload descriptors.
@@ -41,7 +48,8 @@ use LogicException;
  *   the encoded object unchanged. Bridged UAPI fails locally without I/O.
  * - params: PHP argument name => array{name: wire name, encoding: 'scalar'|
  *   'bool'|'repeat'|'numbered'|'suffix-numbered'|'suffix-numbered-scalar', omit_empty?: true}, in
- *   signature order. Suffix encodings replace terminal * with one-based indices
+ *   signature order. The positive_int: true scalar policy requires
+ *   a positive native integer before dispatch. Suffix encodings replace terminal * with one-based indices
  *   (action1, action2); the scalar form also permits integer list items.
  *   omit_empty is accepted only with repeat and skips exactly [] before wrapping
  *   it as a repeated list. Generation restricts this explicit option to optional

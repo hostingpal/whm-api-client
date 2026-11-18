@@ -496,7 +496,30 @@ an inline multipart string contract.
 The fields of a documented `application/x-www-form-urlencoded` request body
 become parameters after the query parameters (required only when the body and
 its schema require them) and force POST, which form-encodes every operation
-parameter in the body. Reviewed UAPI operations may select `body: "multipart"` with operation-level evidence.
+parameter in the body.
+
+The WHM `addzonerecord` and `editzonerecord` overlays select the reviewed
+`form_record` encoding. A WHM POST form with the same source composition can
+opt in by naming its PHP argument with `php` and supplying bound evidence.
+The generator resolves the source discriminator and checks that every mapped
+alternative appears once in `anyOf`. Each alternative extends the same base
+through `allOf`. Common fields become named scalar arguments and type-specific
+fields become one sensitive `record` argument with a PHPStan array-shape union.
+The discriminator wire name comes from the pinned schema. Common scalar fields
+use the normal `params` corrections, and `order` can position the composite PHP
+argument alongside them. The runtime sends its members as individual form fields. The overlay binds the
+source hash and request-body pointer and separately records the versioned handler
+evidence for `common` and `variants` field additions, omissions and requiredness. Adding and omitting the same field
+in one correction is rejected.
+`labels` corrects a display label to its wire discriminator. On edit,
+`retain_existing` allows partial fields of one variant with an optional type.
+On edit, `change_params` names optional scalar companions that can change the
+resource when the record supplies no fields. The DNS edit line explicitly
+selects `positive_int: true` through its parameter overlay. This requires a
+required, nonnullable integer with minimum 1 and evidence bound to its source
+schema. Other documented minima alone do not opt parameters into validation.
+
+Reviewed UAPI operations may select `body: "multipart"` with operation-level evidence.
 Only inline, non-nullable string fields are supported. Query declarations may repeat
 body fields only when their schemas match (documentation annotations are ignored);
 the query declaration retains its requiredness. Every query field must have a matching
