@@ -12458,3 +12458,55 @@ constants and nontarget generated outputs remain preserved. Canonical coverage
 remains 1,235 operations (636 UAPI, 599 WHM), 119 groups and 241 outputs, with
 55 inherited source diagnostics visible and unwaived. Offline gates and this
 correction do not establish exact-HEAD PHP 8.3 CI or final external acceptance.
+
+## 2026-11-18 — UAPI Tokens module with a live lifecycle capture (8x0.1.32)
+
+Source: `docs/api/sources/2026-10-13/cpanel.openapi.json.gz`, decompressed SHA-256
+`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`. All four `Tokens`
+paths are selected; none is excluded.
+
+| Pinned operation pointer | Public method | Effective transport |
+| --- | --- | --- |
+| `/paths/~1Tokens~1create_full_access/get` | `tokens()->createFullAccess()` | form POST |
+| `/paths/~1Tokens~1list/get` | `tokens()->listTokens()` | GET |
+| `/paths/~1Tokens~1rename/get` | `tokens()->renameToken()` | form POST |
+| `/paths/~1Tokens~1revoke/get` | `tokens()->revokeToken()` | form POST |
+
+The pinned declarations all stay GET. `x-readonly: false` on create, rename and revoke
+selects the default form POST; `list` has `x-readonly: true`.
+
+Observed contract on cPanel `11.138.0.24`, direct UAPI and WHM bridge, account `npr`:
+
+| Pinned | Server | Overlay |
+| --- | --- | --- |
+| `revoke`: schema says `result.data` integer 0/1; prose says the value is returned in metadata and that 1 covers a token that does not exist | `result.data` is integer 1 when a token was removed and 0 when none had that name; metadata is empty; status 1 in both cases | No correction: the formal schema is the typed result. Documented and observed notes record the contradiction |
+| `list` `expires_at`: nullable integer | null, or a digit string when set | `accept: numeric-string` |
+| `list` rows and `create_full_access` result: no `whitelist_ips` | present and null in every observation | added as optional nullable list of strings |
+| `list` `readonly`: present only for read-only tokens | present on every row as 0 or 1 | No correction: the field stays optional |
+| `rename` data: nullable object | null | No correction |
+
+Evidence:
+
+- Committed capture [2026-11-18-tokens-section.json](evidence/2026-11-18-tokens-section.json),
+  SHA-256 `3d99afac982e0357f7efae4037bb61c5994f69f923d3eea9b698b8082d9de6e4`, revision
+  `c7f2ec78`, recipe `tokens-lifecycle-v1`: 17 observations (9 GET, 8 POST) through the
+  generated client, zero discrepancies, both throwaway tokens absent afterwards.
+- A separate sanitized probe on the same day with throwaway tokens, all revoked, is the
+  source for the API-error cases (duplicate name, missing rename source, rename to the
+  same name) and for the first observation of each row above. It is not a committed
+  capture.
+- Server source read on the same version: `Cpanel/API/Tokens.pm` (revoke passes the
+  admin result to result data; rename sets no data; create strips every admin field
+  except `whitelist_ips`; module needs the `apitokens` feature; team users are refused),
+  `Cpanel/Security/Authn/APITokens/Object.pm` (`whitelist_ips` is the allowed IP
+  addresses or CIDR ranges, or undefined), `.../Validate.pm` (name pattern, 50-character
+  limit, past expiry rejected), `.../Write.pm` (`revoke_token` returns 1 after deleting,
+  else 0) and `Cpanel/Admin/Modules/Cpanel/apitokens.pm` (creation sends an
+  `APIToken::Created` notification). The string item type of `whitelist_ips` rests on
+  that source description; no populated value was observed.
+
+Not established: `whitelist_ips` with values, delivery of the creation notification
+(`npr` has no contact address), enforcement of expiry and of read-only tokens, the stored
+meaning of `expires_at` 0, and any version other than `11.138.0.24`. These are tracked in
+`whm-api-client-8x0.2.98`. Coverage after this change is read from
+[coverage.md](coverage.md).

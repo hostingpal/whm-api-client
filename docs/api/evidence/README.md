@@ -1519,3 +1519,10 @@ exists; see the [review corrections](../source-audit.md#webmail-session-review-c
 [the cleanup move](../source-audit.md#webmail-session-cleanup-inside-the-lifecycle-2026-11-02)
 and the
 [second review](../source-audit.md#webmail-session-second-review-corrections-2026-11-02).
+
+The [API token lifecycle capture](2026-11-18-tokens-section.json) at `c7f2ec78` on
+`11.138.0.24` records recipe `tokens-lifecycle-v1`: WHM `version` plus eight phases of
+`uapi()->tokens()` on each UAPI route, 17 observations (9 GET, 8 POST), all passing with
+zero discrepancies and both throwaway tokens confirmed absent. It shows `expires_at` as
+null or a digit string, `whitelist_ips` as null, null rename data and integer revoke
+results. See the [recipe](../../../tools/live-verify/README.md#api-token-lifecycle).

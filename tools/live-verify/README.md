@@ -3029,3 +3029,51 @@ inventory went from 0 to 2 populated rows on each route. Account, token, domain 
 found 8 session files and failed the run; the cleanup then removed all 8 and its separate rerun
 of the proof read `confirmed_absent`. See the
 [source audit](../../docs/api/source-audit.md#disposable-webmail-session-capture-2026-11-02).
+
+## API token lifecycle
+
+`tokens-section.php` (recipe `tokens-lifecycle-v1`) verifies `uapi()->tokens()` on the
+designated `npr` account through the generated client, on direct UAPI and the WHM bridge.
+The shared `SectionCommand` handles authorization, committed-input checks and protected,
+new-only publication.
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 \
+WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/tokens-section.php --output=docs/api/evidence/tokens-section-new.json
+```
+
+After WHM `version`, each route runs eight phases on one throwaway token named
+`whmapiclient-live-<suffix>-<route>`, where the suffix is new for every run:
+
+1. list, which must not already contain the run's names;
+2. create, read-only and expiring one hour after the run starts;
+3. list, which must show that token once with its expiry, read-only flag and full
+   access, and no row may hold a token secret;
+4. rename, which must return null;
+5. list, which must show only the new name with the same settings;
+6. revoke, which must return 1;
+7. revoke again, which must return 0;
+8. list, which must show neither name.
+
+`TokensSectionRecipe` spells every URI and form body literally, independently of the
+client's encoder, and `TokensSectionGuard` admits each phase's exact method, URI, body
+and headers once. Only the run's own names can appear in a body, so the account's other
+tokens, including the one the direct route authenticates with, cannot be renamed or
+revoked. The created secret is checked in place for presence, never used to authenticate
+and never recorded; the report holds structural paths and types only.
+
+A route's token counts as possibly present from the moment its creation is dispatched.
+After any failed phase the fixture revokes both names of that route once each, which
+returns 0 harmlessly for a name that does not exist, confirms absence with a list and
+stops before the next route. Those cleanup requests are separate phases, never retries,
+and `TokensSectionEvidence` treats them as unexpected, so a run that needed cleanup
+exits 1. A `tokens` state of `uncertain` in the report means absence was not confirmed
+and the name must be checked by hand.
+
+The [2026-11-18 capture](../../docs/api/evidence/2026-11-18-tokens-section.json) at
+`c7f2ec78` on `11.138.0.24` passes all 17 observations (9 GET, 8 POST) with zero
+discrepancies and both tokens `absent`. It records the digit-string `expires_at`, the
+null `whitelist_ips`, null rename data and the integer revoke results. It does not
+exercise expiry or read-only enforcement, API-error responses or the creation
+notification (`npr` has no contact address); see `whm-api-client-8x0.2.98`.
