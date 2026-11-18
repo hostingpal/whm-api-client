@@ -12504,8 +12504,15 @@ Evidence:
   (`contact_email`, `contact_email_2`, `pushbullet_access_token`) through
   `Variables/get_user_information` before each create; all three were empty strings on
   both routes. It also limits cleanup to names the run holds and keeps a route uncertain
-  after a creation of unknown outcome. Neither capture needed cleanup, so those paths are
+  after a creation of unknown outcome. No capture needed cleanup, so those paths are
   covered by synthetic tests only.
+- Committed capture [2026-11-18-tokens-section-v3.json](evidence/2026-11-18-tokens-section-v3.json),
+  SHA-256 `9220525a75f499597848801b2c4bd86ddef0fe0601664131c07dcb0fb5eccc3f`, revision
+  `1c05e6d6`, recipe `tokens-lifecycle-v3`: 17 observations (11 GET, 6 POST), zero
+  discrepancies, both tokens absent. v3 releases a name after an accepted rename or
+  revoke, revokes in cleanup only a held name whose row shows the run's settings, and no
+  longer revokes the freed name a second time. The revoke result `0` for a missing token
+  is therefore recorded by the v1 and v2 captures only.
 - A separate sanitized probe on the same day with throwaway tokens, all revoked, is the
   source for the API-error cases (duplicate name, missing rename source, rename to the
   same name) and for the first observation of each row above. It is not a committed

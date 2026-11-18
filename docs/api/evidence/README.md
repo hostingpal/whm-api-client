@@ -1534,3 +1534,8 @@ targets on each route before its create (`contact_email`, `contact_email_2` and
 `pushbullet_access_token`, all empty strings) and reports `notification_targets`. The v1
 artifact stays the valid record of what ran at its revision; its report's fixed statement
 about the contact address was checked by hand, not by that recipe.
+
+The [current capture](2026-11-18-tokens-section-v3.json) at `1c05e6d6` on `11.138.0.24`
+records recipe `tokens-lifecycle-v3`: 17 observations (11 GET, 6 POST), all passing with
+zero discrepancies and both tokens absent. v3 revokes each token once; the second revoke
+of the freed name, and its `0` result, appear only in the v1 and v2 artifacts.

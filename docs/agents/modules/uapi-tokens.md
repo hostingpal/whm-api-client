@@ -59,21 +59,29 @@ token a direct client authenticates with ends that client's access.
 
 ## Live recipe and evidence
 
-`tools/live-verify/tokens-section.php` (recipe `tokens-lifecycle-v2`) runs the whole
+`tools/live-verify/tokens-section.php` (recipe `tokens-lifecycle-v3`) runs the
 lifecycle through the generated client on the designated `npr` account, which is shared.
 Each route owns one throwaway token named `whmapiclient-live-<suffix>-<route>`, created
-read-only with a one-hour expiry. The rules a change to the recipe must keep:
+read-only with a one-hour expiry: list, read notification targets, create, list, rename,
+list, revoke (expects 1), list. The rules a change to the recipe must keep:
 
 - **No create without checking notification targets.** Before each route's create the
   recipe reads `contact_email`, `contact_email_2` and `pushbullet_access_token` through
   `Variables/get_user_information` and stops unless all three are reported and empty.
   The report's `notification_targets` records what the run checked; it makes no claim
   about delivery.
-- **Cleanup revokes only what the run holds.** An accepted create or rename establishes
-  a name. A refused one means the name belongs to someone else and it is left alone; a
-  refused create ends the route as `not_created` with no cleanup. After an outcome the
-  run never learned, a name is revoked only when a later list shows a row with exactly
-  the run's expiry, read-only flag and full access.
+- **A released name is someone else's.** The run holds a name after an accepted create
+  or rename and releases the old one after an accepted rename or revoke. A refused
+  mutation changes nothing; a refused create ends the route as `not_created` with no
+  cleanup. After a rename of unknown outcome the run may hold either name.
+- **Cleanup revokes only a held name with the run's settings.** The row must show
+  exactly the run's expiry, read-only flag and full access. A held name with other
+  settings, or a released name that is listed again, may be another party's token: it
+  is left untouched and the route stays `uncertain`. A name the run never had is ignored.
+- **No mutation targets a freed name.** The lifecycle revokes each token once. v1 and
+  v2 revoked the freed name a second time to observe the `0` result; on a shared account
+  that would hit whoever reused the name. Repeating it belongs on a disposable account
+  (`whm-api-client-8x0.2.98`).
 - **Absence needs evidence.** A list proves absence only when every row has a name and
   none holds a secret. After a create of unknown outcome, an empty list settles nothing,
   because the request can still take effect: the route stays `uncertain` unless the
@@ -82,14 +90,21 @@ read-only with a one-hour expiry. The rules a change to the recipe must keep:
   separate phases, never retries, and a run that needed them cannot pass.
 - The created secret is checked in place, never used and never recorded.
 
-Captures, both on `11.138.0.24` with zero discrepancies and both tokens absent:
+Captures, all on `11.138.0.24` with zero discrepancies and both tokens absent:
 
+- [v3](../../api/evidence/2026-11-18-tokens-section-v3.json) at `1c05e6d6`: 17
+  observations (11 GET, 6 POST), `notification_targets` `none_configured` on both routes.
+  The current recipe.
 - [v2](../../api/evidence/2026-11-18-tokens-section-v2.json) at `bd654671`: 19
-  observations (11 GET, 8 POST), `notification_targets` `none_configured` on both routes.
+  observations (11 GET, 8 POST). Same checks as v3 plus the second revoke returning `0`;
+  its cleanup kept a renamed-away or revoked name as the run's.
 - [v1](../../api/evidence/2026-11-18-tokens-section.json) at `c7f2ec78`: 17
-  observations (9 GET, 8 POST). v1 did not check notification targets and its report
-  states that the account has no contact address; that was checked by hand that day.
-  v1's cleanup revoked both names after any failure. Neither capture needed cleanup.
+  observations (9 GET, 8 POST), including the second revoke. v1 did not check
+  notification targets and its report states that the account has no contact address;
+  that was checked by hand that day. v1's cleanup revoked both names after any failure.
+
+No capture needed cleanup. The `0` result of revoking a missing token is recorded by v1
+and v2 only.
 
 The failure paths are covered by synthetic tests only (`TokensSectionFixtureTest`,
 `TokensSectionRecipeTest`). The API-error cases above come from a separate sanitized
