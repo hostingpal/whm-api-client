@@ -163,11 +163,14 @@ final class DnsZoneEvidenceTest extends TestCase
 
     public function testSuccessfulPhasesRequirePopulatedRawPayloads(): void
     {
-        foreach ([0, 1, 27] as $index) {
-            $records = self::records('known_failure');
-            self::assertArrayHasKey($index, $records);
-            self::assertArrayHasKey('argument_variant', $records[$index]);
-            $records[$index]['payload_paths'] = ['$' => ['null']];
+        foreach (['direct-mass-before', 'direct-mass-add', 'direct-swap'] as $phase) {
+            $records = [];
+            foreach (self::records('known_failure') as $record) {
+                if (($record['argument_variant'] ?? null) === $phase) {
+                    $record['payload_paths'] = ['$' => ['null']];
+                }
+                $records[] = $record;
+            }
             $result = DnsZoneEvidence::assess(
                 $records,
                 DomainRowsEvidenceTest::context(),
@@ -175,7 +178,7 @@ final class DnsZoneEvidenceTest extends TestCase
                 'known_failure',
             );
             self::assertSame('failed', $result['status']);
-            self::assertContains('unexpected_outcome:' . $records[$index]['argument_variant'], $result['findings']);
+            self::assertContains('unexpected_outcome:' . $phase, $result['findings']);
         }
     }
 
