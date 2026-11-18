@@ -203,6 +203,10 @@ final class SectionCommandTest extends TestCase
         if (is_file($source)) {
             self::assertTrue(copy($source, $root . '/tools/live-verify/src/SectionCommand.php'));
         }
+        self::assertTrue(copy(
+            dirname(__DIR__, 3) . '/tools/live-verify/src/EvidencePublication.php',
+            $root . '/tools/live-verify/src/EvidencePublication.php',
+        ));
         foreach (['email-section.php', 'boxtrapper-section.php'] as $script) {
             self::assertTrue(copy(
                 dirname(__DIR__, 3) . '/tools/live-verify/' . $script,
@@ -224,6 +228,7 @@ function file_put_contents(string $path, string $contents): int|false
     }
     return \file_put_contents($path, $contents);
 }
+require __DIR__ . '/tools/live-verify/src/EvidencePublication.php';
 require __DIR__ . '/tools/live-verify/src/SectionCommand.php';
 exit(SectionCommand::run(
     array_slice($argv, 1), __DIR__,

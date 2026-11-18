@@ -5,79 +5,18 @@ declare(strict_types=1);
 namespace HostingPal\WhmApiClient\Tools\LiveVerify;
 
 use HostingPal\WhmApiClient\Api\Uapi\Spec\DnsSpec;
-use SensitiveParameter;
-use stdClass;
 
 /**
  * Assess the thirty captured probes independently of fixture setup, readback expectations and cleanup.
- * Every discrepancy remains in its original capture. A reviewed readback field and the reproduced bridge
- * failure have distinct proofs; neither permits an unrelated write discrepancy or an unsuccessful read.
+ * Require populated raw structures for successful reads and writes and a null payload for the bridge refusal.
  *
  * @phpstan-import-type Context from EvidenceRunner
  * @phpstan-import-type Record from EvidenceRunner
- * @phpstan-import-type Alternative from EvidenceRunner
- * @phpstan-type Observation array{
- *     operation: string, variant: string, argument_variant?: string, route: string, method: ?string,
- *     server_version: ?string, observed_at: string, revision: string, source_sha256: string, map_sha256: string,
- *     generator_tree: string, overlay_sha256: string, effective_contract_sha256: string, http_status: ?int,
- *     api_outcome: string, payload_validation: string, probe_outcome: string, failure_kind: ?string,
- *     response_paths: array<string, list<string>>, payload_paths: array<string, list<string>>,
- *     discrepancies: list<array{path: string, kind: string}>, payload_alternatives?: list<Alternative>,
- *     readback_review?: 'known_dname_raw_string'
- * }
+ * @phpstan-type Observation Record
  * @phpstan-type Assessment array{status: 'passed'|'failed', policy: string, findings: list<string>}
  */
 final class DnsZoneEvidence
 {
-    private const PARSE_CONTRACT = '9d318e929dc7b2c9f5eb506a482e9af44e1e864548977432beded9f5ed63afd7';
-    private const PARSE_SOURCE = '172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc';
-
-    /**
-     * Inspect the captured body before the next request overwrites it. The wildcard fingerprint alone cannot
-     * identify unknown keys or their count. Every extra key on every row must be the reviewed string field
-     * on a resource record. Only a fixed label leaves this scope.
-     *
-     * @param Observation $record
-     * @return Observation
-     */
-    public static function reviewReadback(array $record, #[SensitiveParameter] ?string $raw): array
-    {
-        unset($record['readback_review']);
-        if ($raw === null || !self::matchesReadback($record)) {
-            return $record;
-        }
-        $document = json_decode($raw);
-        if (!$document instanceof stdClass) {
-            return $record;
-        }
-        if ($record['route'] === 'bridged-uapi') {
-            $envelope = ($document->data ?? null) instanceof stdClass ? ($document->data->uapi ?? null) : null;
-        } else {
-            $envelope = property_exists($document, 'result') ? $document->result : $document;
-        }
-        if (!$envelope instanceof stdClass || !is_array($envelope->data ?? null)) {
-            return $record;
-        }
-        $declared = DnsSpec::PARSE_ZONE['returns']['items']['fields'];
-        $found = false;
-        foreach ($envelope->data as $row) {
-            if (!$row instanceof stdClass) {
-                return $record;
-            }
-            foreach (array_diff_key(get_object_vars($row), $declared) as $name => $value) {
-                if (
-                    $name !== 'dname_raw' || !is_string($value) || ($row->type ?? null) !== 'record'
-                    || !is_string($row->dname_b64 ?? null) || base64_decode($row->dname_b64, true) !== $value
-                ) {
-                    return $record;
-                }
-                $found = true;
-            }
-        }
-
-        return $found ? [...$record, 'readback_review' => 'known_dname_raw_string'] : $record;
-    }
-
     /**
      * @param list<Observation> $probes
      * @param Context $context
@@ -124,7 +63,7 @@ final class DnsZoneEvidence
             $knownFailure = $phase === 'bridged-swap' && $bridgeOutcome === 'known_failure';
             if (
                 $probe['http_status'] !== 200 || ($probe['response_paths']['$'] ?? null) !== ['object']
-                || !isset($probe['payload_paths']['$'])
+                || !self::payloadMatches($spec['function'], $probe['payload_paths'], $knownFailure)
                 || $probe['api_outcome'] !== ($knownFailure ? 'failure' : 'success')
                 || $probe['probe_outcome'] !== ($knownFailure ? 'failed' : 'passed')
                 || $probe['payload_validation'] !== ($knownFailure ? 'not_checked' : 'passed')
@@ -132,11 +71,7 @@ final class DnsZoneEvidence
             ) {
                 $findings[] = 'unexpected_outcome:' . $phase;
             }
-            $hasReview = ($probe['readback_review'] ?? null) === 'known_dname_raw_string';
-            if (
-                ($probe['discrepancies'] !== [] || isset($probe['readback_review']))
-                && (!$hasReview || !self::matchesReadback($probe))
-            ) {
+            if ($probe['discrepancies'] !== []) {
                 $findings[] = 'unreviewed_discrepancy:' . $phase;
             }
         }
@@ -147,21 +82,36 @@ final class DnsZoneEvidence
             $findings[] = 'phase_order_mismatch';
         }
 
-        return ['status' => $findings === [] ? 'passed' : 'failed', 'policy' => 'uapi-dns-two-zone-v1',
+        return ['status' => $findings === [] ? 'passed' : 'failed', 'policy' => 'uapi-dns-two-zone-v2',
             'findings' => array_values(array_unique($findings))];
     }
 
-    /** @param Record $record */
-    private static function matchesReadback(array $record): bool
+    /** @param array<string, list<string>> $paths */
+    private static function payloadMatches(string $function, array $paths, bool $knownFailure): bool
     {
-        return $record['operation'] === 'uapi:DNS/parse_zone' && $record['variant'] === 'uapi:DNS/parse_zone#GET'
-            && in_array($record['route'], ['direct-uapi', 'bridged-uapi'], true) && $record['method'] === 'GET'
-            && $record['server_version'] === '11.138.0.24' && $record['source_sha256'] === self::PARSE_SOURCE
-            && $record['effective_contract_sha256'] === self::PARSE_CONTRACT && $record['http_status'] === 200
-            && $record['probe_outcome'] === 'passed' && $record['api_outcome'] === 'success'
-            && $record['payload_validation'] === 'passed' && $record['failure_kind'] === null
-            && ($record['payload_paths']['$[].*'] ?? null) === ['string']
-            && $record['discrepancies'] === [['path' => '$[].*', 'kind' => 'unknown_field']];
+        if ($knownFailure) {
+            return $paths === ['$' => ['null']];
+        }
+        if ($function === 'mass_edit_zone') {
+            return ($paths['$'] ?? null) === ['object']
+                && in_array($paths['$.new_serial'] ?? [], [['int'], ['numeric-string']], true);
+        }
+        if (($paths['$'] ?? null) !== ['list'] || ($paths['$[]'] ?? null) !== ['object']) {
+            return false;
+        }
+        $required = $function === 'swap_ip_in_zones'
+            ? ['new_value' => 'string', 'old_value' => 'string', 'record_name' => 'string',
+                'record_type' => 'string', 'zone_name' => 'string']
+            : ['line_index' => 'int', 'type' => 'string', 'record_type' => 'string', 'ttl' => 'int',
+                'dname_b64' => 'string', 'data_b64' => 'list', 'data_b64[]' => 'string'];
+        foreach ($required as $field => $type) {
+            $seen = $paths['$[].' . $field] ?? [];
+            if (!in_array($type, $seen, true) || array_diff($seen, [$type, 'missing']) !== []) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

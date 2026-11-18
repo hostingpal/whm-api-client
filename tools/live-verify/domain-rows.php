@@ -5,14 +5,12 @@ declare(strict_types=1);
 namespace HostingPal\WhmApiClient\Tools\LiveVerify;
 
 use LogicException;
-use RuntimeException;
 use SensitiveParameter;
 use Throwable;
 
 // Committed-code disposable-account domain-rows proof: a new-only structural artifact, or a private name inspection.
 $command = static function (#[SensitiveParameter] array $arguments): int {
-    $temporary = null;
-    $reportReady = false;
+    $publication = null;
     try {
         if ($arguments === ['--help']) {
             fwrite(STDOUT, "Usage: php tools/live-verify/domain-rows.php --output=PATH\n"
@@ -97,21 +95,7 @@ $command = static function (#[SensitiveParameter] array $arguments): int {
             return $fixture['status'] === 'passed' ? 0 : 1;
         }
         $output = substr((string) $argument, 9);
-        if (is_link($output) || file_exists($output)) {
-            throw new LogicException('Domain rows evidence requires a new destination.');
-        }
-        $directory = dirname($output);
-        if (!is_dir($directory) && !@mkdir($directory, 0700, true) && !is_dir($directory)) {
-            throw new RuntimeException('Domain rows evidence directory unavailable.');
-        }
-        $temporary = @tempnam($directory, '.domain-rows-');
-        if ($temporary === false) {
-            $temporary = null;
-            throw new RuntimeException('Domain rows evidence file unavailable.');
-        }
-        if (dirname($temporary) !== realpath($directory) || !@chmod($temporary, 0600)) {
-            throw new RuntimeException('Domain rows evidence protection unavailable.');
-        }
+        $publication = new EvidencePublication($output, '.domain-rows-');
         $scenario = (new DomainRowsFixture(
             new CurlClient(allowFormPost: true),
             $whm,
@@ -122,15 +106,7 @@ $command = static function (#[SensitiveParameter] array $arguments): int {
             ['schema_version' => 1, 'domain_rows' => $scenario],
             JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR,
         ) . "\n";
-        if (@file_put_contents($temporary, $json) !== strlen($json)) {
-            throw new RuntimeException('Domain rows evidence persistence failed.');
-        }
-        $reportReady = true;
-        if (!@link($temporary, $output)) {
-            throw new RuntimeException('Domain rows evidence persistence failed.');
-        }
-        @unlink($temporary);
-        $temporary = null;
+        $publication->publish($json);
         $passed = $scenario['fixture']['status'] === 'passed';
         $reviewed = $scenario['discrepancy_review']['status'] === 'passed';
         fwrite(STDOUT, 'Domain rows fixture: ' . ($passed ? 'passed' : 'failed') . "\n");
@@ -140,15 +116,14 @@ $command = static function (#[SensitiveParameter] array $arguments): int {
     } catch (Throwable $error) {
         $kind = $error instanceof LogicException ? 'configuration_failure' : 'execution_failure';
         fwrite(STDERR, 'Domain rows verification failed (' . $kind . ").\n");
-        if ($reportReady && $temporary !== null) {
-            fwrite(STDERR, 'Domain rows report retained at: ' . $temporary . "\n");
+        $recovery = $publication?->quotedRecoveryPath();
+        if ($recovery !== null) {
+            fwrite(STDERR, 'Domain rows report retained at: ' . $recovery . "\n");
         }
 
         return 1;
     } finally {
-        if ($temporary !== null && !$reportReady) {
-            @unlink($temporary);
-        }
+        $publication?->finish();
     }
 };
 

@@ -2405,10 +2405,11 @@ Things to know before calling it:
   changed: check their `record_type` and values.
 - With several domains and no `sourceIp`, the code on cPanel 11.138.0.24 applies that
   rule once per call instead of once per zone: the first zone it handles that yields
-  an address decides it for every zone handled afterwards, and that order is not the
-  order you passed. Pass `sourceIp` when the zones may hold different addresses. A disposable
-  two-zone test verified this by giving the zones different apex addresses and placing both candidate addresses in each zone. The direct
-  call replaced just one of those addresses across both zones.
+  an address decides it for every zone handled afterwards, and that order is independent of the
+  caller’s domain order. Pass `sourceIp` to choose the address explicitly. In a disposable
+  test with different apex addresses and both candidate addresses in each zone, the
+  direct call replaced one source across both zones. Either traversal order could
+  produce this observation.
 - If the result does not match the documented shape after a successful response
   (`PayloadMismatchException`), the zones may or may not have changed: a successful
   call can also skip every domain. Read the zones before deciding whether to retry.
@@ -2419,9 +2420,9 @@ The digit-string `new_serial`, the no-change and stale-serial exceptions, the sw
 and the bridge failure were observed on 2026-11-18 on a disposable account through
 both routes. Malformed JSON and a zone the account does not control were seen only as
 failed responses to the generic `call()`. The SPF rewriting was observed and matches
-the server's code; the two-zone recipe independently verified once-per-call detection. See the
-[two-zone source audit](docs/api/source-audit.md#2026-11-18--uapi-dns-two-zone-live-recipe-8x0297) for
-what was and was not observed.
+the server's code; the two-zone recipe independently verified reuse of one source. See the
+[original contract checks](docs/api/source-audit.md#2026-11-18--uapi-dns-zone-writes-8x0441) and
+[two-zone observations](docs/api/source-audit.md#2026-11-18--uapi-dns-two-zone-live-recipe-8x0297).
 
 ### Expanded WHM account management
 

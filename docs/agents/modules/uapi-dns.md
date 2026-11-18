@@ -117,4 +117,6 @@ Direct UAPI returned matching A change rows for both zones. Only the markers
 for one detected source changed, and both SOA serials advanced. The WHM bridge
 returned the known inner API error. Both complete typed zone snapshots stayed
 unchanged across that request. See the [live recipe](../../../tools/live-verify/README.md#uapi-dns-zone-writes-on-a-disposable-account)
-for the evidence policy and command.
+for the evidence policy and command. The v4 run inspected the original responses
+and verified that the optional resource-record field `dname_raw` was a string equal
+to decoded `dname_b64`. The typed parse now preserves this field when present.

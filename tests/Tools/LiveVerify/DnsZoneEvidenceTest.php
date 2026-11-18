@@ -161,71 +161,22 @@ final class DnsZoneEvidenceTest extends TestCase
         return $record;
     }
 
-    public function testOriginalReadbackProvesTheNameAndValueBehindTheWildcard(): void
+    public function testSuccessfulPhasesRequirePopulatedRawPayloads(): void
     {
-        $records = self::records('known_failure');
-        $context = DomainRowsEvidenceTest::context();
-        $context['source_hashes']['uapi'] = '172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc';
-        foreach ($records as &$record) {
-            $record['source_sha256'] = $context['source_hashes']['uapi'];
-        }
-        unset($record);
-        $field = ['type' => 'record', 'dname_raw' => 'private.name.', 'dname_b64' => base64_encode('private.name.')];
-        $asBody = static fn (array $rows): string => json_encode(['result' => ['data' => $rows]], JSON_THROW_ON_ERROR);
-        foreach ([0, 7] as $index) {
-            $probe = $records[$index];
-            $probe['discrepancies'] = [['path' => '$[].*', 'kind' => 'unknown_field']];
-            $probe['payload_paths']['$[].*'] = ['string'];
-            $raw = $index === 0 ? $asBody([$field]) : json_encode(
-                ['data' => ['uapi' => ['data' => [$field]]]],
-                JSON_THROW_ON_ERROR,
+        foreach ([0, 1, 27] as $index) {
+            $records = self::records('known_failure');
+            self::assertArrayHasKey($index, $records);
+            self::assertArrayHasKey('argument_variant', $records[$index]);
+            $records[$index]['payload_paths'] = ['$' => ['null']];
+            $result = DnsZoneEvidence::assess(
+                $records,
+                DomainRowsEvidenceTest::context(),
+                '11.138.0.24',
+                'known_failure',
             );
-            $reviewed = DnsZoneEvidence::reviewReadback($probe, $raw);
-            self::assertSame('known_dname_raw_string', $reviewed['readback_review'] ?? null);
-            self::assertSame($probe['discrepancies'], $reviewed['discrepancies']);
-            self::assertStringNotContainsString('private.name.', json_encode($reviewed, JSON_THROW_ON_ERROR));
-            self::assertArrayNotHasKey('readback_review', DnsZoneEvidence::reviewReadback($reviewed, null));
-            $records[$index] = $reviewed;
+            self::assertSame('failed', $result['status']);
+            self::assertContains('unexpected_outcome:' . $records[$index]['argument_variant'], $result['findings']);
         }
-        self::assertSame('passed', DnsZoneEvidence::assess(
-            $records,
-            $context,
-            '11.138.0.24',
-            'known_failure',
-        )['status']);
-        $probe = $records[0];
-        unset($probe['readback_review']);
-        foreach (
-            [
-            $asBody([['type' => 'record']]), $asBody([array_merge($field, ['private_extra' => 'private'])]),
-            $asBody([$field, ['private_extra' => 'private']]), $asBody([array_merge($field, ['type' => 'comment'])]),
-            $asBody([array_merge($field, ['dname_b64' => base64_encode('other')])]),
-            $asBody([array_merge($field, ['dname_raw' => 1])]), $asBody([array_merge($field, ['dname_b64' => '!'])]),
-            null, 'malformed',
-            ] as $bad
-        ) {
-            self::assertArrayNotHasKey('readback_review', DnsZoneEvidence::reviewReadback($probe, $bad));
-        }
-        foreach (
-            [
-            ['server_version' => '11.138.0.25'], ['source_sha256' => str_repeat('a', 64)],
-            ['effective_contract_sha256' => str_repeat('a', 64)], ['method' => 'POST'],
-            ['payload_paths' => ['$[].*' => ['int', 'string']]],
-            ['discrepancies' => [['path' => '$', 'kind' => 'type_mismatch']]],
-            ] as $change
-        ) {
-            self::assertArrayNotHasKey('readback_review', DnsZoneEvidence::reviewReadback(
-                [...$probe, ...$change],
-                $asBody([$field]),
-            ));
-        }
-        $records[0] = $probe;
-        self::assertSame('failed', DnsZoneEvidence::assess(
-            $records,
-            $context,
-            '11.138.0.24',
-            'known_failure',
-        )['status']);
     }
 
     /** @return list<Record> */
@@ -267,7 +218,17 @@ final class DnsZoneEvidenceTest extends TestCase
                 'probe_outcome' => $defect ? 'failed' : 'passed', 'api_outcome' => $defect ? 'failure' : 'success',
                 'payload_validation' => $defect ? 'not_checked' : 'passed',
                 'failure_kind' => $defect ? 'api_failure' : null, 'discrepancies' => [],
-                'response_paths' => ['$' => ['object']], 'payload_paths' => ['$' => [$defect ? 'null' : 'object']],
+                'response_paths' => ['$' => ['object']], 'payload_paths' => match (true) {
+                    $defect => ['$' => ['null']],
+                    $operation === 'uapi:DNS/mass_edit_zone' => ['$' => ['object'], '$.new_serial' => ['numeric-string']],
+                    $operation === 'uapi:DNS/swap_ip_in_zones' => ['$' => ['list'], '$[]' => ['object'],
+                        '$[].new_value' => ['string'], '$[].old_value' => ['string'], '$[].record_name' => ['string'],
+                        '$[].record_type' => ['string'], '$[].zone_name' => ['string']],
+                    default => ['$' => ['list'], '$[]' => ['object'], '$[].line_index' => ['int'],
+                        '$[].record_type' => ['missing', 'string'], '$[].type' => ['string'],
+                        '$[].dname_b64' => ['string'], '$[].ttl' => ['int'], '$[].data_b64' => ['list'],
+                        '$[].data_b64[]' => ['string']],
+                },
             ];
         }
 

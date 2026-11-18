@@ -170,8 +170,8 @@ final class DnsZoneExercise
             foreach ($sources as $label => $address) {
                 $expected = $label === $changedLabel ? $destination : $address;
                 $after[$zone]->requiredA($label . '.' . $zone . '.', $expected);
+                self::check(self::markerChangesMatch($rows, $zone, $label, $address, $expected));
             }
-            self::check(self::hasChange($rows, $zone, $changedLabel, $chosen, $destination));
         }
         if ($route === 'bridged') {
             $this->bridge = 'success';
@@ -179,11 +179,12 @@ final class DnsZoneExercise
     }
 
     /**
-     * Match a returned change to the same owner, source and destination found in the two independent zone reads.
+     * A changed marker requires one exact row; an unchanged marker must have none. All rows for this marker
+     * count, even when they contradict the independently read old or new value. Other owners may also change.
      *
      * @param SwapIpInZonesResult $rows
      */
-    private static function hasChange(
+    private static function markerChangesMatch(
         #[SensitiveParameter] array $rows,
         string $zone,
         string $label,
@@ -193,15 +194,19 @@ final class DnsZoneExercise
         $count = 0;
         foreach ($rows as $row) {
             if (
-                rtrim($row['zone_name'] ?? '', '.') === $zone && ($row['record_type'] ?? null) === 'A'
-                && in_array(rtrim($row['record_name'] ?? '', '.'), [$label, $label . '.' . $zone], true)
-                && ($row['old_value'] ?? null) === $source && ($row['new_value'] ?? null) === $destination
+                strtolower(rtrim($row['zone_name'] ?? '', '.')) !== $zone
+                || strtoupper($row['record_type'] ?? '') !== 'A'
+                || !in_array(strtolower(rtrim($row['record_name'] ?? '', '.')), [$label, $label . '.' . $zone], true)
             ) {
-                $count++;
+                continue;
             }
+            if (($row['old_value'] ?? null) !== $source || ($row['new_value'] ?? null) !== $destination) {
+                return false;
+            }
+            ++$count;
         }
 
-        return $count === 1;
+        return $count === ($source === $destination ? 0 : 1);
     }
 
     /**
@@ -325,11 +330,10 @@ final class DnsZoneExercise
         );
         $record = $this->runner->capture($probe, $this->capture, $bridged ? $this->whm : $this->direct);
         $record['server_version'] = $this->version;
-        $record = DnsZoneEvidence::reviewReadback($record, $this->capture->rawBody());
         $this->records[] = $record;
         if (
             $record['http_status'] !== 200 || $record['method'] !== ($readZone === null ? 'POST' : 'GET')
-            || ($record['discrepancies'] !== [] && !isset($record['readback_review']))
+            || $record['discrepancies'] !== []
         ) {
             throw new RuntimeException('DNS probe transport or structural evidence failed.');
         }
@@ -367,8 +371,8 @@ final class DnsZoneExercise
         }
 
         return preg_match(
-            '~\bUndefined subroutine &Cpanel::AdminBin::Call::call called at /usr/local/cpanel/Cpanel/API/DNS\.pm'
-                . '(?: line [0-9]+)?\.~',
+            '~\AUndefined subroutine &Cpanel::AdminBin::Call::call called at /usr/local/cpanel/Cpanel/API/DNS\.pm'
+                . '(?: line [0-9]+)?\.\n?\z~',
             $errors[0],
         ) === 1;
     }

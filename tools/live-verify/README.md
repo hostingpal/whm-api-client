@@ -3183,9 +3183,7 @@ one source for the whole call, regardless of its traversal order. The report
 retains the expected bridge API failure only when its original response matches
 the handler error and both zone snapshots remain unchanged.
 
-The evidence review checks all 30 ordered probes. On cPanel 11.138.0.24 the
-zone parser returns an extra string named `dname_raw`. For the pinned parse
-contract the recipe inspects the same raw response, requires this to be the sole
-extra key on affected record rows, and compares it with the strictly decoded
-`dname_b64`. It preserves the masked discrepancy in the artifact. DNS write
-responses use the strict contract throughout.
+The evidence review checks all 30 ordered probes. Every successful phase must
+contain its expected raw payload paths and types. Any undeclared field fails
+the review. The historical v4 capture identified the optional record field
+`dname_raw`, which the generated parse contract now preserves as a string.

@@ -12654,7 +12654,9 @@ Read over SSH from `/usr/local/cpanel`, not from the pinned documents:
   the first zone processed decides it for the batch; the loop iterates a hash. Every
   processed zone has its serial increased and is synchronized and reloaded.
 
-### Not observed
+### Outside the original one-off runs
+
+The later two-zone recipe and the separate temporary-domain observation are recorded below.
 
 - A bridged `swap_ip_in_zones` success, so the list container is unobserved there.
 - A swap across two separate zones (both test domains shared one zone), and therefore

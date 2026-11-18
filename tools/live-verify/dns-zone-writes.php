@@ -5,14 +5,12 @@ declare(strict_types=1);
 namespace HostingPal\WhmApiClient\Tools\LiveVerify;
 
 use LogicException;
-use RuntimeException;
 use SensitiveParameter;
 use Throwable;
 
 // Publish one committed-code DNS zone run on the designated disposable account.
 $command = static function (#[SensitiveParameter] array $arguments): int {
-    $temporary = null;
-    $reportReady = false;
+    $publication = null;
     try {
         if ($arguments === ['--help']) {
             fwrite(STDOUT, "Usage: php tools/live-verify/dns-zone-writes.php --output=PATH\n"
@@ -41,21 +39,7 @@ $command = static function (#[SensitiveParameter] array $arguments): int {
         require $root . '/vendor/autoload.php';
         $context = RepositoryContext::load($root);
         $output = substr($argument, 9);
-        if (is_link($output) || file_exists($output)) {
-            throw new LogicException('DNS zone evidence requires a new destination.');
-        }
-        $directory = dirname($output);
-        if (!is_dir($directory) && !@mkdir($directory, 0700, true) && !is_dir($directory)) {
-            throw new RuntimeException('DNS zone evidence directory unavailable.');
-        }
-        $temporary = @tempnam($directory, '.dns-zone-writes-');
-        if ($temporary === false) {
-            $temporary = null;
-            throw new RuntimeException('DNS zone evidence file unavailable.');
-        }
-        if (dirname($temporary) !== realpath($directory) || !@chmod($temporary, 0600)) {
-            throw new RuntimeException('DNS zone evidence protection unavailable.');
-        }
+        $publication = new EvidencePublication($output, '.dns-zone-writes-');
         $scenario = (new DnsZoneFixture(
             new CurlClient(allowFormPost: true),
             $whm,
@@ -65,15 +49,7 @@ $command = static function (#[SensitiveParameter] array $arguments): int {
             ['schema_version' => 1, 'dns_zone_writes' => $scenario],
             JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR,
         ) . "\n";
-        if (@file_put_contents($temporary, $json) !== strlen($json)) {
-            throw new RuntimeException('DNS zone evidence persistence failed.');
-        }
-        $reportReady = true;
-        if (!@link($temporary, $output)) {
-            throw new RuntimeException('DNS zone evidence persistence failed.');
-        }
-        @unlink($temporary);
-        $temporary = null;
+        $publication->publish($json);
         $passed = $scenario['fixture']['status'] === 'passed';
         fwrite(STDOUT, 'DNS zone fixture: ' . ($passed ? 'passed' : 'failed') . "\n");
 
@@ -84,15 +60,14 @@ $command = static function (#[SensitiveParameter] array $arguments): int {
     } catch (Throwable $error) {
         $kind = $error instanceof LogicException ? 'configuration_failure' : 'execution_failure';
         fwrite(STDERR, 'DNS zone verification failed (' . $kind . ").\n");
-        if ($reportReady && $temporary !== null) {
-            fwrite(STDERR, 'DNS zone report retained at: ' . $temporary . "\n");
+        $recovery = $publication?->quotedRecoveryPath();
+        if ($recovery !== null) {
+            fwrite(STDERR, 'DNS zone report retained at: ' . $recovery . "\n");
         }
 
         return 1;
     } finally {
-        if ($temporary !== null && !$reportReady) {
-            @unlink($temporary);
-        }
+        $publication?->finish();
     }
 };
 
