@@ -22,7 +22,8 @@ use Throwable;
  * uncertain, and a subsequent absence cannot settle it. The report carries fixed labels and structural probes only.
  *
  * @phpstan-import-type Context from EvidenceRunner
- * @phpstan-import-type Record from EvidenceRunner
+ * @phpstan-import-type Observation from DnsZoneEvidence
+ * @phpstan-import-type Assessment from DnsZoneEvidence
  * @phpstan-import-type ResourceOutcome from DisposableAccountLifecycle
  * @phpstan-import-type TokenOutcome from DisposableAccountLifecycle
  * @phpstan-import-type CleanupOutcome from DisposableAccountLifecycle
@@ -37,7 +38,8 @@ use Throwable;
  *         alias_zone: ResourceOutcome}
  * }
  * @phpstan-type Scenario array{
- *     scenario: string, target_role: string, server_version: ?string, probes: list<Record>, bridge_outcome: string,
+ *     scenario: string, target_role: string, server_version: ?string, probes: list<Observation>, bridge_outcome: string,
+ *     discrepancy_review: Assessment,
  *     fixture: Report
  * }
  */
@@ -74,7 +76,7 @@ final class DnsZoneFixture
     public function __construct(
         #[SensitiveParameter] ClientInterface $http,
         #[SensitiveParameter] string $whmToken,
-        array $context,
+        private readonly array $context,
     ) {
         $account = DisposableAccount::fresh(self::ACCOUNT, self::DOMAIN, self::TOKEN_NAME, 900, readOnlyToken: false);
         $this->guard = new DnsZoneGuard($http, $whmToken, $account);
@@ -100,10 +102,14 @@ final class DnsZoneFixture
         $outcome = $this->lifecycle->run($this->exercise(...), proveRemoved: $this->proveRemoved(...));
         $report = DisposableAccountLifecycle::reportFields($outcome);
 
+        $records = $this->exercise?->observations() ?? [];
+        $bridge = $this->exercise?->bridgeOutcome() ?? 'not_run';
+
         return [
             'scenario' => 'uapi-dns-zone-disposable-v1', 'target_role' => 'disposable-test-account',
-            'server_version' => $this->version, 'bridge_outcome' => $this->exercise?->bridgeOutcome() ?? 'not_run',
-            'probes' => $this->exercise?->observations() ?? [],
+            'server_version' => $this->version, 'bridge_outcome' => $bridge,
+            'probes' => $records,
+            'discrepancy_review' => DnsZoneEvidence::assess($records, $this->context, $this->version, $bridge),
             'fixture' => [
                 ...$report, 'resources' => [...$report['resources'], ...$this->alias],
                 'alias_setup' => $this->aliasSetup, 'stopped_at' => $this->phase,

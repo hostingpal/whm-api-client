@@ -16,7 +16,7 @@ use stdClass;
  * Exercise typed DNS writes on the run's two separately owned zones. Each probe captures one original response.
  * Live record values, comparison snapshots, indexes and exception messages stay in memory.
  *
- * @phpstan-import-type Record from EvidenceRunner
+ * @phpstan-import-type Observation from DnsZoneEvidence
  * @phpstan-import-type SwapIpInZonesResult from Dns
  * @phpstan-type Route 'direct'|'bridged'
  */
@@ -26,7 +26,7 @@ final class DnsZoneExercise
 
     private const MARKERS = ['source-one' => '192.0.2.61', 'source-two' => '192.0.2.62'];
 
-    /** @var list<Record> */
+    /** @var list<Observation> */
     private array $records = [];
 
     /** @var 'not_run'|'known_failure'|'success'|'unexpected' */
@@ -55,7 +55,7 @@ final class DnsZoneExercise
         $this->swap('direct', '192.0.2.55');
     }
 
-    /** @return list<Record> */
+    /** @return list<Observation> */
     public function observations(): array
     {
         return $this->records;
@@ -325,10 +325,11 @@ final class DnsZoneExercise
         );
         $record = $this->runner->capture($probe, $this->capture, $bridged ? $this->whm : $this->direct);
         $record['server_version'] = $this->version;
+        $record = DnsZoneEvidence::reviewReadback($record, $this->capture->rawBody());
         $this->records[] = $record;
         if (
             $record['http_status'] !== 200 || $record['method'] !== ($readZone === null ? 'POST' : 'GET')
-            || $record['discrepancies'] !== []
+            || ($record['discrepancies'] !== [] && !isset($record['readback_review']))
         ) {
             throw new RuntimeException('DNS probe transport or structural evidence failed.');
         }

@@ -25,8 +25,8 @@ final class DnsZoneGuard implements ClientInterface
     private const BRIDGE = self::WHM . 'uapi_cpanel?api.version=1&cpanel.user=' . DnsZoneFixture::ACCOUNT
         . '&cpanel.module=DNS&cpanel.function=';
 
-    private const PHASES = [
-        'limits', 'park_alias',
+    /** Captured DNS phases in fixed order, shared with the evidence assessment. */
+    public const EXERCISE_PHASES = [
         'direct-mass-before', 'direct-mass-add', 'direct-mass-added', 'direct-mass-edit', 'direct-mass-edited',
         'direct-mass-remove', 'direct-mass-removed',
         'bridged-mass-before', 'bridged-mass-add', 'bridged-mass-added', 'bridged-mass-edit', 'bridged-mass-edited',
@@ -38,6 +38,8 @@ final class DnsZoneGuard implements ClientInterface
         'direct-swap-main-before', 'direct-swap-alias-before', 'direct-swap', 'direct-swap-main-after',
         'direct-swap-alias-after',
     ];
+
+    private const PHASES = ['limits', 'park_alias', ...self::EXERCISE_PHASES];
 
     private readonly ControlPostAdmission $controlPosts;
 

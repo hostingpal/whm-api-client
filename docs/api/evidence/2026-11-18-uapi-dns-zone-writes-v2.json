@@ -1,0 +1,177 @@
+{
+    "schema_version": 1,
+    "dns_zone_writes": {
+        "scenario": "uapi-dns-zone-disposable-v1",
+        "target_role": "disposable-test-account",
+        "server_version": "11.138.0.24",
+        "bridge_outcome": "not_run",
+        "probes": [
+            {
+                "operation": "uapi:DNS/parse_zone",
+                "variant": "uapi:DNS/parse_zone#GET",
+                "argument_variant": "direct-mass-before",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.24",
+                "observed_at": "2026-11-18T11:34:21Z",
+                "revision": "56d42408a5eb605834046921a1ac3ab8eb2c764f",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "fc0c5b0646b9f4f16335f2412206e9779d8d09e7",
+                "overlay_sha256": "3df098f09e39982fe3e472cce9b961ff04e9c86993c3b757cecc17c6235d7e3b",
+                "effective_contract_sha256": "9d318e929dc7b2c9f5eb506a482e9af44e1e864548977432beded9f5ed63afd7",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "list"
+                    ],
+                    "$.data[]": [
+                        "object"
+                    ],
+                    "$.data[].*": [
+                        "string"
+                    ],
+                    "$.data[].data_b64": [
+                        "list",
+                        "missing"
+                    ],
+                    "$.data[].data_b64[]": [
+                        "string"
+                    ],
+                    "$.data[].dname_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data[].line_index": [
+                        "int"
+                    ],
+                    "$.data[].record_type": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data[].text_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$.data[].ttl": [
+                        "int",
+                        "missing"
+                    ],
+                    "$.data[].type": [
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.*": [
+                        "int"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "list"
+                    ],
+                    "$[]": [
+                        "object"
+                    ],
+                    "$[].*": [
+                        "string"
+                    ],
+                    "$[].data_b64": [
+                        "list",
+                        "missing"
+                    ],
+                    "$[].data_b64[]": [
+                        "string"
+                    ],
+                    "$[].dname_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].line_index": [
+                        "int"
+                    ],
+                    "$[].record_type": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].text_b64": [
+                        "missing",
+                        "string"
+                    ],
+                    "$[].ttl": [
+                        "int",
+                        "missing"
+                    ],
+                    "$[].type": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [
+                    {
+                        "path": "$[].*",
+                        "kind": "unknown_field"
+                    }
+                ]
+            }
+        ],
+        "fixture": {
+            "status": "failed",
+            "setup": "passed",
+            "cleanup": "passed",
+            "failures": [
+                "dns_exercise_failure"
+            ],
+            "domain_cleanup": "confirmed_absent",
+            "zone_cleanup": "confirmed_absent",
+            "filesystem_cleanup": "not_claimed",
+            "filesystem_residue": [],
+            "filesystem_control": {
+                "status": "not_run",
+                "counts": []
+            },
+            "resources": {
+                "account": {
+                    "creation": "confirmed",
+                    "cleanup": "confirmed_absent"
+                },
+                "token": {
+                    "creation": "confirmed",
+                    "cleanup": "confirmed_absent"
+                },
+                "alias_domain": {
+                    "creation": "confirmed",
+                    "cleanup": "confirmed_absent"
+                },
+                "alias_zone": {
+                    "creation": "confirmed",
+                    "cleanup": "confirmed_absent"
+                }
+            },
+            "alias_setup": "passed",
+            "stopped_at": "dns_exercise"
+        }
+    }
+}

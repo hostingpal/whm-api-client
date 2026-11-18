@@ -77,7 +77,10 @@ $command = static function (#[SensitiveParameter] array $arguments): int {
         $passed = $scenario['fixture']['status'] === 'passed';
         fwrite(STDOUT, 'DNS zone fixture: ' . ($passed ? 'passed' : 'failed') . "\n");
 
-        return $passed ? 0 : 1;
+        $reviewed = $scenario['discrepancy_review']['status'] === 'passed';
+        fwrite(STDOUT, 'DNS evidence review: ' . ($reviewed ? 'passed' : 'failed') . "\n");
+
+        return $passed && $reviewed ? 0 : 1;
     } catch (Throwable $error) {
         $kind = $error instanceof LogicException ? 'configuration_failure' : 'execution_failure';
         fwrite(STDERR, 'DNS zone verification failed (' . $kind . ").\n");
