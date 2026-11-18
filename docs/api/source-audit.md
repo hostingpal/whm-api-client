@@ -12706,3 +12706,21 @@ stricter evidence review passed with zero discrepancies. The ordinary bridged
 swap returned the known handler failure with both zone snapshots unchanged.
 The direct swap matched the controlled A changes in both zones. The account,
 token, primary and alias domains, and both zones were confirmed absent.
+
+## 2026-11-18 — UAPI ZoneEdit/resetzone (8x0.1.37)
+
+The flattened cPanel OpenAPI response documents a list of rebuild replies.
+The installed 11.138.0.24 wrapper explicitly selects list semantics.
+A successful UAPI dispatch can carry a failed rebuild in the row's `result`.
+The generated method preserves the nested status, message and optional nullable
+MX metadata. Its 16 offline cases exercise both routes, inner failure, outer
+failure and malformed accepted payloads.
+
+At `aee6a547bf7b4567fa68f11e1102f19ad9c45ecf` on `test.oblak.host`,
+the one-off fixture created an account, added and read a dedicated custom A
+record before each reset, then reread the zone after each call. Direct UAPI
+and the WHM bridge each received one form POST, removed their respective
+record and returned one successful rebuild row. Both payloads passed the
+generated contract. The fixture confirmed absence of its token, account,
+domain and zone after cleanup. The original response shape and masked MX
+field types are in the [structural evidence](evidence/2026-11-18-uapi-zone-reset.json).

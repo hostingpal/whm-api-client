@@ -140,3 +140,11 @@ A dispatched rebuild failure has integer 0 and can supply `statusmsg`.
 Dispatch failures raise `ApiErrorException`. The pin leaves `checkmx` contents
 unspecified. If supplied, the client retains the object's fields or explicit
 null. A payload mismatch after accepted dispatch can follow a completed rebuild.
+
+At `aee6a547` on 2026-11-18, each route reset the dedicated domain of fresh
+account `wldnsreset` on cPanel `11.138.0.24`. A distinct custom A record was read
+before each reset and absent afterwards. Each HTTP 200 response had one rebuild
+row with integer status 1, an empty status message and a non-null MX object.
+The account, token, primary domain and zone were confirmed absent after cleanup.
+Rebuild failure is source-backed and covered by synthetic fixtures. See the
+[sanitized probes](../../api/evidence/2026-11-18-uapi-zone-reset.json).

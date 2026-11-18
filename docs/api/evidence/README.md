@@ -1541,3 +1541,8 @@ zero discrepancies and both tokens absent. v3 revokes each token once; the secon
 of the freed name, and its `0` result, appear only in the v1 and v2 artifacts. The current
 recipe is `tokens-lifecycle-v4`, which has no capture: it sends the same requests on a
 passing run and differs only in what it leaves untouched after a lost reply.
+
+- [UAPI ZoneEdit reset](2026-11-18-uapi-zone-reset.json) records two form POSTs
+  on `11.138.0.24` from a one-off owned-zone fixture using `EvidenceRunner`.
+  Each route removed its own custom A record and returned one successful rebuild row.
+  Both payloads validated without discrepancies, and lifecycle cleanup passed.
