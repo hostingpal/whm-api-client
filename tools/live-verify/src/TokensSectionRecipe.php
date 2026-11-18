@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace HostingPal\WhmApiClient\Tools\LiveVerify;
 
 use HostingPal\WhmApiClient\Api\Uapi\Spec\TokensSpec;
+use HostingPal\WhmApiClient\Api\Uapi\Spec\VariablesSpec;
 use HostingPal\WhmApiClient\Api\Uapi\Tokens;
 use HostingPal\WhmApiClient\Api\Whm\Spec\ServerSpec;
 use HostingPal\WhmApiClient\Client;
@@ -17,7 +18,9 @@ use Throwable;
 /**
  * The exact requests and expectations of one API token lifecycle on the designated npr account.
  *
- * Each route owns one throwaway token named from the run's suffix: created read-only with an expiry, listed, renamed,
+ * Each route owns one throwaway token named from the run's suffix. Before creating it the route must show that
+ * neither of its names exists and that the account has no notification target, because the server announces every
+ * created token to the account's contacts. The token is then created read-only with an expiry, listed, renamed,
  * revoked, revoked again and confirmed absent. Bodies are spelled literally here, independently of the client's
  * encoder, so the guard compares two spellings of each request; the names use only characters that need no encoding.
  * The cleanup phases exist only for a failed run and are never part of passing evidence. Nothing here performs I/O,
@@ -26,21 +29,26 @@ use Throwable;
  * @phpstan-type Route 'direct-uapi'|'bridged-uapi'
  * @phpstan-type Step array{probe:Probe,method:'GET'|'POST',body:string}
  * @phpstan-type Definition array{operation:string,route:'whm'|Route,spec:array<mixed>,method:'GET'|'POST'}
+ * @phpstan-type Sighting 'absent'|'settled'|'other'
+ * @phpstan-type Inventory array{original:Sighting,renamed:Sighting}
  */
 final readonly class TokensSectionRecipe
 {
-    public const RECIPE = 'tokens-lifecycle-v1';
+    public const RECIPE = 'tokens-lifecycle-v2';
+
+    /** The account variables that hold a cPanel user's notification targets. */
+    private const TARGETS = ['contact_email', 'contact_email_2', 'pushbullet_access_token'];
 
     private const LIFECYCLE = [
-        'preflight', 'create', 'listed', 'rename', 'renamed', 'revoke', 'revoke_again', 'absent',
+        'preflight', 'targets', 'create', 'listed', 'rename', 'renamed', 'revoke', 'revoke_again', 'absent',
     ];
 
-    private const CLEANUP = ['cleanup_original', 'cleanup_renamed', 'cleanup_check'];
+    private const CLEANUP = ['cleanup_inspect', 'cleanup_original', 'cleanup_renamed', 'cleanup_check'];
 
-    private const DIRECT = 'https://test.oblak.host:2083/execute/Tokens/';
+    private const DIRECT = 'https://test.oblak.host:2083/execute/';
 
     private const BRIDGE = 'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
-        . '&cpanel.module=Tokens&cpanel.function=';
+        . '&cpanel.module=';
 
     /** Bind one run's suffix and the expiry its tokens are created with; performs no I/O. */
     public function __construct(private string $suffix, private int $expiresAt)
@@ -88,6 +96,23 @@ final readonly class TokensSectionRecipe
         [$stage, $name] = self::split($phase);
         $definition = self::definition($stage, $name);
         $route = $definition['route'];
+        $account = $route === 'direct-uapi' ? null : 'npr';
+        [$module, $function] = explode('/', substr($definition['operation'], 5));
+        $uri = $route === 'direct-uapi'
+            ? self::DIRECT . $module . '/' . $function
+            : self::BRIDGE . $module . '&cpanel.function=' . $function;
+        if ($stage === 'targets') {
+            $uri .= ($route === 'direct-uapi' ? '?' : '&') . 'name=' . implode('&name=', self::TARGETS);
+
+            return ['probe' => new Probe(
+                $definition['operation'],
+                $route,
+                $definition['spec'],
+                $uri,
+                static fn (#[SensitiveParameter] Client $client): mixed =>
+                    $client->uapi($account)->variables()->getUserInformation(self::TARGETS),
+            ), 'method' => 'GET', 'body' => ''];
+        }
         $original = $this->tokenName($name, false);
         $renamed = $this->tokenName($name, true);
         $expiresAt = $this->expiresAt;
@@ -114,9 +139,8 @@ final readonly class TokensSectionRecipe
             $definition['operation'],
             $route,
             $definition['spec'],
-            ($route === 'direct-uapi' ? self::DIRECT : self::BRIDGE) . substr($definition['operation'], 12),
-            static fn (#[SensitiveParameter] Client $client): mixed =>
-                $invoke($client->uapi($route === 'direct-uapi' ? null : 'npr')->tokens()),
+            $uri,
+            static fn (#[SensitiveParameter] Client $client): mixed => $invoke($client->uapi($account)->tokens()),
         );
 
         return ['probe' => $probe, 'method' => $definition['method'], 'body' => $body];
@@ -125,8 +149,8 @@ final readonly class TokensSectionRecipe
     /**
      * Whether a phase's original response shows what the lifecycle requires at that point.
      *
-     * The response is decoded here from its raw bytes, independently of the generated client. Cleanup revocations
-     * carry no expectation: only the absence check after them decides whether a failed run left a token behind.
+     * The response is decoded here from its raw bytes, independently of the generated client. Cleanup phases carry
+     * no expectation here: the fixture decides them from inventory() and from what the run proved it owns.
      */
     public function holds(string $phase, #[SensitiveParameter] string $raw): bool
     {
@@ -134,39 +158,43 @@ final readonly class TokensSectionRecipe
             return true;
         }
         [$stage, $name] = self::split($phase);
-        try {
-            $document = json_decode($raw, false, 512, JSON_THROW_ON_ERROR);
-        } catch (Throwable) {
+        $payload = self::payload($name, $raw);
+        if ($payload === null) {
             return false;
         }
-        if (!$document instanceof stdClass) {
-            return false;
-        }
-        if ($name === 'direct') {
-            $envelope = property_exists($document, 'result') ? $document->result : $document;
-        } else {
-            $envelope = ($document->data ?? null) instanceof stdClass ? ($document->data->uapi ?? null) : null;
-        }
-        if (!$envelope instanceof stdClass || !property_exists($envelope, 'data')) {
-            return false;
-        }
-        $data = $envelope->data;
-        $original = $this->named($data, $this->tokenName($name, false));
-        $renamed = $this->named($data, $this->tokenName($name, true));
+        $data = $payload[0];
+        $inventory = $this->read($data, $name);
 
         return match ($stage) {
+            'targets' => self::withoutTargets($data),
             'create' => $data instanceof stdClass && is_int($data->create_time ?? null)
                 && is_string($data->token ?? null) && $data->token !== '',
             'rename' => $data === null,
             'revoke' => $data === 1,
             'revoke_again' => $data === 0,
-            'listed' => $original !== null && count($original) === 1 && $this->settled($original[0])
-                && $renamed === [],
-            'renamed' => $renamed !== null && count($renamed) === 1 && $this->settled($renamed[0])
-                && $original === [],
-            'preflight', 'absent', 'cleanup_check' => $original === [] && $renamed === [],
+            'listed' => $inventory === ['original' => 'settled', 'renamed' => 'absent'],
+            'renamed' => $inventory === ['original' => 'absent', 'renamed' => 'settled'],
+            'preflight', 'absent' => $inventory === ['original' => 'absent', 'renamed' => 'absent'],
             default => true,
         };
+    }
+
+    /**
+     * What a list response shows for this route's two names, or null when it cannot be relied on.
+     *
+     * A name is absent only when every row of the list identifies itself: one row without a name, or one exposing a
+     * token secret, makes the whole list unusable for inferring absence. A name is settled when exactly one row
+     * carries it with the expiry, read-only restriction and full access this run creates its token with; any other
+     * presence is reported as other and proves nothing about ownership.
+     *
+     * @param 'direct'|'bridge' $name
+     * @return Inventory|null
+     */
+    public function inventory(string $name, #[SensitiveParameter] string $raw): ?array
+    {
+        $payload = self::payload($name, $raw);
+
+        return $payload === null ? null : $this->read($payload[0], $name);
     }
 
     /**
@@ -175,14 +203,17 @@ final readonly class TokensSectionRecipe
      */
     private static function definition(string $stage, string $name): array
     {
-        [$function, $spec, $method] = match ($stage) {
-            'create' => ['create_full_access', TokensSpec::CREATE_FULL_ACCESS, 'POST'],
-            'rename' => ['rename', TokensSpec::RENAME, 'POST'],
-            'revoke', 'revoke_again', 'cleanup_original', 'cleanup_renamed' => ['revoke', TokensSpec::REVOKE, 'POST'],
-            default => ['list', TokensSpec::LIST, 'GET'],
+        [$operation, $spec, $method] = match ($stage) {
+            'targets' => ['Variables/get_user_information', VariablesSpec::GET_USER_INFORMATION, 'GET'],
+            'create' => ['Tokens/create_full_access', TokensSpec::CREATE_FULL_ACCESS, 'POST'],
+            'rename' => ['Tokens/rename', TokensSpec::RENAME, 'POST'],
+            'revoke', 'revoke_again', 'cleanup_original', 'cleanup_renamed' => [
+                'Tokens/revoke', TokensSpec::REVOKE, 'POST',
+            ],
+            default => ['Tokens/list', TokensSpec::LIST, 'GET'],
         };
 
-        return ['operation' => 'uapi:Tokens/' . $function,
+        return ['operation' => 'uapi:' . $operation,
             'route' => $name === 'direct' ? 'direct-uapi' : 'bridged-uapi', 'spec' => $spec, 'method' => $method];
     }
 
@@ -200,6 +231,49 @@ final readonly class TokensSectionRecipe
         throw new LogicException('Unknown token phase.');
     }
 
+    /**
+     * The data member of a UAPI response on this route, wrapped so that an explicit null stays distinct from absence.
+     *
+     * @param 'direct'|'bridge' $name
+     * @return array{mixed}|null
+     */
+    private static function payload(string $name, #[SensitiveParameter] string $raw): ?array
+    {
+        try {
+            $document = json_decode($raw, false, 512, JSON_THROW_ON_ERROR);
+        } catch (Throwable) {
+            return null;
+        }
+        if (!$document instanceof stdClass) {
+            return null;
+        }
+        if ($name === 'direct') {
+            $envelope = property_exists($document, 'result') ? $document->result : $document;
+        } else {
+            $envelope = ($document->data ?? null) instanceof stdClass ? ($document->data->uapi ?? null) : null;
+        }
+        if (!$envelope instanceof stdClass || !property_exists($envelope, 'data')) {
+            return null;
+        }
+
+        return [$envelope->data];
+    }
+
+    /** Whether every notification target is reported and none is set. */
+    private static function withoutTargets(#[SensitiveParameter] mixed $data): bool
+    {
+        if (!$data instanceof stdClass) {
+            return false;
+        }
+        foreach (self::TARGETS as $target) {
+            if (!property_exists($data, $target) || !in_array($data->$target, [null, ''], true)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     /** @param 'direct'|'bridge' $name */
     private function tokenName(string $name, bool $renamed): string
     {
@@ -207,32 +281,48 @@ final readonly class TokensSectionRecipe
     }
 
     /**
-     * The rows carrying this name, or null unless the payload is a list of token rows without any secret.
-     *
-     * @return list<stdClass>|null
+     * @param 'direct'|'bridge' $name
+     * @return Inventory|null
      */
-    private function named(#[SensitiveParameter] mixed $data, string $name): ?array
+    private function read(#[SensitiveParameter] mixed $data, string $name): ?array
     {
         if (!is_array($data) || !array_is_list($data)) {
             return null;
         }
-        $rows = [];
+        $names = ['original' => $this->tokenName($name, false), 'renamed' => $this->tokenName($name, true)];
+        $rows = ['original' => [], 'renamed' => []];
         foreach ($data as $row) {
+            // Every row must identify itself and none may hold a secret, or the list proves nothing.
             if (!$row instanceof stdClass || property_exists($row, 'token')) {
                 return null;
             }
-            if (($row->name ?? null) === $name) {
-                $rows[] = $row;
+            $rowName = $row->name ?? null;
+            if (!is_string($rowName) || $rowName === '') {
+                return null;
+            }
+            foreach ($names as $identity => $tokenName) {
+                if ($rowName === $tokenName) {
+                    $rows[$identity][] = $row;
+                }
             }
         }
 
-        return $rows;
+        return ['original' => $this->sighting($rows['original']), 'renamed' => $this->sighting($rows['renamed'])];
     }
 
-    /** Whether a row still has the expiry, read-only restriction and full access its token was created with. */
-    private function settled(stdClass $row): bool
+    /**
+     * @param list<stdClass> $rows
+     * @return Sighting
+     */
+    private function sighting(array $rows): string
     {
-        return in_array($row->expires_at ?? null, [$this->expiresAt, (string) $this->expiresAt], true)
-            && ($row->readonly ?? null) === 1 && ($row->has_full_access ?? null) === 1;
+        if ($rows === []) {
+            return 'absent';
+        }
+        $row = $rows[0];
+
+        return count($rows) === 1
+            && in_array($row->expires_at ?? null, [$this->expiresAt, (string) $this->expiresAt], true)
+            && ($row->readonly ?? null) === 1 && ($row->has_full_access ?? null) === 1 ? 'settled' : 'other';
     }
 }

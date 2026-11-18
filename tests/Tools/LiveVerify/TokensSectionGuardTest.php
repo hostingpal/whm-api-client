@@ -22,6 +22,8 @@ final class TokensSectionGuardTest extends TestCase
     private const BRIDGE = 'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
         . '&cpanel.module=Tokens&cpanel.function=';
 
+    private const TARGETS = 'name=contact_email&name=contact_email_2&name=pushbullet_access_token';
+
     /** @var array<string,string|false> */
     private array $environment = [];
 
@@ -48,6 +50,12 @@ final class TokensSectionGuardTest extends TestCase
     {
         $name = 'whmapiclient-live-0a1b2c-';
         yield 'direct list' => ['preflight_direct', 'GET', self::DIRECT . 'list', ''];
+        yield 'direct cleanup inspection' => ['cleanup_inspect_direct', 'GET', self::DIRECT . 'list', ''];
+        yield 'direct notification targets' => ['targets_direct', 'GET',
+            'https://test.oblak.host:2083/execute/Variables/get_user_information?' . self::TARGETS, ''];
+        yield 'bridge notification targets' => ['targets_bridge', 'GET',
+            'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
+                . '&cpanel.module=Variables&cpanel.function=get_user_information&' . self::TARGETS, ''];
         yield 'direct create' => ['create_direct', 'POST', self::DIRECT . 'create_full_access',
             'name=' . $name . 'direct&expires_at=1795080067&readonly=1'];
         yield 'direct rename' => ['rename_direct', 'POST', self::DIRECT . 'rename',
@@ -178,7 +186,7 @@ final class TokensSectionGuardTest extends TestCase
     public function testUnknownPhasesInvalidRecipesAndEmptyCredentialsAreRejected(): void
     {
         $guard = self::guard(new MockClient());
-        foreach (['create', 'create_other', 'cleanup_direct', 'version_direct', ''] as $phase) {
+        foreach (['create', 'create_other', 'cleanup_direct', 'version_direct', 'targets', ''] as $phase) {
             try {
                 $guard->authorize($phase);
                 self::fail('An unknown phase was authorized.');

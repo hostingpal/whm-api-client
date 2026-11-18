@@ -15,16 +15,24 @@ use Throwable;
 /**
  * One-shot API token lifecycle through the generated client on both UAPI routes, with structural evidence only.
  *
- * Each route creates its own read-only, expiring throwaway token, lists it, renames it, revokes it, revokes it again
- * and confirms it is gone. The created secret is never read into this fixture's state: the original response is
- * checked in place and dropped before the next request. A route's token counts as possibly present from the moment
- * its creation is dispatched until an absence check passes. After any failure the fixture revokes both of that
- * route's names once each, which is harmless when they do not exist, confirms absence, and stops before the next
- * route. Cleanup requests are separate phases, never retries, and a run that needed them cannot pass.
+ * Each route first shows that neither of its names exists and that the account has no notification target, then
+ * creates its own read-only, expiring throwaway token, lists it, renames it, revokes it, revokes it again and
+ * confirms it is gone. The created secret is never read into this fixture's state: the original response is checked
+ * in place and dropped before the next request.
+ *
+ * The account is shared, so cleanup after a failed phase revokes a name only when this run is known to hold a token
+ * under it. An accepted creation or rename establishes that. A refused one establishes that the name is not this
+ * run's, and it is left alone. After an outcome this process never learned, a name is revoked only when a later list
+ * shows a row with exactly the settings this run creates its token with. Cleanup requests are separate phases, never
+ * retries, and a run that needed them cannot pass.
+ *
+ * A route's token is reported absent only on evidence. In particular, an empty list after a creation whose outcome is
+ * unknown settles nothing, because that request can still take effect later: the route then stays uncertain.
  *
  * @phpstan-import-type Context from EvidenceRunner
  * @phpstan-import-type Alternative from EvidenceRunner
  * @phpstan-import-type Assessment from TokensSectionEvidence
+ * @phpstan-import-type Inventory from TokensSectionRecipe
  * @phpstan-type Observation array{
  *   phase:string,expectation:'passed'|'failed'|'not_checked',
  *   operation:string,variant:string,route:string,method:string|null,server_version:string|null,
@@ -34,10 +42,14 @@ use Throwable;
  *   response_paths:array<string,list<string>>,payload_paths:array<string,list<string>>,
  *   discrepancies:list<array{path:string,kind:string}>,payload_alternatives?:list<Alternative>
  * }
- * @phpstan-type State 'not_started'|'uncertain'|'absent'
+ * @phpstan-type State 'not_started'|'not_created'|'uncertain'|'absent'
+ * @phpstan-type Targets 'not_checked'|'not_established'|'none_configured'
+ * @phpstan-type Ownership 'none'|'possible'|'owned'
  * @phpstan-type Report array{
  *   recipe:string,status:'passed'|'failed',probes:list<Observation>,assessment:Assessment,
- *   tokens:array{direct-uapi:State,bridged-uapi:State},failures:list<string>,limitations:list<string>
+ *   tokens:array{direct-uapi:State,bridged-uapi:State},
+ *   notification_targets:array{direct-uapi:Targets,bridged-uapi:Targets},
+ *   failures:list<string>,limitations:list<string>
  * }
  */
 final class TokensSectionFixture
@@ -58,6 +70,9 @@ final class TokensSectionFixture
 
     /** @var array{direct-uapi:State,bridged-uapi:State} */
     private array $tokens = ['direct-uapi' => 'not_started', 'bridged-uapi' => 'not_started'];
+
+    /** @var array{direct-uapi:Targets,bridged-uapi:Targets} */
+    private array $targets = ['direct-uapi' => 'not_checked', 'bridged-uapi' => 'not_checked'];
 
     /** @var list<string> */
     private array $failures = [];
@@ -129,11 +144,31 @@ final class TokensSectionFixture
     private function lifecycle(string $name): bool
     {
         $route = $name === 'direct' ? 'direct-uapi' : 'bridged-uapi';
+        /** @var array{original:Ownership,renamed:Ownership} $owned */
+        $owned = ['original' => 'none', 'renamed' => 'none'];
+        $dispatched = false;
         try {
             $this->observe('preflight_' . $name);
+            // The server announces a created token to the account's contacts, so none may be configured.
+            $this->targets[$route] = 'not_established';
+            $this->observe('targets_' . $name);
+            $this->targets[$route] = 'none_configured';
             // From here the creation may reach the server, whatever this process learns about its outcome.
+            $dispatched = true;
             $this->tokens[$route] = 'uncertain';
-            foreach (['create', 'listed', 'rename', 'renamed', 'revoke', 'revoke_again', 'absent'] as $stage) {
+            try {
+                $this->observe('create_' . $name);
+            } finally {
+                $owned['original'] = self::established($this->outcome('create_' . $name));
+            }
+            $this->observe('listed_' . $name);
+            try {
+                $this->observe('rename_' . $name);
+            } finally {
+                // The token stays this run's under its first name until a list shows that name gone.
+                $owned['renamed'] = self::established($this->outcome('rename_' . $name));
+            }
+            foreach (['renamed', 'revoke', 'revoke_again', 'absent'] as $stage) {
                 $this->observe($stage . '_' . $name);
             }
             $this->tokens[$route] = 'absent';
@@ -141,8 +176,11 @@ final class TokensSectionFixture
             return true;
         } catch (Throwable) {
             $this->failures[] = $route . ':phase_failure';
-            if ($this->tokens[$route] === 'uncertain') {
-                $this->cleanup($name);
+            if ($dispatched && $owned['original'] === 'none') {
+                // The server refused the creation, so this run holds nothing under either name.
+                $this->tokens[$route] = 'not_created';
+            } elseif ($dispatched) {
+                $this->cleanup($name, $owned);
             }
 
             return false;
@@ -150,30 +188,130 @@ final class TokensSectionFixture
     }
 
     /**
-     * Revoke both names of one route once each and accept only a confirmed absence.
+     * Revoke what this run holds on one route and accept only evidence that nothing of it is left.
      *
      * @param 'direct'|'bridge' $name
+     * @param array{original:Ownership,renamed:Ownership} $owned
      */
-    private function cleanup(string $name): void
+    private function cleanup(string $name, array $owned): void
     {
         $route = $name === 'direct' ? 'direct-uapi' : 'bridged-uapi';
-        foreach (['cleanup_original', 'cleanup_renamed'] as $stage) {
-            try {
-                $this->observe($stage . '_' . $name);
-            } catch (Throwable) {
-                $this->failures[] = $route . ':cleanup_failure';
+        $before = $this->inspect('cleanup_inspect_' . $name, $name);
+        if ($before === null) {
+            $this->failures[] = $route . ':cleanup_unconfirmed';
+
+            return;
+        }
+        foreach (['original', 'renamed'] as $identity) {
+            if (self::ours($owned[$identity], $before[$identity])) {
+                try {
+                    $this->observe('cleanup_' . $identity . '_' . $name);
+                } catch (Throwable) {
+                    $this->failures[] = $route . ':cleanup_failure';
+                }
             }
         }
-        try {
-            $this->observe('cleanup_check_' . $name);
-            $this->tokens[$route] = 'absent';
-        } catch (Throwable) {
+        $after = $this->inspect('cleanup_check_' . $name, $name);
+        if ($after === null) {
             $this->failures[] = $route . ':cleanup_unconfirmed';
+
+            return;
         }
+        $unsettled = [];
+        foreach (['original', 'renamed'] as $identity) {
+            if (self::ours($owned[$identity], $after[$identity])) {
+                $unsettled[] = $route . ':cleanup_unconfirmed';
+            } elseif ($owned[$identity] === 'possible' && $after[$identity] === 'other') {
+                // Something carries the name, but nothing shows that this run put it there.
+                $unsettled[] = $route . ':unproven_token_under_run_name';
+            }
+        }
+        if ($owned['original'] === 'possible' && $before['original'] !== 'settled') {
+            // The creation never showed itself, so it may still take effect after these lists.
+            $unsettled[] = $route . ':creation_outcome_unknown';
+        }
+        if ($unsettled === []) {
+            $this->tokens[$route] = 'absent';
+        }
+        array_push($this->failures, ...$unsettled);
+    }
+
+    /**
+     * Whether a listed name is this run's token: any presence of an owned name, or a settled row of a possible one.
+     *
+     * @param Ownership $owned
+     * @param 'absent'|'settled'|'other' $sighting
+     */
+    private static function ours(string $owned, string $sighting): bool
+    {
+        return ($owned === 'owned' && $sighting !== 'absent') || ($owned === 'possible' && $sighting === 'settled');
+    }
+
+    /**
+     * What a mutation's outcome establishes about the name it would create.
+     *
+     * @param 'accepted'|'refused'|'unknown' $outcome
+     * @return Ownership
+     */
+    private static function established(string $outcome): string
+    {
+        return match ($outcome) {
+            'accepted' => 'owned',
+            'refused' => 'none',
+            default => 'possible',
+        };
+    }
+
+    /**
+     * The API outcome of a phase, read from its own record; anything this process did not learn is unknown.
+     *
+     * @return 'accepted'|'refused'|'unknown'
+     */
+    private function outcome(string $phase): string
+    {
+        $index = array_key_last($this->records);
+        $record = $index === null ? null : $this->records[$index];
+        if ($record === null || $record['phase'] !== $phase) {
+            return 'unknown';
+        }
+
+        return match ($record['api_outcome']) {
+            'success' => 'accepted',
+            'failure' => 'refused',
+            default => 'unknown',
+        };
     }
 
     /** Capture exactly one original response, check it in place and drop it; raw details never escape. */
     private function observe(string $phase): void
+    {
+        $raw = $this->capture($phase);
+        if (!$this->settle($raw !== null && $this->recipe->holds($phase, $raw))) {
+            throw new RuntimeException('Token observation failed.');
+        }
+    }
+
+    /**
+     * Capture one list during cleanup and read what it shows for the route's names, or null when it cannot be used.
+     *
+     * @param 'direct'|'bridge' $name
+     * @return Inventory|null
+     */
+    private function inspect(string $phase, string $name): ?array
+    {
+        try {
+            $raw = $this->capture($phase);
+        } catch (Throwable) {
+            return null;
+        }
+        $inventory = $raw === null ? null : $this->recipe->inventory($name, $raw);
+        $this->settle($inventory !== null);
+
+        return $inventory;
+    }
+
+    /** Record one phase's observation and return its original body only when the probe passed cleanly. */
+    private function capture(string $phase): ?string
     {
         $step = $this->recipe->step($phase);
         $probe = $step['probe'];
@@ -185,13 +323,23 @@ final class TokensSectionFixture
             $this->guard->clearPending();
             $this->capture->clear();
         }
-        $usable = $record['probe_outcome'] === 'passed' && $record['discrepancies'] === [];
-        $held = $usable && $raw !== null && $this->recipe->holds($phase, $raw);
-        $this->records[] = [...$record, 'phase' => $phase,
-            'expectation' => $usable ? ($held ? 'passed' : 'failed') : 'not_checked'];
-        if (!$held) {
-            throw new RuntimeException('Token observation failed.');
+        $this->records[] = [...$record, 'phase' => $phase, 'expectation' => 'not_checked'];
+
+        return $record['probe_outcome'] === 'passed' && $record['discrepancies'] === [] ? $raw : null;
+    }
+
+    /** Mark the latest record's expectation, which stays unchecked for an observation that could not be used. */
+    private function settle(bool $held): bool
+    {
+        $index = array_key_last($this->records);
+        if ($index !== null) {
+            $record = $this->records[$index];
+            if ($record['probe_outcome'] === 'passed' && $record['discrepancies'] === []) {
+                $this->records[$index]['expectation'] = $held ? 'passed' : 'failed';
+            }
         }
+
+        return $held;
     }
 
     /** @return Report */
@@ -209,14 +357,16 @@ final class TokensSectionFixture
         return ['recipe' => TokensSectionRecipe::RECIPE,
             'status' => $this->failures === [] && $absent && $assessment['status'] === 'passed' ? 'passed' : 'failed',
             'probes' => $records, 'assessment' => $assessment, 'tokens' => $this->tokens,
+            'notification_targets' => $this->targets,
             'failures' => array_values(array_unique($this->failures)),
             'limitations' => [
-                'each_route_used_one_throwaway_read_only_expiring_token_and_touched_no_other_token',
-                'created_secrets_were_never_used_to_authenticate_and_are_not_recorded',
+                'scope_is_one_throwaway_read_only_expiring_token_per_route',
+                'created_secrets_are_never_used_to_authenticate_and_never_recorded',
                 'expiry_and_read_only_enforcement_not_exercised',
-                'whitelist_ips_observed_only_as_null',
-                'rename_and_revoke_failures_for_missing_tokens_not_part_of_this_capture',
-                'designated_account_has_no_contact_address_so_no_creation_notification_was_observable',
+                'populated_whitelist_ips_not_exercised',
+                'api_error_responses_are_not_part_of_passing_evidence',
+                'notification_targets_are_read_only_as_contact_email_contact_email_2_and_pushbullet_access_token',
+                'creation_notification_delivery_not_observed',
                 'only_recorded_functions_routes_versions_and_revision_observed',
             ]];
     }
