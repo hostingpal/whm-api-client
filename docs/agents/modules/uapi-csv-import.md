@@ -23,3 +23,10 @@ batch with explicit null `data` or an empty or null `results` list raises
 `ApiErrorException`. Omitted data, a status-zero object missing `results`, and
 malformed known row fields raise `PayloadMismatchException`. WHM's outer result
 is independently enforced.
+
+On cPanel 11.138.0.24 the direct route created a mailbox and a local forwarder.
+A mixed direct import added the new mailboxes on both sides of a duplicate.
+The bridged mailbox imports returned failed rows, and the bridged forwarder
+attempt returned explicit null data and an API error. The header-only forwarder
+import succeeded on both routes with `results: null`. See the
+[ten-case disposable account run](../../api/source-audit.md#prepared-uapi-mailbox-and-forwarder-imports-2026-11-18).
