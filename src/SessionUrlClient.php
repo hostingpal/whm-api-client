@@ -21,6 +21,7 @@ use LogicException;
 use Psr\Http\Client\ClientExceptionInterface;
 use RuntimeException;
 use SensitiveParameter;
+use SensitiveParameterValue;
 use Throwable;
 use TypeError;
 use ValueError;
@@ -40,7 +41,11 @@ final class SessionUrlClient
     private readonly string $operationPath;
 
     private readonly string $cookieName;
-    private ?ResponseMetadata $metadata = null;
+    /** @var SensitiveParameterValue<array{url: string, cookie: string, transport: HttpTransport}> */
+    private readonly SensitiveParameterValue $connection;
+
+    /** @var SensitiveParameterValue<ResponseMetadata>|null Upstream messages can include the session credentials. */
+    private ?SensitiveParameterValue $metadata = null;
 
     /**
      * Bind a caller-owned authenticated endpoint to its independently trusted service origin.
@@ -56,9 +61,9 @@ final class SessionUrlClient
      */
     public function __construct(
         #[SensitiveParameter] string $trustedOrigin,
-        #[SensitiveParameter] private readonly string $endpointUrl,
-        #[SensitiveParameter] private readonly string $cookieValue,
-        #[SensitiveParameter] private readonly HttpTransport $transport,
+        #[SensitiveParameter] string $endpointUrl,
+        #[SensitiveParameter] string $cookieValue,
+        #[SensitiveParameter] HttpTransport $transport,
     ) {
         if (
             preg_match('~\Ahttps://(\[[a-f0-9:.]+\]|[a-z0-9.-]+):(2083|2096)\z~i', $trustedOrigin, $parts) !== 1
@@ -81,6 +86,12 @@ final class SessionUrlClient
         ) {
             throw new InvalidArgumentException('Invalid trusted session host.');
         }
+        // A transport may retain its last request. Keep it behind the same export boundary as the credentials.
+        $this->connection = new SensitiveParameterValue([
+            'url' => $endpointUrl,
+            'cookie' => $cookieValue,
+            'transport' => $transport,
+        ]);
         $this->operationPath = $path[1];
         $this->cookieName = $parts[2] === '2083' ? 'cpsession' : 'webmailsession';
     }
@@ -92,7 +103,7 @@ final class SessionUrlClient
      */
     public function responseMeta(): ?ResponseMetadata
     {
-        return $this->metadata;
+        return $this->metadata?->getValue();
     }
 
     /**
@@ -117,9 +128,10 @@ final class SessionUrlClient
         $fields->assertNoReserved([]);
         $method = OperationSpec::method($spec);
         $outcome = OperationSpec::outcome($spec);
+        $connection = $this->connection->getValue();
         try {
-            $response = $this->transport->send($method->value, $this->endpointUrl, [
-                'Cookie' => $this->cookieName . '=' . $this->cookieValue,
+            $response = $connection['transport']->send($method->value, $connection['url'], [
+                'Cookie' => $this->cookieName . '=' . $connection['cookie'],
                 'Accept' => 'application/json',
                 'Content-Type' => 'application/x-www-form-urlencoded',
             ], $fields->encode());
@@ -142,7 +154,7 @@ final class SessionUrlClient
             ResponseRoute::DirectUapi,
             $outcome,
             function (ResponseMetadata $metadata): void {
-                $this->metadata = $metadata;
+                $this->metadata = new SensitiveParameterValue($metadata);
             },
         );
     }

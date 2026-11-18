@@ -5066,8 +5066,10 @@ this invocation did not set up a temporary user.
 
 Construction performs no I/O. Each call sends one empty form POST with
 `cpsession` on port 2083 or `webmailsession` on port 2096. The caller owns
-session establishment and logout. Keep the URL, cookie, returned identifier,
-response metadata and raw failures out of logs and object exports.
+session establishment and logout. Ordinary exports and array casts of the handle
+keep bound credentials, the transport and stored metadata opaque. Callers who
+explicitly read responses, metadata or their own HTTP history can see sensitive
+values. Keep these values and the original URL and cookie out of logs.
 
 On `11.138.0.24` cPanel returned `['created' => 1, 'session_temp_user' => <string>]`
 when it created the temporary user and `['created' => 0]` on a second call in

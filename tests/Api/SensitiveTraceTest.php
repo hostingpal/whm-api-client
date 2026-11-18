@@ -34,6 +34,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Client\NetworkExceptionInterface;
 use Psr\Http\Message\MessageInterface;
+use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use ReflectionMethod;
@@ -1619,9 +1620,11 @@ final class SensitiveTraceTest extends TestCase
         }
     }
 
-    /** @return iterable<string, array{class-string<\Error>,class-string<\Error>}> */
-    public static function sessionEngineErrors(): iterable
+    /** @return iterable<string, array{class-string<\Error|LogicException|RuntimeException>,class-string<\Error|LogicException|RuntimeException>}> */
+    public static function sessionImplementationFailures(): iterable
     {
+        yield 'client logic exception' => [LogicException::class, LogicException::class];
+        yield 'client runtime exception' => [RuntimeException::class, RuntimeException::class];
         yield 'type' => [\TypeError::class, \TypeError::class];
         yield 'value' => [\ValueError::class, \ValueError::class];
         yield 'engine' => [\Error::class, \Error::class];
@@ -1630,15 +1633,15 @@ final class SensitiveTraceTest extends TestCase
     }
 
     /**
-     * @param class-string<\Error> $source
-     * @param class-string<\Error> $expected
+     * @param class-string<\Error|LogicException|RuntimeException> $source
+     * @param class-string<\Error|LogicException|RuntimeException> $expected
      */
-    #[DataProvider('sessionEngineErrors')]
+    #[DataProvider('sessionImplementationFailures')]
     public function testSessionTransportProgrammingErrorsStayDistinctAndPrivate(string $source, string $expected): void
     {
         $factory = new Psr17Factory();
         $http = new class ($source) implements ClientInterface {
-            /** @param class-string<\Error> $source */
+            /** @param class-string<\Error|LogicException|RuntimeException> $source */
             public function __construct(private readonly string $source)
             {
             }
@@ -1654,10 +1657,35 @@ final class SensitiveTraceTest extends TestCase
         try {
             $session->createTempUser();
             self::fail('Expected a programming error.');
-        } catch (\Error $exception) {
+        } catch (\Error | LogicException | RuntimeException $exception) {
             self::assertSame($expected, $exception::class);
             self::assertNull($exception->getPrevious());
             self::assertSecretAbsent($exception);
+            self::assertNull($session->responseMeta());
+        }
+    }
+
+    public function testSessionRequestFactoryFailureDiscardsTheSensitiveUriAndOriginalTrace(): void
+    {
+        $factory = new class implements RequestFactoryInterface {
+            public function createRequest(string $method, $uri): RequestInterface
+            {
+                throw new InvalidArgumentException((string) $uri);
+            }
+        };
+        $http = new MockClient();
+        $transport = new HttpTransport($http, $factory, new Psr17Factory());
+        $origin = 'https://example.test:2083';
+        $endpoint = $origin . '/cpsess' . self::STRING_TOTP . '/execute/Session/create_temp_user';
+        $session = new SessionUrlClient($origin, $endpoint, self::SECRET, $transport);
+        try {
+            $session->createTempUser();
+            self::fail('Expected a factory failure.');
+        } catch (LogicException $exception) {
+            self::assertSame(LogicException::class, $exception::class);
+            self::assertNull($exception->getPrevious());
+            self::assertSecretAbsent($exception);
+            self::assertCount(0, $http->getRequests());
             self::assertNull($session->responseMeta());
         }
     }

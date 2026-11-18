@@ -74,6 +74,39 @@ final class SessionUrlClientTest extends TestCase
         self::assertCount(1, $http->getRequests());
     }
 
+    /** @return iterable<string, array{bool}> */
+    public static function exportStates(): iterable
+    {
+        yield 'newly bound session' => [false];
+        yield 'after request and reflected metadata' => [true];
+    }
+
+    #[DataProvider('exportStates')]
+    public function testObjectExportAndArrayCastHideStoredCredentials(bool $sent): void
+    {
+        $origin = 'https://example.test:2083';
+        $url = $origin . self::PATH;
+        $http = new Client();
+        $session = new SessionUrlClient($origin, $url, self::COOKIE, self::transport($http));
+        if ($sent) {
+            $messages = [$url, self::COOKIE];
+            $envelope = ['status' => 1, 'data' => ['created' => 0], 'messages' => $messages];
+            $body = json_encode($envelope, JSON_THROW_ON_ERROR);
+            $http->addResponse(new Response(200, [], $body));
+            self::assertSame(['created' => 0], $session->createTempUser());
+            self::assertSame($messages, $session->responseMeta()?->uapiMessages());
+            self::assertCount(1, $http->getRequests());
+        }
+        $properties = (array) $session;
+        foreach ([$url, self::COOKIE] as $value) {
+            self::assertNotContains($value, $properties);
+        }
+        foreach ([var_export($session, true), var_export($properties, true)] as $export) {
+            self::assertStringNotContainsString('cpsess1234567890', $export);
+            self::assertStringNotContainsString(self::COOKIE, $export);
+        }
+    }
+
     public function testBindingStartsWithoutResponseMetadata(): void
     {
         $origin = 'https://example.test:2083';
