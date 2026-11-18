@@ -29,6 +29,10 @@
         {
           "kind": "policy",
           "text": "On status 1 a prepared empty batch may return results: null. On status 0 explicit null data or a validated null or empty results list raises ApiErrorException. Missing data, missing status-0 results and malformed rows are payload mismatches. The outer WHM result is always checked."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.24 direct imports created mailboxes and a forwarder. Bridged mailbox imports returned status 0 for every row. A bridged forwarder import returned null data and raised ApiErrorException. A prepared header-only batch succeeded through both routes. Verify inventory before any retry or route change."
         }
       ],
       "evidence": [
@@ -45,6 +49,12 @@
           "version": "cPanel 11.138.0.24 installed source",
           "date": "2026-11-18",
           "note": "Cpanel::CSVImport implements uploadimport, processdata/loaddata and configimport. Cpanel::API::CSVImport reads an account-local prepared batch, loops over all rows, adds email accounts or forwarders and marks overall failure if any row failed. Protect the staging ID as a reference to private import data."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.24",
+          "date": "2026-11-18",
+          "note": "At 6fa3197d on test.oblak.host ten typed POSTs compared raw response metadata, validated results and account inventories. The bridge returned WHM result 1 in every case. Its mailbox and forwarder cases added nothing; direct nonempty imports persisted all successful rows. See the 2026-11-18 prepared UAPI imports section of docs/api/source-audit.md."
         }
       ],
       "outcome": "unchecked",

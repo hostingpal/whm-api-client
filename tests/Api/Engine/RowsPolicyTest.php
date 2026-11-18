@@ -38,9 +38,6 @@ final class RowsPolicyTest extends TestCase
         $nullable['returns']['nullable'] = true;
         yield 'nullable root' => [$nullable];
         $nullable = $base;
-        $nullable['returns']['fields']['uploads']['nullable'] = true;
-        yield 'nullable list' => [$nullable];
-        $nullable = $base;
         $nullable['returns']['fields']['uploads']['items']['nullable'] = true;
         yield 'nullable row' => [$nullable];
         $scalar = $base;
@@ -77,6 +74,22 @@ final class RowsPolicyTest extends TestCase
         return ['function' => 'batch', 'module' => 'Synthetic', 'method' => 'POST', 'outcome' => 'unchecked',
             'params' => [], 'rows' => '$', 'returns' => ['type' => 'list', 'items' => ['type' => 'object',
                 'fields' => ['reason' => ['type' => 'string']]]]];
+    }
+
+    public function testNullableSelectedFieldWorksForAnIndependentGeneratedShape(): void
+    {
+        $spec = self::rootRows();
+        $spec['rows'] = 'other.rows';
+        $spec['returns'] = ['type' => 'object', 'fields' => [
+            'other.rows' => ['nullable' => true] + $spec['returns'],
+        ]];
+        $data = (object) ['other.rows' => null];
+        $success = new ApiResponse($data, new ResponseMetadata(200, null, ['status' => 1]));
+        $actual = OperationRunner::run($spec, [], static fn (): ApiResponse => $success);
+        self::assertSame(['other.rows' => null], $actual);
+        $failure = new ApiResponse($data, new ResponseMetadata(200, null, ['status' => 0]));
+        $this->expectException(ApiErrorException::class);
+        OperationRunner::run($spec, [], static fn (): ApiResponse => $failure);
     }
 
     public function testRootRowsPolicyAndLiteralDollarObjectField(): void

@@ -91,6 +91,7 @@ final class UapiCsvImportTest extends TestCase
             yield "$name failed empty list" => [$bridge, 0, '{"results":[]}', ApiErrorException::class];
             yield "$name failed missing results" => [$bridge, 0, '{}', PayloadMismatchException::class];
             yield "$name failed missing data" => [$bridge, 0, null, PayloadMismatchException::class];
+            yield "$name null successful data" => [$bridge, 1, 'null', PayloadMismatchException::class];
             yield "$name missing successful data" => [$bridge, 1, null, PayloadMismatchException::class];
             yield "$name malformed row" => [$bridge, 0, '{"results":[{"status":2}]}', PayloadMismatchException::class];
         }
@@ -99,10 +100,17 @@ final class UapiCsvImportTest extends TestCase
     public function testOuterBridgeFailurePrecedesInnerSuccessfulRow(): void
     {
         [$account, $http] = self::account(true);
-        $http->addResponse(new Response(200, [], '{"metadata":{"result":0},"data":{"uapi":'
+        $http->addResponse(new Response(200, [], '{"metadata":{"result":0,"reason":"outer rejection"},"data":{"uapi":'
             . '{"status":1,"data":{"results":[{"status":1}]}}}}'));
-        $this->expectException(ApiErrorException::class);
-        $account->csvImport()->doImport('example.test', 'synthetic-id', 'email');
+        try {
+            $account->csvImport()->doImport('example.test', 'synthetic-id', 'email');
+            self::fail('The failed WHM envelope must stop the batch.');
+        } catch (ApiErrorException $error) {
+            self::assertSame($account->responseMeta(), $error->metadata);
+            self::assertSame(0, $error->metadata?->whmResult());
+            self::assertSame(['outer rejection'], $error->errors());
+        }
+        self::assertCount(1, $http->getRequests());
     }
 
     private static function envelope(bool $bridge, int $status, ?string $data): Response

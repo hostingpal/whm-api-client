@@ -63,6 +63,10 @@ final readonly class CsvImport
      * validated null or empty results list raises ApiErrorException. Missing data, missing status-0 results and
      * malformed rows are payload mismatches. The outer WHM result is always checked.
      *
+     * Observed: On cPanel 11.138.0.24 direct imports created mailboxes and a forwarder. Bridged mailbox imports
+     * returned status 0 for every row. A bridged forwarder import returned null data and raised ApiErrorException. A
+     * prepared header-only batch succeeded through both routes. Verify inventory before any retry or route change.
+     *
      * API-map identity: uapi:CSVImport/doimport#GET (wire name doimport).
      *
      * @param string $domain The domain under which to add the email accounts.

@@ -91,12 +91,13 @@ use LogicException;
  *   optional nullable roots are unsupported. Malformed descriptors fail before I/O.
  * - returns: required key; a type spec (see ShapeValidator for the grammar), or
  *   an explicit null for a void operation.
- * - rows: optional nonempty string selecting a declared list of
- *   nonnullable objects in a nonnullable object result. Requires UAPI unchecked,
- *   without optional/unwrap. Status 0 with explicit null or a validated empty list
- *   raises ApiErrorException; missing data/rows or malformed fields mismatch.
- *   Nonempty valid rows return normally. Status 1 preserves schema optionality.
- *   CSVImport/doimport also permits a null results list, treated as no rows on status 0.
+ * - rows: optional selector for a UAPI unchecked batch without optional/unwrap.
+ *   Select a list of objects in an object result, or the root list with '$'.
+ *   Root and object items must be nonnullable. A selected object field may be
+ *   nullable with live evidence verified by the generator. On status 0, explicit
+ *   null data or a validated empty or null list raises ApiErrorException. A missing
+ *   data or rows member or malformed field is a payload mismatch. Nonempty valid
+ *   rows return normally. Status 1 preserves the declared nullability and optionality.
  * - unwrap: optional string naming a field declared in an object "returns";
  *   that field of the validated object is returned.
  * - empty_without_data: optional literal true for a WHM flag-outcome operation

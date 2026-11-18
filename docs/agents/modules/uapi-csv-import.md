@@ -30,3 +30,14 @@ The bridged mailbox imports returned failed rows, and the bridged forwarder
 attempt returned explicit null data and an API error. The header-only forwarder
 import succeeded on both routes with `results: null`. See the
 [ten-case disposable account run](../../api/source-audit.md#prepared-uapi-mailbox-and-forwarder-imports-2026-11-18).
+
+The installed Jupiter Address Importer uploads and parses the file on step 2.
+Step 3 calls `loaddata` and `configimport`, then renders a Finish link carrying
+`csvimportid`. That link's ID names three account-local files, `<id>`, `<id>.parsed`
+and `<id>.import`. Remove those specific files after inventory reconciliation.
+
+Open follow-up `whm-api-client-3jy` tracks the cause of the bridge failures.
+The installed handler reads the prepared batch before invoking `Email/add_pop`
+or the forwarder handler. The observed empty-batch success and failed mailbox
+rows distinguish a completed staging lookup from a failed row write. Null data
+on the forwarder attempt leaves its failing step unconfirmed.
