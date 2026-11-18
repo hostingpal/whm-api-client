@@ -151,3 +151,8 @@ Rebuild failure is source-backed and covered by synthetic fixtures. See the
 [sanitized probes](../../api/evidence/2026-11-18-uapi-zone-reset.json).
 
 Reproducible readback capture is tracked in `whm-api-client-8x0.2.99`.
+
+At `323496bc`, the revised policy also passed on both routes with a fresh
+disposable zone. The [v2 capture](../../api/evidence/2026-11-18-uapi-zone-reset-v2.json)
+includes all six typed readbacks and both reset responses. Each route's record
+was absent before planting, present before reset and absent afterwards.

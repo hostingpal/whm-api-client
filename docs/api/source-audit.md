@@ -12726,3 +12726,11 @@ record and returned one successful rebuild row. Both payloads passed the
 generated contract. The fixture confirmed absence of its token, account,
 domain and zone after cleanup. The original response shape and masked MX
 field types are in the [structural evidence](evidence/2026-11-18-uapi-zone-reset.json).
+
+At `323496bcc2b0d375f06d9e96984a3ba414d05f2e`, a fresh disposable zone tested
+the reviewed nested-outcome policy on both routes. All eight captures passed,
+including direct and bridged parse readbacks before planting each marker,
+before resetting, and afterwards. Both resets confirmed the nested outcome and
+cleanup confirmed absence of the account, token, domain and zone.
+The [v2 artifact](evidence/2026-11-18-uapi-zone-reset-v2.json) records each original
+response's structure and masks the owner and RDATA values.

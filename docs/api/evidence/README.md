@@ -1550,3 +1550,10 @@ passing run and differs only in what it leaves untouched after a lost reply.
   The controls are in-memory readback assertions. The artifact includes structural
   captures of the reset calls only. Committing the reusable recipe and independent
   readback observations is tracked in `whm-api-client-8x0.2.99`.
+
+- [UAPI ZoneEdit reset after outcome-policy review](2026-11-18-uapi-zone-reset-v2.json),
+  SHA-256 `9941e9860081f33610b80c08e87f033afaeeaf029a852d85fa0c2a3f69fbbaa9`, records eight successful probes
+  at `323496bc`. The three zone reads for each route checked the control record
+  before it was planted, immediately before reset, and after reset. Each reset
+  confirmed the nested outcome and removed the control. Every payload passed
+  with zero discrepancies. Cleanup confirmed account, token, domain and zone absence.
