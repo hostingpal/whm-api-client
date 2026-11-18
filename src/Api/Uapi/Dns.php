@@ -296,14 +296,16 @@ final readonly class Dns
      * digits; it is returned as an integer. Two repeated add fields both landed, and an edit plus a removal by
      * parseZone() line_index changed exactly those records.
      *
-     * Observed: On the same server a call without changes, a stale serial, malformed add JSON and a zone the account
-     * does not control each failed with ApiErrorException and no zone change. The stale-serial failure carries a data
-     * object that the exception does not expose. The malformed-JSON error text quotes the supplied record text, so
-     * errors() can contain record data: treat it as private.
+     * Observed: On the same server a call without changes and a stale serial raised ApiErrorException through this
+     * method on both routes, with the zone unchanged. Malformed add JSON and a zone the account does not control
+     * returned UAPI status 0 to the generic call(), which this method raises the same way; they were not sent through
+     * this method. The stale-serial failure carries a data object that the exception does not expose. The
+     * malformed-JSON error text quotes the supplied record text, so errors() can contain record data: treat it as
+     * private.
      *
-     * Observed: Source read on cPanel 11.138.0.24: the function needs one of the simplezoneedit, zoneedit or changemx
-     * features and is refused in demo mode. The record types it accepts depend on those features; a record_type outside
-     * them fails the whole call. No record-type enum is enforced locally.
+     * Policy: Server code on cPanel 11.138.0.24, read but not exercised at runtime: the function needs one of the
+     * simplezoneedit, zoneedit or changemx features and is refused in demo mode. The record types it accepts depend on
+     * those features; a record_type outside them fails the whole call. No record-type enum is enforced locally.
      *
      * Policy: The pinned text says each surviving record keeps its line count, not that line offsets stay unchanged:
      * read the zone again before reusing indexes. The client makes one request with no reread, serial refresh, retry or
@@ -374,8 +376,10 @@ final readonly class Dns
      * This function replaces a domain's IPv4 address in the DNS zone file with the specified destination IPv4 address.
      *
      * Documented: Available from cPanel 96. Replaces an IPv4 address in the DNS zones of the given domains with destIp,
-     * with no rollback. Without sourceIp the server detects the address to replace: the zone root's A record, otherwise
-     * the first A record that is not a loopback address. Without ftpIp, FTP records receive destIp.
+     * with no rollback. Without ftpIp, FTP records receive destIp. Without sourceIp the pinned text detects the address
+     * to replace in each zone: the zone root's A record, if its address is not a loopback address; otherwise the first
+     * A record in the zone file whose address is not a loopback address, which can belong to another name; and when the
+     * zone has no A record or only loopback addresses, the zone file is not updated.
      *
      * Policy: A scalar domain sends one domain field. A nonempty sequential string list, including a list of one,
      * repeats the literal domain field in caller order. The pinned text also describes numbered names but disagrees
@@ -388,21 +392,24 @@ final readonly class Dns
      * loading it. Input errors still reported normally on both routes. The client keeps the bridge route and adds no
      * fallback; this is one build, not every version.
      *
-     * Observed: Source read on cPanel 11.138.0.24: A records whose address equals a source address are replaced, and
-     * names starting with ftp. receive the FTP address. Every SPF TXT record is rewritten and reported whether or not
-     * an address matched, and each processed zone gets a new serial and is synchronized and reloaded. A sourceIp that
-     * matched no record still returned rows on that server. An empty list therefore is not the only result of a call
-     * that replaced no address.
+     * Observed: On cPanel 11.138.0.24 a sourceIp that matched no record still returned two TXT rows and increased the
+     * zone serial. The server code on that version explains it: every SPF TXT record is rewritten and reported whether
+     * or not an address matched, A records whose address equals a source address are replaced (names starting with ftp.
+     * receive the FTP address), and each processed zone gets a new serial and is synchronized and reloaded. An empty
+     * list is therefore not what a call that replaced no address returns.
      *
-     * Observed: Source read on cPanel 11.138.0.24: with several domains and no sourceIp, the address is detected once,
-     * from whichever zone the server processes first, and reused for the others; that order is not the caller's. Pass
-     * sourceIp when the zones may hold different addresses. Temporary domains are skipped with a warning in
-     * responseMeta(); if all are skipped the result is an empty list.
+     * Policy: Server code on cPanel 11.138.0.24, read but not observed at runtime because both test domains shared one
+     * zone: detection follows the documented order but runs once per call, not once per zone. The first zone processed
+     * that yields an address decides it for every zone processed after it, and that order is not the caller's. A zone
+     * without a candidate is skipped only until an address has been found; after that it is processed with the found
+     * address and its SPF records are rewritten. Pass sourceIp when zones may hold different addresses. Temporary
+     * domains are skipped with a warning in responseMeta(); if all are skipped the result is an empty list.
      *
      * Policy: Inspect the returned rows instead of treating envelope success as proof that an address changed. Zone
      * changes for public domains are published and resolvers cache the old answers. The client makes one request with
-     * no readback, retry or rollback; a PayloadMismatchException after a successful envelope follows zones that already
-     * changed.
+     * no readback, retry or rollback. After a PayloadMismatchException that follows a successful envelope the zones may
+     * already have changed, or none may have, because a successful call can skip every domain: read the zones before
+     * deciding whether to retry.
      *
      * API-map identity: uapi:DNS/swap_ip_in_zones#GET (wire name swap_ip_in_zones).
      *

@@ -32,11 +32,16 @@ Read [WHM DNS management](whm-dns.md) for the shared rules.
   zone's serial afterwards.
 - Observed: two repeated `add` fields both landed, and one call with an edit and a
   removal changed exactly those records, on both routes.
-- Observed failures, each an `ApiErrorException` with the zone unchanged: no change
-  supplied, a stale serial, malformed `add` JSON, a zone the account does not control.
-  The stale-serial failure carries a `data` object (`type`, `detail`) that `Flag` does
-  not expose. The malformed-JSON error text quotes the supplied record text, so
-  `errors()` can contain record data.
+- Observed through this method, on both routes: no change supplied and a stale serial
+  each raised `ApiErrorException` with the zone unchanged. Observed only with the
+  generic `call()`: malformed `add` JSON and a zone the account does not control each
+  returned UAPI status 0 with the zone unchanged; under `Flag` this method raises the
+  same exception, which the offline tests cover. The stale-serial failure carries a
+  `data` object (`type`, `detail`) that `Flag` does not expose. The malformed-JSON
+  error text quotes the supplied record text, so `errors()` can contain record data.
+- A `PayloadMismatchException` after a successful envelope follows a zone that already
+  changed. Source read: the handler rejects an empty change set and reports success
+  only after the admin call applied the changes and produced the new serial.
 - Source read: the function needs one of the `simplezoneedit`, `zoneedit` or
   `changemx` features and is refused in demo mode. Accepted record types depend on
   those features. Only `TXT` records were exercised live.
@@ -57,10 +62,12 @@ Read [WHM DNS management](whm-dns.md) for the shared rules.
 - **Observed: the WHM bridge fails.** Every bridged call that reached the zone update
   returned UAPI status 0 with `Undefined subroutine &Cpanel::AdminBin::Call::call`.
   Source read: `swap_ip_in_zones` in `Cpanel/API/DNS.pm` calls that module without
-  loading it, unlike the functions around it. Direct UAPI works. Input errors (invalid
-  address, domain not controlled, missing domain) report normally on both routes. The
-  client keeps the bridge route and adds no fallback. This is one build; re-check it
-  after cPanel updates before describing it as general.
+  loading it, unlike the functions around it. Direct UAPI works. Input errors report
+  normally on both routes: an invalid address and a domain the account does not
+  control raised `ApiErrorException` through this method, and a request with no
+  `domain`, which this method cannot send, returned status 0 to the generic `call()`.
+  The client keeps the bridge route and adds no fallback. This is one build; re-check
+  it after cPanel updates before describing it as general.
 - Observed on direct UAPI: one domain and a two-item domain list each returned six
   rows (four `A`, two `TXT`), every row with all five string fields.
 - Observed: a `sourceIp` that matched no record still returned two `TXT` rows and
@@ -68,16 +75,27 @@ Read [WHM DNS management](whm-dns.md) for the shared rules.
   reported whether or not an address matched, and each processed zone gets a new
   serial and is synchronized and reloaded. An empty list is therefore not what a
   "nothing replaced" call returns.
+- Pinned rule for an omitted `sourceIp`, per zone: the zone root's `A` record if its
+  address is not a loopback address; otherwise the first `A` record in the zone file
+  whose address is not a loopback address, which can belong to another name; with no
+  `A` record or only loopback addresses, the zone file is not updated. Do not shorten
+  this to "the apex record".
 - Source read: `A` records whose address equals a source address are replaced; names
-  that start with `ftp.` receive `ftpIp`, which defaults to `destIp`. With several
-  domains and no `sourceIp`, the address is detected once, from whichever zone the
-  server processes first, and reused for the rest. Unobserved: both test domains
-  shared one zone.
+  that start with `ftp.` receive `ftpIp`, which defaults to `destIp`.
+- Source read: detection follows the pinned order but runs once per call, not once per
+  zone. The first zone processed that yields an address decides it for every zone
+  processed after it, and that order is not the caller's. A zone without a candidate is
+  skipped only until an address has been found; after that it is processed with the
+  found address and its SPF records are rewritten. Unobserved: both test domains shared
+  one zone.
 - Source read: temporary domains are skipped with a warning in `responseMeta()`; if
   all are skipped the result is an empty list. Unobserved.
 - Source read: the function declares no feature requirement; the admin layer checks
   that the caller owns every domain.
 
-Neither method rereads, retries or rolls back. A `PayloadMismatchException` after a
-successful envelope follows zones that already changed. Changes to public zones are
-published and cached by resolvers.
+- After a `PayloadMismatchException` that follows a successful envelope, the zones may
+  already have changed or none may have: a successful call can skip every domain. Read
+  the zones before deciding whether to retry.
+
+Neither method rereads, retries or rolls back. Changes to public zones are published
+and cached by resolvers.

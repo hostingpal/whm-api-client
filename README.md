@@ -2321,18 +2321,43 @@ with a rollback.
 
 ```php
 $dns = $client->uapi('example')->dns();
+$zoneName = 'example.test';
 
-// Find the current SOA serial and the 0-based line_index of each record.
-$zone = $dns->parseZone('example.test');
+// Names come back as the zone stores them: fully qualified with a trailing dot, or relative to the zone.
+$fullName = static fn (string $name): string => str_ends_with($name, '.') ? $name : $name . '.' . $zoneName . '.';
 
-// One request: add a record and remove the record that starts on line 22.
+// One read supplies both the SOA serial and the line_index of the record to remove.
+$serial = null;
+$targets = [];
+foreach ($dns->parseZone($zoneName) as $line) {
+    if (($line['type'] ?? null) !== 'record') {
+        continue;
+    }
+    $name = $fullName((string) base64_decode($line['dname_b64'] ?? '', true));
+    $data = array_map(
+        static fn (string $part): string => (string) base64_decode($part, true),
+        $line['data_b64'] ?? [],
+    );
+    if (($line['record_type'] ?? null) === 'SOA' && ctype_digit($data[2] ?? '')) {
+        $serial = (int) $data[2]; // SOA data: primary name server, contact, serial, ...
+    }
+    // Select the record by what it is, never by a line number you remembered.
+    if (($line['record_type'] ?? null) === 'TXT' && $name === 'old.example.test.' && $data === ['obsolete text']) {
+        $targets[] = $line['line_index'] ?? null;
+    }
+}
+if ($serial === null || count($targets) !== 1 || !is_int($targets[0])) {
+    throw new RuntimeException('The zone serial or the record to remove was not identified uniquely.');
+}
+
+// One request: add a record and remove the one selected above.
 $result = $dns->massEditZone(
-    serial: $currentSerial,
-    zone: 'example.test',
+    serial: $serial,
+    zone: $zoneName,
     add: [json_encode([
         'dname' => 'www', 'ttl' => 14400, 'record_type' => 'TXT', 'data' => ['example text'],
     ], JSON_THROW_ON_ERROR)],
-    remove: [22],
+    remove: [$targets[0]],
 );
 $nextSerial = $result['new_serial'] ?? null; // int
 
@@ -2347,16 +2372,26 @@ $rows = $dns->swapIpInZones(
 `massEditZone()` follows the same rules as the WHM `massEditDnsZone()` above: `add` and
 `edit` are nonempty lists of JSON strings you serialize yourself, `remove` is a nonempty
 integer list, and `remove` indexes and `edit.line_index` are 0-based, as returned by
-`parseZone()`. The serial must match the zone's current serial. A call without changes,
+`parseZone()`. Take the serial and every index from the same read, and select records
+by name, type and data: an index only identifies whatever occupies that line, so a
+wrong one removes a different record while the call succeeds. The serial must
+match the zone's current serial. A call without changes,
 a stale serial or malformed JSON raises `ApiErrorException` and leaves the zone
 unchanged. The malformed-JSON error text quotes the record you sent, so treat
 `errors()` as private. The account needs one of the `simplezoneedit`, `zoneedit` or
 `changemx` features, which also decide the record types it may write.
 
 `swapIpInZones()` returns a list of rows, each with optional string `zone_name`,
-`record_name`, `record_type`, `old_value` and `new_value`. Without `sourceIp` the server
-detects the address to replace; without `ftpIp`, records whose name starts with `ftp.`
-receive `destIp`. Things to know before calling it:
+`record_name`, `record_type`, `old_value` and `new_value`. Without `ftpIp`, records
+whose name starts with `ftp.` receive `destIp`. Without `sourceIp` the documented rule
+detects the address to replace in each zone:
+
+1. the zone root's `A` record, if its address is not a loopback address;
+2. otherwise the first `A` record in the zone file whose address is not a loopback
+   address, which may belong to another name such as `www`;
+3. if the zone has no `A` record, or only loopback addresses, the zone is not updated.
+
+Things to know before calling it:
 
 - **It fails through the WHM bridge on cPanel 11.138.0.24.** With WHM credentials every
   real swap raises `ApiErrorException` ("Undefined subroutine
@@ -2365,15 +2400,23 @@ receive `destIp`. Things to know before calling it:
 - Every SPF `TXT` record in the zone is rewritten and returned, even when no address
   matched, and the zone still gets a new serial. Rows are not proof that an address
   changed: check their `record_type` and values.
-- With several domains and no `sourceIp`, the server detects the address once, from
-  whichever zone it handles first, and reuses it. Pass `sourceIp` when the zones may
-  hold different addresses.
+- With several domains and no `sourceIp`, the code on cPanel 11.138.0.24 applies that
+  rule once per call instead of once per zone: the first zone it handles that yields
+  an address decides it for every zone handled afterwards, and that order is not the
+  order you passed. Pass `sourceIp` when the zones may hold different addresses. This
+  comes from reading the server's code; it was not observed, because both test domains
+  shared one zone.
+- If the result does not match the documented shape after a successful response
+  (`PayloadMismatchException`), the zones may or may not have changed: a successful
+  call can also skip every domain. Read the zones before deciding whether to retry.
 - Domains and addresses are sent unchanged, with no local validation. Changes to public
   zones are published and resolvers cache the old answers.
 
-The digit-string `new_serial`, both failure sets and the bridge failure were observed
-on 2026-11-18 on a disposable account through both routes; the SPF and detection rules
-come from reading the server's code on that version. See the
+The digit-string `new_serial`, the no-change and stale-serial exceptions, the swap rows
+and the bridge failure were observed on 2026-11-18 on a disposable account through
+both routes. Malformed JSON and a zone the account does not control were seen only as
+failed responses to the generic `call()`. The SPF rewriting was observed and matches
+the server's code; the once-per-call detection comes from the code alone. See the
 [source audit](docs/api/source-audit.md#2026-11-18--uapi-dns-zone-writes-8x0441) for
 what was and was not observed.
 

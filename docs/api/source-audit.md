@@ -12494,12 +12494,18 @@ Two one-off runs on 2026-11-18 against `test.oblak.host`. Each created the dispo
 account `wldnszed` (`wldnszed.example.com`, plus the subdomain `sub`), minted a
 30-minute cPanel token for the direct route through the bridged generic
 `Tokens/create_full_access`, removed the account and confirmed its absence through
-`listaccts`. Every request was a form POST sent once. Nothing but value types, counts,
-record types and upstream error text was recorded, and no artifact is committed.
+`listaccts`. Each `mass_edit_zone` and `swap_ip_in_zones` request was a form POST sent
+once per route. The zone readbacks between them used the generated `parseZone()`, a
+GET, and account setup and removal used their own WHM and UAPI calls. Nothing but value
+types, counts, record types and upstream error text was recorded, and no artifact is
+committed.
 
-Run 1 used the generic `call()` with `OutcomePolicy::Unchecked` at master `8c2834de`.
-Run 2 called the generated methods from this change's working tree (base `8c2834de`,
-before its first commit).
+Run 1 used the generic `call()` with `OutcomePolicy::Unchecked` at master `8c2834de`,
+so its failures were read as UAPI status 0 responses and raised no exception. Run 2
+called the generated methods from this change's working tree (base `8c2834de`, before
+its first commit), where a failure is an exception.
+
+Run 1, generic `call()`:
 
 | Call | Direct UAPI | WHM bridge |
 | --- | --- | --- |
@@ -12509,17 +12515,35 @@ before its first commit).
 | `mass_edit_zone`, stale serial | status 0; data `{type: string, detail: null}` | same |
 | `mass_edit_zone`, malformed `add` JSON | status 0, null data; error text quotes the supplied text | same |
 | `mass_edit_zone`, zone not controlled | status 0, null data | same |
-| `swap_ip_in_zones`, one domain, detected source | status 1; 6 rows (4 `A`, 2 `TXT`) | status 0, `Undefined subroutine &Cpanel::AdminBin::Call::call` |
-| `swap_ip_in_zones`, two domains, explicit `source_ip` and `ftp_ip` | status 1; 6 rows (4 `A`, 2 `TXT`) | same failure |
-| `swap_ip_in_zones`, `source_ip` matching nothing | status 1; 2 `TXT` rows; zone serial increased | same failure |
+| `swap_ip_in_zones`, one domain, detected source | status 1; 6 rows | status 0, `Undefined subroutine &Cpanel::AdminBin::Call::call` |
+| `swap_ip_in_zones`, two domains, explicit `source_ip` and `ftp_ip` | status 1; 6 rows | same failure |
+| `swap_ip_in_zones`, `source_ip` matching nothing | status 1; 2 rows | same failure |
 | `swap_ip_in_zones`, invalid `dest_ip` | status 0 | status 0 |
 | `swap_ip_in_zones`, domain not controlled | status 0 | status 0 |
 | `swap_ip_in_zones`, no `domain` | status 0 | status 0 |
 
-Every swap row had exactly the five pinned keys with string values. In run 2 the
-generated `massEditZone()` returned an integer `new_serial` equal to the zone's serial
-on the following `parseZone()` read, on both routes, and every status-0 row above
-raised `ApiErrorException`.
+Every swap row in run 1 had exactly the five pinned keys with string values. Run 1
+recorded no record types and did not read the serial around the swaps.
+
+Run 2, generated methods:
+
+| Call | Direct UAPI | WHM bridge |
+| --- | --- | --- |
+| `massEditZone()`, two repeated `add` | integer `new_serial` equal to the serial on the next `parseZone()` read; both records present | same |
+| `massEditZone()`, one `edit` and one `remove` by `parseZone()` `line_index` | integer `new_serial` equal to the serial on the next read; record edited, other removed | same |
+| `massEditZone()`, no change | `ApiErrorException` | `ApiErrorException` |
+| `massEditZone()`, stale serial | `ApiErrorException` | `ApiErrorException` |
+| `swapIpInZones()`, one domain, detected source | 6 rows: 4 `A`, 2 `TXT` | `ApiErrorException`, same undefined-subroutine text |
+| `swapIpInZones()`, two domains, explicit `sourceIp` and `ftpIp` | 6 rows: 4 `A`, 2 `TXT` | `ApiErrorException` |
+| `swapIpInZones()`, `sourceIp` matching nothing | 2 `TXT` rows; zone serial increased | `ApiErrorException` |
+| `swapIpInZones()`, invalid `destIp` | `ApiErrorException` | `ApiErrorException` |
+| `swapIpInZones()`, domain not controlled | `ApiErrorException` | `ApiErrorException` |
+
+Run 2 did not send malformed `add` JSON or a zone the account does not control: for
+those two cases only the status 0 responses of run 1 exist, and the exception follows
+from the client's `Flag` policy, which the offline tests cover. A request with no
+`domain` cannot be sent through `swapIpInZones()`, whose `domain` argument is required;
+that row exists only in run 1.
 
 `new_serial` therefore accepts canonical in-range integer strings and returns `int`,
 as `whm1:mass_edit_dns_zone` does. The pinned integer is wrong for this build on both
