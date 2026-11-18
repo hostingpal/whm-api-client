@@ -30,7 +30,7 @@ An add has no serial check. Read the zone after a write with an uncertain outcom
 before deciding whether another change is needed.
 
 The typed methods accept only the 18 mapped record families and their declared wire
-fields. For a server-supported type or field outside this set, use whm()->call() with form
+fields. For a server-supported type or field outside this set, use `whm()->call()` with form
 POST.
 
 The pinned TTL minimum is 1. The client forwards an explicit zero. On cPanel 11.138.0.24
@@ -69,12 +69,20 @@ run. Successful writes returned WHM result 1 with the data member absent.
   subsequent `parseDnsZone()` identified an A6 row for the supplied owner.
   Check persisted zone state before relying on this variant.
 
-A third run exercised the generated methods in this worktree (base `1e3f79c3`,
+An initial generated-method run exercised a pre-commit version in this worktree (base `1e3f79c3`,
 generated `DnsSpec.php` SHA-256
 `1267254fb3c94ad6c600944e08e6a5f55c25b2fc59d813203c76167de1ed11b8`).
 A, PTR and TXT adds succeeded. Untagged address and explicit A TTL-only edits
 passed readback. A stale serial raised `ApiErrorException`, and readback confirmed
 the preceding address and TTL. Account, token, domain and zone cleanup passed.
+
+A fourth run on the same server exercised commit
+`963c98f8b76c6c1d154eb47ff10c3bb2eed1c80a`, generated `DnsSpec.php` SHA-256
+`3b4baa617281b2a422df3fe3bb0f3756a298373f12d05a523ef93d421996a254`.
+The six form POSTs covered A, PTR and TXT additions, an untagged A address edit,
+a tagged A TTL edit and stale-serial refusal with the integer guard. Fresh reads
+confirmed the changes, preserved fields, and unchanged A record after refusal.
+The account, token, domain and zone were confirmed absent after cleanup.
 
 The installed `Whostmgr::DNS` and `Cpanel::ZoneFile` sources explain several
 pin discrepancies. Add appends, and the serializer defaults class to IN.
