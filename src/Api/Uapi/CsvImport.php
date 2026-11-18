@@ -49,9 +49,12 @@ final readonly class CsvImport
      * Documented: Available from cPanel 94. The selected account needs a prepared import ID. Use type email for
      * mailboxes or fwd for forwarders. This mutation has no rollback.
      *
-     * Policy: cPanel API 2 CSVImport/uploadimport supplies an account-local ID. Process or load the CSV data and apply
-     * column mappings with configimport before invoking this method. Keep the ID and staging files private. Mailbox
-     * batches can contain passwords. The import leaves its staging files in the account.
+     * Policy: Supply the selected account's prepared import ID. The live tests used cPanel API 2
+     * CSVImport/uploadimport, processdata and configimport to upload the CSV, parse it and map the columns. For
+     * preparation in cPanel, see the README section “UAPI mailbox and forwarder CSV imports”. The installed
+     * 11.138.0.24 Jupiter templates place csvimportid in the Address Importer review page's Finish link. Keep the ID
+     * and staging files private. Mailbox batches can contain passwords. The import leaves its staging files in the
+     * account.
      *
      * Policy: The csvimport feature is required and demo mode is refused on the reviewed server. The handler attempts
      * all configured rows. Inspect each returned row status plus responseMeta()->uapiStatus() and errors(). A failed
