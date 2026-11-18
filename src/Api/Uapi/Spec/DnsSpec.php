@@ -207,6 +207,7 @@ final class DnsSpec
                 'fields' => [
                     'data_b64' => ['type' => 'list', 'items' => ['type' => 'string']],
                     'dname_b64' => ['type' => 'string'],
+                    'dname_raw' => ['type' => 'string'],
                     'line_index' => ['type' => 'int'],
                     'record_type' => ['type' => 'string'],
                     'text_b64' => ['type' => 'string'],

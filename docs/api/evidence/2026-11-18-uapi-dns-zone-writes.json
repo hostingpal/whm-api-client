@@ -1,0 +1,46 @@
+{
+    "schema_version": 1,
+    "dns_zone_writes": {
+        "scenario": "uapi-dns-zone-disposable-v1",
+        "target_role": "disposable-test-account",
+        "server_version": "11.138.0.24",
+        "bridge_outcome": "not_run",
+        "probes": [],
+        "fixture": {
+            "status": "failed",
+            "setup": "passed",
+            "cleanup": "passed",
+            "failures": [
+                "park_alias_failure"
+            ],
+            "domain_cleanup": "confirmed_absent",
+            "zone_cleanup": "confirmed_absent",
+            "filesystem_cleanup": "not_claimed",
+            "filesystem_residue": [],
+            "filesystem_control": {
+                "status": "not_run",
+                "counts": []
+            },
+            "resources": {
+                "account": {
+                    "creation": "confirmed",
+                    "cleanup": "confirmed_absent"
+                },
+                "token": {
+                    "creation": "confirmed",
+                    "cleanup": "confirmed_absent"
+                },
+                "alias_domain": {
+                    "creation": "unconfirmed",
+                    "cleanup": "confirmed_absent"
+                },
+                "alias_zone": {
+                    "creation": "unconfirmed",
+                    "cleanup": "confirmed_absent"
+                }
+            },
+            "alias_setup": "failed",
+            "stopped_at": "park_alias"
+        }
+    }
+}

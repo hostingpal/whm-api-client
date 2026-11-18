@@ -599,11 +599,13 @@ final class DnsSliceTest extends TestCase
             'parse_zone' => [
                 'parseZone', ['example.test'], 'parse_zone', 'zone=example.test',
                 '[{"data_b64":["MTkyLjAuMi4x"],"dname_b64":"ZXhhbXBsZQ==","line_index":3,"record_type":"A",'
-                    . '"ttl":14400,"type":"record"},{"line_index":1,"text_b64":"JE9SSUdJTg==","type":"control"}]',
+                    . '"dname_raw":"example","ttl":14400,"type":"record"},'
+                    . '{"line_index":1,"text_b64":"JE9SSUdJTg==","type":"control"}]',
                 [
                     [
                         'data_b64' => ['MTkyLjAuMi4x'],
                         'dname_b64' => 'ZXhhbXBsZQ==',
+                        'dname_raw' => 'example',
                         'line_index' => 3,
                         'record_type' => 'A',
                         'ttl' => 14400,
@@ -662,7 +664,7 @@ final class DnsSliceTest extends TestCase
             ['isHttpsAvailable', [], ['null', '{"https":"yes"}', '{"dns_server":false}']],
             ['isSvcbAvailable', [], ['null', '{"svcb":3}', '{"dns_server":[]}']],
             ['parseZone', ['example.test'], ['null', '{"a":1}', '[1]', '[{"line_index":"1"}]',
-                '[{"data_b64":"x"}]']],
+                '[{"data_b64":"x"}]', '[{"dname_raw":3}]', '[{"dname_raw":null}]']],
         ];
         foreach (['direct', 'bridge'] as $route) {
             foreach ($cases as [$method, $arguments, $payloads]) {

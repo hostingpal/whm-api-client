@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace HostingPal\WhmApiClient\Tools\LiveVerify;
 
 use Closure;
-use HostingPal\WhmApiClient\Api\RequestMethod;
 use HostingPal\WhmApiClient\Client;
 use HostingPal\WhmApiClient\Http\HttpTransport;
 use LogicException;
@@ -13,7 +12,6 @@ use Nyholm\Psr7\Factory\Psr17Factory;
 use Psr\Http\Client\ClientInterface;
 use RuntimeException;
 use SensitiveParameter;
-use stdClass;
 use Throwable;
 
 /**
@@ -115,8 +113,6 @@ final class DomainRowsFixture
     private readonly Client $root;
 
     private readonly DisposableAccountLifecycle $lifecycle;
-
-    private ?Client $direct = null;
 
     /** @var Report */
     private array $report;
@@ -226,7 +222,7 @@ final class DomainRowsFixture
         try {
             $this->guard->bindToken($token);
             $factory = new Psr17Factory();
-            $direct = $this->direct = new Client([
+            $direct = new Client([
                 'host' => self::HOST, 'port' => 2083, 'authType' => 'cpanel',
                 'username' => DomainRowsRecipe::ACCOUNT, 'token' => $token,
             ], new HttpTransport($this->capture, $factory, $factory));
@@ -264,8 +260,8 @@ final class DomainRowsFixture
     {
         $this->succeed('version', $this->root);
         try {
-            $domains = $this->domainRows();
-            $zones = $this->zoneRows();
+            $domains = $this->lifecycle->configuredDomainOwners();
+            $zones = $this->lifecycle->zoneNames();
         } catch (Throwable $failure) {
             $this->stop('extra_identity_inventory_unusable', $failure);
         }
@@ -274,7 +270,11 @@ final class DomainRowsFixture
                 $this->stop('extra_identity_already_present');
             }
         }
-        $this->requireOwnership();
+        try {
+            $this->lifecycle->requireOwnership();
+        } catch (Throwable $failure) {
+            $this->stop('ownership_unconfirmed', $failure);
+        }
         if ($this->observe('limits', $this->root)['api_outcome'] !== 'success') {
             $this->stop('setup_phase_failure');
         }
@@ -295,7 +295,7 @@ final class DomainRowsFixture
     private function create(string $phase, array $labels, Client $direct): void
     {
         foreach ($labels as $label) {
-            $this->report['resources'][$label]['creation'] = 'unconfirmed';
+            $this->report['resources'][$label] = ['creation' => 'unconfirmed', 'cleanup' => 'not_required'];
         }
         $record = $this->observe($phase, $direct);
         if (!in_array($record['api_outcome'], ['success', 'failure'], true)) {
@@ -310,9 +310,9 @@ final class DomainRowsFixture
         }
         $zoned = array_intersect($labels, array_keys(DomainRowsRecipe::ZONES)) !== [];
         try {
-            $domains = $this->domainRows();
+            $domains = $this->lifecycle->configuredDomainOwners();
             // Only a creation that can make a zone is followed by a zone read, so no other read can stop the capture.
-            $zones = $zoned ? $this->zoneRows() : [];
+            $zones = $zoned ? $this->lifecycle->zoneNames() : [];
         } catch (Throwable $failure) {
             $this->stop('extra_identity_inventory_unusable', $failure);
         }
@@ -321,35 +321,11 @@ final class DomainRowsFixture
                 ? in_array(DomainRowsRecipe::ZONES[$label], $zones, true)
                 : ($domains[DomainRowsRecipe::DOMAINS[$label]] ?? null) === DomainRowsRecipe::ACCOUNT;
             if ($listed) {
-                $this->report['resources'][$label]['creation'] = 'confirmed';
+                $this->report['resources'][$label] = ['creation' => 'confirmed', 'cleanup' => 'not_required'];
             } elseif (in_array($label, self::REQUIRED, true)) {
                 $this->markFailed();
                 $this->stop('extra_identity_unconfirmed');
             }
-        }
-    }
-
-    /** Read the account's marker again right before this run's first own mutation; nothing proceeds without it. */
-    private function requireOwnership(): void
-    {
-        try {
-            $this->root->whm()->call('listaccts', ['want' => 'user,domain,email'], RequestMethod::Get);
-            $rows = self::payload($this->capture->rawBody())->acct ?? null;
-            $domains = self::identityRows($rows, 'user', 'domain');
-        } catch (Throwable $failure) {
-            $this->stop('ownership_unconfirmed', $failure);
-        }
-        $email = null;
-        foreach (is_array($rows) ? $rows : [] as $row) {
-            if ($row instanceof stdClass && ($row->user ?? null) === DomainRowsRecipe::ACCOUNT) {
-                $email = $row->email ?? null;
-            }
-        }
-        if (
-            ($domains[DomainRowsRecipe::ACCOUNT] ?? null) !== DomainRowsRecipe::DOMAIN
-            || !$this->recipe->account->isContactMarker($email)
-        ) {
-            $this->stop('ownership_unconfirmed');
         }
     }
 
@@ -544,12 +520,12 @@ final class DomainRowsFixture
             return [];
         }
         try {
-            $domains = $this->domainRows();
+            $domains = $this->lifecycle->configuredDomainOwners();
         } catch (Throwable) {
             $domains = null;
         }
         try {
-            $zones = $this->zoneRows();
+            $zones = $this->lifecycle->zoneNames();
         } catch (Throwable) {
             $zones = null;
         }
@@ -641,73 +617,6 @@ final class DomainRowsFixture
         } catch (Throwable) {
             return ['outcome' => 'unconfirmed', 'residue' => []];
         }
-    }
-
-    /**
-     * Read every manually configured domain on the server with its owner; empty or unusable proves nothing.
-     *
-     * @return array<string, string>
-     * @phpstan-impure
-     */
-    private function domainRows(): array
-    {
-        $this->root->whm()->call('get_domain_info', [], RequestMethod::Get);
-
-        return self::identityRows(self::payload($this->capture->rawBody())->domains ?? null, 'domain', 'user');
-    }
-
-    /**
-     * Read every zone on the server; empty or unusable proves nothing.
-     *
-     * @return list<string>
-     * @phpstan-impure
-     */
-    private function zoneRows(): array
-    {
-        $this->root->whm()->call('listzones', [], RequestMethod::Get);
-
-        return array_keys(self::identityRows(self::payload($this->capture->rawBody())->zone ?? null, 'domain'));
-    }
-
-    /** The WHM payload of the response just captured, keeping JSON object and list distinct. */
-    private static function payload(#[SensitiveParameter] ?string $raw): ?stdClass
-    {
-        if ($raw === null) {
-            throw new RuntimeException('Domain rows identity inventory was not captured.');
-        }
-        $document = json_decode($raw, false, 512, JSON_THROW_ON_ERROR);
-        $payload = $document instanceof stdClass ? ($document->data ?? null) : null;
-
-        return $payload instanceof stdClass ? $payload : null;
-    }
-
-    /**
-     * Validate every row of a server-wide inventory; a nonlist, an empty list or an unusable row proves nothing.
-     *
-     * @return non-empty-array<string, string> Each identity with its related value, or an empty string without one.
-     */
-    private static function identityRows(
-        #[SensitiveParameter] mixed $rows,
-        string $identity,
-        ?string $related = null,
-    ): array {
-        if (!is_array($rows) || !array_is_list($rows) || $rows === []) {
-            throw new RuntimeException('Domain rows identity inventory cannot prove anything.');
-        }
-        $identities = [];
-        foreach ($rows as $row) {
-            $name = $row instanceof stdClass ? ($row->{$identity} ?? null) : null;
-            $value = $row instanceof stdClass && $related !== null ? ($row->{$related} ?? null) : '';
-            if (
-                !is_string($name) || $name === '' || isset($identities[$name]) || !is_string($value)
-                || ($related !== null && $value === '')
-            ) {
-                throw new RuntimeException('Domain rows identity inventory is unusable.');
-            }
-            $identities[$name] = $value;
-        }
-
-        return $identities;
     }
 
     /**

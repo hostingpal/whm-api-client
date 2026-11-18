@@ -79,6 +79,14 @@ final class DisposableAccountServer implements ClientInterface
 
     private int $expiresAt = 0;
 
+    /** Use these identities when a recipe binds the lifecycle to its own fixed disposable account. */
+    public function __construct(
+        private readonly string $user = self::USER,
+        private readonly string $domain = self::DOMAIN,
+        private readonly string $tokenName = self::TOKEN_NAME,
+    ) {
+    }
+
     public function sendRequest(RequestInterface $request): ResponseInterface
     {
         $this->requests[] = $request;
@@ -90,7 +98,7 @@ final class DisposableAccountServer implements ClientInterface
             if (!is_string($query['cpanel_module'] ?? null) || !is_string($query['cpanel_function'] ?? null)) {
                 throw new LogicException('Synthetic bridge request is malformed.');
             }
-            if (($query['cpanel_user'] ?? null) !== self::USER) {
+            if (($query['cpanel_user'] ?? null) !== $this->user) {
                 throw new LogicException('Synthetic bridge request names another account.');
             }
             $function = $query['cpanel_module'] . '/' . $query['cpanel_function'];
@@ -147,7 +155,7 @@ final class DisposableAccountServer implements ClientInterface
                 }
                 $this->expiresAt = (int) $parameters['expires_at'];
                 $this->tokenReadOnly = ($parameters['readonly'] ?? null) === '1';
-                $this->tokens[] = self::TOKEN_NAME;
+                $this->tokens[] = $this->tokenName;
                 break;
             case 'Tokens/revoke':
                 $this->tokens = [];
@@ -166,17 +174,17 @@ final class DisposableAccountServer implements ClientInterface
         return match ($function) {
             'listaccts' => ['acct' => array_merge([
                 ['user' => 'existing', 'domain' => 'existing.example', 'email' => 'private-existing@example.com'],
-                ['user' => self::USER . 'x', 'domain' => self::DOMAIN . '.other'],
+                ['user' => $this->user . 'x', 'domain' => $this->domain . '.other'],
             ], $this->account
-                ? [['user' => self::USER, 'domain' => $this->listedDomain ?? self::DOMAIN,
+                ? [['user' => $this->user, 'domain' => $this->listedDomain ?? $this->domain,
                     'email' => $this->contactEmail]] : [])],
             'listzones' => ['zone' => array_merge(
                 [['domain' => 'existing.example', 'zonefile' => 'private.db']],
-                $this->zone ? [['domain' => self::DOMAIN, 'zonefile' => 'private.db']] : [],
+                $this->zone ? [['domain' => $this->domain, 'zonefile' => 'private.db']] : [],
             )],
             'get_domain_info' => ['domains' => array_merge(
                 [['domain' => 'existing.example', 'user' => 'existing']],
-                $this->manualDomain ? [['domain' => self::DOMAIN, 'user' => self::USER]] : [],
+                $this->manualDomain ? [['domain' => $this->domain, 'user' => $this->user]] : [],
             )],
             'Tokens/list' => array_map(fn (string $name): array => array_replace(
                 array_filter([

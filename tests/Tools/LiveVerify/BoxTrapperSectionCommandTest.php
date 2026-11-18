@@ -50,13 +50,16 @@ final class BoxTrapperSectionCommandTest extends TestCase
         mkdir($root . '/vendor', 0700, true);
         $source = dirname(__DIR__, 3) . '/tools/live-verify/boxtrapper-section.php';
         self::assertTrue(copy($source, $root . '/tools/live-verify/boxtrapper-section.php'));
-        self::assertTrue(copy(
-            dirname(__DIR__, 3) . '/tools/live-verify/src/SectionCommand.php',
-            $root . '/tools/live-verify/src/SectionCommand.php',
-        ));
+        foreach (['SectionCommand.php', 'EvidencePublication.php'] as $file) {
+            self::assertTrue(copy(
+                dirname(__DIR__, 3) . '/tools/live-verify/src/' . $file,
+                $root . '/tools/live-verify/src/' . $file,
+            ));
+        }
         file_put_contents($root . '/vendor/autoload.php', <<<'STUB'
 <?php
 namespace HostingPal\WhmApiClient\Tools\LiveVerify;
+require dirname(__DIR__) . '/tools/live-verify/src/EvidencePublication.php';
 function link(string $from, string $to): bool
 {
     return getenv('SECTION_CASE') === 'unsupported' ? false : \link($from, $to);
@@ -140,7 +143,7 @@ STUB);
             foreach (
                 ['context-loaded', 'cleanup-complete', 'output.json',
                 'vendor/autoload.php', 'tools/live-verify/boxtrapper-section.php',
-                'tools/live-verify/src/SectionCommand.php'] as $file
+                'tools/live-verify/src/SectionCommand.php', 'tools/live-verify/src/EvidencePublication.php'] as $file
             ) {
                 if (is_file($root . '/' . $file)) {
                     unlink($root . '/' . $file);

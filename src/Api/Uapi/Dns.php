@@ -55,6 +55,7 @@ use SensitiveParameter;
  * @phpstan-type ParseZoneResult list<array{
  *     data_b64?: list<string>,
  *     dname_b64?: string,
+ *     dname_raw?: string,
  *     line_index?: int,
  *     record_type?: string,
  *     text_b64?: string,
@@ -398,12 +399,14 @@ final readonly class Dns
      * receive the FTP address), and each processed zone gets a new serial and is synchronized and reloaded. A call that
      * replaces no address can still return SPF TXT rows.
      *
-     * Policy: Server code on cPanel 11.138.0.24, read but not observed at runtime because both test domains shared one
-     * zone: detection follows the documented order but runs once per call, not once per zone. The first zone processed
-     * that yields an address decides it for every zone processed after it, and that order is not the caller's. A zone
-     * without a candidate is skipped only until an address has been found; after that it is processed with the found
-     * address and its SPF records are rewritten. Pass sourceIp when zones may hold different addresses. Temporary
-     * domains are skipped with a warning in responseMeta(); if all are skipped the result is an empty list.
+     * Observed: On cPanel 11.138.0.24 a direct UAPI run with two distinct zone apices and both candidate addresses in
+     * each zone replaced one detected source address across both zones. In a separate run requesting only a temporary
+     * domain, both routes returned an empty list and a skip warning in responseMeta().
+     *
+     * Policy: In the inspected 11.138.0.24 server source, zone traversal order is unspecified. Detection uses the
+     * documented root or fallback A record. A zone without a candidate is skipped until a source is found. Subsequent
+     * zones are processed with that source and their SPF records are rewritten even when they have no candidate. Pass
+     * sourceIp to choose the address explicitly. Temporary domains are skipped with a warning even in a mixed list.
      *
      * Policy: Inspect the returned rows instead of treating envelope success as proof that an address changed. Zone
      * changes for public domains are published and resolvers cache the old answers. The client makes one request with

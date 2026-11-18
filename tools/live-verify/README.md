@@ -3157,3 +3157,35 @@ The captures record the digit-string `expires_at`, the null `whitelist_ips`, nul
 data and the integer revoke result `1`; the result `0` for a missing token is in v1 and
 v2 only. They do not exercise expiry or read-only enforcement, API-error responses or
 notification delivery; see `whm-api-client-8x0.2.98`.
+
+### UAPI DNS zone writes on a disposable account
+
+`dns-zone-writes.php` creates a marked test account and parks an alias so that
+it can verify two distinct zone files. The disposable account supplies the
+direct UAPI credential. The WHM credential supplies the bridge and manages
+account cleanup.
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 \
+WHM_API_LIVE_ACCOUNT=wldnsrecipe WHM_API_LIVE_DOMAIN=dns-recipe.example.test \
+php tools/live-verify/dns-zone-writes.php --output=.cache/dns-zone-writes.json
+```
+
+Export `OBLAK_TEST_WHM_KEY` before running. The command requires a fresh output
+path. Inspect the per-probe outcomes, the bridge outcome and the cleanup results
+when interpreting the report. A cPanel API refusal remains visible in the
+evidence even when it matches the expected behavior of the installed version.
+
+The fixture reads each SOA serial and zero-based edit index from a fresh zone
+parse. It gives the two apices different test addresses, then puts both candidate
+addresses in both zones. A swap can therefore demonstrate whether cPanel selects
+one source for the whole call, regardless of its traversal order. The report
+retains the expected bridge API failure only when its original response matches
+the handler error and both zone snapshots remain unchanged.
+
+The evidence review checks all 30 ordered probes. Every successful phase must
+contain its expected raw payload paths and types. Any undeclared field fails
+the review. The historical v4 capture identified the optional record field
+`dname_raw`, which the generated parse contract now preserves as a string.
+The [v5 capture](../../docs/api/evidence/2026-11-18-uapi-dns-zone-writes-v5.json)
+exercised these checks on cPanel 11.138.0.24 with zero structural discrepancies.
