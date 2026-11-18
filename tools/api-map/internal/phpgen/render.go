@@ -220,7 +220,11 @@ func groupClass(g effective.Group) string {
 			w.line(" *")
 			aliases = true
 		}
-		w.typeAlias(op.Alias, *spec)
+		if op.SingleResultStatus {
+			w.docTag("", "@phpstan-type "+op.Alias+" "+singleResultShape(*spec.Items))
+		} else {
+			w.typeAlias(op.Alias, *spec)
+		}
 	}
 	for _, op := range g.Operations {
 		if d := op.FormRecord; d != nil {
@@ -657,6 +661,9 @@ func specClass(g effective.Group) string {
 				w.line("        'returns' => null,")
 			} else {
 				w.line("        'returns' => " + specLiteralAt(*op.Returns, "        ", len("        'returns' => ")) + ",")
+			}
+			if op.SingleResultStatus {
+				w.line("        'single_result_status' => true,")
 			}
 			if op.Rows != "" {
 				w.line("        'rows' => " + phpString(op.Rows) + ",")

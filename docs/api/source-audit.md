@@ -12713,8 +12713,10 @@ The flattened cPanel OpenAPI response documents a list of rebuild replies.
 The installed 11.138.0.24 wrapper explicitly selects list semantics.
 A successful UAPI dispatch can carry a failed rebuild in the row's `result`.
 The generated method preserves the nested status, message and optional nullable
-MX metadata. Its 16 offline cases exercise both routes, inner failure, outer
-failure and malformed accepted payloads.
+MX metadata. The original 16 offline fixtures distinguished inner rebuild failure from UAPI
+dispatch failure. Subsequent review added fail-closed handling for the rebuild
+outcome, ambiguous data, and an explicit outer WHM rejection fixture. The
+following historical probes exercised the original contract.
 
 At `aee6a547bf7b4567fa68f11e1102f19ad9c45ecf` on `test.oblak.host`,
 the one-off fixture created an account, added and read a dedicated custom A

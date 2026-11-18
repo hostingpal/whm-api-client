@@ -33,9 +33,12 @@ final class ZoneEditSpec
                             'status' => ['type' => 'flag'],
                             'statusmsg' => ['type' => 'string'],
                         ],
+                        'required' => ['status'],
                     ],
                 ],
+                'required' => ['result'],
             ],
         ],
+        'single_result_status' => true,
     ];
 }

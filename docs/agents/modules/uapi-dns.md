@@ -1,6 +1,6 @@
 # UAPI DNS
 
-> Agent contract notes for `uapi()->dns()`. Index: [docs/agents](../README.md).
+> Agent contract notes for `uapi()->dns()` and `uapi()->zoneEdit()`. Index: [docs/agents](../README.md).
 
 `uapi()->dns()` covers all eleven pinned DNS functions for the selected account: nine
 GET reads and two form POST zone writes, `massEditZone()` and `swapIpInZones()`. Both
@@ -121,7 +121,7 @@ for the evidence policy and command. The v4 run inspected the original responses
 and verified that the optional resource-record field `dname_raw` was a string equal
 to decoded `dname_b64`. The typed parse now preserves this field when present.
 
-## ZoneEdit/resetzone
+## `uapi()->zoneEdit()->resetZone()`
 
 The cPanel 138 pin documents a destructive rebuild from the server template, with
 no rollback. The DNS role must be enabled. The installed 11.138.0.24 handler in
@@ -130,16 +130,17 @@ no rollback. The DNS role must be enabled. The installed 11.138.0.24 handler in
 row. `Cpanel/Admin/Modules/Cpanel/zone.pm::RESET` verifies ownership and the
 `zoneedit` feature, then selects the rebuild status, message and MX check
 from `Whostmgr/DNS/Rebuild.pm`. The helper also returns serialized zone text,
-which the admin handler discards. On this build it incorporates certain TXT
-records into the new template. Rely on a backup for custom records.
+which the admin handler discards. On this build it incorporates uncommented TXT
+lines from readable old zone data into the new template. Rely on a backup for custom records.
 
-The flat pinned OpenAPI response describes the inner UAPI envelope. The typed
-method posts the account-owned domain and returns its data list. Check
-`$rows[0]['result']['status']` for integer 1 before reporting a successful reset.
-A dispatched rebuild failure has integer 0 and can supply `statusmsg`.
-Dispatch failures raise `ApiErrorException`. The pin leaves `checkmx` contents
-unspecified. If supplied, the client retains the object's fields or explicit
-null. A payload mismatch after accepted dispatch can follow a completed rebuild.
+The flat pinned OpenAPI response describes the inner UAPI envelope. A return
+requires a successful dispatch and exactly one result row with a strict integer
+rebuild status of 1. Either outer WHM rejection, inner UAPI rejection, or rebuild
+status 0 raises `ApiErrorException`. The message never includes freeform rebuild
+text. Missing or ambiguous outcomes raise `PayloadMismatchException` with
+`outcomeConfirmed` false. When status 1 is established, malformed ancillary data
+raises the same exception with `outcomeConfirmed` true. The pin leaves MX metadata
+fields unspecified. The client preserves the map, explicit null and omission.
 
 At `aee6a547` on 2026-11-18, each route reset the dedicated domain of fresh
 account `wldnsreset` on cPanel `11.138.0.24`. A distinct custom A record was read
@@ -148,3 +149,5 @@ row with integer status 1, an empty status message and a non-null MX object.
 The account, token, primary domain and zone were confirmed absent after cleanup.
 Rebuild failure is source-backed and covered by synthetic fixtures. See the
 [sanitized probes](../../api/evidence/2026-11-18-uapi-zone-reset.json).
+
+Reproducible readback capture is tracked in `whm-api-client-8x0.2.99`.

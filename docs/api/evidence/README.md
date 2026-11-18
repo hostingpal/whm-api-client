@@ -1546,3 +1546,7 @@ passing run and differs only in what it leaves untouched after a lost reply.
   on `11.138.0.24` from a one-off owned-zone fixture using `EvidenceRunner`.
   Each route removed its own custom A record and returned one successful rebuild row.
   Both payloads validated without discrepancies, and lifecycle cleanup passed.
+  Artifact SHA-256: `a86c66f8d2c0a82bafadbd931996923b8aebd6c41b6c9f9e86871a964b0fc429`.
+  The controls are in-memory readback assertions. The artifact includes structural
+  captures of the reset calls only. Committing the reusable recipe and independent
+  readback observations is tracked in `whm-api-client-8x0.2.99`.

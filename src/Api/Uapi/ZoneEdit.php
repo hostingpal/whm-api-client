@@ -18,13 +18,13 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  * according to the configured credentials, with a single attempt and no retries. The handle clears responseMeta()
  * before every attempt and records the envelope snapshot before API or payload errors.
  *
- * @phpstan-type ResetZoneResult list<array{
- *     result?: array{
+ * @phpstan-type ResetZoneResult array{0: array{
+ *     result: array{
  *         checkmx?: array<array-key, mixed>|null,
- *         status?: 0|1,
+ *         status: 1,
  *         statusmsg?: string,
  *     },
- * }>
+ * }}
  */
 final readonly class ZoneEdit
 {
@@ -43,13 +43,22 @@ final readonly class ZoneEdit
      *
      * This function resets a domain's DNS zone to the server's default zone template.
      *
-     * Documented: Available from cPanel 138 with the DNS role enabled. Resetting an account-owned zone applies the
-     * server's default template with no rollback. Custom records the template does not recreate can be lost, including
-     * manually added MX, TXT and CNAME records. Back up the zone before calling.
+     * Documented: Available from cPanel 138 with the DNS role enabled. The pin says resetting to the default template
+     * destroys every custom record, including manually added MX, TXT and CNAME records the template does not recreate.
+     * There is no rollback.
      *
-     * Policy: Inspect the returned row's result.status for 1 before treating the rebuild as successful. A 0 reports
-     * rebuild failure, with details in result.statusmsg. The outer UAPI status records dispatch. The optional nullable
-     * checkmx object contains upstream mail-routing metadata whose fields the pin leaves unspecified.
+     * Policy: Back up the zone first. On cPanel 11.138.0.24 the installed handler checks domain ownership and the
+     * zoneedit feature. Its rebuild helper copies uncommented TXT lines from the old zone when it can read it. Other
+     * server versions and individual records can differ.
+     *
+     * Policy: A return confirms one rebuild row with integer result.status 1. Integer 0 raises ApiErrorException with a
+     * fixed message. A missing, malformed or ambiguous outcome raises PayloadMismatchException with outcomeConfirmed
+     * false. If the inner status is 1 and another field is malformed, outcomeConfirmed is true. Read the zone before
+     * considering another reset.
+     *
+     * Observed: On cPanel 11.138.0.24 both direct and bridged successes had an empty statusmsg and a checkmx object.
+     * The pin leaves MX metadata fields unspecified. Failed rebuilds were not observed live. The client requires a
+     * strict integer status and makes no assumptions about alternative encodings.
      *
      * API-map identity: uapi:ZoneEdit/resetzone#GET (wire name resetzone).
      *
