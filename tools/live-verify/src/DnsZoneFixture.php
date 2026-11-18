@@ -45,7 +45,7 @@ final class DnsZoneFixture
 {
     public const ACCOUNT = 'wldnsrecipe';
     public const DOMAIN = 'dns-recipe.example.test';
-    public const ALIAS = 'dns-alias.example.test';
+    public const ALIAS = 'dns-alias.example.com';
     public const TOKEN_NAME = 'dns-zone-recipe';
 
     private const UNTOUCHED = ['creation' => 'not_attempted', 'cleanup' => 'not_required'];

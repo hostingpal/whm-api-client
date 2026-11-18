@@ -78,7 +78,7 @@ final class DnsZoneGuardTest extends TestCase
             }
             ++$count;
         }
-        foreach (['main' => self::ZONE, 'alias' => 'dns-alias.example.test'] as $kind => $zone) {
+        foreach (['main' => self::ZONE, 'alias' => 'dns-alias.example.com'] as $kind => $zone) {
             $this->guard->arm('direct-seed-' . $kind . '-before');
             $this->guard->sendRequest(self::parse('direct', $zone));
             $this->guard->arm('direct-seed-' . $kind, 45, 3);
@@ -103,14 +103,14 @@ final class DnsZoneGuardTest extends TestCase
                     $this->guard->sendRequest(self::request(
                         'POST',
                         self::dns($route, 'swap_ip_in_zones'),
-                        'domain=' . self::ZONE . '&domain=dns-alias.example.test&dest_ip=192.0.2.'
+                        'domain=' . self::ZONE . '&domain=dns-alias.example.com&dest_ip=192.0.2.'
                         . ($route === 'direct' ? '55' : '54'),
                     ));
                     ++$count;
                 }
                 foreach (['main', 'alias'] as $kind) {
                     $this->guard->arm($route . '-swap-' . $kind . '-' . $when);
-                    $zone = $kind === 'main' ? self::ZONE : 'dns-alias.example.test';
+                    $zone = $kind === 'main' ? self::ZONE : 'dns-alias.example.com';
                     $this->guard->sendRequest(self::parse($route, $zone));
                     ++$count;
                 }
@@ -240,7 +240,7 @@ final class DnsZoneGuardTest extends TestCase
         $uri = self::WHM . 'modifyacct?api.version=1';
         $this->guard->sendRequest(self::request('POST', $uri, 'user=wldnsrecipe&MAXPARK=1'));
         $this->guard->arm('park_alias');
-        $this->refuse(self::request('POST', self::DIRECT . 'Park/park', 'domain=dns-alias.example.test'), 1);
+        $this->refuse(self::request('POST', self::DIRECT . 'Park/park', 'domain=dns-alias.example.com'), 1);
     }
 
     public function testTokenCannotBeReboundOrContainHeaderControlCharacters(): void
@@ -273,7 +273,7 @@ final class DnsZoneGuardTest extends TestCase
         $limits = self::request('POST', self::WHM . 'modifyacct?api.version=1', 'user=wldnsrecipe&MAXPARK=1');
         $this->guard->sendRequest($limits);
         $this->guard->arm('park_alias');
-        $this->guard->sendRequest(self::request('POST', self::DIRECT . 'Park/park', 'domain=dns-alias.example.test'));
+        $this->guard->sendRequest(self::request('POST', self::DIRECT . 'Park/park', 'domain=dns-alias.example.com'));
     }
 
     private function refuse(RequestInterface $request, int $alreadySent): void
