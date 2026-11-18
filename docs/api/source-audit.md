@@ -12734,6 +12734,7 @@ before resetting, and afterwards. Both resets confirmed the nested outcome and
 cleanup confirmed absence of the account, token, domain and zone.
 The [v2 artifact](evidence/2026-11-18-uapi-zone-reset-v2.json) records each original
 response's structure and masks the owner and RDATA values.
+
 ## Prepared UAPI mailbox and forwarder imports, 2026-11-18
 
 At revision `6fa3197d14eb7563909a5e132822d228d224805b`, the generated
@@ -12773,6 +12774,7 @@ token, account, domain and zone absent. A subsequent filesystem check confirmed
 the dedicated account home and its CSV staging directory absent. The operations,
 checks and sanitized observations are scoped to this run. Staging files, IDs,
 passwords, mail addresses and error text were excluded from the report.
+
 ## Session/create_temp_user authenticated-session verification (2026-11-18)
 
 The pinned UAPI GET documents the session URL and declares a mutation. Its
