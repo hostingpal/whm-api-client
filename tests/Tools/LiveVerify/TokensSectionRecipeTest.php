@@ -132,9 +132,7 @@ final class TokensSectionRecipeTest extends TestCase
         yield 'revoke returning zero' => ['revoke_direct', '0', false];
         yield 'revoke returning a digit string' => ['revoke_direct', '"1"', false];
         yield 'revoke returning true' => ['revoke_direct', 'true', false];
-        yield 'second revoke' => ['revoke_again_direct', '0', true];
-        yield 'second revoke returning one' => ['revoke_again_direct', '1', false];
-        yield 'second revoke returning null' => ['revoke_again_direct', 'null', false];
+        yield 'revoke returning null' => ['revoke_direct', 'null', false];
     }
 
     #[DataProvider('payloads')]

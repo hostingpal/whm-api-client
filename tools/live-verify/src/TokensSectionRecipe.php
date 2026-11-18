@@ -21,10 +21,13 @@ use Throwable;
  * Each route owns one throwaway token named from the run's suffix. Before creating it the route must show that
  * neither of its names exists and that the account has no notification target, because the server announces every
  * created token to the account's contacts. The token is then created read-only with an expiry, listed, renamed,
- * revoked, revoked again and confirmed absent. Bodies are spelled literally here, independently of the client's
- * encoder, so the guard compares two spellings of each request; the names use only characters that need no encoding.
- * The cleanup phases exist only for a failed run and are never part of passing evidence. Nothing here performs I/O,
- * and no expectation keeps or returns a token secret.
+ * revoked and confirmed absent. Every mutation names a token the run holds at that point, or a name the preflight
+ * showed to be free. The account is shared, so nothing here revokes a name the run has already released: a second
+ * revoke of the freed name would hit whoever reused it, and its result is recorded by the earlier captures instead.
+ * Bodies are spelled literally here, independently of the client's encoder, so the guard compares two spellings of
+ * each request; the names use only characters that need no encoding. The cleanup phases exist only for a failed run
+ * and are never part of passing evidence. Nothing here performs I/O, and no expectation keeps or returns a token
+ * secret.
  *
  * @phpstan-type Route 'direct-uapi'|'bridged-uapi'
  * @phpstan-type Step array{probe:Probe,method:'GET'|'POST',body:string}
@@ -34,14 +37,12 @@ use Throwable;
  */
 final readonly class TokensSectionRecipe
 {
-    public const RECIPE = 'tokens-lifecycle-v2';
+    public const RECIPE = 'tokens-lifecycle-v3';
 
     /** The account variables that hold a cPanel user's notification targets. */
     private const TARGETS = ['contact_email', 'contact_email_2', 'pushbullet_access_token'];
 
-    private const LIFECYCLE = [
-        'preflight', 'targets', 'create', 'listed', 'rename', 'renamed', 'revoke', 'revoke_again', 'absent',
-    ];
+    private const LIFECYCLE = ['preflight', 'targets', 'create', 'listed', 'rename', 'renamed', 'revoke', 'absent'];
 
     private const CLEANUP = ['cleanup_inspect', 'cleanup_original', 'cleanup_renamed', 'cleanup_check'];
 
@@ -125,7 +126,7 @@ final readonly class TokensSectionRecipe
                 'name=' . $original . '&new_name=' . $renamed,
                 static fn (Tokens $tokens): mixed => $tokens->renameToken($original, $renamed),
             ],
-            'revoke', 'revoke_again', 'cleanup_renamed' => [
+            'revoke', 'cleanup_renamed' => [
                 'name=' . $renamed,
                 static fn (Tokens $tokens): mixed => $tokens->revokeToken($renamed),
             ],
@@ -171,7 +172,6 @@ final readonly class TokensSectionRecipe
                 && is_string($data->token ?? null) && $data->token !== '',
             'rename' => $data === null,
             'revoke' => $data === 1,
-            'revoke_again' => $data === 0,
             'listed' => $inventory === ['original' => 'settled', 'renamed' => 'absent'],
             'renamed' => $inventory === ['original' => 'absent', 'renamed' => 'settled'],
             'preflight', 'absent' => $inventory === ['original' => 'absent', 'renamed' => 'absent'],
@@ -207,9 +207,7 @@ final readonly class TokensSectionRecipe
             'targets' => ['Variables/get_user_information', VariablesSpec::GET_USER_INFORMATION, 'GET'],
             'create' => ['Tokens/create_full_access', TokensSpec::CREATE_FULL_ACCESS, 'POST'],
             'rename' => ['Tokens/rename', TokensSpec::RENAME, 'POST'],
-            'revoke', 'revoke_again', 'cleanup_original', 'cleanup_renamed' => [
-                'Tokens/revoke', TokensSpec::REVOKE, 'POST',
-            ],
+            'revoke', 'cleanup_original', 'cleanup_renamed' => ['Tokens/revoke', TokensSpec::REVOKE, 'POST'],
             default => ['Tokens/list', TokensSpec::LIST, 'GET'],
         };
 

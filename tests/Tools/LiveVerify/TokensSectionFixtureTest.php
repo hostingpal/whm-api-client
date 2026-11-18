@@ -55,7 +55,7 @@ final class TokensSectionFixtureTest extends TestCase
         $server = new TokensSectionServer();
         $report = self::fixture($server)->run();
 
-        self::assertSame('tokens-lifecycle-v2', $report['recipe']);
+        self::assertSame('tokens-lifecycle-v3', $report['recipe']);
         self::assertSame('passed', $report['status']);
         self::assertSame(['status' => 'passed', 'findings' => []], $report['assessment']);
         self::assertSame(['direct-uapi' => 'absent', 'bridged-uapi' => 'absent'], $report['tokens']);
@@ -68,18 +68,17 @@ final class TokensSectionFixtureTest extends TestCase
         self::assertSame([
             'version',
             'preflight_direct', 'targets_direct', 'create_direct', 'listed_direct', 'rename_direct',
-            'renamed_direct', 'revoke_direct', 'revoke_again_direct', 'absent_direct',
+            'renamed_direct', 'revoke_direct', 'absent_direct',
             'preflight_bridge', 'targets_bridge', 'create_bridge', 'listed_bridge', 'rename_bridge',
-            'renamed_bridge', 'revoke_bridge', 'revoke_again_bridge', 'absent_bridge',
+            'renamed_bridge', 'revoke_bridge', 'absent_bridge',
         ], array_column($report['probes'], 'phase'));
+        // Each name is revoked exactly once: a second revoke would target a name the run no longer holds.
         self::assertSame([
             self::CREATE,
             self::RENAME,
             'name=' . self::RENAMED,
-            'name=' . self::RENAMED,
             'name=whmapiclient-live-0a1b2c-bridge&expires_at=1795080067&readonly=1',
             'name=whmapiclient-live-0a1b2c-bridge&new_name=whmapiclient-live-0a1b2c-bridge-renamed',
-            'name=whmapiclient-live-0a1b2c-bridge-renamed',
             'name=whmapiclient-live-0a1b2c-bridge-renamed',
         ], self::bodies($server));
         foreach ($server->requests as $request) {
@@ -263,6 +262,75 @@ final class TokensSectionFixtureTest extends TestCase
         self::assertArrayHasKey(self::ORIGINAL, $server->tokens);
     }
 
+    /** The other party's token gets exactly the run's settings, so only released ownership can protect it. */
+    private const LOOKALIKE = ['create_time' => 1794993668, 'expires_at' => '1795080067', 'readonly' => 1];
+
+    public function testANameReusedAfterASuccessfulRenameIsNotRevoked(): void
+    {
+        $server = new TokensSectionServer();
+        $server->foreign = self::LOOKALIKE;
+        // Another party takes the freed first name before the list that follows the rename.
+        $server->arrivals['list/direct/3'] = self::ORIGINAL;
+        $report = self::fixture($server)->run();
+
+        self::assertSame('failed', $report['status']);
+        self::assertSame(
+            ['renamed_direct', 'cleanup_inspect_direct', 'cleanup_renamed_direct', 'cleanup_check_direct'],
+            array_slice(array_column($report['probes'], 'phase'), -4),
+        );
+        // The run's own token is revoked under the name it still holds; the reused first name is never sent.
+        self::assertSame([self::CREATE, self::RENAME, 'name=' . self::RENAMED], self::bodies($server));
+        self::assertSame(self::EXISTING + [self::ORIGINAL => self::LOOKALIKE], $server->tokens);
+        // A token under a released name cannot be told from the run's own, so a person has to look.
+        self::assertSame(['direct-uapi' => 'uncertain', 'bridged-uapi' => 'not_started'], $report['tokens']);
+        self::assertSame(
+            ['direct-uapi:phase_failure', 'direct-uapi:unproven_token_under_run_name'],
+            $report['failures'],
+        );
+    }
+
+    public function testANameReusedAfterASuccessfulRevokeIsNotRevoked(): void
+    {
+        $server = new TokensSectionServer();
+        $server->foreign = self::LOOKALIKE;
+        // Another party takes the freed second name before the final list.
+        $server->arrivals['list/direct/4'] = self::RENAMED;
+        $report = self::fixture($server)->run();
+
+        self::assertSame('failed', $report['status']);
+        self::assertSame(
+            ['absent_direct', 'cleanup_inspect_direct', 'cleanup_check_direct'],
+            array_slice(array_column($report['probes'], 'phase'), -3),
+        );
+        // The only revoke is the lifecycle's own, sent while the run still held the name.
+        self::assertSame([self::CREATE, self::RENAME, 'name=' . self::RENAMED], self::bodies($server));
+        self::assertSame(self::EXISTING + [self::RENAMED => self::LOOKALIKE], $server->tokens);
+        self::assertSame(['direct-uapi' => 'uncertain', 'bridged-uapi' => 'not_started'], $report['tokens']);
+        self::assertSame(
+            ['direct-uapi:phase_failure', 'direct-uapi:unproven_token_under_run_name'],
+            $report['failures'],
+        );
+    }
+
+    public function testAHeldNameListedWithOtherSettingsIsLeftUntouched(): void
+    {
+        $server = new TokensSectionServer();
+        $server->failures['rename/direct/1'] = 'api';
+        // Both cleanup lists show the run's first name without an expiry: it may not be the run's token.
+        $other = '[{"name":"' . self::ORIGINAL . '","expires_at":null,"readonly":1,"has_full_access":1}]';
+        $server->overrides['list/direct/3'] = $other;
+        $server->overrides['list/direct/4'] = $other;
+        $report = self::fixture($server)->run();
+
+        self::assertSame('failed', $report['status']);
+        self::assertSame(['direct-uapi' => 'uncertain', 'bridged-uapi' => 'not_started'], $report['tokens']);
+        self::assertSame(
+            ['direct-uapi:phase_failure', 'direct-uapi:unproven_token_under_run_name'],
+            $report['failures'],
+        );
+        self::assertSame([self::CREATE, self::RENAME], self::bodies($server));
+    }
+
     public function testAnUnknownCreationIsRevokedOnlyWhenItsRowShowsThisRunsSettings(): void
     {
         $server = new TokensSectionServer();
@@ -331,7 +399,6 @@ final class TokensSectionFixtureTest extends TestCase
         yield 'revoke refused' => ['failures', 'revoke/direct/1', 'api', 'revoke_direct', $renamed];
         yield 'revoke reporting nothing removed' => ['overrides', 'revoke/direct/1', '0', 'revoke_direct', []];
         yield 'revoke reply lost after it took effect' => ['failures', 'revoke/direct/1', 'lost', 'revoke_direct', []];
-        yield 'second revoke reporting a removal' => ['overrides', 'revoke/direct/2', '1', 'revoke_again_direct', []];
         yield 'token still listed after revoke' => ['overrides', 'list/direct/4',
             '[{"name":"' . self::RENAMED . '"}]', 'absent_direct', []];
     }
@@ -422,9 +489,10 @@ final class TokensSectionFixtureTest extends TestCase
         self::assertSame(['bridged-uapi:phase_failure'], $report['failures']);
         self::assertSame(['direct-uapi' => 'absent', 'bridged-uapi' => 'absent'], $report['tokens']);
         self::assertSame(self::EXISTING, $server->tokens);
-        self::assertSame('passed', $report['probes'][9]['expectation']);
-        self::assertSame('revoke_bridge', $report['probes'][16]['phase']);
-        self::assertSame('failed', $report['probes'][16]['expectation']);
+        self::assertSame('absent_direct', $report['probes'][8]['phase']);
+        self::assertSame('passed', $report['probes'][8]['expectation']);
+        self::assertSame('revoke_bridge', $report['probes'][15]['phase']);
+        self::assertSame('failed', $report['probes'][15]['expectation']);
     }
 
     public function testAssessmentFailsClosedOnAlteredEvidence(): void
@@ -434,8 +502,8 @@ final class TokensSectionFixtureTest extends TestCase
         self::assertSame('passed', TokensSectionEvidence::finish($records, self::context())['status']);
 
         $cases = [
-            'missing_phase' => array_slice($records, 0, 18),
-            'duplicate_phase' => [...$records, $records[18]],
+            'missing_phase' => array_slice($records, 0, 16),
+            'duplicate_phase' => [...$records, $records[16]],
             'phase_order_mismatch' => [$records[0], $records[2], $records[1], ...array_slice($records, 3)],
             'unsuccessful_phase' => array_replace($records, [5 => ['expectation' => 'failed'] + $records[5]]),
             'unacknowledged_discrepancy' => array_replace($records, [

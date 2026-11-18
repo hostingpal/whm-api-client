@@ -16,14 +16,15 @@ use Throwable;
  * One-shot API token lifecycle through the generated client on both UAPI routes, with structural evidence only.
  *
  * Each route first shows that neither of its names exists and that the account has no notification target, then
- * creates its own read-only, expiring throwaway token, lists it, renames it, revokes it, revokes it again and
- * confirms it is gone. The created secret is never read into this fixture's state: the original response is checked
- * in place and dropped before the next request.
+ * creates its own read-only, expiring throwaway token, lists it, renames it, revokes it and confirms it is gone.
+ * The created secret is never read into this fixture's state: the original response is checked in place and dropped
+ * before the next request.
  *
- * The account is shared, so cleanup after a failed phase revokes a name only when this run is known to hold a token
- * under it. An accepted creation or rename establishes that. A refused one establishes that the name is not this
- * run's, and it is left alone. After an outcome this process never learned, a name is revoked only when a later list
- * shows a row with exactly the settings this run creates its token with. Cleanup requests are separate phases, never
+ * The account is shared, so the run tracks which of its two names it holds. An accepted creation or rename makes it
+ * hold the new name; an accepted rename or revoke releases the old one, which may be anyone's from then on; a refused
+ * mutation changes nothing. After an outcome this process never learned, the run may hold either name. Cleanup after
+ * a failed phase revokes only a held name, and only when a list shows it with exactly the settings this run creates
+ * its token with. Everything ambiguous is left untouched and reported. Cleanup requests are separate phases, never
  * retries, and a run that needed them cannot pass.
  *
  * A route's token is reported absent only on evidence. In particular, an empty list after a creation whose outcome is
@@ -44,7 +45,7 @@ use Throwable;
  * }
  * @phpstan-type State 'not_started'|'not_created'|'uncertain'|'absent'
  * @phpstan-type Targets 'not_checked'|'not_established'|'none_configured'
- * @phpstan-type Ownership 'none'|'possible'|'owned'
+ * @phpstan-type Holding 'never'|'held'|'released'
  * @phpstan-type Report array{
  *   recipe:string,status:'passed'|'failed',probes:list<Observation>,assessment:Assessment,
  *   tokens:array{direct-uapi:State,bridged-uapi:State},
@@ -144,9 +145,9 @@ final class TokensSectionFixture
     private function lifecycle(string $name): bool
     {
         $route = $name === 'direct' ? 'direct-uapi' : 'bridged-uapi';
-        /** @var array{original:Ownership,renamed:Ownership} $owned */
-        $owned = ['original' => 'none', 'renamed' => 'none'];
-        $dispatched = false;
+        /** @var array{original:Holding,renamed:Holding} $names */
+        $names = ['original' => 'never', 'renamed' => 'never'];
+        $creation = 'not_dispatched';
         try {
             $this->observe('preflight_' . $name);
             // The server announces a created token to the account's contacts, so none may be configured.
@@ -154,33 +155,44 @@ final class TokensSectionFixture
             $this->observe('targets_' . $name);
             $this->targets[$route] = 'none_configured';
             // From here the creation may reach the server, whatever this process learns about its outcome.
-            $dispatched = true;
+            $creation = 'unknown';
             $this->tokens[$route] = 'uncertain';
             try {
                 $this->observe('create_' . $name);
             } finally {
-                $owned['original'] = self::established($this->outcome('create_' . $name));
+                $creation = $this->outcome('create_' . $name);
+                if ($creation !== 'refused') {
+                    $names['original'] = 'held';
+                }
             }
             $this->observe('listed_' . $name);
             try {
                 $this->observe('rename_' . $name);
             } finally {
-                // The token stays this run's under its first name until a list shows that name gone.
-                $owned['renamed'] = self::established($this->outcome('rename_' . $name));
+                $renaming = $this->outcome('rename_' . $name);
+                if ($renaming === 'accepted') {
+                    // The first name is free again and may be anyone's from here on.
+                    $names = ['original' => 'released', 'renamed' => 'held'];
+                } elseif ($renaming === 'unknown') {
+                    // The token is under one of the two names; only a list can say which.
+                    $names['renamed'] = 'held';
+                }
             }
-            foreach (['renamed', 'revoke', 'revoke_again', 'absent'] as $stage) {
-                $this->observe($stage . '_' . $name);
-            }
+            $this->observe('renamed_' . $name);
+            // Passing means the server answered 1: it removed the token and the name is free again.
+            $this->observe('revoke_' . $name);
+            $names['renamed'] = 'released';
+            $this->observe('absent_' . $name);
             $this->tokens[$route] = 'absent';
 
             return true;
         } catch (Throwable) {
             $this->failures[] = $route . ':phase_failure';
-            if ($dispatched && $owned['original'] === 'none') {
+            if ($creation === 'refused') {
                 // The server refused the creation, so this run holds nothing under either name.
                 $this->tokens[$route] = 'not_created';
-            } elseif ($dispatched) {
-                $this->cleanup($name, $owned);
+            } elseif ($creation !== 'not_dispatched') {
+                $this->cleanup($name, $names, $creation === 'unknown');
             }
 
             return false;
@@ -188,12 +200,17 @@ final class TokensSectionFixture
     }
 
     /**
-     * Revoke what this run holds on one route and accept only evidence that nothing of it is left.
+     * Revoke what this run still holds on one route and accept only evidence that nothing of it is left.
+     *
+     * Only a name the run holds is revoked, and only when a list shows it with exactly the run's settings. A name the
+     * run never had is someone else's and is ignored. Any other presence is ambiguous: a held name with other
+     * settings, or a released name that is listed again, may be this run's token or another party's. It is left
+     * untouched and the route stays uncertain for a person to check.
      *
      * @param 'direct'|'bridge' $name
-     * @param array{original:Ownership,renamed:Ownership} $owned
+     * @param array{original:Holding,renamed:Holding} $names
      */
-    private function cleanup(string $name, array $owned): void
+    private function cleanup(string $name, array $names, bool $creationUnknown): void
     {
         $route = $name === 'direct' ? 'direct-uapi' : 'bridged-uapi';
         $before = $this->inspect('cleanup_inspect_' . $name, $name);
@@ -203,7 +220,7 @@ final class TokensSectionFixture
             return;
         }
         foreach (['original', 'renamed'] as $identity) {
-            if (self::ours($owned[$identity], $before[$identity])) {
+            if ($names[$identity] === 'held' && $before[$identity] === 'settled') {
                 try {
                     $this->observe('cleanup_' . $identity . '_' . $name);
                 } catch (Throwable) {
@@ -219,14 +236,14 @@ final class TokensSectionFixture
         }
         $unsettled = [];
         foreach (['original', 'renamed'] as $identity) {
-            if (self::ours($owned[$identity], $after[$identity])) {
-                $unsettled[] = $route . ':cleanup_unconfirmed';
-            } elseif ($owned[$identity] === 'possible' && $after[$identity] === 'other') {
-                // Something carries the name, but nothing shows that this run put it there.
-                $unsettled[] = $route . ':unproven_token_under_run_name';
+            if ($names[$identity] === 'never' || $after[$identity] === 'absent') {
+                continue;
             }
+            $unsettled[] = $names[$identity] === 'held' && $after[$identity] === 'settled'
+                ? $route . ':cleanup_unconfirmed'
+                : $route . ':unproven_token_under_run_name';
         }
-        if ($owned['original'] === 'possible' && $before['original'] !== 'settled') {
+        if ($creationUnknown && $before['original'] !== 'settled') {
             // The creation never showed itself, so it may still take effect after these lists.
             $unsettled[] = $route . ':creation_outcome_unknown';
         }
@@ -234,32 +251,6 @@ final class TokensSectionFixture
             $this->tokens[$route] = 'absent';
         }
         array_push($this->failures, ...$unsettled);
-    }
-
-    /**
-     * Whether a listed name is this run's token: any presence of an owned name, or a settled row of a possible one.
-     *
-     * @param Ownership $owned
-     * @param 'absent'|'settled'|'other' $sighting
-     */
-    private static function ours(string $owned, string $sighting): bool
-    {
-        return ($owned === 'owned' && $sighting !== 'absent') || ($owned === 'possible' && $sighting === 'settled');
-    }
-
-    /**
-     * What a mutation's outcome establishes about the name it would create.
-     *
-     * @param 'accepted'|'refused'|'unknown' $outcome
-     * @return Ownership
-     */
-    private static function established(string $outcome): string
-    {
-        return match ($outcome) {
-            'accepted' => 'owned',
-            'refused' => 'none',
-            default => 'possible',
-        };
     }
 
     /**

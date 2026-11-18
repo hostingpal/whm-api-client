@@ -50,6 +50,9 @@ final class TokensSectionServer implements ClientInterface
     /** @var array<string,string> function/route/occurrence -> name of another party's token created just before it. */
     public array $arrivals = [];
 
+    /** @var Token The token another party creates; a test can give it the run's own settings, the hardest case. */
+    public array $foreign = self::FOREIGN;
+
     /** @var array<string,int> */
     private array $counts = [];
 
@@ -76,7 +79,7 @@ final class TokensSectionServer implements ClientInterface
         $this->counts[$key] = ($this->counts[$key] ?? 0) + 1;
         $key .= '/' . $this->counts[$key];
         if (isset($this->arrivals[$key])) {
-            $this->tokens[$this->arrivals[$key]] = self::FOREIGN;
+            $this->tokens[$this->arrivals[$key]] = $this->foreign;
         }
         $failure = $this->failures[$key] ?? '';
         if ($failure === 'api') {

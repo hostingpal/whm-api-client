@@ -66,7 +66,8 @@ final class TokensSectionGuardTest extends TestCase
         yield 'bridge list' => ['absent_bridge', 'GET', self::BRIDGE . 'list', ''];
         yield 'bridge create' => ['create_bridge', 'POST', self::BRIDGE . 'create_full_access',
             'name=' . $name . 'bridge&expires_at=1795080067&readonly=1'];
-        yield 'bridge second revoke' => ['revoke_again_bridge', 'POST', self::BRIDGE . 'revoke',
+        yield 'bridge revoke' => ['revoke_bridge', 'POST', self::BRIDGE . 'revoke', 'name=' . $name . 'bridge-renamed'];
+        yield 'bridge cleanup of the renamed name' => ['cleanup_renamed_bridge', 'POST', self::BRIDGE . 'revoke',
             'name=' . $name . 'bridge-renamed'];
         yield 'version' => ['version', 'GET', 'https://test.oblak.host:2087/json-api/version?api.version=1', ''];
     }
@@ -186,7 +187,8 @@ final class TokensSectionGuardTest extends TestCase
     public function testUnknownPhasesInvalidRecipesAndEmptyCredentialsAreRejected(): void
     {
         $guard = self::guard(new MockClient());
-        foreach (['create', 'create_other', 'cleanup_direct', 'version_direct', 'targets', ''] as $phase) {
+        $unknown = ['create', 'create_other', 'cleanup_direct', 'version_direct', 'targets', 'revoke_again_direct', ''];
+        foreach ($unknown as $phase) {
             try {
                 $guard->authorize($phase);
                 self::fail('An unknown phase was authorized.');
