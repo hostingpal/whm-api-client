@@ -398,12 +398,11 @@ final readonly class Dns
      * receive the FTP address), and each processed zone gets a new serial and is synchronized and reloaded. A call that
      * replaces no address can still return SPF TXT rows.
      *
-     * Policy: Server code on cPanel 11.138.0.24, read but not observed at runtime because both test domains shared one
-     * zone: detection follows the documented order but runs once per call, not once per zone. The first zone processed
-     * that yields an address decides it for every zone processed after it, and that order is not the caller's. A zone
-     * without a candidate is skipped only until an address has been found; after that it is processed with the found
-     * address and its SPF records are rewritten. Pass sourceIp when zones may hold different addresses. Temporary
-     * domains are skipped with a warning in responseMeta(); if all are skipped the result is an empty list.
+     * Observed: On cPanel 11.138.0.24, direct UAPI selected one apex source address for the entire call. A disposable
+     * two-zone run with different apex addresses and both candidate addresses present in each zone confirmed that only
+     * the chosen source was replaced in both. Pass sourceIp to choose it explicitly. Server source shows that traversal
+     * order is unspecified and a zone without a candidate is skipped only until a source has been found. A separate run
+     * on a sole temporary domain returned an empty list and a skip warning on both routes.
      *
      * Policy: Inspect the returned rows instead of treating envelope success as proof that an address changed. Zone
      * changes for public domains are published and resolvers cache the old answers. The client makes one request with

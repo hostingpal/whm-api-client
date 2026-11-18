@@ -60,39 +60,6 @@ final class DnsZoneEvidenceTest extends TestCase
             case 'reordered':
                 [$records[0], $records[1]] = [$records[1], $records[0]];
                 break;
-            case 'unknown':
-                $records[1]['argument_variant'] = 'private unexpected value';
-                break;
-            case 'no-label':
-                unset($records[1]['argument_variant']);
-                break;
-            case 'route':
-                $records[1]['route'] = 'bridged-uapi';
-                break;
-            case 'operation':
-                $records[1]['operation'] = 'uapi:DNS/parse_zone';
-                break;
-            case 'variant':
-                $records[1]['variant'] = 'uapi:DNS/mass_edit_zone#POST';
-                break;
-            case 'method':
-                $records[1]['method'] = 'GET';
-                break;
-            case 'source':
-                $records[1]['source_sha256'] = $context['source_hashes']['whm1'];
-                break;
-            case 'revision':
-                $records[1]['revision'] = str_repeat('0', 40);
-                break;
-            case 'overlay':
-                $records[1]['overlay_sha256'] = str_repeat('0', 64);
-                break;
-            case 'map':
-                $records[1]['map_sha256'] = str_repeat('0', 64);
-                break;
-            case 'tree':
-                $records[1]['generator_tree'] = str_repeat('0', 40);
-                break;
             case 'context':
                 $context['revision'] = 'invalid';
                 foreach ($records as &$record) {
@@ -100,43 +67,20 @@ final class DnsZoneEvidenceTest extends TestCase
                 }
                 unset($record);
                 break;
-            case 'contract':
-                $records[1]['effective_contract_sha256'] = str_repeat('0', 64);
-                break;
-            case 'version':
-                $records[1]['server_version'] = '11.136.0.1';
-                break;
             case 'invalid-version':
                 $version = null;
-                break;
-            case 'http':
-                $records[1]['http_status'] = 503;
-                break;
-            case 'outcome':
-                $records[1]['api_outcome'] = 'failure';
-                break;
-            case 'validation':
-                $records[1]['payload_validation'] = 'not_checked';
-                break;
-            case 'discrepancy':
-                $records[1]['discrepancies'][] = ['path' => '$.*', 'kind' => 'unknown_field'];
-                break;
-            case 'empty-structure':
-                $records[1]['response_paths'] = [];
                 break;
             case 'bridge-outcome':
                 $bridge = 'unexpected';
                 break;
             case 'wrong-bridge-failure':
-                $records[22]['failure_kind'] = 'payload_mismatch';
-                break;
-            case 'failure-elsewhere':
-                $records[1] = [...$records[1], 'failure_kind' => 'api_failure',
-                    'api_outcome' => 'failure', 'probe_outcome' => 'failed', 'payload_validation' => 'not_checked'];
+                $records[22] = [...$records[22], 'failure_kind' => 'payload_mismatch'];
                 break;
             case 'successful-bridge-reported-as-defect':
                 $records = self::records('success');
                 break;
+            default:
+                $records[1] = self::corrupt($records[1], $case);
         }
 
         $before = $records;
@@ -145,6 +89,143 @@ final class DnsZoneEvidenceTest extends TestCase
         self::assertNotEmpty($assessment['findings']);
         self::assertStringNotContainsString('private unexpected value', implode(' ', $assessment['findings']));
         self::assertSame($before, $records);
+    }
+
+    /**
+     * @param Record $record
+     * @return Record
+     */
+    private static function corrupt(array $record, string $case): array
+    {
+        switch ($case) {
+            case 'unknown':
+                $record['argument_variant'] = 'private unexpected value';
+                break;
+            case 'no-label':
+                unset($record['argument_variant']);
+                break;
+            case 'route':
+                $record['route'] = 'bridged-uapi';
+                break;
+            case 'operation':
+                $record['operation'] = 'uapi:DNS/parse_zone';
+                break;
+            case 'variant':
+                $record['variant'] = 'uapi:DNS/mass_edit_zone#POST';
+                break;
+            case 'method':
+                $record['method'] = 'GET';
+                break;
+            case 'source':
+                $record['source_sha256'] = DomainRowsEvidenceTest::context()['source_hashes']['whm1'];
+                break;
+            case 'revision':
+                $record['revision'] = str_repeat('0', 40);
+                break;
+            case 'overlay':
+                $record['overlay_sha256'] = str_repeat('0', 64);
+                break;
+            case 'map':
+                $record['map_sha256'] = str_repeat('0', 64);
+                break;
+            case 'tree':
+                $record['generator_tree'] = str_repeat('0', 40);
+                break;
+            case 'contract':
+                $record['effective_contract_sha256'] = str_repeat('0', 64);
+                break;
+            case 'version':
+                $record['server_version'] = '11.136.0.1';
+                break;
+            case 'http':
+                $record['http_status'] = 503;
+                break;
+            case 'outcome':
+                $record['api_outcome'] = 'failure';
+                break;
+            case 'validation':
+                $record['payload_validation'] = 'not_checked';
+                break;
+            case 'discrepancy':
+                $record['discrepancies'][] = ['path' => '$.*', 'kind' => 'unknown_field'];
+                break;
+            case 'empty-structure':
+                $record['response_paths'] = [];
+                break;
+            case 'failure-elsewhere':
+                $record = [...$record, 'failure_kind' => 'api_failure',
+                    'api_outcome' => 'failure', 'probe_outcome' => 'failed', 'payload_validation' => 'not_checked'];
+                break;
+        }
+
+        return $record;
+    }
+
+    public function testOriginalReadbackProvesTheNameAndValueBehindTheWildcard(): void
+    {
+        $records = self::records('known_failure');
+        $context = DomainRowsEvidenceTest::context();
+        $context['source_hashes']['uapi'] = '172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc';
+        foreach ($records as &$record) {
+            $record['source_sha256'] = $context['source_hashes']['uapi'];
+        }
+        unset($record);
+        $field = ['type' => 'record', 'dname_raw' => 'private.name.', 'dname_b64' => base64_encode('private.name.')];
+        $asBody = static fn (array $rows): string => json_encode(['result' => ['data' => $rows]], JSON_THROW_ON_ERROR);
+        foreach ([0, 7] as $index) {
+            $probe = $records[$index];
+            $probe['discrepancies'] = [['path' => '$[].*', 'kind' => 'unknown_field']];
+            $probe['payload_paths']['$[].*'] = ['string'];
+            $raw = $index === 0 ? $asBody([$field]) : json_encode(
+                ['data' => ['uapi' => ['data' => [$field]]]],
+                JSON_THROW_ON_ERROR,
+            );
+            $reviewed = DnsZoneEvidence::reviewReadback($probe, $raw);
+            self::assertSame('known_dname_raw_string', $reviewed['readback_review'] ?? null);
+            self::assertSame($probe['discrepancies'], $reviewed['discrepancies']);
+            self::assertStringNotContainsString('private.name.', json_encode($reviewed, JSON_THROW_ON_ERROR));
+            self::assertArrayNotHasKey('readback_review', DnsZoneEvidence::reviewReadback($reviewed, null));
+            $records[$index] = $reviewed;
+        }
+        self::assertSame('passed', DnsZoneEvidence::assess(
+            $records,
+            $context,
+            '11.138.0.24',
+            'known_failure',
+        )['status']);
+        $probe = $records[0];
+        unset($probe['readback_review']);
+        foreach (
+            [
+            $asBody([['type' => 'record']]), $asBody([array_merge($field, ['private_extra' => 'private'])]),
+            $asBody([$field, ['private_extra' => 'private']]), $asBody([array_merge($field, ['type' => 'comment'])]),
+            $asBody([array_merge($field, ['dname_b64' => base64_encode('other')])]),
+            $asBody([array_merge($field, ['dname_raw' => 1])]), $asBody([array_merge($field, ['dname_b64' => '!'])]),
+            null, 'malformed',
+            ] as $bad
+        ) {
+            self::assertArrayNotHasKey('readback_review', DnsZoneEvidence::reviewReadback($probe, $bad));
+        }
+        foreach (
+            [
+            ['server_version' => '11.138.0.25'], ['source_sha256' => str_repeat('a', 64)],
+            ['effective_contract_sha256' => str_repeat('a', 64)], ['method' => 'POST'],
+            ['payload_paths' => ['$[].*' => ['int', 'string']]],
+            ['discrepancies' => [['path' => '$', 'kind' => 'type_mismatch']]],
+            ] as $change
+        ) {
+            self::assertArrayNotHasKey('readback_review', DnsZoneEvidence::reviewReadback(
+                [...$probe, ...$change],
+                $asBody([$field]),
+            ));
+        }
+        $records[0] = $probe;
+        self::assertSame('failed', DnsZoneEvidence::assess(
+            $records,
+            $context,
+            '11.138.0.24',
+            'known_failure',
+        )['status']);
     }
 
     /** @return list<Record> */

@@ -3175,3 +3175,17 @@ Export `OBLAK_TEST_WHM_KEY` before running. The command requires a fresh output
 path. Inspect the per-probe outcomes, the bridge outcome and the cleanup results
 when interpreting the report. A cPanel API refusal remains visible in the
 evidence even when it matches the expected behavior of the installed version.
+
+The fixture reads each SOA serial and zero-based edit index from a fresh zone
+parse. It gives the two apices different test addresses, then puts both candidate
+addresses in both zones. A swap can therefore demonstrate whether cPanel selects
+one source for the whole call, regardless of its traversal order. The report
+retains the expected bridge API failure only when its original response matches
+the handler error and both zone snapshots remain unchanged.
+
+The evidence review checks all 30 ordered probes. On cPanel 11.138.0.24 the
+zone parser returns an extra string named `dname_raw`. For the pinned parse
+contract the recipe inspects the same raw response, requires this to be the sole
+extra key on affected record rows, and compares it with the strictly decoded
+`dname_b64`. It preserves the masked discrepancy in the artifact. DNS write
+responses use the strict contract throughout.

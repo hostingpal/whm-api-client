@@ -37,11 +37,12 @@ final class DnsZoneEvidence
      * identify unknown keys or their count. Every extra key on every row must be the reviewed string field
      * on a resource record. Only a fixed label leaves this scope.
      *
-     * @param Record $record
+     * @param Observation $record
      * @return Observation
      */
     public static function reviewReadback(array $record, #[SensitiveParameter] ?string $raw): array
     {
+        unset($record['readback_review']);
         if ($raw === null || !self::matchesReadback($record)) {
             return $record;
         }
@@ -131,8 +132,11 @@ final class DnsZoneEvidence
             ) {
                 $findings[] = 'unexpected_outcome:' . $phase;
             }
-            $hasReview = isset($probe['readback_review']);
-            if (($probe['discrepancies'] !== [] || $hasReview) && (!$hasReview || !self::matchesReadback($probe))) {
+            $hasReview = ($probe['readback_review'] ?? null) === 'known_dname_raw_string';
+            if (
+                ($probe['discrepancies'] !== [] || isset($probe['readback_review']))
+                && (!$hasReview || !self::matchesReadback($probe))
+            ) {
                 $findings[] = 'unreviewed_discrepancy:' . $phase;
             }
         }
