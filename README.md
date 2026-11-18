@@ -3,8 +3,8 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 128 generated typed groups cover 1,273 documented operations (see
-[`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
+The generated typed groups and their operation totals are listed in
+[`docs/api/coverage.md`](docs/api/coverage.md). They cover WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, DNS zone and DNSSEC
 management, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
 features, domain management, directory access, the complete Email and SSL modules,
@@ -3404,7 +3404,8 @@ $removed = $tokens->revokeToken('deploy-2026') === 1;
   operations. On an account with a contact address the server also sends a
   token-created notification.
 - `listTokens()` returns token metadata and never a token secret.
-- `renameToken()` changes only the name; the secret keeps working. It returns null.
+- `renameToken()` changes only the name; the secret keeps working. Its typed result is
+  `?array`; on cPanel `11.138.0.24` it was null.
 - `revokeToken()` returns `1` when it removed a token and `0` when no token had that
   name. Both are successful calls, so `0` raises nothing: compare with `1` when the
   removal must be confirmed. Revocation cannot be undone, and revoking the token the
@@ -3421,7 +3422,7 @@ if it is not wanted.
 
 The pinned documentation differs from the server in three places, all observed on
 cPanel `11.138.0.24` through both routes and recorded in the
-[2026-11-18 capture](docs/api/evidence/2026-11-18-tokens-section.json):
+[2026-11-18 capture](docs/api/evidence/2026-11-18-tokens-section-v2.json):
 
 - It says `revoke` returns its value in the function's metadata and that `1` also
   covers a token that does not exist. The server returns it as the function's data,

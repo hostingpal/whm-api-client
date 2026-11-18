@@ -12482,15 +12482,30 @@ Observed contract on cPanel `11.138.0.24`, direct UAPI and WHM bridge, account `
 | `revoke`: schema says `result.data` integer 0/1; prose says the value is returned in metadata and that 1 covers a token that does not exist | `result.data` is integer 1 when a token was removed and 0 when none had that name; metadata is empty; status 1 in both cases | No correction: the formal schema is the typed result. Documented and observed notes record the contradiction |
 | `list` `expires_at`: nullable integer | null, or a digit string when set | `accept: numeric-string` |
 | `list` rows and `create_full_access` result: no `whitelist_ips` | present and null in every observation | added as optional nullable list of strings |
-| `list` `readonly`: present only for read-only tokens | present on every row as 0 or 1 | No correction: the field stays optional |
-| `rename` data: nullable object | null | No correction |
+
+Two observations agree with the pin and need no correction. The pinned `list` description
+says `readonly` is present and 1 only for read-only tokens and otherwise absent or 0; it was
+present on every row, 0 on writable tokens and 1 on read-only ones. The pinned `rename` data
+is a nullable object; it was null.
 
 Evidence:
 
 - Committed capture [2026-11-18-tokens-section.json](evidence/2026-11-18-tokens-section.json),
   SHA-256 `3d99afac982e0357f7efae4037bb61c5994f69f923d3eea9b698b8082d9de6e4`, revision
   `c7f2ec78`, recipe `tokens-lifecycle-v1`: 17 observations (9 GET, 8 POST) through the
-  generated client, zero discrepancies, both throwaway tokens absent afterwards.
+  generated client, zero discrepancies, both throwaway tokens absent afterwards. Its report
+  carries a fixed statement that the account has no contact address. That was checked by
+  hand on the day (empty `CONTACTEMAIL` and `CONTACTEMAIL2` in the account file, an empty
+  mail queue and no mail logged); the v1 recipe itself did not check it.
+- Committed capture [2026-11-18-tokens-section-v2.json](evidence/2026-11-18-tokens-section-v2.json),
+  SHA-256 `8156ec084337db9f4fb993ee0f6b2b567f3129a9afc3217af0f2fb0e09a93141`, revision
+  `bd654671`, recipe `tokens-lifecycle-v2`: 19 observations (11 GET, 8 POST), zero
+  discrepancies, both tokens absent. v2 reads the account's notification targets
+  (`contact_email`, `contact_email_2`, `pushbullet_access_token`) through
+  `Variables/get_user_information` before each create; all three were empty strings on
+  both routes. It also limits cleanup to names the run holds and keeps a route uncertain
+  after a creation of unknown outcome. Neither capture needed cleanup, so those paths are
+  covered by synthetic tests only.
 - A separate sanitized probe on the same day with throwaway tokens, all revoked, is the
   source for the API-error cases (duplicate name, missing rename source, rename to the
   same name) and for the first observation of each row above. It is not a committed

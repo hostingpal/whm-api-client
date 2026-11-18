@@ -28,22 +28,26 @@ Observed on cPanel `11.138.0.24` through direct UAPI and the WHM bridge, and rea
   observed populated value. The UAPI module has no input that sets it. The handler's
   comment says the create result should hold only `create_time` and `token`, so the
   field may disappear from that result in a later version; it is optional for that reason.
-- **`readonly` presence.** Pinned as present only for read-only tokens; it was present
-  on every row as 0 or 1.
+
+Two observations agree with the pin. `readonly` is pinned as present and 1 only for
+read-only tokens and otherwise absent or 0; it was present on every row, 0 on writable
+tokens. `rename` data is pinned as a nullable object; it was null on this build. The
+typed result stays `?array`, so do not describe `renameToken()` as returning null in
+general.
 
 ## Behaviour the pinned text does not mention
 
 Read in the handler and its validation and admin classes on `11.138.0.24`:
 
-- Creation sends an `APIToken::Created` notification to the account's contact address.
-  `npr` has none, so no delivery was observed.
+- Creation sends an `APIToken::Created` notification to the account user. Its targets
+  are the account's contact addresses and Pushbullet token. `npr` has none, so no
+  delivery was observed.
 - All four functions need the account's `apitokens` feature and refuse team users.
 - A nonzero `expires_at` in the past is rejected; `0` passes validation and its stored
   meaning was not observed.
 - A duplicate name on create, a missing source on rename and a rename to the same name
   are API errors (all three observed).
-- `rename` sets no result data; the observed payload is null. The typed result keeps the
-  pinned nullable object.
+- `rename` sets no result data.
 
 ## Secrets
 
@@ -55,19 +59,41 @@ token a direct client authenticates with ends that client's access.
 
 ## Live recipe and evidence
 
-`tools/live-verify/tokens-section.php` (recipe `tokens-lifecycle-v1`) runs the whole
-lifecycle through the generated client on the designated `npr` account. Each route owns
-one throwaway token named `whmapiclient-live-<suffix>-<route>`, created read-only with a
-one-hour expiry: preflight list, create, list, rename, list, revoke (expects 1), revoke
-again (expects 0), list. The guard admits only those names, so the account's existing
-token is out of reach. After any failure it revokes both names of that route once,
-confirms absence and stops before the next route; a run that needed cleanup cannot pass.
-The created secret is checked in place, never used and never recorded.
+`tools/live-verify/tokens-section.php` (recipe `tokens-lifecycle-v2`) runs the whole
+lifecycle through the generated client on the designated `npr` account, which is shared.
+Each route owns one throwaway token named `whmapiclient-live-<suffix>-<route>`, created
+read-only with a one-hour expiry. The rules a change to the recipe must keep:
 
-The [2026-11-18 capture](../../api/evidence/2026-11-18-tokens-section.json) at `c7f2ec78`
-on `11.138.0.24` passes all 17 observations (9 GET, 8 POST) with zero discrepancies and
-both tokens confirmed absent. It does not cover the API-error cases above, which come
-from a separate sanitized probe on the same day that is not a committed capture.
+- **No create without checking notification targets.** Before each route's create the
+  recipe reads `contact_email`, `contact_email_2` and `pushbullet_access_token` through
+  `Variables/get_user_information` and stops unless all three are reported and empty.
+  The report's `notification_targets` records what the run checked; it makes no claim
+  about delivery.
+- **Cleanup revokes only what the run holds.** An accepted create or rename establishes
+  a name. A refused one means the name belongs to someone else and it is left alone; a
+  refused create ends the route as `not_created` with no cleanup. After an outcome the
+  run never learned, a name is revoked only when a later list shows a row with exactly
+  the run's expiry, read-only flag and full access.
+- **Absence needs evidence.** A list proves absence only when every row has a name and
+  none holds a secret. After a create of unknown outcome, an empty list settles nothing,
+  because the request can still take effect: the route stays `uncertain` unless the
+  token showed itself and was then revoked.
+- The guard admits only the run's own names, each phase once. Cleanup requests are
+  separate phases, never retries, and a run that needed them cannot pass.
+- The created secret is checked in place, never used and never recorded.
+
+Captures, both on `11.138.0.24` with zero discrepancies and both tokens absent:
+
+- [v2](../../api/evidence/2026-11-18-tokens-section-v2.json) at `bd654671`: 19
+  observations (11 GET, 8 POST), `notification_targets` `none_configured` on both routes.
+- [v1](../../api/evidence/2026-11-18-tokens-section.json) at `c7f2ec78`: 17
+  observations (9 GET, 8 POST). v1 did not check notification targets and its report
+  states that the account has no contact address; that was checked by hand that day.
+  v1's cleanup revoked both names after any failure. Neither capture needed cleanup.
+
+The failure paths are covered by synthetic tests only (`TokensSectionFixtureTest`,
+`TokensSectionRecipeTest`). The API-error cases above come from a separate sanitized
+probe on 2026-11-18 that is not a committed capture.
 
 Open follow-up `whm-api-client-8x0.2.98`: a populated `whitelist_ips`, notification
 delivery, expiry and read-only enforcement, and versions other than `11.138.0.24`.

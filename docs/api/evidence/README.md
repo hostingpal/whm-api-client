@@ -1526,3 +1526,11 @@ The [API token lifecycle capture](2026-11-18-tokens-section.json) at `c7f2ec78` 
 zero discrepancies and both throwaway tokens confirmed absent. It shows `expires_at` as
 null or a digit string, `whitelist_ips` as null, null rename data and integer revoke
 results. See the [recipe](../../../tools/live-verify/README.md#api-token-lifecycle).
+
+The [revised capture](2026-11-18-tokens-section-v2.json) at `bd654671` on `11.138.0.24`
+records recipe `tokens-lifecycle-v2`: 19 observations (11 GET, 8 POST), all passing with
+zero discrepancies and both tokens absent. v2 adds one read of the account's notification
+targets on each route before its create (`contact_email`, `contact_email_2` and
+`pushbullet_access_token`, all empty strings) and reports `notification_targets`. The v1
+artifact stays the valid record of what ran at its revision; its report's fixed statement
+about the contact address was checked by hand, not by that recipe.
