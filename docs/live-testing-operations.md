@@ -577,7 +577,7 @@ refresh it with `php tools/live-testing/refresh-operations-client.php`.
 | `uapi:CPDAVD/manage_collection` | typed |
 | `uapi:CPDAVD/remove_delegate` | typed |
 | `uapi:CPDAVD/update_delegate` | typed |
-| `uapi:CSVImport/doimport` | untyped |
+| `uapi:CSVImport/doimport` | typed |
 | `uapi:CacheBuster/update` | typed |
 | `uapi:ClamScanner/disinfect_files` | excluded |
 | `uapi:ClamScanner/start_scan` | typed |
@@ -917,7 +917,7 @@ refresh it with `php tools/live-testing/refresh-operations-client.php`.
 | `uapi:WordPressRestore/cleanup` | typed |
 | `uapi:WordPressRestore/start` | typed |
 | `uapi:WordPressSite/create` | untyped |
-| `uapi:ZoneEdit/resetzone` | untyped |
+| `uapi:ZoneEdit/resetzone` | typed |
 | `uapi:cPGreyList/disable_all_domains` | typed |
 | `uapi:cPGreyList/disable_domains` | typed |
 | `uapi:cPGreyList/enable_all_domains` | typed |

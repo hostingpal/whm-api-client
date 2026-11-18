@@ -59,6 +59,9 @@ func Validate(set Set) []string {
 				op.MultipartUploadFamily != nil || op.MultipartUploads != nil || op.AdditionalMethods != nil) {
 				problems = append(problems, id+": form_record requires an exclusive WHM form POST body")
 			}
+			if op.SingleResultStatus && (id != "uapi:ZoneEdit/resetzone" || op.Exclude != nil) {
+				problems = append(problems, id+": single_result_status requires an included ZoneEdit/resetzone operation")
+			}
 			if op.Rows != "" && (file.Family != "uapi" || op.Outcome != "unchecked" || op.Void || op.OptionalPayload || op.Unwrap != "") {
 				problems = append(problems, id+": rows requires unchecked UAPI without void, optional_payload or unwrap")
 			}

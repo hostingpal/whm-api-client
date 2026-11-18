@@ -30,9 +30,12 @@ func (b *builder) rowsPolicy(op model.Operation, v model.Variant, ov overlay.Ope
 		}
 		field = returns.Fields[i].Spec
 	}
-	if field.Type != "list" || field.Nullable || field.Items == nil || field.Items.Type != "object" || field.Items.Nullable {
+	if field.Type != "list" || field.Items == nil || field.Items.Type != "object" || field.Items.Nullable {
 		fail()
 		return
+	}
+	if field.Nullable && !observedNullableRows(ov) {
+		b.problem(op.ID + ": nullable rows field needs a nullable correction with live evidence for that exact field")
 	}
 	// Only the reviewed direct result/data schema form is supported. A later
 	// source representation needs its own explicit provenance decision.
@@ -43,4 +46,17 @@ func (b *builder) rowsPolicy(op model.Operation, v model.Variant, ov overlay.Ope
 	if v.OperationLocator.Pointer == nil || !boundInputEvidence(ov.Evidence, v.OperationLocator, *v.OperationLocator.Pointer+suffix) {
 		b.problem(op.ID + ": rows needs exact source-bound result field evidence")
 	}
+}
+
+// A rows selector names one literal object field. A correction on a nested
+// path or its list items cannot attest to nullability of the selected list.
+func observedNullableRows(ov overlay.Operation) bool {
+	for path, correction := range ov.Response {
+		steps, err := parsePath(path)
+		if err == nil && len(steps) == 1 && steps[0].name == ov.Rows && len(steps[0].suffixes) == 0 &&
+			correction.Nullable != nil && *correction.Nullable && hasLiveObservation(correction.Evidence) {
+			return true
+		}
+	}
+	return false
 }

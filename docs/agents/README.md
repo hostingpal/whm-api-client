@@ -27,10 +27,11 @@ Add new module notes to the matching file here, never to `AGENTS.md`.
 | [UAPI Branding](modules/uapi-branding.md) | `uapi()->branding()` |
 | [UAPI account cache management](modules/uapi-cache.md) | `cacheBuster()`, `nginxCaching()` |
 | [UAPI CCS calendar delegation](modules/uapi-ccs.md) | `uapi()->ccs()` |
+| [UAPI CSVImport](modules/uapi-csv-import.md) | `uapi()->csvImport()` mailbox and forwarder imports |
 | [UAPI DAV calendars, contacts and delegation](modules/uapi-dav-calendars.md) | `dav()`, `cpDavd()` |
 | [UAPI DCV checks](modules/uapi-dcv.md) | `uapi()->dcv()` |
 | [UAPI directory access](modules/uapi-directory-access.md) | DirectoryIndexes, DirectoryPrivacy, DirectoryProtection |
-| [UAPI DNS](modules/uapi-dns.md) | `uapi()->dns()`, including `massEditZone()` and `swapIpInZones()` |
+| [UAPI DNS](modules/uapi-dns.md) | `uapi()->dns()`, including `massEditZone()` and `swapIpInZones()`, plus `zoneEdit()->resetZone()` |
 | [UAPI DNSSEC and Dynamic DNS](modules/uapi-dnssec-dynamic-dns.md) | `dnssec()`, `dynamicDns()` |
 | [UAPI DomainRecommendations](modules/uapi-domain-recommendations.md) | `uapi()->domainRecommendations()` |
 | [UAPI DomainInfo, Features and LangPHP](modules/uapi-domaininfo-features-langphp.md) | `domainInfo()`, `features()`, `langPhp()` |

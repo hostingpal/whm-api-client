@@ -132,6 +132,8 @@ type Operation struct {
 	EmptyWithoutData bool
 	// AccountSearchEmpty restores strict outcomes around evidenced listaccts absence.
 	AccountSearchEmpty bool
+	// SingleResultStatus requires exactly one rebuild row with a strict nested outcome.
+	SingleResultStatus bool
 }
 
 // Method owns only input mapping and public symbols, never a second response contract.

@@ -19,6 +19,7 @@ use HostingPal\WhmApiClient\Exception\HttpException;
 use HostingPal\WhmApiClient\Exception\InvalidResponseException;
 use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
 use HostingPal\WhmApiClient\Exception\TransportException;
+use HostingPal\WhmApiClient\Exception\ZoneRebuildException;
 use HostingPal\WhmApiClient\Http\HttpTransport;
 use HostingPal\WhmApiClient\SessionUrlClient;
 use HostingPal\WhmApiClient\UapiClient;
@@ -229,6 +230,29 @@ final class SensitiveTraceTest extends TestCase
                 $seen = [];
                 self::assertTrue(self::contains($error->getTrace(), $seen));
             }
+        }
+    }
+
+    #[DataProvider('privateLogResponseRoutes')]
+    public function testZoneRebuildReasonIsExplicitAndTraceSafe(string $route): void
+    {
+        [$client, $http] = self::client($route !== 'bridged');
+        $result = '{"status":1,"data":[{"result":{"status":0,"statusmsg":"' . self::SECRET . '"}}]}';
+        $body = match ($route) {
+            'wrapped' => '{"result":' . $result . '}',
+            'bare' => $result,
+            default => '{"metadata":{"result":1},"data":{"uapi":' . $result . '}}',
+        };
+        $http->addResponse(new Response(200, [], $body));
+        $account = $client->uapi($route === 'bridged' ? 'npr' : null);
+        try {
+            $account->zoneEdit()->resetZone('fixture.example.test');
+            self::fail('Expected a rebuild failure.');
+        } catch (ZoneRebuildException $exception) {
+            self::assertSame(self::SECRET, $exception->upstreamReason());
+            self::assertSame($account->responseMeta(), $exception->metadata);
+            self::assertSecretAbsent($exception);
+            self::assertStringNotContainsString(self::SECRET, print_r($exception, true));
         }
     }
 

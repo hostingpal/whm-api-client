@@ -413,6 +413,7 @@ remain unobserved under `8x0.2.59`.
 | `uapi()->cpDavd()` | `listUsers()`, `listDelegates()`, `addDelegate()`, `updateDelegate()`, `removeDelegate()`, `manageCollection()` |
 | `uapi()->postgresql()` | `createDatabase()`, `createUser()`, `deleteDatabase()`, `deleteUser()`, `getRestrictions()`, `grantAllPrivileges()`, `listDatabases()`, `listUsers()`, `renameDatabase()`, `renameUser()`, `renameUserNoPassword()`, `revokeAllPrivileges()`, `setPassword()`, `updatePrivileges()` |
 | `uapi()->dns()` | `lookup()`, `fetchCpanelGeneratedDomains()`, `parseZone()`, `hasLocalAuthority()`, `ensureDomainsResideOnlyLocally()`, `ensureDomainsUseRecognizedNameservers()`, `isAliasAvailable()`, `isHttpsAvailable()`, `isSvcbAvailable()`, and the zone writes `massEditZone()` and `swapIpInZones()` |
+| `uapi()->zoneEdit()` | `resetZone()` rebuilds an account-owned DNS zone using the server template. A return confirms the rebuild succeeded. |
 | `uapi()->dnssec()` | All 12 pinned functions: key lifecycle, DNSKEY/private-key exports, DS records and NSEC settings. `fetchDsRecords()` and `exportZoneDnskey()` use GET; the other ten use form POST, including private-key export. |
 | `uapi()->dynamicDns()` | All 5 pinned functions: `listDomains()` uses GET; `create()`, `recreate()`, `setDescription()` and `delete()` use form POST. |
 
@@ -2311,8 +2312,8 @@ Use a current zone read and the applicable serial number; a stale or incorrect
 line can remove the wrong record. `deleteDomain()` can succeed with `type: null`
 when no domain exists, so a successful envelope does not establish deletion.
 Domain deletion has no rollback and does not delete an addon's associated
-subdomain. `resetZone()` requires `domain` or `zone`; it preserves valid TXT
-records but resets other records to defaults, including subdomain records.
+subdomain. `resetZone()` requires `domain` or `zone`; on 11.138.0.24 the shared rebuild helper copies uncommented TXT
+lines from the existing zone when available but resets other records to defaults, including subdomain records.
 
 The WHM pinned schema lists `nsec3_iterations: 7` and no salt default. These are
 pinned WHM declarations, not a promise about every server version's behavior;
@@ -2329,6 +2330,31 @@ remove-record pass was rejected before execution with `[Modify Shared Resources]
 and was not retried. Those corrections remain source/offline evidence. Server-wide
 writes and other remaining variants stay under `8x0.2.42`; existing artifacts are
 unchanged.
+
+### Reset an account's DNS zone
+
+On cPanel 138 and later with the DNS role enabled, `resetZone()` rebuilds the
+account-owned zone from the server template. The pin warns that hand-added MX,
+TXT and CNAME records are lost. On 11.138.0.24, the shared WHM/UAPI helper copies
+uncommented TXT lines from the old zone when it can read it. Back up the zone
+before calling. There is no rollback.
+
+```php
+$rows = $client->uapi('example')->zoneEdit()->resetZone(domain: 'example.com');
+$mxCheck = $rows[0]['result']['checkmx'] ?? null;
+```
+
+A normal return confirms that exactly one row reported integer rebuild status 1.
+A rebuild status of 0 raises `ZoneRebuildException`, which extends
+`ApiErrorException`. Its message is safe to display. For private diagnostics,
+`$exception->upstreamReason()` returns the untrusted upstream `statusmsg` string.
+An empty string is preserved, and missing or non-string text yields null.
+The reason may name accounts or domains. Keep it out of public logs. The
+exception cannot be serialized because it holds a protected diagnostic. A missing or malformed status,
+or an unexpected number of rows, raises `PayloadMismatchException` with
+`outcomeConfirmed` false. Malformed MX data after rebuild status 1 raises the
+same exception with `outcomeConfirmed` true. Read the zone before deciding
+whether to reset it again.
 
 ### UAPI DNS zone writes
 
@@ -4615,6 +4641,47 @@ open; the 55 inherited diagnostics, PHP 8.3 CI, source/runtime/stress/platform/
 metadata/release gaps and deferred consumer integration remain unwaived.
 Historical PR95 provenance finding I1 / `whm-api-client-qrk` remains open.
 
+
+### UAPI mailbox and forwarder CSV imports
+
+`$account->csvImport()->doImport($domain, $preparedId, 'email')` creates mailboxes
+from a prepared batch. Use `'fwd'` for forwarders. This client runs the final
+import. The disposable-account live tests prepared each batch with the account's
+cPanel API 2 upload, parsing and column-configuration functions.
+
+The following UI path comes from reading the Jupiter Address Importer templates
+installed on cPanel 11.138.0.24. In the target account, open **Email → Address
+Importer**, choose the batch type, upload the file and select its delimiter and
+header setting. Map the columns, select the domain and click **Next**. The review
+page template prepares the batch and places its `csvimportid` in the **Finish**
+link. Pass that value as `$preparedId` and leave **Finish** unclicked when the
+client will perform the import. Keep the ID and authenticated URL private.
+[cPanel Address Importer guide](https://docs.cpanel.net/cpanel/email/address-importer/).
+
+The installed 11.138.0.24 CSVImport source creates three files in
+`~/tmp/cpcsvimport/` for each prepared batch: `<id>` (upload), `<id>.parsed`
+(parsed rows) and `<id>.import` (configured rows). These can contain mailbox
+passwords. After reconciling the import, select those three filenames for this
+import ID in the account's File Manager and click **Delete**. In the confirmation
+dialog, select **Skip the trash and permanently delete the files**, verify the
+selection contains only this batch's three files, and confirm deletion. These
+instructions follow the installed Jupiter File Manager template. The live test
+removed the disposable account and then verified that its home and CSV staging
+directory were absent.
+
+The method makes one POST. The server can create rows before and after a failed
+row, without rollback. A nonempty list returns even when every row failed.
+Inspect each row's `status` and the account handle's `responseMeta()->uapiStatus()`
+and `errors()` before deciding which addresses need attention. Verify mailbox or
+forwarder inventory before any retry. A successful header-only batch can return
+`['results' => null]`. Failed imports with explicit null data or an empty or null
+row list raise `ApiErrorException`.
+
+On cPanel 11.138.0.24 the direct route created mailboxes and a forwarder.
+On the WHM bridge, mailbox rows all reported status 0, and the forwarder attempt
+raised `ApiErrorException` with null data. Independent inventory checks found
+no additions from those bridge calls. The empty batch succeeded on both routes.
+[Live results by route](docs/api/source-audit.md#prepared-uapi-mailbox-and-forwarder-imports-2026-11-18).
 
 ### UAPI Mailboxes (2026-10-31)
 

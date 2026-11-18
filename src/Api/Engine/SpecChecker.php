@@ -182,6 +182,7 @@ final class SpecChecker
         self::rows($spec, $returns);
         self::emptyWithoutData($spec, $returns);
         AccountSearchEmpty::check($spec);
+        SingleResultStatus::check($spec);
 
         $unwrap = $spec['unwrap'] ?? null;
         if ($unwrap === null) {
@@ -205,8 +206,8 @@ final class SpecChecker
      * Limit no-row failure classification to explicit unchecked UAPI object or root-list batches.
      *
      * A list root uses rows '$'; object selectors remain literal field names.
-     * The root, selected list and its object items must be nonnullable. Field requiredness remains
-     * part of the payload schema; only status 0 additionally needs usable rows.
+     * The root and object items must be nonnullable. Generation verifies live evidence for a nullable
+     * selected object field. Status 0 requires usable rows. Status 1 preserves field optionality.
      *
      * @param array<mixed> $spec
      */
@@ -234,7 +235,6 @@ final class SpecChecker
             || ($returns['nullable'] ?? false) === true
             || !is_array($field)
             || ($field['type'] ?? null) !== 'list'
-            || ($field['nullable'] ?? false) === true
             || !is_array($items)
             || ($items['type'] ?? null) !== 'object'
             || ($items['nullable'] ?? false) === true

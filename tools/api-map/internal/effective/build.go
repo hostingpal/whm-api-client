@@ -270,6 +270,7 @@ func (b *builder) operation(op model.Operation, v model.Variant, ov overlay.Oper
 	}
 	b.rowsPolicy(op, v, ov, returns)
 	result.EmptyWithoutData = b.emptyWithoutData(op, ov, returns)
+	result.SingleResultStatus = b.singleResultStatus(result, v, ov, returns)
 	result.AccountSearchEmpty = b.accountSearchEmpty(result, ov, returns)
 	result.SessionURL = b.sessionURL(result, ov, returns)
 	result.Returns = returns

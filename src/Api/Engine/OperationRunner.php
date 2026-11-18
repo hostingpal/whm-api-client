@@ -45,7 +45,7 @@ final class OperationRunner
      * @param Closure(array<mixed>, OrderedFields, JsonBody|MultipartInput|null=): ApiResponse $dispatch
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the envelope and outcome were accepted but the payload differs from the
-     *     spec; under the flag policy the operation took effect.
+     *     spec. Inspect the exception's outcomeConfirmed before interpreting the failure.
      * @throws LogicException If the spec is malformed or the arguments disagree with it.
      * @throws InvalidArgumentException If a float is non-finite or an explicit target policy fails (ArgumentEncoder),
      *     or if collection contents or expanded fields are invalid. The handles clear metadata before
@@ -123,19 +123,19 @@ final class OperationRunner
      * It preserves original metadata and rejects all other failures before payload validation.
      *
      * An explicit "rows" policy preserves valid row-bearing status-0 batches, but
-     * classifies explicit null or a fully validated payload with an empty selected row list
+     * classifies explicit null data or a validated payload with a null or empty selected row list
      * as ApiErrorException. Missing data or rows and malformed known fields remain
      * payload mismatches. Status 1 retains the declared field optionality.
      *
      * The response reaching this point already passed the envelope checks and the
      * outcome policy, so other payload failures raise PayloadMismatchException:
-     * outcomeConfirmed is true under the flag policy (the operation took effect)
+     * outcomeConfirmed is true under the flag policy once any required nested outcome has also confirmed success
      * and false when the outcome was not checked. Spec defects stay LogicException.
      * Responses can contain or echo secrets; hide them from trace arguments while
      * retaining the explicit unvalidated payload on PayloadMismatchException.
      *
      * @param array<mixed> $spec
-     * @throws ApiErrorException If the opted-in status-0 result is null or has an empty validated row list.
+     * @throws ApiErrorException If the opted-in status-0 data is null or its validated row list is null or empty.
      * @throws InvalidResponseException If a typed unchecked status/result is not integer 0 or 1.
      * @throws PayloadMismatchException If the payload does not satisfy the spec.
      * @throws LogicException If the spec is malformed.
@@ -179,6 +179,11 @@ final class OperationRunner
         $confirmed = OperationSpec::outcome($spec) === OutcomePolicy::Flag;
         $read = new PayloadReader($response->metadata, OperationSpec::text($spec, 'function') . ' payload');
         try {
+            if (($spec['single_result_status'] ?? false) === true) {
+                $confirmed = false;
+                SingleResultStatus::confirm($response, $read);
+                $confirmed = true;
+            }
             $value = self::validated($spec, $returns, $response, $read);
             if ($failedRows) {
                 // List roots use '$'; an object field named '$' remains literal.
@@ -186,7 +191,8 @@ final class OperationRunner
                 if (!is_array($value) || (!$root && !array_key_exists($rows, $value))) {
                     return $read->fail();
                 }
-                if (($root ? $value : $value[$rows]) === []) {
+                $batch = $root ? $value : $value[$rows];
+                if ($batch === [] || $batch === null) {
                     throw new ApiErrorException(
                         'UAPI operation failed; inspect errors() or response metadata.',
                         $response->metadata,

@@ -185,3 +185,9 @@ document service ports and the observed Webmail refusal on 11.138.0.24.
   passed with a cPanel token, the expected main domain, and HTTP 200/status 1.
   Keep this runtime evidence separate from pinned source contracts. Infrastructure
   tests and WHM bridge evidence do not establish other endpoint or route coverage.
+
+The `single_result_status` outcome check applies to the generated ZoneEdit reset.
+After accepted dispatch it requires exactly one rebuild row. A strict integer 0
+raises a fixed-message API failure and 1 confirms success before ancillary
+payload validation. Ambiguous rebuild outcomes raise a payload mismatch with
+`outcomeConfirmed` false. The ordinary envelope and metadata paths run first.

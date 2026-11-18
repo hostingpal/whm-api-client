@@ -23,7 +23,11 @@ func restoreOpaqueRetrieval(op model.Operation, v model.Variant, ov overlay.Oper
 		c.Type != "" || c.Add != nil || c.Accept != nil || c.Nullable != nil || c.Preserve || c.Required != nil {
 		return false
 	}
-	for _, evidence := range c.Evidence {
+	return hasLiveObservation(c.Evidence)
+}
+
+func hasLiveObservation(entries []overlay.Evidence) bool {
+	for _, evidence := range entries {
 		_, err := time.Parse("2006-01-02", evidence.Date)
 		if evidence.Kind == "live" && strings.TrimSpace(evidence.Version) != "" &&
 			strings.TrimSpace(evidence.Note) != "" && err == nil {

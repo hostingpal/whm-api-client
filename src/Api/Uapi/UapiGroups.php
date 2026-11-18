@@ -49,6 +49,8 @@ trait UapiGroups
 
     private ?CpGreyList $cpGreyListGroup = null;
 
+    private ?CsvImport $csvImportGroup = null;
+
     private ?Dav $davGroup = null;
 
     private ?Dcv $dcvGroup = null;
@@ -212,6 +214,8 @@ trait UapiGroups
     private ?WordPressRestore $wordPressRestoreGroup = null;
 
     private ?Wpx $wpxGroup = null;
+
+    private ?ZoneEdit $zoneEditGroup = null;
 
     /**
      * Select the AccountEnhancements operations without making a request.
@@ -395,6 +399,16 @@ trait UapiGroups
     public function cpGreyList(): CpGreyList
     {
         return $this->cpGreyListGroup ??= new CpGreyList($this->run(...));
+    }
+
+    /**
+     * Select the CSVImport operations without making a request.
+     *
+     * The CSVImport module for UAPI.
+     */
+    public function csvImport(): CsvImport
+    {
+        return $this->csvImportGroup ??= new CsvImport($this->run(...));
     }
 
     /**
@@ -1258,5 +1272,15 @@ trait UapiGroups
     public function wpx(): Wpx
     {
         return $this->wpxGroup ??= new Wpx($this->run(...));
+    }
+
+    /**
+     * Select the ZoneEdit operations without making a request.
+     *
+     * The ZoneEdit module for UAPI.
+     */
+    public function zoneEdit(): ZoneEdit
+    {
+        return $this->zoneEditGroup ??= new ZoneEdit($this->run(...));
     }
 }

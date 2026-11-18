@@ -195,6 +195,9 @@ func groupClass(g effective.Group) string {
 		if op.Returns != nil {
 			uses = append(uses, rootNamespace+`\Exception\PayloadMismatchException`)
 		}
+		if op.SingleResultStatus {
+			uses = append(uses, rootNamespace+`\Exception\ZoneRebuildException`)
+		}
 		for _, p := range op.Params {
 			if isMultiple(p.Encoding) || p.RejectEmpty || p.PositiveInt || p.Input != nil {
 				uses = append(uses, "InvalidArgumentException")
@@ -231,7 +234,11 @@ func groupClass(g effective.Group) string {
 			w.line(" *")
 			aliases = true
 		}
-		w.typeAlias(op.Alias, *spec)
+		if op.SingleResultStatus {
+			w.docTag("", "@phpstan-type "+op.Alias+" "+singleResultShape(*spec.Items))
+		} else {
+			w.typeAlias(op.Alias, *spec)
+		}
 	}
 	for _, op := range g.Operations {
 		if d := op.FormRecord; d != nil {
@@ -422,6 +429,9 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 		w.docTag(indent, "@return "+docReturn(op, *ret))
 	}
 	w.line(indent + " * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.")
+	if op.SingleResultStatus {
+		w.line(indent + " * @throws ZoneRebuildException If dispatch succeeded and the zone rebuild reported integer status 0.")
+	}
 	if op.SessionURL {
 		w.line(indent + ` * @throws \Error|\LogicException|\RuntimeException If the HTTP implementation fails outside its`)
 		w.line(indent + " *     PSR transport contract. Its original request and diagnostics are discarded.")
@@ -716,6 +726,9 @@ func specClass(g effective.Group) string {
 				w.line("        'returns' => null,")
 			} else {
 				w.line("        'returns' => " + specLiteralAt(*op.Returns, "        ", len("        'returns' => ")) + ",")
+			}
+			if op.SingleResultStatus {
+				w.line("        'single_result_status' => true,")
 			}
 			if op.Rows != "" {
 				w.line("        'rows' => " + phpString(op.Rows) + ",")
