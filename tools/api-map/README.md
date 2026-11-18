@@ -509,7 +509,8 @@ The discriminator wire name comes from the pinned schema. Common scalar fields
 use the normal `params` corrections, and `order` can position the composite PHP
 argument alongside them. The runtime sends its members as individual form fields. The overlay binds the
 source hash and request-body pointer and separately records the versioned handler
-evidence for `common` and `variants` field additions, omissions and requiredness.
+evidence for `common` and `variants` field additions, omissions and requiredness. Adding and omitting the same field
+in one correction is rejected.
 `labels` corrects a display label to its wire discriminator. On edit,
 `retain_existing` allows partial fields of one variant with an optional type.
 On edit, `change_params` names optional scalar companions that can change the

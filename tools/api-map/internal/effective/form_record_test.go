@@ -10,7 +10,7 @@ import (
 )
 
 func TestFormRecordSourceAndCorrections(t *testing.T) {
-	for _, tc := range []string{"add", "edit", "different operation", "change parameter", "positive minimum", "positive evidence", "positive optional", "tag collision", "wrong hash", "wrong pointer", "missing handler evidence", "wrong media", "query", "unknown correction", "wrong allOf", "duplicate mapping", "duplicate base property", "different base", "unsupported field", "composed scalar", "bad requiredness"} {
+	for _, tc := range []string{"add", "edit", "different operation", "change parameter", "positive minimum", "positive evidence", "positive optional", "tag collision", "wrong hash", "wrong pointer", "missing handler evidence", "wrong media", "query", "unknown correction", "wrong allOf", "duplicate mapping", "duplicate base property", "common omit and add", "different base", "unsupported field", "composed scalar", "bad requiredness"} {
 		t.Run(tc, func(t *testing.T) {
 			m := fixtureMap(t)
 			ref := func(name string) map[string]any { return map[string]any{"$ref": "#/components/schemas/" + name} }
@@ -88,6 +88,9 @@ func TestFormRecordSourceAndCorrections(t *testing.T) {
 				mx["allOf"] = branches[:1]
 			case "duplicate mapping":
 				mapping["MX"] = mapping["Text record"]
+			case "common omit and add":
+				d.Common.Omit = []string{"name"}
+				d.Common.Add = map[string]overlay.FormRecordField{"name": {Type: "int", Description: "Replacement."}}
 			case "duplicate base property":
 				props["domain"] = field("string")
 			case "different base":
@@ -105,6 +108,12 @@ func TestFormRecordSourceAndCorrections(t *testing.T) {
 			}
 			b := builder{schemas: s, problems: map[string]bool{}}
 			record, params, err := b.formRecord(op, v, ov, node, "writeRecord")
+			if tc == "common omit and add" {
+				if err == nil || !strings.Contains(err.Error(), `cannot omit and add field "name"`) {
+					t.Fatalf("expected conflicting name corrections to fail, got %v", err)
+				}
+				return
+			}
 			if tc != "add" && tc != "edit" && tc != "different operation" {
 				if err == nil && len(b.problems) == 0 {
 					t.Fatal("malformed form accepted")

@@ -238,6 +238,9 @@ func formFields(node map[string]any, changes overlay.FormRecordChanges) (map[str
 		fields[name] = FormField{Name: name, Type: typ, Description: text(p["description"])}
 	}
 	for _, name := range changes.Omit {
+		if _, added := changes.Add[name]; added {
+			return nil, fmt.Errorf("cannot omit and add field %q", name)
+		}
 		if _, ok := fields[name]; !ok {
 			return nil, fmt.Errorf("cannot omit missing field %q", name)
 		}
