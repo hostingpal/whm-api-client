@@ -3157,3 +3157,21 @@ The captures record the digit-string `expires_at`, the null `whitelist_ips`, nul
 data and the integer revoke result `1`; the result `0` for a missing token is in v1 and
 v2 only. They do not exercise expiry or read-only enforcement, API-error responses or
 notification delivery; see `whm-api-client-8x0.2.98`.
+
+### UAPI DNS zone writes on a disposable account
+
+`dns-zone-writes.php` creates a marked test account and parks an alias so that
+it can verify two distinct zone files. The disposable account supplies the
+direct UAPI credential. The WHM credential supplies the bridge and manages
+account cleanup.
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 \
+WHM_API_LIVE_ACCOUNT=wldnsrecipe WHM_API_LIVE_DOMAIN=dns-recipe.example.test \
+php tools/live-verify/dns-zone-writes.php --output=.cache/dns-zone-writes.json
+```
+
+Export `OBLAK_TEST_WHM_KEY` before running. The command requires a fresh output
+path. Inspect the per-probe outcomes, the bridge outcome and the cleanup results
+when interpreting the report. A cPanel API refusal remains visible in the
+evidence even when it matches the expected behavior of the installed version.

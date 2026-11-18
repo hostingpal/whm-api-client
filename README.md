@@ -2397,6 +2397,9 @@ Things to know before calling it:
   real swap raises `ApiErrorException` ("Undefined subroutine
   &Cpanel::AdminBin::Call::call"), because the server function calls a module it never
   loads. Use direct cPanel credentials. The client adds no fallback.
+- If every requested domain is temporary, the server skips the update. The typed
+  method returned an empty list and a warning naming the skipped domain on both
+  routes on cPanel 11.138.0.24.
 - Every SPF `TXT` record in the zone is rewritten and returned, even when no address
   matched, and the zone still gets a new serial. Rows are not proof that an address
   changed: check their `record_type` and values.

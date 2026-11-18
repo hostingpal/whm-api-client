@@ -7,12 +7,12 @@ GET reads and two form POST zone writes, `massEditZone()` and `swapIpInZones()`.
 writes require cPanel 96 and declare no rollback. The pinned source lists them as GET
 with `x-readonly=false`; the client sends form POST.
 
-Everything marked "observed" below comes from one-off runs on 2026-11-18 against
+The original implementation observations below come from one-off runs on 2026-11-18 against
 `test.oblak.host` on cPanel `11.138.0.24`, on the disposable account `wldnszed`
 (created and removed by each run, absence confirmed). The first run used the generic
 `call()` at master `8c2834de` and recorded value types and error text only. The second
 run called the generated methods of this slice. Both used direct UAPI and the WHM
-bridge. No capture artifact is committed; a recipe is tracked under `8x0.2.97`.
+bridge. Those two runs produced no committed capture.
 "Source read" means the server's own Perl on that version, not the pinned documents.
 
 ## massEditZone
@@ -89,8 +89,15 @@ Read [WHM DNS management](whm-dns.md) for the shared rules.
   skipped only until an address has been found; after that it is processed with the
   found address and its SPF records are rewritten. Unobserved: both test domains shared
   one zone.
-- Source read: temporary domains are skipped with a warning in `responseMeta()`; if
-  all are skipped the result is an empty list. Unobserved.
+- A separate one-off test on 2026-11-18 used the generated `swapIpInZones()` at
+  `1e3f79c3` on cPanel `11.138.0.24`. cPanel assigned a temporary addon domain
+  to a new disposable account. The client's account-scoped inventory returned one
+  addon, and `isTemporaryDomain()` confirmed its type. For that domain alone,
+  direct UAPI and the WHM bridge each returned HTTP 200, UAPI status 1, an empty
+  list, and a warning naming the skipped domain. This case exits before the zone
+  update. The lifecycle confirmed account, token, primary domain and zone absence.
+  A separate server check found zero temporary-domain assignments for the account.
+  This observation is independent of the two-zone recipe.
 - Source read: the function declares no feature requirement; the admin layer checks
   that the caller owns every domain.
 
