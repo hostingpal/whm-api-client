@@ -123,7 +123,7 @@ final class OperationRunner
      * It preserves original metadata and rejects all other failures before payload validation.
      *
      * An explicit "rows" policy preserves valid row-bearing status-0 batches, but
-     * classifies explicit null or a fully validated payload with an empty selected row list
+     * classifies explicit null data or a validated payload with a null or empty selected row list
      * as ApiErrorException. Missing data or rows and malformed known fields remain
      * payload mismatches. Status 1 retains the declared field optionality.
      *
@@ -135,7 +135,7 @@ final class OperationRunner
      * retaining the explicit unvalidated payload on PayloadMismatchException.
      *
      * @param array<mixed> $spec
-     * @throws ApiErrorException If the opted-in status-0 result is null or has an empty validated row list.
+     * @throws ApiErrorException If the opted-in status-0 data is null or its validated row list is null or empty.
      * @throws InvalidResponseException If a typed unchecked status/result is not integer 0 or 1.
      * @throws PayloadMismatchException If the payload does not satisfy the spec.
      * @throws LogicException If the spec is malformed.
@@ -191,7 +191,8 @@ final class OperationRunner
                 if (!is_array($value) || (!$root && !array_key_exists($rows, $value))) {
                     return $read->fail();
                 }
-                if (($root ? $value : $value[$rows]) === []) {
+                $batch = $root ? $value : $value[$rows];
+                if ($batch === [] || $batch === null) {
                     throw new ApiErrorException(
                         'UAPI operation failed; inspect errors() or response metadata.',
                         $response->metadata,

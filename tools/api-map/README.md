@@ -287,20 +287,21 @@ Operation entries (all keys optional):
   `void` (no payload) and `unwrap` (return one documented object field; exclusive
   with `void`). Read-only operations default to GET; mutating, unknown-risk and
   secret-bearing ones default to POST, and GET is refused for secret-bearing ones.
-- `rows`: a nonempty declared result-field name for an unchecked UAPI object
-  batch, or `$` selecting a nonnullable root list of nonnullable objects, without
-  void, optional_payload or unwrap. Root, list and object rows must
-  be nonnullable. Exact source hash/pointer evidence binds the selected row field
-  in the reviewed result/data response schema; other source layouts are unsupported.
-  Status 0 plus explicit null or a fully validated empty row list raises API error;
-  missing data/rows or malformed known fields remain payload mismatches. Status 1
-  keeps pinned optional fields. Fileman/upload_files selects its uploads field; ImageManager/create_thumbnails
-  selects the whole list with `$`.
-  For root lists, evidence must bind the exact selected source SHA and
-  `/responses/200/content/application~1json/schema/properties/result/properties/data`
-  pointer. `$` on object roots remains a literal declared field name with its
-  existing field evidence binding. Whole payload validation precedes empty-list
-  classification; other Unchecked operations do not inherit this policy.
+- `rows` selects a declared field in a UAPI object batch or the root list with
+  `$`. It requires `outcome: unchecked` without `void`, `optional_payload` or
+  `unwrap`. The payload root and each object row must be nonnullable. A nullable
+  selected list in an object requires a `nullable: true` response correction
+  with live evidence on that exact field. CSVImport/doimport uses this for a
+  header-only batch. PHP checks the generated shape at runtime.
+  The operation also needs the reviewed source SHA and exact JSON pointer for
+  the selected field under
+  `/responses/200/content/application~1json/schema/properties/result/properties/data`.
+  A root-list pointer ends at `data`. For an object, `$` names a literal field.
+  On status 0, explicit null data or a validated empty or null list raises an
+  API error. A missing data or rows member or a malformed known field raises a
+  payload mismatch. Status 1 preserves declared field nullability and optionality.
+  Fileman/upload_files selects its `uploads` field and
+  ImageManager/create_thumbnails selects its root list.
 
 - `optional_payload`: an omitted or null `data` member is a valid response; the
   spec gains `'optional' => true`, the method's return type becomes nullable and

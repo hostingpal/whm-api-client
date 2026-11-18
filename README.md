@@ -4642,6 +4642,47 @@ metadata/release gaps and deferred consumer integration remain unwaived.
 Historical PR95 provenance finding I1 / `whm-api-client-qrk` remains open.
 
 
+### UAPI mailbox and forwarder CSV imports
+
+`$account->csvImport()->doImport($domain, $preparedId, 'email')` creates mailboxes
+from a prepared batch. Use `'fwd'` for forwarders. This client runs the final
+import. The disposable-account live tests prepared each batch with the account's
+cPanel API 2 upload, parsing and column-configuration functions.
+
+The following UI path comes from reading the Jupiter Address Importer templates
+installed on cPanel 11.138.0.24. In the target account, open **Email → Address
+Importer**, choose the batch type, upload the file and select its delimiter and
+header setting. Map the columns, select the domain and click **Next**. The review
+page template prepares the batch and places its `csvimportid` in the **Finish**
+link. Pass that value as `$preparedId` and leave **Finish** unclicked when the
+client will perform the import. Keep the ID and authenticated URL private.
+[cPanel Address Importer guide](https://docs.cpanel.net/cpanel/email/address-importer/).
+
+The installed 11.138.0.24 CSVImport source creates three files in
+`~/tmp/cpcsvimport/` for each prepared batch: `<id>` (upload), `<id>.parsed`
+(parsed rows) and `<id>.import` (configured rows). These can contain mailbox
+passwords. After reconciling the import, select those three filenames for this
+import ID in the account's File Manager and click **Delete**. In the confirmation
+dialog, select **Skip the trash and permanently delete the files**, verify the
+selection contains only this batch's three files, and confirm deletion. These
+instructions follow the installed Jupiter File Manager template. The live test
+removed the disposable account and then verified that its home and CSV staging
+directory were absent.
+
+The method makes one POST. The server can create rows before and after a failed
+row, without rollback. A nonempty list returns even when every row failed.
+Inspect each row's `status` and the account handle's `responseMeta()->uapiStatus()`
+and `errors()` before deciding which addresses need attention. Verify mailbox or
+forwarder inventory before any retry. A successful header-only batch can return
+`['results' => null]`. Failed imports with explicit null data or an empty or null
+row list raise `ApiErrorException`.
+
+On cPanel 11.138.0.24 the direct route created mailboxes and a forwarder.
+On the WHM bridge, mailbox rows all reported status 0, and the forwarder attempt
+raised `ApiErrorException` with null data. Independent inventory checks found
+no additions from those bridge calls. The empty batch succeeded on both routes.
+[Live results by route](docs/api/source-audit.md#prepared-uapi-mailbox-and-forwarder-imports-2026-11-18).
+
 ### UAPI Mailboxes (2026-10-31)
 
 `uapi()->mailboxes()` covers all five pinned Mailboxes functions. The two inventory

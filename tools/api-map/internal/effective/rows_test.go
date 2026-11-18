@@ -180,3 +180,71 @@ func TestRootRowsPolicyBindsExactSourceDataAndShape(t *testing.T) {
 		})
 	}
 }
+
+func TestNullableRowsNeedsLiveEvidenceForTheExactObjectField(t *testing.T) {
+	const id = "uapi:DomainInfo/list_domains"
+	const pointer = "/paths/~1DomainInfo~1list_domains/get/responses/200/content/application~1json/schema/properties/result/properties/data/properties/mail.rows"
+	for _, change := range []string{"observed", "no correction", "doc only", "nested field only", "operation live only", "wrong source pointer", "wrong source hash", "invalid observation date", "no nullable decision"} {
+		t.Run(change, func(t *testing.T) {
+			m := fixtureMap(t)
+			row := map[string]any{"type": "object", "properties": map[string]any{"reason": map[string]any{"type": "string"}}}
+			list := map[string]any{"type": "array", "items": row}
+			if change != "observed" {
+				list["nullable"] = true
+			}
+			data := map[string]any{"type": "object", "properties": map[string]any{"mail.rows": list,
+				"mail": map[string]any{"type": "object", "properties": map[string]any{"rows": list}}}}
+			setEnvelope(t, fixtureNode(t, m, id), map[string]any{"type": "object", "properties": map[string]any{
+				"result": map[string]any{"type": "object", "properties": map[string]any{"data": data}}}})
+
+			doc := overlay.Evidence{Kind: "doc", Version: "pin", Date: "2026-11-01", Note: "Source list field", SourceSHA256: "x", Pointer: pointer}
+			live := overlay.Evidence{Kind: "live", Version: "test server", Date: "2026-11-01", Note: "Observed null field"}
+			yes := true
+			correction := overlay.Correction{Nullable: &yes, Evidence: []overlay.Evidence{live}}
+			path := `mail\.rows`
+			op := overlay.Operation{Outcome: "unchecked", Rows: "mail.rows", Evidence: []overlay.Evidence{doc}}
+			switch change {
+			case "doc only":
+				correction.Evidence = []overlay.Evidence{doc}
+			case "nested field only":
+				path = "mail.rows"
+			case "operation live only":
+				op.Evidence = append(op.Evidence, live)
+				correction.Evidence = []overlay.Evidence{doc}
+			case "wrong source pointer":
+				op.Evidence[0].Pointer += "/items"
+			case "wrong source hash":
+				op.Evidence[0].SourceSHA256 = "different"
+			case "invalid observation date":
+				correction.Evidence[0].Date = "unknown"
+			case "no nullable decision":
+				correction.Nullable = nil
+				correction.Required = &yes
+			}
+			if change != "no correction" {
+				op.Response = map[string]overlay.Correction{path: correction}
+			}
+			set := fixtureOverlay("listed")
+			set.Files[0].Operations[id] = op
+			result, problems := buildProblems(t, m, set)
+			if change != "observed" {
+				want := "nullable rows field needs a nullable correction with live evidence for that exact field"
+				if change == "wrong source pointer" || change == "wrong source hash" {
+					want = "rows needs exact source-bound result field evidence"
+				}
+				if !strings.Contains(problems, want) {
+					t.Fatalf("expected %q, got %q", want, problems)
+				}
+				return
+			}
+			if problems != "" {
+				t.Fatal(problems)
+			}
+			batch := groupByClass(t, result, "DomainInfo").Operations[0]
+			index := fieldIndex(batch.Returns, "mail.rows")
+			if batch.Rows != "mail.rows" || index < 0 || !batch.Returns.Fields[index].Spec.Nullable {
+				t.Fatalf("lost nullable literal field: %+v", batch)
+			}
+		})
+	}
+}

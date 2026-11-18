@@ -12734,3 +12734,42 @@ before resetting, and afterwards. Both resets confirmed the nested outcome and
 cleanup confirmed absence of the account, token, domain and zone.
 The [v2 artifact](evidence/2026-11-18-uapi-zone-reset-v2.json) records each original
 response's structure and masks the owner and RDATA values.
+## Prepared UAPI mailbox and forwarder imports, 2026-11-18
+
+At revision `6fa3197d14eb7563909a5e132822d228d224805b`, the generated
+`uapi:CSVImport/doimport#GET` method made ten form POSTs to cPanel
+`11.138.0.24` on `test.oblak.host` using one disposable account. Each case
+used a fresh account-local batch or a freshly chosen missing ID. Fresh API 2
+upload, process and configuration steps ran as that account. All forwarder
+destinations were synthetic local mailboxes. No test message was sent. The
+UAPI source SHA-256 was `172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`,
+the map SHA-256 was `f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8`,
+and the effective generated spec SHA-256 was
+`7878b9826d2f5e4c4c019d591e1c0a278155f96dc8e090269153f3bcbc4b6493`.
+
+Every request received HTTP 200. Each bridged request received outer WHM result
+1. Each UAPI status 0 carried one error. The checks compared envelope metadata and,
+where present, the typed result against the same response. After each call separate
+mailbox and forwarder inventory reads checked the complete inventory change.
+
+| Prepared rows | Route | UAPI status | Typed outcome | Inventory change |
+| --- | --- | ---: | --- | --- |
+| Mailbox | Direct | 1 | One row, status 1 | One mailbox added |
+| Mailbox | WHM bridge | 0 | One row, status 0 | None |
+| Forwarder | Direct | 1 | One row, status 1 | One forwarder added with the staged local destination |
+| Forwarder | WHM bridge | 0 | Explicit null data, `ApiErrorException` | None |
+| New mailbox, existing mailbox, new mailbox | Direct | 0 | Three rows, statuses 1, 0, 1 | First and third mailboxes added |
+| New mailbox, existing mailbox, new mailbox | WHM bridge | 0 | Three rows, statuses 0, 0, 0 | None |
+| Header-only forwarder file | Direct and WHM bridge separately | 1 | Data object with explicit `results: null` | None |
+| Missing ID | Direct and WHM bridge separately | 0 | Explicit null data, `ApiErrorException` | None |
+
+All returned rows had integer `status` and string `type`, `email` and `reason`.
+Only the successful forwarder returned a string `fwd`. Explicit null data had
+no `results` key. The observed errors establish the outcomes for these bridge
+calls on this version. The run did not identify their underlying cause.
+
+Token revocation and account removal completed. Independent reads confirmed the
+token, account, domain and zone absent. A subsequent filesystem check confirmed
+the dedicated account home and its CSV staging directory absent. The operations,
+checks and sanitized observations are scoped to this run. Staging files, IDs,
+passwords, mail addresses and error text were excluded from the report.
