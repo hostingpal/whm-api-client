@@ -3029,3 +3029,131 @@ inventory went from 0 to 2 populated rows on each route. Account, token, domain 
 found 8 session files and failed the run; the cleanup then removed all 8 and its separate rerun
 of the proof read `confirmed_absent`. See the
 [source audit](../../docs/api/source-audit.md#disposable-webmail-session-capture-2026-11-02).
+
+## API token lifecycle
+
+`tokens-section.php` (recipe `tokens-lifecycle-v4`) verifies `uapi()->tokens()` on the
+designated `npr` account through the generated client, on direct UAPI and the WHM bridge.
+The shared `SectionCommand` handles authorization, committed-input checks and protected,
+new-only publication.
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 \
+WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/tokens-section.php --output=docs/api/evidence/tokens-section-new.json
+```
+
+After WHM `version`, each route runs eight phases on one throwaway token named
+`whmapiclient-live-<suffix>-<route>`, where the suffix is new for every run:
+
+1. list, which must not already contain the run's names;
+2. read the account's notification targets, which must all be reported and empty;
+3. create, read-only and expiring one hour after the run starts;
+4. list, which must show that token once with its expiry, read-only flag and full access;
+5. rename, which must return null;
+6. list, which must show only the new name with the same settings;
+7. revoke, which must return 1;
+8. list, which must show neither name.
+
+Every mutation names a token the run holds at that point, or a name the first list showed
+to be free. The freed name is not revoked a second time: v1 and v2 did that to observe
+the `0` result, but on a shared account it would hit whoever reused the name.
+
+`TokensSectionRecipe` spells every URI and form body literally, independently of the
+client's encoder, and `TokensSectionGuard` admits each phase's exact method, URI, body
+and headers once. Only the run's own names can appear in a body. The created secret is
+checked in place for presence, never used to authenticate and never recorded; the report
+holds structural paths and types only.
+
+### Notification targets
+
+The server sends a token-created notification to the account user for every create. Its
+targets are the account's contact addresses and Pushbullet token, so phase 2 reads
+`contact_email`, `contact_email_2` and `pushbullet_access_token` through
+`Variables/get_user_information` and stops the route before its create unless all three
+are reported and are null or empty. The report's `notification_targets` is
+`none_configured` only for a route whose read passed, `not_established` when the read
+ran and did not show that, and `not_checked` when it never ran. It records what the run
+read, not whether anything was delivered.
+
+### What a list proves
+
+A list is used to infer absence only when every row is an object with a nonempty string
+`name` and no `token` member. One row that does not identify itself makes the whole list
+unusable: the preflight then stops before any mutation, and a cleanup list leaves the
+route `uncertain`.
+
+### Cleanup on a shared account
+
+`npr` is shared, so the fixture tracks which of a route's two names the run holds:
+
+| Event | First name | Renamed name |
+| --- | --- | --- |
+| Create accepted | held | never |
+| Create outcome unknown | unknown | never |
+| Create refused | never (route ends `not_created`, no cleanup) | never |
+| Rename accepted | released | held |
+| Rename refused | unchanged | never |
+| Rename outcome unknown | unknown | unknown |
+| Revoke answered 1 | | released |
+| Revoke refused | | held |
+| Revoke outcome unknown, or answered anything else | | unknown |
+
+An unknown outcome is not ownership: the run's token may be under that name, or another
+party's may be. Expiry and the two flags are attributes any token can share, not an
+identity, so matching them proves nothing.
+
+After a failed phase, cleanup is one list, at most one revoke per name, and one more
+list. It revokes a name only when the run is confirmed to hold it **and** the list shows
+it with exactly the run's expiry, read-only flag and full access. What the last list shows
+then decides:
+
+| Name is | Listed as | Result |
+| --- | --- | --- |
+| never the run's | anything | ignored: it is someone else's |
+| held | with the run's settings | `cleanup_unconfirmed`: the token survived |
+| held | with other settings | `unproven_token_under_run_name`: left untouched |
+| released or unknown | present at all | `unproven_token_under_run_name`: left untouched |
+
+The route's token state becomes `absent` only when none of these applies. A create of
+unknown outcome always stays `uncertain` (`creation_outcome_unknown`): an empty list
+cannot settle it, because that request can still take effect afterwards, and a listed row
+cannot, because nothing shows the run created it. A cleanup list that could not be used
+also leaves the route `uncertain`. After a lost rename or revoke reply the route is
+`absent` only when no row carries either name.
+
+The price of this rule is that a plain timeout leaves the run's own token in place. It is
+read-only and expires within the hour, and the report says `uncertain`.
+
+`uncertain` means the route's names must be checked by hand. Cleanup requests are
+separate phases, never retries, and `TokensSectionEvidence` treats them as unexpected, so
+a run that needed cleanup exits 1.
+
+### Captures
+
+v4 has no capture. On a passing run it sends the same requests with the same expectations
+as v3 and differs only in failure handling, so the v3 capture stands for it.
+
+All three captures are on `11.138.0.24`, pass every observation with zero discrepancies
+and left both tokens `absent`. None needed cleanup; the failure paths above are covered
+by synthetic tests against `TokensSectionServer`, which can insert another party's token
+between two requests, give it the run's own settings, and complete a request after its
+reply was lost.
+
+- [v3, 2026-11-18](../../docs/api/evidence/2026-11-18-tokens-section-v3.json) at
+  `1c05e6d6`: 17 observations (11 GET, 6 POST), `notification_targets` `none_configured`
+  on both routes. The latest capture. Its cleanup still treated a name as held after a
+  lost rename reply.
+- [v2, 2026-11-18](../../docs/api/evidence/2026-11-18-tokens-section-v2.json) at
+  `bd654671`: 19 observations (11 GET, 8 POST), including the second revoke. Its cleanup
+  still treated a renamed-away or revoked name as the run's.
+- [v1, 2026-11-18](../../docs/api/evidence/2026-11-18-tokens-section.json) at `c7f2ec78`:
+  17 observations (9 GET, 8 POST), including the second revoke. v1 had no
+  notification-target phase and revoked both names after any failure. Its report states
+  that the account has no contact address; that was checked by hand on the day, not by
+  the recipe.
+
+The captures record the digit-string `expires_at`, the null `whitelist_ips`, null rename
+data and the integer revoke result `1`; the result `0` for a missing token is in v1 and
+v2 only. They do not exercise expiry or read-only enforcement, API-error responses or
+notification delivery; see `whm-api-client-8x0.2.98`.

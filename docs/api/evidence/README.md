@@ -1519,3 +1519,25 @@ exists; see the [review corrections](../source-audit.md#webmail-session-review-c
 [the cleanup move](../source-audit.md#webmail-session-cleanup-inside-the-lifecycle-2026-11-02)
 and the
 [second review](../source-audit.md#webmail-session-second-review-corrections-2026-11-02).
+
+The [API token lifecycle capture](2026-11-18-tokens-section.json) at `c7f2ec78` on
+`11.138.0.24` records recipe `tokens-lifecycle-v1`: WHM `version` plus eight phases of
+`uapi()->tokens()` on each UAPI route, 17 observations (9 GET, 8 POST), all passing with
+zero discrepancies and both throwaway tokens confirmed absent. It shows `expires_at` as
+null or a digit string, `whitelist_ips` as null, null rename data and integer revoke
+results. See the [recipe](../../../tools/live-verify/README.md#api-token-lifecycle).
+
+The [revised capture](2026-11-18-tokens-section-v2.json) at `bd654671` on `11.138.0.24`
+records recipe `tokens-lifecycle-v2`: 19 observations (11 GET, 8 POST), all passing with
+zero discrepancies and both tokens absent. v2 adds one read of the account's notification
+targets on each route before its create (`contact_email`, `contact_email_2` and
+`pushbullet_access_token`, all empty strings) and reports `notification_targets`. The v1
+artifact stays the valid record of what ran at its revision; its report's fixed statement
+about the contact address was checked by hand, not by that recipe.
+
+The [latest capture](2026-11-18-tokens-section-v3.json) at `1c05e6d6` on `11.138.0.24`
+records recipe `tokens-lifecycle-v3`: 17 observations (11 GET, 6 POST), all passing with
+zero discrepancies and both tokens absent. v3 revokes each token once; the second revoke
+of the freed name, and its `0` result, appear only in the v1 and v2 artifacts. The current
+recipe is `tokens-lifecycle-v4`, which has no capture: it sends the same requests on a
+passing run and differs only in what it leaves untouched after a lost reply.

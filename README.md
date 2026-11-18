@@ -3,8 +3,8 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 128 generated typed groups cover 1,273 documented operations (see
-[`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
+The generated typed groups and their operation totals are listed in
+[`docs/api/coverage.md`](docs/api/coverage.md). They cover WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, DNS zone and DNSSEC
 management, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
 features, domain management, directory access, the complete Email and SSL modules,
@@ -3375,6 +3375,67 @@ seven POST methods remain live-unobserved. Follow-up `8x0.2.44` retains these
 limits and the historical finding; no completed capture is repeated to clear it.
 Artifact SHA-256:
 `eef3b63351acad16364534ceec676a6ab454f72fb901ded0b72be99e9f3088bc`.
+
+### cPanel API tokens
+
+`uapi()->tokens()` manages the API tokens of the selected cPanel account (cPanel 80
+and later) through direct cPanel access or the WHM bridge. It covers all four pinned
+`Tokens` functions.
+
+```php
+$tokens = $client->uapi('fixture')->tokens();
+
+$created = $tokens->createFullAccess('deploy', expiresAt: time() + 86400, readonly: true);
+$secret = $created['token'] ?? null; // Returned once. Store it securely; it is a credential.
+
+foreach ($tokens->listTokens() as $row) {
+    $name = $row['name'] ?? null;
+    $expiresAt = $row['expires_at'] ?? null; // int, or null when the token never expires.
+}
+
+$tokens->renameToken('deploy', 'deploy-2026');
+$removed = $tokens->revokeToken('deploy-2026') === 1;
+```
+
+- `createFullAccess()` creates a token with access to every feature the account has.
+  The name may contain only letters, digits, dashes and underscores, at most 50
+  characters. Without `expiresAt` the token never expires, and an expired token stays
+  listed until it is revoked. `readonly: true` restricts the token to read-only
+  operations. On an account with a contact address the server also sends a
+  token-created notification.
+- `listTokens()` returns token metadata and never a token secret.
+- `renameToken()` changes only the name; the secret keeps working. Its typed result is
+  `?array`; on cPanel `11.138.0.24` it was null.
+- `revokeToken()` returns `1` when it removed a token and `0` when no token had that
+  name. Both are successful calls, so `0` raises nothing: compare with `1` when the
+  removal must be confirmed. Revocation cannot be undone, and revoking the token the
+  client itself authenticates with ends its access.
+
+The list is a GET; the other three send one form POST with the name in the body. A name
+that is already in use, a rename of a missing token and a rename to the same name raise
+`ApiErrorException`.
+
+If `createFullAccess()` raises `PayloadMismatchException` after the API accepted the
+call, the token may already exist and the exception's unvalidated `$payload` may hold
+its only copy. Handle that payload securely, do not retry, and revoke the token by name
+if it is not wanted.
+
+The pinned documentation differs from the server in three places, all observed on
+cPanel `11.138.0.24` through both routes and recorded in the
+[2026-11-18 capture](docs/api/evidence/2026-11-18-tokens-section-v2.json):
+
+- It says `revoke` returns its value in the function's metadata and that `1` also
+  covers a token that does not exist. The server returns it as the function's data,
+  with `0` for a missing token.
+- It declares `expires_at` in list rows as an integer. The server sends a digit
+  string, which the client returns as an integer.
+- It omits `whitelist_ips`, which the server returns in list rows and in the create
+  result. It was null in every observation and is typed as an optional nullable list
+  of strings from the server's own description of the field.
+
+The [generated result shapes](src/Api/Uapi/Tokens.php) keep every field optional.
+Expiry and read-only enforcement, a populated `whitelist_ips` and notification delivery
+were not observed (`whm-api-client-8x0.2.98`).
 
 ### WHM web-server configuration
 
