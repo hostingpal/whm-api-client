@@ -806,7 +806,7 @@ refresh it with `php tools/live-testing/refresh-operations-client.php`.
 | `uapi:SSL/upload_key` | typed |
 | `uapi:ServiceProxy/set_service_proxy_backends` | typed |
 | `uapi:ServiceProxy/unset_all_service_proxy_backends` | typed |
-| `uapi:Session/create_temp_user` | untyped |
+| `uapi:Session/create_temp_user` | typed |
 | `uapi:Session/create_webmail_session_for_mail_user` | typed |
 | `uapi:Session/create_webmail_session_for_mail_user_check_password` | typed |
 | `uapi:Session/create_webmail_session_for_self` | typed |

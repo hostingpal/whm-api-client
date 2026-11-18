@@ -12734,6 +12734,7 @@ before resetting, and afterwards. Both resets confirmed the nested outcome and
 cleanup confirmed absence of the account, token, domain and zone.
 The [v2 artifact](evidence/2026-11-18-uapi-zone-reset-v2.json) records each original
 response's structure and masks the owner and RDATA values.
+
 ## Prepared UAPI mailbox and forwarder imports, 2026-11-18
 
 At revision `6fa3197d14eb7563909a5e132822d228d224805b`, the generated
@@ -12773,3 +12774,38 @@ token, account, domain and zone absent. A subsequent filesystem check confirmed
 the dedicated account home and its CSV staging directory absent. The operations,
 checks and sanitized observations are scoped to this run. Staging files, IDs,
 passwords, mail addresses and error text were excluded from the report.
+
+## Session/create_temp_user authenticated-session verification (2026-11-18)
+
+The pinned UAPI GET documents the session URL and declares a mutation. Its
+OpenAPI source SHA-256 is `172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`.
+On test.oblak.host running `11.138.0.24`, the installed
+`Cpanel/API/Session.pm` returns a flag in both setup branches. Its
+`SETUP_TEMP_SESSION` helper returns zero for an already configured temporary user.
+The installed `Cpanel/API.pm` checks Webmail functions through AppSafe.
+
+Two account lifecycles used purpose-created cPanel and Webmail sessions for
+`wlsessiontmp` (`session-temp.example.test`). The raw form POST returned
+HTTP 200 on both services, with UAPI status 1 on cPanel and status 0 on Webmail.
+The second run used the generated method from a worktree based on `9193906c`
+with SHA-256 of PHP's serialized `SessionSpec::CREATE_TEMP_USER` equal to
+`553f049bbfef8d862d420761158638adf93704ee06596ed478506128e76626cb`.
+cPanel's first POST returned an integer one and a string identifier. A separate
+POST in the same session returned only an integer zero flag. Webmail's own
+authenticated POST returned the error for a function refused by its application
+allowlist. The typed handle preserved the Webmail failure metadata.
+
+Explicit logouts returned HTTP 200 for both services. Readbacks established
+token, account, domain and zone absence and zero account-matching session
+entries after each lifecycle. The returned temporary identity was never used
+to authenticate or check database privileges.
+
+A third, purpose-created fixture repeated typed verification after the contract
+was restored to the pin's optional fields and the session router began dispatching
+from its generated spec. This worktree was based on `88558743`. The serialized
+spec SHA-256 was `1861312cb22efd1800be28483985ac40d1ea8c3a3972492e29b2ba0307bb8c5f`.
+cPanel again returned one with a string identifier on first setup, then zero
+with the identifier absent. Authenticated Webmail returned HTTP 200, UAPI 0
+and the same AppSafe refusal. Both explicit logouts returned HTTP 200. Readbacks
+confirmed token, account, domain and zone absence and zero account-matching
+session entries.

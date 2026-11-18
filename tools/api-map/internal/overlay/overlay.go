@@ -116,6 +116,7 @@ type FormRecordField struct {
 }
 
 type Operation struct {
+	SessionURL            bool                   `json:"session_url,omitempty"`
 	FormRecord            *FormRecord            `json:"form_record,omitempty"`
 	MultipartUploadFamily *MultipartUploadFamily `json:"multipart_upload_family,omitempty"`
 	MultipartUpload       *MultipartUpload       `json:"multipart_upload,omitempty"`

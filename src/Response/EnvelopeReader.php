@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace HostingPal\WhmApiClient\Response;
 
+use Closure;
 use HostingPal\WhmApiClient\Api\OutcomePolicy;
 use HostingPal\WhmApiClient\Exception\ApiErrorException;
+use HostingPal\WhmApiClient\Exception\ApiException;
 use HostingPal\WhmApiClient\Exception\HttpException;
 use HostingPal\WhmApiClient\Exception\InvalidResponseException;
 use InvalidArgumentException;
@@ -36,6 +38,29 @@ use stdClass;
  */
 final class EnvelopeReader
 {
+    /**
+     * Record the available snapshot on the owning handle before returning or propagating an API failure.
+     *
+     * @param Closure(ResponseMetadata): void $record
+     */
+    public static function readAndRecord(
+        #[SensitiveParameter] ResponseInterface $response,
+        ResponseRoute $route,
+        OutcomePolicy $outcome,
+        #[SensitiveParameter] Closure $record,
+    ): ApiResponse {
+        try {
+            $result = self::read($response, $route, $outcome);
+        } catch (ApiException $exception) {
+            if ($exception->metadata !== null) {
+                $record($exception->metadata);
+            }
+            throw $exception;
+        }
+        $record($result->metadata);
+        return $result;
+    }
+
     /**
      * Extract available metadata before interpreting HTTP and API outcomes.
      *

@@ -19,6 +19,18 @@ Decision record: `whm-api-client-8x0.1.2`. Runtime execution and authentication:
 `whm-api-client-8x0.1`. Concrete payload returns and response metadata:
 `whm-api-client-8x0.1.1`.
 
+## Caller-owned authenticated sessions (2026-11-18)
+
+`SessionUrlClient` is a separate capability for the pinned UAPI operation
+`Session/create_temp_user`. The token selectors continue to use their existing
+direct and bridged routing. Construct the session handle with an independently
+trusted HTTPS origin, a caller-owned complete session endpoint URL, its one
+service cookie value, and an explicitly configured transport. Construction
+validates scope locally. The generated operation sends a single form POST
+to that bound path and records metadata on its own handle. Login, logout and
+session ownership belong to the caller. The constructor and generated method
+document service ports and the observed Webmail refusal on 11.138.0.24.
+
 ## Public interface
 
 Expose WHM operations through `whm()` and cPanel UAPI operations through

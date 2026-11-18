@@ -938,8 +938,8 @@ trait UapiGroups
     /**
      * Select the Session operations without making a request.
      *
-     * Temporary Webmail session credentials (three of four pinned Session operations). Session-URL create_temp_user
-     * remains deferred under whm-api-client-8x0.1.33.
+     * Temporary Webmail session credentials for token-authenticated UAPI clients. The separate SessionUrlClient
+     * executes createTempUser with a caller-owned authenticated session URL.
      */
     public function session(): Session
     {

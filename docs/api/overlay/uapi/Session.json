@@ -4,8 +4,43 @@
   "group": "Session",
   "class": "Session",
   "accessor": "session",
-  "description": "Temporary Webmail session credentials (three of four pinned Session operations). Session-URL create_temp_user remains deferred under whm-api-client-8x0.1.33.",
+  "description": "Temporary Webmail session credentials for token-authenticated UAPI clients. The separate SessionUrlClient executes createTempUser with a caller-owned authenticated session URL.",
   "operations": {
+    "uapi:Session/create_temp_user": {
+      "name": "createTempUser",
+      "method": "POST",
+      "session_url": true,
+      "notes": [
+        {
+          "kind": "policy",
+          "text": "Use SessionUrlClient with a trusted HTTPS service origin, the complete already-authenticated endpoint URL, and that service's cookie value. One empty form POST. The caller owns login, logout and cleanup. Do not log the URL, cookie, returned identifier or unvalidated payload."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned data object has two optional fields. When present, created is an integer flag (1 means creation succeeded, 0 means it failed) and session_temp_user is a string. Omission leaves creation unknown."
+        },
+        {
+          "kind": "observed",
+          "text": "On 11.138.0.24 cPanel returned created=1 with an identifier, then created=0 alone for the same session. The installed handler and setup helper confirm that an already-set-up user takes the zero branch. Webmail authenticated but AppSafe refused this operation. Inspect responseMeta() for the service outcome."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned cPanel 11.138.0.10",
+          "date": "2026-11-18",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Session~1create_temp_user/get/description",
+          "note": "Requires an existing authenticated session URL. The pinned URL example includes its security token. The formal GET declares x-readonly=false and x-rollback=none."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.24",
+          "date": "2026-11-18",
+          "note": "One raw form POST in each purpose-created authenticated session on the disposable account. cPanel returned status 1, native integer created=1 and a string session_temp_user. Webmail returned status 0; the original raw run did not classify its error text. A separate typed run observed both cPanel outcomes in the same session and classified the Webmail refusal as the installed AppSafe check. Explicit logouts returned HTTP 200 and readbacks confirmed token, account, domain and zone absence after both runs."
+        }
+      ]
+    },
     "uapi:Session/create_webmail_session_for_mail_user": {
       "name": "createWebmailSessionForMailUser",
       "method": "POST",

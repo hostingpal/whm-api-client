@@ -98,6 +98,7 @@ type FormField struct {
 
 // Operation owns one canonical response/route contract and its public input mappings.
 type Operation struct {
+	SessionURL            bool                           `json:",omitempty"`
 	FormRecord            *FormRecord                    `json:",omitempty"`
 	MultipartUploadFamily *overlay.MultipartUploadFamily `json:",omitempty"`
 	MultipartUpload       *overlay.MultipartUpload       `json:",omitempty"`

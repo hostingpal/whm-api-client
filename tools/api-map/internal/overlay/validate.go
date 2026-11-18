@@ -50,7 +50,7 @@ func Validate(set Set) []string {
 			}
 			seen[id] = name
 			op := file.Operations[id]
-			if op.Exclude != nil && (op.Name != "" || len(op.Params) > 0 || len(op.Response) > 0 || op.Unwrap != "" ||
+			if op.Exclude != nil && (op.SessionURL || op.Name != "" || len(op.Params) > 0 || len(op.Response) > 0 || op.Unwrap != "" ||
 				len(op.AdditionalMethods) > 0 || op.Function != "" || op.Rows != "" || op.OptionalPayload || op.Variant != "" || op.Body != "" || len(op.BodyFields) > 0 || op.MultipartUploads != nil || op.MultipartUpload != nil || op.MultipartUploadFamily != nil) {
 				problems = append(problems, id+": excluded operations take no other settings")
 			}

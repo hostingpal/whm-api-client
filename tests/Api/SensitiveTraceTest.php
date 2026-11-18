@@ -21,6 +21,7 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
 use HostingPal\WhmApiClient\Exception\TransportException;
 use HostingPal\WhmApiClient\Exception\ZoneRebuildException;
 use HostingPal\WhmApiClient\Http\HttpTransport;
+use HostingPal\WhmApiClient\SessionUrlClient;
 use HostingPal\WhmApiClient\UapiClient;
 use HostingPal\WhmApiClient\Upload;
 use HostingPal\WhmApiClient\WhmClient;
@@ -34,6 +35,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Client\NetworkExceptionInterface;
 use Psr\Http\Message\MessageInterface;
+use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use ReflectionMethod;
@@ -1577,6 +1579,138 @@ final class SensitiveTraceTest extends TestCase
         } catch (ApiErrorException | PayloadMismatchException $exception) {
             self::assertCount(1, $http->getRequests());
             self::assertSecretAbsent($exception);
+        }
+    }
+
+    public function testSessionUrlAndCookieStayOutOfValidationAndTransportFailureTraces(): void
+    {
+        $factory = new Psr17Factory();
+        $http = new MockClient();
+        $transport = new HttpTransport($http, $factory, $factory);
+        $origin = 'https://example.test:2083';
+        $endpoint = $origin . '/cpsess' . self::STRING_TOTP . '/execute/Session/create_temp_user';
+        try {
+            new SessionUrlClient($origin, $endpoint . '?invalid', self::SECRET, $transport);
+            self::fail('Expected session URL rejection.');
+        } catch (InvalidArgumentException $exception) {
+            self::assertSecretAbsent($exception);
+        }
+        $session = new SessionUrlClient($origin, $endpoint, self::SECRET, $transport);
+        $http->addException(new class ($endpoint . self::SECRET) extends RuntimeException implements
+            NetworkExceptionInterface
+        {
+            public function getRequest(): RequestInterface
+            {
+                throw new LogicException('The transport must not inspect the private request.');
+            }
+        });
+        try {
+            $session->createTempUser();
+            self::fail('Expected transport failure.');
+        } catch (TransportException $exception) {
+            self::assertNull($exception->getPrevious());
+            self::assertSecretAbsent($exception);
+            self::assertStringNotContainsString(self::STRING_TOTP, $exception->causeMessage);
+            self::assertStringNotContainsString(self::SECRET, $exception->causeMessage);
+        }
+    }
+
+    /** @return iterable<string, array{int,string,class-string<ApiException>}> */
+    public static function sessionResponseFailures(): iterable
+    {
+        yield 'HTTP' => [500, '{}', HttpException::class];
+        yield 'API' => [200, '{"status":0,"errors":["PRIVATE"]}', ApiErrorException::class];
+        yield 'malformed envelope' => [200, 'PRIVATE', InvalidResponseException::class];
+        yield 'payload' => [200, '{"status":1,"data":{"created":"PRIVATE"}}', PayloadMismatchException::class];
+    }
+
+    /** @param class-string<ApiException> $expected */
+    #[DataProvider('sessionResponseFailures')]
+    public function testSessionSecretsStayOutOfResponseFailureTraces(int $status, string $body, string $expected): void
+    {
+        $factory = new Psr17Factory();
+        $http = new MockClient();
+        $origin = 'https://example.test:2083';
+        $endpoint = $origin . '/cpsess' . self::STRING_TOTP . '/execute/Session/create_temp_user';
+        $session = new SessionUrlClient($origin, $endpoint, self::SECRET, new HttpTransport($http, $factory, $factory));
+        $http->addResponse(new Response($status, [], str_replace('PRIVATE', self::SECRET . $endpoint, $body)));
+        try {
+            $session->createTempUser();
+            self::fail('Expected a response failure.');
+        } catch (ApiException $exception) {
+            self::assertInstanceOf($expected, $exception);
+            self::assertSame($session->responseMeta(), $exception->metadata);
+            self::assertSecretAbsent($exception);
+        }
+    }
+
+    /** @return iterable<string, array{class-string<\Error|LogicException|RuntimeException>,class-string<\Error|LogicException|RuntimeException>}> */
+    public static function sessionImplementationFailures(): iterable
+    {
+        yield 'client logic exception' => [LogicException::class, LogicException::class];
+        yield 'client runtime exception' => [RuntimeException::class, RuntimeException::class];
+        yield 'type' => [\TypeError::class, \TypeError::class];
+        yield 'value' => [\ValueError::class, \ValueError::class];
+        yield 'engine' => [\Error::class, \Error::class];
+        yield 'arithmetic' => [\ArithmeticError::class, \Error::class];
+        yield 'assertion' => [\AssertionError::class, \Error::class];
+    }
+
+    /**
+     * @param class-string<\Error|LogicException|RuntimeException> $source
+     * @param class-string<\Error|LogicException|RuntimeException> $expected
+     */
+    #[DataProvider('sessionImplementationFailures')]
+    public function testSessionTransportProgrammingErrorsStayDistinctAndPrivate(string $source, string $expected): void
+    {
+        $factory = new Psr17Factory();
+        $http = new class ($source) implements ClientInterface {
+            /** @param class-string<\Error|LogicException|RuntimeException> $source */
+            public function __construct(private readonly string $source)
+            {
+            }
+
+            public function sendRequest(RequestInterface $request): ResponseInterface
+            {
+                throw new ($this->source)($request->getHeaderLine('Cookie') . $request->getRequestTarget());
+            }
+        };
+        $origin = 'https://example.test:2083';
+        $endpoint = $origin . '/cpsess' . self::STRING_TOTP . '/execute/Session/create_temp_user';
+        $session = new SessionUrlClient($origin, $endpoint, self::SECRET, new HttpTransport($http, $factory, $factory));
+        try {
+            $session->createTempUser();
+            self::fail('Expected a programming error.');
+        } catch (\Error | LogicException | RuntimeException $exception) {
+            self::assertSame($expected, $exception::class);
+            self::assertNull($exception->getPrevious());
+            self::assertSecretAbsent($exception);
+            self::assertNull($session->responseMeta());
+        }
+    }
+
+    public function testSessionRequestFactoryFailureDiscardsTheSensitiveUriAndOriginalTrace(): void
+    {
+        $factory = new class implements RequestFactoryInterface {
+            public function createRequest(string $method, $uri): RequestInterface
+            {
+                throw new InvalidArgumentException((string) $uri);
+            }
+        };
+        $http = new MockClient();
+        $transport = new HttpTransport($http, $factory, new Psr17Factory());
+        $origin = 'https://example.test:2083';
+        $endpoint = $origin . '/cpsess' . self::STRING_TOTP . '/execute/Session/create_temp_user';
+        $session = new SessionUrlClient($origin, $endpoint, self::SECRET, $transport);
+        try {
+            $session->createTempUser();
+            self::fail('Expected a factory failure.');
+        } catch (LogicException $exception) {
+            self::assertSame(LogicException::class, $exception::class);
+            self::assertNull($exception->getPrevious());
+            self::assertSecretAbsent($exception);
+            self::assertCount(0, $http->getRequests());
+            self::assertNull($session->responseMeta());
         }
     }
 
