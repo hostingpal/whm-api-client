@@ -917,7 +917,7 @@ refresh it with `php tools/live-testing/refresh-operations-client.php`.
 | `uapi:WordPressRestore/cleanup` | typed |
 | `uapi:WordPressRestore/start` | typed |
 | `uapi:WordPressSite/create` | untyped |
-| `uapi:ZoneEdit/resetzone` | untyped |
+| `uapi:ZoneEdit/resetzone` | typed |
 | `uapi:cPGreyList/disable_all_domains` | typed |
 | `uapi:cPGreyList/disable_domains` | typed |
 | `uapi:cPGreyList/enable_all_domains` | typed |

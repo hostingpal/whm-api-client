@@ -45,7 +45,7 @@ final class OperationRunner
      * @param Closure(array<mixed>, OrderedFields, JsonBody|MultipartInput|null=): ApiResponse $dispatch
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the envelope and outcome were accepted but the payload differs from the
-     *     spec; under the flag policy the operation took effect.
+     *     spec. Inspect the exception's outcomeConfirmed before interpreting the failure.
      * @throws LogicException If the spec is malformed or the arguments disagree with it.
      * @throws InvalidArgumentException If a float is non-finite or an explicit target policy fails (ArgumentEncoder),
      *     or if collection contents or expanded fields are invalid. The handles clear metadata before
@@ -129,7 +129,7 @@ final class OperationRunner
      *
      * The response reaching this point already passed the envelope checks and the
      * outcome policy, so other payload failures raise PayloadMismatchException:
-     * outcomeConfirmed is true under the flag policy (the operation took effect)
+     * outcomeConfirmed is true under the flag policy once any required nested outcome has also confirmed success
      * and false when the outcome was not checked. Spec defects stay LogicException.
      * Responses can contain or echo secrets; hide them from trace arguments while
      * retaining the explicit unvalidated payload on PayloadMismatchException.
@@ -179,6 +179,11 @@ final class OperationRunner
         $confirmed = OperationSpec::outcome($spec) === OutcomePolicy::Flag;
         $read = new PayloadReader($response->metadata, OperationSpec::text($spec, 'function') . ' payload');
         try {
+            if (($spec['single_result_status'] ?? false) === true) {
+                $confirmed = false;
+                SingleResultStatus::confirm($response, $read);
+                $confirmed = true;
+            }
             $value = self::validated($spec, $returns, $response, $read);
             if ($failedRows) {
                 // List roots use '$'; an object field named '$' remains literal.

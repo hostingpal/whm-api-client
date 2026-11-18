@@ -413,6 +413,7 @@ remain unobserved under `8x0.2.59`.
 | `uapi()->cpDavd()` | `listUsers()`, `listDelegates()`, `addDelegate()`, `updateDelegate()`, `removeDelegate()`, `manageCollection()` |
 | `uapi()->postgresql()` | `createDatabase()`, `createUser()`, `deleteDatabase()`, `deleteUser()`, `getRestrictions()`, `grantAllPrivileges()`, `listDatabases()`, `listUsers()`, `renameDatabase()`, `renameUser()`, `renameUserNoPassword()`, `revokeAllPrivileges()`, `setPassword()`, `updatePrivileges()` |
 | `uapi()->dns()` | `lookup()`, `fetchCpanelGeneratedDomains()`, `parseZone()`, `hasLocalAuthority()`, `ensureDomainsResideOnlyLocally()`, `ensureDomainsUseRecognizedNameservers()`, `isAliasAvailable()`, `isHttpsAvailable()`, `isSvcbAvailable()`, and the zone writes `massEditZone()` and `swapIpInZones()` |
+| `uapi()->zoneEdit()` | `resetZone()` rebuilds an account-owned DNS zone using the server template. A return confirms the rebuild succeeded. |
 | `uapi()->dnssec()` | All 12 pinned functions: key lifecycle, DNSKEY/private-key exports, DS records and NSEC settings. `fetchDsRecords()` and `exportZoneDnskey()` use GET; the other ten use form POST, including private-key export. |
 | `uapi()->dynamicDns()` | All 5 pinned functions: `listDomains()` uses GET; `create()`, `recreate()`, `setDescription()` and `delete()` use form POST. |
 
@@ -2311,8 +2312,8 @@ Use a current zone read and the applicable serial number; a stale or incorrect
 line can remove the wrong record. `deleteDomain()` can succeed with `type: null`
 when no domain exists, so a successful envelope does not establish deletion.
 Domain deletion has no rollback and does not delete an addon's associated
-subdomain. `resetZone()` requires `domain` or `zone`; it preserves valid TXT
-records but resets other records to defaults, including subdomain records.
+subdomain. `resetZone()` requires `domain` or `zone`; on 11.138.0.24 the shared rebuild helper copies uncommented TXT
+lines from the existing zone when available but resets other records to defaults, including subdomain records.
 
 The WHM pinned schema lists `nsec3_iterations: 7` and no salt default. These are
 pinned WHM declarations, not a promise about every server version's behavior;
@@ -2329,6 +2330,31 @@ remove-record pass was rejected before execution with `[Modify Shared Resources]
 and was not retried. Those corrections remain source/offline evidence. Server-wide
 writes and other remaining variants stay under `8x0.2.42`; existing artifacts are
 unchanged.
+
+### Reset an account's DNS zone
+
+On cPanel 138 and later with the DNS role enabled, `resetZone()` rebuilds the
+account-owned zone from the server template. The pin warns that hand-added MX,
+TXT and CNAME records are lost. On 11.138.0.24, the shared WHM/UAPI helper copies
+uncommented TXT lines from the old zone when it can read it. Back up the zone
+before calling. There is no rollback.
+
+```php
+$rows = $client->uapi('example')->zoneEdit()->resetZone(domain: 'example.com');
+$mxCheck = $rows[0]['result']['checkmx'] ?? null;
+```
+
+A normal return confirms that exactly one row reported integer rebuild status 1.
+A rebuild status of 0 raises `ZoneRebuildException`, which extends
+`ApiErrorException`. Its message is safe to display. For private diagnostics,
+`$exception->upstreamReason()` returns the untrusted upstream `statusmsg` string.
+An empty string is preserved, and missing or non-string text yields null.
+The reason may name accounts or domains. Keep it out of public logs. The
+exception cannot be serialized because it holds a protected diagnostic. A missing or malformed status,
+or an unexpected number of rows, raises `PayloadMismatchException` with
+`outcomeConfirmed` false. Malformed MX data after rebuild status 1 raises the
+same exception with `outcomeConfirmed` true. Read the zone before deciding
+whether to reset it again.
 
 ### UAPI DNS zone writes
 

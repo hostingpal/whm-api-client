@@ -118,35 +118,60 @@ func baseShape(spec effective.TypeSpec, indent string) string {
 	case "union":
 		return unionShape(spec, indent)
 	case "object":
-		// Closed fieldless objects return []; open objects preserve typed extras.
-		if len(spec.Fields) == 0 && spec.Values == nil {
-			return "array{}"
-		}
-		inner := indent + "    "
-		lines := []string{"array{"}
-		required := map[string]bool{}
-		for _, name := range spec.Required {
-			required[name] = true
-		}
-		for _, field := range spec.Fields {
-			key := field.Name
-			if !shapeKey.MatchString(key) {
-				key = phpString(key)
-			}
-			key = escapeDoc(key)
-			optional := "?"
-			if required[field.Name] {
-				optional = ""
-			}
-			lines = append(lines, inner+key+optional+": "+shape(field.Spec, inner)+",")
-		}
-		if spec.Values != nil {
-			lines = append(lines, inner+"...<array-key, "+shape(*spec.Values, inner)+">")
-		}
-		lines = append(lines, indent+"}")
-		return strings.Join(lines, "\n")
+		return objectShape(spec, indent, fieldShape)
 	}
 	return "mixed"
+}
+
+func fieldShape(f effective.Field, indent string) string {
+	return shape(f.Spec, indent)
+}
+
+// objectShape retains every schema field while allowing an outcome policy to
+// narrow just the status it has already checked on the successful return path.
+func objectShape(spec effective.TypeSpec, indent string, fieldType func(effective.Field, string) string) string {
+	// Closed fieldless objects return []; open objects preserve typed extras.
+	if len(spec.Fields) == 0 && spec.Values == nil {
+		return "array{}"
+	}
+	inner := indent + "    "
+	lines := []string{"array{"}
+	required := map[string]bool{}
+	for _, name := range spec.Required {
+		required[name] = true
+	}
+	for _, field := range spec.Fields {
+		key := field.Name
+		if !shapeKey.MatchString(key) {
+			key = phpString(key)
+		}
+		key = escapeDoc(key)
+		optional := "?"
+		if required[field.Name] {
+			optional = ""
+		}
+		lines = append(lines, inner+key+optional+": "+fieldType(field, inner)+",")
+	}
+	if spec.Values != nil {
+		lines = append(lines, inner+"...<array-key, "+shape(*spec.Values, inner)+">")
+	}
+	lines = append(lines, indent+"}")
+	return strings.Join(lines, "\n")
+}
+
+func singleResultShape(row effective.TypeSpec) string {
+	rowType := objectShape(row, "", func(field effective.Field, indent string) string {
+		if field.Name != "result" {
+			return fieldShape(field, indent)
+		}
+		return objectShape(field.Spec, indent, func(field effective.Field, indent string) string {
+			if field.Name == "status" {
+				return "1"
+			}
+			return fieldShape(field, indent)
+		})
+	})
+	return "array{0: " + rowType + "}"
 }
 
 // nativeType renders the PHP return or property type for a spec. Null is

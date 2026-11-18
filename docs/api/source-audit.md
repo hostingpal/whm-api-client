@@ -12707,6 +12707,33 @@ swap returned the known handler failure with both zone snapshots unchanged.
 The direct swap matched the controlled A changes in both zones. The account,
 token, primary and alias domains, and both zones were confirmed absent.
 
+## 2026-11-18 — UAPI ZoneEdit/resetzone (8x0.1.37)
+
+The flattened cPanel OpenAPI response documents a list of rebuild replies.
+The installed 11.138.0.24 wrapper explicitly selects list semantics.
+A successful UAPI dispatch can carry a failed rebuild in the row's `result`.
+The generated method preserves the nested status, message and optional nullable
+MX metadata. The original 16 offline fixtures distinguished inner rebuild failure from UAPI
+dispatch failure. Subsequent review added fail-closed handling for the rebuild
+outcome, ambiguous data, and an explicit outer WHM rejection fixture. The
+following historical probes exercised the original contract.
+
+At `aee6a547bf7b4567fa68f11e1102f19ad9c45ecf` on `test.oblak.host`,
+the one-off fixture created an account, added and read a dedicated custom A
+record before each reset, then reread the zone after each call. Direct UAPI
+and the WHM bridge each received one form POST, removed their respective
+record and returned one successful rebuild row. Both payloads passed the
+generated contract. The fixture confirmed absence of its token, account,
+domain and zone after cleanup. The original response shape and masked MX
+field types are in the [structural evidence](evidence/2026-11-18-uapi-zone-reset.json).
+
+At `323496bcc2b0d375f06d9e96984a3ba414d05f2e`, a fresh disposable zone tested
+the reviewed nested-outcome policy on both routes. All eight captures passed,
+including direct and bridged parse readbacks before planting each marker,
+before resetting, and afterwards. Both resets confirmed the nested outcome and
+cleanup confirmed absence of the account, token, domain and zone.
+The [v2 artifact](evidence/2026-11-18-uapi-zone-reset-v2.json) records each original
+response's structure and masks the owner and RDATA values.
 ## Prepared UAPI mailbox and forwarder imports, 2026-11-18
 
 At revision `6fa3197d14eb7563909a5e132822d228d224805b`, the generated

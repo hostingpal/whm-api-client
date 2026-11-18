@@ -215,6 +215,8 @@ trait UapiGroups
 
     private ?Wpx $wpxGroup = null;
 
+    private ?ZoneEdit $zoneEditGroup = null;
+
     /**
      * Select the AccountEnhancements operations without making a request.
      *
@@ -1270,5 +1272,15 @@ trait UapiGroups
     public function wpx(): Wpx
     {
         return $this->wpxGroup ??= new Wpx($this->run(...));
+    }
+
+    /**
+     * Select the ZoneEdit operations without making a request.
+     *
+     * The ZoneEdit module for UAPI.
+     */
+    public function zoneEdit(): ZoneEdit
+    {
+        return $this->zoneEditGroup ??= new ZoneEdit($this->run(...));
     }
 }
