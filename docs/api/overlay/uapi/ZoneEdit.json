@@ -19,7 +19,7 @@
         },
         {
           "kind": "policy",
-          "text": "A return confirms one rebuild row with integer result.status 1. Integer 0 raises ApiErrorException with a fixed message. A missing, malformed or ambiguous outcome raises PayloadMismatchException with outcomeConfirmed false. If the inner status is 1 and another field is malformed, outcomeConfirmed is true. Read the zone before considering another reset."
+          "text": "A return confirms one rebuild row with integer result.status 1. Integer 0 raises ZoneRebuildException, an ApiErrorException with a fixed message. Its upstreamReason() accessor returns the untrusted statusmsg string, including an empty string, or null when unavailable. Keep private upstream text out of logs. A missing, malformed or ambiguous outcome raises PayloadMismatchException with outcomeConfirmed false. If the inner status is 1 and another field is malformed, outcomeConfirmed is true. Read the zone before considering another reset."
         },
         {
           "kind": "observed",

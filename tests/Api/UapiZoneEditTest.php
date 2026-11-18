@@ -9,6 +9,7 @@ use HostingPal\WhmApiClient\Api\Uapi\Spec\ZoneEditSpec;
 use HostingPal\WhmApiClient\Client;
 use HostingPal\WhmApiClient\Exception\ApiErrorException;
 use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
+use HostingPal\WhmApiClient\Exception\ZoneRebuildException;
 use HostingPal\WhmApiClient\Http\HttpTransport;
 use Http\Mock\Client as MockClient;
 use LogicException;
@@ -56,6 +57,8 @@ final class UapiZoneEditTest extends TestCase
             'optional MX null' => ['[{"result":{"checkmx":null,"status":1}}]', 1, null],
             'inner failure' => ['[{"result":{"status":0,"statusmsg":"private-rebuild-text"}}]', 1, $rejected],
             'inner failure with null message' => ['[{"result":{"status":0,"statusmsg":null}}]', 1, $rejected],
+            'inner failure with empty message' => ['[{"result":{"status":0,"statusmsg":""}}]', 1, $rejected],
+            'inner failure with nontext message' => ['[{"result":{"status":0,"statusmsg":[1]}}]', 1, $rejected],
             'inner failure without message' => ['[{"result":{"status":0}}]', 1, $rejected],
             'dispatch denied' => ['null', 0, $rejected],
             'omitted data' => ['', 1, $mismatch],
@@ -104,7 +107,16 @@ final class UapiZoneEditTest extends TestCase
             self::assertSame($account->responseMeta(), $error->metadata);
             self::assertStringNotContainsString('private-rebuild-text', $error->getMessage());
             if ($failure === ApiErrorException::class && str_contains($data, '"status":0')) {
+                self::assertInstanceOf(ZoneRebuildException::class, $error);
                 self::assertSame('The DNS zone rebuild failed.', $error->getMessage());
+                $reason = match (true) {
+                    str_contains($data, 'private-rebuild-text') => 'private-rebuild-text',
+                    str_contains($data, '"statusmsg":""') => '',
+                    default => null,
+                };
+                self::assertSame($reason, $error->upstreamReason());
+            } elseif ($error instanceof ApiErrorException) {
+                self::assertNotInstanceOf(ZoneRebuildException::class, $error);
             }
             if ($error instanceof PayloadMismatchException) {
                 self::assertSame($data === '[{"result":{"checkmx":"bad","status":1}}]', $error->outcomeConfirmed);

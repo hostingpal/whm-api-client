@@ -2345,8 +2345,11 @@ $mxCheck = $rows[0]['result']['checkmx'] ?? null;
 ```
 
 A normal return confirms that exactly one row reported integer rebuild status 1.
-A rebuild status of 0 raises `ApiErrorException` even when dispatch succeeded.
-Its message excludes the upstream rebuild text. A missing or malformed status,
+A rebuild status of 0 raises `ZoneRebuildException`, which extends
+`ApiErrorException`. Its message is safe to display. For private diagnostics,
+`$exception->upstreamReason()` returns the untrusted upstream `statusmsg` string.
+An empty string is preserved, and missing or non-string text yields null.
+The reason may name accounts or domains. Keep it out of public logs. A missing or malformed status,
 or an unexpected number of rows, raises `PayloadMismatchException` with
 `outcomeConfirmed` false. Malformed MX data after rebuild status 1 raises the
 same exception with `outcomeConfirmed` true. Read the zone before deciding

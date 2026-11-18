@@ -51,10 +51,11 @@ final readonly class ZoneEdit
      * zoneedit feature. Its rebuild helper copies uncommented TXT lines from the old zone when it can read it. Other
      * server versions and individual records can differ.
      *
-     * Policy: A return confirms one rebuild row with integer result.status 1. Integer 0 raises ApiErrorException with a
-     * fixed message. A missing, malformed or ambiguous outcome raises PayloadMismatchException with outcomeConfirmed
-     * false. If the inner status is 1 and another field is malformed, outcomeConfirmed is true. Read the zone before
-     * considering another reset.
+     * Policy: A return confirms one rebuild row with integer result.status 1. Integer 0 raises ZoneRebuildException, an
+     * ApiErrorException with a fixed message. Its upstreamReason() accessor returns the untrusted statusmsg string,
+     * including an empty string, or null when unavailable. Keep private upstream text out of logs. A missing, malformed
+     * or ambiguous outcome raises PayloadMismatchException with outcomeConfirmed false. If the inner status is 1 and
+     * another field is malformed, outcomeConfirmed is true. Read the zone before considering another reset.
      *
      * Observed: On cPanel 11.138.0.24 both direct and bridged successes had an empty statusmsg and a checkmx object.
      * The pin leaves MX metadata fields unspecified. Failed rebuilds were not observed live. The client requires a

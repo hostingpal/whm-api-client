@@ -6,7 +6,7 @@ namespace HostingPal\WhmApiClient\Api\Engine;
 
 use HostingPal\WhmApiClient\Api\OutcomePolicy;
 use HostingPal\WhmApiClient\Api\RequestBodyFormat;
-use HostingPal\WhmApiClient\Exception\ApiErrorException;
+use HostingPal\WhmApiClient\Exception\ZoneRebuildException;
 use HostingPal\WhmApiClient\Response\ApiResponse;
 use HostingPal\WhmApiClient\Response\PayloadReader;
 use LogicException;
@@ -65,7 +65,8 @@ final class SingleResultStatus
         }
         $status = $rows[0]->result->status ?? null;
         if ($status === 0) {
-            throw new ApiErrorException('The DNS zone rebuild failed.', $response->metadata);
+            $reason = $rows[0]->result->statusmsg ?? null;
+            throw new ZoneRebuildException($response->metadata, is_string($reason) ? $reason : null);
         }
         if ($status !== 1) {
             $read->fail();

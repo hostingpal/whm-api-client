@@ -136,8 +136,10 @@ lines from readable old zone data into the new template. Rely on a backup for cu
 The flat pinned OpenAPI response describes the inner UAPI envelope. A return
 requires a successful dispatch and exactly one result row with a strict integer
 rebuild status of 1. Either outer WHM rejection, inner UAPI rejection, or rebuild
-status 0 raises `ApiErrorException`. The message never includes freeform rebuild
-text. Missing or ambiguous outcomes raise `PayloadMismatchException` with
+status 0 raises `ApiErrorException`. A failed rebuild specifically raises `ZoneRebuildException` with a
+fixed message and an explicit `upstreamReason()` accessor for the untrusted
+string diagnostic. Empty text is preserved. Missing, null and non-string
+diagnostics give null. Missing or ambiguous outcomes raise `PayloadMismatchException` with
 `outcomeConfirmed` false. When status 1 is established, malformed ancillary data
 raises the same exception with `outcomeConfirmed` true. The pin leaves MX metadata
 fields unspecified. The client preserves the map, explicit null and omission.
